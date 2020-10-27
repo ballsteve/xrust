@@ -23,6 +23,9 @@ pub use sequence::{add_item, stringvalue};
 mod xpath;
 pub use xpath::parse;
 
+mod evaluate;
+pub use evaluate::{DynamicContext, cons_literal};
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -49,6 +52,23 @@ mod tests {
         add_item(&mut s, Item::Value(Value::String(String::from("item"))));
         add_item(&mut s, Item::Value(Value::Double(1.234)));
 	assert_eq!(stringvalue(s), "item1.234");
+    }
+
+    // Construct a literal singleton sequence
+    #[test]
+    fn eval_literal() {
+      let d = DynamicContext {
+        current_item: None,
+      };
+      let seq = cons_literal(Some(Item::Value(Value::Integer(456))), &d).expect("unable to construct literal");
+      if seq.len() == 1 {
+        match seq[0] {
+	  Item::Value(Value::Integer(v)) => assert_eq!(v, 456),
+	  _ => panic!("item is not a literal integer value")
+	}
+      } else {
+        panic!("sequence is not a singleton")
+      }
     }
 
     // Parse an XPath

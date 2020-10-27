@@ -7,6 +7,7 @@ use decimal;
 
 use crate::xdmerror::{Error, ErrorKind};
 
+#[derive(Clone)]
 pub enum Item {
     Node,
     Function,
@@ -41,6 +42,7 @@ impl StringValue for Item {
 //    }
 //}
 
+#[derive(Clone)]
 pub enum Value {
     AnyType, // node or simple type
     Untyped, // a not-yet-valildated anyType
@@ -146,6 +148,11 @@ impl NonPositiveInteger {
         self.value
     }
 }
+impl Clone for NonPositiveInteger {
+    fn clone(&self) -> Self {
+        NonPositiveInteger::new(self.value).expect("unable to clone NonPositiveInteger")
+    }
+}
 
 pub struct PositiveInteger {
     value: i64,
@@ -167,6 +174,11 @@ impl PositiveInteger {
     }
     pub fn value(&self) -> i64 {
         self.value
+    }
+}
+impl Clone for PositiveInteger {
+    fn clone(&self) -> Self {
+        PositiveInteger::new(self.value).expect("unable to clone PositiveInteger")
     }
 }
 
@@ -192,6 +204,11 @@ impl NonNegativeInteger {
         self.value
     }
 }
+impl Clone for NonNegativeInteger {
+    fn clone(&self) -> Self {
+        NonNegativeInteger::new(self.value).expect("unable to clone NonNegativeInteger")
+    }
+}
 
 pub struct NegativeInteger {
     value: i64,
@@ -215,6 +232,11 @@ impl NegativeInteger {
         self.value
     }
 }
+impl Clone for NegativeInteger {
+    fn clone(&self) -> Self {
+        NegativeInteger::new(self.value).expect("unable to clone NegativeInteger")
+    }
+}
 
 pub struct NormalizedString {
     value: String,
@@ -232,6 +254,11 @@ impl NormalizedString {
     }
     pub fn value(self) -> String {
         self.value
+    }
+}
+impl Clone for NormalizedString {
+    fn clone(&self) -> Self {
+        NormalizedString::new(self.value.clone()).expect("unable to clone NormalizedString")
     }
 }
 
