@@ -3,14 +3,15 @@
 //! An XPath parser as a nom parser combinator.
 
 extern crate nom;
+use decimal;
 use nom:: {
   IResult,
   character::complete::*,
   branch::alt,
   character::complete::{char, none_of},
-  sequence::{delimited, tuple},
+  sequence::{delimited, pair, tuple},
   multi::{many0, separated_nonempty_list},
-  combinator::{map, opt},
+  combinator::{complete, map, opt, recognize},
   bytes::complete::tag,
 };
 use crate::item::*;
@@ -58,12 +59,65 @@ fn literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
-// TODO: decimal and double
 fn numeric_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  alt((
+    double_literal,
+    decimal_literal,
+    integer_literal,
+  ))
+  (input)
+}
+// IntegerLiteral ::= Digits
+fn integer_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(digit1, |s: &str| {
     let n = s.parse::<i64>().unwrap();
     vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::Integer(n)))}]
   })
+  (input)
+}
+// DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
+// Construct a double, but if that fails fall back to decimal
+fn decimal_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map(
+    alt((
+      recognize(complete(pair(tag("."), digit1))),
+      recognize(complete(tuple((digit1, tag("."), digit0)))),
+    )),
+    |s: &str| {
+      let n = s.parse::<f64>();
+      let i = match n {
+        Ok(m) => Item::Value(Value::Double(m)),
+	Err(_) => Item::Value(Value::Decimal(decimal::d128!(s))),
+      };
+      vec![SequenceConstructor{func: cons_literal, data: Some(i)}]
+    }
+  )
+  (input)
+}
+// DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
+// Construct a double
+fn double_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map(
+    recognize(
+      tuple((
+        alt((
+          recognize(complete(pair(tag("."), digit1))),
+          recognize(complete(tuple((digit1, tag("."), digit0)))),
+        )),
+	one_of("eE"),
+	opt(one_of("+-")),
+	digit1
+      ))
+    ),
+    |s: &str| {
+      let n = s.parse::<f64>();
+      let i = match n {
+        Ok(m) => Item::Value(Value::Double(m)),
+	Err(_) => panic!("unable to convert to double"),
+      };
+      vec![SequenceConstructor{func: cons_literal, data: Some(i)}]
+    }
+  )
   (input)
 }
 
@@ -169,6 +223,32 @@ mod tests {
 	  match e[0] {
 	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(v, 1),
 	    _ => panic!("item is not a literal integer value constructor")
+	  }
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+    // Parses to a singleton double/decimal sequence constructor
+    #[test]
+    fn nomxpath_parse_decimal() {
+        let e = parse("1.2").expect("failed to parse expression \"1.2\"");
+	if e.len() == 1 {
+	  match e[0] {
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v)))} => assert_eq!(v, 1.2),
+	    _ => panic!("item is not a literal double constructor")
+	  }
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+    // Parses to a singleton double sequence constructor
+    #[test]
+    fn nomxpath_parse_double() {
+        let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
+	if e.len() == 1 {
+	  match e[0] {
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v)))} => assert_eq!(v, 120.0),
+	    _ => panic!("item is not a literal double constructor")
 	  }
 	} else {
 	  panic!("sequence is not a singleton")
