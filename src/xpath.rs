@@ -15,7 +15,7 @@ use nom:: {
 };
 use crate::item::*;
 use crate::xdmerror::*;
-use crate::evaluate::{SequenceConstructor, cons_literal};
+use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item};
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
@@ -28,7 +28,11 @@ fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
 fn primary_expr(input: &str) -> IResult<&str, SequenceConstructor> {
-  literal(input)
+  alt((
+    literal,
+    context_item
+  ))
+  (input)
 }
 
 // Literal ::= NumericLiteral | StringLiteral
@@ -101,6 +105,14 @@ fn string_literal(input: &str) -> IResult<&str, SequenceConstructor> {
   )
   (input)
 }
+fn context_item(input: &str) -> IResult<&str, SequenceConstructor> {
+  map(
+    tag("."),
+    |_| SequenceConstructor{func: cons_context_item, data: None}
+  )
+  (input)
+}
+
 pub fn parse(e: &str) -> Result<Vec<SequenceConstructor>, Error> {
   match expr(e) {
     Ok((rest, value)) => {
@@ -227,6 +239,21 @@ mod tests {
 	  }
 	} else {
 	  panic!("sequence does not have 3 items")
+	}
+    }
+
+    // Parses to a singleton context item sequence constructor
+    #[test]
+    fn nomxpath_parse_context_item() {
+        let e = parse(".").expect("failed to parse expression \".\"");
+	if e.len() == 1 {
+	  let s = &e[0].data;
+	  match s {
+	    None => assert!(true),
+	    _ => panic!("item is not a context item constructor")
+	  }
+	} else {
+	  panic!("sequence is not a singleton")
 	}
     }
 

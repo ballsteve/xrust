@@ -58,7 +58,7 @@ mod tests {
     #[test]
     fn eval_literal() {
       let d = DynamicContext {
-        current_item: None,
+        context_item: None,
       };
       let seq = cons_literal(Some(Item::Value(Value::Integer(456))), &d).expect("unable to construct literal");
       if seq.len() == 1 {
