@@ -10,7 +10,7 @@ use nom:: {
   character::complete::{char, none_of},
   sequence::{delimited, tuple},
   multi::{many0, separated_nonempty_list},
-  combinator::map,
+  combinator::{map, opt},
   bytes::complete::tag,
 };
 use crate::item::*;
@@ -18,25 +18,38 @@ use crate::xdmerror::*;
 use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item};
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
+// we need to unpack each primary_expr
 fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
-  separated_nonempty_list(
-    tuple((multispace0, tag(","), multispace0)),
-    primary_expr
+  map (
+    separated_nonempty_list(
+      tuple((multispace0, tag(","), multispace0)),
+      primary_expr
+    ),
+    |v| {
+      let mut s = Vec::new();
+      for i in v {
+        for j in i {
+          s.push(j)
+	}
+      }
+      s
+    }
   )
   (input)
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
-fn primary_expr(input: &str) -> IResult<&str, SequenceConstructor> {
+fn primary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   alt((
     literal,
-    context_item
+    context_item,
+    parenthesized_expr
   ))
   (input)
 }
 
 // Literal ::= NumericLiteral | StringLiteral
-fn literal(input: &str) -> IResult<&str, SequenceConstructor> {
+fn literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   alt((
     numeric_literal ,
     string_literal
@@ -46,10 +59,10 @@ fn literal(input: &str) -> IResult<&str, SequenceConstructor> {
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
 // TODO: decimal and double
-fn numeric_literal(input: &str) -> IResult<&str, SequenceConstructor> {
+fn numeric_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(digit1, |s: &str| {
     let n = s.parse::<i64>().unwrap();
-    SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::Integer(n)))}
+    vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::Integer(n)))}]
   })
   (input)
 }
@@ -95,20 +108,36 @@ fn string_literal_single(input: &str) -> IResult<&str, String> {
   )
   (input)
 }
-fn string_literal(input: &str) -> IResult<&str, SequenceConstructor> {
+fn string_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(
     alt((
       string_literal_double ,
       string_literal_single
     )),
-    |s| SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(s)))}
+    |s| vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(s)))}]
   )
   (input)
 }
-fn context_item(input: &str) -> IResult<&str, SequenceConstructor> {
+// ContextItemExpr ::= '.'
+fn context_item(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(
     tag("."),
-    |_| SequenceConstructor{func: cons_context_item, data: None}
+    |_| vec![SequenceConstructor{func: cons_context_item, data: None}]
+  )
+  (input)
+}
+// ParenthesizedExpr ::= '(' Expr? ')'
+fn parenthesized_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  delimited(
+    tag("("),
+    map(
+      opt(expr),
+      |e| match e {
+        Some(v) => v,
+        None => Vec::new()
+      }
+    ),
+    tag(")")
   )
   (input)
 }
@@ -257,14 +286,23 @@ mod tests {
 	}
     }
 
-    //#[test]
-    //fn nomxpath_parse_empty() {
-        //assert_eq!(parse("()").unwrap(), ());
-    //}
-    //#[test]
-    //fn nomxpath_parse_singleton_int() {
-        //assert_eq!(parse("(1)").unwrap(), 1);
-    //}
+    #[test]
+    fn nomxpath_parse_empty() {
+        let e = parse("()").expect("failed to parse expression \"()\"");
+	assert_eq!(e.len(), 0)
+    }
+    #[test]
+    fn nomxpath_parse_singleton_paren() {
+        let e = parse("(1)").expect("failed to parse expression \"(1)\"");
+	if e.len() == 1 {
+	  match e[0] {
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(v, 1),
+	    _ => panic!("item is not a literal integer value constructor")
+	  }
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
 
 }
 

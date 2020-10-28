@@ -137,13 +137,14 @@ mod tests {
 
     // Parse then evaluate
 
-//    #[test]
-//    fn empty_sequence() {
-//      let d = DynamicContext {
-//        context_item: Some(Item::Value(Value::Integer(123))),
-//      }
-//      eval(parse("()"), d); // should result in empty sequence
-//    }
+    #[test]
+    fn empty_sequence() {
+      let d = DynamicContext {
+        context_item: Some(Item::Value(Value::Integer(123))),
+      };
+      let s = eval(parse("()").expect("failed to parse expression \"()\""), d).expect("failed to evaluate expression \"()\""); // should result in empty sequence
+      assert_eq!(s.len(), 0)
+    }
 
     #[test]
     fn parse_singleton_literal_sequence() {
