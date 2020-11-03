@@ -42,7 +42,7 @@ mod tests {
     fn seq_add_one_item() {
         let mut s: Vec<Item> = Vec::new();
         add_item(&mut s, Item::Value(Value::String(String::from("item"))));
-	assert_eq!(stringvalue(s), "item");
+	assert_eq!(stringvalue(&s), "item");
     }
 
     // Create a sequence
@@ -51,7 +51,7 @@ mod tests {
         let mut s: Vec<Item> = Vec::new();
         add_item(&mut s, Item::Value(Value::String(String::from("item"))));
         add_item(&mut s, Item::Value(Value::Double(1.234)));
-	assert_eq!(stringvalue(s), "item1.234");
+	assert_eq!(stringvalue(&s), "item1.234");
     }
 
     // Construct a literal singleton sequence
@@ -60,7 +60,7 @@ mod tests {
       let d = DynamicContext {
         context_item: None,
       };
-      let seq = cons_literal(Some(Item::Value(Value::Integer(456))), &d).expect("unable to construct literal");
+      let seq = cons_literal(&d, None, Some(Item::Value(Value::Integer(456)))).expect("unable to construct literal");
       if seq.len() == 1 {
         match seq[0] {
 	  Item::Value(Value::Integer(v)) => assert_eq!(v, 456),
@@ -70,11 +70,4 @@ mod tests {
         panic!("sequence is not a singleton")
       }
     }
-
-    // Parse an XPath
-    // TODO: don't have sequences yet
-    //#[test]
-    //fn xpath_parse_empty() {
-        //let e = parse("()").expect("failed to parse expression \"()\"");
-    //}
 }

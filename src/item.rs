@@ -74,7 +74,7 @@ pub enum Value {
     DateTime,
     DateTimeStamp,
     Date,
-    String(String),
+    String(String), // TODO: consider using a string slice instead
     NormalizedString(NormalizedString),
     Token, // TODO like normalizedString, but without leading, trailing and consecutive whitespace
     Language, // language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
@@ -84,6 +84,7 @@ pub enum Value {
     ID, // NCName
     IDREF, // NCName
     ENTITY, // NCName
+    Boolean(bool),
 }
 
 impl StringValue for Value {

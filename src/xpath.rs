@@ -16,7 +16,7 @@ use nom:: {
 };
 use crate::item::*;
 use crate::xdmerror::*;
-use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item};
+use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item, cons_or};
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
@@ -24,7 +24,7 @@ fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map (
     separated_nonempty_list(
       tuple((multispace0, tag(","), multispace0)),
-      primary_expr
+      expr_single
     ),
     |v| {
       let mut s = Vec::new();
@@ -37,6 +37,42 @@ fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     }
   )
   (input)
+}
+
+// ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
+fn expr_single(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  or_expr(input)
+  // TODO: other branches
+}
+
+// OrExpr ::= AndExpr ('or' AndExpr)*
+fn or_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    separated_nonempty_list(
+      tuple((multispace0, tag("or"), multispace0)),
+      and_expr
+    ),
+    |v: Vec<Vec<SequenceConstructor>>| {
+      if v.len() == 1 {
+        let mut s = Vec::new();
+        for i in v {
+          for j in i {
+            s.push(j)
+	  }
+	}
+	s
+      } else {
+        vec![SequenceConstructor{func: cons_or, data: None, args: Some(v)}]
+      }
+    }
+  )
+  (input)
+}
+
+// AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
+fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  // TODO
+  primary_expr(input)
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
@@ -71,7 +107,7 @@ fn numeric_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 fn integer_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(digit1, |s: &str| {
     let n = s.parse::<i64>().unwrap();
-    vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::Integer(n)))}]
+    vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::Integer(n))), args: None}]
   })
   (input)
 }
@@ -89,7 +125,7 @@ fn decimal_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         Ok(m) => Item::Value(Value::Double(m)),
 	Err(_) => Item::Value(Value::Decimal(decimal::d128!(s))),
       };
-      vec![SequenceConstructor{func: cons_literal, data: Some(i)}]
+      vec![SequenceConstructor{func: cons_literal, data: Some(i), args: None}]
     }
   )
   (input)
@@ -115,7 +151,7 @@ fn double_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         Ok(m) => Item::Value(Value::Double(m)),
 	Err(_) => panic!("unable to convert to double"),
       };
-      vec![SequenceConstructor{func: cons_literal, data: Some(i)}]
+      vec![SequenceConstructor{func: cons_literal, data: Some(i), args: None}]
     }
   )
   (input)
@@ -168,7 +204,7 @@ fn string_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       string_literal_double ,
       string_literal_single
     )),
-    |s| vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(s)))}]
+    |s| vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(s))), args: None}]
   )
   (input)
 }
@@ -176,7 +212,7 @@ fn string_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 fn context_item(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(
     tag("."),
-    |_| vec![SequenceConstructor{func: cons_context_item, data: None}]
+    |_| vec![SequenceConstructor{func: cons_context_item, data: None, args: None}]
   )
   (input)
 }
@@ -221,7 +257,7 @@ mod tests {
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
 	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(v, 1),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(v, 1),
 	    _ => panic!("item is not a literal integer value constructor")
 	  }
 	} else {
@@ -234,7 +270,7 @@ mod tests {
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
 	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v)))} => assert_eq!(v, 1.2),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v))), args: None} => assert_eq!(v, 1.2),
 	    _ => panic!("item is not a literal double constructor")
 	  }
 	} else {
@@ -247,7 +283,7 @@ mod tests {
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
 	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v)))} => assert_eq!(v, 120.0),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v))), args: None} => assert_eq!(v, 120.0),
 	    _ => panic!("item is not a literal double constructor")
 	  }
 	} else {
@@ -264,7 +300,7 @@ mod tests {
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
 	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v)))} => assert_eq!(v, "abc"),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, "abc"),
 	    _ => panic!("item is not a literal string value")
 	  }
 	} else {
@@ -277,7 +313,7 @@ mod tests {
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
 	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v)))} => assert_eq!(v, "abc'def"),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, "abc'def"),
 	    _ => panic!("item is not a literal string value")
 	  }
 	} else {
@@ -290,7 +326,7 @@ mod tests {
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
 	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v)))} => assert_eq!(v, "abc"),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, "abc"),
 	    _ => panic!("item is not a literal string value")
 	  }
 	} else {
@@ -303,7 +339,7 @@ mod tests {
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
 	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v)))} => assert_eq!(v, r#"abc"def"#),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, r#"abc"def"#),
 	    _ => panic!("item is not a literal string value")
 	  }
 	} else {
@@ -315,15 +351,15 @@ mod tests {
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
 	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(*v, 1),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 1),
 	    _ => panic!("item 0 is not a literal integer value")
 	  }
 	  match &e[1] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v)))} => assert_eq!(v, r#"abc"#),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, r#"abc"#),
 	    _ => panic!("item 1 is not a literal string value")
 	  }
 	  match &e[2] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(*v, 2),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 2),
 	    _ => panic!("item 2 is not a literal integer value")
 	  }
 	} else {
@@ -335,15 +371,15 @@ mod tests {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
 	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(*v, 1),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 1),
 	    _ => panic!("item 0 is not a literal integer value")
 	  }
 	  match &e[1] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v)))} => assert_eq!(v, r#"abc"#),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, r#"abc"#),
 	    _ => panic!("item 1 is not a literal string value")
 	  }
 	  match &e[2] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(*v, 2),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 2),
 	    _ => panic!("item 2 is not a literal integer value")
 	  }
 	} else {
@@ -376,7 +412,7 @@ mod tests {
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
 	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v)))} => assert_eq!(v, 1),
+	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(v, 1),
 	    _ => panic!("item is not a literal integer value constructor")
 	  }
 	} else {
