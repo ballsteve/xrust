@@ -16,7 +16,7 @@ use nom:: {
 };
 use crate::item::*;
 use crate::xdmerror::*;
-use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item, cons_or};
+use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item, cons_or, cons_and};
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
@@ -71,6 +71,30 @@ fn or_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
 fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    separated_nonempty_list(
+      tuple((multispace0, tag("and"), multispace0)),
+      comparison_expr
+    ),
+    |v: Vec<Vec<SequenceConstructor>>| {
+      if v.len() == 1 {
+        let mut s = Vec::new();
+        for i in v {
+          for j in i {
+            s.push(j)
+	  }
+	}
+	s
+      } else {
+        vec![SequenceConstructor{func: cons_and, data: None, args: Some(v)}]
+      }
+    }
+  )
+  (input)
+}
+
+// ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
+fn comparison_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }

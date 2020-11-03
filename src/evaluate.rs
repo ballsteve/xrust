@@ -5,7 +5,7 @@
 use crate::xdmerror::*;
 use crate::item::*;
 use crate::xpath::parse;
-use crate::sequence::{effective_boolean_value, stringvalue};
+use crate::sequence::effective_boolean_value;
 
 pub struct DynamicContext {
   pub context_item: Option<Item>, // in some circumstances there is no context item
@@ -51,9 +51,30 @@ pub fn cons_or(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i:
     Some(t) => {
       for v in t {
         let r = eval(v, d).expect("evaluating operand failed");
+	//let x = stringvalue(&r);
         b = effective_boolean_value(r);
-        //b = effective_boolean_value();
+        //println!("cons_or: evaluate operand \"{}\" to {}", x, b);
         if b {break};
+      };
+      Ok(vec![Item::Value(Value::Boolean(b))])
+    },
+    None => Ok(vec![Item::Value(Value::Boolean(false))]) // Rather than panic!, just return false
+  }
+}
+
+// Evaluate each operand to a boolean result. Return false if any of the operands' result is false
+// Optimsation: stop upon the first false result.
+// Future: Evaluate every operand to check for dynamic errors
+pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  let mut b = true;
+  match s {
+    Some(t) => {
+      for v in t {
+        let r = eval(v, d).expect("evaluating operand failed");
+	//let x = stringvalue(&r);
+        b = effective_boolean_value(r);
+        //println!("cons_and: evaluate operand \"{}\" to {}", x, b);
+        if !b {break};
       };
       Ok(vec![Item::Value(Value::Boolean(b))])
     },
@@ -292,6 +313,67 @@ mod tests {
       if s.len() == 1 {
         match s[0] {
 	  Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn parse_or_multi_1() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("0 or 1.0 or 'abc'").expect("failed to parse expression \"0 or 1.0 or 'abc'\""), &d).expect("failed to evaluate expression \"0 or 1.0 or 'abc'\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+
+    #[test]
+    fn parse_and_int_0() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("0 and 1").expect("failed to parse expression \"0 and 1\""), &d).expect("failed to evaluate expression \"0 and 1\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn parse_and_int_1() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 and 1").expect("failed to parse expression \"1 and 1\""), &d).expect("failed to evaluate expression \"1 and 1\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn parse_and_multi_1() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 and 1.0 and 'abc'").expect("failed to parse expression \"1 and 1.0 and 'abc'\""), &d).expect("failed to evaluate expression \"1 and 1.0 and 'abc'\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
 	  _ => panic!("item is not a literal boolean value")
 	}
       } else {
