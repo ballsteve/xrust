@@ -6,6 +6,7 @@ use core::{fmt, str};
 
 pub enum ErrorKind {
     TypeError,
+    NotImplemented,
     Unknown,
 }
 
@@ -13,6 +14,7 @@ impl ErrorKind {
     pub fn to_string(&self) -> &'static str {
         match *self {
             ErrorKind::TypeError => "type error",
+            ErrorKind::NotImplemented => "not implemented",
 	    ErrorKind::Unknown => "unknown",
 	}
     }

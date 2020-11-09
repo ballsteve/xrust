@@ -11,13 +11,28 @@ pub struct DynamicContext {
   pub context_item: Option<Item>, // in some circumstances there is no context item
 }
 
-type SequenceConstructorFunc = fn(&DynamicContext, Option<Vec<Vec<SequenceConstructor>>>, Option<Item>) -> Result<Vec<Item>, Error>;
+pub type SequenceConstructorFunc = fn(&DynamicContext, Option<Vec<Vec<SequenceConstructor>>>, Option<Item>) -> Result<Vec<Item>, Error>;
 
 // TODO: define a factory function to create a new object and initialise fields to None
+#[derive(Clone)]
 pub struct SequenceConstructor {
   pub func: SequenceConstructorFunc,		// the function to evaluate to construct the sequence
   pub data: Option<Item>,			// literal data for the constructor
   pub args: Option<Vec<Vec<SequenceConstructor>>>,	// arguments for the constructor
+}
+
+// Comparison operators
+#[derive(Copy, Clone)]
+enum Operator {
+  Equal,
+  NotEqual,
+  LessThan,
+  LessThanEqual,
+  GreaterThan,
+  GreaterThanEqual,
+  Is,
+  Before,
+  After,
 }
 
 pub fn cons_literal(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, i: Option<Item>) -> Result<Vec<Item>, Error> {
@@ -82,11 +97,131 @@ pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i
   }
 }
 
+// General comparisons evaluate each operand to a sequence.
+// The items in the sequences are all then compared using the given operator
+macro_rules! general_cmp {
+  ( $x:ident, $y:expr ) => {
+    pub fn $x (d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+      match s {
+        Some(t) => {
+	  if t.len() == 2 {
+	    general_comparison(d, &t[0], &t[1], $y)
+	  } else {
+	    panic!("need exactly two sequence constructors")
+	  }
+	},
+	None => panic!("no sequence constructors"),
+      }
+    }
+  };
+}
+general_cmp!(comparison_general_equal, Operator::Equal);
+general_cmp!(comparison_general_notequal, Operator::NotEqual);
+general_cmp!(comparison_general_lessthan, Operator::LessThan);
+general_cmp!(comparison_general_lessthanequal, Operator::LessThanEqual);
+general_cmp!(comparison_general_greaterthan, Operator::GreaterThan);
+general_cmp!(comparison_general_greaterthanequal, Operator::GreaterThanEqual);
+
+fn general_comparison(d: &DynamicContext, left: &Vec<SequenceConstructor>, right: &Vec<SequenceConstructor>, op: Operator) -> Result<Vec<Item>, Error> {
+  let mut b = false;
+  let left_seq = eval_ref(&left, d).expect("evaluating left-hand sequence failed");
+  let right_seq = eval_ref(&right, d).expect("evaluating right-hand sequence failed");
+  for l in &left_seq {
+    for r in &right_seq {
+      b = item_compare(&l, &r, op);
+      if b { break }
+    }
+    if b { break }
+  };
+  Ok(vec![Item::Value(Value::Boolean(b))])
+}
+
+macro_rules! value_cmp {
+  ( $x:ident, $y:expr ) => {
+    pub fn $x (d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+      match s {
+        Some(t) => {
+	  if t.len() == 2 {
+	    value_comparison(d, t[0].clone(), t[1].clone(), $y)
+	  } else {
+	    panic!("need exactly two sequence constructors")
+	  }
+	}
+	None => panic!("no sequence constructors"),
+      }
+    }
+  }
+}
+value_cmp!(comparison_value_equal, Operator::Equal);
+value_cmp!(comparison_value_notequal, Operator::NotEqual);
+value_cmp!(comparison_value_lessthan, Operator::LessThan);
+value_cmp!(comparison_value_lessthanequal, Operator::LessThanEqual);
+value_cmp!(comparison_value_greaterthan, Operator::GreaterThan);
+value_cmp!(comparison_value_greaterthanequal, Operator::GreaterThanEqual);
+
+// Operands must be singletons
+fn value_comparison(d: &DynamicContext, left: Vec<SequenceConstructor>, right: Vec<SequenceConstructor>, op: Operator) -> Result<Vec<Item>, Error> {
+  let left_seq = eval_ref(&left, d).expect("evaluating left-hand sequence failed");
+  if left_seq.len() == 1 {
+    let right_seq = eval_ref(&right, d).expect("evaluating right-hand sequence failed");
+    if right_seq.len() == 1 {
+      Ok(vec![Item::Value(Value::Boolean(item_compare(&left_seq[0], &right_seq[0], op)))])
+    } else {
+      Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+    }
+  } else {
+    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+  }
+}
+
+// TODO: type coersion
+// TODO: will probably have to implement comparison in the item module (as a trait?)
+fn item_compare(left: &Item, right: &Item, op: Operator) -> bool {
+  match op {
+    Operator::Equal => left == right,
+    Operator::NotEqual => left != right,
+    Operator::LessThan => left < right,
+    Operator::LessThanEqual => left <= right,
+    Operator::GreaterThan => left > right,
+    Operator::GreaterThanEqual => left >= right,
+    Operator::Is => false,	//
+    Operator::Before => false,	// TODO: Not yet implemented
+    Operator::After => false,	//
+  }
+}
+
+// TODO
+pub fn comparison_node_is(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
+}
+// TODO
+pub fn comparison_node_before(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
+}
+// TODO
+pub fn comparison_node_after(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
+}
+
 pub fn eval(cons: Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec<Item>, Error> {
   let mut ret = Vec::new();
 
   for i in cons {
     let seq = (i.func)(ctxt, i.args, i.data).expect("evaluation failed");
+    for j in seq {
+      ret.push(j);
+    }
+  }
+
+  Ok(ret)
+}
+
+// TODO: consider making SequenceConstructor reference counted: cloning/copying will be expensive for large items or long sequences
+pub fn eval_ref(cons: &Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec<Item>, Error> {
+  let mut ret = Vec::new();
+
+  for i in cons {
+    let seq = (i.func)(ctxt, i.args.clone(), i.data.clone()).expect("evaluation failed");
     for j in seq {
       ret.push(j);
     }
@@ -374,6 +509,67 @@ mod tests {
       if s.len() == 1 {
         match s[0] {
 	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+
+    #[test]
+    fn value_eq_int_true() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 eq 1").expect("failed to parse expression \"1 eq 1\""), &d).expect("failed to evaluate expression \"1 eq 1\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn value_eq_string_true() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("'abc' eq 'abc'").expect("failed to parse expression \"'abc' eq 'abc'\""), &d).expect("failed to evaluate expression \"'abc' eq 'abc'\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn value_eq_int_false() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 eq 0").expect("failed to parse expression \"1 eq 0\""), &d).expect("failed to evaluate expression \"1 eq 0\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn value_eq_string_false() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("'abc' eq 'def'").expect("failed to parse expression \"'abc' eq 'def'\""), &d).expect("failed to evaluate expression \"'abc' eq 'def'\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
 	  _ => panic!("item is not a literal boolean value")
 	}
       } else {

@@ -3,8 +3,8 @@
 //! Sequence Item module.
 //! An Item is a Node, Function or Atomic Value.
 
+use std::cmp::Ordering;
 use decimal;
-
 use crate::xdmerror::{Error, ErrorKind};
 
 #[derive(Clone)]
@@ -12,6 +12,60 @@ pub enum Item {
     Node,
     Function,
     Value(Value),
+}
+
+impl PartialEq for Item {
+  fn eq(&self, other: &Item) -> bool {
+    match self {
+      Item::Node => false, // not yet implemented
+      Item::Function => false, // not yet implemented
+      Item::Value(v) => match v {
+        Value::String(s) => s.eq(&other.stringvalue()),
+	Value::Boolean(b) => match other {
+	  Item::Value(Value::Boolean(c)) => b == c,
+	  _ => false, // type error?
+	},
+	Value::Decimal(d) => match other {
+	  Item::Value(Value::Decimal(e)) => d == e,
+	  _ => false, // type error?
+	},
+	Value::Integer(i) => match other {
+	  Item::Value(Value::Integer(j)) => i == j,
+	  _ => false, // type error? coerce to integer?
+	},
+	Value::Double(d) => match other {
+	  Item::Value(Value::Double(e)) => d == e,
+	  _ => false, // type error? coerce to integer?
+	},
+        _ => false, // not yet implemented
+      },
+    }
+  }
+}
+impl PartialOrd for Item {
+  fn partial_cmp(&self, other: &Item) -> Option<Ordering> {
+    match self {
+      Item::Node => None, // not yet implemented
+      Item::Function => None, // not yet implemented
+      Item::Value(v) => match v {
+        Value::String(s) => s.partial_cmp(&other.stringvalue()),
+	Value::Boolean(_) => None,
+	Value::Decimal(d) => match other {
+	  Item::Value(Value::Decimal(e)) => d.partial_cmp(e),
+	  _ => None, // type error?
+	}
+	Value::Integer(d) => match other {
+	  Item::Value(Value::Integer(e)) => d.partial_cmp(e),
+	  _ => None, // type error?
+	}
+	Value::Double(d) => match other {
+	  Item::Value(Value::Double(e)) => d.partial_cmp(e),
+	  _ => None, // type error?
+	}
+	_ => None,
+      }
+    }
+  }
 }
 
 pub trait StringValue {

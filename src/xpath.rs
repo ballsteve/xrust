@@ -16,7 +16,25 @@ use nom:: {
 };
 use crate::item::*;
 use crate::xdmerror::*;
-use crate::evaluate::{SequenceConstructor, cons_literal, cons_context_item, cons_or, cons_and};
+use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
+    cons_literal, cons_context_item,
+    cons_or, cons_and,
+    comparison_general_equal,
+    comparison_general_notequal,
+    comparison_general_lessthan,
+    comparison_general_lessthanequal,
+    comparison_general_greaterthan,
+    comparison_general_greaterthanequal,
+    comparison_value_equal,
+    comparison_value_notequal,
+    comparison_value_lessthan,
+    comparison_value_lessthanequal,
+    comparison_value_greaterthan,
+    comparison_value_greaterthanequal,
+    comparison_node_is,
+    comparison_node_before,
+    comparison_node_after,
+};
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
@@ -95,6 +113,67 @@ fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
 fn comparison_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair (
+      stringconcat_expr,
+      opt(
+        pair(
+	  alt((
+	    tuple((multispace0, tag("="), multispace0)),
+	    tuple((multispace0, tag("!="), multispace0)),
+	    tuple((multispace0, tag("<"), multispace0)),
+	    tuple((multispace0, tag("<="), multispace0)),
+	    tuple((multispace0, tag(">"), multispace0)),
+	    tuple((multispace0, tag(">="), multispace0)),
+	    tuple((multispace0, tag("eq"), multispace0)),
+	    tuple((multispace0, tag("ne"), multispace0)),
+	    tuple((multispace0, tag("lt"), multispace0)),
+	    tuple((multispace0, tag("le"), multispace0)),
+	    tuple((multispace0, tag("gt"), multispace0)),
+	    tuple((multispace0, tag("ge"), multispace0)),
+	    tuple((multispace0, tag("is"), multispace0)),
+	    tuple((multispace0, tag("<<"), multispace0)),
+	    tuple((multispace0, tag(">>"), multispace0)),
+	  )),
+	  stringconcat_expr,
+	)
+      ),
+    ),
+    |(v, o)| {
+      match o {
+        None => v,
+	Some(((_a, b, _c), t)) => {
+	  vec![SequenceConstructor{func: choose_compare(b).expect("invalid comparison operator"),
+	    data: None, args: Some(vec![v, t])}]
+	},
+      }
+    }
+  )
+  (input)
+}
+fn choose_compare(a: &str) -> Result<SequenceConstructorFunc, Error> {
+  match a {
+    "=" => Ok(comparison_general_equal),
+    "!=" => Ok(comparison_general_notequal),
+    "<" => Ok(comparison_general_lessthan),
+    "<=" => Ok(comparison_general_lessthanequal),
+    ">" => Ok(comparison_general_greaterthan),
+    ">=" => Ok(comparison_general_greaterthanequal),
+    "eq" => Ok(comparison_value_equal),
+    "ne" => Ok(comparison_value_notequal),
+    "lt" => Ok(comparison_value_lessthan),
+    "le" => Ok(comparison_value_lessthanequal),
+    "gt" => Ok(comparison_value_greaterthan),
+    "ge" => Ok(comparison_value_greaterthanequal),
+    "is" => Ok(comparison_node_is),
+    "<<" => Ok(comparison_node_before),
+    ">>" => Ok(comparison_node_after),
+    _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid comparison operator")}),
+  }
+}
+
+// StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
+fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }
