@@ -34,6 +34,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     comparison_node_is,
     comparison_node_before,
     comparison_node_after,
+    cons_string_concat,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -174,6 +175,30 @@ fn choose_compare(a: &str) -> Result<SequenceConstructorFunc, Error> {
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
 fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    separated_nonempty_list(
+      tuple((multispace0, tag("||"), multispace0)),
+      range_expr
+    ),
+    |v| {
+      if v.len() == 1 {
+        let mut s = Vec::new();
+      	for i in v {
+            for j in i {
+              s.push(j)
+	    }
+        }
+        s
+      } else {
+        vec![SequenceConstructor{func: cons_string_concat, data: None, args: Some(v)}]
+      }
+    }
+  )
+  (input)
+}
+
+// RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
+fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }

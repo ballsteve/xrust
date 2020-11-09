@@ -5,7 +5,7 @@
 use crate::xdmerror::*;
 use crate::item::*;
 use crate::xpath::parse;
-use crate::sequence::effective_boolean_value;
+use crate::sequence::{effective_boolean_value, stringvalue};
 
 pub struct DynamicContext {
   pub context_item: Option<Item>, // in some circumstances there is no context item
@@ -201,6 +201,22 @@ pub fn comparison_node_before(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceCo
 // TODO
 pub fn comparison_node_after(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
+}
+
+// Concatenate all of the operand's string values.
+pub fn cons_string_concat(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  let mut r = String::from("");
+  match s {
+    Some(t) => {
+      for v in t {
+        let q = eval(v, d).expect("evaluating operand failed");
+	//let x = stringvalue(&r);
+	r.push_str(stringvalue(&q).as_str());
+      };
+      Ok(vec![Item::Value(Value::String(r))])
+    },
+    None => Ok(vec![Item::Value(Value::String(r))])
+  }
 }
 
 pub fn eval(cons: Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec<Item>, Error> {
@@ -601,6 +617,37 @@ mod tests {
         match s[0] {
 	  Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
 	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+
+    #[test]
+    fn parse_string_concat() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 || 'abc'").expect("failed to parse expression \"1 || 'abc'\""), &d).expect("failed to evaluate expression \"1 || 'abc'\"");
+      if s.len() == 1 {
+        match &s[0] {
+	  Item::Value(Value::String(r)) => assert_eq!(r, "1abc"),
+	  _ => panic!("item is not a literal string value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn parse_string_concat_multi() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 || 'abc' || 2.3").expect("failed to parse expression \"1 || 'abc' || 2.3\""), &d).expect("failed to evaluate expression \"1 || 'abc' || 2.3\"");
+      if s.len() == 1 {
+        match &s[0] {
+	  Item::Value(Value::String(r)) => assert_eq!(r, "1abc2.3"),
+	  _ => panic!("item is not a literal string value")
 	}
       } else {
         panic!("sequence does not have 1 item")
