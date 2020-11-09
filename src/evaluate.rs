@@ -576,5 +576,35 @@ mod tests {
         panic!("sequence does not have 1 item")
       }
     }
+    #[test]
+    fn general_eq_int_true() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("(1, 2) = (0, 1)").expect("failed to parse expression \"(1, 2) = (0, 1)\""), &d).expect("failed to evaluate expression \"(1, 2) = (0, 1)\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
+    #[test]
+    fn general_eq_int_false() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("(1, 2) = (0, 3)").expect("failed to parse expression \"(1, 2) = (0, 3)\""), &d).expect("failed to evaluate expression \"(1, 2) = (0, 3)\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	  _ => panic!("item is not a literal boolean value")
+	}
+      } else {
+        panic!("sequence does not have 1 item")
+      }
+    }
 } 
 
