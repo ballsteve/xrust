@@ -219,6 +219,52 @@ pub fn cons_string_concat(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstruc
   }
 }
 
+pub fn cons_range(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  match s {
+    Some(t) => {
+      if t.len() == 2 {
+        // Evaluate the two operands: they must both be literal integer items
+	let start = eval_ref(&t[0], d).expect("evaluating start operand failed");
+	let end = eval_ref(&t[1], d).expect("evaluating end operand failed");
+	if start.len() == 0 || end.len() == 0 {
+	  Ok(Vec::new())
+	} else if start.len() == 1 {
+	  if end.len() == 1 {
+	    match start[0] {
+	      Item::Value(Value::Integer(u)) => {
+	        match end[0] {
+	          Item::Value(Value::Integer(v)) => {
+		    if u > v {
+		      Ok(Vec::new())
+		    } else if u == v {
+		      Ok(vec![Item::Value(Value::Integer(u))])
+		    } else {
+		      let mut r = Vec::new();
+		      for i in u..=v {
+		        r.push(Item::Value(Value::Integer(i)))
+		      }
+		      Ok(r)
+		    }
+		  }
+	      	  _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be literal integer")})
+		}
+	      }
+	      _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be literal integer")})
+	    }
+	  } else {
+	    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
+	  }
+	} else {
+	  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
+	}
+      } else {
+        Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("need exactly two operands")})
+      }
+    }
+    None => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no operands")})
+  }
+}
+
 pub fn eval(cons: Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec<Item>, Error> {
   let mut ret = Vec::new();
 
@@ -652,6 +698,61 @@ mod tests {
       } else {
         panic!("sequence does not have 1 item")
       }
+    }
+
+    #[test]
+    fn parse_range() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 to 3").expect("failed to parse expression \"1 to 3\""), &d).expect("failed to evaluate expression \"1 to 3\"");
+      if s.len() == 3 {
+        match s[0] {
+	  Item::Value(Value::Integer(r)) => assert_eq!(r, 1),
+	  _ => panic!("item is not a literal integer value")
+	};
+        match s[1] {
+	  Item::Value(Value::Integer(r)) => assert_eq!(r, 2),
+	  _ => panic!("item is not a literal integer value")
+	};
+        match s[2] {
+	  Item::Value(Value::Integer(r)) => assert_eq!(r, 3),
+	  _ => panic!("item is not a literal integer value")
+	}
+      } else {
+        panic!(format!("sequence does not have 3 items, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_range_single() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("2 to 2").expect("failed to parse expression \"2 to 2\""), &d).expect("failed to evaluate expression \"2 to 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Integer(r)) => assert_eq!(r, 2),
+	  _ => panic!("item is not a literal integer value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 items, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_range_empty() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 to ()").expect("failed to parse expression \"1 to ()\""), &d).expect("failed to evaluate expression \"1 to ()\"");
+      assert_eq!(s.len(), 0)
+    }
+    #[test]
+    fn parse_range_gt() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("10 to 1").expect("failed to parse expression \"10 to 1\""), &d).expect("failed to evaluate expression \"10 to 1\"");
+      assert_eq!(s.len(), 0)
     }
 } 
 

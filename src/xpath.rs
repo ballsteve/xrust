@@ -35,6 +35,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     comparison_node_before,
     comparison_node_after,
     cons_string_concat,
+    cons_range,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -199,6 +200,30 @@ fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
 fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      additive_expr,
+      opt(
+        tuple((
+	  tuple((multispace0, tag("to"), multispace0)),
+	  additive_expr,
+	))
+      )
+    ),
+    |(v, o)| {
+      match o {
+        None => v,
+	Some((_t, u)) => {
+          vec![SequenceConstructor{func: cons_range, data: None, args: Some(vec![v, u])}]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
+fn additive_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }
