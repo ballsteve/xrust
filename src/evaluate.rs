@@ -265,6 +265,17 @@ pub fn cons_range(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, 
   }
 }
 
+// Evaluate the first operand. Then add each subsequent operand to the result
+pub fn addition(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  match s {
+    Some(t) => {
+    }
+    None => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no operands")})
+  }
+}
+pub fn subtraction(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+}
+
 pub fn eval(cons: Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec<Item>, Error> {
   let mut ret = Vec::new();
 

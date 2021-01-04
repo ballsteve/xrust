@@ -36,6 +36,8 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     comparison_node_after,
     cons_string_concat,
     cons_range,
+    addition, subtraction,
+    multiplication, division, int_division, modulus,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -224,6 +226,71 @@ fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
 fn additive_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    separated_nonempty_list(
+      alt((
+        tuple((multispace0, tag("+"), multispace0)),
+	tuple((multispace0, tag("-"), multispace0)),
+      )),
+      multiplicative_expr,
+    ),
+    |(v, o)| {
+      match o {
+        None => v,
+	Some(((_a, b, _c), u)) => {
+          vec![SequenceConstructor{func: choose_add(b), data: None, args: Some(vec![v, u])}]
+	}
+      }
+    }
+  )
+  (input)
+}
+fn choose_add(a: &str) -> Result<SequenceConstructorFunc, Error> {
+  match a {
+    "+" => Ok(addition),
+    "-" => Ok(subtraction),
+    _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid addition operator")}),
+  }
+}
+// MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
+fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      union_expr,
+      opt(
+        pair(
+	  alt((
+	    tuple((multispace0, tag("*"), multispace0)),
+	    tuple((multispace0, tag("div"), multispace0)),
+	    tuple((multispace0, tag("idiv"), multispace0)),
+	    tuple((multispace0, tag("mod"), multispace0)),
+	  )),
+	  union_expr,
+	)
+      )
+    ),
+    |(v, o)| {
+      match o {
+        None => v,
+	Some(((_a, b, _c), u)) => {
+          vec![SequenceConstructor{func: choose_multiplier(b), data: None, args: Some(vec![v, u])}]
+	}
+      }
+    }
+  )
+  (input)
+}
+fn choose_multiplier(a: &str) -> Result<SequenceConstructorFunc, Error> {
+  match a {
+    "*" => Ok(multiplication),
+    "div" => Ok(division),
+    "idiv" => Ok(int_division),
+    "mod" => Ok(modulus),
+    _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid multiplication operator")}),
+  }
+}
+// UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
+fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }
