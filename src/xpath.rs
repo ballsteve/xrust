@@ -38,6 +38,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_range,
     addsub, muldiv,
     cons_union,
+    cons_intersectexcept,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -284,7 +285,7 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	))
       )
     ),
-    |(mut a, b)| {
+    |(a, b)| {
       if b.len() == 0 {
         a
       } else {
@@ -337,6 +338,45 @@ fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
 fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      instanceof_expr,
+      many0(
+        tuple((
+	  alt((
+	    tuple((multispace0, tag("intersect"), multispace0)),
+	    tuple((multispace0, tag("except"), multispace0)),
+	  )),
+	  instanceof_expr,
+	))
+      )
+    ),
+    |(a, b)| {
+      if b.len() == 0 {
+        a
+      } else {
+        // The arguments to the intersectexcept function are the sequences to be operated upon.
+	// These are pair-wise items: first is the operator as a string literal,
+	// second is the value
+	// we fake an entry for first part of the first pair
+	let mut r = Vec::new();
+
+        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+	r.push(a);
+
+	for ((_x, c, _y), d) in b {
+	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(d);
+	}
+        vec![SequenceConstructor{func: cons_intersectexcept, data: None, args: Some(r)}]
+      }
+    }
+  )
+  (input)
+}
+
+// InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
+fn instanceof_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }
@@ -689,6 +729,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_union() {
         let e = parse("'a' | 'b'").expect("failed to parse expression \"'a' | 'b'\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_intersectexcept() {
+        let e = parse("'a' intersect 'b' except 'c'").expect("failed to parse expression \"'a' intersect 'b' except 'c'\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
