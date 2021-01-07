@@ -40,6 +40,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_union,
     cons_intersectexcept,
     cons_instanceof,
+    cons_treat,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -417,7 +418,33 @@ fn sequencetype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
 fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
-  // TODO
+  map (
+    pair(
+      castable_expr,
+      opt(
+        tuple((multispace0, tag("treat"), multispace0, tag("as"), multispace0, sequencetype_expr)),
+      )
+    ),
+    |(u, v)| {
+      match v {
+        None => {
+	  u
+	}
+	Some(t) => {
+	  let mut r = Vec::new();
+	  r.push(u);
+	  let (a, b, c, d, e, st) = t;
+	  r.push(st);
+	  vec![SequenceConstructor{func: cons_treat, data: None, args: Some(r)}]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
+fn castable_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
@@ -789,6 +816,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_instanceof() {
         let e = parse("'a' instance of empty-sequence()").expect("failed to parse expression \"'a' instance of empty-sequence()\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_treat() {
+        let e = parse("'a' treat as empty-sequence()").expect("failed to parse expression \"'a' treat as empty-sequence()\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
