@@ -39,6 +39,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     addsub, muldiv,
     cons_union,
     cons_intersectexcept,
+    cons_instanceof,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -377,6 +378,45 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> 
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
 fn instanceof_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      treat_expr,
+      opt(
+        tuple((multispace0, tag("instance"), multispace0, tag("of"), multispace0, sequencetype_expr)),
+      )
+    ),
+    |(u, v)| {
+      match v {
+        None => {
+	  u
+	}
+	Some(t) => {
+	  let mut r = Vec::new();
+	  r.push(u);
+	  let (a, b, c, d, e, st) = t;
+	  r.push(st);
+	  vec![SequenceConstructor{func: cons_instanceof, data: None, args: Some(r)}]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
+// TODO: implement this parser fully
+fn sequencetype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    tag("empty-sequence()"),
+    |v| {
+      Vec::new()
+    }
+  )
+  (input)
+}
+
+// TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
+fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }
@@ -739,6 +779,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_intersectexcept() {
         let e = parse("'a' intersect 'b' except 'c'").expect("failed to parse expression \"'a' intersect 'b' except 'c'\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_instanceof() {
+        let e = parse("'a' instance of empty-sequence()").expect("failed to parse expression \"'a' instance of empty-sequence()\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {

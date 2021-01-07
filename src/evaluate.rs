@@ -111,6 +111,13 @@ pub fn cons_intersectexcept(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstr
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
+// Evaluate each operand to a sequence result.
+// Future: Evaluate every operand to check for dynamic errors
+pub fn cons_instanceof(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+
 // General comparisons evaluate each operand to a sequence.
 // The items in the sequences are all then compared using the given operator
 macro_rules! general_cmp {
