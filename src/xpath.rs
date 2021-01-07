@@ -36,8 +36,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     comparison_node_after,
     cons_string_concat,
     cons_range,
-    addition, subtraction,
-    multiplication, division, int_division, modulus,
+    addsub, muldiv,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -224,41 +223,56 @@ fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   (input)
 }
 
+// For additive and multiplicative expressions,
+// passing the expression to be operated upon to the evaluator
+// is quite awkward.
+// TODO: find a better way
+
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
 fn additive_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map (
-    separated_nonempty_list(
-      alt((
-        tuple((multispace0, tag("+"), multispace0)),
-	tuple((multispace0, tag("-"), multispace0)),
-      )),
+    pair(
       multiplicative_expr,
+      many0(
+        tuple((
+          alt((
+            tuple((multispace0, tag("+"), multispace0)),
+	    tuple((multispace0, tag("-"), multispace0)),
+          )),
+          multiplicative_expr,
+	))
+      )
     ),
-    |(v, o)| {
-      match o {
-        None => v,
-	Some(((_a, b, _c), u)) => {
-          vec![SequenceConstructor{func: choose_add(b), data: None, args: Some(vec![v, u])}]
+    |(a, b)| {
+      if b.len() == 0 {
+        a
+      } else {
+        // The arguments to the addsub function are the items to be summed
+	// These are pair-wise items: first is the operator as a string literal,
+	// second is the value
+	// we fake an entry for first part of the first pair
+	let mut r = Vec::new();
+
+        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+	r.push(a);
+
+	for ((_x, c, _y), d) in b {
+	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(d);
 	}
+        vec![SequenceConstructor{func: addsub, data: None, args: Some(r)}]
       }
     }
   )
   (input)
-}
-fn choose_add(a: &str) -> Result<SequenceConstructorFunc, Error> {
-  match a {
-    "+" => Ok(addition),
-    "-" => Ok(subtraction),
-    _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid addition operator")}),
-  }
 }
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
 fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map (
     pair(
       union_expr,
-      opt(
-        pair(
+      many0(
+        tuple((
 	  alt((
 	    tuple((multispace0, tag("*"), multispace0)),
 	    tuple((multispace0, tag("div"), multispace0)),
@@ -266,28 +280,31 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	    tuple((multispace0, tag("mod"), multispace0)),
 	  )),
 	  union_expr,
-	)
+	))
       )
     ),
-    |(v, o)| {
-      match o {
-        None => v,
-	Some(((_a, b, _c), u)) => {
-          vec![SequenceConstructor{func: choose_multiplier(b), data: None, args: Some(vec![v, u])}]
+    |(mut a, b)| {
+      if b.len() == 0 {
+        a
+      } else {
+        // The arguments to the addsub function are the items to be summed
+	// These are pair-wise items: first is the operator as a string literal,
+	// second is the value
+	// we fake an entry for first part of the first pair
+	let mut r = Vec::new();
+
+        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+	r.push(a);
+
+	for ((_x, c, _y), d) in b {
+	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(d);
 	}
+        vec![SequenceConstructor{func: muldiv, data: None, args: Some(r)}]
       }
     }
   )
   (input)
-}
-fn choose_multiplier(a: &str) -> Result<SequenceConstructorFunc, Error> {
-  match a {
-    "*" => Ok(multiplication),
-    "div" => Ok(division),
-    "idiv" => Ok(int_division),
-    "mod" => Ok(modulus),
-    _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid multiplication operator")}),
-  }
 }
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
 fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {

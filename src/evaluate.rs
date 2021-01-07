@@ -265,15 +265,122 @@ pub fn cons_range(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, 
   }
 }
 
-// Evaluate the first operand. Then add each subsequent operand to the result
-pub fn addition(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+// Each item in the tuple is a pair
+pub fn addsub(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   match s {
     Some(t) => {
+      if t.len() % 2 == 0 {
+
+	// Type: the result will be a number, but integer or double?
+	// If all of the operands are integers, then the result is integer otherwise double
+	// TODO: check the type of all operands to determine type of result
+	// In the meantime, let's assume the result will be double and convert any integers
+
+	let mut acc: f64 = 0.0;
+
+        for j in t.chunks(2) {
+	  let v = eval_ref(&j[1], d).expect("evaluating operand failed");
+	  let u: f64;
+
+	  if v.len() != 1 {
+	    return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (not a singleton sequence)")});
+	  } else {
+	    match v[0] {
+	      Item::Value(Value::Integer(w)) => {
+	        u = w as f64
+	      }
+	      Item::Value(Value::Double(d)) => {
+	        u = d
+	      }
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (not a numeric value)")});
+	      }
+	    }
+	    let o = stringvalue(&eval_ref(&j[0], d).expect("evaluating operator failed"));
+            match o.as_str() {
+	      "" => {
+	        acc = u; // value must be singleton numeric value
+	      }
+	      "+" => {
+	        acc += u; // value must be singleton numeric value
+	      }
+	      "-" => {
+	        acc -= u; // value must be singleton numeric value
+	      }
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("invalid operator")});
+	      }
+	    }
+	  }
+	}
+	Ok(vec![Item::Value(Value::Double(acc))])
+      } else {
+        Result::Err(Error{kind: ErrorKind::Unknown, message: String::from(format!("wrong number of operands: {} operands", t.len()))})
+      }
     }
     None => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no operands")})
   }
 }
-pub fn subtraction(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn muldiv(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  match s {
+    Some(t) => {
+      if t.len() % 2 == 0 {
+
+	// Type: the result will be a number, but integer or double?
+	// If all of the operands are integers, then the result is integer otherwise double
+	// TODO: check the type of all operands to determine type of result
+	// In the meantime, let's assume the result will be double and convert any integers
+
+	let mut acc: f64 = 0.0;
+
+        for j in t.chunks(2) {
+	  let v = eval_ref(&j[1], d).expect("evaluating operand failed");
+	  let u: f64;
+
+	  if v.len() != 1 {
+	    return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (not a singleton sequence)")});
+	  } else {
+	    match v[0] {
+	      Item::Value(Value::Integer(w)) => {
+	        u = w as f64
+	      }
+	      Item::Value(Value::Double(d)) => {
+	        u = d
+	      }
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (not a numeric value)")});
+	      }
+	    }
+	    let o = stringvalue(&eval_ref(&j[0], d).expect("evaluating operator failed"));
+            match o.as_str() {
+	      "" => {
+	        acc = u; // value must be singleton numeric value
+	      }
+	      "*" => {
+	        acc *= u; // value must be singleton numeric value
+	      }
+	      "div" => {
+	        acc /= u; // value must be singleton numeric value
+	      }
+	      "idiv" => {
+	        acc /= u; // TODO: convert to integer
+	      }
+	      "mod" => {
+	        acc = acc % u; // value must be singleton numeric value
+	      }
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("invalid operator")});
+	      }
+	    }
+	  }
+	}
+	Ok(vec![Item::Value(Value::Double(acc))])
+      } else {
+        Result::Err(Error{kind: ErrorKind::Unknown, message: String::from(format!("wrong number of operands: {} operands", t.len()))})
+      }
+    }
+    None => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no operands")})
+  }
 }
 
 pub fn eval(cons: Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec<Item>, Error> {
@@ -764,6 +871,188 @@ mod tests {
       };
       let s = eval(parse("10 to 1").expect("failed to parse expression \"10 to 1\""), &d).expect("failed to evaluate expression \"10 to 1\"");
       assert_eq!(s.len(), 0)
+    }
+
+    #[test]
+    fn parse_addsub_plus_2() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 + 1").expect("failed to parse expression \"1 + 1\""), &d).expect("failed to evaluate expression \"1 + 1\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 2.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_addsub_plus_3() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 + 1 + 2").expect("failed to parse expression \"1 + 1 + 2\""), &d).expect("failed to evaluate expression \"1 + 1 + 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 4.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_addsub_minus_2() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("3 - 1").expect("failed to parse expression \"3 - 1\""), &d).expect("failed to evaluate expression \"3 - 1\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 2.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_addsub_minus_3() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("10 - 5 - 2").expect("failed to parse expression \"10 - 5 - 2\""), &d).expect("failed to evaluate expression \"10 - 5 - 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 3.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_addsub_mix() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("10 + 20 - 5 + 2").expect("failed to parse expression \"10 + 20 - 5 + 2\""), &d).expect("failed to evaluate expression \"10 + 20 - 5 + 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 27.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+
+    #[test]
+    fn parse_multiply_2() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("2 * 3").expect("failed to parse expression \"2 * 3\""), &d).expect("failed to evaluate expression \"2 * 3\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 6.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_multiply_3() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("2 * 3 * 4").expect("failed to parse expression \"2 * 3 * 4\""), &d).expect("failed to evaluate expression \"2 * 3 * 4\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 24.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_divide_2() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("3 div 2").expect("failed to parse expression \"3 div 2\""), &d).expect("failed to evaluate expression \"3 div 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 1.5),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_divide_3() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("100 div 10 div 2").expect("failed to parse expression \"100 div 10 div 2\""), &d).expect("failed to evaluate expression \"100 div 10 div 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 5.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_mod_2() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("3 mod 2").expect("failed to parse expression \"3 mod 2\""), &d).expect("failed to evaluate expression \"3 mod 2\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 1.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_muldiv_mix() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("6.5 * 2 div 0.5").expect("failed to parse expression \"6.5 * 2 div 0.5\""), &d).expect("failed to evaluate expression \"6.5 * 2 div 0.5\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 26.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
+    }
+    #[test]
+    fn parse_arithmetic_precedence() {
+      let d = DynamicContext {
+        context_item: None,
+      };
+      let s = eval(parse("1 + 2 * 3 - 4").expect("failed to parse expression \"1 + 2 * 3 - 4\""), &d).expect("failed to evaluate expression \"1 + 2 * 3 - 4\"");
+      if s.len() == 1 {
+        match s[0] {
+	  Item::Value(Value::Double(r)) => assert_eq!(r, 3.0),
+	  _ => panic!("item is not a literal double value")
+	};
+      } else {
+        panic!(format!("sequence does not have 1 item, it has {} items", s.len()))
+      }
     }
 } 
 
