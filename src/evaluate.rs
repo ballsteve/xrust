@@ -97,6 +97,13 @@ pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i
   }
 }
 
+// Evaluate each operand to a sequence result. Calculate the union of all sequences.
+// Future: Evaluate every operand to check for dynamic errors
+pub fn cons_union(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+
 // General comparisons evaluate each operand to a sequence.
 // The items in the sequences are all then compared using the given operator
 macro_rules! general_cmp {

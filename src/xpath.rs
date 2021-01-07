@@ -37,6 +37,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_string_concat,
     cons_range,
     addsub, muldiv,
+    cons_union,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -306,8 +307,36 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   )
   (input)
 }
+
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
 fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    separated_nonempty_list(
+      alt((
+        tuple((multispace0, tag("union"), multispace0)),
+        tuple((multispace0, tag("|"), multispace0)),
+      )),
+      intersectexcept_expr
+    ),
+    |v| {
+      if v.len() == 1 {
+        let mut s = Vec::new();
+      	for i in v {
+            for j in i {
+              s.push(j)
+	    }
+        }
+        s
+      } else {
+        vec![SequenceConstructor{func: cons_union, data: None, args: Some(v)}]
+      }
+    }
+  )
+  (input)
+}
+
+// IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
+fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   // TODO
   primary_expr(input)
 }
@@ -652,6 +681,16 @@ mod tests {
 	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(v, 1),
 	    _ => panic!("item is not a literal integer value constructor")
 	  }
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_union() {
+        let e = parse("'a' | 'b'").expect("failed to parse expression \"'a' | 'b'\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
 	} else {
 	  panic!("sequence is not a singleton")
 	}
