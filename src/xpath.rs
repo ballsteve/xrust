@@ -45,6 +45,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_cast,
     cons_arrow,
     cons_unary,
+    cons_simplemap
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -665,6 +666,36 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // ValueExpr (SimpleMapExpr) ::= PathExpr ('!' PathExpr)*
 fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      path_expr,
+      many0(
+        tuple((
+	  tag("!"),
+	  path_expr,
+	))
+      )
+    ),
+    |(u, v)| {
+      if (v.len() == 0) {
+        u
+      } else {
+        let mut s = Vec::new();
+	s.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(String::from("")))), args: None}]);
+	s.push(u);
+	for (a, b) in v {
+	  s.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(String::from(a)))), args: None}]);
+	  s.push(b);
+	}
+        vec![SequenceConstructor{func: cons_simplemap, data: None, args: Some(s)}]
+      }
+    }
+  )
+  (input)
+}
+
+// PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
+fn path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
@@ -1087,6 +1118,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_unary() {
         let e = parse("+'a'").expect("failed to parse expression \"+'a'\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_simplemap() {
+        let e = parse("'a'!'b'").expect("failed to parse expression \"'a'!'b'\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
