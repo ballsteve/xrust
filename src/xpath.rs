@@ -45,7 +45,10 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_cast,
     cons_arrow,
     cons_unary,
-    cons_simplemap
+    cons_simplemap,
+    cons_root,
+    cons_child,
+    cons_descendant_or_self,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -677,7 +680,7 @@ fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       )
     ),
     |(u, v)| {
-      if (v.len() == 0) {
+      if v.len() == 0 {
         u
       } else {
         let mut s = Vec::new();
@@ -696,6 +699,51 @@ fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
 fn path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  alt((
+    absolute_descendant_expr,
+    absolute_path_expr,
+    relativepath_expr,
+  ))
+  (input)
+}
+// ('/' RelativePathExpr?)
+fn absolute_path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map(
+    pair(
+      tag("/"),
+      opt(relativepath_expr),
+    ),
+    |(u, v)| {
+      match v {
+        Some(a) => {
+	  vec![SequenceConstructor{func: cons_root, data: None, args: None},
+	  SequenceConstructor{func: cons_child, data: None, args: Some(vec![a])}]
+	}
+	None => {
+	  vec![SequenceConstructor{func: cons_root, data: None, args: None}]
+	}
+      }
+    }
+  )
+  (input)
+}
+// ('//' RelativePathExpr)
+fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map(
+    pair(
+      tag("//"),
+      relativepath_expr,
+    ),
+    |(u, v)| {
+      vec![SequenceConstructor{func: cons_root, data: None, args: None},
+	SequenceConstructor{func: cons_descendant_or_self, data: None, args: Some(vec![v])}]
+    }
+  )
+  (input)
+}
+
+// RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
+fn relativepath_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
@@ -1134,6 +1182,62 @@ mod tests {
 	  panic!("sequence is not a singleton")
 	}
     }
+
+    #[test]
+    fn nomxpath_parse_root() {
+        let e = parse("/").expect("failed to parse expression \"/\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+    #[test]
+    fn nomxpath_parse_root_step_1() {
+        let e = parse("/1").expect("failed to parse expression \"/1\"");
+	assert!(true) // TODO: check the sequence constructor
+    }
+//    #[test]
+//    fn nomxpath_parse_root_step_2() {
+//        let e = parse("/1/2").expect("failed to parse expression \"/1/2\"");
+//	if e.len() == 1 {
+//	  assert!(true) // TODO: check the sequence constructor
+//	} else {
+//	  panic!("sequence is not a singleton")
+//	}
+//    }
+    #[test]
+    fn nomxpath_parse_desc_or_self_1() {
+        let e = parse("//1").expect("failed to parse expression \"//1\"");
+	assert!(true) // TODO: check the sequence constructor
+    }
+//    #[test]
+//    fn nomxpath_parse_desc_or_self_2() {
+//        let e = parse("//1/2").expect("failed to parse expression \"//1/2\"");
+//	if e.len() == 1 {
+//	  assert!(true) // TODO: check the sequence constructor
+//	} else {
+//	  panic!("sequence is not a singleton")
+//	}
+//    }
+//    #[test]
+//    fn nomxpath_parse_relative_path_1() {
+//        let e = parse("1/2").expect("failed to parse expression \"1/2\"");
+//	if e.len() == 1 {
+//	  assert!(true) // TODO: check the sequence constructor
+//	} else {
+//	  panic!("sequence is not a singleton")
+//	}
+//    }
+//    #[test]
+//    fn nomxpath_parse_relative_path_2() {
+//        let e = parse("1//2").expect("failed to parse expression \"1//2\"");
+//	if e.len() == 1 {
+//	  assert!(true) // TODO: check the sequence constructor
+//	} else {
+//	  panic!("sequence is not a singleton")
+//	}
+//    }
 
 }
 

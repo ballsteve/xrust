@@ -159,6 +159,22 @@ pub fn cons_simplemap(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
+// Set dynamic context to document root.
+pub fn cons_root(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+// Return child nodes
+pub fn cons_child(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+// Return descendant-or-self nodes
+pub fn cons_descendant_or_self(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+
 // General comparisons evaluate each operand to a sequence.
 // The items in the sequences are all then compared using the given operator
 macro_rules! general_cmp {
