@@ -43,6 +43,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_treat,
     cons_castable,
     cons_cast,
+    cons_arrow,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -567,10 +568,79 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
 fn arrow_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair (
+      unary_expr,
+      many0(
+        tuple((
+	  multispace0,
+	  tag("=>"),
+	  multispace0,
+	  arrowfunctionspecifier,
+	  multispace0,
+	  opt(argumentlist)
+	))
+      )
+    ),
+    |(u, v)| {
+      if v.len() == 0 {
+        u
+      } else {
+        vec![SequenceConstructor{func: cons_arrow, data: None, args: None}]
+      }
+    }
+  )
+  (input)
+}
+
+// ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
+// TODO: finish this parser with EQName and VarRef
+fn arrowfunctionspecifier(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    alt((
+      qname_expr,
+      parenthesized_expr
+    )),
+    |v| {
+      Vec::new()
+    }
+  )
+  (input)
+}
+fn qname_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    qname,
+    |(prefix, localpart)| {
+      vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(localpart))), args: None}]
+    }
+  )
+  (input)
+}
+
+// ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
+// TODO: finish this parser with actual arguments
+fn argumentlist(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    tag("()"),
+    //tuple((
+      //tag("("),
+      //multispace0,
+      //tag(")"),
+    //)),
+    |v| {
+      Vec::new()
+    }
+  )
+  (input)
+}
+
+// UnaryExpr ::= ('-' | '+')* ValueExpr
+fn unary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
+// TODO: finish this parser
 fn primary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   alt((
     literal,
@@ -968,6 +1038,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_cast() {
         let e = parse("'a' cast as type").expect("failed to parse expression \"'a' cast as type\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_arrow() {
+        let e = parse("'a' => spec XY").expect("failed to parse expression \"'a' => spec()\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
