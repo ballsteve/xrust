@@ -10,7 +10,7 @@ use nom:: {
   branch::alt,
   character::complete::{char, none_of},
   sequence::{delimited, pair, tuple},
-  multi::{many0, separated_nonempty_list},
+  multi::{many0, many1, separated_nonempty_list},
   combinator::{complete, map, opt, recognize},
   bytes::complete::tag,
 };
@@ -41,6 +41,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_intersectexcept,
     cons_instanceof,
     cons_treat,
+    cons_castable,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -445,6 +446,99 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
 fn castable_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      cast_expr,
+      opt(
+        tuple((multispace0, tag("castable"), multispace0, tag("as"), multispace0, singletype_expr)),
+      )
+    ),
+    |(u, v)| {
+      match v {
+        None => {
+	  u
+	}
+	Some(t) => {
+	  let mut r = Vec::new();
+	  r.push(u);
+	  let (a, b, c, d, e, st) = t;
+	  r.push(st);
+	  vec![SequenceConstructor{func: cons_castable, data: None, args: Some(r)}]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// SingleType ::= SimpleTypeName '?'?
+// SimpleTypeName ::= TypeName
+// TypeName ::= EQName
+// EQName ::= QName | URIQualifiedName
+// URIQualifiedName ::= BracedURILiteral NCName
+// QName ::= PrefixedName | UnprefixedName
+// PrefixedName ::= Prefix ':' LocalPart
+// UnprefixedName ::= LocalPart
+// Prefix ::= NCName
+// LocalPart ::= NCName
+// NCName ::= Name - (Char* ':' Char*)
+// Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
+// TODO: implement this parser fully
+fn singletype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      qname,
+      opt(
+        tuple((multispace0, tag("?"), multispace0)),
+      )
+    ),
+    |(u, v)| {
+      Vec::new()
+    }
+  )
+  (input)
+}
+fn qname(input: &str) -> IResult<&str, (String, String)> {
+  alt((
+    prefixed_name,
+    unprefixed_name,
+  ))
+  (input)
+}
+fn unprefixed_name(input: &str) -> IResult<&str, (String, String)> {
+  map (
+    ncname,
+    |localpart| {
+      (String::from(""), localpart)
+    }
+  )
+  (input)
+}
+fn prefixed_name(input: &str) -> IResult<&str, (String, String)> {
+  map (
+    tuple((
+      ncname,
+      tag(":"),
+      ncname
+    )),
+    |(prefix, _, localpart)| {
+      (prefix, localpart)
+    }
+  )
+  (input)
+}
+fn ncname(input: &str) -> IResult<&str, String> {
+  map (
+    many1(none_of(":")),
+    |v| {
+      v.iter().collect::<String>()
+    }
+  )
+  (input)
+}
+
+// CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
+fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
@@ -826,6 +920,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_treat() {
         let e = parse("'a' treat as empty-sequence()").expect("failed to parse expression \"'a' treat as empty-sequence()\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_castable() {
+        let e = parse("'a' castable as type").expect("failed to parse expression \"'a' castable as type\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
