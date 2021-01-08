@@ -42,6 +42,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_instanceof,
     cons_treat,
     cons_castable,
+    cons_cast,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -539,6 +540,33 @@ fn ncname(input: &str) -> IResult<&str, String> {
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
 fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      arrow_expr,
+      opt(
+        tuple((multispace0, tag("cast"), multispace0, tag("as"), multispace0, singletype_expr)),
+      )
+    ),
+    |(u, v)| {
+      match v {
+        None => {
+	  u
+	}
+	Some(t) => {
+	  let mut r = Vec::new();
+	  r.push(u);
+	  let (a, b, c, d, e, st) = t;
+	  r.push(st);
+	  vec![SequenceConstructor{func: cons_cast, data: None, args: Some(r)}]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
+fn arrow_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
@@ -930,6 +958,16 @@ mod tests {
     #[test]
     fn nomxpath_parse_castable() {
         let e = parse("'a' castable as type").expect("failed to parse expression \"'a' castable as type\"");
+	if e.len() == 1 {
+	  assert!(true) // TODO: check the sequence constructor
+	} else {
+	  panic!("sequence is not a singleton")
+	}
+    }
+
+    #[test]
+    fn nomxpath_parse_cast() {
+        let e = parse("'a' cast as type").expect("failed to parse expression \"'a' cast as type\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
