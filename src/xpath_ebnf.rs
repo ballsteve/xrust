@@ -42,7 +42,7 @@ ValueExpr := SimpleMapExpr ;
 GeneralComp := '=' | '!=' | '<' | '<=' | '>' | '>=' ;
 ValueComp := 'eq' | 'ne' | 'lt' | 'le' | 'gt' | 'ge' ;
 NodeComp := 'is' | '<<' | '>>' ;
-SimplMapExpr := PathExpr ('!' PathExpr)* ;
+SimpleMapExpr := PathExpr ('!' PathExpr)* ;
 PathExpr := ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr ;
 RelativePathExpr := StepExpr (('/' | '//') StepExpr)* ;
 StepExpr := PostfixExpr | AxisStep ;

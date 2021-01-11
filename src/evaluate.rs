@@ -99,78 +99,84 @@ pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i
 
 // Evaluate each operand to a sequence result. Calculate the union of all sequences.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_union(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_union(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result. Perform operations on the sequences.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_intersectexcept(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_intersectexcept(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_instanceof(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_instanceof(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_treat(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_treat(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_castable(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_castable(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_cast(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_cast(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_arrow(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_arrow(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result. All but last operands are +/- values. Last operand is value to operate upon.
-pub fn cons_unary(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_unary(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_simplemap(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_simplemap(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Set dynamic context to document root.
-pub fn cons_root(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_root(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 // Return child nodes
-pub fn cons_child(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_child(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 // Return descendant-or-self nodes
-pub fn cons_descendant_or_self(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_descendant_or_self(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+
+// Evaluate each operand to a sequence result. Each operand changes the current context.
+pub fn cons_relativepath(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
