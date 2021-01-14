@@ -19,6 +19,49 @@ pub struct SequenceConstructor {
   pub func: SequenceConstructorFunc,		// the function to evaluate to construct the sequence
   pub data: Option<Item>,			// literal data for the constructor
   pub args: Option<Vec<Vec<SequenceConstructor>>>,	// arguments for the constructor
+  pub axis: Option<NodeMatch>,			// match nodes in the document
+}
+
+#[derive(Clone)]
+pub struct NodeMatch {
+  pub axis: Axis,
+  pub nodetest: NodeTest,
+}
+
+#[derive(Clone)]
+pub enum NodeTest {
+  Kind,
+  Name(NameTest),
+}
+
+#[derive(Clone)]
+pub struct NameTest {
+  pub ns: Option(WildcardOrName),
+  pub prefix: Option(String),
+  pub name: Option(WildcardOrName),
+}
+
+#[derive(Clone)]
+pub Enum WildcardOrName {
+  Wildcard,
+  Name(String),
+}
+
+#[derive(Clone)]
+pub enum Axis {
+  Child,
+  Descendant,
+  Descendant-or-self,
+  Attribute,
+  Self,
+  Following,
+  Following-or-self,
+  Namespace,
+  Parent,
+  Ancestor,
+  Ancestor-or-self,
+  Preceding,
+  Preceding-or-self,
 }
 
 // Comparison operators
@@ -171,6 +214,11 @@ pub fn cons_child(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>
 }
 // Return descendant-or-self nodes
 pub fn cons_descendant_or_self(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+  // TODO
+  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
+}
+// Evaluate step
+pub fn cons_step(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }

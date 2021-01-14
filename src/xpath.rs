@@ -12,7 +12,7 @@ use nom:: {
   sequence::{delimited, pair, tuple},
   multi::{many0, many1, separated_nonempty_list},
   combinator::{complete, map, opt, recognize},
-  bytes::complete::tag,
+  bytes::complete::{tag, take_while, take_while1, take_while_m_n},
 };
 use crate::item::*;
 use crate::xdmerror::*;
@@ -50,6 +50,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_child,
     cons_descendant_or_self,
     cons_relativepath,
+    cons_step,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -506,23 +507,23 @@ fn singletype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   )
   (input)
 }
-fn qname(input: &str) -> IResult<&str, (String, String)> {
+fn qname(input: &str) -> IResult<&str, (&str, &str)> {
   alt((
     prefixed_name,
     unprefixed_name,
   ))
   (input)
 }
-fn unprefixed_name(input: &str) -> IResult<&str, (String, String)> {
+fn unprefixed_name(input: &str) -> IResult<&str, (&str, &str)> {
   map (
     ncname,
     |localpart| {
-      (String::from(""), localpart)
+      ("", localpart)
     }
   )
   (input)
 }
-fn prefixed_name(input: &str) -> IResult<&str, (String, String)> {
+fn prefixed_name(input: &str) -> IResult<&str, (&str, &str)> {
   map (
     tuple((
       ncname,
@@ -535,14 +536,179 @@ fn prefixed_name(input: &str) -> IResult<&str, (String, String)> {
   )
   (input)
 }
-fn ncname(input: &str) -> IResult<&str, String> {
+// NCName ::= Name - (Char* ':' Char*)
+// Name ::= NameStartChar NameChar*
+// NameStartChar ::= ':' | [A-Z] | '_' | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
+// NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
+fn ncname(input: &str) -> IResult<&str, &str> {
+  //println!("ncname: input=\"{}\"", input);
+//  recognize (
   map (
-    many1(none_of(":")),
-    |v| {
-      v.iter().collect::<String>()
+    pair (
+      ncnamestartchar,
+      take_while(is_ncnamechar),
+    ),
+    |(a, b)| {
+      //println!("ncname: got \"{}\" and \"{}\"", a, b);
+      a
     }
   )
   (input)
+}
+//fn ncname_old(input: &str) -> IResult<&str, &str> {
+//  recognize (
+//    pair (
+//      ncnamestartchar,
+//      many0(ncnamechar),
+//    )
+//  )
+//  (input)
+//}
+//fn ncname_broken(input: &str) -> IResult<&str, String> {
+//  map (
+//    many1(none_of(":")),
+//    |v| {
+//      v.iter().collect::<String>()
+//    }
+//  )
+//  (input)
+//}
+fn name(input: &str) -> IResult<&str, &str> {
+  //println!("name: input=\"{}\"", input);
+  recognize (
+    pair (
+      namestartchar,
+      take_while1(is_namechar),
+    )
+  )
+  (input)
+}
+//fn namechar(input: &str) -> IResult<&str, char> {
+//  alt((
+//    namestartchar,
+//    one_of(".-0123456789\u{B7}"),
+//    take_while1(is_namechar_range),
+//  ))
+//  (input)
+//}
+fn is_namechar(ch: char) -> bool {
+  if is_namestartchar(ch) {
+    true
+  } else {
+    match ch {
+      '.' => true,
+      '-' => true,
+      '0'..='9' => true,
+      '\u{B7}' => true,
+      '\u{0300}'..='\u{036F}' => true,
+      '\u{203F}'..='\u{2040}' => true,
+      _ => false
+    }
+  }
+}
+//fn ncnamechar(input: &str) -> IResult<&str, char> {
+//  alt((
+//    ncnamestartchar,
+//    one_of(".-0123456789"),
+//    one_of("\u{B7}"),
+//    one_of(('\u{0300}'..='\u{036F}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{203F}'..='\u{2040}').map(char::from).collect::<Vec<_>>()),
+//  ))
+//  (input)
+//}
+fn ncnamechar(input: &str) -> IResult<&str, &str> {
+  take_while_m_n(1, 1, is_ncnamechar)
+  (input)
+}
+fn is_ncnamechar(ch: char) -> bool {
+  //println!("is_ncnamechar: input \"{}\"", ch);
+  if is_ncnamestartchar(ch) {
+    //println!("is_ncnamechar: input is a ncnamestartchar");
+    true
+  } else {
+    match ch {
+      '.' |
+      '-' |
+      '0'..='9' |
+      '\u{B7}' |
+      '\u{0300}'..='\u{036F}' |
+      '\u{203F}'..='\u{2040}' => {
+        println!("is_ncnamechar: true");
+        true
+      },
+      _ => false
+    }
+  }
+}
+//fn namestartchar(input: &str) -> IResult<&str, char> {
+//  alt((
+//    one_of(":_"),
+//    one_of(('A'..='Z').map(char::from).collect::<Vec<_>>()),
+//    one_of(('a'..='z').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{C0}'..='\u{D6}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{D8}'..='\u{F6}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{F8}'..='\u{2FF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{370}'..='\u{37D}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{37F}'..='\u{1FFF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{200C}'..='\u{200D}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{2070}'..='\u{218F}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{2C00}'..='\u{2FEF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{3001}'..='\u{D7FF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{F900}'..='\u{FDCF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{FDF0}'..='\u{FFFD}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{10000}'..='\u{EFFFF}').map(char::from).collect::<Vec<_>>()),
+//  ))
+//  (input)
+//}
+fn namestartchar(input: &str) -> IResult<&str, &str> {
+  take_while_m_n(1, 1, is_namestartchar)
+  (input)
+}
+fn is_namestartchar(ch: char) -> bool {
+  match ch {
+    ':' => true,
+    _ => is_ncnamestartchar(ch)
+  }
+}
+// Same as above, but without the colon
+//fn ncnamestartchar(input: &str) -> IResult<&str, char> {
+//  alt((
+//    one_of("_"),
+//    one_of(('A'..='Z').map(char::from).collect::<Vec<_>>()),
+//    one_of(('a'..='z').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{C0}'..='\u{D6}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{D8}'..='\u{F6}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{F8}'..='\u{2FF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{370}'..='\u{37D}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{37F}'..='\u{1FFF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{200C}'..='\u{200D}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{2070}'..='\u{218F}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{2C00}'..='\u{2FEF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{3001}'..='\u{D7FF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{F900}'..='\u{FDCF}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{FDF0}'..='\u{FFFD}').map(char::from).collect::<Vec<_>>()),
+//    one_of(('\u{10000}'..='\u{EFFFF}').map(char::from).collect::<Vec<_>>()),
+//  ))
+//  (input)
+//}
+fn ncnamestartchar(input: &str) -> IResult<&str, &str> {
+  //println!("ncnamestartchar: input \"{}\"", input);
+  take_while_m_n(1, 1, is_ncnamestartchar)
+  (input)
+}
+fn is_ncnamestartchar(ch: char) -> bool {
+  //println!("is_ncnamestartchar: input \"{}\"", ch);
+  match ch {
+    '_' |
+    'A'..='Z' |
+    'a'..='z' |
+    '\u{C0}'..='\u{D6}' => {
+      //println!("is_ncnamestartchar: true");
+      true
+    },
+    // etc
+    _ => false
+  }
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
@@ -617,7 +783,7 @@ fn qname_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map (
     qname,
     |(_prefix, localpart)| {
-      vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(localpart))), args: None}]
+      vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(localpart.to_string()))), args: None}]
     }
   )
   (input)
@@ -777,9 +943,164 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   )
   (input)
 }
+// For debugging: a version of the above function that steps through the parsing
+fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  let mut myin = newinput;
+  //println!("relpath: starting with \"{}\"", myin);
+  let (myin, a) = step_expr(myin)?;
+  let mut r = Vec::new();
+
+  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+  r.push(a);
+
+  //println!("relpath: parsed first step. input=\"{}\"", myin);
+
+  loop {
+    //println!("looking for delimiter in \"{}\"", myin);
+    if myin.len() == 0 {
+      //println!("no more input");
+      break
+    }
+    let (myin, (_x, c, _y)) = alt((
+      tuple((multispace0, tag("//"), multispace0)),
+      tuple((multispace0, tag("/"), multispace0)),
+    ))(myin)?;
+    //println!("got delimiter \"{}\", remaining input \"{}\"", c, myin);
+    r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+
+    let (myin, d) = step_expr(myin)?;
+    //println!("got next step");
+    r.push(d);
+    break;
+  }
+
+  //println!("relpath: finished");
+  Ok((myin, vec![SequenceConstructor{func: cons_relativepath, data: None, args: Some(r)}]))
+}
 
 // StepExpr ::= PostfixExpr | AxisStep
 fn step_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  //println!("step_expr: input \"{}\"", input);
+  alt((
+    postfix_expr,
+    axisstep
+  ))
+  (input)
+}
+
+// AxisStep ::= (ReverseStep | ForwardStep) PredicateList
+// TODO: predicates
+fn axisstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  alt((
+    reversestep,
+    forwardstep
+  ))
+  (input)
+}
+
+// ForwardStep ::= (ForwardAxis NodeTest) | AbbrevForwardStep
+// TODO: abbreviated step
+fn forwardstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      forwardaxis,
+      nodetest
+    ),
+    |(_a, _n)| {
+      vec![SequenceConstructor{func: cons_step, data: None, args: None}]
+    }
+  )
+  (input)
+}
+// ReverseStep ::= (ReverseAxis NodeTest) | AbbrevReverseStep
+// TODO: abbreviated step
+fn reversestep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+  map (
+    pair(
+      reverseaxis,
+      nodetest
+    ),
+    |(_a, (_prefix, _localpart))| {
+      vec![SequenceConstructor{func: cons_step, data: None, args: None}]
+    }
+  )
+  (input)
+}
+
+// ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
+fn forwardaxis(input: &str) -> IResult<&str, &str> {
+  map (
+    pair(
+      alt((
+        tag("child"),
+        tag("descendant"),
+        tag("attribute"),
+        tag("self"),
+        tag("descendant-or-self"),
+        tag("following-sibling"),
+        tag("following"),
+        tag("namespace"),
+      )),
+      tag("::"),
+    ),
+    |(a, _b)| {
+      a
+    }
+  )
+  (input)
+}
+// ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding' | 'preceding-sibling') '::'
+fn reverseaxis(input: &str) -> IResult<&str, &str> {
+  map (
+    pair(
+      alt((
+        tag("parent"),
+        tag("ancestor"),
+        tag("ancestor-or-self"),
+        tag("preceding-sibling"),
+        tag("preceding"),
+      )),
+      tag("::"),
+    ),
+    |(a, _b)| {
+      a
+    }
+  )
+  (input)
+}
+
+// NodeTest ::= KindTest | NameTest
+// TODO: KindTest
+fn nodetest(input: &str) -> IResult<&str, (&str, &str)> {
+  nametest
+  (input)
+}
+
+// NameTest ::= EQName | Wildcard
+// TODO: allow EQName rather than QName
+fn nametest(input: &str) -> IResult<&str, (&str, &str)> {
+  alt((
+    qname,
+    wildcard,
+  ))
+  (input)
+}
+
+// Wildcard ::= '*' | (NCName ':*') | ('*:' NCName) | (BracedURILiteral '*')
+// TODO: more specific wildcards
+fn wildcard(input: &str) -> IResult<&str, (&str, &str)> {
+  map(
+    tag("*"),
+    |_w| {
+      ("*", "*")
+    }
+  )
+  (input)
+}
+
+// PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
+// TODO: predicates, arg list, lookup
+fn postfix_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   primary_expr(input)
 }
 
@@ -1230,32 +1551,32 @@ mod tests {
     }
     #[test]
     fn nomxpath_parse_root_step_1() {
-        let _e = parse("/1").expect("failed to parse expression \"/1\"");
+        let _e = parse("/child::a").expect("failed to parse expression \"/child::a\"");
 	assert!(true) // TODO: check the sequence constructor
     }
     #[test]
     fn nomxpath_parse_root_step_2() {
-        let _e = parse("/1/2").expect("failed to parse expression \"/1/2\"");
+        let _e = parse("/child::a/child::b").expect("failed to parse expression \"/child::a/child::b\"");
 	assert!(true) // TODO: check the sequence constructor
     }
     #[test]
     fn nomxpath_parse_desc_or_self_1() {
-        let _e = parse("//1").expect("failed to parse expression \"//1\"");
+        let _e = parse("//child::a").expect("failed to parse expression \"//child::a\"");
 	assert!(true) // TODO: check the sequence constructor
     }
     #[test]
     fn nomxpath_parse_desc_or_self_2() {
-        let _e = parse("//1/2").expect("failed to parse expression \"//1/2\"");
+        let _e = parse("//child::a/child::b").expect("failed to parse expression \"//child::a/child::b\"");
 	assert!(true) // TODO: check the sequence constructor
     }
     #[test]
     fn nomxpath_parse_desc_or_self_3() {
-        let _e = parse("//1//2").expect("failed to parse expression \"//1//2\"");
+        let _e = parse("//child::a//child::b").expect("failed to parse expression \"//child::a//child::b\"");
 	assert!(true) // TODO: check the sequence constructor
     }
     #[test]
     fn nomxpath_parse_relative_path_1() {
-        let e = parse("1/2").expect("failed to parse expression \"1/2\"");
+        let e = parse("child::a/child::b").expect("failed to parse expression \"child::a/child::b\"");
 	if e.len() == 1 {
 	  assert!(true) // TODO: check the sequence constructor
 	} else {
@@ -1264,9 +1585,24 @@ mod tests {
     }
     #[test]
     fn nomxpath_parse_relative_path_2() {
-        let _e = parse("1//2").expect("failed to parse expression \"1//2\"");
+        let _e = parse("child::a//child::b").expect("failed to parse expression \"child::a//child::b\"");
 	assert!(true) // TODO: check the sequence constructor
     }
 
+    #[test]
+    fn nomxpath_parse_step_1() {
+        let _e = parse("child::a").expect("failed to parse expression \"child::a\"");
+	assert!(true) // TODO: check the sequence constructor
+    }
+    #[test]
+    fn nomxpath_parse_step_2() {
+        let _e = parse("child::bc").expect("failed to parse expression \"child::bc\"");
+	assert!(true) // TODO: check the sequence constructor
+    }
+    #[test]
+    fn nomxpath_parse_step_wild() {
+        let _e = parse("child::*").expect("failed to parse expression \"child::*\"");
+	assert!(true) // TODO: check the sequence constructor
+    }
 }
 
