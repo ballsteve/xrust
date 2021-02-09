@@ -7,94 +7,77 @@ use std::cmp::Ordering;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
 
-#[derive(Clone)]
-pub enum Item {
-    Node,
-    Function,
-    Value(Value),
+//#[derive(Clone)]
+//pub enum Item<N, F> {
+//    Node(N),
+//    Function(F),
+//    Value(Value),
+//}
+
+pub trait Item<'a> {
+  // All items have a string value
+  fn stringvalue(&self) -> String;
+
+  // Determine the effective boolean value of a sequence.
+  // See XPath 2.4.3.
+  fn to_bool(&self) -> bool;
+
+  // TODO: atomization
+  // fn atomize(&self);
+
+  // Functions for Node items
+  fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error>;
+  fn children(&self) -> Result<Vec<Box<dyn Item<'a> + 'a>>, Error>;
+  fn parent(&self) -> Result<Box<dyn Item<'a> + 'a>, Error>;
 }
 
-impl PartialEq for Item {
-  fn eq(&self, other: &Item) -> bool {
+// A concrete type that implements atomic values
+
+impl PartialEq for Value {
+  fn eq(&self, other: &Value) -> bool {
     match self {
-      Item::Node => false, // not yet implemented
-      Item::Function => false, // not yet implemented
-      Item::Value(v) => match v {
         Value::String(s) => s.eq(&other.stringvalue()),
 	Value::Boolean(b) => match other {
-	  Item::Value(Value::Boolean(c)) => b == c,
+	  Value::Boolean(c) => b == c,
 	  _ => false, // type error?
 	},
 	Value::Decimal(d) => match other {
-	  Item::Value(Value::Decimal(e)) => d == e,
+	  Value::Decimal(e) => d == e,
 	  _ => false, // type error?
 	},
 	Value::Integer(i) => match other {
-	  Item::Value(Value::Integer(j)) => i == j,
+	  Value::Integer(j) => i == j,
 	  _ => false, // type error? coerce to integer?
 	},
 	Value::Double(d) => match other {
-	  Item::Value(Value::Double(e)) => d == e,
+	  Value::Double(e) => d == e,
 	  _ => false, // type error? coerce to integer?
 	},
         _ => false, // not yet implemented
-      },
     }
   }
 }
-impl PartialOrd for Item {
-  fn partial_cmp(&self, other: &Item) -> Option<Ordering> {
+impl PartialOrd for Value {
+  fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
     match self {
-      Item::Node => None, // not yet implemented
-      Item::Function => None, // not yet implemented
-      Item::Value(v) => match v {
         Value::String(s) => s.partial_cmp(&other.stringvalue()),
 	Value::Boolean(_) => None,
 	Value::Decimal(d) => match other {
-	  Item::Value(Value::Decimal(e)) => d.partial_cmp(e),
+	  Value::Decimal(e) => d.partial_cmp(e),
 	  _ => None, // type error?
 	}
 	Value::Integer(d) => match other {
-	  Item::Value(Value::Integer(e)) => d.partial_cmp(e),
+	  Value::Integer(e) => d.partial_cmp(e),
 	  _ => None, // type error?
 	}
 	Value::Double(d) => match other {
-	  Item::Value(Value::Double(e)) => d.partial_cmp(e),
+	  Value::Double(e) => d.partial_cmp(e),
 	  _ => None, // type error?
 	}
 	_ => None,
-      }
     }
   }
 }
-
-pub trait StringValue {
-    fn stringvalue(&self) -> String;
-}
-
-impl StringValue for Item {
-    fn stringvalue(&self) -> String {
-        match self {
-	    Item::Value(v) => v.stringvalue(),
-	    _ => String::from(""),
-	}
-    }
-}
-
-// TODO: atomize is low priority for now
-//pub trait Atomize {
-//    fn atomize(&self) -> Result<Item, Error>;
-//}
-
-//impl Atomize for Item {
-//    fn atomize(&self) -> Result<Item, Error> {
-//        match self {
-//	    Item::Value(_) => Ok(self.clone()),
-//	    Item::Function => Err(Error{kind: ErrorKind::TypeError, message: String::from("cannot atomize a function")}),
-//	    Item::Node => Ok(self.clone()), // TODO return typed value
-//	}
-//    }
-//}
 
 #[derive(Clone)]
 pub enum Value {
@@ -141,7 +124,7 @@ pub enum Value {
     Boolean(bool),
 }
 
-impl StringValue for Value {
+impl<'a> Item<'a> for Value {
     fn stringvalue(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
@@ -165,21 +148,30 @@ impl StringValue for Value {
  	    _ => String::from(""),
 	}
     }
-}
 
-// TODO defining a union is in the too hard basket for now
-// Numeric is a union of double, float and decimal
-//pub enum NumericType {
-//    Double,
-//    Float,
-//    Decimal,
-//}
-//pub struct Numeric {
-//    numerictype: NumericType,
-//    double: f64,
-//    float: f32,
-//    decimal: decimal::d128,
-//}
+    fn to_bool(&self) -> bool {
+        match &self {
+            Value::Boolean(b) => *b == true,
+            Value::String(t) => {
+                //t.is_empty()
+	        t.as_str().len() != 0
+            },
+            Value::Double(n) => *n != 0.0,
+            Value::Integer(i) => *i != 0,
+            _ => false
+	}
+    }
+
+    fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error> {
+      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("atomic values don't have a document")})
+    }
+    fn children(&self) -> Result<Vec<Box<dyn Item<'a> + 'a>>, Error> {
+      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("atomic values don't have children")})
+    }
+    fn parent(&self) -> Result<Box<dyn Item<'a> + 'a>, Error> {
+      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("atomic values don't have a parent")})
+    }
+}
 
 pub struct NonPositiveInteger {
     value: i64,
@@ -459,38 +451,38 @@ mod tests {
     // String Values
     #[test]
     fn string_stringvalue() {
-        assert_eq!(Item::Value(Value::String(String::from("foobar"))).stringvalue(), "foobar")
+        assert_eq!(Value::String(String::from("foobar")).stringvalue(), "foobar")
     }
     #[test]
     fn decimal_stringvalue() {
-        assert_eq!(Item::Value(Value::Decimal(decimal::d128!(001.23))).stringvalue(), "1.23")
+        assert_eq!(Value::Decimal(decimal::d128!(001.23)).stringvalue(), "1.23")
     }
     #[test]
     fn float_stringvalue() {
-        assert_eq!(Item::Value(Value::Float(001.2300_f32)).stringvalue(), "1.23")
+        assert_eq!(Value::Float(001.2300_f32).stringvalue(), "1.23")
     }
     #[test]
     fn nonpositiveinteger_stringvalue() {
         let npi = NonPositiveInteger::new(-00123).expect("invalid nonPositiveInteger");
-	let i = Item::Value(Value::NonPositiveInteger(npi));
+	let i = Value::NonPositiveInteger(npi);
         assert_eq!(i.stringvalue(), "-123")
     }
     #[test]
     fn nonnegativeinteger_stringvalue() {
         let nni = NonNegativeInteger::new(00123).expect("invalid nonNegativeInteger");
-	let i = Item::Value(Value::NonNegativeInteger(nni));
+	let i = Value::NonNegativeInteger(nni);
         assert_eq!(i.stringvalue(), "123")
     }
     #[test]
     fn normalizedstring_stringvalue() {
         let ns = NormalizedString::new(String::from("foobar")).expect("invalid normalizedString");
-	let i = Item::Value(Value::NormalizedString(ns));
+	let i = Value::NormalizedString(ns);
         assert_eq!(i.stringvalue(), "foobar")
     }
 
     //#[test]
     //fn value_atomize() {
-	//let i = Item::Value(Value::Int(123));
+	//let i = Value::Int(123);
         //assert_eq!(i.atomize().stringvalue(), "123")
     //}
 }

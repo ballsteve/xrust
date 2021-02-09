@@ -18,13 +18,15 @@ mod item;
 pub use item::{Item, Value};
 
 mod sequence;
-pub use sequence::{add_item, stringvalue};
+pub use sequence::Sequence;
 
-mod xpath;
-pub use xpath::parse;
+mod rox_adaptor;
 
-mod evaluate;
-pub use evaluate::{DynamicContext, cons_literal};
+//mod xpath;
+//pub use xpath::parse;
+
+//mod evaluate;
+//pub use evaluate::{DynamicContext, cons_literal};
 
 #[cfg(test)]
 mod tests {
@@ -33,41 +35,39 @@ mod tests {
     // Create an Item
     #[test]
     fn item_create_string() {
-        Item::Value(Value::String(String::from("item")));
+        Value::String(String::from("item"));
 	assert!(true);
     }
 
     // Create a sequence
     #[test]
     fn seq_add_one_item() {
-        let mut s: Vec<Item> = Vec::new();
-        add_item(&mut s, Item::Value(Value::String(String::from("item"))));
-	assert_eq!(stringvalue(&s), "item");
+        let s: Sequence = vec![Box::new(Value::String(String::from("item")))];
+	assert_eq!(s.stringvalue(), "item");
     }
 
     // Create a sequence
     #[test]
     fn seq_add_two_items() {
-        let mut s: Vec<Item> = Vec::new();
-        add_item(&mut s, Item::Value(Value::String(String::from("item"))));
-        add_item(&mut s, Item::Value(Value::Double(1.234)));
-	assert_eq!(stringvalue(&s), "item1.234");
+        let s: Sequence = vec![Box::new(Value::String(String::from("item"))),
+          Box::new(Value::Double(1.234))];
+	assert_eq!(s.stringvalue(), "item1.234");
     }
 
     // Construct a literal singleton sequence
-    #[test]
-    fn eval_literal() {
-      let d = DynamicContext {
-        context_item: None,
-      };
-      let seq = cons_literal(&d, None, Some(Item::Value(Value::Integer(456)))).expect("unable to construct literal");
-      if seq.len() == 1 {
-        match seq[0] {
-	  Item::Value(Value::Integer(v)) => assert_eq!(v, 456),
-	  _ => panic!("item is not a literal integer value")
-	}
-      } else {
-        panic!("sequence is not a singleton")
-      }
-    }
+    //#[test]
+    //fn eval_literal() {
+      //let d = DynamicContext {
+        //context_item: None,
+      //};
+      //let seq = cons_literal(&d, None, Some(Item::Value(Value::Integer(456)))).expect("unable to construct literal");
+      //if seq.len() == 1 {
+        //match seq[0] {
+	  //Item::Value(Value::Integer(v)) => assert_eq!(v, 456),
+	  //_ => panic!("item is not a literal integer value")
+	//}
+      //} else {
+        //panic!("sequence is not a singleton")
+      //}
+    //}
 }

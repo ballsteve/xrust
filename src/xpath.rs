@@ -10,13 +10,16 @@ use nom:: {
   branch::alt,
   character::complete::{char, none_of},
   sequence::{delimited, pair, tuple},
-  multi::{many0, many1, separated_nonempty_list},
+  multi::{many0, separated_nonempty_list},
   combinator::{complete, map, opt, recognize},
   bytes::complete::{tag, take_while, take_while1, take_while_m_n},
 };
 use crate::item::*;
 use crate::xdmerror::*;
 use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
+    NameTest, WildcardOrName,
+    NodeTest, NodeMatch,
+    AxisType, Axis,
     cons_literal, cons_context_item,
     cons_or, cons_and,
     comparison_general_equal,
@@ -507,23 +510,23 @@ fn singletype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   )
   (input)
 }
-fn qname(input: &str) -> IResult<&str, (&str, &str)> {
+fn qname(input: &str) -> IResult<&str, NodeTest> {
   alt((
     prefixed_name,
     unprefixed_name,
   ))
   (input)
 }
-fn unprefixed_name(input: &str) -> IResult<&str, (&str, &str)> {
+fn unprefixed_name(input: &str) -> IResult<&str, NodeTest> {
   map (
     ncname,
     |localpart| {
-      ("", localpart)
+      NodeTest::Name(NameTest{ns: None, prefix: None, name: WildcardOrName::Name(String::from(localpart))})
     }
   )
   (input)
 }
-fn prefixed_name(input: &str) -> IResult<&str, (&str, &str)> {
+fn prefixed_name(input: &str) -> IResult<&str, NodeTest> {
   map (
     tuple((
       ncname,
@@ -531,7 +534,7 @@ fn prefixed_name(input: &str) -> IResult<&str, (&str, &str)> {
       ncname
     )),
     |(prefix, _, localpart)| {
-      (prefix, localpart)
+      NodeTest::Name(NameTest{ns: None, prefix: Some(String::from(prefix)), name: WildcardOrName::Name(String::from(localpart))})
     }
   )
   (input)
@@ -782,8 +785,15 @@ fn arrowfunctionspecifier(input: &str) -> IResult<&str, Vec<SequenceConstructor>
 fn qname_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map (
     qname,
-    |(_prefix, localpart)| {
-      vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(localpart.to_string()))), args: None}]
+    |q| {
+      match q {
+        NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart))}) => {
+	  vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(localpart.to_string()))), args: None}]
+	}
+        _ => {
+      	  vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("invalid qname"))), args: None}]
+	}
+      }
     }
   )
   (input)
@@ -1006,8 +1016,8 @@ fn forwardstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       forwardaxis,
       nodetest
     ),
-    |(_a, _n)| {
-      vec![SequenceConstructor{func: cons_step, data: None, args: None}]
+    |(a, n)| {
+      vec![SequenceConstructor{func: cons_step, data: None, args: None, nodematch: Some(NodeMatch{axis: a, nodetest: n})}]
     }
   )
   (input)
@@ -1020,15 +1030,15 @@ fn reversestep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       reverseaxis,
       nodetest
     ),
-    |(_a, (_prefix, _localpart))| {
-      vec![SequenceConstructor{func: cons_step, data: None, args: None}]
+    |(a, n)| {
+      vec![SequenceConstructor{func: cons_step, data: None, args: None, nodematch: Some(NodeMatch{axis: a, nodetest: n})}]
     }
   )
   (input)
 }
 
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
-fn forwardaxis(input: &str) -> IResult<&str, &str> {
+fn forwardaxis(input: &str) -> IResult<&str, AxisType> {
   map (
     pair(
       alt((
@@ -1044,13 +1054,13 @@ fn forwardaxis(input: &str) -> IResult<&str, &str> {
       tag("::"),
     ),
     |(a, _b)| {
-      a
+      Axis::from(a)
     }
   )
   (input)
 }
 // ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding' | 'preceding-sibling') '::'
-fn reverseaxis(input: &str) -> IResult<&str, &str> {
+fn reverseaxis(input: &str) -> IResult<&str, AxisType> {
   map (
     pair(
       alt((
@@ -1063,7 +1073,7 @@ fn reverseaxis(input: &str) -> IResult<&str, &str> {
       tag("::"),
     ),
     |(a, _b)| {
-      a
+      Axis::from(a)
     }
   )
   (input)
@@ -1071,14 +1081,14 @@ fn reverseaxis(input: &str) -> IResult<&str, &str> {
 
 // NodeTest ::= KindTest | NameTest
 // TODO: KindTest
-fn nodetest(input: &str) -> IResult<&str, (&str, &str)> {
+fn nodetest(input: &str) -> IResult<&str, NodeTest> {
   nametest
   (input)
 }
 
 // NameTest ::= EQName | Wildcard
 // TODO: allow EQName rather than QName
-fn nametest(input: &str) -> IResult<&str, (&str, &str)> {
+fn nametest(input: &str) -> IResult<&str, NodeTest> {
   alt((
     qname,
     wildcard,
@@ -1088,11 +1098,11 @@ fn nametest(input: &str) -> IResult<&str, (&str, &str)> {
 
 // Wildcard ::= '*' | (NCName ':*') | ('*:' NCName) | (BracedURILiteral '*')
 // TODO: more specific wildcards
-fn wildcard(input: &str) -> IResult<&str, (&str, &str)> {
+fn wildcard(input: &str) -> IResult<&str, NodeTest> {
   map(
     tag("*"),
     |_w| {
-      ("*", "*")
+      NodeTest::Name(NameTest{ns: Some(WildcardOrName::Wildcard), prefix: None, name: Some(WildcardOrName::Wildcard)})
     }
   )
   (input)

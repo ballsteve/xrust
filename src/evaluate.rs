@@ -19,12 +19,12 @@ pub struct SequenceConstructor {
   pub func: SequenceConstructorFunc,		// the function to evaluate to construct the sequence
   pub data: Option<Item>,			// literal data for the constructor
   pub args: Option<Vec<Vec<SequenceConstructor>>>,	// arguments for the constructor
-  pub axis: Option<NodeMatch>,			// match nodes in the document
+  pub nodematch: Option<NodeMatch>,			// match nodes in the document
 }
 
 #[derive(Clone)]
 pub struct NodeMatch {
-  pub axis: Axis,
+  pub axis: AxisType,
   pub nodetest: NodeTest,
 }
 
@@ -36,32 +36,56 @@ pub enum NodeTest {
 
 #[derive(Clone)]
 pub struct NameTest {
-  pub ns: Option(WildcardOrName),
-  pub prefix: Option(String),
-  pub name: Option(WildcardOrName),
+  pub ns: Option<WildcardOrName>,
+  pub prefix: Option<String>,
+  pub name: Option<WildcardOrName>,
 }
 
 #[derive(Clone)]
-pub Enum WildcardOrName {
+pub enum WildcardOrName {
   Wildcard,
   Name(String),
 }
 
 #[derive(Clone)]
-pub enum Axis {
+pub enum AxisType {
   Child,
   Descendant,
-  Descendant-or-self,
+  DescendantOrSelf,
   Attribute,
-  Self,
+  Selfaxis,
   Following,
-  Following-or-self,
+  FollowingOrSelf,
   Namespace,
   Parent,
   Ancestor,
-  Ancestor-or-self,
+  AncestorOrSelf,
   Preceding,
-  Preceding-or-self,
+  PrecedingOrSelf,
+}
+
+// Define a trait so that we can use Axis::new(), or Axis::from(&str)
+pub trait Axis {
+  fn from(s: &str) -> AxisType {
+    new_axis(s)
+  }
+}
+pub fn new_axis(s: &str) -> AxisType {
+  match s {
+    "child" => AxisType::Child,
+    "descendant" => AxisType::Descendant,
+    "descendant-or-self" => AxisType::DescendantOrSself,
+    "attribute" => AxisType::Attribute,
+    "self" => AxisType::Selfaxis,
+    "following" => AxisType::Following,
+    "following-or-self" => AxisType::FollowingOrSself,
+    "namespace" => AxisType::Namespace,
+    "parent" => AxisType::Parent,
+    "ancestor" => AxisType::Ancestor,
+    "ancestor-or-self" => AxisType::AncestorOrSself,
+    "preceding" => AxisType::Preceding,
+    "preceding-or-self" => AxisType::PrecedingOrSself,
+  }
 }
 
 // Comparison operators
@@ -78,7 +102,14 @@ enum Operator {
   After,
 }
 
-pub fn cons_literal(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, i: Option<Item>) -> Result<Vec<Item>, Error> {
+// Define tree navigation traits
+pub trait Navigate {
+  fn doc(n: &impl Navigate) -> Self; // Return the document node
+  fn children(n: &impl Navigate) -> Vec<Self>; // Return all child nodes
+  fn parent(n: &impl Navigate) -> Self; // Return parent node
+}
+
+pub fn cons_literal(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   match i {
     Some(j) => {
       let mut seq = Vec::new();
@@ -89,7 +120,7 @@ pub fn cons_literal(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>
   }
 }
 
-pub fn cons_context_item(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_context_item(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   match &d.context_item {
     Some(c) => {
       let mut seq = Vec::new();
@@ -103,7 +134,7 @@ pub fn cons_context_item(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstruc
 // Evaluate each operand to a boolean result. Return true if any of the operands' result is true
 // Optimsation: stop upon the first true result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_or(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_or(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   let mut b = false;
   match s {
     Some(t) => {
@@ -123,7 +154,7 @@ pub fn cons_or(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i:
 // Evaluate each operand to a boolean result. Return false if any of the operands' result is false
 // Optimsation: stop upon the first false result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   let mut b = true;
   match s {
     Some(t) => {
@@ -142,89 +173,89 @@ pub fn cons_and(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i
 
 // Evaluate each operand to a sequence result. Calculate the union of all sequences.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_union(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_union(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result. Perform operations on the sequences.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_intersectexcept(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_intersectexcept(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_instanceof(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_instanceof(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_treat(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_treat(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_castable(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_castable(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_cast(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_cast(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_arrow(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_arrow(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result. All but last operands are +/- values. Last operand is value to operate upon.
-pub fn cons_unary(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_unary(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result.
 // Future: Evaluate every operand to check for dynamic errors
-pub fn cons_simplemap(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_simplemap(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Set dynamic context to document root.
-pub fn cons_root(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_root(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 // Return child nodes
-pub fn cons_child(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_child(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 // Return descendant-or-self nodes
-pub fn cons_descendant_or_self(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_descendant_or_self(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 // Evaluate step
-pub fn cons_step(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_step(d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
 
 // Evaluate each operand to a sequence result. Each operand changes the current context.
-pub fn cons_relativepath(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_relativepath(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   // TODO
   Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented"),})
 }
@@ -233,7 +264,7 @@ pub fn cons_relativepath(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstru
 // The items in the sequences are all then compared using the given operator
 macro_rules! general_cmp {
   ( $x:ident, $y:expr ) => {
-    pub fn $x (d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+    pub fn $x (d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
       match s {
         Some(t) => {
 	  if t.len() == 2 {
@@ -270,7 +301,7 @@ fn general_comparison(d: &DynamicContext, left: &Vec<SequenceConstructor>, right
 
 macro_rules! value_cmp {
   ( $x:ident, $y:expr ) => {
-    pub fn $x (d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+    pub fn $x (d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
       match s {
         Some(t) => {
 	  if t.len() == 2 {
@@ -323,20 +354,20 @@ fn item_compare(left: &Item, right: &Item, op: Operator) -> bool {
 }
 
 // TODO
-pub fn comparison_node_is(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn comparison_node_is(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
 }
 // TODO
-pub fn comparison_node_before(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn comparison_node_before(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
 }
 // TODO
-pub fn comparison_node_after(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn comparison_node_after(_d: &DynamicContext, _s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
 }
 
 // Concatenate all of the operand's string values.
-pub fn cons_string_concat(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_string_concat(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   let mut r = String::from("");
   match s {
     Some(t) => {
@@ -351,7 +382,7 @@ pub fn cons_string_concat(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstruc
   }
 }
 
-pub fn cons_range(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn cons_range(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   match s {
     Some(t) => {
       if t.len() == 2 {
@@ -398,7 +429,7 @@ pub fn cons_range(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, 
 }
 
 // Each item in the tuple is a pair
-pub fn addsub(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn addsub(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   match s {
     Some(t) => {
       if t.len() % 2 == 0 {
@@ -453,7 +484,7 @@ pub fn addsub(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: 
     None => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no operands")})
   }
 }
-pub fn muldiv(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>) -> Result<Vec<Item>, Error> {
+pub fn muldiv(d: &DynamicContext, s: Option<Vec<Vec<SequenceConstructor>>>, _i: Option<Item>, _m: Option<NodeMatch>) -> Result<Vec<Item>, Error> {
   match s {
     Some(t) => {
       if t.len() % 2 == 0 {
@@ -519,7 +550,7 @@ pub fn eval(cons: Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Result<Vec
   let mut ret = Vec::new();
 
   for i in cons {
-    let seq = (i.func)(ctxt, i.args, i.data).expect("evaluation failed");
+    let seq = (i.func)(ctxt, i.args, i.data, i.nodematch).expect("evaluation failed");
     for j in seq {
       ret.push(j);
     }
@@ -533,7 +564,7 @@ pub fn eval_ref(cons: &Vec<SequenceConstructor>, ctxt: &DynamicContext) -> Resul
   let mut ret = Vec::new();
 
   for i in cons {
-    let seq = (i.func)(ctxt, i.args.clone(), i.data.clone()).expect("evaluation failed");
+    let seq = (i.func)(ctxt, i.args.clone(), i.data.clone(), i.nodematch.clone()).expect("evaluation failed");
     for j in seq {
       ret.push(j);
     }

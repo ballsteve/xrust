@@ -10,4 +10,6 @@ edition = "2018"
 decimal = "2.0.4"
 lexers = "0.1.2"
 nom = "5.1.2"
+roxmltree = "0.14.0"
+
 
