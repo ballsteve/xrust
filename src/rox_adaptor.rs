@@ -4,10 +4,10 @@
 
 use crate::xdmerror::*;
 use roxmltree::{Node, Document};
-use crate::item::Item;
+use crate::item::{Item, Operator};
 
 impl<'a> Item<'a> for Document<'a> {
-  fn stringvalue(&self) -> String {
+  fn to_string(&self) -> String {
     // TODO: this is incorrect for element nodes
     // need to find all text node descendants
     let t = self.root_element().first_child().expect("unable to find first child element").text();
@@ -20,6 +20,11 @@ impl<'a> Item<'a> for Document<'a> {
   fn to_bool(&self) -> bool {
     // TODO
     false
+  }
+
+  fn compare(&self, _other: Box<dyn Item<'a> + 'a>, _op: Operator) -> Result<bool, Error> {
+    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented")})
+    // TODO: can return a result for the Operator::Is, Operator::Before, and Operator::After comparisons
   }
 
   fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error> {
@@ -37,7 +42,7 @@ impl<'a> Item<'a> for Document<'a> {
 }
 
 impl<'a, 'b: 'a> Item<'a> for Node<'a, 'b> {
-  fn stringvalue(&self) -> String {
+  fn to_string(&self) -> String {
     // TODO: this is incorrect for element nodes
     // need to find all text node descendants
     match self.text() {
@@ -80,14 +85,14 @@ mod tests {
   fn rox_doc_stringvalue() {
     let doc = roxmltree::Document::parse("<test>foobar</test>").expect("unable to parse XML");
     let n = doc.root_element().first_child().expect("unable to find first child element");
-    assert_eq!(n.stringvalue(), "foobar")
+    assert_eq!(n.to_string(), "foobar")
   }
 
   #[test]
   fn rox_node_stringvalue() {
     let doc = roxmltree::Document::parse("<test><one>foobar</one><two>barfoo</two></test>").expect("unable to parse XML");
     let n = doc.root_element().first_child().expect("unable to find first child element");
-    assert_eq!(n.stringvalue(), "foobar")
+    assert_eq!(n.to_string(), "foobar")
   }
 }
 

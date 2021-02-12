@@ -9,11 +9,11 @@ use crate::item::*;
 pub type Sequence<'a> = Vec<Box<dyn Item<'a> + 'a>>;
 
 impl<'a> Item<'a> for Sequence<'a> {
-    fn stringvalue(&self) -> String {
+    fn to_string(&self) -> String {
         // Find the string value of each item in the sequence
         // and concatenate
         // TODO: define and access the item-separator parameter
-        self.iter().map(|i| i.stringvalue()).collect()
+        self.iter().map(|i| i.to_string()).collect()
     }
     fn to_bool(&self) -> bool {
       if self.len() == 0 {
@@ -64,7 +64,7 @@ mod tests {
     fn seq_stringvalue() {
         let s: Sequence = vec![Box::new(Value::Int(1)),
 	  Box::new(Value::String(String::from("second item")))];
-	assert_eq!(s.stringvalue(), "1second item")
+	assert_eq!(s.to_string(), "1second item")
     }
 
     #[test]

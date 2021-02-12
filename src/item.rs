@@ -6,6 +6,7 @@
 use std::cmp::Ordering;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
+use dyn_clone::DynClone;
 
 //#[derive(Clone)]
 //pub enum Item<N, F> {
@@ -14,29 +15,63 @@ use crate::xdmerror::{Error, ErrorKind};
 //    Value(Value),
 //}
 
-pub trait Item<'a> {
-  // All items have a string value
-  fn stringvalue(&self) -> String;
+// Comparison operators
+#[derive(Copy, Clone)]
+pub enum Operator {
+  Equal,
+  NotEqual,
+  LessThan,
+  LessThanEqual,
+  GreaterThan,
+  GreaterThanEqual,
+  Is,
+  Before,
+  After,
+}
+
+pub trait Item<'a>: DynClone {
+  // TODO: Consider adding 'to_value()' that returns a Value enum.
+  // This would allow retrieval and comparison of scalar values.
+  // This might be a better alternative to to_int(), to_double(), etc.
+
+  // Gives the string value of an item. All items have a string value.
+  fn to_string(&self) -> String;
+  // Should there also be a string slice version?
+  // fn to_str(&self) -> &str;
 
   // Determine the effective boolean value of a sequence.
   // See XPath 2.4.3.
   fn to_bool(&self) -> bool;
 
+  // TODO: there needs to be a general mechanism for data typing and casting between data types
+  // For now, define specific data type accessors
+  fn to_int(&self) -> Result<i64, Error> {
+    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+  }
+  fn to_double(&self) -> Result<f64, Error> {
+    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+  }
+
   // TODO: atomization
   // fn atomize(&self);
+
+  fn compare(&self, _other: Box<dyn Item<'a> + 'a>, _op: Operator) -> Result<bool, Error> {
+    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+  }
 
   // Functions for Node items
   fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error>;
   fn children(&self) -> Result<Vec<Box<dyn Item<'a> + 'a>>, Error>;
   fn parent(&self) -> Result<Box<dyn Item<'a> + 'a>, Error>;
 }
+dyn_clone::clone_trait_object!(Item);
 
 // A concrete type that implements atomic values
 
 impl PartialEq for Value {
   fn eq(&self, other: &Value) -> bool {
     match self {
-        Value::String(s) => s.eq(&other.stringvalue()),
+        Value::String(s) => s.eq(&other.to_string()),
 	Value::Boolean(b) => match other {
 	  Value::Boolean(c) => b == c,
 	  _ => false, // type error?
@@ -60,7 +95,7 @@ impl PartialEq for Value {
 impl PartialOrd for Value {
   fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
     match self {
-        Value::String(s) => s.partial_cmp(&other.stringvalue()),
+        Value::String(s) => s.partial_cmp(&other.to_string()),
 	Value::Boolean(_) => None,
 	Value::Decimal(d) => match other {
 	  Value::Decimal(e) => d.partial_cmp(e),
@@ -125,7 +160,7 @@ pub enum Value {
 }
 
 impl<'a> Item<'a> for Value {
-    fn stringvalue(&self) -> String {
+    fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
 	    Value::NormalizedString(s) => String::from(s.value.as_str()), // TODO: this copies the value, so no good for large strings
@@ -160,6 +195,92 @@ impl<'a> Item<'a> for Value {
             Value::Integer(i) => *i != 0,
             _ => false
 	}
+    }
+
+    fn to_int(&self) -> Result<i64, Error> {
+        match &self {
+            Value::Integer(i) => Ok(*i),
+            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+	}
+    }
+    fn to_double(&self) -> Result<f64, Error> {
+        match &self {
+            Value::Integer(i) => Ok((*i) as f64),
+            Value::Double(d) => Ok(*d),
+            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+	}
+    }
+
+    // TODO: type coersion
+    // TODO: will probably have to implement comparison in the item module (as a trait?)
+    fn compare(&self, other: Box<dyn Item<'a> + 'a>, op: Operator) -> Result<bool, Error> {
+      match &self {
+        Value::Boolean(b) => {
+	  let c = other.to_bool();
+      	  match op {
+                Operator::Equal => Ok(*b == c),
+    		Operator::NotEqual => Ok(*b != c),
+    		Operator::LessThan => Ok(*b < c),
+    		Operator::LessThanEqual => Ok(*b <= c),
+    		Operator::GreaterThan => Ok(*b > c),
+    		Operator::GreaterThanEqual => Ok(*b >= c),
+    		Operator::Is |
+    		Operator::Before |
+    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+	  }
+	}
+        Value::Integer(i) => {
+	  match other.to_int() {
+	    Ok(j) => {
+      	      match op {
+                Operator::Equal => Ok(*i == j),
+    		Operator::NotEqual => Ok(*i != j),
+    		Operator::LessThan => Ok(*i < j),
+    		Operator::LessThanEqual => Ok(*i <= j),
+    		Operator::GreaterThan => Ok(*i > j),
+    		Operator::GreaterThanEqual => Ok(*i >= j),
+    		Operator::Is |
+    		Operator::Before |
+    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+      	      }
+	    }
+	    Result::Err(e) => Result::Err(e)
+	  }
+	}
+        Value::Double(d) => {
+	  match other.to_double() {
+	    Ok(e) => {
+      	      match op {
+                Operator::Equal => Ok(*d == e),
+    		Operator::NotEqual => Ok(*d != e),
+    		Operator::LessThan => Ok(*d < e),
+    		Operator::LessThanEqual => Ok(*d <= e),
+    		Operator::GreaterThan => Ok(*d > e),
+    		Operator::GreaterThanEqual => Ok(*d >= e),
+    		Operator::Is |
+    		Operator::Before |
+    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+      	      }
+	    }
+	    Result::Err(e) => Result::Err(e)
+	  }
+	}
+        Value::String(s) => {
+	  let t = other.to_string();
+      	  match op {
+                Operator::Equal => Ok(*s == t),
+    		Operator::NotEqual => Ok(*s != t),
+    		Operator::LessThan => Ok(*s < t),
+    		Operator::LessThanEqual => Ok(*s <= t),
+    		Operator::GreaterThan => Ok(*s > t),
+    		Operator::GreaterThanEqual => Ok(*s >= t),
+    		Operator::Is |
+    		Operator::Before |
+    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+	  }
+	}
+	_ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented")})
+      }
     }
 
     fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error> {
@@ -451,33 +572,33 @@ mod tests {
     // String Values
     #[test]
     fn string_stringvalue() {
-        assert_eq!(Value::String(String::from("foobar")).stringvalue(), "foobar")
+        assert_eq!(Value::String(String::from("foobar")).to_string(), "foobar")
     }
     #[test]
     fn decimal_stringvalue() {
-        assert_eq!(Value::Decimal(decimal::d128!(001.23)).stringvalue(), "1.23")
+        assert_eq!(Value::Decimal(decimal::d128!(001.23)).to_string(), "1.23")
     }
     #[test]
     fn float_stringvalue() {
-        assert_eq!(Value::Float(001.2300_f32).stringvalue(), "1.23")
+        assert_eq!(Value::Float(001.2300_f32).to_string(), "1.23")
     }
     #[test]
     fn nonpositiveinteger_stringvalue() {
         let npi = NonPositiveInteger::new(-00123).expect("invalid nonPositiveInteger");
 	let i = Value::NonPositiveInteger(npi);
-        assert_eq!(i.stringvalue(), "-123")
+        assert_eq!(i.to_string(), "-123")
     }
     #[test]
     fn nonnegativeinteger_stringvalue() {
         let nni = NonNegativeInteger::new(00123).expect("invalid nonNegativeInteger");
 	let i = Value::NonNegativeInteger(nni);
-        assert_eq!(i.stringvalue(), "123")
+        assert_eq!(i.to_string(), "123")
     }
     #[test]
     fn normalizedstring_stringvalue() {
         let ns = NormalizedString::new(String::from("foobar")).expect("invalid normalizedString");
 	let i = Value::NormalizedString(ns);
-        assert_eq!(i.stringvalue(), "foobar")
+        assert_eq!(i.to_string(), "foobar")
     }
 
     //#[test]

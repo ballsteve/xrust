@@ -16,10 +16,11 @@ use nom:: {
 };
 use crate::item::*;
 use crate::xdmerror::*;
-use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
+use crate::evaluate::{DynamicContext,
+    SequenceConstructor, SequenceConstructorFunc,
     NameTest, WildcardOrName,
     NodeTest, NodeMatch,
-    AxisType, Axis,
+    Axis,
     cons_literal, cons_context_item,
     cons_or, cons_and,
     comparison_general_equal,
@@ -54,6 +55,7 @@ use crate::evaluate::{SequenceConstructor, SequenceConstructorFunc,
     cons_descendant_or_self,
     cons_relativepath,
     cons_step,
+    eval,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -100,7 +102,7 @@ fn or_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	}
 	s
       } else {
-        vec![SequenceConstructor{func: cons_or, data: None, args: Some(v)}]
+        vec![SequenceConstructor{func: cons_or, data: None, args: Some(v), nodematch: None}]
       }
     }
   )
@@ -124,7 +126,7 @@ fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	}
 	s
       } else {
-        vec![SequenceConstructor{func: cons_and, data: None, args: Some(v)}]
+        vec![SequenceConstructor{func: cons_and, data: None, args: Some(v), nodematch: None}]
       }
     }
   )
@@ -164,7 +166,7 @@ fn comparison_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         None => v,
 	Some(((_a, b, _c), t)) => {
 	  vec![SequenceConstructor{func: choose_compare(b).expect("invalid comparison operator"),
-	    data: None, args: Some(vec![v, t])}]
+	    data: None, args: Some(vec![v, t]), nodematch: None}]
 	},
       }
     }
@@ -209,7 +211,7 @@ fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         }
         s
       } else {
-        vec![SequenceConstructor{func: cons_string_concat, data: None, args: Some(v)}]
+        vec![SequenceConstructor{func: cons_string_concat, data: None, args: Some(v), nodematch: None}]
       }
     }
   )
@@ -232,7 +234,7 @@ fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       match o {
         None => v,
 	Some((_t, u)) => {
-          vec![SequenceConstructor{func: cons_range, data: None, args: Some(vec![v, u])}]
+          vec![SequenceConstructor{func: cons_range, data: None, args: Some(vec![v, u]), nodematch: None}]
 	}
       }
     }
@@ -268,16 +270,16 @@ fn additive_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	// These are pair-wise items: first is the operator as a string literal,
 	// second is the value
 	// we fake an entry for first part of the first pair
-	let mut r = Vec::new();
+	let mut r: Vec<Vec<SequenceConstructor>> = Vec::new();
 
-        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+	r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
 	r.push(a);
 
 	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
 	  r.push(d);
 	}
-        vec![SequenceConstructor{func: addsub, data: None, args: Some(r)}]
+        vec![SequenceConstructor::new(addsub).set_args(Some(r))]
       }
     }
   )
@@ -310,14 +312,14 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	// we fake an entry for first part of the first pair
 	let mut r = Vec::new();
 
-        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
 	r.push(a);
 
 	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
 	  r.push(d);
 	}
-        vec![SequenceConstructor{func: muldiv, data: None, args: Some(r)}]
+        vec![SequenceConstructor::new(muldiv).set_args(Some(r))]
       }
     }
   )
@@ -344,7 +346,7 @@ fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         }
         s
       } else {
-        vec![SequenceConstructor{func: cons_union, data: None, args: Some(v)}]
+        vec![SequenceConstructor::new(cons_union).set_args(Some(v))]
       }
     }
   )
@@ -376,14 +378,14 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> 
 	// we fake an entry for first part of the first pair
 	let mut r = Vec::new();
 
-        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
 	r.push(a);
 
 	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
 	  r.push(d);
 	}
-        vec![SequenceConstructor{func: cons_intersectexcept, data: None, args: Some(r)}]
+        vec![SequenceConstructor::new(cons_intersectexcept).set_args(Some(r))]
       }
     }
   )
@@ -409,7 +411,7 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	  r.push(u);
 	  let (_a, _b, _c, _d, _e, st) = t;
 	  r.push(st);
-	  vec![SequenceConstructor{func: cons_instanceof, data: None, args: Some(r)}]
+	  vec![SequenceConstructor::new(cons_instanceof).set_args(Some(r))]
 	}
       }
     }
@@ -448,7 +450,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	  r.push(u);
 	  let (_a, _b, _c, _d, _e, st) = t;
 	  r.push(st);
-	  vec![SequenceConstructor{func: cons_treat, data: None, args: Some(r)}]
+	  vec![SequenceConstructor::new(cons_treat).set_args(Some(r))]
 	}
       }
     }
@@ -475,7 +477,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	  r.push(u);
 	  let (_a, _b, _c, _d, _e, st) = t;
 	  r.push(st);
-	  vec![SequenceConstructor{func: cons_castable, data: None, args: Some(r)}]
+	  vec![SequenceConstructor::new(cons_castable).set_args(Some(r))]
 	}
       }
     }
@@ -521,7 +523,7 @@ fn unprefixed_name(input: &str) -> IResult<&str, NodeTest> {
   map (
     ncname,
     |localpart| {
-      NodeTest::Name(NameTest{ns: None, prefix: None, name: WildcardOrName::Name(String::from(localpart))})
+      NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from(localpart)))})
     }
   )
   (input)
@@ -534,7 +536,7 @@ fn prefixed_name(input: &str) -> IResult<&str, NodeTest> {
       ncname
     )),
     |(prefix, _, localpart)| {
-      NodeTest::Name(NameTest{ns: None, prefix: Some(String::from(prefix)), name: WildcardOrName::Name(String::from(localpart))})
+      NodeTest::Name(NameTest{ns: None, prefix: Some(String::from(prefix)), name: Some(WildcardOrName::Name(String::from(localpart)))})
     }
   )
   (input)
@@ -551,7 +553,7 @@ fn ncname(input: &str) -> IResult<&str, &str> {
       ncnamestartchar,
       take_while(is_ncnamechar),
     ),
-    |(a, b)| {
+    |(a, _b)| {
       //println!("ncname: got \"{}\" and \"{}\"", a, b);
       a
     }
@@ -733,7 +735,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	  r.push(u);
 	  let (_a, _b, _c, _d, _e, st) = t;
 	  r.push(st);
-	  vec![SequenceConstructor{func: cons_cast, data: None, args: Some(r)}]
+	  vec![SequenceConstructor::new(cons_cast).set_args(Some(r))]
 	}
       }
     }
@@ -761,7 +763,7 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if v.len() == 0 {
         u
       } else {
-        vec![SequenceConstructor{func: cons_arrow, data: None, args: None}]
+        vec![SequenceConstructor::new(cons_arrow)]
       }
     }
   )
@@ -787,11 +789,11 @@ fn qname_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     qname,
     |q| {
       match q {
-        NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart))}) => {
-	  vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(localpart.to_string()))), args: None}]
+        NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart)), ns: None, prefix: None}) => {
+	  vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(localpart.to_string()))))]
 	}
         _ => {
-      	  vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("invalid qname"))), args: None}]
+      	  vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from("invalid qname")))))]
 	}
       }
     }
@@ -834,10 +836,10 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       } else {
         let mut a = Vec::new();
 	for i in u {
-	  a.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(String::from(i)))), args: None}]);
+	  a.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(i)))))]);
 	}
 	a.push(v);
-        vec![SequenceConstructor{func: cons_unary, data: None, args: Some(a)}]
+        vec![SequenceConstructor::new(cons_unary).set_args(Some(a))]
       }
     }
   )
@@ -861,13 +863,13 @@ fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         u
       } else {
         let mut s = Vec::new();
-	s.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(String::from("")))), args: None}]);
+	s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from("")))))]);
 	s.push(u);
 	for (a, b) in v {
-	  s.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(String::from(a)))), args: None}]);
+	  s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(a)))))]);
 	  s.push(b);
 	}
-        vec![SequenceConstructor{func: cons_simplemap, data: None, args: Some(s)}]
+        vec![SequenceConstructor::new(cons_simplemap).set_args(Some(s))]
       }
     }
   )
@@ -893,11 +895,11 @@ fn absolute_path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     |(_u, v)| {
       match v {
         Some(a) => {
-	  vec![SequenceConstructor{func: cons_root, data: None, args: None},
-	  SequenceConstructor{func: cons_child, data: None, args: Some(vec![a])}]
+	  vec![SequenceConstructor::new(cons_root),
+	  SequenceConstructor::new(cons_child).set_args(Some(vec![a]))]
 	}
 	None => {
-	  vec![SequenceConstructor{func: cons_root, data: None, args: None}]
+	  vec![SequenceConstructor::new(cons_root)]
 	}
       }
     }
@@ -912,8 +914,8 @@ fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<SequenceConstructo
       relativepath_expr,
     ),
     |(_u, v)| {
-      vec![SequenceConstructor{func: cons_root, data: None, args: None},
-	SequenceConstructor{func: cons_descendant_or_self, data: None, args: Some(vec![v])}]
+      vec![SequenceConstructor::new(cons_root),
+	SequenceConstructor::new(cons_descendant_or_self).set_args(Some(vec![v]))]
     }
   )
   (input)
@@ -940,14 +942,14 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       } else {
         let mut r = Vec::new();
 
-        r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
 	r.push(a);
 
 	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
 	  r.push(d);
 	}
-        vec![SequenceConstructor{func: cons_relativepath, data: None, args: Some(r)}]
+        vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]
       }
     }
   )
@@ -955,12 +957,12 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 // For debugging: a version of the above function that steps through the parsing
 fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<SequenceConstructor>> {
-  let mut myin = newinput;
+  let myin = newinput;
   //println!("relpath: starting with \"{}\"", myin);
   let (myin, a) = step_expr(myin)?;
   let mut r = Vec::new();
 
-  r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String("".to_string()))), args: None}]);
+  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
   r.push(a);
 
   //println!("relpath: parsed first step. input=\"{}\"", myin);
@@ -976,16 +978,16 @@ fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<SequenceConstructo
       tuple((multispace0, tag("/"), multispace0)),
     ))(myin)?;
     //println!("got delimiter \"{}\", remaining input \"{}\"", c, myin);
-    r.push(vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(c.to_string()))), args: None}]);
+    r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
 
-    let (myin, d) = step_expr(myin)?;
+    let (_myin, d) = step_expr(myin)?;
     //println!("got next step");
     r.push(d);
     break;
   }
 
   //println!("relpath: finished");
-  Ok((myin, vec![SequenceConstructor{func: cons_relativepath, data: None, args: Some(r)}]))
+  Ok((myin, vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]))
 }
 
 // StepExpr ::= PostfixExpr | AxisStep
@@ -1017,7 +1019,7 @@ fn forwardstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       nodetest
     ),
     |(a, n)| {
-      vec![SequenceConstructor{func: cons_step, data: None, args: None, nodematch: Some(NodeMatch{axis: a, nodetest: n})}]
+      vec![SequenceConstructor::new(cons_step).set_nodematch(Some(NodeMatch{axis: Axis::from(a), nodetest: n}))]
     }
   )
   (input)
@@ -1031,14 +1033,14 @@ fn reversestep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       nodetest
     ),
     |(a, n)| {
-      vec![SequenceConstructor{func: cons_step, data: None, args: None, nodematch: Some(NodeMatch{axis: a, nodetest: n})}]
+      vec![SequenceConstructor::new(cons_step).set_nodematch(Some(NodeMatch{axis: Axis::from(a), nodetest: n}))]
     }
   )
   (input)
 }
 
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
-fn forwardaxis(input: &str) -> IResult<&str, AxisType> {
+fn forwardaxis(input: &str) -> IResult<&str, &str> {
   map (
     pair(
       alt((
@@ -1054,13 +1056,13 @@ fn forwardaxis(input: &str) -> IResult<&str, AxisType> {
       tag("::"),
     ),
     |(a, _b)| {
-      Axis::from(a)
+      a
     }
   )
   (input)
 }
 // ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding' | 'preceding-sibling') '::'
-fn reverseaxis(input: &str) -> IResult<&str, AxisType> {
+fn reverseaxis(input: &str) -> IResult<&str, &str> {
   map (
     pair(
       alt((
@@ -1073,7 +1075,7 @@ fn reverseaxis(input: &str) -> IResult<&str, AxisType> {
       tag("::"),
     ),
     |(a, _b)| {
-      Axis::from(a)
+      a
     }
   )
   (input)
@@ -1147,7 +1149,7 @@ fn numeric_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 fn integer_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(digit1, |s: &str| {
     let n = s.parse::<i64>().unwrap();
-    vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::Integer(n))), args: None}]
+    vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::Integer(n))))]
   })
   (input)
 }
@@ -1162,10 +1164,10 @@ fn decimal_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     |s: &str| {
       let n = s.parse::<f64>();
       let i = match n {
-        Ok(m) => Item::Value(Value::Double(m)),
-	Err(_) => Item::Value(Value::Decimal(decimal::d128!(s))),
+        Ok(m) => Box::new(Value::Double(m)),
+	Err(_) => Box::new(Value::Decimal(decimal::d128!(s))),
       };
-      vec![SequenceConstructor{func: cons_literal, data: Some(i), args: None}]
+      vec![SequenceConstructor::new(cons_literal).set_data(Some(i))]
     }
   )
   (input)
@@ -1188,10 +1190,10 @@ fn double_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     |s: &str| {
       let n = s.parse::<f64>();
       let i = match n {
-        Ok(m) => Item::Value(Value::Double(m)),
+        Ok(m) => Box::new(Value::Double(m)),
 	Err(_) => panic!("unable to convert to double"),
       };
-      vec![SequenceConstructor{func: cons_literal, data: Some(i), args: None}]
+      vec![SequenceConstructor::new(cons_literal).set_data(Some(i))]
     }
   )
   (input)
@@ -1244,7 +1246,7 @@ fn string_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       string_literal_double ,
       string_literal_single
     )),
-    |s| vec![SequenceConstructor{func: cons_literal, data: Some(Item::Value(Value::String(s))), args: None}]
+    |s| vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(s))))]
   )
   (input)
 }
@@ -1252,7 +1254,7 @@ fn string_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 fn context_item(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   map(
     tag("."),
-    |_| vec![SequenceConstructor{func: cons_context_item, data: None, args: None}]
+    |_| vec![SequenceConstructor::new(cons_context_item)]
   )
   (input)
 }
@@ -1296,10 +1298,8 @@ mod tests {
     fn nomxpath_parse_int() {
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
-	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(v, 1),
-	    _ => panic!("item is not a literal integer value constructor")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_int().unwrap(), 1)
 	} else {
 	  panic!("sequence is not a singleton")
 	}
@@ -1309,10 +1309,8 @@ mod tests {
     fn nomxpath_parse_decimal() {
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
-	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v))), args: None} => assert_eq!(v, 1.2),
-	    _ => panic!("item is not a literal double constructor")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_double().unwrap(), 1.2)
 	} else {
 	  panic!("sequence is not a singleton")
 	}
@@ -1322,27 +1320,23 @@ mod tests {
     fn nomxpath_parse_double() {
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
-	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Double(v))), args: None} => assert_eq!(v, 120.0),
-	    _ => panic!("item is not a literal double constructor")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_double().unwrap(), 120.0)
 	} else {
 	  panic!("sequence is not a singleton")
 	}
     }
     //#[test]
     //fn nomxpath_parse_double() {
-        //assert_eq!(parse("2.0").unwrap(), Item::Value(Value::Double(2.0)));
+        //assert_eq!(parse("2.0").unwrap(), Box::new(Value::Double(2.0)));
     //}
     // Parses to a singleton string
     #[test]
     fn nomxpath_parse_string_apos() {
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
-	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, "abc"),
-	    _ => panic!("item is not a literal string value")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_string(), "abc")
 	} else {
 	  panic!("sequence is not a singleton")
 	}
@@ -1352,10 +1346,8 @@ mod tests {
     fn nomxpath_parse_string_apos_esc() {
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
-	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, "abc'def"),
-	    _ => panic!("item is not a literal string value")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_string(), "abc'def")
 	} else {
 	  panic!("sequence is not a singleton")
 	}
@@ -1365,10 +1357,8 @@ mod tests {
     fn nomxpath_parse_string_quot() {
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
-	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, "abc"),
-	    _ => panic!("item is not a literal string value")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_string(), "abc")
 	} else {
 	  panic!("sequence is not a singleton")
 	}
@@ -1378,10 +1368,8 @@ mod tests {
     fn nomxpath_parse_string_quot_esc() {
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
-	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, r#"abc"def"#),
-	    _ => panic!("item is not a literal string value")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_string(), r#"abc"def"#)
 	} else {
 	  panic!("sequence is not a singleton")
 	}
@@ -1390,18 +1378,10 @@ mod tests {
     fn nomxpath_parse_literal_sequence() {
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
-	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 1),
-	    _ => panic!("item 0 is not a literal integer value")
-	  }
-	  match &e[1] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, r#"abc"#),
-	    _ => panic!("item 1 is not a literal string value")
-	  }
-	  match &e[2] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 2),
-	    _ => panic!("item 2 is not a literal integer value")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_int().unwrap(), 1);
+	  assert_eq!(s[1].to_string(), r#"abc"#);
+	  assert_eq!(s[2].to_int().unwrap(), 2);
 	} else {
 	  panic!("sequence does not have 3 items")
 	}
@@ -1410,18 +1390,10 @@ mod tests {
     fn nomxpath_parse_literal_seq_ws() {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
-	  match &e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 1),
-	    _ => panic!("item 0 is not a literal integer value")
-	  }
-	  match &e[1] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::String(v))), args: None} => assert_eq!(v, r#"abc"#),
-	    _ => panic!("item 1 is not a literal string value")
-	  }
-	  match &e[2] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(*v, 2),
-	    _ => panic!("item 2 is not a literal integer value")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_int().unwrap(), 1);
+	  assert_eq!(s[1].to_string(), r#"abc"#);
+	  assert_eq!(s[2].to_int().unwrap(), 2);
 	} else {
 	  panic!("sequence does not have 3 items")
 	}
@@ -1451,10 +1423,8 @@ mod tests {
     fn nomxpath_parse_singleton_paren() {
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
-	  match e[0] {
-	    SequenceConstructor{func: _cons_literal, data: Some(Item::Value(Value::Integer(v))), args: None} => assert_eq!(v, 1),
-	    _ => panic!("item is not a literal integer value constructor")
-	  }
+	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
+	  assert_eq!(s[0].to_int().unwrap(), 1)
 	} else {
 	  panic!("sequence is not a singleton")
 	}
