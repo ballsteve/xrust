@@ -385,12 +385,24 @@ impl<'a> Value<'a> {
 
     fn to_int(&self) -> Result<i64, Error> {
         match &self {
+	    Value::String(s) => {
+	      match s.parse::<i64>() {
+	        Ok(i) => Ok(i),
+		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
+	      }
+	    }
             Value::Integer(i) => Ok(*i),
             _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
 	}
     }
     fn to_double(&self) -> f64 {
         match &self {
+	    Value::String(s) => {
+	      match s.parse::<f64>() {
+	        Ok(i) => i,
+		Err(e) => f64::NAN,
+	      }
+	    }
             Value::Integer(i) => (*i) as f64,
             Value::Double(d) => *d,
             _ => f64::NAN,
@@ -449,6 +461,7 @@ impl<'a> Value<'a> {
 	}
         Value::String(s) => {
 	  let t = other.to_string();
+	  //println!("compare strings {} to {}", s, t);
       	  match op {
                 Operator::Equal => Ok(s.to_string() == t),
     		Operator::NotEqual => Ok(s.to_string() != t),
@@ -837,12 +850,12 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-      assert_eq!(Value::String("3.0").compare(Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
+      assert_eq!(Value::String("3").compare(Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
     }
 
     #[test]
     fn value_compare_ne() {
-      assert_eq!(Value::String("3.0").compare(Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
+      assert_eq!(Value::String("3").compare(Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
     }
 
     //#[test]
