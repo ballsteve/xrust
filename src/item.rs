@@ -6,14 +6,13 @@
 use std::cmp::Ordering;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
-use dyn_clone::DynClone;
 
-//#[derive(Clone)]
-//pub enum Item<N, F> {
-//    Node(N),
-//    Function(F),
-//    Value(Value),
-//}
+#[derive(Clone)]
+pub enum Item<'a> {
+    Node(Node<'a>),
+    Function,
+    Value(Value<'a>),
+}
 
 // Comparison operators
 #[derive(Copy, Clone)]
@@ -29,46 +28,229 @@ pub enum Operator {
   After,
 }
 
-pub trait Item<'a>: DynClone {
-  // TODO: Consider adding 'to_value()' that returns a Value enum.
-  // This would allow retrieval and comparison of scalar values.
-  // This might be a better alternative to to_int(), to_double(), etc.
-
+impl<'a> Item<'a> {
   // Gives the string value of an item. All items have a string value.
-  fn to_string(&self) -> String;
+  fn to_string(&self) -> String {
+    match self {
+      Item::Node(n) => n.to_string(),
+      Item::Function => "".to_string(),
+      Item::Value(v) => v.to_string(),
+    }
+  }
   // Should there also be a string slice version?
   // fn to_str(&self) -> &str;
 
   // Determine the effective boolean value of a sequence.
   // See XPath 2.4.3.
-  fn to_bool(&self) -> bool;
-
-  // TODO: there needs to be a general mechanism for data typing and casting between data types
-  // For now, define specific data type accessors
-  fn to_int(&self) -> Result<i64, Error> {
-    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+  fn to_bool(&self) -> bool {
+    match self {
+      Item::Node(_) => true,
+      Item::Function => false,
+      Item::Value(v) => v.to_bool(),
+    }
   }
-  fn to_double(&self) -> Result<f64, Error> {
-    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+
+  fn to_int(&self) -> Result<i64, Error> {
+    match self {
+      Item::Node(_n) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
+      Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
+      Item::Value(v) => {
+        match v.to_int() {
+	  Ok(i) => {
+	    Ok(i)
+	  }
+	  Err(e) => {
+	    Result::Err(e)
+	  }
+	}
+      },
+    }
+  }
+
+  fn to_double(&self) -> f64 {
+    match self {
+      Item::Node(_) => f64::NAN,
+      Item::Function => f64::NAN,
+      Item::Value(v) => v.to_double(),
+    }
   }
 
   // TODO: atomization
   // fn atomize(&self);
+}
 
-  fn compare(&self, _other: Box<dyn Item<'a> + 'a>, _op: Operator) -> Result<bool, Error> {
-    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+// Node in a tree
+
+#[derive(Copy, Clone)]
+pub enum NodeType {
+  Document,
+  Element,
+  Text,
+  Attribute,
+  Comment,
+  ProcessingInstruction,
+}
+
+#[derive(Clone)]
+pub struct Node<'a> {
+  nodetype: NodeType,
+  name: Option<&'a str>, // TODO: make it a QName
+  value: Option<&'a str>,
+  attributes: Option<Vec<Node<'a>>>,
+  content: Option<Vec<Item<'a>>>,
+}
+
+impl<'a> Node<'a> {
+  pub fn new(t: NodeType) -> Node<'a> {
+    Node{nodetype: t, name: None, value: None, attributes: None, content: None}
+  }
+  pub fn set_name(mut self, n: &'a str) -> Self {
+    // TODO: restrict which types can have a name
+    self.name.replace(n);
+    self
+  }
+  pub fn name(&self) -> &str {
+    // None => empty string
+    self.name.unwrap_or("")
+  }
+  pub fn set_value(mut self, v: &'a str) -> Self {
+    self.value.replace(v);
+    self
+  }
+  pub fn value(&self) -> &str {
+    self.value.unwrap_or("")
+  }
+  pub fn set_attributes(mut self, a: Vec<Node<'a>>) -> Self {
+    self.attributes.replace(a);
+    self
+  }
+  pub fn attributes(&self) -> Option<&Vec<Node>> {
+    self.attributes.as_ref().map(|a| a)
+  }
+  pub fn set_content(&mut self, c: Vec<Item<'a>>) {
+    self.content.replace(c);
+  }
+  pub fn content(&self) -> Option<&Vec<Item>> {
+    self.content.as_ref().map(|c| c)
   }
 
-  // Functions for Node items
-  fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error>;
-  fn children(&self) -> Result<Vec<Box<dyn Item<'a> + 'a>>, Error>;
-  fn parent(&self) -> Result<Box<dyn Item<'a> + 'a>, Error>;
+  pub fn prepend_node(mut self, n: Node<'a>) {
+    match self.content {
+      Some(mut v) => {v.insert(0, Item::Node(n));},
+      None => {
+        self.content.replace(vec![Item::Node(n)]);
+      },
+    }
+  }
+  pub fn prepend_item(mut self, i: Item<'a>) {
+    match self.content {
+      Some(mut v) => {v.insert(0, i);},
+      None => {
+        self.content.replace(vec![i]);
+      },
+    }
+  }
+  pub fn prepend_seq(&mut self, s: Vec<Item<'a>>) {
+    let mut new: Vec<Item<'a>>;
+
+    if self.content.is_some() {
+      new = self.content.take().unwrap();
+      for i in s {
+	new.insert(0, i);
+      }
+    } else {
+      new = s;
+    }
+    self.content.replace(new);
+  }
+  pub fn append_node(mut self, n: Node<'a>) {
+    match self.content {
+      Some(mut v) => {v.push(Item::Node(n));},
+      None => {
+        self.content.replace(vec![Item::Node(n)]);
+      },
+    }
+  }
+  pub fn append_item(mut self, i: Item<'a>) {
+    match self.content {
+      Some(mut v) => {v.push(i);},
+      None => {
+        self.content.replace(vec![i]);
+      },
+    }
+  }
+  pub fn append_seq(mut self, s: Vec<Item<'a>>) {
+    match self.content {
+      Some(mut v) => {
+        for i in s {
+	  v.push(i);
+	}
+      },
+      None => {self.content.replace(s);},
+    }
+  }
+
+  pub fn to_string(&self) -> String {
+    match self.nodetype {
+      NodeType::Document => {
+        let mut r = String::new();
+
+        for i in self.content.as_ref().unwrap_or(&vec![]) {
+	  r.push_str(i.to_string().as_str())
+	}
+	r
+      }
+      NodeType::Element => {
+        let mut r = String::from("<");
+	r.push_str(self.name.unwrap());
+	for i in self.attributes.as_ref().unwrap_or(&vec![]) {
+	  r.push_str(" ");
+	  r.push_str(i.to_string().as_str())
+	}
+	r.push_str(">");
+	for i in self.content.as_ref().unwrap_or(&vec![]) {
+	  r.push_str(i.to_string().as_str())
+	}
+	r.push_str("</");
+	r.push_str(self.name.unwrap());
+	r.push_str(">");
+	r
+      }
+      NodeType::Text => {
+        String::from(self.value.unwrap_or(""))
+      }
+      NodeType::Attribute => {
+        let mut r = String::new();
+        r.push_str(self.name.unwrap());
+        r.push_str("='");
+        r.push_str(self.value.unwrap_or(""));
+        r.push_str("'");
+        // TODO: delimiters, escaping
+	r
+      }
+      NodeType::Comment => {
+        let mut r = String::new();
+        r.push_str("<!--");
+        r.push_str(self.value.unwrap_or(""));
+        r.push_str("-->");
+	r
+      }
+      NodeType::ProcessingInstruction => {
+        let mut r = String::new();
+        r.push_str("<?");
+        r.push_str(self.name.unwrap());
+        r.push_str(" ");
+        r.push_str(self.value.unwrap_or(""));
+        r.push_str("?>");
+	r
+      }
+    }
+  }
 }
-dyn_clone::clone_trait_object!(Item);
 
 // A concrete type that implements atomic values
 
-impl PartialEq for Value {
+impl<'a> PartialEq for Value<'a> {
   fn eq(&self, other: &Value) -> bool {
     match self {
         Value::String(s) => s.eq(&other.to_string()),
@@ -92,10 +274,13 @@ impl PartialEq for Value {
     }
   }
 }
-impl PartialOrd for Value {
+impl<'a> PartialOrd for Value<'a> {
   fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
     match self {
-        Value::String(s) => s.partial_cmp(&other.to_string()),
+        Value::String(s) => {
+	  let o: String = other.to_string();
+	  s.partial_cmp(&o.as_str())
+	},
 	Value::Boolean(_) => None,
 	Value::Decimal(d) => match other {
 	  Value::Decimal(e) => d.partial_cmp(e),
@@ -115,7 +300,7 @@ impl PartialOrd for Value {
 }
 
 #[derive(Clone)]
-pub enum Value {
+pub enum Value<'a> {
     AnyType, // node or simple type
     Untyped, // a not-yet-valildated anyType
     AnySimpleType, // base type of all simple types. i.e. not a node
@@ -146,8 +331,8 @@ pub enum Value {
     DateTime,
     DateTimeStamp,
     Date,
-    String(String), // TODO: consider using a string slice instead
-    NormalizedString(NormalizedString),
+    String(&'a str), // Items never change, so no need for a String
+    NormalizedString(NormalizedString<'a>),
     Token, // TODO like normalizedString, but without leading, trailing and consecutive whitespace
     Language, // language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
     NMTOKEN, // NameChar+
@@ -159,11 +344,11 @@ pub enum Value {
     Boolean(bool),
 }
 
-impl<'a> Item<'a> for Value {
+impl<'a> Value<'a> {
     fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
-	    Value::NormalizedString(s) => String::from(s.value.as_str()), // TODO: this copies the value, so no good for large strings
+	    Value::NormalizedString(s) => s.value.to_string(),
 	    Value::Decimal(d) => d.to_string(),
 	    Value::Float(f) => f.to_string(),
 	    Value::Double(d) => d.to_string(),
@@ -180,7 +365,7 @@ impl<'a> Item<'a> for Value {
 	    Value::NonNegativeInteger(i) => i.value().to_string(),
 	    Value::PositiveInteger(i) => i.value().to_string(),
 	    Value::NegativeInteger(i) => i.value().to_string(),
- 	    _ => String::from(""),
+ 	    _ => "".to_string(),
 	}
     }
 
@@ -189,8 +374,9 @@ impl<'a> Item<'a> for Value {
             Value::Boolean(b) => *b == true,
             Value::String(t) => {
                 //t.is_empty()
-	        t.as_str().len() != 0
+	        t.len() != 0
             },
+	    Value::NormalizedString(s) => s.value.len() != 0,
             Value::Double(n) => *n != 0.0,
             Value::Integer(i) => *i != 0,
             _ => false
@@ -200,20 +386,20 @@ impl<'a> Item<'a> for Value {
     fn to_int(&self) -> Result<i64, Error> {
         match &self {
             Value::Integer(i) => Ok(*i),
-            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
 	}
     }
-    fn to_double(&self) -> Result<f64, Error> {
+    fn to_double(&self) -> f64 {
         match &self {
-            Value::Integer(i) => Ok((*i) as f64),
-            Value::Double(d) => Ok(*d),
-            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
+            Value::Integer(i) => (*i) as f64,
+            Value::Double(d) => *d,
+            _ => f64::NAN,
 	}
     }
 
     // TODO: type coersion
     // TODO: will probably have to implement comparison in the item module (as a trait?)
-    fn compare(&self, other: Box<dyn Item<'a> + 'a>, op: Operator) -> Result<bool, Error> {
+    fn compare(&self, other: Item, op: Operator) -> Result<bool, Error> {
       match &self {
         Value::Boolean(b) => {
 	  let c = other.to_bool();
@@ -248,8 +434,7 @@ impl<'a> Item<'a> for Value {
 	  }
 	}
         Value::Double(d) => {
-	  match other.to_double() {
-	    Ok(e) => {
+	  let e = other.to_double();
       	      match op {
                 Operator::Equal => Ok(*d == e),
     		Operator::NotEqual => Ok(*d != e),
@@ -261,19 +446,16 @@ impl<'a> Item<'a> for Value {
     		Operator::Before |
     		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
       	      }
-	    }
-	    Result::Err(e) => Result::Err(e)
-	  }
 	}
         Value::String(s) => {
 	  let t = other.to_string();
       	  match op {
-                Operator::Equal => Ok(*s == t),
-    		Operator::NotEqual => Ok(*s != t),
-    		Operator::LessThan => Ok(*s < t),
-    		Operator::LessThanEqual => Ok(*s <= t),
-    		Operator::GreaterThan => Ok(*s > t),
-    		Operator::GreaterThanEqual => Ok(*s >= t),
+                Operator::Equal => Ok(s.to_string() == t),
+    		Operator::NotEqual => Ok(s.to_string() != t),
+    		Operator::LessThan => Ok(s.to_string() < t),
+    		Operator::LessThanEqual => Ok(s.to_string() <= t),
+    		Operator::GreaterThan => Ok(s.to_string() > t),
+    		Operator::GreaterThanEqual => Ok(s.to_string() >= t),
     		Operator::Is |
     		Operator::Before |
     		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
@@ -281,16 +463,6 @@ impl<'a> Item<'a> for Value {
 	}
 	_ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented")})
       }
-    }
-
-    fn doc(&self) -> Result<Box<dyn Item<'a> + 'a>, Error> {
-      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("atomic values don't have a document")})
-    }
-    fn children(&self) -> Result<Vec<Box<dyn Item<'a> + 'a>>, Error> {
-      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("atomic values don't have children")})
-    }
-    fn parent(&self) -> Result<Box<dyn Item<'a> + 'a>, Error> {
-      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("atomic values don't have a parent")})
     }
 }
 
@@ -406,11 +578,11 @@ impl Clone for NegativeInteger {
     }
 }
 
-pub struct NormalizedString {
-    value: String,
+pub struct NormalizedString<'a> {
+    value: &'a str,
 }
-impl NormalizedString {
-    pub fn new(v: String) -> Result<Self, Error> {
+impl<'a> NormalizedString<'a> {
+    pub fn new(v: &'a str) -> Result<Self, Error> {
         let n: &[_] = &['\n', '\r', '\t'];
         match v.find(n) {
 	    None => Ok(NormalizedString{value: v}),
@@ -420,11 +592,11 @@ impl NormalizedString {
 	  	})
 	}
     }
-    pub fn value(self) -> String {
+    pub fn value(self) -> &'a str {
         self.value
     }
 }
-impl Clone for NormalizedString {
+impl<'a> Clone for NormalizedString<'a> {
     fn clone(&self) -> Self {
         NormalizedString::new(self.value.clone()).expect("unable to clone NormalizedString")
     }
@@ -436,19 +608,19 @@ mod tests {
 
     #[test]
     fn normalizedstring_valid_empty() {
-        assert_eq!(NormalizedString::new(String::from("")).expect("invalid NormalizedString").value, "");
+        assert_eq!(NormalizedString::new("").expect("invalid NormalizedString").value, "");
     }
     #[test]
     fn normalizedstring_valid() {
-        assert_eq!(NormalizedString::new(String::from("notinvalid")).expect("invalid NormalizedString").value, "notinvalid");
+        assert_eq!(NormalizedString::new("notinvalid").expect("invalid NormalizedString").value, "notinvalid");
     }
     #[test]
     fn normalizedstring_valid_spaces() {
-        assert_eq!(NormalizedString::new(String::from("not an invalid string")).expect("invalid NormalizedString").value, "not an invalid string");
+        assert_eq!(NormalizedString::new("not an invalid string").expect("invalid NormalizedString").value, "not an invalid string");
     }
     #[test]
     fn normalizedstring_invalid_tab() {
-        let r = NormalizedString::new(String::from("contains tab	character"));
+        let r = NormalizedString::new("contains tab	character");
 	assert!(match r {
 	    Ok(_) => panic!("string contains tab character"),
 	    Err(_) => true,
@@ -456,7 +628,7 @@ mod tests {
     }
     #[test]
     fn normalizedstring_invalid_newline() {
-        let r = NormalizedString::new(String::from("contains newline\ncharacter"));
+        let r = NormalizedString::new("contains newline\ncharacter");
 	assert!(match r {
 	    Ok(_) => panic!("string contains newline character"),
 	    Err(_) => true,
@@ -464,7 +636,7 @@ mod tests {
     }
     #[test]
     fn normalizedstring_invalid_cr() {
-        let r = NormalizedString::new(String::from("contains carriage return\rcharacter"));
+        let r = NormalizedString::new("contains carriage return\rcharacter");
 	assert!(match r {
 	    Ok(_) => panic!("string contains cr character"),
 	    Err(_) => true,
@@ -472,7 +644,7 @@ mod tests {
     }
     #[test]
     fn normalizedstring_invalid_all() {
-        let r = NormalizedString::new(String::from("contains	all\rforbidden\ncharacters"));
+        let r = NormalizedString::new("contains	all\rforbidden\ncharacters");
 	assert!(match r {
 	    Ok(_) => panic!("string contains at least one forbidden character"),
 	    Err(_) => true,
@@ -572,7 +744,7 @@ mod tests {
     // String Values
     #[test]
     fn string_stringvalue() {
-        assert_eq!(Value::String(String::from("foobar")).to_string(), "foobar")
+        assert_eq!(Value::String("foobar").to_string(), "foobar")
     }
     #[test]
     fn decimal_stringvalue() {
@@ -596,9 +768,81 @@ mod tests {
     }
     #[test]
     fn normalizedstring_stringvalue() {
-        let ns = NormalizedString::new(String::from("foobar")).expect("invalid normalizedString");
+        let ns = NormalizedString::new("foobar").expect("invalid normalizedString");
 	let i = Value::NormalizedString(ns);
         assert_eq!(i.to_string(), "foobar")
+    }
+
+    // to_bool
+
+    #[test]
+    fn bool_value_string_empty() {
+      assert_eq!(Item::Value(Value::String("")).to_bool(), false)
+    }
+    #[test]
+    fn bool_value_string_nonempty() {
+      assert_eq!(Item::Value(Value::String("false")).to_bool(), true)
+    }
+    #[test]
+    fn bool_value_int_zero() {
+      assert_eq!(Item::Value(Value::Integer(0)).to_bool(), false)
+    }
+    #[test]
+    fn bool_value_int_nonzero() {
+      assert_eq!(Item::Value(Value::Integer(42)).to_bool(), true)
+    }
+
+    // to_int
+
+    #[test]
+    fn int_value_string() {
+      match Item::Value(Value::String("1")).to_int() {
+        Ok(i) => assert_eq!(i, 1),
+	Err(e) => {
+	  println!("to_int() failed: {}", e.message);
+	  panic!("to_int() failed")
+	}
+      }
+    }
+
+    // to_double
+
+    #[test]
+    fn double_value_string() {
+      assert_eq!(Item::Value(Value::String("2.0")).to_double(), 2.0)
+    }
+
+    // value to_bool
+
+    #[test]
+    fn value_to_bool_string() {
+      assert_eq!(Value::String("2").to_bool(), true)
+    }
+
+    // value to_int
+
+    #[test]
+    fn value_to_int_string() {
+      assert_eq!(Value::String("2").to_int().expect("cannot convert to integer"), 2)
+    }
+
+    // value to_double
+
+    #[test]
+    fn value_to_double_string() {
+      assert_eq!(Value::String("3.0").to_double(), 3.0)
+    }
+
+    // value compare
+
+    #[test]
+    fn value_compare_eq() {
+      assert_eq!(Value::String("3.0").compare(Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
+    }
+
+    #[test]
+    fn value_compare_ne() {
+      assert_eq!(Value::String("3.0").compare(Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
     }
 
     //#[test]
@@ -606,4 +850,23 @@ mod tests {
 	//let i = Value::Int(123);
         //assert_eq!(i.atomize().stringvalue(), "123")
     //}
+
+    // Nodes
+
+    #[test]
+    fn node_document() {
+        let d = Node::new(NodeType::Document);
+        assert!(true)
+    }
+    #[test]
+    fn node_element() {
+        let e = Node::new(NodeType::Element).set_name("Test");
+        assert_eq!(e.to_string(), "<Test></Test>")
+    }
+    #[test]
+    fn node_text() {
+        let t = Node::new(NodeType::Text).set_value("Test text");
+        assert_eq!(t.to_string(), "Test text")
+    }
+
 }

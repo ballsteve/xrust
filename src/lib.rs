@@ -17,54 +17,16 @@ pub use xdmerror::{Error, ErrorKind};
 mod item;
 pub use item::{Item, Value};
 
-mod sequence;
-pub use sequence::Sequence;
+mod parsecommon;
+mod parsexml;
 
-mod rox_adaptor;
+//mod sequence;
+//pub use sequence::Sequence;
 
-mod xpath;
-pub use xpath::parse;
+//mod rox_adaptor;
 
-mod evaluate;
-pub use evaluate::{DynamicContext, cons_literal};
+//mod xpath;
+//pub use xpath::parse;
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    // Create an Item
-    #[test]
-    fn item_create_string() {
-        Value::String(String::from("item"));
-	assert!(true);
-    }
-
-    // Create a sequence
-    #[test]
-    fn seq_add_one_item() {
-        let s: Sequence = vec![Box::new(Value::String(String::from("item")))];
-	assert_eq!(s.to_string(), "item");
-    }
-
-    // Create a sequence
-    #[test]
-    fn seq_add_two_items() {
-        let s: Sequence = vec![Box::new(Value::String(String::from("item"))),
-          Box::new(Value::Double(1.234))];
-	assert_eq!(s.to_string(), "item1.234");
-    }
-
-    // Construct a literal singleton sequence
-    #[test]
-    fn eval_literal() {
-      let d = DynamicContext {
-        context_item: None,
-      };
-      let seq = cons_literal(&d, None, Some(Box::new(Value::Integer(456))), None).expect("unable to construct literal");
-      if seq.len() == 1 {
-        assert_eq!(seq[0].to_int().expect("item is not a literal integer value"), 456)
-      } else {
-        panic!("sequence is not a singleton")
-      }
-    }
-}
+//mod evaluate;
+//pub use evaluate::{DynamicContext, cons_literal};
