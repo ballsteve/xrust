@@ -9,7 +9,7 @@ use crate::xdmerror::{Error, ErrorKind};
 
 #[derive(Clone)]
 pub enum Item<'a> {
-    Node(Node<'a>),
+    Node(Node),
     Function,
     Value(Value<'a>),
 }
@@ -92,66 +92,78 @@ pub enum NodeType {
 }
 
 #[derive(Clone)]
-pub struct Node<'a> {
+pub struct Node {
   nodetype: NodeType,
-  name: Option<&'a str>, // TODO: make it a QName
-  value: Option<&'a str>,
-  attributes: Option<Vec<Node<'a>>>,
-  content: Option<Vec<Item<'a>>>,
+  name: Option<String>, // TODO: make it a QName
+  value: Option<String>,
+  attributes: Option<Vec<Node>>,
+  content: Option<Vec<Node>>,
 }
 
-impl<'a> Node<'a> {
-  pub fn new(t: NodeType) -> Node<'a> {
+impl Node {
+  pub fn new(t: NodeType) -> Node {
     Node{nodetype: t, name: None, value: None, attributes: None, content: None}
   }
-  pub fn set_name(mut self, n: &'a str) -> Self {
+  pub fn nodetype(&self) -> NodeType {
+    self.nodetype
+  }
+  pub fn set_name(mut self, n: String) -> Self {
     // TODO: restrict which types can have a name
     self.name.replace(n);
     self
   }
   pub fn name(&self) -> &str {
     // None => empty string
-    self.name.unwrap_or("")
+    if self.name.is_some() {
+      self.name.as_ref().unwrap()
+    } else {
+      ""
+    }
   }
-  pub fn set_value(mut self, v: &'a str) -> Self {
+  pub fn set_value(mut self, v: String) -> Self {
     self.value.replace(v);
     self
   }
   pub fn value(&self) -> &str {
-    self.value.unwrap_or("")
+    if self.value.is_some() {
+      self.value.as_ref().unwrap()
+    } else {
+      ""
+    }
   }
-  pub fn set_attributes(mut self, a: Vec<Node<'a>>) -> Self {
-    self.attributes.replace(a);
+  pub fn set_attributes(mut self, a: Vec<Node>) -> Self {
+    if a.len() == 0 {
+      self.attributes = None;
+    } else {
+      self.attributes.replace(a);
+    }
     self
   }
   pub fn attributes(&self) -> Option<&Vec<Node>> {
     self.attributes.as_ref().map(|a| a)
   }
-  pub fn set_content(&mut self, c: Vec<Item<'a>>) {
-    self.content.replace(c);
+  pub fn set_content(mut self, c: Vec<Node>) -> Self {
+    if c.len() == 0 {
+      self.content = None;
+    } else {
+      self.content.replace(c);
+    }
+    self
   }
-  pub fn content(&self) -> Option<&Vec<Item>> {
+  pub fn content(&self) -> Option<&Vec<Node>> {
     self.content.as_ref().map(|c| c)
   }
 
-  pub fn prepend_node(mut self, n: Node<'a>) {
+  pub fn prepend_node(mut self, n: Node) {
     match self.content {
-      Some(mut v) => {v.insert(0, Item::Node(n));},
+      Some(mut v) => {v.insert(0, n);},
       None => {
-        self.content.replace(vec![Item::Node(n)]);
+        self.content.replace(vec![n]);
       },
     }
   }
-  pub fn prepend_item(mut self, i: Item<'a>) {
-    match self.content {
-      Some(mut v) => {v.insert(0, i);},
-      None => {
-        self.content.replace(vec![i]);
-      },
-    }
-  }
-  pub fn prepend_seq(&mut self, s: Vec<Item<'a>>) {
-    let mut new: Vec<Item<'a>>;
+  pub fn prepend_seq(&mut self, s: Vec<Node>) {
+    let mut new: Vec<Node>;
 
     if self.content.is_some() {
       new = self.content.take().unwrap();
@@ -163,23 +175,15 @@ impl<'a> Node<'a> {
     }
     self.content.replace(new);
   }
-  pub fn append_node(mut self, n: Node<'a>) {
+  pub fn append_node(mut self, n: Node) {
     match self.content {
-      Some(mut v) => {v.push(Item::Node(n));},
+      Some(mut v) => {v.push(n);},
       None => {
-        self.content.replace(vec![Item::Node(n)]);
+        self.content.replace(vec![n]);
       },
     }
   }
-  pub fn append_item(mut self, i: Item<'a>) {
-    match self.content {
-      Some(mut v) => {v.push(i);},
-      None => {
-        self.content.replace(vec![i]);
-      },
-    }
-  }
-  pub fn append_seq(mut self, s: Vec<Item<'a>>) {
+  pub fn append_seq(mut self, s: Vec<Node>) {
     match self.content {
       Some(mut v) => {
         for i in s {
@@ -202,28 +206,28 @@ impl<'a> Node<'a> {
       }
       NodeType::Element => {
         let mut r = String::from("<");
-	r.push_str(self.name.unwrap());
+	r.push_str(self.name());
 	for i in self.attributes.as_ref().unwrap_or(&vec![]) {
 	  r.push_str(" ");
-	  r.push_str(i.to_string().as_str())
+	  r.push_str(&i.to_string())
 	}
 	r.push_str(">");
 	for i in self.content.as_ref().unwrap_or(&vec![]) {
-	  r.push_str(i.to_string().as_str())
+	  r.push_str(&i.to_string())
 	}
 	r.push_str("</");
-	r.push_str(self.name.unwrap());
+	r.push_str(self.name());
 	r.push_str(">");
 	r
       }
       NodeType::Text => {
-        String::from(self.value.unwrap_or(""))
+        String::from(self.value())
       }
       NodeType::Attribute => {
         let mut r = String::new();
-        r.push_str(self.name.unwrap());
+        r.push_str(self.name());
         r.push_str("='");
-        r.push_str(self.value.unwrap_or(""));
+        r.push_str(self.value());
         r.push_str("'");
         // TODO: delimiters, escaping
 	r
@@ -231,16 +235,16 @@ impl<'a> Node<'a> {
       NodeType::Comment => {
         let mut r = String::new();
         r.push_str("<!--");
-        r.push_str(self.value.unwrap_or(""));
+        r.push_str(self.value());
         r.push_str("-->");
 	r
       }
       NodeType::ProcessingInstruction => {
         let mut r = String::new();
         r.push_str("<?");
-        r.push_str(self.name.unwrap());
+        r.push_str(self.name());
         r.push_str(" ");
-        r.push_str(self.value.unwrap_or(""));
+        r.push_str(self.value());
         r.push_str("?>");
 	r
       }
@@ -400,7 +404,7 @@ impl<'a> Value<'a> {
 	    Value::String(s) => {
 	      match s.parse::<f64>() {
 	        Ok(i) => i,
-		Err(e) => f64::NAN,
+		Err(_) => f64::NAN,
 	      }
 	    }
             Value::Integer(i) => (*i) as f64,
@@ -868,17 +872,17 @@ mod tests {
 
     #[test]
     fn node_document() {
-        let d = Node::new(NodeType::Document);
+        Node::new(NodeType::Document);
         assert!(true)
     }
     #[test]
     fn node_element() {
-        let e = Node::new(NodeType::Element).set_name("Test");
+        let e = Node::new(NodeType::Element).set_name("Test".to_string());
         assert_eq!(e.to_string(), "<Test></Test>")
     }
     #[test]
     fn node_text() {
-        let t = Node::new(NodeType::Text).set_value("Test text");
+        let t = Node::new(NodeType::Text).set_value("Test text".to_string());
         assert_eq!(t.to_string(), "Test text")
     }
 
