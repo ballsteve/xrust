@@ -4,8 +4,39 @@
 //! An Item is a Node, Function or Atomic Value.
 
 use std::cmp::Ordering;
+use std::rc::Rc;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
+
+pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
+
+trait SequenceTrait<'a> {
+  fn to_string(&self) -> String;
+  fn new_node(&mut self, n: Node);
+  fn new_value(&mut self, v: Value<'a>);
+  fn add(&mut self, i: &Rc<Item<'a>>);
+}
+
+impl<'a> SequenceTrait<'a> for Sequence<'a> {
+  fn to_string(&self) -> String {
+    let mut r = String::new();
+    for i in self {
+      r.push_str(i.to_string().as_str())
+    }
+    r
+  }
+  fn new_node(&mut self, n: Node) {
+    self.push(Rc::new(Item::Node(n)));
+  }
+  fn new_value(&mut self, v: Value<'a>) {
+    self.push(Rc::new(Item::Value(v)));
+  }
+  //fn new_function(&self, f: Function) -> Sequence {
+  //}
+  fn add(&mut self, i: &Rc<Item<'a>>) {
+    self.push(Rc::clone(i));
+  }
+}
 
 #[derive(Clone)]
 pub enum Item<'a> {
@@ -886,4 +917,19 @@ mod tests {
         assert_eq!(t.to_string(), "Test text")
     }
 
+    // Sequences
+
+    #[test]
+    fn sequence() {
+        let _s = Sequence::new();
+        assert!(true)
+    }
+    #[test]
+    fn sequence_one() {
+        let mut s = Sequence::new();
+	s.new_value(Value::String("one"));
+	let mut t = Sequence::new();
+	t.add(&s[0]);
+	assert!(Rc::ptr_eq(&s[0], &t[0]))
+    }
 }
