@@ -15,18 +15,13 @@ mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
 mod item;
-pub use item::{Item, Value};
 
 mod parsecommon;
 mod parsexml;
-
-//mod sequence;
-//pub use sequence::Sequence;
 
 //mod rox_adaptor;
 
 //mod xpath;
 //pub use xpath::parse;
 
-//mod evaluate;
-//pub use evaluate::{DynamicContext, cons_literal};
+mod evaluate;

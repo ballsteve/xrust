@@ -10,8 +10,9 @@ use crate::xdmerror::{Error, ErrorKind};
 
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 
-trait SequenceTrait<'a> {
+pub trait SequenceTrait<'a> {
   fn to_string(&self) -> String;
+  fn to_bool(&self) -> bool;
   fn new_node(&mut self, n: Node);
   fn new_value(&mut self, v: Value<'a>);
   fn add(&mut self, i: &Rc<Item<'a>>);
@@ -35,6 +36,24 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
   //}
   fn add(&mut self, i: &Rc<Item<'a>>) {
     self.push(Rc::clone(i));
+  }
+
+  // Calculate the effective boolean value
+  fn to_bool(&self) -> bool {
+    if self.len() == 0 {
+      false
+    } else {
+      match *self[0] {
+        Item::Node(_) => true,
+	_ => {
+	  if self.len() == 1 {
+	    (*self[0]).to_bool()
+	  } else {
+	    false // should be a type error
+	  }
+	}
+      }
+    }
   }
 }
 
@@ -61,7 +80,7 @@ pub enum Operator {
 
 impl<'a> Item<'a> {
   // Gives the string value of an item. All items have a string value.
-  fn to_string(&self) -> String {
+  pub fn to_string(&self) -> String {
     match self {
       Item::Node(n) => n.to_string(),
       Item::Function => "".to_string(),
@@ -73,7 +92,7 @@ impl<'a> Item<'a> {
 
   // Determine the effective boolean value of a sequence.
   // See XPath 2.4.3.
-  fn to_bool(&self) -> bool {
+  pub fn to_bool(&self) -> bool {
     match self {
       Item::Node(_) => true,
       Item::Function => false,
@@ -81,7 +100,7 @@ impl<'a> Item<'a> {
     }
   }
 
-  fn to_int(&self) -> Result<i64, Error> {
+  pub fn to_int(&self) -> Result<i64, Error> {
     match self {
       Item::Node(_n) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
       Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
@@ -98,7 +117,7 @@ impl<'a> Item<'a> {
     }
   }
 
-  fn to_double(&self) -> f64 {
+  pub fn to_double(&self) -> f64 {
     match self {
       Item::Node(_) => f64::NAN,
       Item::Function => f64::NAN,
@@ -108,6 +127,21 @@ impl<'a> Item<'a> {
 
   // TODO: atomization
   // fn atomize(&self);
+
+  pub fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
+    match self {
+      Item::Value(v) => {
+        v.compare(other, op)
+      }
+      Item::Node(_n) => {
+        //n.compare(other, op)
+	Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
+      }
+      _ => {
+        Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
+      }
+    }
+  }
 }
 
 // Node in a tree
@@ -367,6 +401,8 @@ pub enum Value<'a> {
     DateTimeStamp,
     Date,
     String(&'a str), // Items never change, so no need for a String
+    StringOwned(String),	// Except that ownership should be with the Value
+    				// TODO: resolve this
     NormalizedString(NormalizedString<'a>),
     Token, // TODO like normalizedString, but without leading, trailing and consecutive whitespace
     Language, // language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
@@ -446,7 +482,7 @@ impl<'a> Value<'a> {
 
     // TODO: type coersion
     // TODO: will probably have to implement comparison in the item module (as a trait?)
-    fn compare(&self, other: Item, op: Operator) -> Result<bool, Error> {
+    fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
       match &self {
         Value::Boolean(b) => {
 	  let c = other.to_bool();
@@ -885,12 +921,12 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-      assert_eq!(Value::String("3").compare(Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
+      assert_eq!(Value::String("3").compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
     }
 
     #[test]
     fn value_compare_ne() {
-      assert_eq!(Value::String("3").compare(Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
+      assert_eq!(Value::String("3").compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
     }
 
     //#[test]
