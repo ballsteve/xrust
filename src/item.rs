@@ -419,6 +419,7 @@ impl<'a> Value<'a> {
     fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
+	    Value::StringOwned(s) => s.to_string(),
 	    Value::NormalizedString(s) => s.value.to_string(),
 	    Value::Decimal(d) => d.to_string(),
 	    Value::Float(f) => f.to_string(),

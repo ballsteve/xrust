@@ -5,6 +5,7 @@
 use std::rc::Rc;
 use crate::xdmerror::*;
 use crate::item::*;
+use decimal::d128;
 
 // The context for evaluating an XPath expression
 #[derive(Clone)]
@@ -323,15 +324,20 @@ fn general_comparison<'a>(ctxt: &XPath, op: Operator, left: &Vec<Constructor<'a>
   let mut b = false;
   let left_seq_a = ctxt.clone().set_constructor(left.clone());
   let left_seq = left_seq_a.evaluate().expect("evaluating left-hand sequence failed");
+  //println!("left sequence ({} items) = \"{}\"", left_seq.len(), left_seq.to_string());
   let right_seq_a = ctxt.clone().set_constructor(right.clone());
   let right_seq = right_seq_a.evaluate().expect("evaluating right-hand sequence failed");
+  //println!("right sequence ({} items) = \"{}\"", right_seq.len(), right_seq.to_string());
   for l in left_seq {
     for r in &right_seq {
+      //println!("compare \"{}\" to \"{}\"", l.to_string(), r.to_string());
       b = l.compare(&*r, op).unwrap();
+      //println!("result = {}", b);
       if b { break }
     }
     if b { break }
   };
+  //println!("final result = {}", b);
   Ok(b)
 }
 
@@ -357,6 +363,17 @@ mod tests {
     use super::*;
 
     #[test]
+    fn literal_string() {
+      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::String("foobar")));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_string(), "foobar")
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
     fn literal_int() {
       let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Integer(456)));
       let s = ctxt.evaluate().expect("evaluation failed");
@@ -364,6 +381,61 @@ mod tests {
         assert_eq!(s[0].to_int().unwrap(), 456)
       } else {
         panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
+    fn literal_decimal() {
+      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Decimal(d128!(34.56))));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_string(), "34.56")
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
+    fn literal_bool() {
+      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Boolean(false)));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), false)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
+    fn literal_double() {
+      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Double(4.56)));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s[0].to_double(), 4.56)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
+    fn sequence_literal() {
+      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::String("foo"))).add_constructor(Constructor::Literal(Value::String("bar")));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 2 {
+        assert_eq!(s.to_string(), "foobar")
+      } else {
+        panic!("sequence does not have two items")
+      }
+    }
+
+    #[test]
+    fn sequence_literal_mixed() {
+      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::String("foo"))).add_constructor(Constructor::Literal(Value::Integer(123)));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 2 {
+        assert_eq!(s.to_string(), "foo123")
+      } else {
+        panic!("sequence does not have two items")
       }
     }
 
@@ -389,9 +461,164 @@ mod tests {
       if result.len() == 2 {
         assert_eq!(result.to_string(), "foobarfoobar")
       } else {
+        panic!("sequence does not have two items")
+      }
+    }
+
+    #[test]
+    fn or() {
+      let ctxt = XPath::new().add_constructor(Constructor::Or(vec![vec![Constructor::Literal(Value::Boolean(true))], vec![Constructor::Literal(Value::Boolean(false))]]));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), true)
+      } else {
         panic!("sequence is not a singleton")
       }
     }
+    // TODO: test more than two operands
+
+    #[test]
+    fn and() {
+      let ctxt = XPath::new().add_constructor(Constructor::And(vec![vec![Constructor::Literal(Value::Boolean(true))], vec![Constructor::Literal(Value::Boolean(false))]]));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), false)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: test more than two operands
+
+    #[test]
+    fn value_comparison_int_true() {
+      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::Integer(1))], vec![Constructor::Literal(Value::Integer(1))]]));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), true)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: negative test: more than two operands
+    #[test]
+    fn value_comparison_int_false() {
+      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::Integer(1))], vec![Constructor::Literal(Value::Integer(2))]]));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), false)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: negative test: more than two operands
+    #[test]
+    fn value_comparison_string_true() {
+      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::String("foo"))], vec![Constructor::Literal(Value::String("foo"))]]));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), true)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: negative test: more than two operands
+    #[test]
+    fn value_comparison_string_false() {
+      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::String("foo"))], vec![Constructor::Literal(Value::String("bar"))]]));
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), false)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: negative test: more than two operands
+    // TODO: compare other data types, mixed data types
+    // TODO: other value comparisons: notequal, lt, gt, etc
+
+    #[test]
+    fn general_comparison_string_true() {
+      let ctxt = XPath::new().add_constructor(Constructor::GeneralComparison(
+        Operator::Equal,
+	vec![
+	  vec![Constructor::Literal(Value::String("foo"))],
+	  vec![Constructor::Literal(Value::String("bar")), Constructor::Literal(Value::String("foo"))]
+	])
+      );
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), true)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    #[test]
+    fn general_comparison_string_false() {
+      let ctxt = XPath::new().add_constructor(Constructor::GeneralComparison(
+        Operator::Equal,
+	vec![
+	  vec![Constructor::Literal(Value::String("foo"))],
+	  vec![Constructor::Literal(Value::String("bar")), Constructor::Literal(Value::String("oof"))]
+	])
+      );
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_bool(), false)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: test multi-item first sequence against multi-item second sequence; mixed types, etc
+
+    #[test]
+    fn concat() {
+      let ctxt = XPath::new().add_constructor(Constructor::Concat(
+	vec![
+	  vec![Constructor::Literal(Value::String("foo"))],
+	  vec![Constructor::Literal(Value::String("bar")), Constructor::Literal(Value::String("oof"))]
+	])
+      );
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_string(), "foobaroof")
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
+    fn range() {
+      let ctxt = XPath::new().add_constructor(Constructor::Range(
+	vec![
+	  vec![Constructor::Literal(Value::Integer(0))],
+	  vec![Constructor::Literal(Value::Integer(9))]
+	])
+      );
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 10 {
+        assert_eq!(s.to_string(), "0123456789")
+      } else {
+        panic!("sequence does not have 10 items")
+      }
+    }
+    // TODO: ranges resulting in empty sequence, start = end, negative tests
+
+    #[test]
+    fn arithmetic_double_add() {
+      let ctxt = XPath::new().add_constructor(Constructor::Arithmetic(
+	vec![
+	  ArithmeticOperand{op: ArithmeticOperator::Noop, operand: vec![Constructor::Literal(Value::Double(1.0))]},
+	  ArithmeticOperand{op: ArithmeticOperator::Add, operand: vec![Constructor::Literal(Value::Double(1.0))]}
+	])
+      );
+      let s = ctxt.evaluate().expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s[0].to_double(), 2.0)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: ranges resulting in empty sequence, start = end, negative tests
 
 } 
 
