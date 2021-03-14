@@ -6,6 +6,7 @@ use std::rc::Rc;
 use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
+use crate::parsexml::parse;
 
 // The context for evaluating an XPath expression
 #[derive(Clone)]
@@ -190,18 +191,18 @@ impl<'a> XPath<'a> {
 	  }
 	  ret.new_value(Value::Double(acc))
 	}
-//	Constructor::Root => {
-//	  if self.context.is_some() {
-//	    match self.context[self.posn] {
-//	      Item::Node(n) => {
-//	        ret.new_node(n.doc())
-//	      }
-//	      _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-//	    }
-//	  } else {
-//	    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-//	  }
-//	}
+	Constructor::Root => {
+	  if self.context.is_some() {
+	    match self.context[self.posn] {
+	      Item::Node(n) => {
+	        ret.new_node(n.doc())
+	      }
+	      _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	    }
+	  } else {
+	    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	  }
+	}
       }
     }
 
@@ -614,6 +615,23 @@ mod tests {
       let s = ctxt.evaluate().expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 2.0)
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+    // TODO: ranges resulting in empty sequence, start = end, negative tests
+
+    // Nodes
+
+    #[test]
+    fn node_root() {
+      let mut ctxt = XPath::new().add_constructor(Constructor::Root());
+      let doc = parse("<Test/>").expect("failed to parse XML \"<Test/>\"");
+      let s = vec![Rc::new(Item::Node(doc))];
+      ctxt.set_context(s);
+      let e = ctxt.evaluate().expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Test></Test>")
       } else {
         panic!("sequence is not a singleton")
       }

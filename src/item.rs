@@ -161,13 +161,14 @@ pub struct Node {
   nodetype: NodeType,
   name: Option<String>, // TODO: make it a QName
   value: Option<String>,
-  attributes: Option<Vec<Node>>,
-  content: Option<Vec<Node>>,
+  attributes: Option<Vec<Rc<Node>>>,
+  content: Option<Vec<Rc<Node>>>,
+  parent: Option<Rc<Node>>,
 }
 
 impl Node {
   pub fn new(t: NodeType) -> Node {
-    Node{nodetype: t, name: None, value: None, attributes: None, content: None}
+    Node{nodetype: t, name: None, value: None, attributes: None, content: None, parent: None}
   }
   pub fn nodetype(&self) -> NodeType {
     self.nodetype
@@ -196,44 +197,64 @@ impl Node {
       ""
     }
   }
-  pub fn set_attributes(mut self, a: Vec<Node>) -> Self {
+  pub fn set_attributes(mut self, a: Vec<Rc<Node>>) -> Self {
+    // TODO: self must be an element type node
     if a.len() == 0 {
       self.attributes = None;
     } else {
+      // Set the parent of each attribute to this element
+      for b in a {
+        b.parent.replace(Rc::clone(&self));
+      }
       self.attributes.replace(a);
     }
     self
   }
-  pub fn attributes(&self) -> Option<&Vec<Node>> {
+  pub fn attributes(&self) -> Option<&Vec<Rc<Node>>> {
     self.attributes.as_ref().map(|a| a)
   }
-  pub fn set_content(mut self, c: Vec<Node>) -> Self {
+  pub fn set_content(mut self, c: Vec<Rc<Node>>) -> Self {
     if c.len() == 0 {
       self.content = None;
     } else {
+      // Set the parent of each child to be this node
+      // TODO: prevent a Document node being added as a child
+      for d in c {
+        d.parent.replace(Rc::clone(self))
+      }
       self.content.replace(c);
     }
     self
   }
-  pub fn content(&self) -> Option<&Vec<Node>> {
+  pub fn content(&self) -> Option<&Vec<Rc<Node>>> {
     self.content.as_ref().map(|c| c)
   }
 
-  pub fn prepend_node(mut self, n: Node) {
+  pub fn prepend_node(mut self, mut n: Node) {
+    // TODO; check that this node is an element type
+    // Make this element the content node's parent
+    n.parent.replace(Rc::clone(self));
+
     match self.content {
-      Some(mut v) => {v.insert(0, n);},
+      Some(mut v) => {v.insert(0, Rc::new(n));},
       None => {
-        self.content.replace(vec![n]);
+        self.content.replace(vec![Rc::new(n)]);
       },
     }
   }
-  pub fn prepend_seq(&mut self, s: Vec<Node>) {
-    let mut new: Vec<Node>;
+  pub fn prepend_seq(&mut self, s: Vec<Rc<Node>>) {
+    // TODO: check that this node is an element or document
+    let mut new: Vec<Rc<Node>>;
+
+    // Each node will now have this element as its parent
+    for t in s {
+      t.parent.replace(Rc::clone(t))
+    }
 
     if self.content.is_some() {
       new = self.content.take().unwrap();
       for i in s {
-	new.insert(0, i);
+	new.insert(0, Rc::clone(i));
       }
     } else {
       new = s;
@@ -241,22 +262,52 @@ impl Node {
     self.content.replace(new);
   }
   pub fn append_node(mut self, n: Node) {
+    // TODO: check that this node is an element
+    n.parent.replace(Rc::clone(self));
+
     match self.content {
-      Some(mut v) => {v.push(n);},
+      Some(mut v) => {v.push(Rc::new(n));},
       None => {
-        self.content.replace(vec![n]);
+        self.content.replace(vec![Rc::new(n)]);
       },
     }
   }
-  pub fn append_seq(mut self, s: Vec<Node>) {
+  pub fn append_seq(mut self, s: Vec<Rc<Node>>) {
+    // TODO: check that this node is an element
+
+    for n in s {
+      n.parent.replace(Rc::clone(self));
+    }
+
     match self.content {
       Some(mut v) => {
         for i in s {
-	  v.push(i);
+	  v.push(Rc::clone(i));
 	}
       },
       None => {self.content.replace(s);},
     }
+  }
+
+  pub fn doc(&self) -> Rc<Node> {
+    match self.nodetype {
+      NodeType::Document => {
+        Rc::clone(self)
+      }
+      NodeType::Element => {
+        // Find the ancestor document node
+	let i = self;
+	while i.parent.is_some() {
+	  if i.parent.unwrap().nodetype == NodeType::Document {
+	    return i.parent.unwrap()
+	  }
+	  i = i.parent.unwrap();
+	}
+      }
+    }
+  }
+  pub fn parent(&self) -> Option<Rc<Node>> {
+    self.parent
   }
 
   pub fn to_string(&self) -> String {
@@ -952,6 +1003,15 @@ mod tests {
     fn node_text() {
         let t = Node::new(NodeType::Text).set_value("Test text".to_string());
         assert_eq!(t.to_string(), "Test text")
+    }
+    #[test]
+    fn node_parent() {
+      let doc = Node::new(NodeType::Document);
+      let root = Node::new(NodeType::Element).set_name("Root".to_string());
+      doc.append_node(root);
+      let child = Node::new(NodeType::Text).set_value("Test text".to_string());
+      root.append_node(child);
+      assert!(Rc::ptr_eq(root, child.parent()))
     }
 
     // Sequences
