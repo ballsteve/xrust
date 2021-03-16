@@ -16,8 +16,8 @@ pub use xdmerror::{Error, ErrorKind};
 
 mod item;
 
-mod parsecommon;
-mod parsexml;
+//mod parsecommon;
+//mod parsexml;
 
 //mod rox_adaptor;
 

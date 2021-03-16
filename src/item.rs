@@ -5,15 +5,17 @@
 
 use std::cmp::Ordering;
 use std::rc::Rc;
+//use std::cell::RefCell;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
+use trees::{Tree, RcNode};
 
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 
 pub trait SequenceTrait<'a> {
   fn to_string(&self) -> String;
   fn to_bool(&self) -> bool;
-  fn new_node(&mut self, n: Node);
+  fn new_node(&mut self, n: RcNode<NodeDefn>);
   fn new_value(&mut self, v: Value<'a>);
   fn add(&mut self, i: &Rc<Item<'a>>);
 }
@@ -26,7 +28,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
     r
   }
-  fn new_node(&mut self, n: Node) {
+  fn new_node(&mut self, n: RcNode<NodeDefn>) {
     self.push(Rc::new(Item::Node(n)));
   }
   fn new_value(&mut self, v: Value<'a>) {
@@ -59,7 +61,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
 
 #[derive(Clone)]
 pub enum Item<'a> {
-    Node(Node),
+    Node(RcNode<NodeDefn>),
     Function,
     Value(Value<'a>),
 }
@@ -82,7 +84,7 @@ impl<'a> Item<'a> {
   // Gives the string value of an item. All items have a string value.
   pub fn to_string(&self) -> String {
     match self {
-      Item::Node(n) => n.to_string(),
+      Item::Node(n) => node_to_string(n),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
     }
@@ -157,21 +159,22 @@ pub enum NodeType {
 }
 
 #[derive(Clone)]
-pub struct Node {
+pub struct NodeDefn {
   nodetype: NodeType,
   name: Option<String>, // TODO: make it a QName
   value: Option<String>,
-  attributes: Option<Vec<Rc<Node>>>,
-  content: Option<Vec<Rc<Node>>>,
-  parent: Option<Rc<Node>>,
 }
 
-impl Node {
-  pub fn new(t: NodeType) -> Node {
-    Node{nodetype: t, name: None, value: None, attributes: None, content: None, parent: None}
+impl NodeDefn {
+  pub fn new(t: NodeType) -> Self {
+    NodeDefn {
+      nodetype: t,
+      name: None,
+      value: None,
+    }
   }
-  pub fn nodetype(&self) -> NodeType {
-    self.nodetype
+  pub fn nodetype(&self) -> &NodeType {
+    &self.nodetype
   }
   pub fn set_name(mut self, n: String) -> Self {
     // TODO: restrict which types can have a name
@@ -197,153 +200,37 @@ impl Node {
       ""
     }
   }
-  pub fn set_attributes(mut self, a: Vec<Rc<Node>>) -> Self {
-    // TODO: self must be an element type node
-    if a.len() == 0 {
-      self.attributes = None;
-    } else {
-      // Set the parent of each attribute to this element
-      for b in a {
-        b.parent.replace(Rc::clone(&self));
-      }
-      self.attributes.replace(a);
-    }
-    self
-  }
-  pub fn attributes(&self) -> Option<&Vec<Rc<Node>>> {
-    self.attributes.as_ref().map(|a| a)
-  }
-  pub fn set_content(mut self, c: Vec<Rc<Node>>) -> Self {
-    if c.len() == 0 {
-      self.content = None;
-    } else {
-      // Set the parent of each child to be this node
-      // TODO: prevent a Document node being added as a child
-      for d in c {
-        d.parent.replace(Rc::clone(self))
-      }
-      self.content.replace(c);
-    }
-    self
-  }
-  pub fn content(&self) -> Option<&Vec<Rc<Node>>> {
-    self.content.as_ref().map(|c| c)
-  }
+}
 
-  pub fn prepend_node(mut self, mut n: Node) {
-    // TODO; check that this node is an element type
-    // Make this element the content node's parent
-    n.parent.replace(Rc::clone(self));
+pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
+  let d = node.data();
 
-    match self.content {
-      Some(mut v) => {v.insert(0, Rc::new(n));},
-      None => {
-        self.content.replace(vec![Rc::new(n)]);
-      },
-    }
-  }
-  pub fn prepend_seq(&mut self, s: Vec<Rc<Node>>) {
-    // TODO: check that this node is an element or document
-    let mut new: Vec<Rc<Node>>;
-
-    // Each node will now have this element as its parent
-    for t in s {
-      t.parent.replace(Rc::clone(t))
-    }
-
-    if self.content.is_some() {
-      new = self.content.take().unwrap();
-      for i in s {
-	new.insert(0, Rc::clone(i));
-      }
-    } else {
-      new = s;
-    }
-    self.content.replace(new);
-  }
-  pub fn append_node(mut self, n: Node) {
-    // TODO: check that this node is an element
-    n.parent.replace(Rc::clone(self));
-
-    match self.content {
-      Some(mut v) => {v.push(Rc::new(n));},
-      None => {
-        self.content.replace(vec![Rc::new(n)]);
-      },
-    }
-  }
-  pub fn append_seq(mut self, s: Vec<Rc<Node>>) {
-    // TODO: check that this node is an element
-
-    for n in s {
-      n.parent.replace(Rc::clone(self));
-    }
-
-    match self.content {
-      Some(mut v) => {
-        for i in s {
-	  v.push(Rc::clone(i));
-	}
-      },
-      None => {self.content.replace(s);},
-    }
-  }
-
-  pub fn doc(&self) -> Rc<Node> {
-    match self.nodetype {
+  match d.nodetype {
       NodeType::Document => {
-        Rc::clone(self)
+        //println!("node_to_string: NodeType::Document");
+        if node.has_no_child() {
+	  String::new()
+	} else {
+	  node.iter_rc().fold(String::new(), |s,c| s + &node_to_string(&c))
+	}
       }
       NodeType::Element => {
-        // Find the ancestor document node
-	let i = self;
-	while i.parent.is_some() {
-	  if i.parent.unwrap().nodetype == NodeType::Document {
-	    return i.parent.unwrap()
-	  }
-	  i = i.parent.unwrap();
+        //println!("node_to_string: NodeType::Element \"{}\"", d.name.as_ref().unwrap());
+        if node.has_no_child() {
+	  format!("<{}/>", d.name.as_ref().unwrap())
+	} else {
+	  // TODO: attributes
+	  format!("<{}>{}</{}>", d.name.as_ref().unwrap(), node.iter_rc().fold(String::new(), |s,c| s + &node_to_string(&c)), d.name.as_ref().unwrap())
 	}
-      }
-    }
-  }
-  pub fn parent(&self) -> Option<Rc<Node>> {
-    self.parent
-  }
-
-  pub fn to_string(&self) -> String {
-    match self.nodetype {
-      NodeType::Document => {
-        let mut r = String::new();
-
-        for i in self.content.as_ref().unwrap_or(&vec![]) {
-	  r.push_str(i.to_string().as_str())
-	}
-	r
-      }
-      NodeType::Element => {
-        let mut r = String::from("<");
-	r.push_str(self.name());
-	for i in self.attributes.as_ref().unwrap_or(&vec![]) {
-	  r.push_str(" ");
-	  r.push_str(&i.to_string())
-	}
-	r.push_str(">");
-	for i in self.content.as_ref().unwrap_or(&vec![]) {
-	  r.push_str(&i.to_string())
-	}
-	r.push_str("</");
-	r.push_str(self.name());
-	r.push_str(">");
-	r
       }
       NodeType::Text => {
-        String::from(self.value())
+        String::from(d.value.as_ref().unwrap())
       }
       NodeType::Attribute => {
         let mut r = String::new();
-        r.push_str(self.name());
+        r.push_str(d.name.as_ref().unwrap().as_str());
         r.push_str("='");
-        r.push_str(self.value());
+        r.push_str(d.value.as_ref().unwrap().as_str());
         r.push_str("'");
         // TODO: delimiters, escaping
 	r
@@ -351,20 +238,19 @@ impl Node {
       NodeType::Comment => {
         let mut r = String::new();
         r.push_str("<!--");
-        r.push_str(self.value());
+        r.push_str(d.value.as_ref().unwrap().as_str());
         r.push_str("-->");
 	r
       }
       NodeType::ProcessingInstruction => {
         let mut r = String::new();
         r.push_str("<?");
-        r.push_str(self.name());
+        r.push_str(d.name.as_ref().unwrap().as_str());
         r.push_str(" ");
-        r.push_str(self.value());
+        r.push_str(d.value.as_ref().unwrap().as_str());
         r.push_str("?>");
 	r
       }
-    }
   }
 }
 
@@ -991,27 +877,34 @@ mod tests {
 
     #[test]
     fn node_document() {
-        Node::new(NodeType::Document);
+        RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
         assert!(true)
     }
     #[test]
     fn node_element() {
-        let e = Node::new(NodeType::Element).set_name("Test".to_string());
-        assert_eq!(e.to_string(), "<Test></Test>")
+        let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+        let e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
+	d.push_front(e);
+        assert_eq!(node_to_string(&d), "<Test/>")
     }
     #[test]
     fn node_text() {
-        let t = Node::new(NodeType::Text).set_value("Test text".to_string());
-        assert_eq!(t.to_string(), "Test text")
+        let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+        let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
+        let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
+	e.push_front(t);
+	d.push_front(e);
+        assert_eq!(node_to_string(&d), "<Test>Test text</Test>")
     }
     #[test]
-    fn node_parent() {
-      let doc = Node::new(NodeType::Document);
-      let root = Node::new(NodeType::Element).set_name("Root".to_string());
-      doc.append_node(root);
-      let child = Node::new(NodeType::Text).set_value("Test text".to_string());
-      root.append_node(child);
-      assert!(Rc::ptr_eq(root, child.parent()))
+    fn item_node_to_string() {
+        let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+        let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
+        let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
+	e.push_front(t);
+	d.push_front(e);
+	let i = Item::Node(d);
+        assert_eq!(i.to_string(), "<Test>Test text</Test>")
     }
 
     // Sequences

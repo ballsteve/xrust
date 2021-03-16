@@ -3,11 +3,14 @@
 //! A parser for XML, as a nom parser combinator.
 //! XML 1.1, see https://www.w3.org/TR/xml11/
 //!
+//! This crate builds a trees::Tree object.
+//!
 //! This is a very simple, minimalist parser of XML. It excludes:
 //!	XML declaration
 //!	DTDs (and therefore entities)
 //!	CDATA sections
 
+use trees::{fr, tr, Tree, Node}
 extern crate nom;
 use nom:: {
   IResult,
@@ -24,24 +27,24 @@ use crate::xdmerror::*;
 use crate::parsecommon::*;
 
 // document ::= ( prolog element misc*)
-fn document(input: &str) -> IResult<&str, Node> {
+fn document(input: &str) -> IResult<&str, Tree> {
   map (
     tuple((
       opt(prolog),
       element,
       many0(misc),
     )),
-    |(p, e, m)| {
-      let d = Node::new(NodeType::Document);
-      let mut c: Vec<Node> = Vec::new();
-      p.map(|q| for i in q {c.push(i);});
-      c.push(e);
-      for i in m {
-        for j in i {
-          c.push(j);
-	}
-      }
-      d.set_content(c)
+    |(_p, e, _m)| {
+      let d = Tree::new(NodeDefn::new(NodeType::Document));
+      //p.map(|q| for i in q {c.push(i);});
+      d.push_back(e);
+      //for i in m {
+        //for j in i {
+          //c.push(j);
+	//}
+      //}
+      //d.set_content(c)
+      d
     }
   )
   (input)

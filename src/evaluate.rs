@@ -6,7 +6,8 @@ use std::rc::Rc;
 use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
-use crate::parsexml::parse;
+//use crate::parsexml::parse;
+use trees::{RcNode, Tree};
 
 // The context for evaluating an XPath expression
 #[derive(Clone)]
@@ -193,20 +194,28 @@ impl<'a> XPath<'a> {
 	}
 	Constructor::Root => {
 	  if self.context.is_some() {
-	    match self.context[self.posn] {
+	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
 	      Item::Node(n) => {
-	        ret.new_node(n.doc())
+	        ret.new_node(find_root(n.clone()));
 	      }
-	      _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	    }
 	  } else {
-	    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
 	  }
 	}
       }
     }
 
     Ok(ret)
+  }
+}
+
+fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
+  if n.is_root() {
+    n.clone()
+  } else {
+    find_root(n.parent().unwrap())
   }
 }
 
@@ -226,7 +235,7 @@ enum Constructor<'a> {
   // Arrow,
   // Unary,
   // SimpleMap,
-  // Root,				// Root node of the context item
+  Root,				// Root node of the context item
   // Child(NodeMatch),			// Child nodes of the context item
   // DescendantOrSelf(NodeMatch),		// Descendants of the context item
   // Step,				// Next step of the path
@@ -625,13 +634,17 @@ mod tests {
 
     #[test]
     fn node_root() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::Root());
-      let doc = parse("<Test/>").expect("failed to parse XML \"<Test/>\"");
-      let s = vec![Rc::new(Item::Node(doc))];
+      let mut ctxt = XPath::new().add_constructor(Constructor::Root);
+      let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+      let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
+      let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
+      e.push_back(t);
+      d.push_back(e);
+      let s = vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))];
       ctxt.set_context(s);
       let e = ctxt.evaluate().expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Test></Test>")
+        assert_eq!(e[0].to_string(), "<Test>Test text</Test>")
       } else {
         panic!("sequence is not a singleton")
       }
