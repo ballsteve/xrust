@@ -16,12 +16,11 @@ pub use xdmerror::{Error, ErrorKind};
 
 mod item;
 
-//mod parsecommon;
+mod parsecommon;
 //mod parsexml;
 
 //mod rox_adaptor;
 
-//mod xpath;
-//pub use xpath::parse;
+mod xpath;
 
 mod evaluate;

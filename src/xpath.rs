@@ -4,6 +4,7 @@
 
 extern crate nom;
 use decimal;
+use std::rc::Rc;
 use nom:: {
   IResult,
   character::complete::*,
@@ -17,51 +18,17 @@ use nom:: {
 use crate::item::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
-use crate::evaluate::{DynamicContext,
-    SequenceConstructor, SequenceConstructorFunc,
+use crate::evaluate::{XPath,
+    Constructor,
     NameTest, WildcardOrName,
     NodeTest, NodeMatch,
     Axis,
-    cons_literal, cons_context_item,
-    cons_or, cons_and,
-    comparison_general_equal,
-    comparison_general_notequal,
-    comparison_general_lessthan,
-    comparison_general_lessthanequal,
-    comparison_general_greaterthan,
-    comparison_general_greaterthanequal,
-    comparison_value_equal,
-    comparison_value_notequal,
-    comparison_value_lessthan,
-    comparison_value_lessthanequal,
-    comparison_value_greaterthan,
-    comparison_value_greaterthanequal,
-    comparison_node_is,
-    comparison_node_before,
-    comparison_node_after,
-    cons_string_concat,
-    cons_range,
-    addsub, muldiv,
-    cons_union,
-    cons_intersectexcept,
-    cons_instanceof,
-    cons_treat,
-    cons_castable,
-    cons_cast,
-    cons_arrow,
-    cons_unary,
-    cons_simplemap,
-    cons_root,
-    cons_child,
-    cons_descendant_or_self,
-    cons_relativepath,
-    cons_step,
-    eval,
+    ArithmeticOperator, ArithmeticOperand,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
-fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     separated_nonempty_list(
       tuple((multispace0, tag(","), multispace0)),
@@ -81,19 +48,19 @@ fn expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
-fn expr_single(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn expr_single(input: &str) -> IResult<&str, Vec<Constructor>> {
   or_expr(input)
   // TODO: other branches
 }
 
 // OrExpr ::= AndExpr ('or' AndExpr)*
-fn or_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn or_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     separated_nonempty_list(
       tuple((multispace0, tag("or"), multispace0)),
       and_expr
     ),
-    |v: Vec<Vec<SequenceConstructor>>| {
+    |v: Vec<Vec<Constructor>>| {
       if v.len() == 1 {
         let mut s = Vec::new();
         for i in v {
@@ -103,7 +70,7 @@ fn or_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	}
 	s
       } else {
-        vec![SequenceConstructor{func: cons_or, data: None, args: Some(v), nodematch: None}]
+        vec![Constructor::Or(v)]
       }
     }
   )
@@ -111,13 +78,13 @@ fn or_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
-fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn and_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     separated_nonempty_list(
       tuple((multispace0, tag("and"), multispace0)),
       comparison_expr
     ),
-    |v: Vec<Vec<SequenceConstructor>>| {
+    |v: Vec<Vec<Constructor>>| {
       if v.len() == 1 {
         let mut s = Vec::new();
         for i in v {
@@ -127,7 +94,7 @@ fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 	}
 	s
       } else {
-        vec![SequenceConstructor{func: cons_and, data: None, args: Some(v), nodematch: None}]
+        vec![Constructor::And(v)]
       }
     }
   )
@@ -135,7 +102,7 @@ fn and_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-fn comparison_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn comparison_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair (
       stringconcat_expr,
@@ -166,37 +133,33 @@ fn comparison_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       match o {
         None => v,
 	Some(((_a, b, _c), t)) => {
-	  vec![SequenceConstructor{func: choose_compare(b).expect("invalid comparison operator"),
-	    data: None, args: Some(vec![v, t]), nodematch: None}]
+	  match b {
+	    "=" => vec![Constructor::GeneralComparison(Operator::Equal, vec![v, t])],
+	    "!=" => vec![Constructor::GeneralComparison(Operator::NotEqual, vec![v, t])],
+	    "<" => vec![Constructor::GeneralComparison(Operator::LessThan, vec![v, t])],
+	    "<=" => vec![Constructor::GeneralComparison(Operator::LessThanEqual, vec![v, t])],
+	    ">" => vec![Constructor::GeneralComparison(Operator::GreaterThan, vec![v, t])],
+	    ">=" => vec![Constructor::GeneralComparison(Operator::GreaterThanEqual, vec![v, t])],
+	    "eq" => vec![Constructor::ValueComparison(Operator::Equal, vec![v, t])],
+	    "ne" => vec![Constructor::ValueComparison(Operator::NotEqual, vec![v, t])],
+	    "lt" => vec![Constructor::ValueComparison(Operator::LessThan, vec![v, t])],
+	    "le" => vec![Constructor::ValueComparison(Operator::LessThanEqual, vec![v, t])],
+	    "gt" => vec![Constructor::ValueComparison(Operator::GreaterThan, vec![v, t])],
+	    "ge" => vec![Constructor::ValueComparison(Operator::GreaterThanEqual, vec![v, t])],
+	    "is" => vec![Constructor::ValueComparison(Operator::Is, vec![v, t])],	//
+	    "<<" => vec![Constructor::ValueComparison(Operator::Before, vec![v, t])],	// TODO: use appropriate constructor
+	    ">>" => vec![Constructor::ValueComparison(Operator::After, vec![v, t])],	//
+	    _ => vec![] // Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid comparison operator")}),
+	  }
 	},
       }
     }
   )
   (input)
 }
-fn choose_compare(a: &str) -> Result<SequenceConstructorFunc, Error> {
-  match a {
-    "=" => Ok(comparison_general_equal),
-    "!=" => Ok(comparison_general_notequal),
-    "<" => Ok(comparison_general_lessthan),
-    "<=" => Ok(comparison_general_lessthanequal),
-    ">" => Ok(comparison_general_greaterthan),
-    ">=" => Ok(comparison_general_greaterthanequal),
-    "eq" => Ok(comparison_value_equal),
-    "ne" => Ok(comparison_value_notequal),
-    "lt" => Ok(comparison_value_lessthan),
-    "le" => Ok(comparison_value_lessthanequal),
-    "gt" => Ok(comparison_value_greaterthan),
-    "ge" => Ok(comparison_value_greaterthanequal),
-    "is" => Ok(comparison_node_is),
-    "<<" => Ok(comparison_node_before),
-    ">>" => Ok(comparison_node_after),
-    _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not a valid comparison operator")}),
-  }
-}
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
-fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn stringconcat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     separated_nonempty_list(
       tuple((multispace0, tag("||"), multispace0)),
@@ -212,7 +175,7 @@ fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         }
         s
       } else {
-        vec![SequenceConstructor{func: cons_string_concat, data: None, args: Some(v), nodematch: None}]
+        vec![Constructor::Concat(v)]
       }
     }
   )
@@ -220,7 +183,7 @@ fn stringconcat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn range_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       additive_expr,
@@ -235,7 +198,7 @@ fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       match o {
         None => v,
 	Some((_t, u)) => {
-          vec![SequenceConstructor{func: cons_range, data: None, args: Some(vec![v, u]), nodematch: None}]
+          vec![Constructor::Range(vec![v, u])]
 	}
       }
     }
@@ -249,7 +212,7 @@ fn range_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 // TODO: find a better way
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
-fn additive_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn additive_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       multiplicative_expr,
@@ -267,27 +230,24 @@ fn additive_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if b.len() == 0 {
         a
       } else {
-        // The arguments to the addsub function are the items to be summed
+        // The arguments to the constructor are the items to be summed
 	// These are pair-wise items: first is the operator as a string literal,
 	// second is the value
-	// we fake an entry for first part of the first pair
-	let mut r: Vec<Vec<SequenceConstructor>> = Vec::new();
+	let mut r: Vec<ArithmeticOperand> = Vec::new();
 
-	r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
-	r.push(a);
+	r.push(ArithmeticOperand{op: ArithmeticOperator::Noop, operand: a});
 
 	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
-	  r.push(d);
+	  r.push(ArithmeticOperand{op: ArithmeticOperator::from(c), operand: d});
 	}
-        vec![SequenceConstructor::new(addsub).set_args(Some(r))]
+        vec![Constructor::Arithmetic(r)]
       }
     }
   )
   (input)
 }
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
-fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn multiplicative_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       union_expr,
@@ -307,20 +267,17 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if b.len() == 0 {
         a
       } else {
-        // The arguments to the addsub function are the items to be summed
+        // The arguments to the constructor are the items to be summed
 	// These are pair-wise items: first is the operator as a string literal,
 	// second is the value
-	// we fake an entry for first part of the first pair
-	let mut r = Vec::new();
+	let mut r: Vec<ArithmeticOperand> = Vec::new();
 
-        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
-	r.push(a);
+	r.push(ArithmeticOperand{op: ArithmeticOperator::Noop, operand: a});
 
 	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
-	  r.push(d);
+	  r.push(ArithmeticOperand{op: ArithmeticOperator::from(c), operand: d});
 	}
-        vec![SequenceConstructor::new(muldiv).set_args(Some(r))]
+        vec![Constructor::Arithmetic(r)]
       }
     }
   )
@@ -328,7 +285,7 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
-fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn union_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     separated_nonempty_list(
       alt((
@@ -347,7 +304,7 @@ fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         }
         s
       } else {
-        vec![SequenceConstructor::new(cons_union).set_args(Some(v))]
+        vec![Constructor::NotImplemented]
       }
     }
   )
@@ -355,7 +312,7 @@ fn union_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
-fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       instanceof_expr,
@@ -376,17 +333,17 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> 
         // The arguments to the intersectexcept function are the sequences to be operated upon.
 	// These are pair-wise items: first is the operator as a string literal,
 	// second is the value
-	// we fake an entry for first part of the first pair
-	let mut r = Vec::new();
+//	let mut r = Vec::new();
 
-        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
-	r.push(a);
+//        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
+//	r.push(a);
 
-	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
-	  r.push(d);
-	}
-        vec![SequenceConstructor::new(cons_intersectexcept).set_args(Some(r))]
+//	for ((_x, c, _y), d) in b {
+//	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
+//	  r.push(d);
+//	}
+//        vec![SequenceConstructor::new(cons_intersectexcept).set_args(Some(r))]
+        vec![Constructor::NotImplemented]
       }
     }
   )
@@ -394,7 +351,7 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> 
 }
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
-fn instanceof_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       treat_expr,
@@ -407,12 +364,13 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         None => {
 	  u
 	}
-	Some(t) => {
-	  let mut r = Vec::new();
-	  r.push(u);
-	  let (_a, _b, _c, _d, _e, st) = t;
-	  r.push(st);
-	  vec![SequenceConstructor::new(cons_instanceof).set_args(Some(r))]
+	Some(_t) => {
+	  //let mut r = Vec::new();
+	  //r.push(u);
+	  //let (_a, _b, _c, _d, _e, st) = t;
+	  //r.push(st);
+	  //vec![SequenceConstructor::new(cons_instanceof).set_args(Some(r))]
+          vec![Constructor::NotImplemented]
 	}
       }
     }
@@ -422,7 +380,7 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
 // TODO: implement this parser fully
-fn sequencetype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn sequencetype_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     tag("empty-sequence()"),
     |_v| {
@@ -433,7 +391,7 @@ fn sequencetype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
-fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       castable_expr,
@@ -446,12 +404,13 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         None => {
 	  u
 	}
-	Some(t) => {
-	  let mut r = Vec::new();
-	  r.push(u);
-	  let (_a, _b, _c, _d, _e, st) = t;
-	  r.push(st);
-	  vec![SequenceConstructor::new(cons_treat).set_args(Some(r))]
+	Some(_t) => {
+	  //let mut r = Vec::new();
+	  //r.push(u);
+	  //let (_a, _b, _c, _d, _e, st) = t;
+	  //r.push(st);
+	  //vec![SequenceConstructor::new(cons_treat).set_args(Some(r))]
+          vec![Constructor::NotImplemented]
 	}
       }
     }
@@ -460,7 +419,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
-fn castable_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       cast_expr,
@@ -473,12 +432,13 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         None => {
 	  u
 	}
-	Some(t) => {
-	  let mut r = Vec::new();
-	  r.push(u);
-	  let (_a, _b, _c, _d, _e, st) = t;
-	  r.push(st);
-	  vec![SequenceConstructor::new(cons_castable).set_args(Some(r))]
+	Some(_t) => {
+	  //let mut r = Vec::new();
+	  //r.push(u);
+	  //let (_a, _b, _c, _d, _e, st) = t;
+	  //r.push(st);
+	  //vec![SequenceConstructor::new(cons_castable).set_args(Some(r))]
+          vec![Constructor::NotImplemented]
 	}
       }
     }
@@ -499,7 +459,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
 // TODO: implement this parser fully
-fn singletype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn singletype_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       qname,
@@ -515,7 +475,7 @@ fn singletype_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
-fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       arrow_expr,
@@ -528,12 +488,13 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
         None => {
 	  u
 	}
-	Some(t) => {
-	  let mut r = Vec::new();
-	  r.push(u);
-	  let (_a, _b, _c, _d, _e, st) = t;
-	  r.push(st);
-	  vec![SequenceConstructor::new(cons_cast).set_args(Some(r))]
+	Some(_t) => {
+	  //let mut r = Vec::new();
+	  //r.push(u);
+	  //let (_a, _b, _c, _d, _e, st) = t;
+	  //r.push(st);
+	  //vec![SequenceConstructor::new(cons_cast).set_args(Some(r))]
+          vec![Constructor::NotImplemented]
 	}
       }
     }
@@ -542,7 +503,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
-fn arrow_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair (
       unary_expr,
@@ -561,7 +522,8 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if v.len() == 0 {
         u
       } else {
-        vec![SequenceConstructor::new(cons_arrow)]
+        //vec![SequenceConstructor::new(cons_arrow)]
+        vec![Constructor::NotImplemented]
       }
     }
   )
@@ -570,7 +532,7 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
-fn arrowfunctionspecifier(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn arrowfunctionspecifier(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     alt((
       qname_expr,
@@ -582,16 +544,16 @@ fn arrowfunctionspecifier(input: &str) -> IResult<&str, Vec<SequenceConstructor>
   )
   (input)
 }
-fn qname_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn qname_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     qname,
     |q| {
       match q {
         NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart)), ns: None, prefix: None}) => {
-	  vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(localpart.to_string()))))]
+	  vec![Constructor::Literal(Value::StringOwned(localpart))]
 	}
         _ => {
-      	  vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from("invalid qname")))))]
+      	  vec![Constructor::Literal(Value::String("invalid qname"))]
 	}
       }
     }
@@ -601,7 +563,7 @@ fn qname_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn argumentlist(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     tag("()"),
     //tuple((
@@ -617,7 +579,7 @@ fn argumentlist(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-fn unary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn unary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair (
       many0(
@@ -632,12 +594,13 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if u.len() == 0 {
         v
       } else {
-        let mut a = Vec::new();
-	for i in u {
-	  a.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(i)))))]);
-	}
-	a.push(v);
-        vec![SequenceConstructor::new(cons_unary).set_args(Some(a))]
+        //let mut a = Vec::new();
+	//for i in u {
+	  //a.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(i)))))]);
+	//}
+	//a.push(v);
+        //vec![SequenceConstructor::new(cons_unary).set_args(Some(a))]
+        vec![Constructor::NotImplemented]
       }
     }
   )
@@ -645,7 +608,7 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // ValueExpr (SimpleMapExpr) ::= PathExpr ('!' PathExpr)*
-fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn value_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       path_expr,
@@ -660,14 +623,15 @@ fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if v.len() == 0 {
         u
       } else {
-        let mut s = Vec::new();
-	s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from("")))))]);
-	s.push(u);
-	for (a, b) in v {
-	  s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(a)))))]);
-	  s.push(b);
-	}
-        vec![SequenceConstructor::new(cons_simplemap).set_args(Some(s))]
+        //let mut s = Vec::new();
+	//s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from("")))))]);
+	//s.push(u);
+	//for (a, b) in v {
+	  //s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(a)))))]);
+	  //s.push(b);
+	//}
+        //vec![SequenceConstructor::new(cons_simplemap).set_args(Some(s))]
+        vec![Constructor::NotImplemented]
       }
     }
   )
@@ -675,7 +639,7 @@ fn value_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
-fn path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     absolute_descendant_expr,
     absolute_path_expr,
@@ -684,7 +648,7 @@ fn path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   (input)
 }
 // ('/' RelativePathExpr?)
-fn absolute_path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn absolute_path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     pair(
       tag("/"),
@@ -692,12 +656,13 @@ fn absolute_path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     ),
     |(_u, v)| {
       match v {
-        Some(a) => {
-	  vec![SequenceConstructor::new(cons_root),
-	  SequenceConstructor::new(cons_child).set_args(Some(vec![a]))]
+        Some(_a) => {
+	  vec![Constructor::Root,
+	  Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})]
+	  // TODO: name test for child axis
 	}
 	None => {
-	  vec![SequenceConstructor::new(cons_root)]
+	  vec![Constructor::Root]
 	}
       }
     }
@@ -705,22 +670,23 @@ fn absolute_path_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   (input)
 }
 // ('//' RelativePathExpr)
-fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     pair(
       tag("//"),
       relativepath_expr,
     ),
-    |(_u, v)| {
-      vec![SequenceConstructor::new(cons_root),
-	SequenceConstructor::new(cons_descendant_or_self).set_args(Some(vec![v]))]
+    |(_u, _v)| {
+      vec![Constructor::Root,
+	Constructor::NotImplemented]
+	// TODO: process v to implement descendant-or-self
     }
   )
   (input)
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair (
       step_expr,
@@ -738,29 +704,30 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
       if b.len() == 0 {
         a
       } else {
-        let mut r = Vec::new();
+//        let mut r = Vec::new();
 
-        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
-	r.push(a);
+//        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
+//	r.push(a);
 
-	for ((_x, c, _y), d) in b {
-	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
-	  r.push(d);
-	}
-        vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]
+//	for ((_x, c, _y), d) in b {
+//	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
+//	  r.push(d);
+//	}
+//        vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]
+        vec![Constructor::NotImplemented]
       }
     }
   )
   (input)
 }
 // For debugging: a version of the above function that steps through the parsing
-fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
   let myin = newinput;
   //println!("relpath: starting with \"{}\"", myin);
   let (myin, a) = step_expr(myin)?;
   let mut r = Vec::new();
 
-  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
+  r.push(vec![Constructor::Literal(Value::String(""))]);
   r.push(a);
 
   //println!("relpath: parsed first step. input=\"{}\"", myin);
@@ -776,7 +743,7 @@ fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<SequenceConstructo
       tuple((multispace0, tag("/"), multispace0)),
     ))(myin)?;
     //println!("got delimiter \"{}\", remaining input \"{}\"", c, myin);
-    r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
+    r.push(vec![Constructor::Literal(Value::String(c))]);
 
     let (_myin, d) = step_expr(myin)?;
     //println!("got next step");
@@ -785,11 +752,12 @@ fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<SequenceConstructo
   }
 
   //println!("relpath: finished");
-  Ok((myin, vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]))
+  //Ok((myin, vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]))
+  Ok((myin, vec![Constructor::NotImplemented]))
 }
 
 // StepExpr ::= PostfixExpr | AxisStep
-fn step_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   //println!("step_expr: input \"{}\"", input);
   alt((
     postfix_expr,
@@ -800,7 +768,7 @@ fn step_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
 // TODO: predicates
-fn axisstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn axisstep(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     reversestep,
     forwardstep
@@ -810,28 +778,28 @@ fn axisstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 
 // ForwardStep ::= (ForwardAxis NodeTest) | AbbrevForwardStep
 // TODO: abbreviated step
-fn forwardstep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn forwardstep(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       forwardaxis,
       nodetest
     ),
     |(a, n)| {
-      vec![SequenceConstructor::new(cons_step).set_nodematch(Some(NodeMatch{axis: Axis::from(a), nodetest: n}))]
+      vec![Constructor::Step(NodeMatch{axis: Axis::from(a), nodetest: n})]
     }
   )
   (input)
 }
 // ReverseStep ::= (ReverseAxis NodeTest) | AbbrevReverseStep
 // TODO: abbreviated step
-fn reversestep(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn reversestep(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
     pair(
       reverseaxis,
       nodetest
     ),
     |(a, n)| {
-      vec![SequenceConstructor::new(cons_step).set_nodematch(Some(NodeMatch{axis: Axis::from(a), nodetest: n}))]
+      vec![Constructor::Step(NodeMatch{axis: Axis::from(a), nodetest: n})]
     }
   )
   (input)
@@ -940,13 +908,13 @@ fn wildcard(input: &str) -> IResult<&str, NodeTest> {
 
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
 // TODO: predicates, arg list, lookup
-fn postfix_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn postfix_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   primary_expr(input)
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
 // TODO: finish this parser
-fn primary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn primary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     literal,
     context_item,
@@ -956,7 +924,7 @@ fn primary_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // Literal ::= NumericLiteral | StringLiteral
-fn literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn literal(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     numeric_literal ,
     string_literal
@@ -965,7 +933,7 @@ fn literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
 }
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
-fn numeric_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn numeric_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     double_literal,
     decimal_literal,
@@ -974,16 +942,16 @@ fn numeric_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   (input)
 }
 // IntegerLiteral ::= Digits
-fn integer_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn integer_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(digit1, |s: &str| {
     let n = s.parse::<i64>().unwrap();
-    vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::Integer(n))))]
+    vec![Constructor::Literal(Value::Integer(n))]
   })
   (input)
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
 // Construct a double, but if that fails fall back to decimal
-fn decimal_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn decimal_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     alt((
       recognize(complete(pair(tag("."), digit1))),
@@ -992,17 +960,17 @@ fn decimal_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     |s: &str| {
       let n = s.parse::<f64>();
       let i = match n {
-        Ok(m) => Box::new(Value::Double(m)),
-	Err(_) => Box::new(Value::Decimal(decimal::d128!(s))),
+        Ok(m) => Value::Double(m),
+	Err(_) => Value::Decimal(decimal::d128!(s)),
       };
-      vec![SequenceConstructor::new(cons_literal).set_data(Some(i))]
+      vec![Constructor::Literal(i)]
     }
   )
   (input)
 }
 // DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
 // Construct a double
-fn double_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn double_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     recognize(
       tuple((
@@ -1018,10 +986,10 @@ fn double_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
     |s: &str| {
       let n = s.parse::<f64>();
       let i = match n {
-        Ok(m) => Box::new(Value::Double(m)),
+        Ok(m) => Value::Double(m),
 	Err(_) => panic!("unable to convert to double"),
       };
-      vec![SequenceConstructor::new(cons_literal).set_data(Some(i))]
+      vec![Constructor::Literal(i)]
     }
   )
   (input)
@@ -1068,26 +1036,26 @@ fn string_literal_single(input: &str) -> IResult<&str, String> {
   )
   (input)
 }
-fn string_literal(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn string_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     alt((
       string_literal_double ,
       string_literal_single
     )),
-    |s| vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(s))))]
+    |s| vec![Constructor::Literal(Value::StringOwned(s))]
   )
   (input)
 }
 // ContextItemExpr ::= '.'
-fn context_item(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn context_item(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     tag("."),
-    |_| vec![SequenceConstructor::new(cons_context_item)]
+    |_| vec![Constructor::ContextItem]
   )
   (input)
 }
 // ParenthesizedExpr ::= '(' Expr? ')'
-fn parenthesized_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
+fn parenthesized_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   delimited(
     tag("("),
     map(
@@ -1102,7 +1070,7 @@ fn parenthesized_expr(input: &str) -> IResult<&str, Vec<SequenceConstructor>> {
   (input)
 }
 
-pub fn parse(e: &str) -> Result<Vec<SequenceConstructor>, Error> {
+pub fn parse(e: &str) -> Result<Vec<Constructor>, Error> {
   match expr(e) {
     Ok((rest, value)) => {
       if rest == "" {
@@ -1126,10 +1094,15 @@ mod tests {
     fn nomxpath_parse_int() {
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_int().unwrap(), 1)
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	    assert_eq!(s[0].to_int().unwrap(), 1)
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton double/decimal sequence constructor
@@ -1137,10 +1110,15 @@ mod tests {
     fn nomxpath_parse_decimal() {
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_double().unwrap(), 1.2)
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	    assert_eq!(s[0].to_double(), 1.2)
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton double sequence constructor
@@ -1148,10 +1126,15 @@ mod tests {
     fn nomxpath_parse_double() {
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_double().unwrap(), 120.0)
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	     assert_eq!(s[0].to_double(), 120.0)
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     //#[test]
@@ -1163,10 +1146,15 @@ mod tests {
     fn nomxpath_parse_string_apos() {
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_string(), "abc")
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	     assert_eq!(s[0].to_string(), "abc")
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton string
@@ -1174,10 +1162,15 @@ mod tests {
     fn nomxpath_parse_string_apos_esc() {
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_string(), "abc'def")
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	     assert_eq!(s[0].to_string(), "abc'def")
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton string
@@ -1185,10 +1178,15 @@ mod tests {
     fn nomxpath_parse_string_quot() {
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_string(), "abc")
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	     assert_eq!(s[0].to_string(), "abc")
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton string
@@ -1196,34 +1194,49 @@ mod tests {
     fn nomxpath_parse_string_quot_esc() {
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_string(), r#"abc"def"#)
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	     assert_eq!(s[0].to_string(), r#"abc"def"#)
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
     #[test]
     fn nomxpath_parse_literal_sequence() {
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_int().unwrap(), 1);
-	  assert_eq!(s[1].to_string(), r#"abc"#);
-	  assert_eq!(s[2].to_int().unwrap(), 2);
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 3 {
+	     assert_eq!(s[0].to_int().unwrap(), 1);
+	     assert_eq!(s[1].to_string(), r#"abc"#);
+	     assert_eq!(s[2].to_int().unwrap(), 2);
+	  } else {
+	    panic!("sequence does not have 3 items")
+	  }
 	} else {
-	  panic!("sequence does not have 3 items")
+	  panic!("constructor does not have 3 items")
 	}
     }
     #[test]
     fn nomxpath_parse_literal_seq_ws() {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_int().unwrap(), 1);
-	  assert_eq!(s[1].to_string(), r#"abc"#);
-	  assert_eq!(s[2].to_int().unwrap(), 2);
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 3 {
+	     assert_eq!(s[0].to_int().unwrap(), 1);
+	     assert_eq!(s[1].to_string(), r#"abc"#);
+	     assert_eq!(s[2].to_int().unwrap(), 2);
+	  } else {
+	    panic!("sequence does not have 3 items")
+	  }
 	} else {
-	  panic!("sequence does not have 3 items")
+	  panic!("constructor does not have 3 items")
 	}
     }
 
@@ -1232,13 +1245,16 @@ mod tests {
     fn nomxpath_parse_context_item() {
         let e = parse(".").expect("failed to parse expression \".\"");
 	if e.len() == 1 {
-	  let s = &e[0].data;
-	  match s {
-	    None => assert!(true),
-	    _ => panic!("item is not a context item constructor")
+	  let mut ctxt = XPath::new().add_constructor_seq(e);
+	  ctxt.set_context(vec![Rc::new(Item::Value(Value::String("foobar")))]);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	    assert_eq!(s[0].to_string(), "foobar")
+	  } else {
+	    panic!("sequence is not a singleton")
 	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a singleton")
 	}
     }
 
@@ -1251,10 +1267,15 @@ mod tests {
     fn nomxpath_parse_singleton_paren() {
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
-	  let s = eval(e, &DynamicContext::new()).expect("unable to evaluate sequence constructor");
-	  assert_eq!(s[0].to_int().unwrap(), 1)
+	  let ctxt = XPath::new().add_constructor_seq(e);
+	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  if s.len() == 1 {
+	     assert_eq!(s[0].to_int().unwrap(), 1)
+	  } else {
+	    panic!("sequence is not a singleton")
+	  }
 	} else {
-	  panic!("sequence is not a singleton")
+	  panic!("constructor is not a single item")
 	}
     }
 

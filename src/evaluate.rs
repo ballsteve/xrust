@@ -56,6 +56,12 @@ impl<'a> XPath<'a> {
     self.constructor.push(c);
     self
   }
+  pub fn add_constructor_seq(mut self, s: Vec<Constructor<'a>>) -> Self {
+    for d in s {
+    	self.constructor.push(d);
+    }
+    self
+  }
   pub fn set_constructor(mut self, c: Vec<Constructor<'a>>) -> Self {
     self.constructor.clear();
     for d in c {
@@ -235,6 +241,12 @@ impl<'a> XPath<'a> {
 	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
 	  }
 	}
+	Constructor::Step(_nm) => {
+	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "step sequence constructor not implemented".to_string()})
+	}
+	Constructor::NotImplemented => {
+	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
+	}
       }
     }
 
@@ -252,7 +264,7 @@ fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
 
 // Defines how we can construct a sequence
 #[derive(Clone)]
-enum Constructor<'a> {
+pub enum Constructor<'a> {
   Literal(Value<'a>),		// A literal, scalar value
   ContextItem,			// The context item from the dynamic context
   Or(Vec<Vec<Constructor<'a>>>),	// Logical OR. Each element of the outer vector is an operand.
@@ -270,7 +282,7 @@ enum Constructor<'a> {
   Child(NodeMatch),			// Child nodes of the context item
   Parent(NodeMatch),			// Parent element of the context item
   // DescendantOrSelf(NodeMatch),		// Descendants of the context item
-  // Step,				// Next step of the path
+  Step(NodeMatch),				// Next step of the path
   // RelativePath,			// Next step of the path
   GeneralComparison(Operator, Vec<Vec<Constructor<'a>>>),	// General comparison
   ValueComparison(Operator, Vec<Vec<Constructor<'a>>>),	// Value comparison
@@ -280,6 +292,7 @@ enum Constructor<'a> {
   Concat(Vec<Vec<Constructor<'a>>>),	// Concatentate string values
   Range(Vec<Vec<Constructor<'a>>>),		// Range of integers
   Arithmetic(Vec<ArithmeticOperand<'a>>),	// Addition, subtraction, multiply, divide
+  NotImplemented,	// TODO: implement everything so this can be removed
 }
 
 #[derive(Clone)]
@@ -356,10 +369,24 @@ pub enum ArithmeticOperator {
   Subtract,
   Modulo,
 }
+impl ArithmeticOperator {
+  pub fn from(a: &str) -> ArithmeticOperator {
+    match a {
+      "+" => ArithmeticOperator::Add,
+      "*" => ArithmeticOperator::Multiply,
+      "div" => ArithmeticOperator::Divide,
+      "idiv" => ArithmeticOperator::IntegerDivide,
+      "-" => ArithmeticOperator::Subtract,
+      "mod" => ArithmeticOperator::Modulo,
+      _ => ArithmeticOperator::Noop,
+    }
+  }
+}
+
 #[derive(Clone)]
 pub struct ArithmeticOperand<'a> {
-  op: ArithmeticOperator,
-  operand: Vec<Constructor<'a>>,
+  pub op: ArithmeticOperator,
+  pub operand: Vec<Constructor<'a>>,
 }
 
 fn general_comparison<'a>(ctxt: &XPath, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
