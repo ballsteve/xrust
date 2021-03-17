@@ -204,6 +204,37 @@ impl<'a> XPath<'a> {
 	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
 	  }
 	}
+	Constructor::Child(nm) => {
+	  // TODO: interpret the node match. At the moment, this implements child::node()
+	  if self.context.is_some() {
+	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
+	      Item::Node(n) => {
+	        n.iter_rc().for_each(|c| ret.new_node(c.clone()));
+	      }
+	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	    }
+	  } else {
+	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	  }
+	}
+	Constructor::Parent(nm) => {
+	  // TODO: interpret the node match. At the moment, this implements parent::*
+	  if self.context.is_some() {
+	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
+	      Item::Node(n) => {
+	        match n.parent() {
+		  Some(p) => {
+		    ret.new_node(p.clone())
+		  }
+		  None => () // empty sequence is the result
+		}
+	      }
+	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	    }
+	  } else {
+	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	  }
+	}
       }
     }
 
@@ -236,7 +267,8 @@ enum Constructor<'a> {
   // Unary,
   // SimpleMap,
   Root,				// Root node of the context item
-  // Child(NodeMatch),			// Child nodes of the context item
+  Child(NodeMatch),			// Child nodes of the context item
+  Parent(NodeMatch),			// Parent element of the context item
   // DescendantOrSelf(NodeMatch),		// Descendants of the context item
   // Step,				// Next step of the path
   // RelativePath,			// Next step of the path
@@ -649,7 +681,40 @@ mod tests {
         panic!("sequence is not a singleton")
       }
     }
-    // TODO: ranges resulting in empty sequence, start = end, negative tests
+    #[test]
+    fn node_child_all() {
+      let mut ctxt = XPath::new().add_constructor(Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}));
+      let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+      let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
+      let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
+      e.push_back(t);
+      d.push_back(e);
+      let s = vec![Rc::new(Item::Node(d.front().unwrap().clone()))];
+      ctxt.set_context(s);
+      let e = ctxt.evaluate().expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "Test text")
+      } else {
+        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+      }
+    }
+    #[test]
+    fn node_parent_any() {
+      let mut ctxt = XPath::new().add_constructor(Constructor::Parent(NodeMatch{axis: Axis::Parent, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}));
+      let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+      let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Root".to_string()));
+      let t = Tree::new(NodeDefn::new(NodeType::Element).set_name("Child".to_string()));
+      e.push_back(t);
+      d.push_back(e);
+      let s = vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))];
+      ctxt.set_context(s);
+      let e = ctxt.evaluate().expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
+      } else {
+        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+      }
+    }
 
 } 
 
