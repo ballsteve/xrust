@@ -13,7 +13,7 @@ use nom:: {
   sequence::{delimited, pair, tuple},
   multi::{many0, separated_nonempty_list},
   combinator::{complete, map, opt, recognize},
-  bytes::complete::{tag, take_while, take_while1, take_while_m_n},
+  bytes::complete::tag,
 };
 use crate::item::*;
 use crate::xdmerror::*;
@@ -704,17 +704,24 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       if b.len() == 0 {
         a
       } else {
-//        let mut r = Vec::new();
+        let mut r = Vec::new();
 
-//        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
-//	r.push(a);
+        r.push(a);
 
-//	for ((_x, c, _y), d) in b {
-//	  r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(c.to_string()))))]);
-//	  r.push(d);
-//	}
-//        vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]
-        vec![Constructor::NotImplemented]
+	for ((_x, c, _y), d) in b {
+	  match c {
+	    "/" => {
+	      r.push(d)
+	    }
+	    _ => {
+	      // Insert a descendant-or-self::* step
+	      r.push(vec![Constructor::DescendantOrSelf(NodeMatch{axis: Axis::DescendantOrSelf, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})]);
+	      r.push(d)
+	    }
+	  }
+	}
+
+        vec![Constructor::Path(r)]
       }
     }
   )
@@ -760,8 +767,8 @@ fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
 fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   //println!("step_expr: input \"{}\"", input);
   alt((
-    postfix_expr,
-    axisstep
+    postfix_expr, // These two return different objects; we need to switch between them
+    axisstep      // TODO: define an enum that allows us to do the switch
   ))
   (input)
 }

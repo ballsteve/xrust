@@ -7,7 +7,7 @@ use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
 //use crate::parsexml::parse;
-use trees::{RcNode, Tree};
+use trees::{tr, RcNode, Tree};
 
 // The context for evaluating an XPath expression
 #[derive(Clone)]
@@ -71,7 +71,7 @@ impl<'a> XPath<'a> {
   }
 
   // This is where the action is!
-  pub fn evaluate(&self) -> Result<Sequence, Error> {
+  pub fn evaluate(&mut self) -> Result<Sequence, Error> {
     let mut ret: Sequence = Vec::new();
 
     // Each constructor will add an item to the result sequence
@@ -94,7 +94,7 @@ impl<'a> XPath<'a> {
 	  // Future: Evaluate every operand to check for dynamic errors
 	  let mut b = false;
 	  for i in v {
-	    let j = self.clone().set_constructor(i.clone());
+	    let mut j = self.clone().set_constructor(i.clone());
 	    let k = j.evaluate().expect("evaluating operand failed");
 	    b = k.to_bool();
 	    if b {break};
@@ -107,7 +107,7 @@ impl<'a> XPath<'a> {
 	  // Future: Evaluate every operand to check for dynamic errors
 	  let mut b = true;
 	  for i in v {
-	    let j = self.clone().set_constructor(i.clone());
+	    let mut j = self.clone().set_constructor(i.clone());
 	    let k = j.evaluate().expect("evaluating operand failed");
 	    b = k.to_bool();
 	    if !b {break};
@@ -131,7 +131,7 @@ impl<'a> XPath<'a> {
         Constructor::Concat(v) => {
 	  let mut r = String::new();
 	  for u in v {
-	    let s = self.clone().set_constructor(u.clone());
+	    let mut s = self.clone().set_constructor(u.clone());
 	    let t = s.evaluate().expect("evaluating operand failed");
 	    r.push_str(t.to_string().as_str());
 	  }
@@ -140,9 +140,9 @@ impl<'a> XPath<'a> {
         Constructor::Range(v) => {
 	  if v.len() == 2 {
             // Evaluate the two operands: they must both be literal integer items
-	    let startc = self.clone().set_constructor(v[0].clone());
+	    let mut startc = self.clone().set_constructor(v[0].clone());
 	    let start = startc.evaluate().expect("evaluating start operand failed");
-	    let endc = self.clone().set_constructor(v[1].clone());
+	    let mut endc = self.clone().set_constructor(v[1].clone());
 	    let end = endc.evaluate().expect("evaluating end operand failed");
 	    if start.len() == 0 || end.len() == 0 {
 	      // empty sequence is the result
@@ -178,7 +178,7 @@ impl<'a> XPath<'a> {
 	  let mut acc: f64 = 0.0;
 
           for j in v {
-	    let i = self.clone().set_constructor(j.operand.clone());
+	    let mut i = self.clone().set_constructor(j.operand.clone());
 	    let k = i.evaluate().expect("evaluating operand failed");
 	    let u: f64;
 	    if k.len() != 1 {
@@ -241,8 +241,50 @@ impl<'a> XPath<'a> {
 	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
 	  }
 	}
-	Constructor::Step(_nm) => {
-	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "step sequence constructor not implemented".to_string()})
+	Constructor::DescendantOrSelf(nm) => {
+	  // TODO: interpret the node match. At the moment, this implements child::node()
+	  if self.context.is_some() {
+	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
+	      Item::Node(n) => {
+	        n.iter_rc().for_each(|c| ret.new_node(c.clone()));
+	      }
+	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	    }
+	  } else {
+	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	  }
+	}
+	Constructor::Path(s) => {
+	  // s is a vector of sequence constructors
+	  // Each step creates a new context for the next step
+	  // TODO: if initial context is None then error
+
+	  ret = s.iter().fold(
+	    if self.context.is_some() {self.context.as_ref().unwrap().clone()} else {vec![]},
+	    |a, c| {
+	      let mut xp: XPath = XPath::new();
+	      xp.context.replace(a);
+	      xp.posn = Some(0);
+    	      for d in c {
+    	        xp.constructor.push(d.clone());
+    	      }
+	      let t = path_helper(&mut xp).expect("failed to evaluate step");
+	      t.clone()
+	    }
+	  );
+	}
+	Constructor::Step(nm) => {
+	  // TODO: interpret the node match. At the moment, this implements child::node()
+	  if self.context.is_some() {
+	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
+	      Item::Node(n) => {
+	        n.iter_rc().for_each(|c| ret.new_node(c.clone()));
+	      }
+	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	    }
+	  } else {
+	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	  }
 	}
 	Constructor::NotImplemented => {
 	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
@@ -260,6 +302,10 @@ fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
   } else {
     find_root(n.parent().unwrap())
   }
+}
+
+fn path_helper<'a>(xp: &'a mut XPath) -> Result<Sequence<'a>, Error> {
+  xp.evaluate()
 }
 
 // Defines how we can construct a sequence
@@ -281,9 +327,9 @@ pub enum Constructor<'a> {
   Root,				// Root node of the context item
   Child(NodeMatch),			// Child nodes of the context item
   Parent(NodeMatch),			// Parent element of the context item
-  // DescendantOrSelf(NodeMatch),		// Descendants of the context item
-  Step(NodeMatch),				// Next step of the path
-  // RelativePath,			// Next step of the path
+  DescendantOrSelf(NodeMatch),		// Descendants of the context item
+  Path(Vec<Vec<Constructor<'a>>>),	// Step in the path
+  Step(NodeMatch),	// Next step of the path
   GeneralComparison(Operator, Vec<Vec<Constructor<'a>>>),	// General comparison
   ValueComparison(Operator, Vec<Vec<Constructor<'a>>>),	// Value comparison
   // Is,
@@ -743,5 +789,36 @@ mod tests {
       }
     }
 
+    #[test]
+    fn step() {
+      let mut ctxt = XPath::new().add_constructor(Constructor::Root);
+      ctxt.add_constructor(Constructor::Path(vec![
+        vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+        vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+      ]));
+
+      let d = RcNode::from(Tree::<NodeDefn>::from_tuple(
+        (NodeDefn::new(NodeType::Document),
+          (NodeDefn::new(NodeType::Element).set_name("Level1".to_string()),
+	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
+	     NodeDefn::new(NodeType::Text).set_value("one".to_string())),
+	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
+	     NodeDefn::new(NodeType::Text).set_value("two".to_string())),
+	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
+	     NodeDefn::new(NodeType::Text).set_value("three".to_string()))
+	  )
+	)
+      ));
+      let s = vec![Rc::new(Item::Node(d.clone()))];
+      ctxt.set_context(s);
+      let e = ctxt.evaluate().expect("evaluation failed");
+      if e.len() == 3 {
+        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
+        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
+        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+      } else {
+        panic!(format!("sequence does not have 3 items: \"{}\"", e.to_string()))
+      }
+    }
 } 
 
