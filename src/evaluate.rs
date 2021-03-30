@@ -7,25 +7,24 @@ use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
 //use crate::parsexml::parse;
-use trees::{tr, RcNode, Tree};
+use trees::{RcNode, Tree};
 
 // The context for evaluating an XPath expression
 #[derive(Clone)]
-pub struct XPath<'a> {
-  context: Option<Sequence<'a>>,		// The sequence currently being evaluated
+pub struct Context<'a> {
+  pub context: Option<Sequence<'a>>,		// The sequence currently being evaluated
   // The focus of the evaluation can be defined by the context sequence, above, plus the position of the context_item.
   // context_item = context[posn]
   // context_size = context.len()
-  posn: Option<usize>,			// Context position
-  constructor: Vec<Constructor<'a>>,
+  pub posn: Option<usize>,			// Context position
 }
 
-impl<'a> XPath<'a> {
-  pub fn new() -> XPath<'a> {
-    XPath{context: None, posn: None, constructor: vec![]}
+impl<'a> Context<'a> {
+  pub fn new() -> Context<'a> {
+    Context{context: None, posn: None,}
   }
-  pub fn clone(&self) -> XPath<'a> {
-    XPath{context: self.context.clone(), posn: self.posn, constructor: vec![]}
+  pub fn clone(&self) -> Context<'a> {
+    Context{context: self.context.clone(), posn: self.posn,}
   }
   pub fn set_context(&mut self, s: Sequence<'a>) {
     self.context = Some(s);
@@ -52,247 +51,292 @@ impl<'a> XPath<'a> {
       None
     }
   }
-  pub fn add_constructor(mut self, c: Constructor<'a>) -> Self {
-    self.constructor.push(c);
-    self
-  }
-  pub fn add_constructor_seq(mut self, s: Vec<Constructor<'a>>) -> Self {
-    for d in s {
-    	self.constructor.push(d);
+}
+
+// Evaluate a sequence constructor, given a context
+//pub fn evaluate<'a>(ctxt: &'a Context, c: &'a Vec<Constructor<'a>>) -> Result<Sequence<'a>, Error> {
+//  Ok(c.iter().map(|a| evaluate_one(ctxt, a).expect("evaluation of item failed")).flatten().collect())
+//}
+
+pub fn evaluate<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Vec<Constructor<'a>>) -> Result<Sequence<'a>, Error> {
+  Ok(c.iter().map(|a| evaluate_one(ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect())
+}
+
+//pub fn evaluate_2_one<'a>(ctxt: Option<Sequence>, posn: Option<usize>, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
+//  match c {
+//    Constructor::Literal(l) => {
+//	let mut seq = Sequence::new();
+//	seq.new_value(l.clone());
+//	Ok(seq)
+//    }
+//    _ => {
+//      Ok(vec![])
+//    }
+//  }
+//}
+
+// Evaluate an item constructor, given a context
+// If a constructor returns a non-singleton sequence, then it is unpacked
+//fn evaluate_one<'a>(ctxt: &'a Context, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
+fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
+  match c {
+    Constructor::Literal(l) => {
+	let mut seq = Sequence::new();
+	seq.new_value(l.clone());
+	Ok(seq)
     }
-    self
-  }
-  pub fn set_constructor(mut self, c: Vec<Constructor<'a>>) -> Self {
-    self.constructor.clear();
-    for d in c {
-    	self.constructor.push(d);
-    }
-    self
-  }
-
-  // This is where the action is!
-  pub fn evaluate(&mut self) -> Result<Sequence, Error> {
-    let mut ret: Sequence = Vec::new();
-
-    // Each constructor will add an item to the result sequence
-    // If a constructor returns a non-singleton sequence, then it is unpacked
-    for c in &self.constructor {
-      match c {
-        Constructor::Literal(l) => {
-	  ret.new_value(l.clone())
-	}
-        Constructor::ContextItem => {
-	  if self.context.is_some() {
-	    ret.add(&self.context.as_ref().unwrap()[self.posn.unwrap()])
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-	  }
-	}
-        Constructor::Or(v) => {
-	  // Evaluate each operand to a boolean result. Return true if any of the operands' result is true
-	  // Optimisation: stop upon the first true result.
-	  // Future: Evaluate every operand to check for dynamic errors
-	  let mut b = false;
-	  for i in v {
-	    let mut j = self.clone().set_constructor(i.clone());
-	    let k = j.evaluate().expect("evaluating operand failed");
-	    b = k.to_bool();
-	    if b {break};
-	  }
-	  ret.new_value(Value::Boolean(b))
-	}
-        Constructor::And(v) => {
-	  // Evaluate each operand to a boolean result. Return false if any of the operands' result is false
-	  // Optimisation: stop upon the first false result.
-	  // Future: Evaluate every operand to check for dynamic errors
-	  let mut b = true;
-	  for i in v {
-	    let mut j = self.clone().set_constructor(i.clone());
-	    let k = j.evaluate().expect("evaluating operand failed");
-	    b = k.to_bool();
-	    if !b {break};
-	  }
-	  ret.new_value(Value::Boolean(b))
-	}
-        Constructor::GeneralComparison(o, v) => {
-	  if v.len() == 2 {
-	    ret.new_value(Value::Boolean(general_comparison(self, *o, &v[0], &v[1]).expect("comparison evaluation failed")))
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-	  }
-	}
-        Constructor::ValueComparison(o, v) => {
-	  if v.len() == 2 {
-	    ret.new_value(Value::Boolean(value_comparison(self, *o, &v[0], &v[1]).expect("comparison evaluation failed")))
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-	  }
-	}
-        Constructor::Concat(v) => {
-	  let mut r = String::new();
-	  for u in v {
-	    let mut s = self.clone().set_constructor(u.clone());
-	    let t = s.evaluate().expect("evaluating operand failed");
-	    r.push_str(t.to_string().as_str());
-	  }
-	  ret.new_value(Value::StringOwned(r));
-	}
-        Constructor::Range(v) => {
-	  if v.len() == 2 {
-            // Evaluate the two operands: they must both be literal integer items
-	    let mut startc = self.clone().set_constructor(v[0].clone());
-	    let start = startc.evaluate().expect("evaluating start operand failed");
-	    let mut endc = self.clone().set_constructor(v[1].clone());
-	    let end = endc.evaluate().expect("evaluating end operand failed");
-	    if start.len() == 0 || end.len() == 0 {
-	      // empty sequence is the result
-	    } else if start.len() == 1 {
-	      if end.len() == 1 {
-	        let i = start[0].to_int().unwrap();
-	    	let j = end[0].to_int().unwrap();
-	    	if i > j {
-		  // empty sequence result
-	    	} else if i == j {
-		  ret.new_value(Value::Integer(i))
-	    	} else {
-		  for k in i..=j {
-		    ret.new_value(Value::Integer(k))
-		  }
-		}
-	      } else {
-	        return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
-	      }
-	    } else {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
-	    }
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-	  }
-	}
-        Constructor::Arithmetic(v) => {
-	  // Type: the result will be a number, but integer or double?
-	  // If all of the operands are integers, then the result is integer otherwise double
-	  // TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
-	  // In the meantime, let's assume the result will be double and convert any integers
-
-	  let mut acc: f64 = 0.0;
-
-          for j in v {
-	    let mut i = self.clone().set_constructor(j.operand.clone());
-	    let k = i.evaluate().expect("evaluating operand failed");
-	    let u: f64;
-	    if k.len() != 1 {
-	      return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
-	    } else {
-	      u = k[0].to_double();
-	      match j.op {
-	        ArithmeticOperator::Noop => acc = u,
-		ArithmeticOperator::Add => acc += u,
-		ArithmeticOperator::Subtract => acc -= u,
-		ArithmeticOperator::Multiply => acc *= u,
-		ArithmeticOperator::Divide => acc /= u,
-		ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
-		ArithmeticOperator::Modulo => acc = acc % u,
-	      }
-	    }
-	  }
-	  ret.new_value(Value::Double(acc))
-	}
-	Constructor::Root => {
-	  if self.context.is_some() {
-	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
-	      Item::Node(n) => {
-	        ret.new_node(find_root(n.clone()));
-	      }
-	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	    }
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-	  }
-	}
-	Constructor::Child(nm) => {
-	  // TODO: interpret the node match. At the moment, this implements child::node()
-	  if self.context.is_some() {
-	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
-	      Item::Node(n) => {
-	        n.iter_rc().for_each(|c| ret.new_node(c.clone()));
-	      }
-	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	    }
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-	  }
-	}
-	Constructor::Parent(nm) => {
-	  // TODO: interpret the node match. At the moment, this implements parent::*
-	  if self.context.is_some() {
-	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
-	      Item::Node(n) => {
-	        match n.parent() {
-		  Some(p) => {
-		    ret.new_node(p.clone())
-		  }
-		  None => () // empty sequence is the result
-		}
-	      }
-	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	    }
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-	  }
-	}
-	Constructor::DescendantOrSelf(nm) => {
-	  // TODO: interpret the node match. At the moment, this implements child::node()
-	  if self.context.is_some() {
-	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
-	      Item::Node(n) => {
-	        n.iter_rc().for_each(|c| ret.new_node(c.clone()));
-	      }
-	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	    }
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-	  }
-	}
-	Constructor::Path(s) => {
-	  // s is a vector of sequence constructors
-	  // Each step creates a new context for the next step
-	  // TODO: if initial context is None then error
-
-	  ret = s.iter().fold(
-	    if self.context.is_some() {self.context.as_ref().unwrap().clone()} else {vec![]},
-	    |a, c| {
-	      let mut xp: XPath = XPath::new();
-	      xp.context.replace(a);
-	      xp.posn = Some(0);
-    	      for d in c {
-    	        xp.constructor.push(d.clone());
-    	      }
-	      let t = path_helper(&mut xp).expect("failed to evaluate step");
-	      t.clone()
-	    }
-	  );
-	}
-	Constructor::Step(nm) => {
-	  // TODO: interpret the node match. At the moment, this implements child::node()
-	  if self.context.is_some() {
-	    match &*(self.context.as_ref().unwrap()[self.posn.unwrap()]) {
-	      Item::Node(n) => {
-	        n.iter_rc().for_each(|c| ret.new_node(c.clone()));
-	      }
-	      _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	    }
-	  } else {
-	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-	  }
-	}
-	Constructor::NotImplemented => {
-	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
-	}
+    Constructor::ContextItem => {
+      if ctxt.is_some() {
+	let mut seq = Sequence::new();
+	seq.add(&ctxt.as_ref().unwrap()[posn.unwrap()]);
+	Ok(seq)
+      } else {
+	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
       }
     }
+    Constructor::Or(v) => {
+      // Evaluate each operand to a boolean result. Return true if any of the operands' result is true
+      // Optimisation: stop upon the first true result.
+      // Future: Evaluate every operand to check for dynamic errors
+      let mut b = false;
+      for i in v {
+	let k = evaluate(ctxt.clone(), posn, i).expect("evaluating operand failed");
+	b = k.to_bool();
+	if b {break};
+      }
+      let mut seq = Sequence::new();
+      seq.new_value(Value::Boolean(b));
+      Ok(seq)
+    }
+    Constructor::And(v) => {
+      // Evaluate each operand to a boolean result. Return false if any of the operands' result is false
+      // Optimisation: stop upon the first false result.
+      // Future: Evaluate every operand to check for dynamic errors
+      let mut b = true;
+      for i in v {
+	let k = evaluate(ctxt.clone(), posn, i).expect("evaluating operand failed");
+	b = k.to_bool();
+	if !b {break};
+      }
+      let mut seq = Sequence::new();
+      seq.new_value(Value::Boolean(b));
+      Ok(seq)
+    }
+    Constructor::GeneralComparison(o, v) => {
+      if v.len() == 2 {
+	let mut seq = Sequence::new();
+	seq.new_value(Value::Boolean(
+	  general_comparison(ctxt, posn, *o, &v[0], &v[1])
+	    .expect("comparison evaluation failed")
+	  ));
+      	Ok(seq)
+      } else {
+	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+      }
+    }
+    Constructor::ValueComparison(o, v) => {
+      if v.len() == 2 {
+	let mut seq = Sequence::new();
+	seq.new_value(Value::Boolean(
+	  value_comparison(ctxt, posn, *o, &v[0], &v[1])
+	    .expect("comparison evaluation failed")
+	));
+      	Ok(seq)
+      } else {
+	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+      }
+    }
+    Constructor::Concat(v) => {
+      let mut r = String::new();
+      for u in v {
+	let t = evaluate(ctxt.clone(), posn, u).expect("evaluating operand failed");
+	r.push_str(t.to_string().as_str());
+      }
+      let mut seq = Sequence::new();
+      seq.new_value(Value::StringOwned(r));
+      Ok(seq)
+    }
+    Constructor::Range(v) => {
+      if v.len() == 2 {
+        // Evaluate the two operands: they must both be literal integer items
+	let start = evaluate(ctxt.clone(), posn, &v[0]).expect("evaluating start operand failed");
+	let end = evaluate(ctxt.clone(), posn, &v[1]).expect("evaluating end operand failed");
+	if start.len() == 0 || end.len() == 0 {
+	  // empty sequence is the result
+	  Ok(vec![])
+	} else if start.len() == 1 {
+	  if end.len() == 1 {
+	    let i = start[0].to_int().unwrap();
+	    let j = end[0].to_int().unwrap();
+	    if i > j {
+	      // empty sequence result
+	      Ok(vec![])
+	    } else if i == j {
+	      let mut seq = Sequence::new();
+	      seq.new_value(Value::Integer(i));
+      	      Ok(seq)
+	    } else {
+	      let mut result = Sequence::new();
+	      for k in i..=j {
+	        result.new_value(Value::Integer(k))
+	      }
+	      Ok(result)
+	    }
+	  } else {
+	    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
+	  }
+	} else {
+	  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
+	}
+      } else {
+	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+      }
+    }
+    Constructor::Arithmetic(v) => {
+      // Type: the result will be a number, but integer or double?
+      // If all of the operands are integers, then the result is integer otherwise double
+      // TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
+      // In the meantime, let's assume the result will be double and convert any integers
 
-    Ok(ret)
+      let mut acc: f64 = 0.0;
+
+      for j in v {
+	let k = evaluate(ctxt.clone(), posn, &j.operand).expect("evaluating operand failed");
+	let u: f64;
+	if k.len() != 1 {
+	  return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
+	} else {
+	  u = k[0].to_double();
+	  match j.op {
+	    ArithmeticOperator::Noop => acc = u,
+	    ArithmeticOperator::Add => acc += u,
+	    ArithmeticOperator::Subtract => acc -= u,
+	    ArithmeticOperator::Multiply => acc *= u,
+	    ArithmeticOperator::Divide => acc /= u,
+	    ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
+	    ArithmeticOperator::Modulo => acc = acc % u,
+	  }
+	}
+      }
+      let mut seq = Sequence::new();
+      seq.new_value(Value::Double(acc));
+      Ok(seq)
+    }
+    Constructor::Root => {
+      if ctxt.is_some() {
+        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::Node(n) => {
+	    let mut seq = Sequence::new();
+	    seq.new_node(find_root(n.clone()));
+      	    Ok(seq)
+	  }
+	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	}
+      } else {
+	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+      }
+    }
+    Constructor::Child(_nm) => {
+      // TODO: interpret the node match. At the moment, this implements child::node()
+      if ctxt.is_some() {
+        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::Node(n) => {
+	    let mut result: Sequence = Vec::new();
+	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
+	    Ok(result)
+	  }
+	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	}
+      } else {
+	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+      }
+    }
+    Constructor::Parent(_nm) => {
+      // TODO: interpret the node match. At the moment, this implements parent::*
+      if ctxt.is_some() {
+	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::Node(n) => {
+	    match n.parent() {
+	      Some(p) => {
+		let mut seq = Sequence::new();
+		seq.new_node(p.clone());
+      		Ok(seq)
+	      }
+	      None => {
+	        // empty sequence is the result
+		let seq = Sequence::new();
+      		Ok(seq)
+	      }
+	    }
+	  }
+	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	}
+      } else {
+	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+      }
+    }
+    Constructor::DescendantOrSelf(_nm) => {
+      // TODO: interpret the node match. At the moment, this implements child::node()
+      if ctxt.is_some() {
+	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::Node(n) => {
+	    let mut result: Sequence = Vec::new();
+	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
+	    Ok(result)
+	  }
+	  _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	}
+      } else {
+	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+      }
+    }
+    Constructor::Path(s) => {
+      // s is a vector of sequence constructors
+      // Each step creates a new context for the next step
+      // TODO: if initial context is None then error
+
+      let u: Sequence; // accumulator - each time around the loop this will be the new context
+
+      if ctxt.is_some() {
+        u = ctxt.unwrap().clone()
+      } else {
+        u = vec![]
+      }
+
+//      for t in s {
+//      	let mut v: Sequence = SequenceTrait::clone(&u);
+//	v = evaluate(&Some(v), Some(0), t).expect("failed to evaluate step"); // TODO: handle error
+//	u.clear();
+//	u = SequenceTrait::clone(&v);
+//      }
+//
+//      Ok(u)
+
+      Ok(s.iter().fold(
+	    u,
+	    |a, c| {
+	      evaluate(Some(a), Some(0), c).expect("failed to evaluate step")
+	    }
+      ))
+    }
+    Constructor::Step(_nm) => {
+      // TODO: interpret the node match. At the moment, this implements child::node()
+      if ctxt.is_some() {
+	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::Node(n) => {
+	    let mut result: Sequence = Vec::new();
+	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
+	    Ok(result)
+	  }
+	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	}
+      } else {
+	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+      }
+    }
+    Constructor::NotImplemented => {
+      Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
+    }
   }
 }
 
@@ -302,10 +346,6 @@ fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
   } else {
     find_root(n.parent().unwrap())
   }
-}
-
-fn path_helper<'a>(xp: &'a mut XPath) -> Result<Sequence<'a>, Error> {
-  xp.evaluate()
 }
 
 // Defines how we can construct a sequence
@@ -435,13 +475,11 @@ pub struct ArithmeticOperand<'a> {
   pub operand: Vec<Constructor<'a>>,
 }
 
-fn general_comparison<'a>(ctxt: &XPath, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
+fn general_comparison<'a>(ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
   let mut b = false;
-  let left_seq_a = ctxt.clone().set_constructor(left.clone());
-  let left_seq = left_seq_a.evaluate().expect("evaluating left-hand sequence failed");
+  let left_seq = evaluate(ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   //println!("left sequence ({} items) = \"{}\"", left_seq.len(), left_seq.to_string());
-  let right_seq_a = ctxt.clone().set_constructor(right.clone());
-  let right_seq = right_seq_a.evaluate().expect("evaluating right-hand sequence failed");
+  let right_seq = evaluate(ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
   //println!("right sequence ({} items) = \"{}\"", right_seq.len(), right_seq.to_string());
   for l in left_seq {
     for r in &right_seq {
@@ -457,12 +495,10 @@ fn general_comparison<'a>(ctxt: &XPath, op: Operator, left: &Vec<Constructor<'a>
 }
 
 // Operands must be singletons
-fn value_comparison<'a>(ctxt: &XPath, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
-  let left_seq_a = ctxt.clone().set_constructor(left.clone());
-  let left_seq = left_seq_a.evaluate().expect("evaluating left-hand sequence failed");
+fn value_comparison<'a>(ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
+  let left_seq = evaluate(ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   if left_seq.len() == 1 {
-    let right_seq_a = ctxt.clone().set_constructor(right.clone());
-    let right_seq = right_seq_a.evaluate().expect("evaluating right-hand sequence failed");
+    let right_seq = evaluate(ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
     if right_seq.len() == 1 {
       Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
     } else {
@@ -479,8 +515,9 @@ mod tests {
 
     #[test]
     fn literal_string() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::String("foobar")));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::Literal(Value::String("foobar"))];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "foobar")
       } else {
@@ -490,8 +527,9 @@ mod tests {
 
     #[test]
     fn literal_int() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Integer(456)));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::Literal(Value::Integer(456))];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_int().unwrap(), 456)
       } else {
@@ -501,8 +539,9 @@ mod tests {
 
     #[test]
     fn literal_decimal() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Decimal(d128!(34.56))));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::Literal(Value::Decimal(d128!(34.56)))];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "34.56")
       } else {
@@ -512,8 +551,9 @@ mod tests {
 
     #[test]
     fn literal_bool() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Boolean(false)));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::Literal(Value::Boolean(false))];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
       } else {
@@ -523,8 +563,9 @@ mod tests {
 
     #[test]
     fn literal_double() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::Double(4.56)));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::Literal(Value::Double(4.56))];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 4.56)
       } else {
@@ -534,8 +575,12 @@ mod tests {
 
     #[test]
     fn sequence_literal() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::String("foo"))).add_constructor(Constructor::Literal(Value::String("bar")));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Literal(Value::String("foo")),
+	  Constructor::Literal(Value::String("bar")),
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 2 {
         assert_eq!(s.to_string(), "foobar")
       } else {
@@ -545,8 +590,12 @@ mod tests {
 
     #[test]
     fn sequence_literal_mixed() {
-      let ctxt = XPath::new().add_constructor(Constructor::Literal(Value::String("foo"))).add_constructor(Constructor::Literal(Value::Integer(123)));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Literal(Value::String("foo")),
+	  Constructor::Literal(Value::Integer(123)),
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 2 {
         assert_eq!(s.to_string(), "foo123")
       } else {
@@ -556,10 +605,10 @@ mod tests {
 
     #[test]
     fn context_item() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::ContextItem);
       let s = vec![Rc::new(Item::Value(Value::String("foobar")))];
-      ctxt.set_context(s);
-      let result = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::ContextItem];
+      let result = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
       if result.len() == 1 {
         assert_eq!(result[0].to_string(), "foobar")
       } else {
@@ -569,10 +618,12 @@ mod tests {
 
     #[test]
     fn context_item_2() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::ContextItem).add_constructor(Constructor::ContextItem);
-      let s = vec![Rc::new(Item::Value(Value::String("foobar")))];
-      ctxt.set_context(s);
-      let result = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::ContextItem,
+	  Constructor::ContextItem,
+	];
+      let result = evaluate(Some(vec![Rc::new(Item::Value(Value::String("foobar")))]), Some(0), &cons)
+        .expect("evaluation failed");
       if result.len() == 2 {
         assert_eq!(result.to_string(), "foobarfoobar")
       } else {
@@ -582,8 +633,16 @@ mod tests {
 
     #[test]
     fn or() {
-      let ctxt = XPath::new().add_constructor(Constructor::Or(vec![vec![Constructor::Literal(Value::Boolean(true))], vec![Constructor::Literal(Value::Boolean(false))]]));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Or(
+	    vec![
+	      vec![Constructor::Literal(Value::Boolean(true))],
+	      vec![Constructor::Literal(Value::Boolean(false))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
       } else {
@@ -594,8 +653,16 @@ mod tests {
 
     #[test]
     fn and() {
-      let ctxt = XPath::new().add_constructor(Constructor::And(vec![vec![Constructor::Literal(Value::Boolean(true))], vec![Constructor::Literal(Value::Boolean(false))]]));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::And(
+	    vec![
+	      vec![Constructor::Literal(Value::Boolean(true))],
+	      vec![Constructor::Literal(Value::Boolean(false))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
       } else {
@@ -606,8 +673,17 @@ mod tests {
 
     #[test]
     fn value_comparison_int_true() {
-      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::Integer(1))], vec![Constructor::Literal(Value::Integer(1))]]));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::ValueComparison(
+	    Operator::Equal,
+	    vec![
+	      vec![Constructor::Literal(Value::Integer(1))],
+	      vec![Constructor::Literal(Value::Integer(1))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
       } else {
@@ -617,8 +693,17 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_int_false() {
-      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::Integer(1))], vec![Constructor::Literal(Value::Integer(2))]]));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::ValueComparison(
+	    Operator::Equal,
+	    vec![
+	      vec![Constructor::Literal(Value::Integer(1))],
+	      vec![Constructor::Literal(Value::Integer(2))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
       } else {
@@ -628,8 +713,17 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_true() {
-      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::String("foo"))], vec![Constructor::Literal(Value::String("foo"))]]));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::ValueComparison(
+	    Operator::Equal,
+	    vec![
+	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![Constructor::Literal(Value::String("foo"))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
       } else {
@@ -639,8 +733,17 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_false() {
-      let ctxt = XPath::new().add_constructor(Constructor::ValueComparison(Operator::Equal, vec![vec![Constructor::Literal(Value::String("foo"))], vec![Constructor::Literal(Value::String("bar"))]]));
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::ValueComparison(
+	    Operator::Equal,
+	    vec![
+	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![Constructor::Literal(Value::String("bar"))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+        .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
       } else {
@@ -653,14 +756,20 @@ mod tests {
 
     #[test]
     fn general_comparison_string_true() {
-      let ctxt = XPath::new().add_constructor(Constructor::GeneralComparison(
-        Operator::Equal,
-	vec![
-	  vec![Constructor::Literal(Value::String("foo"))],
-	  vec![Constructor::Literal(Value::String("bar")), Constructor::Literal(Value::String("foo"))]
-	])
-      );
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::GeneralComparison(
+            Operator::Equal,
+	    vec![
+	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![
+	        Constructor::Literal(Value::String("bar")),
+	        Constructor::Literal(Value::String("foo")),
+	      ]
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
       } else {
@@ -669,14 +778,20 @@ mod tests {
     }
     #[test]
     fn general_comparison_string_false() {
-      let ctxt = XPath::new().add_constructor(Constructor::GeneralComparison(
-        Operator::Equal,
-	vec![
-	  vec![Constructor::Literal(Value::String("foo"))],
-	  vec![Constructor::Literal(Value::String("bar")), Constructor::Literal(Value::String("oof"))]
-	])
-      );
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::GeneralComparison(
+            Operator::Equal,
+	    vec![
+	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![
+	        Constructor::Literal(Value::String("bar")),
+	        Constructor::Literal(Value::String("oof")),
+	      ]
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
       } else {
@@ -687,13 +802,19 @@ mod tests {
 
     #[test]
     fn concat() {
-      let ctxt = XPath::new().add_constructor(Constructor::Concat(
-	vec![
-	  vec![Constructor::Literal(Value::String("foo"))],
-	  vec![Constructor::Literal(Value::String("bar")), Constructor::Literal(Value::String("oof"))]
-	])
-      );
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Concat(
+	    vec![
+	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![
+	        Constructor::Literal(Value::String("bar")),
+	        Constructor::Literal(Value::String("oof")),
+	      ]
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "foobaroof")
       } else {
@@ -703,13 +824,16 @@ mod tests {
 
     #[test]
     fn range() {
-      let ctxt = XPath::new().add_constructor(Constructor::Range(
-	vec![
-	  vec![Constructor::Literal(Value::Integer(0))],
-	  vec![Constructor::Literal(Value::Integer(9))]
-	])
-      );
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Range(
+	    vec![
+	      vec![Constructor::Literal(Value::Integer(0))],
+	      vec![Constructor::Literal(Value::Integer(9))],
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 10 {
         assert_eq!(s.to_string(), "0123456789")
       } else {
@@ -720,13 +844,22 @@ mod tests {
 
     #[test]
     fn arithmetic_double_add() {
-      let ctxt = XPath::new().add_constructor(Constructor::Arithmetic(
-	vec![
-	  ArithmeticOperand{op: ArithmeticOperator::Noop, operand: vec![Constructor::Literal(Value::Double(1.0))]},
-	  ArithmeticOperand{op: ArithmeticOperator::Add, operand: vec![Constructor::Literal(Value::Double(1.0))]}
-	])
-      );
-      let s = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Arithmetic(
+	    vec![
+	      ArithmeticOperand{
+	        op: ArithmeticOperator::Noop,
+	        operand: vec![Constructor::Literal(Value::Double(1.0))]
+	      },
+	      ArithmeticOperand{
+	        op: ArithmeticOperator::Add,
+	        operand: vec![Constructor::Literal(Value::Double(1.0))]
+	      }
+	    ]
+	  )
+	];
+      let s = evaluate(None, None, &cons)
+	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 2.0)
       } else {
@@ -739,15 +872,13 @@ mod tests {
 
     #[test]
     fn node_root() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::Root);
       let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
       let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
       let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
       e.push_back(t);
       d.push_back(e);
-      let s = vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))];
-      ctxt.set_context(s);
-      let e = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![Constructor::Root];
+      let e = evaluate(Some(vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))]), Some(0), &cons).expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test>Test text</Test>")
       } else {
@@ -756,15 +887,25 @@ mod tests {
     }
     #[test]
     fn node_child_all() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}));
       let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
       let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
       let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
       e.push_back(t);
       d.push_back(e);
-      let s = vec![Rc::new(Item::Node(d.front().unwrap().clone()))];
-      ctxt.set_context(s);
-      let e = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Child(
+	    NodeMatch{
+	      axis: Axis::Child,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    }
+	  )
+	];
+      let e = evaluate(Some(vec![Rc::new(Item::Node(d.front().unwrap().clone()))]), Some(0), &cons)
+        .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "Test text")
       } else {
@@ -773,15 +914,25 @@ mod tests {
     }
     #[test]
     fn node_parent_any() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::Parent(NodeMatch{axis: Axis::Parent, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}));
       let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
       let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Root".to_string()));
       let t = Tree::new(NodeDefn::new(NodeType::Element).set_name("Child".to_string()));
       e.push_back(t);
       d.push_back(e);
       let s = vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))];
-      ctxt.set_context(s);
-      let e = ctxt.evaluate().expect("evaluation failed");
+
+      let cons = vec![Constructor::Parent(
+	  NodeMatch{
+	    axis: Axis::Parent,
+	    nodetest: NodeTest::Name(NameTest{
+	      ns: None,
+	      prefix: None,
+	      name: Some(WildcardOrName::Wildcard)
+	    })
+	  }
+	)];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
       } else {
@@ -790,13 +941,7 @@ mod tests {
     }
 
     #[test]
-    fn step() {
-      let mut ctxt = XPath::new().add_constructor(Constructor::Root);
-      ctxt.add_constructor(Constructor::Path(vec![
-        vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
-        vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
-      ]));
-
+    fn path() {
       let d = RcNode::from(Tree::<NodeDefn>::from_tuple(
         (NodeDefn::new(NodeType::Document),
           (NodeDefn::new(NodeType::Element).set_name("Level1".to_string()),
@@ -810,8 +955,17 @@ mod tests {
 	)
       ));
       let s = vec![Rc::new(Item::Node(d.clone()))];
-      ctxt.set_context(s);
-      let e = ctxt.evaluate().expect("evaluation failed");
+      let cons = vec![
+	  Constructor::Root,
+	  Constructor::Path(
+	    vec![
+              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+            ]
+	  )
+	];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
       if e.len() == 3 {
         assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
         assert_eq!(e[1].to_string(), "<Level2>two</Level2>");

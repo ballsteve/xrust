@@ -18,7 +18,7 @@ use nom:: {
 use crate::item::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
-use crate::evaluate::{XPath,
+use crate::evaluate::{evaluate,
     Constructor,
     NameTest, WildcardOrName,
     NodeTest, NodeMatch,
@@ -1101,8 +1101,7 @@ mod tests {
     fn nomxpath_parse_int() {
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_int().unwrap(), 1)
 	  } else {
@@ -1117,8 +1116,7 @@ mod tests {
     fn nomxpath_parse_decimal() {
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_double(), 1.2)
 	  } else {
@@ -1133,8 +1131,7 @@ mod tests {
     fn nomxpath_parse_double() {
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_double(), 120.0)
 	  } else {
@@ -1153,8 +1150,7 @@ mod tests {
     fn nomxpath_parse_string_apos() {
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc")
 	  } else {
@@ -1169,8 +1165,7 @@ mod tests {
     fn nomxpath_parse_string_apos_esc() {
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc'def")
 	  } else {
@@ -1185,8 +1180,7 @@ mod tests {
     fn nomxpath_parse_string_quot() {
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc")
 	  } else {
@@ -1201,8 +1195,7 @@ mod tests {
     fn nomxpath_parse_string_quot_esc() {
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), r#"abc"def"#)
 	  } else {
@@ -1216,8 +1209,7 @@ mod tests {
     fn nomxpath_parse_literal_sequence() {
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1233,8 +1225,7 @@ mod tests {
     fn nomxpath_parse_literal_seq_ws() {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1252,9 +1243,8 @@ mod tests {
     fn nomxpath_parse_context_item() {
         let e = parse(".").expect("failed to parse expression \".\"");
 	if e.len() == 1 {
-	  let mut ctxt = XPath::new().add_constructor_seq(e);
-	  ctxt.set_context(vec![Rc::new(Item::Value(Value::String("foobar")))]);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let ctxt = vec![Rc::new(Item::Value(Value::String("foobar")))];
+	  let s = evaluate(Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_string(), "foobar")
 	  } else {
@@ -1274,8 +1264,7 @@ mod tests {
     fn nomxpath_parse_singleton_paren() {
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
-	  let ctxt = XPath::new().add_constructor_seq(e);
-	  let s = ctxt.evaluate().expect("unable to evaluate sequence constructor");
+	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_int().unwrap(), 1)
 	  } else {

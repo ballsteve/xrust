@@ -13,6 +13,7 @@ use trees::{Tree, RcNode};
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 
 pub trait SequenceTrait<'a> {
+  //fn clone(&self) -> Sequence;
   fn to_string(&self) -> String;
   fn to_bool(&self) -> bool;
   fn new_node(&mut self, n: RcNode<NodeDefn>);
@@ -21,6 +22,13 @@ pub trait SequenceTrait<'a> {
 }
 
 impl<'a> SequenceTrait<'a> for Sequence<'a> {
+  //fn clone(&self) -> Sequence {
+  //  let mut new: Sequence  = Vec::new();
+  //  for i in self {
+  //    new.push(Rc::clone(i))
+  //  }
+  //  new
+  //}
   fn to_string(&self) -> String {
     let mut r = String::new();
     for i in self {
