@@ -9,7 +9,7 @@ use std::rc::Rc;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
 use trees::{Tree, RcNode};
-use roxmltree::{Document, Node};
+use roxmltree::Node;
 
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 

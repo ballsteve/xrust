@@ -1002,9 +1002,9 @@ mod tests {
       let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let cons = vec![
-	  Constructor::Root,
 	  Constructor::Path(
 	    vec![
+	      vec![Constructor::Root],
               vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
               vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
             ]
