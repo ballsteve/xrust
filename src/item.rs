@@ -9,6 +9,7 @@ use std::rc::Rc;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
 use trees::{Tree, RcNode};
+use roxmltree::{Document, Node};
 
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 
@@ -17,18 +18,13 @@ pub trait SequenceTrait<'a> {
   fn to_string(&self) -> String;
   fn to_bool(&self) -> bool;
   fn new_node(&mut self, n: RcNode<NodeDefn>);
+  //fn new_xdoc(&mut self, d: Document<'a>);
+  fn new_xnode(&mut self, n: Node<'a, 'a>);
   fn new_value(&mut self, v: Value<'a>);
   fn add(&mut self, i: &Rc<Item<'a>>);
 }
 
 impl<'a> SequenceTrait<'a> for Sequence<'a> {
-  //fn clone(&self) -> Sequence {
-  //  let mut new: Sequence  = Vec::new();
-  //  for i in self {
-  //    new.push(Rc::clone(i))
-  //  }
-  //  new
-  //}
   fn to_string(&self) -> String {
     let mut r = String::new();
     for i in self {
@@ -38,6 +34,12 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
   }
   fn new_node(&mut self, n: RcNode<NodeDefn>) {
     self.push(Rc::new(Item::Node(n)));
+  }
+//  fn new_xdoc(&mut self, d: Document<'a>) {
+//    self.push(Rc::new(Item::XDoc(d)));
+//  }
+  fn new_xnode(&mut self, n: Node<'a, 'a>) {
+    self.push(Rc::new(Item::XNode(n)));
   }
   fn new_value(&mut self, v: Value<'a>) {
     self.push(Rc::new(Item::Value(v)));
@@ -54,7 +56,9 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
       false
     } else {
       match *self[0] {
-        Item::Node(_) => true,
+        Item::Node(_) |
+	Item::XNode(_) => true,
+	//Item::XDoc(_) => true,
 	_ => {
 	  if self.len() == 1 {
 	    (*self[0]).to_bool()
@@ -70,6 +74,8 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
 #[derive(Clone)]
 pub enum Item<'a> {
     Node(RcNode<NodeDefn>),
+    XNode(Node<'a, 'a>),
+    //XDoc(Document<'a>), cannot be cloned
     Function,
     Value(Value<'a>),
 }
@@ -93,6 +99,8 @@ impl<'a> Item<'a> {
   pub fn to_string(&self) -> String {
     match self {
       Item::Node(n) => node_to_string(n),
+      Item::XNode(n) => xnode_to_string(*n),
+      //Item::XDoc(d) => d.to_string(),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
     }
@@ -104,7 +112,9 @@ impl<'a> Item<'a> {
   // See XPath 2.4.3.
   pub fn to_bool(&self) -> bool {
     match self {
-      Item::Node(_) => true,
+      Item::Node(_) |
+      Item::XNode(_) => true,
+      //Item::XDoc(_) => true,
       Item::Function => false,
       Item::Value(v) => v.to_bool(),
     }
@@ -112,7 +122,9 @@ impl<'a> Item<'a> {
 
   pub fn to_int(&self) -> Result<i64, Error> {
     match self {
-      Item::Node(_n) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
+      Item::Node(_) |
+      Item::XNode(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
+      //Item::XDoc(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
       Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
       Item::Value(v) => {
         match v.to_int() {
@@ -129,7 +141,9 @@ impl<'a> Item<'a> {
 
   pub fn to_double(&self) -> f64 {
     match self {
-      Item::Node(_) => f64::NAN,
+      Item::Node(_) |
+      Item::XNode(_) => f64::NAN,
+      //Item::XDoc(_) => f64::NAN,
       Item::Function => f64::NAN,
       Item::Value(v) => v.to_double(),
     }
@@ -143,10 +157,15 @@ impl<'a> Item<'a> {
       Item::Value(v) => {
         v.compare(other, op)
       }
-      Item::Node(_n) => {
+      Item::Node(_) |
+      Item::XNode(_) => {
         //n.compare(other, op)
 	Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
       }
+      //Item::XDoc(_) => {
+        //n.compare(other, op)
+	//Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
+      //}
       _ => {
         Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
       }
@@ -256,6 +275,47 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
         r.push_str(d.name.as_ref().unwrap().as_str());
         r.push_str(" ");
         r.push_str(d.value.as_ref().unwrap().as_str());
+        r.push_str("?>");
+	r
+      }
+  }
+}
+
+pub fn xnode_to_string(node: Node) -> String {
+  match node.node_type() {
+      roxmltree::NodeType::Root => {
+        //println!("node_to_string: NodeType::Document");
+        if node.has_children() {
+	  xnode_to_string(node.first_child().unwrap())
+	} else {
+	  String::new()
+	}
+      }
+      roxmltree::NodeType::Element => {
+        //println!("node_to_string: NodeType::Element \"{}\"", d.name.as_ref().unwrap());
+        if node.has_children() {
+	  // TODO: attributes
+	  format!("<{}>{}</{}>", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_string(c)), node.tag_name().name())
+	} else {
+	  format!("<{}/>", node.tag_name().name())
+	}
+      }
+      roxmltree::NodeType::Text => {
+        String::from(node.text().unwrap_or(""))
+      }
+      roxmltree::NodeType::Comment => {
+        let mut r = String::new();
+        r.push_str("<!--");
+        r.push_str(node.text().unwrap_or(""));
+        r.push_str("-->");
+	r
+      }
+      roxmltree::NodeType::PI => {
+        let mut r = String::new();
+        r.push_str("<?");
+        r.push_str(node.tag_name().name());
+        r.push_str(" ");
+        r.push_str(node.text().unwrap_or(""));
         r.push_str("?>");
 	r
       }
@@ -913,6 +973,20 @@ mod tests {
 	d.push_front(e);
 	let i = Item::Node(d);
         assert_eq!(i.to_string(), "<Test>Test text</Test>")
+    }
+
+    // Documents and Nodes using roxmltree
+//    #[test]
+//    fn xnode_doc() {
+//      let d = roxmltree::Document::parse("<Test/>").expect("unable to parse XML");
+//      let i = Item::XDoc(d);
+//      assert_eq!(i.to_string(), "<Test/>")
+//    }
+    #[test]
+    fn xnode_node() {
+      let d = roxmltree::Document::parse("<Test><Level2>test text</Level2></Test>").expect("unable to parse XML");
+      let i = Item::XNode(d.root().first_child().unwrap().first_child().unwrap());
+      assert_eq!(i.to_string(), "<Level2>test text</Level2>")
     }
 
     // Sequences

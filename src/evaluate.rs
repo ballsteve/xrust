@@ -8,76 +8,15 @@ use crate::item::*;
 use decimal::d128;
 //use crate::parsexml::parse;
 use trees::{RcNode, Tree};
-
-// The context for evaluating an XPath expression
-#[derive(Clone)]
-pub struct Context<'a> {
-  pub context: Option<Sequence<'a>>,		// The sequence currently being evaluated
-  // The focus of the evaluation can be defined by the context sequence, above, plus the position of the context_item.
-  // context_item = context[posn]
-  // context_size = context.len()
-  pub posn: Option<usize>,			// Context position
-}
-
-impl<'a> Context<'a> {
-  pub fn new() -> Context<'a> {
-    Context{context: None, posn: None,}
-  }
-  pub fn clone(&self) -> Context<'a> {
-    Context{context: self.context.clone(), posn: self.posn,}
-  }
-  pub fn set_context(&mut self, s: Sequence<'a>) {
-    self.context = Some(s);
-    self.posn = Some(0);
-  }
-  pub fn reset_context(&mut self) {
-    self.context = None;
-    self.posn = None;
-  }
-  pub fn set_position(mut self, p: usize) -> Self {
-    self.posn = Some(p);
-    self
-  }
-  pub fn context(&self) -> &Option<Sequence> {
-    &self.context
-  }
-  pub fn position(&self) -> &Option<usize> {
-    &self.posn
-  }
-  pub fn current_item(&self) -> Option<&Rc<Item>> {
-    if self.context.is_some() {
-      Some(&self.context.as_ref().unwrap()[self.posn.unwrap()])
-    } else {
-      None
-    }
-  }
-}
+use roxmltree::Node;
 
 // Evaluate a sequence constructor, given a context
-//pub fn evaluate<'a>(ctxt: &'a Context, c: &'a Vec<Constructor<'a>>) -> Result<Sequence<'a>, Error> {
-//  Ok(c.iter().map(|a| evaluate_one(ctxt, a).expect("evaluation of item failed")).flatten().collect())
-//}
-
 pub fn evaluate<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Vec<Constructor<'a>>) -> Result<Sequence<'a>, Error> {
   Ok(c.iter().map(|a| evaluate_one(ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect())
 }
 
-//pub fn evaluate_2_one<'a>(ctxt: Option<Sequence>, posn: Option<usize>, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
-//  match c {
-//    Constructor::Literal(l) => {
-//	let mut seq = Sequence::new();
-//	seq.new_value(l.clone());
-//	Ok(seq)
-//    }
-//    _ => {
-//      Ok(vec![])
-//    }
-//  }
-//}
-
 // Evaluate an item constructor, given a context
 // If a constructor returns a non-singleton sequence, then it is unpacked
-//fn evaluate_one<'a>(ctxt: &'a Context, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
 fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
   match c {
     Constructor::Literal(l) => {
@@ -230,6 +169,11 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    seq.new_node(find_root(n.clone()));
       	    Ok(seq)
 	  }
+	  Item::XNode(n) => {
+	    let mut seq = Sequence::new();
+	    seq.new_xnode(n.document().root());
+	    Ok(seq)
+	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
       } else {
@@ -244,6 +188,13 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    let mut result: Sequence = Vec::new();
 	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
 	    Ok(result)
+	  }
+	  Item::XNode(n) => {
+	    if n.has_children() {
+	      Ok(n.children().fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c}))
+	    } else {
+	      Ok(Sequence::new())
+	    }
 	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
@@ -269,6 +220,16 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	      }
 	    }
 	  }
+	  Item::XNode(n) => {
+	    match n.parent() {
+	      Some(p) => {
+	        Ok(vec![Rc::new(Item::XNode(p))])
+	      }
+	      None => {
+	        Ok(vec![])
+	      }
+	    }
+	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
       } else {
@@ -282,6 +243,12 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	  Item::Node(n) => {
 	    let mut result: Sequence = Vec::new();
 	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
+	    Ok(result)
+	  }
+	  Item::XNode(n) => {
+	    let mut result = Sequence::new();
+	    result.new_xnode(*n);
+	    n.descendants().for_each(|d| result.new_xnode(d));
 	    Ok(result)
 	  }
 	  _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
@@ -303,15 +270,6 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
         u = vec![]
       }
 
-//      for t in s {
-//      	let mut v: Sequence = SequenceTrait::clone(&u);
-//	v = evaluate(&Some(v), Some(0), t).expect("failed to evaluate step"); // TODO: handle error
-//	u.clear();
-//	u = SequenceTrait::clone(&v);
-//      }
-//
-//      Ok(u)
-
       Ok(s.iter().fold(
 	    u,
 	    |a, c| {
@@ -327,6 +285,13 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    let mut result: Sequence = Vec::new();
 	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
 	    Ok(result)
+	  }
+	  Item::XNode(n) => {
+	    if n.has_children() {
+	      Ok(n.children().fold(Sequence::new(), |mut c, a| {c.push(Rc::new(Item::XNode(a))); c}))
+	    } else {
+	      Ok(Sequence::new())
+	    }
 	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
@@ -886,6 +851,18 @@ mod tests {
       }
     }
     #[test]
+    fn xnode_root() {
+      let d = roxmltree::Document::parse("<Test>test text</Test>").expect("failed to parse XML");
+      let cons = vec![Constructor::Root];
+      let e = evaluate(Some(vec![Rc::new(Item::XNode(d.root()))]), Some(0), &cons).expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Test>test text</Test>")
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
+
+    #[test]
     fn node_child_all() {
       let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
       let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
@@ -908,6 +885,29 @@ mod tests {
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "Test text")
+      } else {
+        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+      }
+    }
+    #[test]
+    fn xnode_child_all() {
+      let d = roxmltree::Document::parse("<Test>test text</Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Child(
+	    NodeMatch{
+	      axis: Axis::Child,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    }
+	  )
+	];
+      let e = evaluate(Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "test text")
       } else {
         panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
       }
@@ -939,9 +939,32 @@ mod tests {
         panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
       }
     }
-
     #[test]
-    fn path() {
+    fn xnode_parent_any() {
+      let d = roxmltree::Document::parse("<Root><Child></Child></Root>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))];
+
+      let cons = vec![Constructor::Parent(
+	  NodeMatch{
+	    axis: Axis::Parent,
+	    nodetest: NodeTest::Name(NameTest{
+	      ns: None,
+	      prefix: None,
+	      name: Some(WildcardOrName::Wildcard)
+	    })
+	  }
+	)];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
+      } else {
+        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+      }
+    }
+
+    //#[test]
+    fn node_path() {
       let d = RcNode::from(Tree::<NodeDefn>::from_tuple(
         (NodeDefn::new(NodeType::Document),
           (NodeDefn::new(NodeType::Element).set_name("Level1".to_string()),
@@ -955,6 +978,29 @@ mod tests {
 	)
       ));
       let s = vec![Rc::new(Item::Node(d.clone()))];
+      let cons = vec![
+	  Constructor::Root,
+	  Constructor::Path(
+	    vec![
+              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+            ]
+	  )
+	];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 3 {
+        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
+        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
+        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+      } else {
+        panic!(format!("sequence does not have 3 items: \"{}\"", e.to_string()))
+      }
+    }
+    #[test]
+    fn xnode_path() {
+      let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let cons = vec![
 	  Constructor::Root,
 	  Constructor::Path(
