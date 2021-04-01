@@ -288,7 +288,7 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	  }
 	  Item::XNode(n) => {
 	    if n.has_children() {
-	      Ok(n.children().fold(Sequence::new(), |mut c, a| {c.push(Rc::new(Item::XNode(a))); c}))
+	      Ok(n.children().fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c}))
 	    } else {
 	      Ok(Sequence::new())
 	    }
@@ -472,6 +472,83 @@ fn value_comparison<'a>(ctxt: Option<Sequence>, posn: Option<usize>, op: Operato
   } else {
     Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
   }
+}
+
+pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
+  let mut result = String::new();
+  for v in c {
+    result.push_str(", ");
+    let t =
+    match v {
+      Constructor::Literal(l) => {
+        format!("{:in$} Construct literal", "", in=i)
+      }
+      Constructor::ContextItem => {
+        format!("{:in$} Construct context item", "", in=i)
+      }
+      Constructor::Or(v) => {
+        format!(
+	  "{:in$} Construct OR of:\n{}\n{}", "",
+	  format_constructor(&v[0], 4),
+	  format_constructor(&v[1], 4),
+	  in=i,
+	)
+      }
+      Constructor::And(v) => {
+        format!(
+	  "{:in$} Construct AND of:\n{}\n{}", "",
+	  format_constructor(&v[0], i + 4),
+	  format_constructor(&v[1], i + 4),
+	  in=i,
+	)
+      }
+      Constructor::Root => {
+        format!("{:in$} Construct document root", "", in=i)
+      }
+      Constructor::Child(_nm) => {
+        format!("{:in$} Construct child axis", "", in=i)
+      }
+      Constructor::Parent(_nm) => {
+        format!("{:in$} Construct parent axis", "", in=i)
+      }
+      Constructor::DescendantOrSelf(_nm) => {
+        format!("{:in$} Construct descendant-or-self axis", "", in=i)
+      }
+      Constructor::Step(_nm) => {
+        format!("{:in$} Construct step axis", "", in=i)
+      }
+      Constructor::Path(v) => {
+        let mut s = format!("{:in$} Construct relative path:\n", "", in=i);
+	for u in v {
+	  s.push_str(&format_constructor(u, i + 4))
+	}
+	s
+      }
+      Constructor::GeneralComparison(o, v) => {
+        format!("{:in$} general comparison constructor", "", in=i)
+      }
+      Constructor::ValueComparison(o, v) => {
+        format!("{:in$} value comparison constructor", "", in=i)
+      }
+      Constructor::Concat(v) => {
+        format!("{:in$} concat constructor", "", in=i)
+      }
+      Constructor::Range(v) => {
+        format!("{:in$} range constructor", "", in=i)
+      }
+      Constructor::Arithmetic(v) => {
+        format!("{:in$} arithmetic constructor", "", in=i)
+      }
+      Constructor::NotImplemented => {
+        format!("{:in$} NotImplemented constructor", "", in=i)
+      }
+      _ => {
+        format!("{:in$} unknown constructor", "", in=i)
+      }
+    };
+    result.push_str(&t);
+  }
+  result
 }
 
 #[cfg(test)]
@@ -1016,6 +1093,8 @@ mod tests {
         assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
         assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
         assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
+	//panic!("blah")
       } else {
         panic!(format!("sequence does not have 3 items: \"{}\"", e.to_string()))
       }

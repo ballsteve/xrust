@@ -24,7 +24,9 @@ use crate::evaluate::{evaluate,
     NodeTest, NodeMatch,
     Axis,
     ArithmeticOperator, ArithmeticOperand,
+    format_constructor,
 };
+use roxmltree::Node;
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
@@ -656,10 +658,25 @@ fn absolute_path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     ),
     |(_u, v)| {
       match v {
-        Some(_a) => {
-	  vec![Constructor::Root,
-	  Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})]
-	  // TODO: name test for child axis
+        Some(a) => {
+	  if a.len() == 1 {
+	    match &a[0] {
+	      Constructor::Path(w) => {
+	        let mut x = vec![vec![Constructor::Root]];
+		for y in w {
+		  x.push(y.to_vec())
+		}
+	        vec![Constructor::Path(x)]
+	      }
+	      _ => {
+		vec![Constructor::Path(vec![vec![Constructor::Root], a])]
+	      }
+	    }
+	  } else {
+	    // Error
+	    println!("absolute_path_expr: relativepath_expr returned more than one constructor");
+	    vec![]
+	  }
 	}
 	None => {
 	  vec![Constructor::Root]
@@ -1366,13 +1383,17 @@ mod tests {
     }
 
     #[test]
-    fn nomxpath_parse_root() {
-        let e = parse("/").expect("failed to parse expression \"/\"");
-	if e.len() == 1 {
-	  assert!(true) // TODO: check the sequence constructor
-	} else {
-	  panic!("sequence is not a singleton")
-	}
+    fn xnode_root() {
+      let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let c = parse("/").expect("unable to parse XPath \"/\"");
+      let e = evaluate(Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+      } else {
+        panic!(format!("sequence does not have 1 item: \"{}\"", e.to_string()))
+      }
     }
     #[test]
     fn nomxpath_parse_root_step_1() {
@@ -1380,9 +1401,39 @@ mod tests {
 	assert!(true) // TODO: check the sequence constructor
     }
     #[test]
+    fn xnode_step_1() {
+      let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let c = parse("/child::*").expect("failed to parse expression \"/child::a\"");
+      let e = evaluate(Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+      } else {
+        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
+        panic!(format!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string()))
+      }
+    }
+    #[test]
     fn nomxpath_parse_root_step_2() {
         let _e = parse("/child::a/child::b").expect("failed to parse expression \"/child::a/child::b\"");
 	assert!(true) // TODO: check the sequence constructor
+    }
+    #[test]
+    fn xnode_step_2() {
+      let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let c = parse("/child::*/child::*").expect("failed to parse expression \"/child::a/child::b\"");
+      let e = evaluate(Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      if e.len() == 3 {
+        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
+        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
+        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+      } else {
+        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
+        panic!(format!("sequence does not have 3 items, it has {}: \"{}\"", e.len(), e.to_string()))
+      }
     }
     #[test]
     fn nomxpath_parse_desc_or_self_1() {
