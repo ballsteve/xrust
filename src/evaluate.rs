@@ -277,7 +277,7 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    }
       ))
     }
-    Constructor::Step(_nm) => {
+    Constructor::Step(nm) => {
       // TODO: interpret the node match. At the moment, this implements child::node()
       if ctxt.is_some() {
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
@@ -287,10 +287,29 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    Ok(result)
 	  }
 	  Item::XNode(n) => {
-	    if n.has_children() {
-	      Ok(n.children().fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c}))
-	    } else {
-	      Ok(Sequence::new())
+	    match nm.axis {
+	      Axis::Child => {
+	        if n.has_children() {
+	      	  Ok(n.children()
+		    .filter(|c| is_node_match(&nm.nodetest, c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c})
+		  )
+	    	} else {
+	      	  Ok(Sequence::new())
+	    	}
+	      }
+	      Axis::Parent => {
+	        // TODO
+	      	  Ok(Sequence::new())
+	      }
+	      Axis::Descendant => {
+	        // TODO
+	      	  Ok(Sequence::new())
+	      }
+	      _ => {
+	        // Not yet implemented
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
+	      }
 	    }
 	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
@@ -344,6 +363,39 @@ pub enum Constructor<'a> {
   Range(Vec<Vec<Constructor<'a>>>),		// Range of integers
   Arithmetic(Vec<ArithmeticOperand<'a>>),	// Addition, subtraction, multiply, divide
   NotImplemented,	// TODO: implement everything so this can be removed
+}
+
+
+fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
+  //println!("is_node_match: node has tag name \"{}\"", n.tag_name().name());
+  match nt {
+    NodeTest::Name(t) => {
+      // TODO: namespaces
+      match &t.name {
+        Some(a) => {
+	  match a {
+	    WildcardOrName::Wildcard => {
+	      //println!("wildcard");
+	      true
+	    }
+	    WildcardOrName::Name(s) => {
+	      //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
+	      s == n.tag_name().name()
+	    }
+	  }
+	}
+	None => {
+	  //println!("no name test");
+	  false
+	}
+      }
+    }
+    NodeTest::Kind => {
+      // TODO
+      //println!("node test kind");
+      false
+    }
+  }
 }
 
 #[derive(Clone)]
@@ -1097,6 +1149,49 @@ mod tests {
 	//panic!("blah")
       } else {
         panic!(format!("sequence does not have 3 items: \"{}\"", e.to_string()))
+      }
+    }
+    #[test]
+    fn xnode_nametest_pos() {
+      let d = roxmltree::Document::parse("<Test/>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let cons = vec![
+	  Constructor::Path(
+	    vec![
+	      vec![Constructor::Root],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})})],
+            ]
+	  )
+	];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Test/>");
+	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
+	//panic!("blah")
+      } else {
+        panic!(format!("sequence does not have 1 item: \"{}\"", e.to_string()))
+      }
+    }
+    #[test]
+    fn xnode_nametest_neg() {
+      let d = roxmltree::Document::parse("<Foobar/>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let cons = vec![
+	  Constructor::Path(
+	    vec![
+	      vec![Constructor::Root],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})})],
+            ]
+	  )
+	];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 0 {
+        assert!(true)
+      } else {
+        println!("result: {}", e.to_string());
+      	assert_eq!(e.len(), 0);
       }
     }
 } 
