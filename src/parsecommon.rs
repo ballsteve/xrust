@@ -15,16 +15,11 @@ use nom:: {
 // NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
 pub fn ncname(input: &str) -> IResult<&str, &str> {
   //println!("ncname: input=\"{}\"", input);
-//  recognize (
-  map (
+  recognize (
     pair (
       ncnamestartchar,
       take_while(is_ncnamechar),
-    ),
-    |(a, _b)| {
-      //println!("ncname: got \"{}\" and \"{}\"", a, b);
-      a
-    }
+    )
   )
   (input)
 }

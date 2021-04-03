@@ -1404,7 +1404,7 @@ mod tests {
     fn xnode_step_1() {
       let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
-      let c = parse("/child::*").expect("failed to parse expression \"/child::a\"");
+      let c = parse("/child::*").expect("failed to parse expression \"/child::*\"");
       let e = evaluate(Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
@@ -1418,6 +1418,34 @@ mod tests {
     fn nomxpath_parse_root_step_2() {
         let _e = parse("/child::a/child::b").expect("failed to parse expression \"/child::a/child::b\"");
 	assert!(true) // TODO: check the sequence constructor
+    }
+    #[test]
+    fn xnode_step_nodetest_pos() {
+      let d = roxmltree::Document::parse("<Level1/>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let c = parse("/child::Level1").expect("failed to parse expression \"/child::Level1\"");
+      let e = evaluate(Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Level1/>");
+      } else {
+        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
+        panic!(format!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string()))
+      }
+    }
+    #[test]
+    fn xnode_step_nodetest_neg() {
+      let d = roxmltree::Document::parse("<Level1/>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let c = parse("/child::Test").expect("failed to parse expression \"/child::Test\"");
+      let e = evaluate(Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      if e.len() == 0 {
+        assert!(true)
+      } else {
+        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
+        panic!(format!("sequence has more than 1 item, it has {}: \"{}\"", e.len(), e.to_string()))
+      }
     }
     #[test]
     fn xnode_step_2() {
