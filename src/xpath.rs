@@ -1392,7 +1392,7 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
       } else {
-        panic!(format!("sequence does not have 1 item: \"{}\"", e.to_string()))
+        panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }
     }
     #[test]
@@ -1411,7 +1411,7 @@ mod tests {
         assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
       } else {
         println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
-        panic!(format!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string()))
+        panic!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
     #[test]
@@ -1430,7 +1430,7 @@ mod tests {
         assert_eq!(e[0].to_string(), "<Level1/>");
       } else {
         println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
-        panic!(format!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string()))
+        panic!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
     #[test]
@@ -1444,7 +1444,7 @@ mod tests {
         assert!(true)
       } else {
         println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
-        panic!(format!("sequence has more than 1 item, it has {}: \"{}\"", e.len(), e.to_string()))
+        panic!("sequence has more than 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
     #[test]
@@ -1460,7 +1460,7 @@ mod tests {
         assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
       } else {
         println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
-        panic!(format!("sequence does not have 3 items, it has {}: \"{}\"", e.len(), e.to_string()))
+        panic!("sequence does not have 3 items, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
     #[test]

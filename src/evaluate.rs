@@ -576,26 +576,23 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
 	}
 	s
       }
-      Constructor::GeneralComparison(o, v) => {
+      Constructor::GeneralComparison(_o, _v) => {
         format!("{:in$} general comparison constructor", "", in=i)
       }
-      Constructor::ValueComparison(o, v) => {
+      Constructor::ValueComparison(_o, _v) => {
         format!("{:in$} value comparison constructor", "", in=i)
       }
-      Constructor::Concat(v) => {
+      Constructor::Concat(_v) => {
         format!("{:in$} concat constructor", "", in=i)
       }
-      Constructor::Range(v) => {
+      Constructor::Range(_v) => {
         format!("{:in$} range constructor", "", in=i)
       }
-      Constructor::Arithmetic(v) => {
+      Constructor::Arithmetic(_v) => {
         format!("{:in$} arithmetic constructor", "", in=i)
       }
       Constructor::NotImplemented => {
         format!("{:in$} NotImplemented constructor", "", in=i)
-      }
-      _ => {
-        format!("{:in$} unknown constructor", "", in=i)
       }
     };
     result.push_str(&t);
@@ -1015,7 +1012,7 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "Test text")
       } else {
-        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+        panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
     }
     #[test]
@@ -1038,7 +1035,7 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "test text")
       } else {
-        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+        panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
     }
     #[test]
@@ -1065,7 +1062,7 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
       } else {
-        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+        panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
     }
     #[test]
@@ -1088,7 +1085,7 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
       } else {
-        panic!(format!("sequence is not a singleton: \"{}\"", e.to_string()))
+        panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
     }
 
@@ -1123,7 +1120,7 @@ mod tests {
         assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
         assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
       } else {
-        panic!(format!("sequence does not have 3 items: \"{}\"", e.to_string()))
+        panic!("sequence does not have 3 items: \"{}\"", e.to_string())
       }
     }
     #[test]
@@ -1148,7 +1145,7 @@ mod tests {
 	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
 	//panic!("blah")
       } else {
-        panic!(format!("sequence does not have 3 items: \"{}\"", e.to_string()))
+        panic!("sequence does not have 3 items: \"{}\"", e.to_string())
       }
     }
     #[test]
@@ -1170,7 +1167,7 @@ mod tests {
 	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
 	//panic!("blah")
       } else {
-        panic!(format!("sequence does not have 1 item: \"{}\"", e.to_string()))
+        panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }
     }
     #[test]
