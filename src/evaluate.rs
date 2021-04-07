@@ -204,9 +204,31 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
       if ctxt.is_some() {
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 	  Item::Node(n) => {
-	    let mut result: Sequence = Vec::new();
-	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
-	    Ok(result)
+	    match nm.axis {
+	      Axis::Child => {
+	        let mut result: Sequence = Vec::new();
+	    	n.iter_rc().for_each(|c| result.new_node(c.clone()));
+	    	Ok(result)
+	      }
+	      Axis::Parent => {
+	        match n.parent() {
+		  Some(p) => {
+		    let mut seq = Sequence::new();
+		    seq.new_node(p.clone());
+      		    Ok(seq)
+		  }
+		  None => {
+	            // empty sequence is the result
+		    let seq = Sequence::new();
+      		    Ok(seq)
+		  }
+		}
+	      }
+	      _ => {
+	        // Not yet implemented
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
+	      }
+	    }
 	  }
 	  Item::XNode(n) => {
 	    match nm.axis {
@@ -224,8 +246,14 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    	}
 	      }
 	      Axis::Parent => {
-	        // TODO
-	      	  Ok(Sequence::new())
+	        match n.parent() {
+	      	  Some(p) => {
+	            Ok(vec![Rc::new(Item::XNode(p))])
+	      	  }
+	      	  None => {
+	            Ok(vec![])
+	      	  }
+	    	}
 	      }
 	      Axis::Descendant => {
 	        // TODO
