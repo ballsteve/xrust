@@ -180,83 +180,6 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
       }
     }
-    Constructor::Child(_nm) => {
-      // TODO: interpret the node match. At the moment, this implements child::node()
-      if ctxt.is_some() {
-        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Node(n) => {
-	    let mut result: Sequence = Vec::new();
-	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
-	    Ok(result)
-	  }
-	  Item::XNode(n) => {
-	    if n.has_children() {
-	      Ok(n.children().fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c}))
-	    } else {
-	      Ok(Sequence::new())
-	    }
-	  }
-	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
-    }
-    Constructor::Parent(_nm) => {
-      // TODO: interpret the node match. At the moment, this implements parent::*
-      if ctxt.is_some() {
-	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Node(n) => {
-	    match n.parent() {
-	      Some(p) => {
-		let mut seq = Sequence::new();
-		seq.new_node(p.clone());
-      		Ok(seq)
-	      }
-	      None => {
-	        // empty sequence is the result
-		let seq = Sequence::new();
-      		Ok(seq)
-	      }
-	    }
-	  }
-	  Item::XNode(n) => {
-	    match n.parent() {
-	      Some(p) => {
-	        Ok(vec![Rc::new(Item::XNode(p))])
-	      }
-	      None => {
-	        Ok(vec![])
-	      }
-	    }
-	  }
-	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
-    }
-    Constructor::DescendantOrSelf(_nm) => {
-      // TODO: interpret the node match. At the moment, this implements child::node()
-      if ctxt.is_some() {
-	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Node(n) => {
-	    let mut result: Sequence = Vec::new();
-	    n.iter_rc().for_each(|c| result.new_node(c.clone()));
-	    Ok(result)
-	  }
-	  Item::XNode(n) => {
-	    let mut result = Sequence::new();
-	    result.new_xnode(*n);
-	    n.descendants().for_each(|d| result.new_xnode(d));
-	    Ok(result)
-	  }
-	  _ => return Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
-    }
     Constructor::Path(s) => {
       // s is a vector of sequence constructors
       // Each step creates a new context for the next step
@@ -277,8 +200,7 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    }
       ))
     }
-    Constructor::Step(nm) => {
-      // TODO: interpret the node match. At the moment, this implements child::node()
+    Constructor::Step(nm, p) => {
       if ctxt.is_some() {
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 	  Item::Node(n) => {
@@ -290,9 +212,12 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    match nm.axis {
 	      Axis::Child => {
 	        if n.has_children() {
-	      	  Ok(n.children()
-		    .filter(|c| is_node_match(&nm.nodetest, c))
-		    .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c})
+	      	  Ok(
+		    predicates(
+		      n.children()
+		      .filter(|c| is_node_match(&nm.nodetest, c))
+		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c}),
+		    p)
 		  )
 	    	} else {
 	      	  Ok(Sequence::new())
@@ -324,6 +249,21 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
   }
 }
 
+// Filter the sequence with each of the predicates
+fn predicates<'a>(s: Sequence<'a>, p: &Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
+  if p.is_empty() {
+    s
+  } else {
+    let mut mp = p.to_vec();
+    mp.iter().fold(s, |t, a| {
+      // t is the sequence so far
+      // a is the next predicate
+      // evaluate a for each item in the sequence
+      t.iter().filter(|b| {evaluate(Some(vec![(**b).clone()]), Some(0), a).expect("evaluating predicate failed").to_bool()}).map(|c| (*c).clone()).collect()
+    })
+  }
+}
+
 fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
   if n.is_root() {
     n.clone()
@@ -349,11 +289,11 @@ pub enum Constructor<'a> {
   // Unary,
   // SimpleMap,
   Root,				// Root node of the context item
-  Child(NodeMatch),			// Child nodes of the context item
-  Parent(NodeMatch),			// Parent element of the context item
-  DescendantOrSelf(NodeMatch),		// Descendants of the context item
+  //Child(NodeMatch),			// Child nodes of the context item
+  //Parent(NodeMatch),			// Parent element of the context item
+  //DescendantOrSelf(NodeMatch),		// Descendants of the context item
   Path(Vec<Vec<Constructor<'a>>>),	// Step in the path
-  Step(NodeMatch),	// Next step of the path
+  Step(NodeMatch, Vec<Vec<Constructor<'a>>>),	// Next step of the path, with predicates
   GeneralComparison(Operator, Vec<Vec<Constructor<'a>>>),	// General comparison
   ValueComparison(Operator, Vec<Vec<Constructor<'a>>>),	// Value comparison
   // Is,
@@ -557,16 +497,7 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::Root => {
         format!("{:in$} Construct document root", "", in=i)
       }
-      Constructor::Child(_nm) => {
-        format!("{:in$} Construct child axis", "", in=i)
-      }
-      Constructor::Parent(_nm) => {
-        format!("{:in$} Construct parent axis", "", in=i)
-      }
-      Constructor::DescendantOrSelf(_nm) => {
-        format!("{:in$} Construct descendant-or-self axis", "", in=i)
-      }
-      Constructor::Step(_nm) => {
+      Constructor::Step(_, _) => {
         format!("{:in$} Construct step axis", "", in=i)
       }
       Constructor::Path(v) => {
@@ -996,7 +927,7 @@ mod tests {
       e.push_back(t);
       d.push_back(e);
       let cons = vec![
-	  Constructor::Child(
+	  Constructor::Step(
 	    NodeMatch{
 	      axis: Axis::Child,
 	      nodetest: NodeTest::Name(NameTest{
@@ -1004,7 +935,8 @@ mod tests {
 		prefix: None,
 		name: Some(WildcardOrName::Wildcard)
 	      })
-	    }
+	    },
+	    vec![]
 	  )
 	];
       let e = evaluate(Some(vec![Rc::new(Item::Node(d.front().unwrap().clone()))]), Some(0), &cons)
@@ -1019,7 +951,7 @@ mod tests {
     fn xnode_child_all() {
       let d = roxmltree::Document::parse("<Test>test text</Test>").expect("failed to parse XML");
       let cons = vec![
-	  Constructor::Child(
+	  Constructor::Step(
 	    NodeMatch{
 	      axis: Axis::Child,
 	      nodetest: NodeTest::Name(NameTest{
@@ -1027,7 +959,8 @@ mod tests {
 		prefix: None,
 		name: Some(WildcardOrName::Wildcard)
 	      })
-	    }
+	    },
+	    vec![]
 	  )
 	];
       let e = evaluate(Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
@@ -1047,7 +980,7 @@ mod tests {
       d.push_back(e);
       let s = vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))];
 
-      let cons = vec![Constructor::Parent(
+      let cons = vec![Constructor::Step(
 	  NodeMatch{
 	    axis: Axis::Parent,
 	    nodetest: NodeTest::Name(NameTest{
@@ -1055,7 +988,8 @@ mod tests {
 	      prefix: None,
 	      name: Some(WildcardOrName::Wildcard)
 	    })
-	  }
+	  },
+	  vec![]
 	)];
       let e = evaluate(Some(s), Some(0), &cons)
         .expect("evaluation failed");
@@ -1070,7 +1004,7 @@ mod tests {
       let d = roxmltree::Document::parse("<Root><Child></Child></Root>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))];
 
-      let cons = vec![Constructor::Parent(
+      let cons = vec![Constructor::Step(
 	  NodeMatch{
 	    axis: Axis::Parent,
 	    nodetest: NodeTest::Name(NameTest{
@@ -1078,7 +1012,8 @@ mod tests {
 	      prefix: None,
 	      name: Some(WildcardOrName::Wildcard)
 	    })
-	  }
+	  },
+	  vec![]
 	)];
       let e = evaluate(Some(s), Some(0), &cons)
         .expect("evaluation failed");
@@ -1108,8 +1043,8 @@ mod tests {
 	  Constructor::Root,
 	  Constructor::Path(
 	    vec![
-              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
-              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
             ]
 	  )
 	];
@@ -1131,8 +1066,8 @@ mod tests {
 	  Constructor::Path(
 	    vec![
 	      vec![Constructor::Root],
-              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
-              vec![Constructor::Child(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
             ]
 	  )
 	];
@@ -1156,7 +1091,7 @@ mod tests {
 	  Constructor::Path(
 	    vec![
 	      vec![Constructor::Root],
-              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})})],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})}, vec![])],
             ]
 	  )
 	];
@@ -1178,7 +1113,7 @@ mod tests {
 	  Constructor::Path(
 	    vec![
 	      vec![Constructor::Root],
-              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})})],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})}, vec![])],
             ]
 	  )
 	];
@@ -1190,6 +1125,58 @@ mod tests {
         println!("result: {}", e.to_string());
       	assert_eq!(e.len(), 0);
       }
+    }
+    #[test]
+    fn xnode_predicate_pos() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      // This constructor is "/Test[Level2]"
+      let cons = vec![
+	  Constructor::Path(
+	    vec![
+	      vec![Constructor::Root],
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![vec![Constructor::Step(
+	          NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level2".to_string()))})},
+		  vec![]
+		)]]
+	      )],
+            ]
+	  )
+	];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_string(), "<Test><Level2/></Test>");
+	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
+	//panic!("blah")
+      } else {
+        panic!("sequence does not have 1 item: \"{}\"", e.to_string())
+      }
+    }
+    #[test]
+    fn xnode_predicate_neg() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      // This constructor is "/Test[foo]"
+      let cons = vec![
+	  Constructor::Path(
+	    vec![
+	      vec![Constructor::Root],
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![vec![Constructor::Step(
+	          NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("foo".to_string()))})},
+		  vec![]
+		)]]
+	      )],
+            ]
+	  )
+	];
+      let e = evaluate(Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 0);
     }
 } 
 

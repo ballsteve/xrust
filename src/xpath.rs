@@ -732,7 +732,7 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	    }
 	    _ => {
 	      // Insert a descendant-or-self::* step
-	      r.push(vec![Constructor::DescendantOrSelf(NodeMatch{axis: Axis::DescendantOrSelf, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})})]);
+	      r.push(vec![Constructor::Step(NodeMatch{axis: Axis::DescendantOrSelf, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])]);
 	      r.push(d)
 	    }
 	  }
@@ -776,7 +776,6 @@ fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
   }
 
   //println!("relpath: finished");
-  //Ok((myin, vec![SequenceConstructor::new(cons_relativepath).set_args(Some(r))]))
   Ok((myin, vec![Constructor::NotImplemented]))
 }
 
@@ -809,7 +808,10 @@ fn forwardstep(input: &str) -> IResult<&str, Vec<Constructor>> {
       nodetest
     ),
     |(a, n)| {
-      vec![Constructor::Step(NodeMatch{axis: Axis::from(a), nodetest: n})]
+      vec![Constructor::Step(
+        NodeMatch{axis: Axis::from(a), nodetest: n},
+        vec![]
+      )]
     }
   )
   (input)
@@ -823,7 +825,10 @@ fn reversestep(input: &str) -> IResult<&str, Vec<Constructor>> {
       nodetest
     ),
     |(a, n)| {
-      vec![Constructor::Step(NodeMatch{axis: Axis::from(a), nodetest: n})]
+      vec![Constructor::Step(
+        NodeMatch{axis: Axis::from(a), nodetest: n},
+	vec![]
+      )]
     }
   )
   (input)
