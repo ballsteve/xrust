@@ -792,10 +792,57 @@ fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
 // TODO: predicates
 fn axisstep(input: &str) -> IResult<&str, Vec<Constructor>> {
-  alt((
-    reversestep,
-    forwardstep
-  ))
+  map(
+    pair(
+      alt((
+        reversestep,
+    	forwardstep
+      )),
+      predicate_list
+    ),
+    |(a, p)| {
+      if p.is_empty() {
+        a
+      } else {
+        // Insert predicates into step
+	if a.len() == 1 {
+	  match &a[0] {
+	    Constructor::Step(nm, _) => {
+	      vec![Constructor::Step(nm.clone(), p)]
+	    }
+	    _ => {
+	      // error
+	      vec![]
+	    }
+	  }
+	} else {
+	  // error
+	  vec![]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// PredicateList ::= Predicate*
+fn predicate_list(input: &str) -> IResult<&str, Vec<Vec<Constructor>>> {
+  many0(predicate)
+  (input)
+}
+
+// Predicate ::= '[' Expr ']'
+fn predicate(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    tuple((
+      tag("["),
+      expr,
+      tag("]"),
+    )),
+    |(_, e, _)| {
+      e
+    }
+  )
   (input)
 }
 
@@ -1512,6 +1559,24 @@ mod tests {
     fn nomxpath_parse_step_wild() {
         let _e = parse("child::*").expect("failed to parse expression \"child::*\"");
 	assert!(true) // TODO: check the sequence constructor
+    }
+
+    #[test]
+    fn parse_eval_predicate_pos() {
+      let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
+      let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
+      let e = parse("/child::*/child::*[child::b]").expect("failed to parse expression \"//child::*/child::*[child::b]\"");
+      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      assert_eq!(s.to_string(), "<a><b/></a>")
+    }
+    #[test]
+    fn parse_eval_predicate_neg() {
+      let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
+      let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
+      let e = parse("/child::*[child::b]").expect("failed to parse expression \"/child::*[child::b]\"");
+      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.len(), 0)
     }
 }
 
