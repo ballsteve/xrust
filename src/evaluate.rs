@@ -17,7 +17,7 @@ pub fn evaluate<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Vec<
 
 // Evaluate an item constructor, given a context
 // If a constructor returns a non-singleton sequence, then it is unpacked
-fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Constructor) -> Result<Sequence<'a>, Error> {
+fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Constructor<'a>) -> Result<Sequence<'a>, Error> {
   match c {
     Constructor::Literal(l) => {
 	let mut seq = Sequence::new();
@@ -234,13 +234,10 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	    match nm.axis {
 	      Axis::Child => {
 	        if n.has_children() {
-	      	  Ok(
-		    predicates(
-		      n.children()
+		  let seq = n.children()
 		      .filter(|c| is_node_match(&nm.nodetest, c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c}),
-		    p)
-		  )
+		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	  Ok(predicates(seq, p))
 	    	} else {
 	      	  Ok(Sequence::new())
 	    	}
@@ -271,6 +268,15 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
       }
     }
+    Constructor::FunctionCall(f, a) => {
+      // Evaluate the arguments
+      let mut b = Vec::new();
+      for c in a {
+        b.push(evaluate(ctxt.clone(), posn, c).expect("argument evaluation failed"))
+      }
+      // Invoke the function
+      (f.body)(ctxt, posn, b)
+    }
     Constructor::NotImplemented => {
       Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
     }
@@ -278,17 +284,24 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 }
 
 // Filter the sequence with each of the predicates
-fn predicates<'a>(s: Sequence<'a>, p: &Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
+fn predicates<'a>(s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
   if p.is_empty() {
     s
   } else {
-    let mut mp = p.to_vec();
-    mp.iter().fold(s, |t, a| {
-      // t is the sequence so far
-      // a is the next predicate
-      // evaluate a for each item in the sequence
-      t.iter().filter(|b| {evaluate(Some(vec![(**b).clone()]), Some(0), a).expect("evaluating predicate failed").to_bool()}).map(|c| (*c).clone()).collect()
-    })
+    let mut result = s.clone();
+
+    // iterate over the predicates
+    for q in p {
+      // for each predicate, evaluate each item in s to a boolean
+      for i in 0..result.len() {
+        let b = evaluate(Some(vec![result[i].clone()]), Some(i), q).expect("evaluating predicate failed");
+	if b.to_bool() == false {
+	  result.remove(i);
+	}
+      }
+    }
+
+    result
   }
 }
 
@@ -330,9 +343,9 @@ pub enum Constructor<'a> {
   Concat(Vec<Vec<Constructor<'a>>>),	// Concatentate string values
   Range(Vec<Vec<Constructor<'a>>>),		// Range of integers
   Arithmetic(Vec<ArithmeticOperand<'a>>),	// Addition, subtraction, multiply, divide
+  FunctionCall(Function<'a>, Vec<Vec<Constructor<'a>>>),
   NotImplemented,	// TODO: implement everything so this can be removed
 }
-
 
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
   //println!("is_node_match: node has tag name \"{}\"", n.tag_name().name());
@@ -460,7 +473,7 @@ pub struct ArithmeticOperand<'a> {
   pub operand: Vec<Constructor<'a>>,
 }
 
-fn general_comparison<'a>(ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
+fn general_comparison<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
   let mut b = false;
   let left_seq = evaluate(ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   //println!("left sequence ({} items) = \"{}\"", left_seq.len(), left_seq.to_string());
@@ -479,8 +492,51 @@ fn general_comparison<'a>(ctxt: Option<Sequence>, posn: Option<usize>, op: Opera
   Ok(b)
 }
 
+// Functions
+
+pub type FunctionImpl<'a> = fn(
+    Option<Sequence<'a>>,		// Context
+    Option<usize>,		// Context position
+    Vec<Sequence<'a>>,		// Actual parameters
+  ) -> Result<Sequence<'a>, Error>;
+
+#[derive(Clone)]
+pub struct Function<'a> {
+  name: String,
+  nsuri: Option<String>,
+  prefix: Option<String>,
+  params: Vec<Param>,	// The number of parameters in the vector is the arity of the function
+  body: FunctionImpl<'a>,
+}
+
+impl Function<'_> {
+  fn new(n: String, p: Vec<Param>, i: FunctionImpl) -> Function {
+    Function{name: n, nsuri: None, prefix: None, params: p, body: i}
+  }
+}
+
+// A formal parameter
+#[derive(Clone)]
+pub struct Param {
+  name: String,
+  datatype: String,	// TODO
+}
+
+impl Param {
+  fn new(n: String, t: String) -> Param {
+    Param{name: n, datatype: t}
+  }
+}
+
+fn func_position<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match posn {
+    Some(u) => Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64)))]),
+    None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
+  }
+}
+
 // Operands must be singletons
-fn value_comparison<'a>(ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor<'a>>, right: &Vec<Constructor<'a>>) -> Result<bool, Error> {
+fn value_comparison<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
   let left_seq = evaluate(ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   if left_seq.len() == 1 {
     let right_seq = evaluate(ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
@@ -549,6 +605,9 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       }
       Constructor::Arithmetic(_v) => {
         format!("{:in$} arithmetic constructor", "", in=i)
+      }
+      Constructor::FunctionCall(f, a) => {
+        format!("{:in$} function call to \"{}\"", "", f.name, in=i)
       }
       Constructor::NotImplemented => {
         format!("{:in$} NotImplemented constructor", "", in=i)
@@ -1205,6 +1264,18 @@ mod tests {
       let e = evaluate(Some(s), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 0);
+    }
+
+    #[test]
+    fn function_call() {
+      let c = Constructor::FunctionCall(Function::new("position".to_string(), vec![], func_position), vec![]);
+      let s = vec![
+        Rc::new(Item::Value(Value::String("a"))),
+        Rc::new(Item::Value(Value::String("b"))),
+      ];
+      let vc = vec![c];
+      let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "1")
     }
 } 
 
