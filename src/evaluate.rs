@@ -9,6 +9,7 @@ use decimal::d128;
 //use crate::parsexml::parse;
 use trees::{RcNode, Tree};
 use roxmltree::Node;
+use std::collections::HashMap;
 
 // Evaluate a sequence constructor, given a context
 pub fn evaluate<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Vec<Constructor<'a>>) -> Result<Sequence<'a>, Error> {
@@ -17,7 +18,12 @@ pub fn evaluate<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Vec<
 
 // Evaluate an item constructor, given a context
 // If a constructor returns a non-singleton sequence, then it is unpacked
-fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Constructor<'a>) -> Result<Sequence<'a>, Error> {
+fn evaluate_one<'a>(
+    ctxt: Option<Sequence<'a>>,
+    posn: Option<usize>,
+    c: &'a Constructor<'a>
+  ) -> Result<Sequence<'a>, Error> {
+
   match c {
     Constructor::Literal(l) => {
 	let mut seq = Sequence::new();
@@ -196,12 +202,14 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
       Ok(s.iter().fold(
 	    u,
 	    |a, c| {
+	      //println!("path: a=\"{}\"", a.to_string());
 	      evaluate(Some(a), Some(0), c).expect("failed to evaluate step")
 	    }
       ))
     }
     Constructor::Step(nm, p) => {
       if ctxt.is_some() {
+        //println!("Constructor::Step: ctxt \"{}\" size = {} posn = {}", ctxt.as_ref().unwrap().to_string(), ctxt.as_ref().unwrap().len(), posn.unwrap());
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 	  Item::Node(n) => {
 	    match nm.axis {
@@ -237,6 +245,7 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
 		  let seq = n.children()
 		      .filter(|c| is_node_match(&nm.nodetest, c))
 		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+		  //println!("path: child axis: seq=\"{}\"", seq.to_string());
 	      	  Ok(predicates(seq, p))
 	    	} else {
 	      	  Ok(Sequence::new())
@@ -269,13 +278,22 @@ fn evaluate_one<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Cons
       }
     }
     Constructor::FunctionCall(f, a) => {
-      // Evaluate the arguments
-      let mut b = Vec::new();
-      for c in a {
-        b.push(evaluate(ctxt.clone(), posn, c).expect("argument evaluation failed"))
+      match f.body {
+        Some(g) => {
+	  println!("Constructor::FunctionCall - function is defined");
+      	  // Evaluate the arguments
+      	  let mut b = Vec::new();
+      	  for c in a {
+            b.push(evaluate(ctxt.clone(), posn, c).expect("argument evaluation failed"))
+      	  }
+      	  // Invoke the function
+      	  g(ctxt, posn, b)
+	}
+	None => {
+	  println!("Constructor::FunctionCall - function is NOT defined");
+	  panic!("call to undefined function \"{}\"", f.name)
+	}
       }
-      // Invoke the function
-      (f.body)(ctxt, posn, b)
     }
     Constructor::NotImplemented => {
       Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
@@ -292,9 +310,11 @@ fn predicates<'a>(s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence
 
     // iterate over the predicates
     for q in p {
+      //println!("evaluating predicate for {} items", result.len());
       // for each predicate, evaluate each item in s to a boolean
       for i in 0..result.len() {
-        let b = evaluate(Some(vec![result[i].clone()]), Some(i), q).expect("evaluating predicate failed");
+        //println!("predicate: evaluating ctxt item {} to bool", i);
+        let b = evaluate(Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
 	if b.to_bool() == false {
 	  result.remove(i);
 	}
@@ -348,7 +368,7 @@ pub enum Constructor<'a> {
 }
 
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
-  //println!("is_node_match: node has tag name \"{}\"", n.tag_name().name());
+  //println!("is_node_match: matching \"{}\" - node has tag name \"{}\"", nt.to_string(), n.tag_name().name());
   match nt {
     NodeTest::Name(t) => {
       // TODO: namespaces
@@ -385,10 +405,27 @@ pub struct NodeMatch {
   pub nodetest: NodeTest,
 }
 
+impl NodeMatch {
+  fn to_string(&self) -> String {
+    format!("NodeMatch {}::{}", self.axis.to_string(), self.nodetest.to_string())
+  }
+}
+
 #[derive(Clone)]
 pub enum NodeTest {
   Kind,
   Name(NameTest),
+}
+
+impl NodeTest {
+  pub fn to_string(&self) -> String {
+      match self {
+        NodeTest::Name(nt) => {
+	  nt.to_string()
+	}
+	_ => "--no test--".to_string()
+      }
+  }
 }
 
 #[derive(Clone)]
@@ -396,6 +433,23 @@ pub struct NameTest {
   pub ns: Option<WildcardOrName>,
   pub prefix: Option<String>,
   pub name: Option<WildcardOrName>,
+}
+
+impl NameTest {
+  pub fn to_string(&self) -> String {
+    if self.name.is_some() {
+      match self.name.as_ref().unwrap() {
+        WildcardOrName::Wildcard => {
+	  "*".to_string()
+	}
+	WildcardOrName::Name(n) => {
+      	  n.to_string()
+	}
+      }
+    } else {
+      "--no name--".to_string()
+    }
+  }
 }
 
 #[derive(Clone)]
@@ -439,6 +493,24 @@ impl Axis {
       "preceding" => Axis::Preceding,
       "preceding-or-self" => Axis::PrecedingOrSelf,
       _ => Axis::Unknown,
+    }
+  }
+  pub fn to_string(&self) -> String {
+    match self {
+      Axis::Child => "child".to_string(),
+      Axis::Descendant => "descendant".to_string(),
+      Axis::DescendantOrSelf => "descendant-or-self".to_string(),
+      Axis::Attribute => "attribute".to_string(),
+      Axis::Selfaxis => "self".to_string(),
+      Axis::Following => "following".to_string(),
+      Axis::FollowingOrSelf => "following-or-self".to_string(),
+      Axis::Namespace => "namespace".to_string(),
+      Axis::Parent => "parent".to_string(),
+      Axis::Ancestor => "ancestor".to_string(),
+      Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
+      Axis::Preceding => "preceding".to_string(),
+      Axis::PrecedingOrSelf => "preceding-or-self".to_string(),
+      _ => "unknown".to_string(),
     }
   }
 }
@@ -492,6 +564,85 @@ fn general_comparison<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: O
   Ok(b)
 }
 
+// Static context and analysis
+
+pub struct StaticContext<'a> {
+  pub funcs: HashMap<String, Function<'a>>,
+}
+
+impl<'a> StaticContext<'a> {
+  pub fn new() -> StaticContext<'a> {
+    StaticContext{funcs: HashMap::new()}
+  }
+  pub fn new_with_builtins() -> StaticContext<'a> {
+    let mut sc = StaticContext{funcs: HashMap::new()};
+    sc.funcs.insert("position".to_string(),
+      Function{
+        name: "position".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_position)
+      }
+    );
+    sc
+  }
+  pub fn declare_function(&mut self, n: String, _ns: String, p: Vec<Param>) {
+    self.funcs.insert(n.clone(), Function{name: n, nsuri: None, prefix: None, body: None, params: p});
+  }
+}
+
+// Rewrite constructors
+pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'a>) {
+  for d in e {
+    match d {
+      Constructor::FunctionCall(f, a) => {
+        // Fill in function body
+	match sc.funcs.get(&f.name) {
+	  Some(g) => {
+	    f.body.replace(g.body.unwrap());
+	  }
+	  None => {
+	    panic!("call to unknown function \"{}\"", f.name)
+	  }
+	}
+        for i in a {
+	  static_analysis(i, sc)
+	}
+      }
+      Constructor::Or(a) |
+      Constructor::And(a) |
+      Constructor::Path(a) |
+      Constructor::Concat(a) |
+      Constructor::Range(a) => {
+        for i in a {
+	  static_analysis(i, sc)
+	}
+      }
+      Constructor::Step(_, a) => {
+        for i in a {
+	  static_analysis(i, sc)
+	}
+      }
+      Constructor::GeneralComparison(_, a) |
+      Constructor::ValueComparison(_, a) => {
+        for i in a {
+	  static_analysis(i, sc)
+	}
+      }
+      Constructor::Arithmetic(a) => {
+        for i in a {
+	  static_analysis(&mut i.operand, sc)
+	}
+      }
+      Constructor::Literal(_) |
+      Constructor::ContextItem |
+      Constructor::Root |
+      Constructor::NotImplemented => {}
+    }
+  }
+}
+
 // Functions
 
 pub type FunctionImpl<'a> = fn(
@@ -506,11 +657,11 @@ pub struct Function<'a> {
   nsuri: Option<String>,
   prefix: Option<String>,
   params: Vec<Param>,	// The number of parameters in the vector is the arity of the function
-  body: FunctionImpl<'a>,
+  body: Option<FunctionImpl<'a>>,	// Function implementation must be provided during static analysis
 }
 
 impl Function<'_> {
-  fn new(n: String, p: Vec<Param>, i: FunctionImpl) -> Function {
+  pub fn new(n: String, p: Vec<Param>, i: Option<FunctionImpl>) -> Function {
     Function{name: n, nsuri: None, prefix: None, params: p, body: i}
   }
 }
@@ -528,9 +679,9 @@ impl Param {
   }
 }
 
-fn func_position<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_position<'a>(_ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match posn {
-    Some(u) => Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64)))]),
+    Some(u) => Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))]),
     None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
   }
 }
@@ -557,7 +708,7 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
     let t =
     match v {
       Constructor::Literal(l) => {
-        format!("{:in$} Construct literal", "", in=i)
+        format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
       }
       Constructor::ContextItem => {
         format!("{:in$} Construct context item", "", in=i)
@@ -581,8 +732,13 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::Root => {
         format!("{:in$} Construct document root", "", in=i)
       }
-      Constructor::Step(_, _) => {
-        format!("{:in$} Construct step axis", "", in=i)
+      Constructor::Step(nm, p) => {
+        format!(
+	  "{:in$} Construct step {}{}", "",
+	  nm.to_string(),
+	  if p.len() != 0 {format!("\npredicates: {}", format_constructor(&p[0], 0))} else {"".to_string()},
+	  in=i
+	)
       }
       Constructor::Path(v) => {
         let mut s = format!("{:in$} Construct relative path:\n", "", in=i);
@@ -594,8 +750,12 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::GeneralComparison(_o, _v) => {
         format!("{:in$} general comparison constructor", "", in=i)
       }
-      Constructor::ValueComparison(_o, _v) => {
-        format!("{:in$} value comparison constructor", "", in=i)
+      Constructor::ValueComparison(o, v) => {
+        format!("{:in$} value comparison constructor {} of:\n{}\n{}", "",
+	o.to_string(),
+	format_constructor(&v[0], i + 4),
+	format_constructor(&v[1], i + 4),
+	in=i)
       }
       Constructor::Concat(_v) => {
         format!("{:in$} concat constructor", "", in=i)
@@ -607,7 +767,11 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
         format!("{:in$} arithmetic constructor", "", in=i)
       }
       Constructor::FunctionCall(f, a) => {
-        format!("{:in$} function call to \"{}\"", "", f.name, in=i)
+        format!("{:in$} function call to \"{}\" ({}) with {} arguments", "",
+	  f.name,
+	  f.body.map_or_else(|| "not defined", |_| "is defined"),
+	  a.len(),
+	  in=i)
       }
       Constructor::NotImplemented => {
         format!("{:in$} NotImplemented constructor", "", in=i)
@@ -1209,7 +1373,7 @@ mod tests {
       if e.len() == 0 {
         assert!(true)
       } else {
-        println!("result: {}", e.to_string());
+        //println!("result: {}", e.to_string());
       	assert_eq!(e.len(), 0);
       }
     }
@@ -1268,14 +1432,17 @@ mod tests {
 
     #[test]
     fn function_call() {
-      let c = Constructor::FunctionCall(Function::new("position".to_string(), vec![], func_position), vec![]);
+      let c = Constructor::FunctionCall(
+        Function::new("position".to_string(), vec![], Some(func_position)),
+	vec![]
+      );
       let s = vec![
         Rc::new(Item::Value(Value::String("a"))),
         Rc::new(Item::Value(Value::String("b"))),
       ];
       let vc = vec![c];
       let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "1")
+      assert_eq!(r.to_string(), "2")
     }
 } 
 

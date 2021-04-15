@@ -94,6 +94,22 @@ pub enum Operator {
   After,
 }
 
+impl Operator {
+  pub fn to_string(&self) -> &str {
+    match self {
+      Operator::Equal => "=",
+      Operator::NotEqual => "!=",
+      Operator::LessThan => "<",
+      Operator::LessThanEqual => "<=",
+      Operator::GreaterThan => ">",
+      Operator::GreaterThanEqual => ">=",
+      Operator::Is => "is",
+      Operator::Before => "<<",
+      Operator::After => ">>",
+    }
+  }
+}
+
 impl<'a> Item<'a> {
   // Gives the string value of an item. All items have a string value.
   pub fn to_string(&self) -> String {
@@ -421,7 +437,7 @@ pub enum Value<'a> {
 }
 
 impl<'a> Value<'a> {
-    fn to_string(&self) -> String {
+    pub fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
 	    Value::StringOwned(s) => s.to_string(),
@@ -1003,5 +1019,43 @@ mod tests {
 	let mut t = Sequence::new();
 	t.add(&s[0]);
 	assert!(Rc::ptr_eq(&s[0], &t[0]))
+    }
+
+    // Operators
+    #[test]
+    fn op_equal() {
+      assert_eq!(Operator::Equal.to_string(), "=")
+    }
+    #[test]
+    fn op_notequal() {
+      assert_eq!(Operator::NotEqual.to_string(), "!=")
+    }
+    #[test]
+    fn op_lt() {
+      assert_eq!(Operator::LessThan.to_string(), "<")
+    }
+    #[test]
+    fn op_ltequal() {
+      assert_eq!(Operator::LessThanEqual.to_string(), "<=")
+    }
+    #[test]
+    fn op_gt() {
+      assert_eq!(Operator::GreaterThan.to_string(), ">")
+    }
+    #[test]
+    fn op_gtequal() {
+      assert_eq!(Operator::GreaterThanEqual.to_string(), ">=")
+    }
+    #[test]
+    fn op_is() {
+      assert_eq!(Operator::Is.to_string(), "is")
+    }
+    #[test]
+    fn op_before() {
+      assert_eq!(Operator::Before.to_string(), "<<")
+    }
+    #[test]
+    fn op_after() {
+      assert_eq!(Operator::After.to_string(), ">>")
     }
 }

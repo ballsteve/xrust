@@ -11,7 +11,7 @@ use nom:: {
   branch::alt,
   character::complete::{char, none_of},
   sequence::{delimited, pair, tuple},
-  multi::{many0, separated_nonempty_list},
+  multi::{many0, separated_list, separated_nonempty_list},
   combinator::{complete, map, opt, recognize},
   bytes::complete::tag,
 };
@@ -19,12 +19,15 @@ use crate::item::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
 use crate::evaluate::{evaluate,
+    static_analysis,
     Constructor,
     NameTest, WildcardOrName,
     NodeTest, NodeMatch,
     Axis,
     ArithmeticOperator, ArithmeticOperand,
+    Function,
     format_constructor,
+    StaticContext,
 };
 use roxmltree::Node;
 
@@ -994,9 +997,58 @@ fn primary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     literal,
     context_item,
-    parenthesized_expr
+    parenthesized_expr,
+    function_call,
   ))
   (input)
+}
+
+// FunctionCall ::= EQName ArgumentList
+fn function_call(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    pair(
+      qname,
+      arglist,
+    ),
+    |(n, a)| {
+      match n {
+        NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart)), ns: None, prefix: None}) => {
+      	  vec![Constructor::FunctionCall(
+            Function::new(localpart, vec![], None),
+	    a
+      	  )]
+	}
+	_ => {
+      	  vec![Constructor::Literal(Value::String("invalid qname"))]
+	}
+      }
+    }
+  )
+  (input)
+}
+
+// ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
+fn arglist(input: &str) -> IResult<&str, Vec<Vec<Constructor>>> {
+  map(
+    tuple((
+      tag("("),
+      separated_list(
+        tuple((multispace0, tag(","), multispace0)),
+      	argument,
+      ),
+      tag(")"),
+    )),
+    |(_, a, _)| {
+      a
+    }
+  )
+  (input)
+}
+
+// Argument ::= ExpreSingle | ArgumentPlaceHolder
+// TODO: ArgumentPlaceHolder
+fn argument(input: &str) -> IResult<&str, Vec<Constructor>> {
+  expr_single(input)
 }
 
 // Literal ::= NumericLiteral | StringLiteral
@@ -1577,6 +1629,17 @@ mod tests {
       let e = parse("/child::*[child::b]").expect("failed to parse expression \"/child::*[child::b]\"");
       let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.len(), 0)
+    }
+    #[test]
+    fn parse_eval_fncall() {
+      let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
+      let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
+      let mut e = parse("/child::*/child::*[position() eq 1]").expect("failed to parse expression \"/child::*/child::*[position() eq 1]\"");
+      let sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &sc);
+      println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "<a><b/></a>")
     }
 }
 
