@@ -1637,7 +1637,7 @@ mod tests {
       let mut e = parse("/child::*/child::*[position() eq 1]").expect("failed to parse expression \"/child::*/child::*[position() eq 1]\"");
       let sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &sc);
-      println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><b/></a>")
     }
@@ -1648,7 +1648,7 @@ mod tests {
       let mut e = parse("/child::*/child::*[position() eq last()]").expect("failed to parse expression \"/child::*/child::*[position() eq last()]\"");
       let sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &sc);
-      println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><d/></a>")
     }

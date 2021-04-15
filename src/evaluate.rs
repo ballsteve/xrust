@@ -601,6 +601,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_last)
       }
     );
+    sc.funcs.insert("count".to_string(),
+      Function{
+        name: "count".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_count)
+      }
+    );
     sc
   }
   pub fn declare_function(&mut self, n: String, _ns: String, p: Vec<Param>) {
@@ -712,6 +721,23 @@ fn func_last<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Se
       Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))])
     }
     None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
+  }
+}
+
+fn func_count<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match args.len() {
+    0 => {
+      // count the context items
+      match ctxt {
+        Some(u) => Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))]),
+        None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
+      }
+    }
+    1 => {
+      // count the argument items
+      Ok(vec![Rc::new(Item::Value(Value::Integer(args[0].len() as i64)))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
@@ -1486,6 +1512,22 @@ mod tests {
       ];
       let vc = vec![c];
       let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "3")
+    }
+    #[test]
+    fn function_call_count() {
+      let c = Constructor::FunctionCall(
+        Function::new("count".to_string(), vec![Param::new("i".to_string(), "t".to_string())], Some(func_count)),
+	vec![
+	  vec![
+            Constructor::Literal(Value::String("a")),
+            Constructor::Literal(Value::String("b")),
+            Constructor::Literal(Value::String("c")),
+	  ]
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "3")
     }
 } 
