@@ -280,7 +280,7 @@ fn evaluate_one<'a>(
     Constructor::FunctionCall(f, a) => {
       match f.body {
         Some(g) => {
-	  println!("Constructor::FunctionCall - function is defined");
+	  //println!("Constructor::FunctionCall - function \"{}\" is defined", f.name);
       	  // Evaluate the arguments
       	  let mut b = Vec::new();
       	  for c in a {
@@ -290,7 +290,7 @@ fn evaluate_one<'a>(
       	  g(ctxt, posn, b)
 	}
 	None => {
-	  println!("Constructor::FunctionCall - function is NOT defined");
+	  //println!("Constructor::FunctionCall - function is NOT defined");
 	  panic!("call to undefined function \"{}\"", f.name)
 	}
       }
@@ -311,16 +311,23 @@ fn predicates<'a>(s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence
     // iterate over the predicates
     for q in p {
       //println!("evaluating predicate for {} items", result.len());
+      let mut new: Sequence = Vec::new();
+
       // for each predicate, evaluate each item in s to a boolean
       for i in 0..result.len() {
-        //println!("predicate: evaluating ctxt item {} to bool", i);
+        //println!("predicate: evaluating ctxt item {} of {} to bool", i, result.len());
         let b = evaluate(Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
-	if b.to_bool() == false {
-	  result.remove(i);
+	if b.to_bool() == true {
+	  //println!("item {} is a keeper", i);
+	  new.push(result[i].clone());
 	}
       }
+      //println!("replacing result with new of {} items", new.len());
+      result.clear();
+      result.append(&mut new);
     }
 
+    //println!("predicates returning sequence with {} items", result.len());
     result
   }
 }
@@ -585,6 +592,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_position)
       }
     );
+    sc.funcs.insert("last".to_string(),
+      Function{
+        name: "last".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_last)
+      }
+    );
     sc
   }
   pub fn declare_function(&mut self, n: String, _ns: String, p: Vec<Param>) {
@@ -681,7 +697,20 @@ impl Param {
 
 fn func_position<'a>(_ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match posn {
-    Some(u) => Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))]),
+    Some(u) => {
+      //println!("func_position returning {}", u + 1);
+      Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))])
+    }
+    None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
+  }
+}
+
+fn func_last<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match ctxt {
+    Some(u) => {
+      //println!("func_last returning {}", u.len());
+      Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))])
+    }
     None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
   }
 }
@@ -1431,7 +1460,7 @@ mod tests {
     }
 
     #[test]
-    fn function_call() {
+    fn function_call_position() {
       let c = Constructor::FunctionCall(
         Function::new("position".to_string(), vec![], Some(func_position)),
 	vec![]
@@ -1443,6 +1472,21 @@ mod tests {
       let vc = vec![c];
       let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "2")
+    }
+    #[test]
+    fn function_call_last() {
+      let c = Constructor::FunctionCall(
+        Function::new("last".to_string(), vec![], Some(func_last)),
+	vec![]
+      );
+      let s = vec![
+        Rc::new(Item::Value(Value::String("a"))),
+        Rc::new(Item::Value(Value::String("b"))),
+        Rc::new(Item::Value(Value::String("c"))),
+      ];
+      let vc = vec![c];
+      let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "3")
     }
 } 
 

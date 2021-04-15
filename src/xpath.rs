@@ -1631,7 +1631,7 @@ mod tests {
       assert_eq!(s.len(), 0)
     }
     #[test]
-    fn parse_eval_fncall() {
+    fn parse_eval_fncall_position() {
       let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
       let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
       let mut e = parse("/child::*/child::*[position() eq 1]").expect("failed to parse expression \"/child::*/child::*[position() eq 1]\"");
@@ -1640,6 +1640,17 @@ mod tests {
       println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><b/></a>")
+    }
+    #[test]
+    fn parse_eval_fncall_last() {
+      let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
+      let mut e = parse("/child::*/child::*[position() eq last()]").expect("failed to parse expression \"/child::*/child::*[position() eq last()]\"");
+      let sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &sc);
+      println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "<a><d/></a>")
     }
 }
 
