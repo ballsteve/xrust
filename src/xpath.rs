@@ -5,6 +5,7 @@
 extern crate nom;
 use decimal;
 use std::rc::Rc;
+use std::collections::HashMap;
 use nom:: {
   IResult,
   character::complete::*,
@@ -18,7 +19,9 @@ use nom:: {
 use crate::item::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
-use crate::evaluate::{evaluate,
+use crate::evaluate::{
+    DynamicContext,
+    evaluate,
     static_analysis,
     Constructor,
     NameTest, WildcardOrName,
@@ -1222,7 +1225,7 @@ mod tests {
     fn nomxpath_parse_int() {
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_int().unwrap(), 1)
 	  } else {
@@ -1237,7 +1240,7 @@ mod tests {
     fn nomxpath_parse_decimal() {
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_double(), 1.2)
 	  } else {
@@ -1252,7 +1255,7 @@ mod tests {
     fn nomxpath_parse_double() {
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_double(), 120.0)
 	  } else {
@@ -1271,7 +1274,7 @@ mod tests {
     fn nomxpath_parse_string_apos() {
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc")
 	  } else {
@@ -1286,7 +1289,7 @@ mod tests {
     fn nomxpath_parse_string_apos_esc() {
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc'def")
 	  } else {
@@ -1301,7 +1304,7 @@ mod tests {
     fn nomxpath_parse_string_quot() {
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc")
 	  } else {
@@ -1316,7 +1319,7 @@ mod tests {
     fn nomxpath_parse_string_quot_esc() {
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), r#"abc"def"#)
 	  } else {
@@ -1330,7 +1333,7 @@ mod tests {
     fn nomxpath_parse_literal_sequence() {
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1346,7 +1349,7 @@ mod tests {
     fn nomxpath_parse_literal_seq_ws() {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1365,7 +1368,7 @@ mod tests {
         let e = parse(".").expect("failed to parse expression \".\"");
 	if e.len() == 1 {
 	  let ctxt = vec![Rc::new(Item::Value(Value::String("foobar")))];
-	  let s = evaluate(Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_string(), "foobar")
 	  } else {
@@ -1385,7 +1388,7 @@ mod tests {
     fn nomxpath_parse_singleton_paren() {
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
-	  let s = evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_int().unwrap(), 1)
 	  } else {
@@ -1491,7 +1494,7 @@ mod tests {
       let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let c = parse("/").expect("unable to parse XPath \"/\"");
-      let e = evaluate(Some(s), Some(0), &c)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
@@ -1509,7 +1512,7 @@ mod tests {
       let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let c = parse("/child::*").expect("failed to parse expression \"/child::*\"");
-      let e = evaluate(Some(s), Some(0), &c)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
@@ -1528,7 +1531,7 @@ mod tests {
       let d = roxmltree::Document::parse("<Level1/>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let c = parse("/child::Level1").expect("failed to parse expression \"/child::Level1\"");
-      let e = evaluate(Some(s), Some(0), &c)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Level1/>");
@@ -1542,7 +1545,7 @@ mod tests {
       let d = roxmltree::Document::parse("<Level1/>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let c = parse("/child::Test").expect("failed to parse expression \"/child::Test\"");
-      let e = evaluate(Some(s), Some(0), &c)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 0 {
         assert!(true)
@@ -1556,7 +1559,7 @@ mod tests {
       let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
       let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
       let c = parse("/child::*/child::*").expect("failed to parse expression \"/child::a/child::b\"");
-      let e = evaluate(Some(s), Some(0), &c)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 3 {
         assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
@@ -1618,7 +1621,7 @@ mod tests {
       let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
       let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
       let e = parse("/child::*/child::*[child::b]").expect("failed to parse expression \"//child::*/child::*[child::b]\"");
-      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       assert_eq!(s.to_string(), "<a><b/></a>")
     }
@@ -1627,7 +1630,7 @@ mod tests {
       let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
       let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
       let e = parse("/child::*[child::b]").expect("failed to parse expression \"/child::*[child::b]\"");
-      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.len(), 0)
     }
     #[test]
@@ -1635,10 +1638,10 @@ mod tests {
       let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
       let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
       let mut e = parse("/child::*/child::*[position() eq 1]").expect("failed to parse expression \"/child::*/child::*[position() eq 1]\"");
-      let sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &sc);
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
       //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
-      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><b/></a>")
     }
     #[test]
@@ -1646,10 +1649,21 @@ mod tests {
       let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
       let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
       let mut e = parse("/child::*/child::*[position() eq last()]").expect("failed to parse expression \"/child::*/child::*[position() eq last()]\"");
-      let sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &sc);
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
       //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
-      let s = evaluate(Some(d), Some(0), &e).expect("evaluation failed");
+      let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "<a><d/></a>")
+    }
+    #[test]
+    fn parse_eval_fncall_count() {
+      let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
+      let mut e = parse("count(/child::*/child::*)").expect("failed to parse expression \"count(/child::*/child::*)\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><d/></a>")
     }
 }

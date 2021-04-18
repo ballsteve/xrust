@@ -10,15 +10,33 @@ use decimal::d128;
 use trees::{RcNode, Tree};
 use roxmltree::Node;
 use std::collections::HashMap;
+use std::cell::RefCell;
+
+pub struct DynamicContext<'a> {
+  vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>,
+}
+
+impl<'a> DynamicContext<'a> {
+  pub fn new() -> DynamicContext<'a> {
+    DynamicContext{vars: RefCell::new(HashMap::new())}
+  }
+}
 
 // Evaluate a sequence constructor, given a context
-pub fn evaluate<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, c: &'a Vec<Constructor<'a>>) -> Result<Sequence<'a>, Error> {
-  Ok(c.iter().map(|a| evaluate_one(ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect())
+pub fn evaluate<'a>(
+    dc: &DynamicContext<'a>,
+    ctxt: Option<Sequence<'a>>,
+    posn: Option<usize>,
+    c: &'a Vec<Constructor<'a>>
+  ) -> Result<Sequence<'a>, Error> {
+
+  Ok(c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect())
 }
 
 // Evaluate an item constructor, given a context
 // If a constructor returns a non-singleton sequence, then it is unpacked
 fn evaluate_one<'a>(
+    dc: &DynamicContext<'a>,
     ctxt: Option<Sequence<'a>>,
     posn: Option<usize>,
     c: &'a Constructor<'a>
@@ -45,7 +63,7 @@ fn evaluate_one<'a>(
       // Future: Evaluate every operand to check for dynamic errors
       let mut b = false;
       for i in v {
-	let k = evaluate(ctxt.clone(), posn, i).expect("evaluating operand failed");
+	let k = evaluate(dc, ctxt.clone(), posn, i).expect("evaluating operand failed");
 	b = k.to_bool();
 	if b {break};
       }
@@ -59,7 +77,7 @@ fn evaluate_one<'a>(
       // Future: Evaluate every operand to check for dynamic errors
       let mut b = true;
       for i in v {
-	let k = evaluate(ctxt.clone(), posn, i).expect("evaluating operand failed");
+	let k = evaluate(dc, ctxt.clone(), posn, i).expect("evaluating operand failed");
 	b = k.to_bool();
 	if !b {break};
       }
@@ -71,7 +89,7 @@ fn evaluate_one<'a>(
       if v.len() == 2 {
 	let mut seq = Sequence::new();
 	seq.new_value(Value::Boolean(
-	  general_comparison(ctxt, posn, *o, &v[0], &v[1])
+	  general_comparison(dc, ctxt, posn, *o, &v[0], &v[1])
 	    .expect("comparison evaluation failed")
 	  ));
       	Ok(seq)
@@ -83,7 +101,7 @@ fn evaluate_one<'a>(
       if v.len() == 2 {
 	let mut seq = Sequence::new();
 	seq.new_value(Value::Boolean(
-	  value_comparison(ctxt, posn, *o, &v[0], &v[1])
+	  value_comparison(dc, ctxt, posn, *o, &v[0], &v[1])
 	    .expect("comparison evaluation failed")
 	));
       	Ok(seq)
@@ -94,7 +112,7 @@ fn evaluate_one<'a>(
     Constructor::Concat(v) => {
       let mut r = String::new();
       for u in v {
-	let t = evaluate(ctxt.clone(), posn, u).expect("evaluating operand failed");
+	let t = evaluate(dc, ctxt.clone(), posn, u).expect("evaluating operand failed");
 	r.push_str(t.to_string().as_str());
       }
       let mut seq = Sequence::new();
@@ -104,8 +122,8 @@ fn evaluate_one<'a>(
     Constructor::Range(v) => {
       if v.len() == 2 {
         // Evaluate the two operands: they must both be literal integer items
-	let start = evaluate(ctxt.clone(), posn, &v[0]).expect("evaluating start operand failed");
-	let end = evaluate(ctxt.clone(), posn, &v[1]).expect("evaluating end operand failed");
+	let start = evaluate(dc, ctxt.clone(), posn, &v[0]).expect("evaluating start operand failed");
+	let end = evaluate(dc, ctxt.clone(), posn, &v[1]).expect("evaluating end operand failed");
 	if start.len() == 0 || end.len() == 0 {
 	  // empty sequence is the result
 	  Ok(vec![])
@@ -146,7 +164,7 @@ fn evaluate_one<'a>(
       let mut acc: f64 = 0.0;
 
       for j in v {
-	let k = evaluate(ctxt.clone(), posn, &j.operand).expect("evaluating operand failed");
+	let k = evaluate(dc, ctxt.clone(), posn, &j.operand).expect("evaluating operand failed");
 	let u: f64;
 	if k.len() != 1 {
 	  return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
@@ -203,7 +221,7 @@ fn evaluate_one<'a>(
 	    u,
 	    |a, c| {
 	      //println!("path: a=\"{}\"", a.to_string());
-	      evaluate(Some(a), Some(0), c).expect("failed to evaluate step")
+	      evaluate(dc, Some(a), Some(0), c).expect("failed to evaluate step")
 	    }
       ))
     }
@@ -246,7 +264,7 @@ fn evaluate_one<'a>(
 		      .filter(|c| is_node_match(&nm.nodetest, c))
 		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
 		  //println!("path: child axis: seq=\"{}\"", seq.to_string());
-	      	  Ok(predicates(seq, p))
+	      	  Ok(predicates(dc, seq, p))
 	    	} else {
 	      	  Ok(Sequence::new())
 	    	}
@@ -284,14 +302,42 @@ fn evaluate_one<'a>(
       	  // Evaluate the arguments
       	  let mut b = Vec::new();
       	  for c in a {
-            b.push(evaluate(ctxt.clone(), posn, c).expect("argument evaluation failed"))
+            b.push(evaluate(dc, ctxt.clone(), posn, c).expect("argument evaluation failed"))
       	  }
       	  // Invoke the function
       	  g(ctxt, posn, b)
 	}
 	None => {
 	  //println!("Constructor::FunctionCall - function is NOT defined");
-	  panic!("call to undefined function \"{}\"", f.name)
+	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "call to undefined function".to_string()})
+	}
+      }
+    }
+    Constructor::VariableDeclaration(v, a) => {
+      let s = evaluate(dc, ctxt, posn, a).expect("failed to evaluate variable value");
+      let mut t: Vec<Sequence>;
+      match dc.vars.borrow().get(v) {
+        Some(u) => {
+	  t = u.to_vec();
+	  t.push(s)
+	}
+	None => {
+	  t = vec![s]
+	}
+      }
+      dc.vars.borrow_mut().insert(v.to_string(), t);
+      Ok(Sequence::new())
+    }
+    Constructor::VariableReference(v) => {
+      match dc.vars.borrow().get(v) {
+        Some(s) => {
+	  match s.last() {
+	    Some(t) => Ok(t.clone()),
+	    None => Result::Err(Error{kind: ErrorKind::Unknown, message: "no value for variable".to_string()})
+	  }
+	}
+	None => {
+      	  Result::Err(Error{kind: ErrorKind::Unknown, message: "reference to undefined variable".to_string()})
 	}
       }
     }
@@ -302,7 +348,7 @@ fn evaluate_one<'a>(
 }
 
 // Filter the sequence with each of the predicates
-fn predicates<'a>(s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
+fn predicates<'a>(dc: &DynamicContext<'a>, s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
   if p.is_empty() {
     s
   } else {
@@ -316,7 +362,7 @@ fn predicates<'a>(s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence
       // for each predicate, evaluate each item in s to a boolean
       for i in 0..result.len() {
         //println!("predicate: evaluating ctxt item {} of {} to bool", i, result.len());
-        let b = evaluate(Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
+        let b = evaluate(dc, Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
 	if b.to_bool() == true {
 	  //println!("item {} is a keeper", i);
 	  new.push(result[i].clone());
@@ -371,6 +417,8 @@ pub enum Constructor<'a> {
   Range(Vec<Vec<Constructor<'a>>>),		// Range of integers
   Arithmetic(Vec<ArithmeticOperand<'a>>),	// Addition, subtraction, multiply, divide
   FunctionCall(Function<'a>, Vec<Vec<Constructor<'a>>>),
+  VariableDeclaration(String, Vec<Constructor<'a>>),	// TODO: support QName
+  VariableReference(String),				// TODO: support QName
   NotImplemented,	// TODO: implement everything so this can be removed
 }
 
@@ -552,11 +600,11 @@ pub struct ArithmeticOperand<'a> {
   pub operand: Vec<Constructor<'a>>,
 }
 
-fn general_comparison<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
+fn general_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
   let mut b = false;
-  let left_seq = evaluate(ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
+  let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   //println!("left sequence ({} items) = \"{}\"", left_seq.len(), left_seq.to_string());
-  let right_seq = evaluate(ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
+  let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
   //println!("right sequence ({} items) = \"{}\"", right_seq.len(), right_seq.to_string());
   for l in left_seq {
     for r in &right_seq {
@@ -574,16 +622,17 @@ fn general_comparison<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: O
 // Static context and analysis
 
 pub struct StaticContext<'a> {
-  pub funcs: HashMap<String, Function<'a>>,
+  pub funcs: RefCell<HashMap<String, Function<'a>>>,
+  pub vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>, // each entry in the vector is an inner scope of the variable
 }
 
 impl<'a> StaticContext<'a> {
   pub fn new() -> StaticContext<'a> {
-    StaticContext{funcs: HashMap::new()}
+    StaticContext{funcs: RefCell::new(HashMap::new()), vars: RefCell::new(HashMap::new())}
   }
   pub fn new_with_builtins() -> StaticContext<'a> {
-    let mut sc = StaticContext{funcs: HashMap::new()};
-    sc.funcs.insert("position".to_string(),
+    let sc = StaticContext{funcs: RefCell::new(HashMap::new()), vars: RefCell::new(HashMap::new())};
+    sc.funcs.borrow_mut().insert("position".to_string(),
       Function{
         name: "position".to_string(),
 	nsuri: None,
@@ -592,7 +641,7 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_position)
       }
     );
-    sc.funcs.insert("last".to_string(),
+    sc.funcs.borrow_mut().insert("last".to_string(),
       Function{
         name: "last".to_string(),
 	nsuri: None,
@@ -601,7 +650,7 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_last)
       }
     );
-    sc.funcs.insert("count".to_string(),
+    sc.funcs.borrow_mut().insert("count".to_string(),
       Function{
         name: "count".to_string(),
 	nsuri: None,
@@ -612,8 +661,11 @@ impl<'a> StaticContext<'a> {
     );
     sc
   }
-  pub fn declare_function(&mut self, n: String, _ns: String, p: Vec<Param>) {
-    self.funcs.insert(n.clone(), Function{name: n, nsuri: None, prefix: None, body: None, params: p});
+  pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
+    self.funcs.borrow_mut().insert(n.clone(), Function{name: n, nsuri: None, prefix: None, body: None, params: p});
+  }
+  pub fn declare_variable(&self, n: String, _ns:String) {
+    self.vars.borrow_mut().insert(n.clone(), vec![]);
   }
 }
 
@@ -623,7 +675,7 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
     match d {
       Constructor::FunctionCall(f, a) => {
         // Fill in function body
-	match sc.funcs.get(&f.name) {
+	match sc.funcs.borrow().get(&f.name) {
 	  Some(g) => {
 	    f.body.replace(g.body.unwrap());
 	  }
@@ -634,6 +686,13 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
         for i in a {
 	  static_analysis(i, sc)
 	}
+      }
+      Constructor::VariableDeclaration(v, a) => {
+        sc.declare_variable(v.to_string(), "".to_string());
+	static_analysis(a, sc)
+      }
+      Constructor::VariableReference(_v) => {
+        // TODO: check that variable has been declared
       }
       Constructor::Or(a) |
       Constructor::And(a) |
@@ -742,10 +801,10 @@ fn func_count<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Se
 }
 
 // Operands must be singletons
-fn value_comparison<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
-  let left_seq = evaluate(ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
+fn value_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
+  let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   if left_seq.len() == 1 {
-    let right_seq = evaluate(ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
+    let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
     if right_seq.len() == 1 {
       Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
     } else {
@@ -828,6 +887,12 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
 	  a.len(),
 	  in=i)
       }
+      Constructor::VariableDeclaration(v, _a) => {
+        format!("{:in$} variable declaration constructor named \"{}\"", "", v, in=i)
+      }
+      Constructor::VariableReference(v) => {
+        format!("{:in$} variable reference constructor named \"{}\"", "", v, in=i)
+      }
       Constructor::NotImplemented => {
         format!("{:in$} NotImplemented constructor", "", in=i)
       }
@@ -844,7 +909,7 @@ mod tests {
     #[test]
     fn literal_string() {
       let cons = vec![Constructor::Literal(Value::String("foobar"))];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "foobar")
@@ -856,7 +921,7 @@ mod tests {
     #[test]
     fn literal_int() {
       let cons = vec![Constructor::Literal(Value::Integer(456))];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_int().unwrap(), 456)
@@ -868,7 +933,7 @@ mod tests {
     #[test]
     fn literal_decimal() {
       let cons = vec![Constructor::Literal(Value::Decimal(d128!(34.56)))];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "34.56")
@@ -880,7 +945,7 @@ mod tests {
     #[test]
     fn literal_bool() {
       let cons = vec![Constructor::Literal(Value::Boolean(false))];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -892,7 +957,7 @@ mod tests {
     #[test]
     fn literal_double() {
       let cons = vec![Constructor::Literal(Value::Double(4.56))];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 4.56)
@@ -907,7 +972,7 @@ mod tests {
 	  Constructor::Literal(Value::String("foo")),
 	  Constructor::Literal(Value::String("bar")),
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 2 {
         assert_eq!(s.to_string(), "foobar")
@@ -922,7 +987,7 @@ mod tests {
 	  Constructor::Literal(Value::String("foo")),
 	  Constructor::Literal(Value::Integer(123)),
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 2 {
         assert_eq!(s.to_string(), "foo123")
@@ -935,7 +1000,7 @@ mod tests {
     fn context_item() {
       let s = vec![Rc::new(Item::Value(Value::String("foobar")))];
       let cons = vec![Constructor::ContextItem];
-      let result = evaluate(Some(s), Some(0), &cons)
+      let result = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if result.len() == 1 {
         assert_eq!(result[0].to_string(), "foobar")
@@ -950,7 +1015,7 @@ mod tests {
 	  Constructor::ContextItem,
 	  Constructor::ContextItem,
 	];
-      let result = evaluate(Some(vec![Rc::new(Item::Value(Value::String("foobar")))]), Some(0), &cons)
+      let result = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::Value(Value::String("foobar")))]), Some(0), &cons)
         .expect("evaluation failed");
       if result.len() == 2 {
         assert_eq!(result.to_string(), "foobarfoobar")
@@ -969,7 +1034,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -989,7 +1054,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -1010,7 +1075,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -1030,7 +1095,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -1050,7 +1115,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -1070,7 +1135,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -1096,7 +1161,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -1118,7 +1183,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -1141,7 +1206,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "foobaroof")
@@ -1160,7 +1225,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 10 {
         assert_eq!(s.to_string(), "0123456789")
@@ -1186,7 +1251,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(None, None, &cons)
+      let s = evaluate(&DynamicContext::new(), None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 2.0)
@@ -1206,7 +1271,7 @@ mod tests {
       e.push_back(t);
       d.push_back(e);
       let cons = vec![Constructor::Root];
-      let e = evaluate(Some(vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))]), Some(0), &cons).expect("evaluation failed");
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))]), Some(0), &cons).expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test>Test text</Test>")
       } else {
@@ -1217,7 +1282,7 @@ mod tests {
     fn xnode_root() {
       let d = roxmltree::Document::parse("<Test>test text</Test>").expect("failed to parse XML");
       let cons = vec![Constructor::Root];
-      let e = evaluate(Some(vec![Rc::new(Item::XNode(d.root()))]), Some(0), &cons).expect("evaluation failed");
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root()))]), Some(0), &cons).expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test>test text</Test>")
       } else {
@@ -1245,7 +1310,7 @@ mod tests {
 	    vec![]
 	  )
 	];
-      let e = evaluate(Some(vec![Rc::new(Item::Node(d.front().unwrap().clone()))]), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::Node(d.front().unwrap().clone()))]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "Test text")
@@ -1269,7 +1334,7 @@ mod tests {
 	    vec![]
 	  )
 	];
-      let e = evaluate(Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "test text")
@@ -1297,7 +1362,7 @@ mod tests {
 	  },
 	  vec![]
 	)];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
@@ -1321,7 +1386,7 @@ mod tests {
 	  },
 	  vec![]
 	)];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
@@ -1354,7 +1419,7 @@ mod tests {
             ]
 	  )
 	];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 3 {
         assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
@@ -1377,7 +1442,7 @@ mod tests {
             ]
 	  )
 	];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 3 {
         assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
@@ -1401,7 +1466,7 @@ mod tests {
             ]
 	  )
 	];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test/>");
@@ -1423,7 +1488,7 @@ mod tests {
             ]
 	  )
 	];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 0 {
         assert!(true)
@@ -1451,7 +1516,7 @@ mod tests {
             ]
 	  )
 	];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test><Level2/></Test>");
@@ -1480,7 +1545,7 @@ mod tests {
             ]
 	  )
 	];
-      let e = evaluate(Some(s), Some(0), &cons)
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 0);
     }
@@ -1496,7 +1561,7 @@ mod tests {
         Rc::new(Item::Value(Value::String("b"))),
       ];
       let vc = vec![c];
-      let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
+      let r = evaluate(&DynamicContext::new(), Some(s), Some(1), &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "2")
     }
     #[test]
@@ -1511,7 +1576,7 @@ mod tests {
         Rc::new(Item::Value(Value::String("c"))),
       ];
       let vc = vec![c];
-      let r = evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
+      let r = evaluate(&DynamicContext::new(), Some(s), Some(1), &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "3")
     }
     #[test]
@@ -1527,8 +1592,19 @@ mod tests {
         ]
       );
       let vc = vec![c];
-      let r = evaluate(None, None, &vc).expect("evaluation failed");
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "3")
+    }
+
+    // Variables
+    #[test]
+    fn var_ref() {
+      let c = vec![
+        Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::String("my variable"))]),
+	Constructor::VariableReference("foo".to_string()),
+      ];
+      let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
+      assert_eq!(r.to_string(), "my variable")
     }
 } 
 
