@@ -1800,7 +1800,28 @@ mod tests {
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 2);
       assert_eq!(s.to_string(), "ab")
+    }
+
+    // Loops
+    #[test]
+    fn parse_eval_for_1() {
+      let mut e = parse("for $x in ('a', 'b', 'c') return ($x, $x)").expect("failed to parse let expression");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 6);
+      assert_eq!(s.to_string(), "aabbcc")
+    }
+    #[test]
+    fn parse_eval_for_2() {
+      let mut e = parse("for $x in (1, 2, 3) return $x * 2").expect("failed to parse let expression");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 3);
+      assert_eq!(s.to_string(), "246")
     }
 }
 
