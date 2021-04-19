@@ -57,8 +57,66 @@ fn expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
 fn expr_single(input: &str) -> IResult<&str, Vec<Constructor>> {
-  or_expr(input)
-  // TODO: other branches
+  alt((
+    or_expr,
+    let_expr,
+    // TODO: other branches
+  ))
+  (input)
+}
+
+// LetExpr ::= SimpleLetClause 'return' ExprSingle
+fn let_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    tuple((
+      simple_let_clause,
+      tuple((multispace0, tag("return"), multispace0)),
+      expr_single
+    )),
+    |(mut l, _, mut e)| {
+      // Variable declaration
+      // expression
+      l.append(&mut e);
+      l
+    }
+  )
+  (input)
+}
+
+// SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
+// SimpleLetBinding ::= '$' VarName ':=' ExprSingle
+fn simple_let_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    tuple((
+      tag("let"),
+      multispace0,
+
+      separated_nonempty_list(
+        tuple((multispace0, tag(","), multispace0)),
+	tuple((
+	  tag("$"),
+	  qname,
+	  multispace0,
+          tag(":="),
+	  multispace0,
+	  expr_single,
+	)),
+      )
+    )),
+    |(_, _, b)| {
+      b.iter()
+        .map(|(_, v, _, _, _, e)| Constructor::VariableDeclaration(get_nt_localname(v), e.to_vec()))
+	.collect()
+    }
+  )
+  (input)
+}
+
+fn get_nt_localname(nt: &NodeTest) -> String {
+  match nt {
+    NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart)), ns: None, prefix: None}) => localpart.to_string(),
+    _ => String::from("invalid qname")
+  }
 }
 
 // OrExpr ::= AndExpr ('or' AndExpr)*
@@ -1002,7 +1060,22 @@ fn primary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     context_item,
     parenthesized_expr,
     function_call,
+    variable_reference,
   ))
+  (input)
+}
+
+// VarRef ::= '$' VarName
+fn variable_reference(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    pair(
+      tag("$"),
+      qname
+    ),
+    |(_, v)| {
+      vec![Constructor::VariableReference(get_nt_localname(&v))]
+    }
+  )
   (input)
 }
 
@@ -1664,7 +1737,25 @@ mod tests {
       static_analysis(&mut e, &mut sc);
       //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "<a><d/></a>")
+      assert_eq!(s.to_string(), "3")
+    }
+
+    // Variables
+    #[test]
+    fn parse_eval_let_1() {
+      let mut e = parse("let $x := 'a' return ($x, $x)").expect("failed to parse let expression");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "aa")
+    }
+    #[test]
+    fn parse_eval_let_2() {
+      let mut e = parse("let $x := 'a', $y := 'b' return ($x, $y)").expect("failed to parse let expression");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "ab")
     }
 }
 
