@@ -10,7 +10,7 @@ use decimal::d128;
 use trees::{RcNode, Tree};
 use roxmltree::Node;
 use std::collections::HashMap;
-use std::cell::RefCell;
+use std::cell::{RefCell, RefMut};
 
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>,
@@ -337,14 +337,77 @@ fn evaluate_one<'a>(
 	  }
 	}
 	None => {
-      	  Result::Err(Error{kind: ErrorKind::Unknown, message: "reference to undefined variable".to_string()})
+      	  Result::Err(Error{kind: ErrorKind::Unknown, message: format!("reference to undefined variable \"{}\"", v)})
 	}
+      }
+    }
+    Constructor::Loop(v, b) => {
+      // TODO: this supports only one variable binding - need to support more than one binding
+      // Evaluate the variable value
+      // Iterate over the items in the sequence
+      // Set the variable value to the item
+      // Evaluate the body, collecting the results
+
+      if v.is_empty() {
+      	Result::Err(Error{kind: ErrorKind::Unknown, message: "no variable bindings".to_string()})
+      } else {
+        let mut result: Sequence = vec![];
+        match &v[0] {
+          Constructor::VariableDeclaration(v, a) => {
+
+	    let s: Sequence = evaluate(dc, ctxt.clone(), posn, &a)
+	      .expect("failed to evaluate variable binding");
+
+	    for i in s {
+	      // Push the new value for this variable
+	      var_push(dc, v, &i);
+	      //println!("dc has value \"{}\" for \"x\"", dc.vars.borrow().get("x").unwrap().iter().map(|z| z.to_string()).collect::<String>());
+	      let mut x = evaluate(dc, ctxt.clone(), posn, b).expect("failed to evaluate loop body");
+	      result.append(&mut x);
+	      // Pop the value for this variable
+	      var_pop(dc, v);
+	    }
+	  }
+	  _ => {
+	    // Error: no variable bindings
+	  }
+      	}
+	Ok(result)
       }
     }
     Constructor::NotImplemented => {
       Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
     }
   }
+}
+
+// Push a new scope for a variable
+fn var_push<'a>(dc: &DynamicContext<'a>, v: &str, i: &Rc<Item<'a>>) {
+  let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
+  let mut t: Option<&mut Vec<Sequence>>;
+
+  h = dc.vars.borrow_mut();
+  t = h.get_mut(v);
+  match t.as_mut() {
+    Some(u) => {
+      // If the variable already has a value, then this is a new, inner scope
+      u.push(vec![i.clone()]);
+    }
+    None => {
+      // Otherwise this is the first scope for the variable
+      h.insert(v.to_string(), vec![vec![i.clone()]]);
+    }
+  }
+}
+// Pop scope for a variable
+// Prerequisite: scope must have already been pushed
+fn var_pop(dc: &DynamicContext, v: &str) {
+  let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
+  let mut t: Option<&mut Vec<Sequence>>;
+
+  h = dc.vars.borrow_mut();
+  t = h.get_mut(v);
+  t.map(|u| u.pop());
 }
 
 // Filter the sequence with each of the predicates
@@ -419,6 +482,7 @@ pub enum Constructor<'a> {
   FunctionCall(Function<'a>, Vec<Vec<Constructor<'a>>>),
   VariableDeclaration(String, Vec<Constructor<'a>>),	// TODO: support QName
   VariableReference(String),				// TODO: support QName
+  Loop(Vec<Constructor<'a>>, Vec<Constructor<'a>>),	// first arg is variables, second arg is body
   NotImplemented,	// TODO: implement everything so this can be removed
 }
 
@@ -673,6 +737,10 @@ impl<'a> StaticContext<'a> {
 pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'a>) {
   for d in e {
     match d {
+      Constructor::Loop(v, a) => {
+	static_analysis(v, sc);
+	static_analysis(a, sc);
+      }
       Constructor::FunctionCall(f, a) => {
         // Fill in function body
 	match sc.funcs.borrow().get(&f.name) {
@@ -887,11 +955,14 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
 	  a.len(),
 	  in=i)
       }
-      Constructor::VariableDeclaration(v, _a) => {
+      Constructor::VariableDeclaration(v, _) => {
         format!("{:in$} variable declaration constructor named \"{}\"", "", v, in=i)
       }
       Constructor::VariableReference(v) => {
         format!("{:in$} variable reference constructor named \"{}\"", "", v, in=i)
+      }
+      Constructor::Loop(_, _) => {
+        format!("{:in$} loop constructor", "", in=i)
       }
       Constructor::NotImplemented => {
         format!("{:in$} NotImplemented constructor", "", in=i)
@@ -1605,6 +1676,28 @@ mod tests {
       ];
       let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
       assert_eq!(r.to_string(), "my variable")
+    }
+
+    // Loops
+    #[test]
+    fn loop_1() {
+      // This is "for $x in ('a', 'b', 'c') return $x"
+      let c = vec![
+        Constructor::Loop(
+	  vec![Constructor::VariableDeclaration(
+	    "x".to_string(),
+	    vec![
+	      Constructor::Literal(Value::String("a")),
+	      Constructor::Literal(Value::String("b")),
+	      Constructor::Literal(Value::String("c")),
+	    ]
+	  )],
+	  vec![Constructor::VariableReference("x".to_string())]
+	)
+      ];
+      let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
+      assert_eq!(r.len(), 3);
+      assert_eq!(r.to_string(), "abc")
     }
 } 
 

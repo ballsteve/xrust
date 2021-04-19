@@ -60,8 +60,53 @@ fn expr_single(input: &str) -> IResult<&str, Vec<Constructor>> {
   alt((
     or_expr,
     let_expr,
+    for_expr,
     // TODO: other branches
   ))
+  (input)
+}
+
+// ForExpr ::= SimpleForClause 'return' ExprSingle
+fn for_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    tuple((
+      simple_for_clause,
+      tuple((multispace0, tag("return"), multispace0)),
+      expr_single
+    )),
+    |(f, _, e)| {
+      vec![Constructor::Loop(f, e)]
+    }
+  )
+  (input)
+}
+
+// SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
+// SimpleForBinding ::= '$' VarName 'in' ExprSingle
+fn simple_for_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    tuple((
+      tag("for"),
+      multispace0,
+
+      separated_nonempty_list(
+        tuple((multispace0, tag(","), multispace0)),
+	tuple((
+	  tag("$"),
+	  qname,
+	  multispace0,
+          tag("in"),
+	  multispace0,
+	  expr_single,
+	)),
+      )
+    )),
+    |(_, _, b)| {
+      b.iter()
+        .map(|(_, v, _, _, _, e)| Constructor::VariableDeclaration(get_nt_localname(v), e.to_vec()))
+	.collect()
+    }
+  )
   (input)
 }
 
