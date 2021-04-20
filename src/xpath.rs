@@ -61,8 +61,43 @@ fn expr_single(input: &str) -> IResult<&str, Vec<Constructor>> {
     or_expr,
     let_expr,
     for_expr,
+    if_expr,
     // TODO: other branches
   ))
+  (input)
+}
+
+// IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
+fn if_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+  map(
+    tuple((
+      tag("if"),
+      multispace0,
+      tag("("),
+      multispace0,
+      expr,
+      multispace0,
+      tag(")"),
+      multispace0,
+      tag("then"),
+      multispace0,
+      expr_single,
+      multispace0,
+      tag("else"),
+      multispace0,
+      expr_single,
+    )),
+    |(_, _, _, _, i, _, _, _, _, _, t, _, _, _, e)| {
+      vec![
+        Constructor::Switch(
+	  vec![
+	    i, t,
+	  ],
+	  e
+	)
+      ]
+    }
+  )
   (input)
 }
 
@@ -1822,6 +1857,25 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 3);
       assert_eq!(s.to_string(), "246")
+    }
+
+    #[test]
+    fn parse_eval_if_1() {
+      let mut e = parse("if (1) then 'one' else 'not one'").expect("failed to parse let expression");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      assert_eq!(s.to_string(), "one")
+    }
+    #[test]
+    fn parse_eval_if_2() {
+      let mut e = parse("if (0) then 'one' else 'not one'").expect("failed to parse let expression");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      assert_eq!(s.to_string(), "not one")
     }
 }
 

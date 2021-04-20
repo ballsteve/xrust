@@ -1749,7 +1749,7 @@ mod tests {
       let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "one")
-    }    
+    }
     #[test]
     fn switch_2() {
       // implements "if (0) then 'one' else 'not one'"
@@ -1769,6 +1769,37 @@ mod tests {
       let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "not one")
+    }    
+    #[test]
+    fn switch_3() {
+      let c = vec![
+        Constructor::Switch(
+	  vec![
+	    vec![
+	      Constructor::Literal(Value::Integer(0))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::String("one"))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::Integer(1))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::String("two"))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::Integer(0))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::String("three"))
+	    ],
+	  ],
+	  vec![Constructor::Literal(Value::String("not any"))]
+	)
+      ];
+      let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      assert_eq!(r.to_string(), "two")
     }    
 } 
 
