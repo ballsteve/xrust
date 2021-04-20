@@ -375,6 +375,25 @@ fn evaluate_one<'a>(
 	Ok(result)
       }
     }
+    Constructor::Switch(v, o) => {
+      // 'v' are pairs of test,body
+      // 'o' is the otherwise clause
+      // evaluate tests to a boolean until the first true result; evaluate it's body as the result
+      // of all tests fail then evaluate otherwise clause
+
+      Ok(
+        v.chunks(2).fold(
+          evaluate(dc, ctxt.clone(), posn, o).expect("failed to evaluate otherwise clause"),
+	  |acc, t| {
+	    if evaluate(dc, ctxt.clone(), posn, &t[0]).expect("failed to evaluate clause test").to_bool() {
+	      evaluate(dc, ctxt.clone(), posn, &t[1]).expect("failed to evaluate clause body")
+	    } else {
+	      acc
+	    }
+	  }
+        )
+      )
+    }
     Constructor::NotImplemented => {
       Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
     }
@@ -403,7 +422,7 @@ fn var_push<'a>(dc: &DynamicContext<'a>, v: &str, i: &Rc<Item<'a>>) {
 // Prerequisite: scope must have already been pushed
 fn var_pop(dc: &DynamicContext, v: &str) {
   let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-  let mut t: Option<&mut Vec<Sequence>>;
+  let t: Option<&mut Vec<Sequence>>;
 
   h = dc.vars.borrow_mut();
   t = h.get_mut(v);
@@ -483,6 +502,7 @@ pub enum Constructor<'a> {
   VariableDeclaration(String, Vec<Constructor<'a>>),	// TODO: support QName
   VariableReference(String),				// TODO: support QName
   Loop(Vec<Constructor<'a>>, Vec<Constructor<'a>>),	// first arg is variables, second arg is body
+  Switch(Vec<Vec<Constructor<'a>>>, Vec<Constructor<'a>>),	// first arg is pairs of test,body. second arg is otherwise clause
   NotImplemented,	// TODO: implement everything so this can be removed
 }
 
@@ -737,6 +757,12 @@ impl<'a> StaticContext<'a> {
 pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'a>) {
   for d in e {
     match d {
+      Constructor::Switch(v, o) => {
+        for i in v {
+	  static_analysis(i, sc)
+	}
+	static_analysis(o, sc);
+      }
       Constructor::Loop(v, a) => {
 	static_analysis(v, sc);
 	static_analysis(a, sc);
@@ -963,6 +989,9 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       }
       Constructor::Loop(_, _) => {
         format!("{:in$} loop constructor", "", in=i)
+      }
+      Constructor::Switch(_, _) => {
+        format!("{:in$} switch constructor", "", in=i)
       }
       Constructor::NotImplemented => {
         format!("{:in$} NotImplemented constructor", "", in=i)
@@ -1699,5 +1728,47 @@ mod tests {
       assert_eq!(r.len(), 3);
       assert_eq!(r.to_string(), "abc")
     }
+
+    // Switch
+    #[test]
+    fn switch_1() {
+      // implements "if (1) then 'one' else 'not one'"
+      let c = vec![
+        Constructor::Switch(
+	  vec![
+	    vec![
+	      Constructor::Literal(Value::Integer(1))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::String("one"))
+	    ]
+	  ],
+	  vec![Constructor::Literal(Value::String("not one"))]
+	)
+      ];
+      let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      assert_eq!(r.to_string(), "one")
+    }    
+    #[test]
+    fn switch_2() {
+      // implements "if (0) then 'one' else 'not one'"
+      let c = vec![
+        Constructor::Switch(
+	  vec![
+	    vec![
+	      Constructor::Literal(Value::Integer(0))
+	    ],
+	    vec![
+	      Constructor::Literal(Value::String("one"))
+	    ]
+	  ],
+	  vec![Constructor::Literal(Value::String("not one"))]
+	)
+      ];
+      let r = evaluate(&DynamicContext::new(), None, None, &c).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      assert_eq!(r.to_string(), "not one")
+    }    
 } 
 
