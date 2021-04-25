@@ -10,6 +10,7 @@ use decimal;
 use crate::xdmerror::{Error, ErrorKind};
 use trees::{Tree, RcNode};
 use roxmltree::Node;
+use json::JsonValue;
 
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 
@@ -21,6 +22,7 @@ pub trait SequenceTrait<'a> {
   //fn new_xdoc(&mut self, d: Document<'a>);
   fn new_xnode(&mut self, n: Node<'a, 'a>);
   fn new_value(&mut self, v: Value<'a>);
+  fn new_jvalue(&mut self, j: JsonValue);
   fn add(&mut self, i: &Rc<Item<'a>>);
 }
 
@@ -44,6 +46,9 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
   fn new_value(&mut self, v: Value<'a>) {
     self.push(Rc::new(Item::Value(v)));
   }
+  fn new_jvalue(&mut self, j: JsonValue) {
+    self.push(Rc::new(Item::JsonValue(j)));
+  }
   //fn new_function(&self, f: Function) -> Sequence {
   //}
   fn add(&mut self, i: &Rc<Item<'a>>) {
@@ -58,6 +63,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
       match *self[0] {
         Item::Node(_) |
 	Item::XNode(_) => true,
+	Item::JsonValue(_) => true,
 	//Item::XDoc(_) => true,
 	_ => {
 	  if self.len() == 1 {
@@ -75,6 +81,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
 pub enum Item<'a> {
     Node(RcNode<NodeDefn>),
     XNode(Node<'a, 'a>),
+    JsonValue(JsonValue),
     //XDoc(Document<'a>), cannot be cloned
     Function,
     Value(Value<'a>),
@@ -119,6 +126,7 @@ impl<'a> Item<'a> {
       //Item::XDoc(d) => d.to_string(),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
+      Item::JsonValue(j) => j.pretty(0),
     }
   }
   // Should there also be a string slice version?
@@ -133,6 +141,7 @@ impl<'a> Item<'a> {
       //Item::XDoc(_) => true,
       Item::Function => false,
       Item::Value(v) => v.to_bool(),
+      Item::JsonValue(j) => true,
     }
   }
 
@@ -142,6 +151,7 @@ impl<'a> Item<'a> {
       Item::XNode(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
       //Item::XDoc(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
       Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
+      Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a json value")}),
       Item::Value(v) => {
         match v.to_int() {
 	  Ok(i) => {
@@ -161,6 +171,7 @@ impl<'a> Item<'a> {
       Item::XNode(_) => f64::NAN,
       //Item::XDoc(_) => f64::NAN,
       Item::Function => f64::NAN,
+      Item::JsonValue(_) => f64::NAN,
       Item::Value(v) => v.to_double(),
     }
   }
@@ -174,7 +185,8 @@ impl<'a> Item<'a> {
         v.compare(other, op)
       }
       Item::Node(_) |
-      Item::XNode(_) => {
+      Item::XNode(_) |
+      Item::JsonValue(_) => {
         //n.compare(other, op)
 	Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
       }
@@ -1057,5 +1069,13 @@ mod tests {
     #[test]
     fn op_after() {
       assert_eq!(Operator::After.to_string(), ">>")
+    }
+
+    // Json
+
+    #[test]
+    fn json_value() {
+      let i = Item::JsonValue(JsonValue::String("this is json".to_string()));
+      assert_eq!(i.to_string(), "\"this is json\"")
     }
 }

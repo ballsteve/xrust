@@ -11,6 +11,7 @@ use trees::{RcNode, Tree};
 use roxmltree::Node;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
+use json::{JsonValue, object};
 
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>,
@@ -198,6 +199,7 @@ fn evaluate_one<'a>(
 	    seq.new_xnode(n.document().root());
 	    Ok(seq)
 	  }
+	  Item::JsonValue(j) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: "json unable to get containing document".to_string()}),
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
       } else {
@@ -217,11 +219,20 @@ fn evaluate_one<'a>(
         u = vec![]
       }
 
+      //println!("path start: u=\"{}\" {} items", u.to_string(), u.len());
+
       Ok(s.iter().fold(
 	    u,
 	    |a, c| {
-	      //println!("path: a=\"{}\"", a.to_string());
-	      evaluate(dc, Some(a), Some(0), c).expect("failed to evaluate step")
+	      //println!("path iteration: a=\"{}\" {} items", a.to_string(), a.len());
+	      // evaluate this step for each item in the context
+	      // Add the result of each evaluation to an accummulator sequence
+	      let mut b: Sequence = Vec::new();
+	      for i in 0..a.len() {
+	        let mut d = evaluate(dc, Some(a.clone()), Some(i), c).expect("failed to evaluate step");
+		b.append(&mut d);
+	      }
+	      b
 	    }
       ))
     }
@@ -278,6 +289,47 @@ fn evaluate_one<'a>(
 	            Ok(vec![])
 	      	  }
 	    	}
+	      }
+	      Axis::Descendant => {
+	        // TODO
+	      	  Ok(Sequence::new())
+	      }
+	      _ => {
+	        // Not yet implemented
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
+	      }
+	    }
+	  }
+	  Item::JsonValue(j) => {
+	    match nm.axis {
+	      Axis::Child => {
+	        //println!("jsonvalue child axis, j is {}", jsonvalue_kind(j));
+		let mut seq: Sequence = Vec::new();
+		match j {
+		  JsonValue::Object(_) => {
+	            seq = j.entries()
+		      .filter(|(key, val)| is_jsonvalue_match(&nm.nodetest, key))
+		      .fold(Sequence::new(), |mut c, (key, val)| {
+		        //println!("adding json value \"{}\" is a {}", key, jsonvalue_kind(val));
+			c.new_jvalue(val.clone());
+			c
+		      });
+		  }
+		  JsonValue::Array(_) => {
+	            seq = j.members()
+		      .fold(Sequence::new(), |mut c, val| {
+		        //println!("adding json array member is a {}", jsonvalue_kind(val));
+			c.new_jvalue(val.clone());
+			c
+		      });
+		  }
+		  _ => {}
+		}
+		//println!("path: child axis: seq=\"{}\" ({} items)", seq.to_string(), seq.len());
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::Parent => {
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "json does not implement parent axis".to_string()})
 	      }
 	      Axis::Descendant => {
 	        // TODO
@@ -400,6 +452,18 @@ fn evaluate_one<'a>(
   }
 }
 
+fn jsonvalue_kind(j: &JsonValue) -> &str {
+  match j {
+    JsonValue::Null => "null",
+    JsonValue::Short(_) => "short",
+    JsonValue::String(_) => "string",
+    JsonValue::Number(_) => "number",
+    JsonValue::Boolean(_) => "boolean",
+    JsonValue::Object(_) => "object",
+    JsonValue::Array(_) => "array",
+  }
+}
+
 // Push a new scope for a variable
 fn var_push<'a>(dc: &DynamicContext<'a>, v: &str, i: &Rc<Item<'a>>) {
   let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
@@ -432,6 +496,7 @@ fn var_pop(dc: &DynamicContext, v: &str) {
 // Filter the sequence with each of the predicates
 fn predicates<'a>(dc: &DynamicContext<'a>, s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
   if p.is_empty() {
+    //println!("predicates: no predicates so return complete sequence");
     s
   } else {
     let mut result = s.clone();
@@ -521,6 +586,37 @@ fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
 	    WildcardOrName::Name(s) => {
 	      //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
 	      s == n.tag_name().name()
+	    }
+	  }
+	}
+	None => {
+	  //println!("no name test");
+	  false
+	}
+      }
+    }
+    NodeTest::Kind => {
+      // TODO
+      //println!("node test kind");
+      false
+    }
+  }
+}
+fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
+  //println!("is_jsonvalue_match: matching \"{}\" - node has tag name \"{}\"", nt.to_string(), n);
+  match nt {
+    NodeTest::Name(t) => {
+      // TODO: namespaces
+      match &t.name {
+        Some(a) => {
+	  match a {
+	    WildcardOrName::Wildcard => {
+	      //println!("wildcard");
+	      true
+	    }
+	    WildcardOrName::Name(s) => {
+	      //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
+	      s == n
 	    }
 	  }
 	}
@@ -1801,5 +1897,79 @@ mod tests {
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "two")
     }    
+
+    // JSON
+    #[test]
+    fn json_1() {
+      let json = object!{
+        anint: 200,
+	abool: true,
+	alist: {
+	  three: [
+	    "three one",
+	    "three two",
+	    "three three"
+	  ]
+	}
+      };
+      let s = vec![Rc::new(Item::JsonValue(json))];
+      let cons = vec![
+	  Constructor::Path(
+	    vec![
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+            ]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() != 0 {
+        assert_eq!(e.len(), 3);
+        assert_eq!(e[0].to_string(), "200");
+        assert_eq!(e[1].to_string(), "true");
+        assert_eq!(e[2].to_string(), "{
+\"three\": [
+\"three one\",
+\"three two\",
+\"three three\"
+]
+}");
+      } else {
+        panic!("empty sequence result")
+      }
+    }
+    #[test]
+    fn json_2() {
+      let json = object!{
+        anint: 200,
+	abool: true,
+	alist: {
+	  three: [
+	    "three one",
+	    "three two",
+	    "three three"
+	  ]
+	}
+      };
+      let s = vec![Rc::new(Item::JsonValue(json))];
+      let cons = vec![
+	  Constructor::Path(
+	    vec![
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+            ]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() != 0 {
+        assert_eq!(e.len(), 3);
+        assert_eq!(e[0].to_string(), "\"three one\"");
+        assert_eq!(e[1].to_string(), "\"three two\"");
+        assert_eq!(e[2].to_string(), "\"three three\"");
+      } else {
+        panic!("empty sequence result")
+      }
+    }
 } 
 
