@@ -1031,10 +1031,10 @@ fn forwardaxis(input: &str) -> IResult<&str, &str> {
     pair(
       alt((
         tag("child"),
+        tag("descendant-or-self"),
         tag("descendant"),
         tag("attribute"),
         tag("self"),
-        tag("descendant-or-self"),
         tag("following-sibling"),
         tag("following"),
         tag("namespace"),
@@ -1053,8 +1053,8 @@ fn reverseaxis(input: &str) -> IResult<&str, &str> {
     pair(
       alt((
         tag("parent"),
-        tag("ancestor"),
         tag("ancestor-or-self"),
+        tag("ancestor"),
         tag("preceding-sibling"),
         tag("preceding"),
       )),
@@ -1722,6 +1722,26 @@ mod tests {
         println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
         panic!("sequence does not have 3 items, it has {}: \"{}\"", e.len(), e.to_string())
       }
+    }
+    #[test]
+    fn xnode_descendant_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))];
+      let c = parse("descendant::*").expect("failed to parse expression \"descendant::*\"");
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 10);
+      assert_eq!(e[2].to_string(), "1 1 1")
+    }
+    #[test]
+    fn xnode_descendantorself_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))];
+      let c = parse("descendant-or-self::*").expect("failed to parse expression \"descendant-or-self::*\"");
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 11);
+      assert_eq!(e[3].to_string(), "1 1 1")
     }
     #[test]
     fn nomxpath_parse_desc_or_self_1() {

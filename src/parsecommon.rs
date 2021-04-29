@@ -101,7 +101,7 @@ fn is_ncnamechar(ch: char) -> bool {
       '\u{B7}' |
       '\u{0300}'..='\u{036F}' |
       '\u{203F}'..='\u{2040}' => {
-        println!("is_ncnamechar: true");
+        //println!("is_ncnamechar: true");
         true
       },
       _ => false
