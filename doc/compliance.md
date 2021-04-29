@@ -85,8 +85,8 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Path expression: steps|yes||
 |Path expression: axes|partial||
 |Axis: child|yes||
-|Axis: descendant|no||
-|Axis: descendant-or-self|no||
+|Axis: descendant|yes|roxmltree|
+|Axis: descendant-or-self|yes|roxmltree|
 |Axis: ancestor|no||
 |Axis: ancestor-or-self|no||
 |Axis: parent|no||
@@ -103,7 +103,7 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Sequence expression: constructing sequences|yes||
 |Sequence expression: combining node sequences|yes||
 |Arithmetic expressions: |yes||
-|String concatenation expressions|no||
+|String concatenation expressions|yes||
 |Comparison expression: value|yes||
 |Comparison expression: general|yes||
 |Comparison expression: node|no||

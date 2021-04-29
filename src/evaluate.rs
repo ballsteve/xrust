@@ -291,8 +291,20 @@ fn evaluate_one<'a>(
 	    	}
 	      }
 	      Axis::Descendant => {
-	        // TODO
-	      	  Ok(Sequence::new())
+	        // The descendant axis does not include itself,
+		// but the descendant function does
+	        let seq = n.descendants()
+		  .skip(1)
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::DescendantOrSelf => {
+	        // In this case the descendant function gives us what we want
+	        let seq = n.descendants()
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	Ok(predicates(dc, seq, p))
 	      }
 	      _ => {
 	        // Not yet implemented
@@ -1589,6 +1601,54 @@ mod tests {
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
+    }
+    #[test]
+    fn xnode_descendant_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Descendant,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 10);
+      //for t in 0..e.len() {
+        //println!("Item {}: \"{}\"", t + 1, e[t].to_string())
+      //}
+      assert_eq!(e[2].to_string(), "1 1 1")
+    }
+    #[test]
+    fn xnode_descendantorself_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::DescendantOrSelf,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 11);
+      //for t in 0..e.len() {
+        //println!("Item {}: \"{}\"", t + 1, e[t].to_string())
+      //}
+      assert_eq!(e[3].to_string(), "1 1 1")
     }
 
     //#[test]
