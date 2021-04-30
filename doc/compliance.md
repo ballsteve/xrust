@@ -87,9 +87,9 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Axis: child|yes||
 |Axis: descendant|yes|roxmltree|
 |Axis: descendant-or-self|yes|roxmltree|
-|Axis: ancestor|no||
-|Axis: ancestor-or-self|no||
-|Axis: parent|no||
+|Axis: ancestor|yes||
+|Axis: ancestor-or-self|yes||
+|Axis: parent|yes||
 |Axis: following|no||
 |Axis: following-sibling|no||
 |Axis: preceding|no||

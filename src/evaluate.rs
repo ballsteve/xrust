@@ -306,6 +306,22 @@ fn evaluate_one<'a>(
 		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
+	      Axis::Ancestor => {
+	        // The ancestor axis does not include itself,
+		// but the ancestors function does
+	        let seq = n.ancestors()
+		  .skip(1)
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::AncestorOrSelf => {
+	        // In this case the ancestors function gives us what we want
+	        let seq = n.ancestors()
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
 	      _ => {
 	        // Not yet implemented
 		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
@@ -585,33 +601,40 @@ pub enum Constructor<'a> {
 
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
   //println!("is_node_match: matching \"{}\" - node has tag name \"{}\"", nt.to_string(), n.tag_name().name());
-  match nt {
-    NodeTest::Name(t) => {
-      // TODO: namespaces
-      match &t.name {
-        Some(a) => {
-	  match a {
-	    WildcardOrName::Wildcard => {
-	      //println!("wildcard");
-	      true
+
+  match n.node_type() {
+    roxmltree::NodeType::Element => {
+      match nt {
+        NodeTest::Name(t) => {
+      	  // TODO: namespaces
+      	  match &t.name {
+            Some(a) => {
+	      match a {
+	        WildcardOrName::Wildcard => {
+	      	  //println!("wildcard");
+	      	  true
+	    	}
+	    	WildcardOrName::Name(s) => {
+	      	  //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
+	      	  s == n.tag_name().name()
+	    	}
+	      }
 	    }
-	    WildcardOrName::Name(s) => {
-	      //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
-	      s == n.tag_name().name()
+	    None => {
+	      //println!("no name test");
+	      false
 	    }
-	  }
-	}
-	None => {
-	  //println!("no name test");
-	  false
-	}
+      	  }
+    	}
+    	NodeTest::Kind => {
+      	  // TODO
+      	  //println!("node test kind");
+      	  false
+    	}
       }
     }
-    NodeTest::Kind => {
-      // TODO
-      //println!("node test kind");
-      false
-    }
+    // Only element-type nodes match a node test
+    _ => false
   }
 }
 fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
@@ -1528,7 +1551,7 @@ mod tests {
     }
     #[test]
     fn xnode_child_all() {
-      let d = roxmltree::Document::parse("<Test>test text</Test>").expect("failed to parse XML");
+      let d = roxmltree::Document::parse("<Test><text/></Test>").expect("failed to parse XML");
       let cons = vec![
 	  Constructor::Step(
 	    NodeMatch{
@@ -1545,7 +1568,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "test text")
+        assert_eq!(e[0].to_string(), "<text/>")
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
@@ -1620,11 +1643,11 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      assert_eq!(e.len(), 10);
+      assert_eq!(e.len(), 6);
       //for t in 0..e.len() {
         //println!("Item {}: \"{}\"", t + 1, e[t].to_string())
       //}
-      assert_eq!(e[2].to_string(), "1 1 1")
+      assert_eq!(e[1].to_string(), "<level3>1 1 1</level3>")
     }
     #[test]
     fn xnode_descendantorself_1() {
@@ -1644,11 +1667,57 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      assert_eq!(e.len(), 11);
+      assert_eq!(e.len(), 7);
       //for t in 0..e.len() {
         //println!("Item {}: \"{}\"", t + 1, e[t].to_string())
       //}
-      assert_eq!(e[3].to_string(), "1 1 1")
+      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>")
+    }
+    #[test]
+    fn xnode_ancestor_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Ancestor,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      //for i in 0..e.len() {
+        //println!("item {} is a {}", i, e[i].to_name())
+      //}
+      assert_eq!(e.len(), 3);
+    }
+    #[test]
+    fn xnode_ancestororself_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::AncestorOrSelf,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      //for i in 0..e.len() {
+        //println!("item {} is a {}", i, e[i].to_name())
+      //}
+      assert_eq!(e.len(), 4);
     }
 
     //#[test]

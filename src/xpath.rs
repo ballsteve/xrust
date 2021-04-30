@@ -1730,8 +1730,8 @@ mod tests {
       let c = parse("descendant::*").expect("failed to parse expression \"descendant::*\"");
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
-      assert_eq!(e.len(), 10);
-      assert_eq!(e[2].to_string(), "1 1 1")
+      assert_eq!(e.len(), 6);
+      assert_eq!(e[1].to_string(), "<level3>1 1 1</level3>")
     }
     #[test]
     fn xnode_descendantorself_1() {
@@ -1740,8 +1740,26 @@ mod tests {
       let c = parse("descendant-or-self::*").expect("failed to parse expression \"descendant-or-self::*\"");
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
-      assert_eq!(e.len(), 11);
-      assert_eq!(e[3].to_string(), "1 1 1")
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>")
+    }
+    #[test]
+    fn xnode_ancestor_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))];
+      let c = parse("ancestor::*").expect("failed to parse expression \"ancestor::*\"");
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 3);
+    }
+    #[test]
+    fn xnode_ancestororself_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap()))];
+      let c = parse("ancestor-or-self::*").expect("failed to parse expression \"ancestor-or-self::*\"");
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 3);
     }
     #[test]
     fn nomxpath_parse_desc_or_self_1() {

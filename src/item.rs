@@ -176,6 +176,21 @@ impl<'a> Item<'a> {
     }
   }
 
+  pub fn to_name(&self) -> &str {
+    match self {
+      Item::XNode(i) => {
+        match i.node_type() {
+	  roxmltree::NodeType::Root => "",
+	  roxmltree::NodeType::Element |
+	  roxmltree::NodeType::PI => i.tag_name().name(),
+	  roxmltree::NodeType::Text |
+	  roxmltree::NodeType::Comment => "",
+	}
+      }
+      _ => ""
+    }
+  }
+
   // TODO: atomization
   // fn atomize(&self);
 
