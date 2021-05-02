@@ -322,6 +322,24 @@ fn evaluate_one<'a>(
 		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
+	      Axis::FollowingSibling => {
+	        // The following-sibling axis does not include itself,
+		// but the next_siblings function does
+	        let seq = n.next_siblings()
+		  .skip(1)
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::PrecedingSibling => {
+	        // The preceding-sibling axis does not include itself,
+		// but the prev_siblings function does
+	        let seq = n.prev_siblings()
+		  .skip(1)
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
 	      _ => {
 	        // Not yet implemented
 		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
@@ -736,13 +754,13 @@ pub enum Axis {
   Attribute,
   Selfaxis,
   Following,
-  FollowingOrSelf,
+  FollowingSibling,
   Namespace,
   Parent,
   Ancestor,
   AncestorOrSelf,
   Preceding,
-  PrecedingOrSelf,
+  PrecedingSibling,
   Unknown,
 }
 
@@ -755,13 +773,13 @@ impl Axis {
       "attribute" => Axis::Attribute,
       "self" => Axis::Selfaxis,
       "following" => Axis::Following,
-      "following-or-self" => Axis::FollowingOrSelf,
+      "following-sibling" => Axis::FollowingSibling,
       "namespace" => Axis::Namespace,
       "parent" => Axis::Parent,
       "ancestor" => Axis::Ancestor,
       "ancestor-or-self" => Axis::AncestorOrSelf,
       "preceding" => Axis::Preceding,
-      "preceding-or-self" => Axis::PrecedingOrSelf,
+      "preceding-sibling" => Axis::PrecedingSibling,
       _ => Axis::Unknown,
     }
   }
@@ -773,13 +791,13 @@ impl Axis {
       Axis::Attribute => "attribute".to_string(),
       Axis::Selfaxis => "self".to_string(),
       Axis::Following => "following".to_string(),
-      Axis::FollowingOrSelf => "following-or-self".to_string(),
+      Axis::FollowingSibling => "following-sibling".to_string(),
       Axis::Namespace => "namespace".to_string(),
       Axis::Parent => "parent".to_string(),
       Axis::Ancestor => "ancestor".to_string(),
       Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
       Axis::Preceding => "preceding".to_string(),
-      Axis::PrecedingOrSelf => "preceding-or-self".to_string(),
+      Axis::PrecedingSibling => "preceding-sibling".to_string(),
       _ => "unknown".to_string(),
     }
   }
@@ -1718,6 +1736,54 @@ mod tests {
         //println!("item {} is a {}", i, e[i].to_name())
       //}
       assert_eq!(e.len(), 4);
+    }
+    #[test]
+    fn xnode_followingsibling_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::FollowingSibling,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      //for i in 0..e.len() {
+        //println!("item {} is a {}", i, e[i].to_name())
+      //}
+      assert_eq!(e.len(), 1);
+      assert_eq!(e.to_string(), "<level3>1 1 2</level3>");
+    }
+    #[test]
+    fn xnode_precedingsibling_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::PrecedingSibling,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      //for i in 0..e.len() {
+        //println!("item {} is a {}", i, e[i].to_name())
+      //}
+      assert_eq!(e.len(), 1);
+      assert_eq!(e.to_string(), "<level3>1 1 1</level3>");
     }
 
     //#[test]

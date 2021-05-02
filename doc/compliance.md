@@ -91,9 +91,9 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Axis: ancestor-or-self|yes||
 |Axis: parent|yes||
 |Axis: following|no||
-|Axis: following-sibling|no||
+|Axis: following-sibling|yes||
 |Axis: preceding|no||
-|Axis: preceding-sibling|no||
+|Axis: preceding-sibling|yes||
 |Axis: attribute|no||
 |Axis: namespace|no||
 |Path expression: Node tests|no||
