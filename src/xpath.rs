@@ -1782,6 +1782,29 @@ mod tests {
       assert_eq!(e.to_string(), "<level3>1 1 1</level3>");
     }
     #[test]
+    fn xnode_following_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))];
+      let c = parse("following::*").expect("failed to parse expression \"following::*\"");
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 4);
+      assert_eq!(e.to_string(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
+    }
+    #[test]
+    fn xnode_preceding_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap().last_child().unwrap()))];
+      let c = parse("preceding::*").expect("failed to parse expression \"preceding::*\"");
+      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[0].to_name(), "level1");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_name(), "level3");
+      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>");
+    }
+    #[test]
     fn nomxpath_parse_desc_or_self_1() {
         let _e = parse("//child::a").expect("failed to parse expression \"//child::a\"");
 	assert!(true) // TODO: check the sequence constructor

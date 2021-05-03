@@ -340,6 +340,48 @@ fn evaluate_one<'a>(
 		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
+	      Axis::Following => {
+	        // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
+		// iow, for each ancestor node, include every next sibling and its descendants
+		let anc: Vec<Node> = n.ancestors()
+		  .skip(1)
+		  .collect();
+		let mut d: Vec<Node> = Vec::new();
+		for a in anc {
+		  let sibs: Vec<Node> = a.next_siblings()
+		      .skip(1)
+		      .collect();
+		  for b in sibs {
+		    let mut sib_descs: Vec<Node> = b.descendants().collect();
+		    d.append(&mut sib_descs)
+		  }
+		}
+	        let seq = d.iter()
+		  .filter(|e| is_node_match(&nm.nodetest, e))
+		  .fold(Sequence::new(), |mut f, g| {f.new_xnode(*g); f});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::Preceding => {
+	        // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
+		// iow, for each ancestor-or-self node, include every previous sibling and its descendants
+		println!("Axis::Preceding: context node is \"{}\"", n.tag_name().name());
+		let anc: Vec<Node> = n.ancestors()
+		  .collect();
+		let mut d: Vec<Node> = Vec::new();
+		for a in anc {
+		  let sibs: Vec<Node> = a.prev_siblings()
+		      .skip(1)
+		      .collect();
+		  for b in sibs {
+		    let mut sib_descs: Vec<Node> = b.descendants().collect();
+		    d.append(&mut sib_descs)
+		  }
+		}
+	        let seq = d.iter()
+		  .filter(|e| is_node_match(&nm.nodetest, e))
+		  .fold(Sequence::new(), |mut f, g| {f.new_xnode(*g); f});
+	      	Ok(predicates(dc, seq, p))
+	      }
 	      _ => {
 	        // Not yet implemented
 		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
@@ -1784,6 +1826,57 @@ mod tests {
       //}
       assert_eq!(e.len(), 1);
       assert_eq!(e.to_string(), "<level3>1 1 1</level3>");
+    }
+    #[test]
+    fn xnode_following_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Following,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      //for i in 0..e.len() {
+        //println!("item {} is a {} = \"{}\"", i, e[i].to_name(), e[i].to_string())
+      //}
+      assert_eq!(e.len(), 4);
+      assert_eq!(e.to_string(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
+    }
+    #[test]
+    fn xnode_preceding_1() {
+      let d = roxmltree::Document::parse("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Preceding,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      //for i in 0..e.len() {
+        //println!("item {} is a {} = \"{}\"", i, e[i].to_name(), e[i].to_string())
+      //}
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[0].to_name(), "level1");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_name(), "level3");
+      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>");
     }
 
     //#[test]

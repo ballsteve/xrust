@@ -90,9 +90,9 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Axis: ancestor|yes||
 |Axis: ancestor-or-self|yes||
 |Axis: parent|yes||
-|Axis: following|no||
+|Axis: following|yes||
 |Axis: following-sibling|yes||
-|Axis: preceding|no||
+|Axis: preceding|yes||
 |Axis: preceding-sibling|yes||
 |Axis: attribute|no||
 |Axis: namespace|no||
