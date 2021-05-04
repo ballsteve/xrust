@@ -2107,6 +2107,15 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "Test")
     }
+    #[test]
+    fn parse_eval_fncall_string() {
+      let mut e = parse("string(('a', 'b', 'c'))").expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "abc")
+    }
 
     // Variables
     #[test]

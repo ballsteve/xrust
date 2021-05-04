@@ -119,6 +119,8 @@ impl Operator {
 
 impl<'a> Item<'a> {
   // Gives the string value of an item. All items have a string value.
+  // TODO: properly implement string value.
+  // At the moment this pretty-prints the item, which includes markup then it shouldn't
   pub fn to_string(&self) -> String {
     match self {
       Item::Node(n) => node_to_string(n),

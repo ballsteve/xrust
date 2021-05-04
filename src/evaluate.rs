@@ -1003,6 +1003,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_name)
       }
     );
+    sc.funcs.borrow_mut().insert("string".to_string(),
+      Function{
+        name: "string".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_string)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1186,6 +1195,17 @@ fn func_name<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Seq
       }
     }
     None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
+  }
+}
+
+// TODO: implement string value properly
+fn func_string<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match args.len() {
+    1 => {
+      // return string value
+      Ok(vec![Rc::new(Item::Value(Value::StringOwned(args[0].to_string())))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
@@ -2283,6 +2303,22 @@ mod tests {
       let vc = vec![c];
       let r = evaluate(&DynamicContext::new(), Some(s), Some(0), &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "Test")
+    }
+    #[test]
+    fn function_call_string_1() {
+      let c = Constructor::FunctionCall(
+        Function::new("string".to_string(), vec![], Some(func_string)),
+	vec![
+	  vec![
+            Constructor::Literal(Value::String("a")),
+            Constructor::Literal(Value::String("b")),
+            Constructor::Literal(Value::String("c")),
+	  ]
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "abc")
     }
 
     // Variables
