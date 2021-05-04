@@ -133,7 +133,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |id|no||
 |local-name|yes|Argument not yet implemented|
 |namespace-uri|no||
-|name|no||
+|name|yes|Argument not yet implemented; qnames not implemented|
 |string|no||
 |concat|no||
 |starts-with|no||
