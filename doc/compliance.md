@@ -131,7 +131,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |last|yes||
 |position|yes||
 |id|no||
-|local-name|no||
+|local-name|yes|Argument not yet implemented|
 |namespace-uri|no||
 |name|no||
 |string|no||

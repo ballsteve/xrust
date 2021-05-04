@@ -985,6 +985,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_count)
       }
     );
+    sc.funcs.borrow_mut().insert("local-name".to_string(),
+      Function{
+        name: "local-name".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_localname)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1133,6 +1142,23 @@ fn func_count<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Se
       Ok(vec![Rc::new(Item::Value(Value::Integer(args[0].len() as i64)))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_localname<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match ctxt {
+    Some(u) => {
+      // Current item must be a node
+      match *u[posn.unwrap()] {
+        Item::XNode(n) => {
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.tag_name().name())))])
+	}
+	Item::Node(_) |
+	Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented"),}),
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
+      }
+    }
+    None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
   }
 }
 
@@ -2206,6 +2232,18 @@ mod tests {
       let vc = vec![c];
       let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "3")
+    }
+    #[test]
+    fn function_call_local_name() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let s = vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))];
+      let c = Constructor::FunctionCall(
+        Function::new("local-name".to_string(), vec![], Some(func_localname)),
+	vec![]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), Some(s), Some(0), &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "Test")
     }
 
     // Variables

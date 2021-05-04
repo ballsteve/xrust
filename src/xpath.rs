@@ -2085,6 +2085,17 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "3")
     }
+    #[test]
+    fn parse_eval_fncall_localname() {
+      let x = roxmltree::Document::parse("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let d = vec![Rc::new(Item::XNode(x.root().first_child().unwrap()))];
+      let mut e = parse("local-name()").expect("failed to parse expression \"local-name()\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "Test")
+    }
 
     // Variables
     #[test]
