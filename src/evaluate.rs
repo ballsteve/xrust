@@ -1012,6 +1012,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_string)
       }
     );
+    sc.funcs.borrow_mut().insert("concat".to_string(),
+      Function{
+        name: "concat".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_concat)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1207,6 +1216,18 @@ fn func_string<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
+}
+
+fn func_concat<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+    args.iter().fold(
+      String::new(),
+      |mut a, b| {
+        a.push_str(b.to_string().as_str());
+	a
+      }
+    )
+  )))])
 }
 
 // Operands must be singletons
@@ -2314,6 +2335,20 @@ mod tests {
             Constructor::Literal(Value::String("b")),
             Constructor::Literal(Value::String("c")),
 	  ]
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "abc")
+    }
+    #[test]
+    fn function_call_concat_1() {
+      let c = Constructor::FunctionCall(
+        Function::new("concat".to_string(), vec![], Some(func_concat)),
+	vec![
+	  vec![Constructor::Literal(Value::String("a"))],
+          vec![Constructor::Literal(Value::String("b"))],
+          vec![Constructor::Literal(Value::String("c"))],
         ]
       );
       let vc = vec![c];
