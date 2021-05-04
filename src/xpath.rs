@@ -25,7 +25,7 @@ use crate::evaluate::{
     static_analysis,
     Constructor,
     NameTest, WildcardOrName,
-    NodeTest, NodeMatch,
+    NodeTest, NodeMatch, KindTest,
     Axis,
     ArithmeticOperator, ArithmeticOperand,
     Function,
@@ -1098,12 +1098,197 @@ fn prefixed_name(input: &str) -> IResult<&str, NodeTest> {
 }
 
 // NodeTest ::= KindTest | NameTest
-// TODO: KindTest
 fn nodetest(input: &str) -> IResult<&str, NodeTest> {
-  nametest
+  alt((
+    kindtest,
+    nametest,
+  ))
   (input)
 }
 
+// KindTest ::= DocumentTest | ElementTest | AttributeTest | SchemaElementTest | SchemaAttributeTest | PITest | CommentTest | TextTest | NamespaceNodeTest | AnyKindTest
+fn kindtest(input: &str) -> IResult<&str, NodeTest> {
+  alt((
+    documenttest,
+    elementtest,
+    attributetest,
+    schemaelementtest,
+    schemaattributetest,
+    pitest,
+    commenttest,
+    texttest,
+    namespacenodetest,
+    anykindtest,
+  ))
+  (input)
+}
+// DocumentTest ::= 'document-node' '(' (ElementTest | SchemaElementTest)? ')'
+// TODO: capture the element test
+fn documenttest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("document-node"),
+      multispace0,
+      tag("("),
+      opt(alt((elementtest, schemaelementtest))),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _t, _, _)| {
+      NodeTest::Kind(KindTest::DocumentTest)
+    }
+  )
+  (input)
+}
+// ElementTest ::= 'element' '(' (ElementNameOrWildcard (',' TypeName '?'?)?)? ')'
+// TODO: capture element name or wildcard, typename
+fn elementtest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("element"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::ElementTest)
+    }
+  )
+  (input)
+}
+// AttributeTest ::= 'attribute' '(' (AttribNameOrWildcard (',' TypeName)?)? ')'
+// TODO: capture attribnameOrWildcard and typename
+fn attributetest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("attribute"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::AttributeTest)
+    }
+  )
+  (input)
+}
+// SchemaElementTest ::= 'schema-element' '(' ElementDeclaration ')'
+// TODO: capture elementDeclaration
+fn schemaelementtest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("schema-element"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::SchemaElementTest)
+    }
+  )
+  (input)
+}
+// SchemaAttributeTest ::= 'schema-attribute' '(' AttributeDeclaration ')'
+// TODO: capture attribute declaration
+fn schemaattributetest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("schema-attribute"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::SchemaAttributeTest)
+    }
+  )
+  (input)
+}
+// PITest ::= 'processing-instruction' '(' (NCName | StringLiteral)? ')'
+// TODO: capture PI name
+fn pitest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("processing-instruction"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::PITest)
+    }
+  )
+  (input)
+}
+// CommentTest ::= 'comment' '(' ')'
+fn commenttest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("comment"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::CommentTest)
+    }
+  )
+  (input)
+}
+// TextTest ::= 'text' '(' ')'
+fn texttest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("text"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::TextTest)
+    }
+  )
+  (input)
+}
+// NamespaceNodeTest ::= 'namespace-node' '(' ')'
+fn namespacenodetest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("namespace-node"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::NamespaceNodeTest)
+    }
+  )
+  (input)
+}
+// AnyKindTest := 'node' '(' ')'
+fn anykindtest(input: &str) -> IResult<&str, NodeTest> {
+  map(
+    tuple((
+      tag("node"),
+      multispace0,
+      tag("("),
+      multispace0,
+      tag(")"),
+    )),
+    |(_, _, _, _, _)| {
+      NodeTest::Kind(KindTest::AnyKindTest)
+    }
+  )
+  (input)
+}
 // NameTest ::= EQName | Wildcard
 // TODO: allow EQName rather than QName
 fn nametest(input: &str) -> IResult<&str, NodeTest> {
@@ -1957,6 +2142,58 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       assert_eq!(s.to_string(), "not one")
+    }
+
+    // Kind Tests
+    #[test]
+    fn xnode_kind_element_1() {
+      let d = roxmltree::Document::parse("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let cons = parse("child::element()").expect("failed to parse element kind expression");
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 6);
+      assert_eq!(e[0].to_name(), "level2");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_name(), "level2");
+      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[4].to_name(), "level2");
+      assert_eq!(e[5].to_name(), "level2");
+    }
+    #[test]
+    fn xnode_kind_text_1() {
+      let d = roxmltree::Document::parse("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let cons = parse("child::text()").expect("failed to parse text kind expression");
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[0].to_string(), "1");
+      assert_eq!(e[1].to_string(), "2");
+      assert_eq!(e[2].to_string(), "3");
+      assert_eq!(e[3].to_string(), "4");
+      assert_eq!(e[4].to_string(), "5");
+      assert_eq!(e[5].to_string(), "6");
+      assert_eq!(e[6].to_string(), "7");
+    }
+    #[test]
+    fn xnode_kind_any_1() {
+      let d = roxmltree::Document::parse("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let cons = parse("child::node()").expect("failed to parse text kind expression");
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 13);
+      assert_eq!(e[0].to_string(), "1");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_string(), "2");
+      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[4].to_string(), "3");
+      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[6].to_string(), "4");
+      assert_eq!(e[7].to_name(), "level2");
+      assert_eq!(e[8].to_string(), "5");
+      assert_eq!(e[9].to_name(), "level2");
+      assert_eq!(e[10].to_string(), "6");
+      assert_eq!(e[11].to_name(), "level2");
+      assert_eq!(e[12].to_string(), "7");
     }
 }
 

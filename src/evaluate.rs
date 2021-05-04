@@ -364,7 +364,6 @@ fn evaluate_one<'a>(
 	      Axis::Preceding => {
 	        // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
 		// iow, for each ancestor-or-self node, include every previous sibling and its descendants
-		println!("Axis::Preceding: context node is \"{}\"", n.tag_name().name());
 		let anc: Vec<Node> = n.ancestors()
 		  .collect();
 		let mut d: Vec<Node> = Vec::new();
@@ -662,10 +661,10 @@ pub enum Constructor<'a> {
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
   //println!("is_node_match: matching \"{}\" - node has tag name \"{}\"", nt.to_string(), n.tag_name().name());
 
-  match n.node_type() {
-    roxmltree::NodeType::Element => {
-      match nt {
-        NodeTest::Name(t) => {
+  match nt {
+    NodeTest::Name(t) => {
+      match n.node_type() {
+        roxmltree::NodeType::Element => {
       	  // TODO: namespaces
       	  match &t.name {
             Some(a) => {
@@ -686,15 +685,53 @@ fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
 	    }
       	  }
     	}
-    	NodeTest::Kind => {
-      	  // TODO
-      	  //println!("node test kind");
-      	  false
-    	}
+      	_ => false
       }
     }
-    // Only element-type nodes match a node test
-    _ => false
+    NodeTest::Kind(k) => {
+      match k {
+        KindTest::DocumentTest => {
+          if n.node_type() == roxmltree::NodeType::Root {
+	    true
+	  } else {
+	    false
+	  }
+        }
+        KindTest::ElementTest => {
+          if n.node_type() == roxmltree::NodeType::Element {
+	    true
+	  } else {
+	    false
+	  }
+        }
+        KindTest::PITest => {
+          if n.node_type() == roxmltree::NodeType::PI {
+	    true
+	  } else {
+	    false
+	  }
+        }
+        KindTest::CommentTest => {
+      	  if n.node_type() == roxmltree::NodeType::Comment {
+	    true
+	  } else {
+	    false
+	  }
+        }
+        KindTest::TextTest => {
+      	  if n.node_type() == roxmltree::NodeType::Text {
+	    true
+	  } else {
+	    false
+	  }
+        }
+        KindTest::AnyKindTest => true,
+        KindTest::AttributeTest |
+	KindTest::SchemaElementTest |
+        KindTest::SchemaAttributeTest |
+        KindTest::NamespaceNodeTest => false, // TODO: not yet implemented
+      }
+    }
   }
 }
 fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
@@ -721,7 +758,7 @@ fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
 	}
       }
     }
-    NodeTest::Kind => {
+    NodeTest::Kind(k) => {
       // TODO
       //println!("node test kind");
       false
@@ -743,7 +780,7 @@ impl NodeMatch {
 
 #[derive(Clone)]
 pub enum NodeTest {
-  Kind,
+  Kind(KindTest),
   Name(NameTest),
 }
 
@@ -756,6 +793,20 @@ impl NodeTest {
 	_ => "--no test--".to_string()
       }
   }
+}
+
+#[derive(Clone)]
+pub enum KindTest {
+  DocumentTest,
+  ElementTest,
+  AttributeTest,
+  SchemaElementTest,
+  SchemaAttributeTest,
+  PITest,
+  CommentTest,
+  TextTest,
+  NamespaceNodeTest,
+  AnyKindTest,
 }
 
 #[derive(Clone)]
@@ -1981,6 +2032,83 @@ mod tests {
       	assert_eq!(e.len(), 0);
       }
     }
+
+    // Kind Tests
+    #[test]
+    fn xnode_kind_element_1() {
+      let d = roxmltree::Document::parse("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Child,
+	      nodetest: NodeTest::Kind(KindTest::ElementTest)
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 6);
+      assert_eq!(e[0].to_name(), "level2");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_name(), "level2");
+      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[4].to_name(), "level2");
+      assert_eq!(e[5].to_name(), "level2");
+    }
+    #[test]
+    fn xnode_kind_text_1() {
+      let d = roxmltree::Document::parse("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Child,
+	      nodetest: NodeTest::Kind(KindTest::TextTest)
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[0].to_string(), "1");
+      assert_eq!(e[1].to_string(), "2");
+      assert_eq!(e[2].to_string(), "3");
+      assert_eq!(e[3].to_string(), "4");
+      assert_eq!(e[4].to_string(), "5");
+      assert_eq!(e[5].to_string(), "6");
+      assert_eq!(e[6].to_string(), "7");
+    }
+    #[test]
+    fn xnode_kind_any_1() {
+      let d = roxmltree::Document::parse("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Child,
+	      nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 13);
+      assert_eq!(e[0].to_string(), "1");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_string(), "2");
+      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[4].to_string(), "3");
+      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[6].to_string(), "4");
+      assert_eq!(e[7].to_name(), "level2");
+      assert_eq!(e[8].to_string(), "5");
+      assert_eq!(e[9].to_name(), "level2");
+      assert_eq!(e[10].to_string(), "6");
+      assert_eq!(e[11].to_name(), "level2");
+      assert_eq!(e[12].to_string(), "7");
+    }
+
     #[test]
     fn xnode_predicate_pos() {
       let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");

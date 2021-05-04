@@ -96,7 +96,7 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Axis: preceding-sibling|yes||
 |Axis: attribute|no||
 |Axis: namespace|no||
-|Path expression: Node tests|no||
+|Path expression: Node tests|yes||
 |Path expression: Predicates within steps|yes||
 |Path expression: Unabbreviated syntax|yes||
 |Path expression: Abbreviated syntax|no||
