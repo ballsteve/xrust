@@ -1030,6 +1030,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_startswith)
       }
     );
+    sc.funcs.borrow_mut().insert("contains".to_string(),
+      Function{
+        name: "contains".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_contains)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1246,6 +1255,19 @@ fn func_startswith<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: 
      // arg[1] is what to search for
      Ok(vec![Rc::new(Item::Value(Value::Boolean(
        args[0].to_string().starts_with(args[1].to_string().as_str())
+    )))])
+  } else {
+    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_contains<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have exactly 2 arguments
+  if args.len() == 2 {
+     // arg[0] is the string to search
+     // arg[1] is what to search for
+     Ok(vec![Rc::new(Item::Value(Value::Boolean(
+       args[0].to_string().contains(args[1].to_string().as_str())
     )))])
   } else {
     Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
@@ -2397,6 +2419,32 @@ mod tests {
 	vec![
 	  vec![Constructor::Literal(Value::String("abc"))],
           vec![Constructor::Literal(Value::String("b"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_bool(), false)
+    }
+    #[test]
+    fn function_call_contains_pos() {
+      let c = Constructor::FunctionCall(
+        Function::new("contains".to_string(), vec![], Some(func_contains)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abc"))],
+          vec![Constructor::Literal(Value::String("b"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_bool(), true)
+    }
+    #[test]
+    fn function_call_contains_neg() {
+      let c = Constructor::FunctionCall(
+        Function::new("contains".to_string(), vec![], Some(func_contains)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abc"))],
+          vec![Constructor::Literal(Value::String("d"))],
         ]
       );
       let vc = vec![c];

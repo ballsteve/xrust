@@ -2143,6 +2143,24 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), false)
     }
+    #[test]
+    fn parse_eval_fncall_contains_pos() {
+      let mut e = parse("contains('abc', 'b')").expect("failed to parse expression \"contains('abc', 'b')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_bool(), true)
+    }
+    #[test]
+    fn parse_eval_fncall_contains_neg() {
+      let mut e = parse("contains('abc', 'd')").expect("failed to parse expression \"contains('abc', 'd')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_bool(), false)
+    }
 
     // Variables
     #[test]

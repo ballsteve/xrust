@@ -137,7 +137,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |string|yes||
 |concat|yes||
 |starts-with|yes||
-|contains|no||
+|contains|yes||
 |substring-before|no||
 |substring-after|no||
 |substring|no||
