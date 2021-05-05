@@ -2179,6 +2179,33 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
+    #[test]
+    fn parse_eval_fncall_substringafter_pos_1() {
+      let mut e = parse("substring-after('abc', 'b')").expect("failed to parse expression \"substring-after('abc', 'b')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "c")
+    }
+    #[test]
+    fn parse_eval_fncall_substringafter_pos_2() {
+      let mut e = parse("substring-after('abc', 'c')").expect("failed to parse expression \"substring-after('abc', 'b')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "")
+    }
+    #[test]
+    fn parse_eval_fncall_substringafter_neg() {
+      let mut e = parse("substring-after('abc', 'd')").expect("failed to parse expression \"substring-after('abc', 'd')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "")
+    }
 
     // Variables
     #[test]
