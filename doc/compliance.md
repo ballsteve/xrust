@@ -138,9 +138,9 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |concat|yes||
 |starts-with|yes||
 |contains|yes||
-|substring-before|no||
-|substring-after|no||
-|substring|no||
+|substring-before|yes||
+|substring-after|yes||
+|substring|yes||
 |normalize-space|no||
 |translate|no||
 |boolean|no||

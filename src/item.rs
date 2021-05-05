@@ -18,6 +18,7 @@ pub trait SequenceTrait<'a> {
   //fn clone(&self) -> Sequence;
   fn to_string(&self) -> String;
   fn to_bool(&self) -> bool;
+  fn to_int(&self) -> Result<i64, Error>;
   fn new_node(&mut self, n: RcNode<NodeDefn>);
   //fn new_xdoc(&mut self, d: Document<'a>);
   fn new_xnode(&mut self, n: Node<'a, 'a>);
@@ -73,6 +74,15 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
 	  }
 	}
       }
+    }
+  }
+
+  // Convenience routine for integer
+  fn to_int(&self) -> Result<i64, Error> {
+    if self.len() == 1 {
+      self[0].to_int()
+    } else {
+      Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: sequence is not a singleton")})
     }
   }
 }

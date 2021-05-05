@@ -3,6 +3,7 @@
 //! Evaluate a sequence constructor.
 
 use std::rc::Rc;
+use unicode_segmentation::UnicodeSegmentation;
 use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
@@ -1039,6 +1040,33 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_contains)
       }
     );
+    sc.funcs.borrow_mut().insert("substring".to_string(),
+      Function{
+        name: "substring".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_substring)
+      }
+    );
+    sc.funcs.borrow_mut().insert("substring-before".to_string(),
+      Function{
+        name: "substring-before".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_substringbefore)
+      }
+    );
+    sc.funcs.borrow_mut().insert("substring-after".to_string(),
+      Function{
+        name: "substring-after".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_substringafter)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1271,6 +1299,83 @@ fn func_contains<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Ve
     )))])
   } else {
     Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_substring<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 2 or 3 arguments
+  match args.len() {
+    2 => {
+     // arg[0] is the string to search
+     // arg[1] is the index to start at
+     // 2-argument version takes the rest of the string
+     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+       args[0].to_string().graphemes(true).skip(args[1].to_int().expect("not an integer") as usize - 1).collect()
+     )))])
+    }
+    3 => {
+     // arg[0] is the string to search
+     // arg[1] is the index to start at
+     // arg[2] is the length of the substring to extract
+     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+       args[0].to_string().graphemes(true).skip(args[1].to_int().expect("not an integer") as usize - 1).take(args[2].to_int().expect("not an integer") as usize).collect()
+     )))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_substringbefore<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 2 arguments
+  match args.len() {
+    2 => {
+     // arg[0] is the string to search
+     // arg[1] is the string to find
+     match args[0].to_string().find(args[1].to_string().as_str()) {
+       Some(i) => {
+         match args[0].to_string().get(0..i) {
+	   Some(s) => {
+     	     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+	       String::from(s)
+     	     )))])
+	   }
+	   None => {
+	     // This shouldn't happen!
+	     Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unable to extract substring"),})
+	   }
+	 }
+       }
+       None => {
+         Ok(vec![])
+       }
+     }
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_substringafter<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 2 or 3 arguments
+  match args.len() {
+    2 => {
+     // arg[0] is the string to search
+     // arg[1] is the index to start at
+     // 2-argument version takes the rest of the string
+     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+       //args[0].graphemes(true).skip(args[1].to_int() - 1).collect()
+       "TODO".to_string()
+     )))])
+    }
+    3 => {
+     // arg[0] is the string to search
+     // arg[1] is the index to start at
+     // arg[2] is the length of the substring to extract
+     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+       //args[0].graphemes(true).skip(args[1].to_int() - 1).take(args[2].to_int()).collect()
+       "TODO".to_string()
+     )))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
@@ -2450,6 +2555,59 @@ mod tests {
       let vc = vec![c];
       let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_bool(), false)
+    }
+    #[test]
+    fn function_call_substring_2() {
+      let c = Constructor::FunctionCall(
+        Function::new("substring".to_string(), vec![], Some(func_substring)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abc"))],
+          vec![Constructor::Literal(Value::Integer(2))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "bc")
+    }
+    #[test]
+    fn function_call_substring_3() {
+      let c = Constructor::FunctionCall(
+        Function::new("substring".to_string(), vec![], Some(func_substring)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abcde"))],
+          vec![Constructor::Literal(Value::Integer(2))],
+          vec![Constructor::Literal(Value::Integer(3))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "bcd")
+    }
+    #[test]
+    fn function_call_substring_before_1() {
+      let c = Constructor::FunctionCall(
+        Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abcde"))],
+          vec![Constructor::Literal(Value::String("bc"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "a")
+    }
+    #[test]
+    fn function_call_substring_before_neg() {
+      let c = Constructor::FunctionCall(
+        Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abcde"))],
+          vec![Constructor::Literal(Value::String("fg"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "")
     }
 
     // Variables
