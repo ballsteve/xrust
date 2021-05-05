@@ -1021,6 +1021,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_concat)
       }
     );
+    sc.funcs.borrow_mut().insert("starts-with".to_string(),
+      Function{
+        name: "starts-with".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_startswith)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1228,6 +1237,19 @@ fn func_concat<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
       }
     )
   )))])
+}
+
+fn func_startswith<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have exactly 2 arguments
+  if args.len() == 2 {
+     // arg[0] is the string to search
+     // arg[1] is what to search for
+     Ok(vec![Rc::new(Item::Value(Value::Boolean(
+       args[0].to_string().starts_with(args[1].to_string().as_str())
+    )))])
+  } else {
+    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
 }
 
 // Operands must be singletons
@@ -2354,6 +2376,32 @@ mod tests {
       let vc = vec![c];
       let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "abc")
+    }
+    #[test]
+    fn function_call_startswith_pos() {
+      let c = Constructor::FunctionCall(
+        Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abc"))],
+          vec![Constructor::Literal(Value::String("a"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_bool(), true)
+    }
+    #[test]
+    fn function_call_startswith_neg() {
+      let c = Constructor::FunctionCall(
+        Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abc"))],
+          vec![Constructor::Literal(Value::String("b"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_bool(), false)
     }
 
     // Variables

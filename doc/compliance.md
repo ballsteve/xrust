@@ -130,13 +130,13 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |count|yes||
 |last|yes||
 |position|yes||
-|id|no||
+|id|no|requires validating parser|
 |local-name|yes|Argument not yet implemented|
 |namespace-uri|no||
 |name|yes|Argument not yet implemented; qnames not implemented|
 |string|yes||
 |concat|yes||
-|starts-with|no||
+|starts-with|yes||
 |contains|no||
 |substring-before|no||
 |substring-after|no||
