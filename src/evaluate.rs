@@ -1067,6 +1067,24 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_substringafter)
       }
     );
+    sc.funcs.borrow_mut().insert("normalize-space".to_string(),
+      Function{
+        name: "normalize-space".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_normalizespace)
+      }
+    );
+    sc.funcs.borrow_mut().insert("translate".to_string(),
+      Function{
+        name: "translate".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_translate)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1355,6 +1373,70 @@ fn func_substringbefore<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, a
 }
 
 fn func_substringafter<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 2 arguments
+  match args.len() {
+    2 => {
+     // arg[0] is the string to search
+     // arg[1] is the string to find
+     match args[0].to_string().find(args[1].to_string().as_str()) {
+       Some(i) => {
+         match args[0].to_string().get(i + args[1].to_string().len()..args[0].to_string().len()) {
+	   Some(s) => {
+     	     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+	       String::from(s)
+     	     )))])
+	   }
+	   None => {
+	     // This shouldn't happen!
+	     Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unable to extract substring"),})
+	   }
+	 }
+       }
+       None => {
+         Ok(vec![])
+       }
+     }
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_normalizespace<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 0 or 1 arguments
+  let s: Result<Option<String>, Error> = match args.len() {
+    0 => {
+      // Use the current item
+      match ctxt {
+        Some(c) => {
+	  Ok(Some(c[posn.unwrap()].to_string()))
+	}
+	None => Ok(None)
+      }
+    }
+    1 => {
+      Ok(Some(args[0].to_string()))
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  };
+
+  match s {
+    Ok(u) => {
+      match u {
+        Some(t) => {
+          Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+            t.split_whitespace().collect()
+          )))])
+        }
+        None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
+      }
+    }
+    Result::Err(e) => {
+      Result::Err(e)
+    }
+  }
+}
+
+fn func_translate<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
@@ -2651,6 +2733,18 @@ mod tests {
       let vc = vec![c];
       let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "")
+    }
+    #[test]
+    fn function_call_normalizespace() {
+      let c = Constructor::FunctionCall(
+        Function::new("normalize-space".to_string(), vec![], Some(func_normalizespace)),
+	vec![
+	  vec![Constructor::Literal(Value::String("	a b   c\nd e 	"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "abcde")
     }
 
     // Variables
