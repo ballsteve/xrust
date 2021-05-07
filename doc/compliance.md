@@ -143,10 +143,10 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |substring|yes||
 |normalize-space|yes||
 |translate|yes||
-|boolean|no||
-|not|no||
-|true|no||
-|false|no||
+|boolean|yes||
+|not|yes||
+|true|yes||
+|false|yes||
 |lang|no||
 |number|no||
 |sum|no||

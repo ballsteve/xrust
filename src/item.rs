@@ -508,6 +508,10 @@ impl<'a> Value<'a> {
                 //t.is_empty()
 	        t.len() != 0
             },
+            Value::StringOwned(t) => {
+                //t.is_empty()
+	        t.len() != 0
+            },
 	    Value::NormalizedString(s) => s.value.len() != 0,
             Value::Double(n) => *n != 0.0,
             Value::Integer(i) => *i != 0,

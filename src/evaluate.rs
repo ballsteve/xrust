@@ -1085,6 +1085,42 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_translate)
       }
     );
+    sc.funcs.borrow_mut().insert("boolean".to_string(),
+      Function{
+        name: "boolean".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_boolean)
+      }
+    );
+    sc.funcs.borrow_mut().insert("not".to_string(),
+      Function{
+        name: "not".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_not)
+      }
+    );
+    sc.funcs.borrow_mut().insert("true".to_string(),
+      Function{
+        name: "true".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_true)
+      }
+    );
+    sc.funcs.borrow_mut().insert("false".to_string(),
+      Function{
+        name: "false".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_false)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1477,6 +1513,46 @@ fn func_translate<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: V
 	}
       }
       Ok(vec![Rc::new(Item::Value(Value::StringOwned(result)))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_boolean<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 arguments
+  match args.len() {
+    1 => {
+      Ok(vec![Rc::new(Item::Value(Value::Boolean(args[0].to_bool())))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_not<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 arguments
+  match args.len() {
+    1 => {
+      Ok(vec![Rc::new(Item::Value(Value::Boolean(!args[0].to_bool())))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_true<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 0 arguments
+  match args.len() {
+    0 => {
+      Ok(vec![Rc::new(Item::Value(Value::Boolean(true)))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_false<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 0 arguments
+  match args.len() {
+    0 => {
+      Ok(vec![Rc::new(Item::Value(Value::Boolean(false)))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
@@ -2778,6 +2854,99 @@ mod tests {
       assert_eq!(r.to_string(), "XbcYXbcY")
     }
     // TODO: test using non-ASCII characters
+    #[test]
+    fn function_call_boolean_true() {
+      let c = Constructor::FunctionCall(
+        Function::new("boolean".to_string(), vec![], Some(func_boolean)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abcdeabcde"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	_ => panic!("not a singleton boolean true value")
+      }
+    }
+    #[test]
+    fn function_call_boolean_false() {
+      let c = Constructor::FunctionCall(
+        Function::new("boolean".to_string(), vec![], Some(func_boolean)),
+	vec![
+	  vec![],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	_ => panic!("not a singleton boolean false value")
+      }
+    }
+    fn function_call_not_false() {
+      let c = Constructor::FunctionCall(
+        Function::new("not".to_string(), vec![], Some(func_not)),
+	vec![
+	  vec![Constructor::Literal(Value::Boolean(true))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	_ => panic!("not a singleton boolean false value")
+      }
+    }
+    #[test]
+    fn function_call_not_true() {
+      let c = Constructor::FunctionCall(
+        Function::new("not".to_string(), vec![], Some(func_not)),
+	vec![
+	  vec![],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	_ => panic!("not a singleton boolean true value")
+      }
+    }
+    #[test]
+    fn function_call_true() {
+      let c = Constructor::FunctionCall(
+        Function::new("true".to_string(), vec![], Some(func_true)),
+	vec![
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	_ => panic!("not a singleton boolean true value")
+      }
+    }
+    #[test]
+    fn function_call_false() {
+      let c = Constructor::FunctionCall(
+        Function::new("false".to_string(), vec![], Some(func_false)),
+	vec![
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	_ => panic!("not a singleton boolean false value")
+      }
+    }
 
     // Variables
     #[test]

@@ -2224,6 +2224,84 @@ mod tests {
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "XbcYXbcY")
     }
+    #[test]
+    fn parse_eval_fncall_boolean_true() {
+      let mut e = parse("boolean('abcdeabcde')").expect("failed to parse expression \"boolean('abcdeabcde')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	_ => panic!("not a singleton boolean true value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_boolean_false() {
+      let mut e = parse("boolean('')").expect("failed to parse expression \"boolean('')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	_ => panic!("not a singleton boolean false value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_not_true() {
+      let mut e = parse("not('')").expect("failed to parse expression \"not('')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	_ => panic!("not a singleton boolean true value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_not_false() {
+      let mut e = parse("not('abc')").expect("failed to parse expression \"not('abc')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	_ => panic!("not a singleton boolean false value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_true() {
+      let mut e = parse("true()").expect("failed to parse expression \"true()\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	_ => panic!("not a singleton boolean true value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_false() {
+      let mut e = parse("false()").expect("failed to parse expression \"false()\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	_ => panic!("not a singleton boolean false value")
+      }
+    }
 
     // Variables
     #[test]
