@@ -220,12 +220,9 @@ fn evaluate_one<'a>(
         u = vec![]
       }
 
-      //println!("path start: u=\"{}\" {} items", u.to_string(), u.len());
-
       Ok(s.iter().fold(
 	    u,
 	    |a, c| {
-	      //println!("path iteration: a=\"{}\" {} items", a.to_string(), a.len());
 	      // evaluate this step for each item in the context
 	      // Add the result of each evaluation to an accummulator sequence
 	      let mut b: Sequence = Vec::new();
@@ -239,7 +236,6 @@ fn evaluate_one<'a>(
     }
     Constructor::Step(nm, p) => {
       if ctxt.is_some() {
-        //println!("Constructor::Step: ctxt \"{}\" size = {} posn = {}", ctxt.as_ref().unwrap().to_string(), ctxt.as_ref().unwrap().len(), posn.unwrap());
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 	  Item::Node(n) => {
 	    match nm.axis {
@@ -275,7 +271,6 @@ fn evaluate_one<'a>(
 		  let seq = n.children()
 		      .filter(|c| is_node_match(&nm.nodetest, c))
 		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
-		  //println!("path: child axis: seq=\"{}\"", seq.to_string());
 	      	  Ok(predicates(dc, seq, p))
 	    	} else {
 	      	  Ok(Sequence::new())
@@ -391,14 +386,12 @@ fn evaluate_one<'a>(
 	  Item::JsonValue(j) => {
 	    match nm.axis {
 	      Axis::Child => {
-	        //println!("jsonvalue child axis, j is {}", jsonvalue_kind(j));
 		let mut seq: Sequence = Vec::new();
 		match j {
 		  JsonValue::Object(_) => {
 	            seq = j.entries()
 		      .filter(|(key, val)| is_jsonvalue_match(&nm.nodetest, key))
 		      .fold(Sequence::new(), |mut c, (key, val)| {
-		        //println!("adding json value \"{}\" is a {}", key, jsonvalue_kind(val));
 			c.new_jvalue(val.clone());
 			c
 		      });
@@ -406,14 +399,12 @@ fn evaluate_one<'a>(
 		  JsonValue::Array(_) => {
 	            seq = j.members()
 		      .fold(Sequence::new(), |mut c, val| {
-		        //println!("adding json array member is a {}", jsonvalue_kind(val));
 			c.new_jvalue(val.clone());
 			c
 		      });
 		  }
 		  _ => {}
 		}
-		//println!("path: child axis: seq=\"{}\" ({} items)", seq.to_string(), seq.len());
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::Parent => {
@@ -438,7 +429,6 @@ fn evaluate_one<'a>(
     Constructor::FunctionCall(f, a) => {
       match f.body {
         Some(g) => {
-	  //println!("Constructor::FunctionCall - function \"{}\" is defined", f.name);
       	  // Evaluate the arguments
       	  let mut b = Vec::new();
       	  for c in a {
@@ -448,7 +438,6 @@ fn evaluate_one<'a>(
       	  g(ctxt, posn, b)
 	}
 	None => {
-	  //println!("Constructor::FunctionCall - function is NOT defined");
 	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "call to undefined function".to_string()})
 	}
       }
@@ -501,7 +490,6 @@ fn evaluate_one<'a>(
 	    for i in s {
 	      // Push the new value for this variable
 	      var_push(dc, v, &i);
-	      //println!("dc has value \"{}\" for \"x\"", dc.vars.borrow().get("x").unwrap().iter().map(|z| z.to_string()).collect::<String>());
 	      let mut x = evaluate(dc, ctxt.clone(), posn, b).expect("failed to evaluate loop body");
 	      result.append(&mut x);
 	      // Pop the value for this variable
@@ -584,31 +572,25 @@ fn var_pop(dc: &DynamicContext, v: &str) {
 // Filter the sequence with each of the predicates
 fn predicates<'a>(dc: &DynamicContext<'a>, s: Sequence<'a>, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence<'a> {
   if p.is_empty() {
-    //println!("predicates: no predicates so return complete sequence");
     s
   } else {
     let mut result = s.clone();
 
     // iterate over the predicates
     for q in p {
-      //println!("evaluating predicate for {} items", result.len());
       let mut new: Sequence = Vec::new();
 
       // for each predicate, evaluate each item in s to a boolean
       for i in 0..result.len() {
-        //println!("predicate: evaluating ctxt item {} of {} to bool", i, result.len());
         let b = evaluate(dc, Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
 	if b.to_bool() == true {
-	  //println!("item {} is a keeper", i);
 	  new.push(result[i].clone());
 	}
       }
-      //println!("replacing result with new of {} items", new.len());
       result.clear();
       result.append(&mut new);
     }
 
-    //println!("predicates returning sequence with {} items", result.len());
     result
   }
 }
@@ -660,8 +642,6 @@ pub enum Constructor<'a> {
 }
 
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
-  //println!("is_node_match: matching \"{}\" - node has tag name \"{}\"", nt.to_string(), n.tag_name().name());
-
   match nt {
     NodeTest::Name(t) => {
       match n.node_type() {
@@ -671,17 +651,14 @@ fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
             Some(a) => {
 	      match a {
 	        WildcardOrName::Wildcard => {
-	      	  //println!("wildcard");
 	      	  true
 	    	}
 	    	WildcardOrName::Name(s) => {
-	      	  //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
 	      	  s == n.tag_name().name()
 	    	}
 	      }
 	    }
 	    None => {
-	      //println!("no name test");
 	      false
 	    }
       	  }
@@ -736,7 +713,6 @@ fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
   }
 }
 fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
-  //println!("is_jsonvalue_match: matching \"{}\" - node has tag name \"{}\"", nt.to_string(), n);
   match nt {
     NodeTest::Name(t) => {
       // TODO: namespaces
@@ -744,24 +720,20 @@ fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
         Some(a) => {
 	  match a {
 	    WildcardOrName::Wildcard => {
-	      //println!("wildcard");
 	      true
 	    }
 	    WildcardOrName::Name(s) => {
-	      //println!("does {} == {} ? {}", s, n.tag_name().name(), s == n.tag_name().name());
 	      s == n
 	    }
 	  }
 	}
 	None => {
-	  //println!("no name test");
 	  false
 	}
       }
     }
     NodeTest::Kind(k) => {
       // TODO
-      //println!("node test kind");
       false
     }
   }
@@ -930,19 +902,14 @@ pub struct ArithmeticOperand<'a> {
 fn general_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
   let mut b = false;
   let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
-  //println!("left sequence ({} items) = \"{}\"", left_seq.len(), left_seq.to_string());
   let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
-  //println!("right sequence ({} items) = \"{}\"", right_seq.len(), right_seq.to_string());
   for l in left_seq {
     for r in &right_seq {
-      //println!("compare \"{}\" to \"{}\"", l.to_string(), r.to_string());
       b = l.compare(&*r, op).unwrap();
-      //println!("result = {}", b);
       if b { break }
     }
     if b { break }
   };
-  //println!("final result = {}", b);
   Ok(b)
 }
 
@@ -1283,7 +1250,6 @@ impl Param {
 fn func_position<'a>(_ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match posn {
     Some(u) => {
-      //println!("func_position returning {}", u + 1);
       Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))])
     }
     None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
@@ -1293,7 +1259,6 @@ fn func_position<'a>(_ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Ve
 fn func_last<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match ctxt {
     Some(u) => {
-      //println!("func_last returning {}", u.len());
       Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))])
     }
     None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no context item"),})
@@ -1631,7 +1596,6 @@ fn func_number<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
 
 fn func_sum<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 argument
-  println!("func_sum");
   match args.len() {
     1 => {
       Ok(vec![Rc::new(Item::Value(Value::Double(args[0].iter().fold(0.0, |mut acc, i| {acc += i.to_double(); acc}))))])
@@ -2313,9 +2277,6 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 6);
-      //for t in 0..e.len() {
-        //println!("Item {}: \"{}\"", t + 1, e[t].to_string())
-      //}
       assert_eq!(e[1].to_string(), "<level3>1 1 1</level3>")
     }
     #[test]
@@ -2337,9 +2298,6 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 7);
-      //for t in 0..e.len() {
-        //println!("Item {}: \"{}\"", t + 1, e[t].to_string())
-      //}
       assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>")
     }
     #[test]
@@ -2360,9 +2318,6 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      //for i in 0..e.len() {
-        //println!("item {} is a {}", i, e[i].to_name())
-      //}
       assert_eq!(e.len(), 3);
     }
     #[test]
@@ -2383,9 +2338,6 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      //for i in 0..e.len() {
-        //println!("item {} is a {}", i, e[i].to_name())
-      //}
       assert_eq!(e.len(), 4);
     }
     #[test]
@@ -2406,9 +2358,6 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      //for i in 0..e.len() {
-        //println!("item {} is a {}", i, e[i].to_name())
-      //}
       assert_eq!(e.len(), 1);
       assert_eq!(e.to_string(), "<level3>1 1 2</level3>");
     }
@@ -2430,9 +2379,6 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      //for i in 0..e.len() {
-        //println!("item {} is a {}", i, e[i].to_name())
-      //}
       assert_eq!(e.len(), 1);
       assert_eq!(e.to_string(), "<level3>1 1 1</level3>");
     }
@@ -2454,9 +2400,6 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      //for i in 0..e.len() {
-        //println!("item {} is a {} = \"{}\"", i, e[i].to_name(), e[i].to_string())
-      //}
       assert_eq!(e.len(), 4);
       assert_eq!(e.to_string(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
     }
@@ -2478,9 +2421,6 @@ mod tests {
 	];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
-      //for i in 0..e.len() {
-        //println!("item {} is a {} = \"{}\"", i, e[i].to_name(), e[i].to_string())
-      //}
       assert_eq!(e.len(), 7);
       assert_eq!(e[0].to_name(), "level1");
       assert_eq!(e[1].to_name(), "level2");
@@ -2541,8 +2481,6 @@ mod tests {
         assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
         assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
         assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
-	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
-	//panic!("blah")
       } else {
         panic!("sequence does not have 3 items: \"{}\"", e.to_string())
       }
@@ -2563,8 +2501,6 @@ mod tests {
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test/>");
-	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
-	//panic!("blah")
       } else {
         panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }
@@ -2586,7 +2522,6 @@ mod tests {
       if e.len() == 0 {
         assert!(true)
       } else {
-        //println!("result: {}", e.to_string());
       	assert_eq!(e.len(), 0);
       }
     }
@@ -2690,8 +2625,6 @@ mod tests {
         .expect("evaluation failed");
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Test><Level2/></Test>");
-	//println!("constructor:\n{}\n", format_constructor(&cons, 0));
-	//panic!("blah")
       } else {
         panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }

@@ -818,7 +818,6 @@ fn absolute_path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	    }
 	  } else {
 	    // Error
-	    println!("absolute_path_expr: relativepath_expr returned more than one constructor");
 	    vec![]
 	  }
 	}
@@ -891,41 +890,32 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // For debugging: a version of the above function that steps through the parsing
 fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
   let myin = newinput;
-  //println!("relpath: starting with \"{}\"", myin);
   let (myin, a) = step_expr(myin)?;
   let mut r = Vec::new();
 
   r.push(vec![Constructor::Literal(Value::String(""))]);
   r.push(a);
 
-  //println!("relpath: parsed first step. input=\"{}\"", myin);
-
   loop {
-    //println!("looking for delimiter in \"{}\"", myin);
     if myin.len() == 0 {
-      //println!("no more input");
       break
     }
     let (myin, (_x, c, _y)) = alt((
       tuple((multispace0, tag("//"), multispace0)),
       tuple((multispace0, tag("/"), multispace0)),
     ))(myin)?;
-    //println!("got delimiter \"{}\", remaining input \"{}\"", c, myin);
     r.push(vec![Constructor::Literal(Value::String(c))]);
 
     let (_myin, d) = step_expr(myin)?;
-    //println!("got next step");
     r.push(d);
     break;
   }
 
-  //println!("relpath: finished");
   Ok((myin, vec![Constructor::NotImplemented("relpathdbg")]))
 }
 
 // StepExpr ::= PostfixExpr | AxisStep
 fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
-  //println!("step_expr: input \"{}\"", input);
   alt((
     postfix_expr, // These two return different objects; we need to switch between them
     axisstep      // TODO: define an enum that allows us to do the switch
@@ -1855,7 +1845,6 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
       } else {
-        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
         panic!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
@@ -1874,7 +1863,6 @@ mod tests {
       if e.len() == 1 {
         assert_eq!(e[0].to_string(), "<Level1/>");
       } else {
-        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
         panic!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
@@ -1888,7 +1876,6 @@ mod tests {
       if e.len() == 0 {
         assert!(true)
       } else {
-        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
         panic!("sequence has more than 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
@@ -1904,7 +1891,6 @@ mod tests {
         assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
         assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
       } else {
-        println!("parsed constructor:\n{}\n", format_constructor(&c, 0));
         panic!("sequence does not have 3 items, it has {}: \"{}\"", e.len(), e.to_string())
       }
     }
@@ -2059,7 +2045,6 @@ mod tests {
       let mut e = parse("/child::*/child::*[position() eq 1]").expect("failed to parse expression \"/child::*/child::*[position() eq 1]\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><b/></a>")
     }
@@ -2070,7 +2055,6 @@ mod tests {
       let mut e = parse("/child::*/child::*[position() eq last()]").expect("failed to parse expression \"/child::*/child::*[position() eq last()]\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "<a><d/></a>")
     }
@@ -2081,7 +2065,6 @@ mod tests {
       let mut e = parse("count(/child::*/child::*)").expect("failed to parse expression \"count(/child::*/child::*)\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "3")
     }
@@ -2092,7 +2075,6 @@ mod tests {
       let mut e = parse("local-name()").expect("failed to parse expression \"local-name()\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "Test")
     }
@@ -2103,7 +2085,6 @@ mod tests {
       let mut e = parse("name()").expect("failed to parse expression \"name()\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "Test")
     }
@@ -2112,7 +2093,6 @@ mod tests {
       let mut e = parse("string(('a', 'b', 'c'))").expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "abc")
     }
@@ -2121,7 +2101,6 @@ mod tests {
       let mut e = parse("concat('a', 'b', 'c')").expect("failed to parse expression \"concat('a', 'b', 'c')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "abc")
     }
@@ -2130,7 +2109,6 @@ mod tests {
       let mut e = parse("starts-with('abc', 'a')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), true)
     }
@@ -2139,7 +2117,6 @@ mod tests {
       let mut e = parse("starts-with('abc', 'b')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), false)
     }
@@ -2148,7 +2125,6 @@ mod tests {
       let mut e = parse("contains('abc', 'b')").expect("failed to parse expression \"contains('abc', 'b')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), true)
     }
@@ -2157,7 +2133,6 @@ mod tests {
       let mut e = parse("contains('abc', 'd')").expect("failed to parse expression \"contains('abc', 'd')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), false)
     }
@@ -2166,7 +2141,6 @@ mod tests {
       let mut e = parse("substring-before('abc', 'b')").expect("failed to parse expression \"substring-before('abc', 'b')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "a")
     }
@@ -2175,7 +2149,6 @@ mod tests {
       let mut e = parse("substring-before('abc', 'd')").expect("failed to parse expression \"substring-before('abc', 'd')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
@@ -2184,7 +2157,6 @@ mod tests {
       let mut e = parse("substring-after('abc', 'b')").expect("failed to parse expression \"substring-after('abc', 'b')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "c")
     }
@@ -2193,7 +2165,6 @@ mod tests {
       let mut e = parse("substring-after('abc', 'c')").expect("failed to parse expression \"substring-after('abc', 'b')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
@@ -2202,7 +2173,6 @@ mod tests {
       let mut e = parse("substring-after('abc', 'd')").expect("failed to parse expression \"substring-after('abc', 'd')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
@@ -2211,7 +2181,6 @@ mod tests {
       let mut e = parse("normalize-space('	a  b\nc 	')").expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "abc")
     }
@@ -2220,7 +2189,6 @@ mod tests {
       let mut e = parse("translate('abcdeabcde', 'ade', 'XY')").expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "XbcYXbcY")
     }
@@ -2229,7 +2197,6 @@ mod tests {
       let mut e = parse("boolean('abcdeabcde')").expect("failed to parse expression \"boolean('abcdeabcde')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2242,7 +2209,6 @@ mod tests {
       let mut e = parse("boolean('')").expect("failed to parse expression \"boolean('')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2255,7 +2221,6 @@ mod tests {
       let mut e = parse("not('')").expect("failed to parse expression \"not('')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2268,7 +2233,6 @@ mod tests {
       let mut e = parse("not('abc')").expect("failed to parse expression \"not('abc')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2281,7 +2245,6 @@ mod tests {
       let mut e = parse("true()").expect("failed to parse expression \"true()\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2294,7 +2257,6 @@ mod tests {
       let mut e = parse("false()").expect("failed to parse expression \"false()\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2307,7 +2269,6 @@ mod tests {
       let mut e = parse("number('123')").expect("failed to parse expression \"number('123')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2320,7 +2281,6 @@ mod tests {
       let mut e = parse("number('123.456')").expect("failed to parse expression \"number('123.456')\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2333,7 +2293,6 @@ mod tests {
       let mut e = parse("sum(('123.456', 10, 20, '0'))").expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2346,7 +2305,6 @@ mod tests {
       let mut e = parse("floor(123.456)").expect("failed to parse expression \"floor(123.456)\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2359,7 +2317,6 @@ mod tests {
       let mut e = parse("ceiling(123.456)").expect("failed to parse expression \"ceiling(123.456)\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2372,7 +2329,6 @@ mod tests {
       let mut e = parse("round(123.456)").expect("failed to parse expression \"round(123.456)\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
@@ -2385,7 +2341,6 @@ mod tests {
       let mut e = parse("round(123.654)").expect("failed to parse expression \"round(123.654)\"");
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
-      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
       let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {

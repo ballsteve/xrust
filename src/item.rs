@@ -289,7 +289,6 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
 
   match d.nodetype {
       NodeType::Document => {
-        //println!("node_to_string: NodeType::Document");
         if node.has_no_child() {
 	  String::new()
 	} else {
@@ -297,7 +296,6 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
 	}
       }
       NodeType::Element => {
-        //println!("node_to_string: NodeType::Element \"{}\"", d.name.as_ref().unwrap());
         if node.has_no_child() {
 	  format!("<{}/>", d.name.as_ref().unwrap())
 	} else {
@@ -339,7 +337,6 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
 pub fn xnode_to_string(node: Node) -> String {
   match node.node_type() {
       roxmltree::NodeType::Root => {
-        //println!("node_to_string: NodeType::Document");
         if node.has_children() {
 	  xnode_to_string(node.first_child().unwrap())
 	} else {
@@ -347,7 +344,6 @@ pub fn xnode_to_string(node: Node) -> String {
 	}
       }
       roxmltree::NodeType::Element => {
-        //println!("node_to_string: NodeType::Element \"{}\"", d.name.as_ref().unwrap());
         if node.has_children() {
 	  // TODO: attributes
 	  format!("<{}>{}</{}>", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_string(c)), node.tag_name().name())
@@ -609,7 +605,6 @@ impl<'a> Value<'a> {
 	}
         Value::String(s) => {
 	  let t = other.to_string();
-	  //println!("compare strings {} to {}", s, t);
       	  match op {
                 Operator::Equal => Ok(s.to_string() == t),
     		Operator::NotEqual => Ok(s.to_string() != t),
@@ -960,7 +955,6 @@ mod tests {
       match Item::Value(Value::String("1")).to_int() {
         Ok(i) => assert_eq!(i, 1),
 	Err(e) => {
-	  println!("to_int() failed: {}", e.message);
 	  panic!("to_int() failed")
 	}
       }
