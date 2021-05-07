@@ -141,8 +141,8 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |substring-before|yes||
 |substring-after|yes||
 |substring|yes||
-|normalize-space|no||
-|translate|no||
+|normalize-space|yes||
+|translate|yes||
 |boolean|no||
 |not|no||
 |true|no||

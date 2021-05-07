@@ -1437,29 +1437,46 @@ fn func_normalizespace<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args
 }
 
 fn func_translate<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
-  // must have 2 arguments
+  // must have 3 arguments
   match args.len() {
-    2 => {
-     // arg[0] is the string to search
-     // arg[1] is the string to find
-     match args[0].to_string().find(args[1].to_string().as_str()) {
-       Some(i) => {
-         match args[0].to_string().get(i + args[1].to_string().len()..args[0].to_string().len()) {
-	   Some(s) => {
-     	     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
-	       String::from(s)
-     	     )))])
-	   }
-	   None => {
-	     // This shouldn't happen!
-	     Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unable to extract substring"),})
-	   }
-	 }
-       }
-       None => {
-         Ok(vec![])
-       }
-     }
+    3 => {
+      // arg[0] is the string to search
+      // arg[1] is the map chars
+      // arg[2] is the translate chars
+      let o = args[1].to_string();
+      let m: Vec<&str> = o.graphemes(true).collect();
+      let u = args[2].to_string();
+      let t: Vec<&str> = u.graphemes(true).collect();
+      let mut result: String = String::new();
+
+      for c in args[0].to_string().graphemes(true) {
+	let mut a: Option<Option<usize>> = Some(None);
+        for i in 0..m.len() {
+	  if c == m[i] {
+	    if i < t.len() {
+	      a = Some(Some(i));
+	      break
+            } else {
+              // omit this character
+	      a = None
+            }
+	  } else {
+	    // keep looking for a match
+	  }
+        }
+	match a {
+	  Some(None) => {
+	    result.push_str(c);
+	  }
+	  Some(Some(j)) => {
+	    result.push_str(t[j])
+	  }
+	  None => {
+	    // omit char
+	  }
+	}
+      }
+      Ok(vec![Rc::new(Item::Value(Value::StringOwned(result)))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
@@ -2746,6 +2763,21 @@ mod tests {
       let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "abcde")
     }
+    #[test]
+    fn function_call_translate() {
+      let c = Constructor::FunctionCall(
+        Function::new("translate".to_string(), vec![], Some(func_translate)),
+	vec![
+	  vec![Constructor::Literal(Value::String("abcdeabcde"))],
+	  vec![Constructor::Literal(Value::String("ade"))],
+	  vec![Constructor::Literal(Value::String("XY"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.to_string(), "XbcYXbcY")
+    }
+    // TODO: test using non-ASCII characters
 
     // Variables
     #[test]
