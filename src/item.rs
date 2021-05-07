@@ -527,6 +527,12 @@ impl<'a> Value<'a> {
 		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
 	      }
 	    }
+	    Value::StringOwned(s) => {
+	      match s.parse::<i64>() {
+	        Ok(i) => Ok(i),
+		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
+	      }
+	    }
             Value::Integer(i) => Ok(*i),
             _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
 	}
@@ -534,6 +540,12 @@ impl<'a> Value<'a> {
     fn to_double(&self) -> f64 {
         match &self {
 	    Value::String(s) => {
+	      match s.parse::<f64>() {
+	        Ok(i) => i,
+		Err(_) => f64::NAN,
+	      }
+	    }
+	    Value::StringOwned(s) => {
 	      match s.parse::<f64>() {
 	        Ok(i) => i,
 		Err(_) => f64::NAN,

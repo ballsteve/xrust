@@ -121,6 +121,7 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 |Treat|no||
 |Simple map operator: !|no||
 |Arrow operator: =>|no||
+|Unary expression|no||
 
 * XPath Functions
 
@@ -148,11 +149,11 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 |true|yes||
 |false|yes||
 |lang|no||
-|number|no||
-|sum|no||
-|floor|no||
-|ceiling|no||
-|round|no||
+|number|yes||
+|sum|yes||
+|floor|yes||
+|ceiling|yes||
+|round|yes||
 
 * XSLT
 

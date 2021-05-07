@@ -450,7 +450,7 @@ fn union_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
         }
         s
       } else {
-        vec![Constructor::NotImplemented]
+        vec![Constructor::NotImplemented("union_expr")]
       }
     }
   )
@@ -489,7 +489,7 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 //	  r.push(d);
 //	}
 //        vec![SequenceConstructor::new(cons_intersectexcept).set_args(Some(r))]
-        vec![Constructor::NotImplemented]
+        vec![Constructor::NotImplemented("intersectexcept")]
       }
     }
   )
@@ -516,7 +516,7 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_instanceof).set_args(Some(r))]
-          vec![Constructor::NotImplemented]
+          vec![Constructor::NotImplemented("instance_of")]
 	}
       }
     }
@@ -556,7 +556,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_treat).set_args(Some(r))]
-          vec![Constructor::NotImplemented]
+          vec![Constructor::NotImplemented("treat")]
 	}
       }
     }
@@ -584,7 +584,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_castable).set_args(Some(r))]
-          vec![Constructor::NotImplemented]
+          vec![Constructor::NotImplemented("castable")]
 	}
       }
     }
@@ -640,7 +640,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_cast).set_args(Some(r))]
-          vec![Constructor::NotImplemented]
+          vec![Constructor::NotImplemented("cast")]
 	}
       }
     }
@@ -669,7 +669,7 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
         u
       } else {
         //vec![SequenceConstructor::new(cons_arrow)]
-        vec![Constructor::NotImplemented]
+        vec![Constructor::NotImplemented("arrow")]
       }
     }
   )
@@ -746,7 +746,7 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	//}
 	//a.push(v);
         //vec![SequenceConstructor::new(cons_unary).set_args(Some(a))]
-        vec![Constructor::NotImplemented]
+        vec![Constructor::NotImplemented("unary")]
       }
     }
   )
@@ -777,7 +777,7 @@ fn value_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //s.push(b);
 	//}
         //vec![SequenceConstructor::new(cons_simplemap).set_args(Some(s))]
-        vec![Constructor::NotImplemented]
+        vec![Constructor::NotImplemented("value")]
       }
     }
   )
@@ -839,7 +839,7 @@ fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     ),
     |(_u, _v)| {
       vec![Constructor::Root,
-	Constructor::NotImplemented]
+	Constructor::NotImplemented("absolute_descendant")]
 	// TODO: process v to implement descendant-or-self
     }
   )
@@ -920,7 +920,7 @@ fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
   }
 
   //println!("relpath: finished");
-  Ok((myin, vec![Constructor::NotImplemented]))
+  Ok((myin, vec![Constructor::NotImplemented("relpathdbg")]))
 }
 
 // StepExpr ::= PostfixExpr | AxisStep
@@ -2300,6 +2300,97 @@ mod tests {
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
 	_ => panic!("not a singleton boolean false value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_number_int() {
+      let mut e = parse("number('123')").expect("failed to parse expression \"number('123')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
+	_ => panic!("not a singleton integer value, got \"{}\"", s.to_string())
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_number_double() {
+      let mut e = parse("number('123.456')").expect("failed to parse expression \"number('123.456')\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_sum() {
+      let mut e = parse("sum(('123.456', 10, 20, '0'))").expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 + 20.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_floor() {
+      let mut e = parse("floor(123.456)").expect("failed to parse expression \"floor(123.456)\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_ceiling() {
+      let mut e = parse("ceiling(123.456)").expect("failed to parse expression \"ceiling(123.456)\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_round_down() {
+      let mut e = parse("round(123.456)").expect("failed to parse expression \"round(123.456)\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn parse_eval_fncall_round_up() {
+      let mut e = parse("round(123.654)").expect("failed to parse expression \"round(123.654)\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+      //println!("fncall: constructor:\n{}", format_constructor(&e, 0));
+      let s = evaluate(&DynamicContext::new(), None, None, &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      match *s[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	_ => panic!("not a singleton double value")
       }
     }
 

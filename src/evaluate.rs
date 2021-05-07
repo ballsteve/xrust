@@ -534,8 +534,8 @@ fn evaluate_one<'a>(
         )
       )
     }
-    Constructor::NotImplemented => {
-      Result::Err(Error{kind: ErrorKind::NotImplemented, message: "sequence constructor not implemented".to_string()})
+    Constructor::NotImplemented(m) => {
+      Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
     }
   }
 }
@@ -656,7 +656,7 @@ pub enum Constructor<'a> {
   VariableReference(String),				// TODO: support QName
   Loop(Vec<Constructor<'a>>, Vec<Constructor<'a>>),	// first arg is variables, second arg is body
   Switch(Vec<Vec<Constructor<'a>>>, Vec<Constructor<'a>>),	// first arg is pairs of test,body. second arg is otherwise clause
-  NotImplemented,	// TODO: implement everything so this can be removed
+  NotImplemented(&'static str),	// TODO: implement everything so this can be removed
 }
 
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
@@ -1121,6 +1121,51 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_false)
       }
     );
+    sc.funcs.borrow_mut().insert("number".to_string(),
+      Function{
+        name: "number".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_number)
+      }
+    );
+    sc.funcs.borrow_mut().insert("sum".to_string(),
+      Function{
+        name: "sum".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_sum)
+      }
+    );
+    sc.funcs.borrow_mut().insert("floor".to_string(),
+      Function{
+        name: "floor".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_floor)
+      }
+    );
+    sc.funcs.borrow_mut().insert("ceiling".to_string(),
+      Function{
+        name: "ceiling".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_ceiling)
+      }
+    );
+    sc.funcs.borrow_mut().insert("round".to_string(),
+      Function{
+        name: "round".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_round)
+      }
+    );
     sc
   }
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
@@ -1194,7 +1239,7 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
       Constructor::Literal(_) |
       Constructor::ContextItem |
       Constructor::Root |
-      Constructor::NotImplemented => {}
+      Constructor::NotImplemented(_) => {}
     }
   }
 }
@@ -1558,6 +1603,97 @@ fn func_false<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<S
   }
 }
 
+fn func_number<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 argument
+  match args.len() {
+    1 => {
+      match args[0].len() {
+        1 => {
+	  // TODO: if the item is already an integer, then just clone it
+      	  // First try converting to an integer
+	  match args[0][0].to_int() {
+	    Ok(i) => {
+      	      Ok(vec![Rc::new(Item::Value(Value::Integer(i)))])
+	    }
+	    Result::Err(_) => {
+      	      // If that fails, convert to double
+	      // NB. this can't fail. At worst it returns NaN
+      	      Ok(vec![Rc::new(Item::Value(Value::Double(args[0][0].to_double())))])
+	    }
+	  }
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+      }
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_sum<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 argument
+  println!("func_sum");
+  match args.len() {
+    1 => {
+      Ok(vec![Rc::new(Item::Value(Value::Double(args[0].iter().fold(0.0, |mut acc, i| {acc += i.to_double(); acc}))))])
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_floor<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 argument which is a singleton
+  match args.len() {
+    1 => {
+      match args[0].len() {
+        1 => {
+      	  Ok(vec![Rc::new(Item::Value(Value::Double(args[0][0].to_double().floor())))])
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+      }
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_ceiling<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 argument which is a singleton
+  match args.len() {
+    1 => {
+      match args[0].len() {
+        1 => {
+      	  Ok(vec![Rc::new(Item::Value(Value::Double(args[0][0].to_double().ceil())))])
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+      }
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_round<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  // must have 1 or 2 arguments
+  match args.len() {
+    1 => {
+      // precision is 0 (i.e. round to nearest whole number
+      match args[0].len() {
+        1 => {
+      	  Ok(vec![Rc::new(Item::Value(Value::Double(args[0][0].to_double().round())))])
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+      }
+    }
+    2 => {
+      match (args[0].len(), args[1].len()) {
+        (1, 1) => {
+      	  Ok(vec![Rc::new(Item::Value(Value::Double(args[0][0].to_double().powi(args[1][0].to_int().unwrap() as i32).round().powi(-1 * args[1][0].to_int().unwrap() as i32))))])
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),})
+      }
+    }
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
 // Operands must be singletons
 fn value_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
   let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
@@ -1657,8 +1793,8 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::Switch(_, _) => {
         format!("{:in$} switch constructor", "", in=i)
       }
-      Constructor::NotImplemented => {
-        format!("{:in$} NotImplemented constructor", "", in=i)
+      Constructor::NotImplemented(m) => {
+        format!("{:in$} NotImplemented constructor: {}", "", m, in=i)
       }
     };
     result.push_str(&t);
@@ -2945,6 +3081,123 @@ mod tests {
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
 	_ => panic!("not a singleton boolean false value")
+      }
+    }
+    #[test]
+    fn function_call_number_int() {
+      let c = Constructor::FunctionCall(
+        Function::new("number".to_string(), vec![], Some(func_number)),
+	vec![
+	  vec![Constructor::Literal(Value::String("123"))]
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
+	_ => panic!("not a singleton integer value")
+      }
+    }
+    #[test]
+    fn function_call_number_double() {
+      let c = Constructor::FunctionCall(
+        Function::new("number".to_string(), vec![], Some(func_number)),
+	vec![
+	  vec![Constructor::Literal(Value::String("123.456"))]
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    // TODO: test NaN result
+    #[test]
+    fn function_call_sum() {
+      let c = Constructor::FunctionCall(
+        Function::new("sum".to_string(), vec![], Some(func_sum)),
+	vec![
+	    vec![Constructor::Literal(Value::String("123.456")),
+	         Constructor::Literal(Value::String("10")),
+	         Constructor::Literal(Value::String("-20")),
+	         Constructor::Literal(Value::String("0")),
+	    ],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 - 20.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn function_call_floor() {
+      let c = Constructor::FunctionCall(
+        Function::new("floor".to_string(), vec![], Some(func_floor)),
+	vec![
+	  vec![Constructor::Literal(Value::String("123.456"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn function_call_ceiling() {
+      let c = Constructor::FunctionCall(
+        Function::new("ceiling".to_string(), vec![], Some(func_ceiling)),
+	vec![
+	  vec![Constructor::Literal(Value::String("123.456"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn function_call_round_down() {
+      let c = Constructor::FunctionCall(
+        Function::new("round".to_string(), vec![], Some(func_round)),
+	vec![
+	  vec![Constructor::Literal(Value::String("123.456"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	_ => panic!("not a singleton double value")
+      }
+    }
+    #[test]
+    fn function_call_round_up() {
+      let c = Constructor::FunctionCall(
+        Function::new("round".to_string(), vec![], Some(func_round)),
+	vec![
+	  vec![Constructor::Literal(Value::String("123.654"))],
+        ]
+      );
+      let vc = vec![c];
+      let r = evaluate(&DynamicContext::new(), None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match *r[0] {
+        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	_ => panic!("not a singleton double value")
       }
     }
 
