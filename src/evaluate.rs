@@ -2137,7 +2137,7 @@ mod tests {
       let cons = vec![Constructor::Root];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::Node(d.front().unwrap().front().unwrap().clone()))]), Some(0), &cons).expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Test>Test text</Test>")
+        assert_eq!(e[0].to_xml(), "<Test>Test text</Test>")
       } else {
         panic!("sequence is not a singleton")
       }
@@ -2148,7 +2148,7 @@ mod tests {
       let cons = vec![Constructor::Root];
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root()))]), Some(0), &cons).expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Test>test text</Test>")
+        assert_eq!(e[0].to_xml(), "<Test>test text</Test>")
       } else {
         panic!("sequence is not a singleton")
       }
@@ -2177,7 +2177,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::Node(d.front().unwrap().clone()))]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "Test text")
+        assert_eq!(e[0].to_xml(), "Test text")
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
@@ -2201,7 +2201,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<text/>")
+        assert_eq!(e[0].to_xml(), "<text/>")
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
@@ -2229,7 +2229,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
+        assert_eq!(e[0].to_xml(), "<Root><Child/></Root>")
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
@@ -2253,7 +2253,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Root><Child/></Root>")
+        assert_eq!(e[0].to_xml(), "<Root><Child/></Root>")
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
@@ -2277,7 +2277,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 6);
-      assert_eq!(e[1].to_string(), "<level3>1 1 1</level3>")
+      assert_eq!(e[1].to_xml(), "<level3>1 1 1</level3>")
     }
     #[test]
     fn xnode_descendantorself_1() {
@@ -2298,7 +2298,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 7);
-      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>")
+      assert_eq!(e[2].to_xml(), "<level3>1 1 1</level3>")
     }
     #[test]
     fn xnode_ancestor_1() {
@@ -2359,7 +2359,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 1);
-      assert_eq!(e.to_string(), "<level3>1 1 2</level3>");
+      assert_eq!(e.to_xml(), "<level3>1 1 2</level3>");
     }
     #[test]
     fn xnode_precedingsibling_1() {
@@ -2380,7 +2380,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 1);
-      assert_eq!(e.to_string(), "<level3>1 1 1</level3>");
+      assert_eq!(e.to_xml(), "<level3>1 1 1</level3>");
     }
     #[test]
     fn xnode_following_1() {
@@ -2401,7 +2401,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap().first_child().unwrap().last_child().unwrap()))]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 4);
-      assert_eq!(e.to_string(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
+      assert_eq!(e.to_xml(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
     }
     #[test]
     fn xnode_preceding_1() {
@@ -2425,7 +2425,7 @@ mod tests {
       assert_eq!(e[0].to_name(), "level1");
       assert_eq!(e[1].to_name(), "level2");
       assert_eq!(e[2].to_name(), "level3");
-      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>");
+      assert_eq!(e[2].to_xml(), "<level3>1 1 1</level3>");
     }
 
     //#[test]
@@ -2478,9 +2478,9 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 3 {
-        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
-        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
-        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+        assert_eq!(e[0].to_xml(), "<Level2>one</Level2>");
+        assert_eq!(e[1].to_xml(), "<Level2>two</Level2>");
+        assert_eq!(e[2].to_xml(), "<Level2>three</Level2>");
       } else {
         panic!("sequence does not have 3 items: \"{}\"", e.to_string())
       }
@@ -2500,7 +2500,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Test/>");
+        assert_eq!(e[0].to_xml(), "<Test/>");
       } else {
         panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }
@@ -2624,7 +2624,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Test><Level2/></Test>");
+        assert_eq!(e[0].to_xml(), "<Test><Level2/></Test>");
       } else {
         panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }
@@ -3268,7 +3268,7 @@ mod tests {
         assert_eq!(e.len(), 3);
         assert_eq!(e[0].to_string(), "200");
         assert_eq!(e[1].to_string(), "true");
-        assert_eq!(e[2].to_string(), "{
+        assert_eq!(e[2].to_json(), "{
 \"three\": [
 \"three one\",
 \"three two\",
@@ -3306,9 +3306,9 @@ mod tests {
         .expect("evaluation failed");
       if e.len() != 0 {
         assert_eq!(e.len(), 3);
-        assert_eq!(e[0].to_string(), "\"three one\"");
-        assert_eq!(e[1].to_string(), "\"three two\"");
-        assert_eq!(e[2].to_string(), "\"three three\"");
+        assert_eq!(e[0].to_string(), "three one");
+        assert_eq!(e[1].to_string(), "three two");
+        assert_eq!(e[2].to_string(), "three three");
       } else {
         panic!("empty sequence result")
       }

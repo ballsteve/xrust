@@ -17,6 +17,8 @@ pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 pub trait SequenceTrait<'a> {
   //fn clone(&self) -> Sequence;
   fn to_string(&self) -> String;
+  fn to_xml(&self) -> String;
+  fn to_json(&self) -> String;
   fn to_bool(&self) -> bool;
   fn to_int(&self) -> Result<i64, Error>;
   fn new_node(&mut self, n: RcNode<NodeDefn>);
@@ -32,6 +34,20 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     let mut r = String::new();
     for i in self {
       r.push_str(i.to_string().as_str())
+    }
+    r
+  }
+  fn to_xml(&self) -> String {
+    let mut r = String::new();
+    for i in self {
+      r.push_str(i.to_xml().as_str())
+    }
+    r
+  }
+  fn to_json(&self) -> String {
+    let mut r = String::new();
+    for i in self {
+      r.push_str(i.to_json().as_str())
     }
     r
   }
@@ -129,8 +145,6 @@ impl Operator {
 
 impl<'a> Item<'a> {
   // Gives the string value of an item. All items have a string value.
-  // TODO: properly implement string value.
-  // At the moment this pretty-prints the item, which includes markup then it shouldn't
   pub fn to_string(&self) -> String {
     match self {
       Item::Node(n) => node_to_string(n),
@@ -138,11 +152,31 @@ impl<'a> Item<'a> {
       //Item::XDoc(d) => d.to_string(),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
+      Item::JsonValue(j) => json_to_string(j),
+    }
+  }
+  // Serialize as XML
+  pub fn to_xml(&self) -> String {
+    match self {
+      Item::Node(n) => node_to_xml(n),
+      Item::XNode(n) => xnode_to_xml(*n),
+      //Item::XDoc(d) => d.to_string(),
+      Item::Function => "".to_string(),
+      Item::Value(v) => v.to_string(),
+      Item::JsonValue(j) => json_to_xml(j),
+    }
+  }
+  // Serialize as JSON
+  pub fn to_json(&self) -> String {
+    match self {
+      Item::Node(n) => node_to_json(n),
+      Item::XNode(n) => xnode_to_json(*n),
+      //Item::XDoc(d) => d.to_string(),
+      Item::Function => "".to_string(),
+      Item::Value(v) => v.to_string(),
       Item::JsonValue(j) => j.pretty(0),
     }
   }
-  // Should there also be a string slice version?
-  // fn to_str(&self) -> &str;
 
   // Determine the effective boolean value of a sequence.
   // See XPath 2.4.3.
@@ -284,6 +318,7 @@ impl NodeDefn {
   }
 }
 
+// Find the string value of the Node
 pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
   let d = node.data();
 
@@ -297,10 +332,38 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
       }
       NodeType::Element => {
         if node.has_no_child() {
+	  "".to_string()
+	} else {
+	  node.iter_rc().fold(String::new(), |s,c| s + &node_to_string(&c))
+	}
+      }
+      NodeType::Text => {
+        String::from(d.value.as_ref().unwrap())
+      }
+      NodeType::Attribute |
+      NodeType::Comment |
+      NodeType::ProcessingInstruction => {
+        "".to_string()
+      }
+  }
+}
+pub fn node_to_xml(node: &RcNode<NodeDefn>) -> String {
+  let d = node.data();
+
+  match d.nodetype {
+      NodeType::Document => {
+        if node.has_no_child() {
+	  String::new()
+	} else {
+	  node.iter_rc().fold(String::new(), |s,c| s + &node_to_xml(&c))
+	}
+      }
+      NodeType::Element => {
+        if node.has_no_child() {
 	  format!("<{}/>", d.name.as_ref().unwrap())
 	} else {
 	  // TODO: attributes
-	  format!("<{}>{}</{}>", d.name.as_ref().unwrap(), node.iter_rc().fold(String::new(), |s,c| s + &node_to_string(&c)), d.name.as_ref().unwrap())
+	  format!("<{}>{}</{}>", d.name.as_ref().unwrap(), node.iter_rc().fold(String::new(), |s,c| s + &node_to_xml(&c)), d.name.as_ref().unwrap())
 	}
       }
       NodeType::Text => {
@@ -333,7 +396,52 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
       }
   }
 }
+pub fn node_to_json(node: &RcNode<NodeDefn>) -> String {
+  let d = node.data();
 
+  match d.nodetype {
+      NodeType::Document => {
+        if node.has_no_child() {
+	  "{}".to_string()
+	} else {
+	  let mut r = String::from("{");
+	  r.push_str(node.iter_rc().fold(String::new(), |s,c| s + &node_to_json(&c)).as_str());
+	  r.push('}');
+	  r
+	}
+      }
+      NodeType::Element => {
+        if node.has_no_child() {
+	  format!("\"{}\": \"\"", d.name.as_ref().unwrap())
+	} else {
+	  format!("\"{}\": {}\n", d.name.as_ref().unwrap(), node.iter_rc().fold(String::new(), |s,c| s + &node_to_json(&c)))
+	}
+      }
+      NodeType::Text => {
+        format!("\"{}\"", String::from(d.value.as_ref().unwrap()))
+      }
+      NodeType::Attribute => {
+        "".to_string()
+      }
+      NodeType::Comment => {
+        "".to_string()
+      }
+      NodeType::ProcessingInstruction => {
+        "".to_string()
+      }
+  }
+}
+
+fn xnode_sv_helper(c: Node) -> String {
+  let mut s: String = String::new();
+  for e in c.descendants()
+    .filter(|d| d.node_type() == roxmltree::NodeType::Text) {
+    s.push_str(e.text().unwrap_or(""));
+  }
+  s
+}
+
+// Generate the string value of the Node
 pub fn xnode_to_string(node: Node) -> String {
   match node.node_type() {
       roxmltree::NodeType::Root => {
@@ -345,8 +453,37 @@ pub fn xnode_to_string(node: Node) -> String {
       }
       roxmltree::NodeType::Element => {
         if node.has_children() {
+	  node
+	    .children()
+	    .fold(String::new(), |s,c| s + xnode_sv_helper(c).as_str())
+	} else {
+	  "".to_string()
+	}
+      }
+      roxmltree::NodeType::Text => {
+        node.text().unwrap_or("").to_string()
+      }
+      roxmltree::NodeType::Comment => {
+        node.text().unwrap_or("").to_string()
+      }
+      roxmltree::NodeType::PI => {
+        node.text().unwrap_or("").to_string()
+      }
+  }
+}
+pub fn xnode_to_xml(node: Node) -> String {
+  match node.node_type() {
+      roxmltree::NodeType::Root => {
+        if node.has_children() {
+	  xnode_to_xml(node.first_child().unwrap())
+	} else {
+	  String::new()
+	}
+      }
+      roxmltree::NodeType::Element => {
+        if node.has_children() {
 	  // TODO: attributes
-	  format!("<{}>{}</{}>", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_string(c)), node.tag_name().name())
+	  format!("<{}>{}</{}>", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_xml(c)), node.tag_name().name())
 	} else {
 	  format!("<{}/>", node.tag_name().name())
 	}
@@ -369,6 +506,87 @@ pub fn xnode_to_string(node: Node) -> String {
         r.push_str(node.text().unwrap_or(""));
         r.push_str("?>");
 	r
+      }
+  }
+}
+pub fn xnode_to_json(node: Node) -> String {
+  match node.node_type() {
+      roxmltree::NodeType::Root => {
+        if node.has_children() {
+	  xnode_to_string(node.first_child().unwrap())
+	} else {
+	  "{}".to_string()
+	}
+      }
+      roxmltree::NodeType::Element => {
+        if node.has_children() {
+	  // TODO: attributes
+	  format!("\"{}\": {}", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_json(c)))
+	} else {
+	  format!("\"{}\": \"\"", node.tag_name().name())
+	}
+      }
+      roxmltree::NodeType::Text => {
+        format!("\"{}\"", String::from(node.text().unwrap_or("")))
+      }
+      roxmltree::NodeType::Comment |
+      roxmltree::NodeType::PI => {
+        "".to_string()
+      }
+  }
+}
+
+pub fn json_to_string(j: &JsonValue) -> String {
+  match j {
+      JsonValue::Null => {
+	  "{}".to_string()
+      }
+      JsonValue::Short(s) => {
+        s.to_string()
+      }
+      JsonValue::Number(s) => {
+        s.to_string()
+      }
+      JsonValue::Boolean(s) => {
+        s.to_string()
+      }
+      JsonValue::String(s) => {
+        s.to_string()
+      }
+      JsonValue::Object(_) => {
+        j.entries()
+	  .map(|(_, v)| json_to_xml(v))
+	  .fold(String::new(), |a, i| a + i.as_str())
+      }
+      JsonValue::Array(a) => {
+        a.iter().fold(String::new(), |a, i| a + json_to_xml(i).as_str())
+      }
+  }
+}
+pub fn json_to_xml(j: &JsonValue) -> String {
+  match j {
+      JsonValue::Null => {
+	  "{}".to_string()
+      }
+      JsonValue::Short(s) => {
+        s.to_string()
+      }
+      JsonValue::Number(s) => {
+        s.to_string()
+      }
+      JsonValue::Boolean(s) => {
+        s.to_string()
+      }
+      JsonValue::String(s) => {
+        s.to_string()
+      }
+      JsonValue::Object(_) => {
+        j.entries()
+	  .map(|(k, v)| format!("<{}>{}</{}>", k, json_to_xml(v), k))
+	  .fold(String::new(), |a, i| a + i.as_str())
+      }
+      JsonValue::Array(a) => {
+        a.iter().fold(String::new(), |a, i| a + json_to_xml(i).as_str())
       }
   }
 }
@@ -928,6 +1146,18 @@ mod tests {
 	let i = Value::NormalizedString(ns);
         assert_eq!(i.to_string(), "foobar")
     }
+    #[test]
+    fn xnode_stringvalue_1() {
+      let d = roxmltree::Document::parse("<Test><Level2>test text</Level2></Test>").expect("unable to parse XML");
+      let i = Item::XNode(d.root().first_child().unwrap().first_child().unwrap());
+      assert_eq!(i.to_string(), "test text")
+    }
+    #[test]
+    fn xnode_stringvalue_2() {
+      let d = roxmltree::Document::parse("<Test><Level2>test</Level2><Level3>text</Level3></Test>").expect("unable to parse XML");
+      let i = Item::XNode(d.root().first_child().unwrap());
+      assert_eq!(i.to_string(), "testtext")
+    }
 
     // to_bool
 
@@ -1018,7 +1248,9 @@ mod tests {
         let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
         let e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
 	d.push_front(e);
-        assert_eq!(node_to_string(&d), "<Test/>")
+        assert_eq!(node_to_string(&d), "");
+        assert_eq!(node_to_xml(&d), "<Test/>");
+        assert_eq!(node_to_json(&d), "{\"Test\": \"\"}")
     }
     #[test]
     fn node_text() {
@@ -1027,7 +1259,8 @@ mod tests {
         let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
 	e.push_front(t);
 	d.push_front(e);
-        assert_eq!(node_to_string(&d), "<Test>Test text</Test>")
+        assert_eq!(node_to_string(&d), "Test text");
+        assert_eq!(node_to_xml(&d), "<Test>Test text</Test>")
     }
     #[test]
     fn item_node_to_string() {
@@ -1037,7 +1270,8 @@ mod tests {
 	e.push_front(t);
 	d.push_front(e);
 	let i = Item::Node(d);
-        assert_eq!(i.to_string(), "<Test>Test text</Test>")
+        assert_eq!(i.to_string(), "Test text");
+        assert_eq!(i.to_xml(), "<Test>Test text</Test>")
     }
 
     // Documents and Nodes using roxmltree
@@ -1051,7 +1285,8 @@ mod tests {
     fn xnode_node() {
       let d = roxmltree::Document::parse("<Test><Level2>test text</Level2></Test>").expect("unable to parse XML");
       let i = Item::XNode(d.root().first_child().unwrap().first_child().unwrap());
-      assert_eq!(i.to_string(), "<Level2>test text</Level2>")
+      assert_eq!(i.to_string(), "test text");
+      assert_eq!(i.to_xml(), "<Level2>test text</Level2>")
     }
 
     // Sequences
@@ -1113,6 +1348,8 @@ mod tests {
     #[test]
     fn json_value() {
       let i = Item::JsonValue(JsonValue::String("this is json".to_string()));
-      assert_eq!(i.to_string(), "\"this is json\"")
+      assert_eq!(i.to_string(), "this is json");
+      assert_eq!(i.to_xml(), "this is json");
+      assert_eq!(i.to_json(), "\"this is json\"")
     }
 }

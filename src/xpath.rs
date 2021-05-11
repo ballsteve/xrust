@@ -1825,7 +1825,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+        assert_eq!(e[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
       } else {
         panic!("sequence does not have 1 item: \"{}\"", e.to_string())
       }
@@ -1843,7 +1843,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+        assert_eq!(e[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
       } else {
         panic!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
@@ -1861,7 +1861,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_string(), "<Level1/>");
+        assert_eq!(e[0].to_xml(), "<Level1/>");
       } else {
         panic!("sequence does not have 1 item, it has {}: \"{}\"", e.len(), e.to_string())
       }
@@ -1887,9 +1887,9 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       if e.len() == 3 {
-        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
-        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
-        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+        assert_eq!(e[0].to_xml(), "<Level2>one</Level2>");
+        assert_eq!(e[1].to_xml(), "<Level2>two</Level2>");
+        assert_eq!(e[2].to_xml(), "<Level2>three</Level2>");
       } else {
         panic!("sequence does not have 3 items, it has {}: \"{}\"", e.len(), e.to_string())
       }
@@ -1902,7 +1902,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       assert_eq!(e.len(), 6);
-      assert_eq!(e[1].to_string(), "<level3>1 1 1</level3>")
+      assert_eq!(e[1].to_xml(), "<level3>1 1 1</level3>")
     }
     #[test]
     fn xnode_descendantorself_1() {
@@ -1912,7 +1912,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       assert_eq!(e.len(), 7);
-      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>")
+      assert_eq!(e[2].to_xml(), "<level3>1 1 1</level3>")
     }
     #[test]
     fn xnode_ancestor_1() {
@@ -1940,7 +1940,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       assert_eq!(e.len(), 1);
-      assert_eq!(e.to_string(), "<level3>1 1 2</level3>");
+      assert_eq!(e.to_xml(), "<level3>1 1 2</level3>");
     }
     #[test]
     fn xnode_precedingsibling_1() {
@@ -1950,7 +1950,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       assert_eq!(e.len(), 1);
-      assert_eq!(e.to_string(), "<level3>1 1 1</level3>");
+      assert_eq!(e.to_xml(), "<level3>1 1 1</level3>");
     }
     #[test]
     fn xnode_following_1() {
@@ -1960,7 +1960,7 @@ mod tests {
       let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &c)
         .expect("evaluation failed");
       assert_eq!(e.len(), 4);
-      assert_eq!(e.to_string(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
+      assert_eq!(e.to_xml(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
     }
     #[test]
     fn xnode_preceding_1() {
@@ -1973,7 +1973,7 @@ mod tests {
       assert_eq!(e[0].to_name(), "level1");
       assert_eq!(e[1].to_name(), "level2");
       assert_eq!(e[2].to_name(), "level3");
-      assert_eq!(e[2].to_string(), "<level3>1 1 1</level3>");
+      assert_eq!(e[2].to_xml(), "<level3>1 1 1</level3>");
     }
     #[test]
     fn nomxpath_parse_desc_or_self_1() {
@@ -2028,7 +2028,7 @@ mod tests {
       let e = parse("/child::*/child::*[child::b]").expect("failed to parse expression \"//child::*/child::*[child::b]\"");
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
-      assert_eq!(s.to_string(), "<a><b/></a>")
+      assert_eq!(s.to_xml(), "<a><b/></a>")
     }
     #[test]
     fn parse_eval_predicate_neg() {
@@ -2046,7 +2046,7 @@ mod tests {
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "<a><b/></a>")
+      assert_eq!(s.to_xml(), "<a><b/></a>")
     }
     #[test]
     fn parse_eval_fncall_last() {
@@ -2056,7 +2056,7 @@ mod tests {
       let mut sc = StaticContext::new_with_builtins();
       static_analysis(&mut e, &mut sc);
       let s = evaluate(&DynamicContext::new(), Some(d), Some(0), &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "<a><d/></a>")
+      assert_eq!(s.to_xml(), "<a><d/></a>")
     }
     #[test]
     fn parse_eval_fncall_count() {
