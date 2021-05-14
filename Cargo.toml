@@ -1,6 +1,8 @@
 [package]
 name = "xdm"
 version = "0.1.0"
+keywords = ["xml", "json", "xpath", "xslt", "tree"]
+categories = ["parser-implementations"]
 authors = ["Steve Ball <Steve.Ball@explain.com.au>"]
 edition = "2018"
 

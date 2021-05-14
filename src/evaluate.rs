@@ -14,17 +14,23 @@ use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
 use json::{JsonValue, object};
 
+/// The dynamic evaluation context.
+///
+/// The dynamic context stores the value of declared variables.
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>,
 }
 
 impl<'a> DynamicContext<'a> {
+  /// Create a dynamic context.
   pub fn new() -> DynamicContext<'a> {
     DynamicContext{vars: RefCell::new(HashMap::new())}
   }
 }
 
-// Evaluate a sequence constructor, given a context
+/// Evaluate a sequence constructor, given a dynamic context.
+///
+/// The dynamic context consists of the supplied context, as well as the context item. The context item, which is optional, consists of a [Sequence] and an index to an item. If the context sequence is supplied, then the index (posn) must also be supplied and be a valid index for the sequence.
 pub fn evaluate<'a>(
     dc: &DynamicContext<'a>,
     ctxt: Option<Sequence<'a>>,
@@ -603,13 +609,19 @@ fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
   }
 }
 
-// Defines how we can construct a sequence
+/// Specifies how a sequence is to be constructed.
+///
+/// These are usually included in a Vector, where each Constructor builds an item. If the constructor results in a singleton, then it becomes an item in the [Sequence], otherwise the sequence is unpacked into the parent [Sequence].
 #[derive(Clone)]
 pub enum Constructor<'a> {
-  Literal(Value<'a>),		// A literal, scalar value
-  ContextItem,			// The context item from the dynamic context
-  Or(Vec<Vec<Constructor<'a>>>),	// Logical OR. Each element of the outer vector is an operand.
-  And(Vec<Vec<Constructor<'a>>>),	// Logical AND
+  /// A literal, atomic value
+  Literal(Value<'a>),
+  /// The context item from the dynamic context
+  ContextItem,
+  /// Logical OR. Each element of the outer vector is an operand.
+  Or(Vec<Vec<Constructor<'a>>>),
+  /// Logical AND. Each element of the outer vector is an operand.
+  And(Vec<Vec<Constructor<'a>>>),
   // Union,
   // IntersectExcept,
   // InstanceOf,
@@ -619,26 +631,37 @@ pub enum Constructor<'a> {
   // Arrow,
   // Unary,
   // SimpleMap,
-  Root,				// Root node of the context item
-  //Child(NodeMatch),			// Child nodes of the context item
-  //Parent(NodeMatch),			// Parent element of the context item
-  //DescendantOrSelf(NodeMatch),		// Descendants of the context item
-  Path(Vec<Vec<Constructor<'a>>>),	// Step in the path
-  Step(NodeMatch, Vec<Vec<Constructor<'a>>>),	// Next step of the path, with predicates
-  GeneralComparison(Operator, Vec<Vec<Constructor<'a>>>),	// General comparison
-  ValueComparison(Operator, Vec<Vec<Constructor<'a>>>),	// Value comparison
+  /// Root node of the context item
+  Root,
+  /// A path in a tree of nodes. Each element of the outer vector is a step in the path. The result of each step becomes the new context for the next step.
+  Path(Vec<Vec<Constructor<'a>>>),
+  /// A step in a path. The second argument is zero or more predicates. Each item in the result sequence is evaluated against each predicate as a boolean. If the predicate evaluates to true it is kept, otherwise it is discarded.
+  Step(NodeMatch, Vec<Vec<Constructor<'a>>>),
+  /// XPath general comparison. Each element of the outer vector is a comparator. If the comparator is a sequence then each item is compared.
+  GeneralComparison(Operator, Vec<Vec<Constructor<'a>>>),
+  /// XPath value comparison. Compares single items.
+  ValueComparison(Operator, Vec<Vec<Constructor<'a>>>),
   // Is,
   // Before,
   // After,
-  Concat(Vec<Vec<Constructor<'a>>>),	// Concatentate string values
-  Range(Vec<Vec<Constructor<'a>>>),		// Range of integers
-  Arithmetic(Vec<ArithmeticOperand<'a>>),	// Addition, subtraction, multiply, divide
+  /// Concatentate string values
+  Concat(Vec<Vec<Constructor<'a>>>),
+  /// Construct a range of integers
+  Range(Vec<Vec<Constructor<'a>>>),
+  /// Perform addition, subtraction, multiply, divide
+  Arithmetic(Vec<ArithmeticOperand<'a>>),
+  /// Call a function
   FunctionCall(Function<'a>, Vec<Vec<Constructor<'a>>>),
+  /// Declare a variable. The variable will be available for subsequence constructors
   VariableDeclaration(String, Vec<Constructor<'a>>),	// TODO: support QName
+  /// Reference a variable.
   VariableReference(String),				// TODO: support QName
-  Loop(Vec<Constructor<'a>>, Vec<Constructor<'a>>),	// first arg is variables, second arg is body
-  Switch(Vec<Vec<Constructor<'a>>>, Vec<Constructor<'a>>),	// first arg is pairs of test,body. second arg is otherwise clause
-  NotImplemented(&'static str),	// TODO: implement everything so this can be removed
+  /// Repeating constructor (i.e. 'for'). The first argument declares variables. The second argument is the body of the loop.
+  Loop(Vec<Constructor<'a>>, Vec<Constructor<'a>>),
+  /// Selects an arm to evaluate. The first argument is pairs of (test,body) clauses. The second argument is the otherwise clause
+  Switch(Vec<Vec<Constructor<'a>>>, Vec<Constructor<'a>>),
+  /// Something that is not yet implemented
+  NotImplemented(&'static str),
 }
 
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
@@ -913,17 +936,48 @@ fn general_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, p
   Ok(b)
 }
 
-// Static context and analysis
-
+/// # Static context
+///
+/// Provide a static context and analysis for a [Sequence] [Constructor].
+///
+/// Currently, this stores the set of functions and variables available to a constructor.
 pub struct StaticContext<'a> {
   pub funcs: RefCell<HashMap<String, Function<'a>>>,
   pub vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>, // each entry in the vector is an inner scope of the variable
 }
 
 impl<'a> StaticContext<'a> {
+  /// Creates a new StaticContext.
   pub fn new() -> StaticContext<'a> {
     StaticContext{funcs: RefCell::new(HashMap::new()), vars: RefCell::new(HashMap::new())}
   }
+  /// Creates a new StaticContext and initializes it with the pre-defined XPath functions.
+  ///
+  /// Currently, this is the functions defined for XPath 1.0:
+  ///
+  /// * position()
+  /// * last()
+  /// * count()
+  /// * local-name()
+  /// * name()
+  /// * string()
+  /// * concat()
+  /// * starts-with()
+  /// * contains()
+  /// * substring()
+  /// * substring-before()
+  /// * substring-after()
+  /// * normalize-space()
+  /// * translate()
+  /// * boolean()
+  /// * not()
+  /// * true()
+  /// * false()
+  /// * number()
+  /// * sum()
+  /// * floor()
+  /// * ceiling()
+  /// * round()
   pub fn new_with_builtins() -> StaticContext<'a> {
     let sc = StaticContext{funcs: RefCell::new(HashMap::new()), vars: RefCell::new(HashMap::new())};
     sc.funcs.borrow_mut().insert("position".to_string(),
@@ -1135,15 +1189,19 @@ impl<'a> StaticContext<'a> {
     );
     sc
   }
+  /// Declares a function in the static context. The first argument is the name of the function. The second argument is the namespace URI (not currently supported). The third argument defines the arity of the function, and the types of each parameter (not currently supported).
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {
     self.funcs.borrow_mut().insert(n.clone(), Function{name: n, nsuri: None, prefix: None, body: None, params: p});
   }
+  /// Declares a variable in the static context. The first argument is the name of the variable. The second argument is the namespace URI (not currently supported).
   pub fn declare_variable(&self, n: String, _ns:String) {
     self.vars.borrow_mut().insert(n.clone(), vec![]);
   }
 }
 
-// Rewrite constructors
+/// Perform static analysis of a sequence constructor.
+///
+/// This checks that functions and variables are declared. It also rewrites the constructors to provide the implementation of functions that are used in expressions.
 pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'a>) {
   for d in e {
     match d {

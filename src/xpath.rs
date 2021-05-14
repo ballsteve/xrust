@@ -1529,6 +1529,7 @@ fn parenthesized_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   (input)
 }
 
+/// Parse an XPath expression. The result is a Sequence constructor.
 pub fn parse(e: &str) -> Result<Vec<Constructor>, Error> {
   match expr(e) {
     Ok((rest, value)) => {

@@ -2,6 +2,8 @@
 //!
 //! Sequence Item module.
 //! An Item is a Node, Function or Atomic Value.
+//!
+//! Nodes are implemented directly in the Item enum. It is planned to implement Nodes as Traits.
 
 use std::cmp::Ordering;
 use std::rc::Rc;
@@ -12,24 +14,39 @@ use trees::{Tree, RcNode};
 use roxmltree::Node;
 use json::JsonValue;
 
+/// In XPath, the Sequence is the fundamental data structure.
+/// It is an ordered collection of [Item]s.
+/// The Rust impementation is a Vector of reference counted [Item]s.
+///
+/// See [SequenceTrait] for methods.
 pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
 
 pub trait SequenceTrait<'a> {
-  //fn clone(&self) -> Sequence;
+  /// Return the string value of the [Sequence].
   fn to_string(&self) -> String;
+  /// Return a XML formatted representation of the [Sequence].
   fn to_xml(&self) -> String;
+  /// Return a JSON formatted representation of the [Sequence].
   fn to_json(&self) -> String;
+  /// Return the Effective Boolean Value of the [Sequence].
   fn to_bool(&self) -> bool;
+  /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
   fn to_int(&self) -> Result<i64, Error>;
+  /// Push a Node (tree-based) to the [Sequence]
   fn new_node(&mut self, n: RcNode<NodeDefn>);
   //fn new_xdoc(&mut self, d: Document<'a>);
+  /// Push a roxmltree Node to the [Sequence]
   fn new_xnode(&mut self, n: Node<'a, 'a>);
+  /// Push a [Value] to the [Sequence]
   fn new_value(&mut self, v: Value<'a>);
+  /// Push a JsonValue to the [Sequence]
   fn new_jvalue(&mut self, j: JsonValue);
+  /// Push an [Item] to the [Sequence]
   fn add(&mut self, i: &Rc<Item<'a>>);
 }
 
 impl<'a> SequenceTrait<'a> for Sequence<'a> {
+  /// Returns the string value of the Sequence.
   fn to_string(&self) -> String {
     let mut r = String::new();
     for i in self {
@@ -37,6 +54,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
     r
   }
+  /// Renders the Sequence as XML
   fn to_xml(&self) -> String {
     let mut r = String::new();
     for i in self {
@@ -44,6 +62,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
     r
   }
+  /// Renders the Sequence as JSON
   fn to_json(&self) -> String {
     let mut r = String::new();
     for i in self {
@@ -51,28 +70,33 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
     r
   }
+  /// Push a Node on to the Sequence
   fn new_node(&mut self, n: RcNode<NodeDefn>) {
     self.push(Rc::new(Item::Node(n)));
   }
 //  fn new_xdoc(&mut self, d: Document<'a>) {
 //    self.push(Rc::new(Item::XDoc(d)));
 //  }
+  /// Push a roxmltree node on to the Sequence
   fn new_xnode(&mut self, n: Node<'a, 'a>) {
     self.push(Rc::new(Item::XNode(n)));
   }
+  /// Push a Value on to the Sequence
   fn new_value(&mut self, v: Value<'a>) {
     self.push(Rc::new(Item::Value(v)));
   }
+  /// Push a JsonValue on to the Sequence
   fn new_jvalue(&mut self, j: JsonValue) {
     self.push(Rc::new(Item::JsonValue(j)));
   }
   //fn new_function(&self, f: Function) -> Sequence {
   //}
+  /// Push an Item on to the Sequence. This clones the Item.
   fn add(&mut self, i: &Rc<Item<'a>>) {
     self.push(Rc::clone(i));
   }
 
-  // Calculate the effective boolean value
+  /// Calculate the effective boolean value of the Sequence
   fn to_bool(&self) -> bool {
     if self.len() == 0 {
       false
@@ -93,7 +117,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
   }
 
-  // Convenience routine for integer
+  /// Convenience routine for integer value of the Sequence. The Sequence must be a singleton; i.e. be a single item.
   fn to_int(&self) -> Result<i64, Error> {
     if self.len() == 1 {
       self[0].to_int()
@@ -103,13 +127,25 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
   }
 }
 
+/// An Item in a Sequence. Can be a Node, Function or Value.
+///
+/// Nodes are implemented directly, using either [trees](https://crates.io/crates/trees), [roxmltree](https://crates.io/crates/roxmltree) or [JsonValue](https://crates.io/crates/json) crates.
+///
+/// In the future it is planned to implement Nodes using a Trait.
+///
+/// Functions are not yet implemented.
 #[derive(Clone)]
 pub enum Item<'a> {
+    /// A trees-based Node
     Node(RcNode<NodeDefn>),
+    /// A roxmltree-based Node
     XNode(Node<'a, 'a>),
+    /// A JsonValue-based Node
     JsonValue(JsonValue),
     //XDoc(Document<'a>), cannot be cloned
+    /// Functions are not yet supported
     Function,
+    /// A scalar value
     Value(Value<'a>),
 }
 
@@ -144,7 +180,7 @@ impl Operator {
 }
 
 impl<'a> Item<'a> {
-  // Gives the string value of an item. All items have a string value.
+  /// Gives the string value of an item. All items have a string value.
   pub fn to_string(&self) -> String {
     match self {
       Item::Node(n) => node_to_string(n),
@@ -155,7 +191,7 @@ impl<'a> Item<'a> {
       Item::JsonValue(j) => json_to_string(j),
     }
   }
-  // Serialize as XML
+  /// Serialize as XML
   pub fn to_xml(&self) -> String {
     match self {
       Item::Node(n) => node_to_xml(n),
@@ -166,7 +202,7 @@ impl<'a> Item<'a> {
       Item::JsonValue(j) => json_to_xml(j),
     }
   }
-  // Serialize as JSON
+  /// Serialize as JSON
   pub fn to_json(&self) -> String {
     match self {
       Item::Node(n) => node_to_json(n),
@@ -178,8 +214,8 @@ impl<'a> Item<'a> {
     }
   }
 
-  // Determine the effective boolean value of a sequence.
-  // See XPath 2.4.3.
+  /// Determine the effective boolean value of the item.
+  /// See XPath 2.4.3.
   pub fn to_bool(&self) -> bool {
     match self {
       Item::Node(_) |
@@ -191,6 +227,7 @@ impl<'a> Item<'a> {
     }
   }
 
+  /// Gives the integer value of the item, if possible.
   pub fn to_int(&self) -> Result<i64, Error> {
     match self {
       Item::Node(_) |
@@ -211,6 +248,7 @@ impl<'a> Item<'a> {
     }
   }
 
+  /// Gives the double value of the item. Returns NaN if the value cannot be converted to a double.
   pub fn to_double(&self) -> f64 {
     match self {
       Item::Node(_) |
@@ -222,6 +260,7 @@ impl<'a> Item<'a> {
     }
   }
 
+  /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
   pub fn to_name(&self) -> &str {
     match self {
       Item::XNode(i) => {
@@ -240,6 +279,7 @@ impl<'a> Item<'a> {
   // TODO: atomization
   // fn atomize(&self);
 
+  /// Compare two items.
   pub fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
     match self {
       Item::Value(v) => {
@@ -319,7 +359,7 @@ impl NodeDefn {
 }
 
 // Find the string value of the Node
-pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
+fn node_to_string(node: &RcNode<NodeDefn>) -> String {
   let d = node.data();
 
   match d.nodetype {
@@ -347,7 +387,7 @@ pub fn node_to_string(node: &RcNode<NodeDefn>) -> String {
       }
   }
 }
-pub fn node_to_xml(node: &RcNode<NodeDefn>) -> String {
+fn node_to_xml(node: &RcNode<NodeDefn>) -> String {
   let d = node.data();
 
   match d.nodetype {
@@ -396,7 +436,7 @@ pub fn node_to_xml(node: &RcNode<NodeDefn>) -> String {
       }
   }
 }
-pub fn node_to_json(node: &RcNode<NodeDefn>) -> String {
+fn node_to_json(node: &RcNode<NodeDefn>) -> String {
   let d = node.data();
 
   match d.nodetype {
@@ -442,7 +482,7 @@ fn xnode_sv_helper(c: Node) -> String {
 }
 
 // Generate the string value of the Node
-pub fn xnode_to_string(node: Node) -> String {
+fn xnode_to_string(node: Node) -> String {
   match node.node_type() {
       roxmltree::NodeType::Root => {
         if node.has_children() {
@@ -471,7 +511,7 @@ pub fn xnode_to_string(node: Node) -> String {
       }
   }
 }
-pub fn xnode_to_xml(node: Node) -> String {
+fn xnode_to_xml(node: Node) -> String {
   match node.node_type() {
       roxmltree::NodeType::Root => {
         if node.has_children() {
@@ -509,7 +549,7 @@ pub fn xnode_to_xml(node: Node) -> String {
       }
   }
 }
-pub fn xnode_to_json(node: Node) -> String {
+fn xnode_to_json(node: Node) -> String {
   match node.node_type() {
       roxmltree::NodeType::Root => {
         if node.has_children() {
@@ -536,7 +576,7 @@ pub fn xnode_to_json(node: Node) -> String {
   }
 }
 
-pub fn json_to_string(j: &JsonValue) -> String {
+fn json_to_string(j: &JsonValue) -> String {
   match j {
       JsonValue::Null => {
 	  "{}".to_string()
@@ -563,7 +603,7 @@ pub fn json_to_string(j: &JsonValue) -> String {
       }
   }
 }
-pub fn json_to_xml(j: &JsonValue) -> String {
+fn json_to_xml(j: &JsonValue) -> String {
   match j {
       JsonValue::Null => {
 	  "{}".to_string()
@@ -642,17 +682,27 @@ impl<'a> PartialOrd for Value<'a> {
   }
 }
 
+/// An atomic value. These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
 #[derive(Clone)]
 pub enum Value<'a> {
-    AnyType, // node or simple type
-    Untyped, // a not-yet-valildated anyType
-    AnySimpleType, // base type of all simple types. i.e. not a node
-    IDREFS, // a list of IDREF
-    NMTOKENS, // a list of NMTOKEN
-    ENTITIES, // a list of ENTITY
-    Numeric, // (Numeric)
-    AnyAtomicType, // all atomic values (no lists or unions)
-    UntypedAtomic, // untyped atomic value
+    /// node or simple type
+    AnyType,
+    /// a not-yet-validated anyType
+    Untyped,
+    /// base type of all simple types. i.e. not a node
+    AnySimpleType,
+    /// a list of IDREF
+    IDREFS,
+    /// a list of NMTOKEN
+    NMTOKENS,
+    /// a list of ENTITY
+    ENTITIES,
+    /// Any numeric type
+    Numeric,
+    /// all atomic values (no lists or unions)
+    AnyAtomicType,
+    /// untyped atomic value
+    UntypedAtomic,
     Duration,
     Time,
     Decimal(decimal::d128),
@@ -674,22 +724,32 @@ pub enum Value<'a> {
     DateTime,
     DateTimeStamp,
     Date,
-    String(&'a str), // Items never change, so no need for a String
-    StringOwned(String),	// Except that ownership should be with the Value
-    				// TODO: resolve this
+    /// Items are immutable, so a string slice can be referenced
+    String(&'a str),
+    /// Where the ownership of the string must be assigned to the Item
+    StringOwned(String),
     NormalizedString(NormalizedString<'a>),
-    Token, // TODO like normalizedString, but without leading, trailing and consecutive whitespace
-    Language, // language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
-    NMTOKEN, // NameChar+
-    Name, // NameStartChar NameChar+
-    NCName, // (Letter | '_') NCNameChar+ (i.e. a Name without the colon)
-    ID, // NCName
-    IDREF, // NCName
-    ENTITY, // NCName
+    /// Like normalizedString, but without leading, trailing and consecutive whitespace
+    Token,
+    /// language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
+    Language,
+    /// NameChar+
+    NMTOKEN,
+    /// NameStartChar NameChar+
+    Name,
+    /// (Letter | '_') NCNameChar+ (i.e. a Name without the colon)
+    NCName,
+    /// Same format as NCName
+    ID,
+    /// Same format as NCName
+    IDREF,
+    /// Same format as NCName
+    ENTITY,
     Boolean(bool),
 }
 
 impl<'a> Value<'a> {
+    /// Give the string value.
     pub fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
@@ -715,7 +775,8 @@ impl<'a> Value<'a> {
 	}
     }
 
-    fn to_bool(&self) -> bool {
+    /// Give the effective boolean value.
+    pub fn to_bool(&self) -> bool {
         match &self {
             Value::Boolean(b) => *b == true,
             Value::String(t) => {
@@ -733,7 +794,8 @@ impl<'a> Value<'a> {
 	}
     }
 
-    fn to_int(&self) -> Result<i64, Error> {
+    /// Convert the value to an integer, if possible.
+    pub fn to_int(&self) -> Result<i64, Error> {
         match &self {
 	    Value::String(s) => {
 	      match s.parse::<i64>() {
@@ -751,7 +813,8 @@ impl<'a> Value<'a> {
             _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
 	}
     }
-    fn to_double(&self) -> f64 {
+    /// Convert the value to a double. If the value cannot be converted, returns Nan.
+    pub fn to_double(&self) -> f64 {
         match &self {
 	    Value::String(s) => {
 	      match s.parse::<f64>() {
@@ -773,7 +836,8 @@ impl<'a> Value<'a> {
 
     // TODO: type coersion
     // TODO: will probably have to implement comparison in the item module (as a trait?)
-    fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
+    /// Compare two items
+    pub fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
       match &self {
         Value::Boolean(b) => {
 	  let c = other.to_bool();

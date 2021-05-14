@@ -4,23 +4,25 @@
 
 use core::{fmt, str};
 
+/// Errors defined in XPath
 pub enum ErrorKind {
-    StaticAbsent, // XPST0001
-    DynamicAbsent, // XPDY0002
-    StaticSyntax, // XPST0003
-    TypeError, // XPTY0004
-    StaticData, // XPST0005
-    StaticUndefined, // XPST0008
-    StaticNamespace, // XPST0010
-    StaticBadFunction, // XPST0017
-    MixedTypes, // XPTY0018
-    NotNodes, // XPTY0019
-    ContextNotNode, // XPTY0020
+    StaticAbsent, /// XPST0001
+    DynamicAbsent, /// XPDY0002
+    StaticSyntax, /// XPST0003
+    TypeError, /// XPTY0004
+    StaticData, /// XPST0005
+    StaticUndefined, /// XPST0008
+    StaticNamespace, /// XPST0010
+    StaticBadFunction, /// XPST0017
+    MixedTypes, /// XPTY0018
+    NotNodes, /// XPTY0019
+    ContextNotNode, /// XPTY0020
     NotImplemented,
     Unknown,
 }
 
 impl ErrorKind {
+    /// String representation of error
     pub fn to_string(&self) -> &'static str {
         match *self {
             ErrorKind::StaticAbsent => "a component of the static context is absent",
@@ -40,6 +42,7 @@ impl ErrorKind {
     }
 }
 
+/// An error returned by an XPath, XQuery or XSLT function/method
 pub struct Error {
     pub kind: ErrorKind,
     pub message: String,
