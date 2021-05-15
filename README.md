@@ -1,6 +1,6 @@
-# &#03EA;rust
+# Ϫrust
 
-##XPath, XQuery, and XSLT for Rust
+XPath, XQuery, and XSLT for Rust
 
 Pronounced "crust".
 
