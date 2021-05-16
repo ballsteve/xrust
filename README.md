@@ -1,4 +1,4 @@
-# Ϫrust
+# χrust
 
 XPath, XQuery, and XSLT for Rust
 
@@ -18,5 +18,9 @@ The library separates parsing from evaluation.
 2. An XSLT processor, implementing approximately v1.0 functionality.
 3. Improve XDM, XPath.
 4. Introduce all v3.0 features to the XSLT engine.
+
+## Compliance
+
+Status of [compliance](compliance) with XDM, XPath, XQuery, and XSLT.
 
 
