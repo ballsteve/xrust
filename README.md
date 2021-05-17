@@ -21,6 +21,6 @@ The library separates parsing from evaluation.
 
 ## Compliance
 
-Status of [compliance](compliance) with XDM, XPath, XQuery, and XSLT.
+Status of [docs/compliance.md](https://github.com/ballsteve/xrust/main/docs/compliance.md) with XDM, XPath, XQuery, and XSLT.
 
 
