@@ -1,4 +1,4 @@
-//! # xdm::evaluate
+//! # xrust::evaluate
 //!
 //! Evaluate a sequence constructor.
 
@@ -206,7 +206,7 @@ fn evaluate_one<'a>(
 	    seq.new_xnode(n.document().root());
 	    Ok(seq)
 	  }
-	  Item::JsonValue(j) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: "json unable to get containing document".to_string()}),
+	  Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: "json unable to get containing document".to_string()}),
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
       } else {
@@ -396,8 +396,8 @@ fn evaluate_one<'a>(
 		match j {
 		  JsonValue::Object(_) => {
 	            seq = j.entries()
-		      .filter(|(key, val)| is_jsonvalue_match(&nm.nodetest, key))
-		      .fold(Sequence::new(), |mut c, (key, val)| {
+		      .filter(|(key, _)| is_jsonvalue_match(&nm.nodetest, key))
+		      .fold(Sequence::new(), |mut c, (_, val)| {
 			c.new_jvalue(val.clone());
 			c
 		      });
@@ -534,17 +534,17 @@ fn evaluate_one<'a>(
   }
 }
 
-fn jsonvalue_kind(j: &JsonValue) -> &str {
-  match j {
-    JsonValue::Null => "null",
-    JsonValue::Short(_) => "short",
-    JsonValue::String(_) => "string",
-    JsonValue::Number(_) => "number",
-    JsonValue::Boolean(_) => "boolean",
-    JsonValue::Object(_) => "object",
-    JsonValue::Array(_) => "array",
-  }
-}
+//fn jsonvalue_kind(j: &JsonValue) -> &str {
+//  match j {
+//    JsonValue::Null => "null",
+//    JsonValue::Short(_) => "short",
+//    JsonValue::String(_) => "string",
+//    JsonValue::Number(_) => "number",
+//    JsonValue::Boolean(_) => "boolean",
+//    JsonValue::Object(_) => "object",
+//    JsonValue::Array(_) => "array",
+//  }
+//}
 
 // Push a new scope for a variable
 fn var_push<'a>(dc: &DynamicContext<'a>, v: &str, i: &Rc<Item<'a>>) {
@@ -755,7 +755,7 @@ fn is_jsonvalue_match(nt: &NodeTest, n: &str) -> bool {
 	}
       }
     }
-    NodeTest::Kind(k) => {
+    NodeTest::Kind(_) => {
       // TODO
       false
     }
@@ -2487,39 +2487,39 @@ mod tests {
     }
 
     //#[test]
-    fn node_path() {
-      let d = RcNode::from(Tree::<NodeDefn>::from_tuple(
-        (NodeDefn::new(NodeType::Document),
-          (NodeDefn::new(NodeType::Element).set_name("Level1".to_string()),
-	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
-	     NodeDefn::new(NodeType::Text).set_value("one".to_string())),
-	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
-	     NodeDefn::new(NodeType::Text).set_value("two".to_string())),
-	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
-	     NodeDefn::new(NodeType::Text).set_value("three".to_string()))
-	  )
-	)
-      ));
-      let s = vec![Rc::new(Item::Node(d.clone()))];
-      let cons = vec![
-	  Constructor::Root,
-	  Constructor::Path(
-	    vec![
-              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
-              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
-            ]
-	  )
-	];
-      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
-        .expect("evaluation failed");
-      if e.len() == 3 {
-        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
-        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
-        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
-      } else {
-        panic!("sequence does not have 3 items: \"{}\"", e.to_string())
-      }
-    }
+//    fn node_path() {
+//      let d = RcNode::from(Tree::<NodeDefn>::from_tuple(
+//        (NodeDefn::new(NodeType::Document),
+//          (NodeDefn::new(NodeType::Element).set_name("Level1".to_string()),
+//	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
+//	     NodeDefn::new(NodeType::Text).set_value("one".to_string())),
+//	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
+//	     NodeDefn::new(NodeType::Text).set_value("two".to_string())),
+//	    (NodeDefn::new(NodeType::Element).set_name("Level2".to_string()),
+//	     NodeDefn::new(NodeType::Text).set_value("three".to_string()))
+//	  )
+//	)
+//      ));
+//      let s = vec![Rc::new(Item::Node(d.clone()))];
+//      let cons = vec![
+//	  Constructor::Root,
+//	  Constructor::Path(
+//	    vec![
+//              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+//              vec![Constructor::Step(NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})}, vec![])],
+//            ]
+//	  )
+//	];
+//      let e = evaluate(&DynamicContext::new(), Some(s), Some(0), &cons)
+//        .expect("evaluation failed");
+//      if e.len() == 3 {
+//        assert_eq!(e[0].to_string(), "<Level2>one</Level2>");
+//        assert_eq!(e[1].to_string(), "<Level2>two</Level2>");
+//        assert_eq!(e[2].to_string(), "<Level2>three</Level2>");
+//      } else {
+//        panic!("sequence does not have 3 items: \"{}\"", e.to_string())
+//      }
+//    }
     #[test]
     fn xnode_path() {
       let d = roxmltree::Document::parse("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");

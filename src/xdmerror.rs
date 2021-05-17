@@ -1,4 +1,4 @@
-//! # xdm::error
+//! # xrust::error
 //!
 //! XDM, XPath, XQuery and XSLT errors.
 

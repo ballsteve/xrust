@@ -1,4 +1,4 @@
-//! # xdm::item
+//! # xrust::item
 //!
 //! Sequence Item module.
 //! An Item is a Node, Function or Atomic Value.
@@ -223,7 +223,7 @@ impl<'a> Item<'a> {
       //Item::XDoc(_) => true,
       Item::Function => false,
       Item::Value(v) => v.to_bool(),
-      Item::JsonValue(j) => true,
+      Item::JsonValue(_) => true,
     }
   }
 
@@ -1248,7 +1248,7 @@ mod tests {
     fn int_value_string() {
       match Item::Value(Value::String("1")).to_int() {
         Ok(i) => assert_eq!(i, 1),
-	Err(e) => {
+	Err(_) => {
 	  panic!("to_int() failed")
 	}
       }

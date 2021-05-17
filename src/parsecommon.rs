@@ -1,4 +1,4 @@
-//! # xdm::parsecommon
+//! # xrust::parsecommon
 //!
 //! Common definitions for XML and XPath parsers
 
@@ -6,7 +6,7 @@ extern crate nom;
 use nom:: {
   IResult,
   sequence::{pair,},
-  combinator::{map, recognize},
+  combinator::recognize,
   bytes::complete::{take_while, take_while1, take_while_m_n},
 };
 // NCName ::= Name - (Char* ':' Char*)
@@ -132,6 +132,20 @@ fn is_ncnamestartchar(ch: char) -> bool {
     },
     // etc
     _ => false
+  }
+}
+
+#[cfg(test)]
+mod tests {
+  use super::*;
+
+  #[test]
+  fn test_name() {
+    assert_eq!(name("Foo"), Ok(("", "Foo")))
+  }
+  #[test]
+  fn test_ncnamechar() {
+    assert_eq!(ncnamechar("F"), Ok(("", "F")))
   }
 }
 

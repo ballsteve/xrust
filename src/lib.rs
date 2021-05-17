@@ -6,6 +6,11 @@ The library separates parsing from evaluation. An expression is compiled to crea
 A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a Rust Vector. An [Item] is a Node, Function or atomic [Value].
 
 ```rust
+# use std::rc::Rc;
+# use xrust::item::Item;
+# use xrust::evaluate::{DynamicContext, evaluate};
+# use xrust::xpath::parse;
+
 let xdoc = roxmltree::Document::parse("<Test/>").expect("parsing XML failed");
 let d = vec![Rc::new(Item::XNode(xdoc.root().first_child().unwrap()))];
 let xpath = parse("/child::Test").expect("XPath parsing failed");
@@ -42,16 +47,16 @@ The library has not been extensively tested.
 
 */
 
-mod xdmerror;
+pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
-mod item;
+pub mod item;
 pub use item::{Sequence, Item, Value, SequenceTrait};
 
 mod parsecommon;
 
-mod xpath;
+pub mod xpath;
 pub use xpath::parse;
 
-mod evaluate;
+pub mod evaluate;
 pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};

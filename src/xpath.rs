@@ -1,11 +1,10 @@
-//! # xdm::xpath
+//! # xrust::xpath
 //!
 //! An XPath parser as a nom parser combinator.
 
 extern crate nom;
 use decimal;
 use std::rc::Rc;
-use std::collections::HashMap;
 use nom:: {
   IResult,
   character::complete::*,
@@ -29,7 +28,6 @@ use crate::evaluate::{
     Axis,
     ArithmeticOperator, ArithmeticOperand,
     Function,
-    format_constructor,
     StaticContext,
 };
 use roxmltree::Node;
@@ -888,31 +886,31 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   (input)
 }
 // For debugging: a version of the above function that steps through the parsing
-fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
-  let myin = newinput;
-  let (myin, a) = step_expr(myin)?;
-  let mut r = Vec::new();
-
-  r.push(vec![Constructor::Literal(Value::String(""))]);
-  r.push(a);
-
-  loop {
-    if myin.len() == 0 {
-      break
-    }
-    let (myin, (_x, c, _y)) = alt((
-      tuple((multispace0, tag("//"), multispace0)),
-      tuple((multispace0, tag("/"), multispace0)),
-    ))(myin)?;
-    r.push(vec![Constructor::Literal(Value::String(c))]);
-
-    let (_myin, d) = step_expr(myin)?;
-    r.push(d);
-    break;
-  }
-
-  Ok((myin, vec![Constructor::NotImplemented("relpathdbg")]))
-}
+//fn relativepath_expr_dbg(newinput: &str) -> IResult<&str, Vec<Constructor>> {
+//  let myin = newinput;
+//  let (myin, a) = step_expr(myin)?;
+//  let mut r = Vec::new();
+//
+//  r.push(vec![Constructor::Literal(Value::String(""))]);
+//  r.push(a);
+//
+//  loop {
+//    if myin.len() == 0 {
+//      break
+//    }
+//    let (myin, (_x, c, _y)) = alt((
+//      tuple((multispace0, tag("//"), multispace0)),
+//      tuple((multispace0, tag("/"), multispace0)),
+//    ))(myin)?;
+//    r.push(vec![Constructor::Literal(Value::String(c))]);
+//
+//    let (_myin, d) = step_expr(myin)?;
+//    r.push(d);
+//    break;
+//  }
+//
+//  Ok((myin, vec![Constructor::NotImplemented("relpathdbg")]))
+//}
 
 // StepExpr ::= PostfixExpr | AxisStep
 fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
