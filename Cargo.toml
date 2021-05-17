@@ -1,9 +1,14 @@
 [package]
-name = "xdm"
+name = "xrust"
 version = "0.1.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
+description = "Support for XPath, XQuery, and XSLT"
 authors = ["Steve Ball <Steve.Ball@explain.com.au>"]
+license = "Apache-2.0"
+repository = "https://github.com/ballsteve/xrust"
+documentation = "https://docs.rs/xrust/"
+readme = "README.md"
 edition = "2018"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
