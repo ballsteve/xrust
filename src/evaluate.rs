@@ -3013,6 +3013,7 @@ mod tests {
 	_ => panic!("not a singleton boolean false value")
       }
     }
+    #[test]
     fn function_call_not_false() {
       let c = Constructor::FunctionCall(
         Function::new("not".to_string(), vec![], Some(func_not)),

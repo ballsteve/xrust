@@ -124,6 +124,7 @@ Treat|no|
 Simple map operator: !|no|
 Arrow operator: =>|no|
 Unary expression|no|
+Comments|yes|
 
 ## XPath Functions
 

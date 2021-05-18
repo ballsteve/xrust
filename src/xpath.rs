@@ -5,15 +5,17 @@
 extern crate nom;
 use decimal;
 use std::rc::Rc;
-use nom:: {
+use nom::{
   IResult,
   character::complete::*,
   branch::alt,
   character::complete::{char, none_of},
   sequence::{delimited, pair, tuple},
-  multi::{many0, separated_list, separated_nonempty_list},
+  multi::{many0, separated_list0, separated_list1},
   combinator::{complete, map, opt, recognize},
   bytes::complete::tag,
+  error::{Error as NomError, ErrorKind as NomErrorKind},
+  Err as NomErr,
 };
 use crate::item::*;
 use crate::xdmerror::*;
@@ -36,8 +38,8 @@ use roxmltree::Node;
 // we need to unpack each primary_expr
 fn expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
-    separated_nonempty_list(
-      tuple((multispace0, tag(","), multispace0)),
+    separated_list1(
+      tuple((xpwhitespace, tag(","), xpwhitespace)),
       expr_single
     ),
     |v| {
@@ -70,19 +72,19 @@ fn if_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     tuple((
       tag("if"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       expr,
-      multispace0,
+      xpwhitespace,
       tag(")"),
-      multispace0,
+      xpwhitespace,
       tag("then"),
-      multispace0,
+      xpwhitespace,
       expr_single,
-      multispace0,
+      xpwhitespace,
       tag("else"),
-      multispace0,
+      xpwhitespace,
       expr_single,
     )),
     |(_, _, _, _, i, _, _, _, _, _, t, _, _, _, e)| {
@@ -104,7 +106,7 @@ fn for_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     tuple((
       simple_for_clause,
-      tuple((multispace0, tag("return"), multispace0)),
+      tuple((xpwhitespace, tag("return"), xpwhitespace)),
       expr_single
     )),
     |(f, _, e)| {
@@ -120,16 +122,16 @@ fn simple_for_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     tuple((
       tag("for"),
-      multispace0,
+      xpwhitespace,
 
-      separated_nonempty_list(
-        tuple((multispace0, tag(","), multispace0)),
+      separated_list1(
+        tuple((xpwhitespace, tag(","), xpwhitespace)),
 	tuple((
 	  tag("$"),
 	  qname,
-	  multispace0,
+      	  xpwhitespace,
           tag("in"),
-	  multispace0,
+      	  xpwhitespace,
 	  expr_single,
 	)),
       )
@@ -148,7 +150,7 @@ fn let_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     tuple((
       simple_let_clause,
-      tuple((multispace0, tag("return"), multispace0)),
+      tuple((xpwhitespace, tag("return"), xpwhitespace)),
       expr_single
     )),
     |(mut l, _, mut e)| {
@@ -167,16 +169,16 @@ fn simple_let_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
   map(
     tuple((
       tag("let"),
-      multispace0,
+      xpwhitespace,
 
-      separated_nonempty_list(
-        tuple((multispace0, tag(","), multispace0)),
+      separated_list1(
+        tuple((xpwhitespace, tag(","), xpwhitespace)),
 	tuple((
 	  tag("$"),
 	  qname,
-	  multispace0,
+      	  xpwhitespace,
           tag(":="),
-	  multispace0,
+      	  xpwhitespace,
 	  expr_single,
 	)),
       )
@@ -200,8 +202,8 @@ fn get_nt_localname(nt: &NodeTest) -> String {
 // OrExpr ::= AndExpr ('or' AndExpr)*
 fn or_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
-    separated_nonempty_list(
-      tuple((multispace0, tag("or"), multispace0)),
+    separated_list1(
+      tuple((xpwhitespace, tag("or"), xpwhitespace)),
       and_expr
     ),
     |v: Vec<Vec<Constructor>>| {
@@ -224,8 +226,8 @@ fn or_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
 fn and_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
-    separated_nonempty_list(
-      tuple((multispace0, tag("and"), multispace0)),
+    separated_list1(
+      tuple((xpwhitespace, tag("and"), xpwhitespace)),
       comparison_expr
     ),
     |v: Vec<Vec<Constructor>>| {
@@ -253,21 +255,21 @@ fn comparison_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       opt(
         pair(
 	  alt((
-	    tuple((multispace0, tag("="), multispace0)),
-	    tuple((multispace0, tag("!="), multispace0)),
-	    tuple((multispace0, tag("<"), multispace0)),
-	    tuple((multispace0, tag("<="), multispace0)),
-	    tuple((multispace0, tag(">"), multispace0)),
-	    tuple((multispace0, tag(">="), multispace0)),
-	    tuple((multispace0, tag("eq"), multispace0)),
-	    tuple((multispace0, tag("ne"), multispace0)),
-	    tuple((multispace0, tag("lt"), multispace0)),
-	    tuple((multispace0, tag("le"), multispace0)),
-	    tuple((multispace0, tag("gt"), multispace0)),
-	    tuple((multispace0, tag("ge"), multispace0)),
-	    tuple((multispace0, tag("is"), multispace0)),
-	    tuple((multispace0, tag("<<"), multispace0)),
-	    tuple((multispace0, tag(">>"), multispace0)),
+	    tuple((xpwhitespace, tag("="), xpwhitespace)),
+	    tuple((xpwhitespace, tag("!="), xpwhitespace)),
+	    tuple((xpwhitespace, tag("<"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("<="), xpwhitespace)),
+	    tuple((xpwhitespace, tag(">"), xpwhitespace)),
+	    tuple((xpwhitespace, tag(">="), xpwhitespace)),
+	    tuple((xpwhitespace, tag("eq"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("ne"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("lt"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("le"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("gt"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("ge"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("is"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("<<"), xpwhitespace)),
+	    tuple((xpwhitespace, tag(">>"), xpwhitespace)),
 	  )),
 	  stringconcat_expr,
 	)
@@ -305,8 +307,8 @@ fn comparison_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
 fn stringconcat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
-    separated_nonempty_list(
-      tuple((multispace0, tag("||"), multispace0)),
+    separated_list1(
+      tuple((xpwhitespace, tag("||"), xpwhitespace)),
       range_expr
     ),
     |v| {
@@ -333,7 +335,7 @@ fn range_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       additive_expr,
       opt(
         tuple((
-	  tuple((multispace0, tag("to"), multispace0)),
+	  tuple((xpwhitespace, tag("to"), xpwhitespace)),
 	  additive_expr,
 	))
       )
@@ -363,8 +365,8 @@ fn additive_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       many0(
         tuple((
           alt((
-            tuple((multispace0, tag("+"), multispace0)),
-	    tuple((multispace0, tag("-"), multispace0)),
+            tuple((xpwhitespace, tag("+"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("-"), xpwhitespace)),
           )),
           multiplicative_expr,
 	))
@@ -398,10 +400,10 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       many0(
         tuple((
 	  alt((
-	    tuple((multispace0, tag("*"), multispace0)),
-	    tuple((multispace0, tag("div"), multispace0)),
-	    tuple((multispace0, tag("idiv"), multispace0)),
-	    tuple((multispace0, tag("mod"), multispace0)),
+	    tuple((xpwhitespace, tag("*"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("div"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("idiv"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("mod"), xpwhitespace)),
 	  )),
 	  union_expr,
 	))
@@ -431,10 +433,10 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
 fn union_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   map (
-    separated_nonempty_list(
+    separated_list1(
       alt((
-        tuple((multispace0, tag("union"), multispace0)),
-        tuple((multispace0, tag("|"), multispace0)),
+        tuple((xpwhitespace, tag("union"), xpwhitespace)),
+        tuple((xpwhitespace, tag("|"), xpwhitespace)),
       )),
       intersectexcept_expr
     ),
@@ -463,8 +465,8 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       many0(
         tuple((
 	  alt((
-	    tuple((multispace0, tag("intersect"), multispace0)),
-	    tuple((multispace0, tag("except"), multispace0)),
+	    tuple((xpwhitespace, tag("intersect"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("except"), xpwhitespace)),
 	  )),
 	  instanceof_expr,
 	))
@@ -500,7 +502,7 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     pair(
       treat_expr,
       opt(
-        tuple((multispace0, tag("instance"), multispace0, tag("of"), multispace0, sequencetype_expr)),
+        tuple((xpwhitespace, tag("instance"), xpwhitespace, tag("of"), xpwhitespace, sequencetype_expr)),
       )
     ),
     |(u, v)| {
@@ -540,7 +542,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     pair(
       castable_expr,
       opt(
-        tuple((multispace0, tag("treat"), multispace0, tag("as"), multispace0, sequencetype_expr)),
+        tuple((xpwhitespace, tag("treat"), xpwhitespace, tag("as"), xpwhitespace, sequencetype_expr)),
       )
     ),
     |(u, v)| {
@@ -568,7 +570,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     pair(
       cast_expr,
       opt(
-        tuple((multispace0, tag("castable"), multispace0, tag("as"), multispace0, singletype_expr)),
+        tuple((xpwhitespace, tag("castable"), xpwhitespace, tag("as"), xpwhitespace, singletype_expr)),
       )
     ),
     |(u, v)| {
@@ -608,7 +610,7 @@ fn singletype_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     pair(
       qname,
       opt(
-        tuple((multispace0, tag("?"), multispace0)),
+        tuple((xpwhitespace, tag("?"), xpwhitespace)),
       )
     ),
     |(_u, _v)| {
@@ -624,7 +626,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     pair(
       arrow_expr,
       opt(
-        tuple((multispace0, tag("cast"), multispace0, tag("as"), multispace0, singletype_expr)),
+        tuple((xpwhitespace, tag("cast"), xpwhitespace, tag("as"), xpwhitespace, singletype_expr)),
       )
     ),
     |(u, v)| {
@@ -653,11 +655,11 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       unary_expr,
       many0(
         tuple((
-	  multispace0,
+	  xpwhitespace,
 	  tag("=>"),
-	  multispace0,
+	  xpwhitespace,
 	  arrowfunctionspecifier,
-	  multispace0,
+	  xpwhitespace,
 	  opt(argumentlist)
 	))
       )
@@ -712,7 +714,7 @@ fn argumentlist(input: &str) -> IResult<&str, Vec<Constructor>> {
     tag("()"),
     //tuple((
       //tag("("),
-      //multispace0,
+      //xpwhitespace,
       //tag(")"),
     //)),
     |_v| {
@@ -851,8 +853,8 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
       many0(
         tuple((
 	  alt((
-	    tuple((multispace0, tag("//"), multispace0)),
-	    tuple((multispace0, tag("/"), multispace0)),
+	    tuple((xpwhitespace, tag("//"), xpwhitespace)),
+	    tuple((xpwhitespace, tag("/"), xpwhitespace)),
 	  )),
 	  step_expr,
 	))
@@ -899,8 +901,8 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 //      break
 //    }
 //    let (myin, (_x, c, _y)) = alt((
-//      tuple((multispace0, tag("//"), multispace0)),
-//      tuple((multispace0, tag("/"), multispace0)),
+//      tuple((xpwhitespace, tag("//"), xpwhitespace)),
+//      tuple((xpwhitespace, tag("/"), xpwhitespace)),
 //    ))(myin)?;
 //    r.push(vec![Constructor::Literal(Value::String(c))]);
 //
@@ -1116,10 +1118,10 @@ fn documenttest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("document-node"),
-      multispace0,
+      xpwhitespace,
       tag("("),
       opt(alt((elementtest, schemaelementtest))),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _t, _, _)| {
@@ -1134,9 +1136,9 @@ fn elementtest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("element"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1151,9 +1153,9 @@ fn attributetest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("attribute"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1168,9 +1170,9 @@ fn schemaelementtest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("schema-element"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1185,9 +1187,9 @@ fn schemaattributetest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("schema-attribute"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1202,9 +1204,9 @@ fn pitest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("processing-instruction"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1218,9 +1220,9 @@ fn commenttest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("comment"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1234,9 +1236,9 @@ fn texttest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("text"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1250,9 +1252,9 @@ fn namespacenodetest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("namespace-node"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1266,9 +1268,9 @@ fn anykindtest(input: &str) -> IResult<&str, NodeTest> {
   map(
     tuple((
       tag("node"),
-      multispace0,
+      xpwhitespace,
       tag("("),
-      multispace0,
+      xpwhitespace,
       tag(")"),
     )),
     |(_, _, _, _, _)| {
@@ -1361,8 +1363,8 @@ fn arglist(input: &str) -> IResult<&str, Vec<Vec<Constructor>>> {
   map(
     tuple((
       tag("("),
-      separated_list(
-        tuple((multispace0, tag(","), multispace0)),
+      separated_list0(
+        tuple((xpwhitespace, tag(","), xpwhitespace)),
       	argument,
       ),
       tag(")"),
@@ -1527,8 +1529,97 @@ fn parenthesized_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
   (input)
 }
 
+// Whitespace, including comments
+fn xpwhitespace(input: &str) -> IResult<&str, &str> {
+  recognize(
+    many0(
+      alt((
+        multispace1,
+        xpcomment,
+      ))
+    )
+  )
+  (input)
+}
+fn xpcomment(input: &str) -> IResult<&str, &str> {
+  recognize(
+    tuple((
+      multispace0,
+      take_until_balanced("(:", ":)"),
+      multispace0,
+    ))
+  )
+  (input)
+}
+
+/// Parse nested input.
+///
+/// Inspired by 'take_until_unbalanced' from parse_hyperlinks crate.
+/// We can't use the parse_hyperlinks version since it only takes character delimiters.
+/// Also, this function does not need to consider escaped brackets.
+///
+/// This function consumes the delimiters.
+/// The start delimiter must be the first token in the input. Finding this sets the bracket count to 1. After that there are 4 scenarios:
+///
+/// * The close delimiter is not found. This is an error.
+/// * There is no open delimiter. In this case, consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
+/// * There is an open delimiter. If the open occurs after the close, then consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
+/// * The open delimiter occurs before the close. In this case, increment the bracket count and continue after the open delimiter.
+fn take_until_balanced<'a>(
+  open: &'a str,
+  close: &'a str,
+) -> impl Fn(&str) -> IResult<&str, &str> + 'a {
+  move |i: &str| {
+    let mut index = 0;
+    let mut bracket_counter = 0;
+    if i.starts_with(open) {
+      index += open.len();
+      bracket_counter += 1;
+      loop {
+        match (&i[index..].find(open), &i[index..].find(close)) {
+	  (_, None) => {
+	    // Scenario 1
+      	    return Result::Err(NomErr::Error(NomError{input: i, code: NomErrorKind::TakeUntil}))
+	  }
+	  (None, Some(c)) => {
+	    // Scenario 2
+	    if bracket_counter > 1 {
+	      bracket_counter -= 1;
+	      index += c + close.len();
+	    } else if bracket_counter == 1 {
+	      index += c + close.len();
+	      return Ok((&i[index..], &i[0..index]));
+	    } else {
+	      return Result::Err(NomErr::Error(NomError{input: i, code: NomErrorKind::TakeUntil}))
+	    }
+	  }
+	  (Some(o), Some(c)) => {
+	    // Scenario 3/4
+	    if o > c {
+	      // Scenario 3
+	      if bracket_counter == 1 {
+	        index += c + close.len();
+	      	return Ok((&i[index..], &i[0..index]));
+	      } else {
+	        return Result::Err(NomErr::Error(NomError{input: i, code: NomErrorKind::TakeUntil}))
+	      }
+	    } else {
+	      // Scenario 4
+	      bracket_counter += 1;
+	      index += o + open.len();
+	    }
+	  }
+	}
+      }
+      // unreachable!();
+    } else {
+      Result::Err(NomErr::Error(NomError{input: i, code: NomErrorKind::TakeUntil}))
+    }
+  }
+}
+
 /// Parse an XPath expression. The result is a Sequence constructor.
-pub fn parse(e: &str) -> Result<Vec<Constructor>, Error> {
+pub fn parse(e: &str) -> Result<Vec<Constructor>, crate::xdmerror::Error> {
   match expr(e) {
     Ok((rest, value)) => {
       if rest == "" {
@@ -1675,6 +1766,50 @@ mod tests {
     #[test]
     fn nomxpath_parse_literal_seq_ws() {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
+	if e.len() == 3 {
+	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
+	  if s.len() == 3 {
+	     assert_eq!(s[0].to_int().unwrap(), 1);
+	     assert_eq!(s[1].to_string(), r#"abc"#);
+	     assert_eq!(s[2].to_int().unwrap(), 2);
+	  } else {
+	    panic!("sequence does not have 3 items")
+	  }
+	} else {
+	  panic!("constructor does not have 3 items")
+	}
+    }
+    #[test]
+    fn xpcomment_1() {
+      assert_eq!(xpcomment("(: my comment :)"), Ok(("", "(: my comment :)")))
+    }
+    #[test]
+    fn xpcomment_2() {
+      assert_eq!(xpcomment(" \t(: my comment :)\n"), Ok(("", " \t(: my comment :)\n")))
+    }
+    #[test]
+    fn xpcomment_3() {
+      assert_eq!(xpcomment("(: my comment :)XYZ"), Ok(("XYZ", "(: my comment :)")))
+    }
+    #[test]
+    fn xpcomment_4() {
+      assert_eq!(xpcomment("(:outer(:inner:)outer:)"), Ok(("", "(:outer(:inner:)outer:)")))
+    }
+    #[test]
+    fn xpcomment_5() {
+      assert_eq!(xpcomment("(:outer(:inner  outer:)"), Result::Err(NomErr::Error(NomError{input: "(:outer(:inner  outer:)", code: NomErrorKind::TakeUntil})))
+    }
+    #[test]
+    fn nomxpath_parse_ws_comment_1() {
+        assert_eq!(xpwhitespace(" \n\t"), Ok(("", " \n\t")));
+        assert_eq!(xpwhitespace("(: foobar :)"), Ok(("", "(: foobar :)")));
+        assert_eq!(xpwhitespace("(: outer (: inner :) outer :)"), Ok(("", "(: outer (: inner :) outer :)")));
+        assert_eq!(xpwhitespace(" (: foobar :) "), Ok(("", " (: foobar :) ")));
+        assert_eq!(xpwhitespace("X(: foobar :)"), Ok(("X(: foobar :)", "")));
+    }
+    #[test]
+    fn nomxpath_parse_ws_comment_2() {
+        let e = parse("1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2").expect("failed to parse \"1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2\"");
 	if e.len() == 3 {
 	  let s = evaluate(&DynamicContext::new(), None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
