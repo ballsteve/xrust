@@ -300,6 +300,29 @@ impl<'a> Item<'a> {
       }
     }
   }
+
+  /// Is this item an element-type node?
+  pub fn is_element_node(&self) -> bool {
+    match self {
+      Item::Node(_) => {
+        // TODO
+	false
+      }
+      Item::XNode(n) => {
+        match n.node_type() {
+	  roxmltree::NodeType::Element => true,
+	  _ => false,
+	}
+      }
+      Item::JsonValue(j) => {
+        match j {
+	  JsonValue::Object(_) => true,
+	  _ => false,
+	}
+      }
+      _ => false,
+    }
+  }
 }
 
 // Node in a tree

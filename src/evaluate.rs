@@ -1,6 +1,6 @@
-//! # xrust::evaluate
+//! # Evaluate a sequence constructor
 //!
-//! Evaluate a sequence constructor.
+//! Evaluate a sequence constructor to produce a sequence.
 
 use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
@@ -272,6 +272,15 @@ fn evaluate_one<'a>(
 	  }
 	  Item::XNode(n) => {
 	    match nm.axis {
+	      Axis::Selfaxis => {
+	        if is_node_match(&nm.nodetest, n) {
+		  let mut seq = Sequence::new();
+		  seq.new_xnode(*n);
+	      	  Ok(predicates(dc, seq, p))
+		} else {
+	      	  Ok(Sequence::new())
+		}
+	      }
 	      Axis::Child => {
 	        if n.has_children() {
 		  let seq = n.children()
@@ -664,6 +673,32 @@ pub enum Constructor<'a> {
   NotImplemented(&'static str),
 }
 
+/// Determine if an item matches a pattern, and return the sequence constructor for that template.
+/// TODO: If more than one pattern matches, return the highest priority match.
+//pub fn find_match<'a>(sc: StaticContext<'a>, i: &'a Rc<Item<'a>>, mut r: Option<Vec<Constructor<'a>>>) {
+//  r = None;
+//  for u in sc.templates {
+//      if item_matches(&u.pattern, i) {
+        // is this a higher priority match? If so then update the priority
+//        r = Some(u.body.clone());
+//      }
+//  };
+//
+
+/// Determine if an item matches a pattern.
+/// The sequence constructor is a pattern: the steps of a path in reverse.
+fn item_matches<'a>(pat: &'a Vec<Constructor<'a>>, i: &'a Rc<Item<'a>>) -> bool {
+  let e = evaluate(&DynamicContext::new(), Some(vec![i.clone()]), Some(0), pat)
+    .expect("pattern evaluation failed");
+
+  // If anything is left in the context then the pattern matched
+  if e.len() != 0 {
+    true
+  } else {
+    false
+  }
+}
+
 fn is_node_match(nt: &NodeTest, n: &Node) -> bool {
   match nt {
     NodeTest::Name(t) => {
@@ -890,6 +925,24 @@ impl Axis {
       _ => "unknown".to_string(),
     }
   }
+  fn opposite(&self) -> Axis {
+    match self {
+      Axis::Child => Axis::Parent,
+      Axis::Descendant => Axis::Ancestor,
+      Axis::DescendantOrSelf => Axis::AncestorOrSelf,
+      Axis::Attribute => Axis::Parent,
+      Axis::Selfaxis => Axis::Selfaxis,
+      Axis::Following => Axis::Preceding,
+      Axis::FollowingSibling => Axis::PrecedingSibling,
+      Axis::Namespace => Axis::Parent,
+      Axis::Parent => Axis::Child,
+      Axis::Ancestor => Axis::Descendant,
+      Axis::AncestorOrSelf => Axis::DescendantOrSelf,
+      Axis::Preceding => Axis::Following,
+      Axis::PrecedingSibling => Axis::FollowingSibling,
+      _ => Axis::Unknown,
+    }
+  }
 }
 
 #[derive(Copy, Clone)]
@@ -936,6 +989,98 @@ fn general_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, p
   Ok(b)
 }
 
+/// A pattern is basically a Sequence Constructor in reverse.
+/// An item is evaluated against the expression, and if the result is a non-empty sequence then the pattern has matched.
+///
+/// Converts a Sequence Constructor to a pattern. The Constructor must be a Path. The result Constructor is also a path, but it's steps are in reverse.
+pub fn to_pattern<'a>(sc: &'a Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a>>, Error> {
+    if sc.len() == 1 {
+      match sc[0] {
+        Constructor::Path(ref s) => {
+          if s.len() == 0 {
+            return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must not be empty".to_string()})
+	  }
+	  let mut p: Vec<Vec<Constructor>> = Vec::new();
+	  let mut it = s.iter().rev();
+	  let step0 = it.next().unwrap(); // We've already checked that there is at least one step
+	  let mut last_axis;
+	  if step0.len() == 1 {
+	    match step0[0] {
+	      Constructor::Step(NodeMatch{axis: a, nodetest: ref nt}, _) => {
+	        p.push(vec![
+	          Constructor::Step(
+	            NodeMatch{
+		      axis: match a {
+	                Axis::Child |
+	          	Axis::Selfaxis => {
+			  println!("to_pattern: initial step is self");
+			  Axis::Selfaxis
+			}
+	         	_ => {
+			  println!("to_pattern: initial step is {}", a.opposite().to_string());
+			  a.opposite()
+			}
+	              },
+		      nodetest: nt.clone()
+		    },
+		    vec![],
+	          )
+	        ]);
+	        last_axis = a.opposite();
+	      }
+	      _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()}),
+	    };
+	  } else {
+	    return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be steps".to_string()})
+	  }
+
+	  loop {
+	    let n = it.next();
+	    if n.is_none() {println!("to_pattern: no more steps"); break};
+	    if n.unwrap().len() != 1 {return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()})};
+
+	    println!("to_pattern: next step");
+	    // TODO: predicates
+	    match n.unwrap()[0] {
+	      Constructor::Step(NodeMatch{axis: _, nodetest: ref nt}, _) => p.push(
+	        vec![
+	          Constructor::Step(
+	            NodeMatch{
+		      axis: last_axis,
+		      nodetest: nt.clone()
+		    },
+		    vec![],
+	          )
+	        ]
+	      ),
+	      _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()}),
+	    }
+
+	    last_axis = match n.unwrap()[0] {
+	      Constructor::Step(NodeMatch{axis: a, ..}, _) => a.opposite(),
+	      _ => Axis::Unknown,
+	    }
+	  }
+	  Ok(vec![Constructor::Path(p)])
+        }
+        _ => {
+          Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
+        }
+      }
+    } else {
+      Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a singleton".to_string()})
+    }
+}
+
+/// A template associating a pattern to a sequence constructor
+#[derive(Clone)]
+pub struct Template<'a> {
+  pattern: Constructor<'a>,
+  body: Vec<Constructor<'a>>,
+  // priority
+  // mode
+}
+
 /// # Static context
 ///
 /// Provide a static context and analysis for a [Sequence] [Constructor].
@@ -944,12 +1089,17 @@ fn general_comparison<'a>(dc: &DynamicContext<'a>, ctxt: Option<Sequence<'a>>, p
 pub struct StaticContext<'a> {
   pub funcs: RefCell<HashMap<String, Function<'a>>>,
   pub vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>, // each entry in the vector is an inner scope of the variable
+  pub templates: Vec<Template<'a>>,
 }
 
 impl<'a> StaticContext<'a> {
   /// Creates a new StaticContext.
   pub fn new() -> StaticContext<'a> {
-    StaticContext{funcs: RefCell::new(HashMap::new()), vars: RefCell::new(HashMap::new())}
+    StaticContext{
+      funcs: RefCell::new(HashMap::new()),
+      vars: RefCell::new(HashMap::new()),
+      templates: Vec::new()
+    }
   }
   /// Creates a new StaticContext and initializes it with the pre-defined XPath functions.
   ///
@@ -979,7 +1129,11 @@ impl<'a> StaticContext<'a> {
   /// * ceiling()
   /// * round()
   pub fn new_with_builtins() -> StaticContext<'a> {
-    let sc = StaticContext{funcs: RefCell::new(HashMap::new()), vars: RefCell::new(HashMap::new())};
+    let sc = StaticContext{
+      funcs: RefCell::new(HashMap::new()),
+      vars: RefCell::new(HashMap::new()),
+      templates: Vec::new(),
+    };
     sc.funcs.borrow_mut().insert("position".to_string(),
       Function{
         name: "position".to_string(),
@@ -1196,6 +1350,10 @@ impl<'a> StaticContext<'a> {
   /// Declares a variable in the static context. The first argument is the name of the variable. The second argument is the namespace URI (not currently supported).
   pub fn declare_variable(&self, n: String, _ns:String) {
     self.vars.borrow_mut().insert(n.clone(), vec![]);
+  }
+  /// Add a template to the static context. The first argument is the pattern. The second argument is the body of the template.
+  pub fn add_template(&mut self, p: Constructor<'a>, b: Vec<Constructor<'a>>) {
+    self.templates.push(Template{pattern: p, body: b});
   }
 }
 
@@ -2263,6 +2421,50 @@ mod tests {
       } else {
         panic!("sequence is not a singleton: \"{}\"", e.to_string())
       }
+    }
+    #[test]
+    fn xnode_self_pos() {
+      let d = roxmltree::Document::parse("<Test><text/></Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Selfaxis,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      if e.len() == 1 {
+        assert_eq!(e[0].to_name(), "Test")
+      } else {
+        panic!("sequence is not a singleton: \"{}\"", e.to_string())
+      }
+    }
+    #[test]
+    fn xnode_self_neg() {
+      let d = roxmltree::Document::parse("<Test>I am a <text/> node</Test>").expect("failed to parse XML");
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Selfaxis,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+      let e = evaluate(&DynamicContext::new(), Some(vec![Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()))]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 0)
     }
     #[test]
     fn node_parent_any() {
@@ -3371,6 +3573,82 @@ mod tests {
       } else {
         panic!("empty sequence result")
       }
+    }
+
+    // Patterns
+
+    #[test]
+    fn pattern_1_pos() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      // This constructor is "*"
+      let cons = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let p = to_pattern(&cons).expect("unable to reverse expression");
+      assert_eq!(item_matches(&p, &i), true);
+    }
+    // TODO: matching a text node should return false
+    #[test]
+    fn pattern_2_pos() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      // This constructor is "child::Test"
+      let cons = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let p = to_pattern(&cons).expect("unable to reverse expression");
+      assert_eq!(item_matches(&p, &i), true);
+    }
+    #[test]
+    fn pattern_2_neg() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      // This constructor is "child::Level2"
+      let cons = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level2".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let p = to_pattern(&cons).expect("unable to reverse expression");
+      assert_eq!(item_matches(&p, &i), false);
+    }
+    #[test]
+    fn pattern_3_pos() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap().first_child().unwrap()));
+
+      // This constructor is "child::Test/child::Level2"
+      let cons = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![]
+	      )],
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level2".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let p = to_pattern(&cons).expect("unable to reverse expression");
+      assert_eq!(item_matches(&p, &i), true);
     }
 } 
 
