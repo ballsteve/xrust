@@ -673,18 +673,6 @@ pub enum Constructor<'a> {
   NotImplemented(&'static str),
 }
 
-/// Determine if an item matches a pattern, and return the sequence constructor for that template.
-/// TODO: If more than one pattern matches, return the highest priority match.
-//pub fn find_match<'a>(sc: StaticContext<'a>, i: &'a Rc<Item<'a>>, mut r: Option<Vec<Constructor<'a>>>) {
-//  r = None;
-//  for u in sc.templates {
-//      if item_matches(&u.pattern, i) {
-        // is this a higher priority match? If so then update the priority
-//        r = Some(u.body.clone());
-//      }
-//  };
-//
-
 /// Determine if an item matches a pattern.
 /// The sequence constructor is a pattern: the steps of a path in reverse.
 fn item_matches<'a>(pat: &'a Vec<Constructor<'a>>, i: &'a Rc<Item<'a>>) -> bool {
@@ -1013,11 +1001,9 @@ pub fn to_pattern<'a>(sc: &'a Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a
 		      axis: match a {
 	                Axis::Child |
 	          	Axis::Selfaxis => {
-			  println!("to_pattern: initial step is self");
 			  Axis::Selfaxis
 			}
 	         	_ => {
-			  println!("to_pattern: initial step is {}", a.opposite().to_string());
 			  a.opposite()
 			}
 	              },
@@ -1036,10 +1022,9 @@ pub fn to_pattern<'a>(sc: &'a Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a
 
 	  loop {
 	    let n = it.next();
-	    if n.is_none() {println!("to_pattern: no more steps"); break};
+	    if n.is_none() {break};
 	    if n.unwrap().len() != 1 {return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()})};
 
-	    println!("to_pattern: next step");
 	    // TODO: predicates
 	    match n.unwrap()[0] {
 	      Constructor::Step(NodeMatch{axis: _, nodetest: ref nt}, _) => p.push(
@@ -1075,7 +1060,7 @@ pub fn to_pattern<'a>(sc: &'a Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a
 /// A template associating a pattern to a sequence constructor
 #[derive(Clone)]
 pub struct Template<'a> {
-  pattern: Constructor<'a>,
+  pattern: Vec<Constructor<'a>>,
   body: Vec<Constructor<'a>>,
   // priority
   // mode
@@ -1351,10 +1336,21 @@ impl<'a> StaticContext<'a> {
   pub fn declare_variable(&self, n: String, _ns:String) {
     self.vars.borrow_mut().insert(n.clone(), vec![]);
   }
+
   /// Add a template to the static context. The first argument is the pattern. The second argument is the body of the template.
-  pub fn add_template(&mut self, p: Constructor<'a>, b: Vec<Constructor<'a>>) {
+  pub fn add_template(&mut self, p: Vec<Constructor<'a>>, b: Vec<Constructor<'a>>) {
     self.templates.push(Template{pattern: p, body: b});
   }
+  /// Determine if an item matches a pattern and return the sequence constructor for that template.
+  /// If no template is found, returns None.
+  /// TODO: If more than one pattern matches, return the highest priority match.
+  pub fn find_match(&'a self, i: &'a Rc<Item<'a>>) -> Vec<Vec<Constructor<'a>>> {
+    self.templates.iter()
+      .filter(|t| item_matches(&t.pattern, i))
+      .map(|t| t.body.clone())
+      .collect()
+  }
+
 }
 
 /// Perform static analysis of a sequence constructor.
@@ -3650,5 +3646,33 @@ mod tests {
       let p = to_pattern(&cons).expect("unable to reverse expression");
       assert_eq!(item_matches(&p, &i), true);
     }
-} 
+
+    /// Templates
+
+    #[test]
+    fn template_1() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      // This constructor is "child::Test"
+      let cons1 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let p = to_pattern(&cons1).expect("unable to convert to pattern");
+      let cons2 = vec![
+        Constructor::Literal(Value::String("I found a matching template")),
+      ];
+      let mut sc = StaticContext::new();
+      sc.add_template(p, cons2);
+      let t = sc.find_match(&i);
+      assert_eq!(t.len(), 1);
+      let seq = evaluate(&DynamicContext::new(), Some(vec![i.clone()]), Some(0), &t[0]).expect("evaluation failed");
+      assert_eq!(seq.to_string(), "I found a matching template")
+    }
+}
 
