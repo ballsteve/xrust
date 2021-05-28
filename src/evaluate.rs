@@ -148,7 +148,7 @@ fn evaluate_one<'a>(
 	r.push_str(t.to_string().as_str());
       }
       let mut seq = Sequence::new();
-      seq.new_value(Value::StringOwned(r));
+      seq.new_value(Value::String(r));
       Ok(seq)
     }
     Constructor::Range(v) => {
@@ -673,7 +673,7 @@ fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
 #[derive(Clone)]
 pub enum Constructor<'a> {
   /// A literal, atomic value
-  Literal(Value<'a>),
+  Literal(Value),
   /// The context item from the dynamic context
   ContextItem,
   /// Logical OR. Each element of the outer vector is an operand.
@@ -1550,7 +1550,7 @@ fn func_localname<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Ve
       // Current item must be a node
       match *u[posn.unwrap()] {
         Item::XNode(n) => {
-      	  Ok(vec![Rc::new(Item::Value(Value::String(n.tag_name().name())))])
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.tag_name().name().to_string())))])
 	}
 	Item::Node(_) |
 	Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented"),}),
@@ -1568,7 +1568,7 @@ fn func_name<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Seq
       // Current item must be a node
       match *u[posn.unwrap()] {
         Item::XNode(n) => {
-      	  Ok(vec![Rc::new(Item::Value(Value::String(n.tag_name().name())))])
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.tag_name().name().to_string())))])
 	}
 	Item::Node(_) |
 	Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented"),}),
@@ -1584,14 +1584,14 @@ fn func_string<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
   match args.len() {
     1 => {
       // return string value
-      Ok(vec![Rc::new(Item::Value(Value::StringOwned(args[0].to_string())))])
+      Ok(vec![Rc::new(Item::Value(Value::String(args[0].to_string())))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
 fn func_concat<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
-  Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+  Ok(vec![Rc::new(Item::Value(Value::String(
     args.iter().fold(
       String::new(),
       |mut a, b| {
@@ -1635,7 +1635,7 @@ fn func_substring<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: V
      // arg[0] is the string to search
      // arg[1] is the index to start at
      // 2-argument version takes the rest of the string
-     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+     Ok(vec![Rc::new(Item::Value(Value::String(
        args[0].to_string().graphemes(true).skip(args[1].to_int().expect("not an integer") as usize - 1).collect()
      )))])
     }
@@ -1643,7 +1643,7 @@ fn func_substring<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: V
      // arg[0] is the string to search
      // arg[1] is the index to start at
      // arg[2] is the length of the substring to extract
-     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+     Ok(vec![Rc::new(Item::Value(Value::String(
        args[0].to_string().graphemes(true).skip(args[1].to_int().expect("not an integer") as usize - 1).take(args[2].to_int().expect("not an integer") as usize).collect()
      )))])
     }
@@ -1661,7 +1661,7 @@ fn func_substringbefore<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, a
        Some(i) => {
          match args[0].to_string().get(0..i) {
 	   Some(s) => {
-     	     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+     	     Ok(vec![Rc::new(Item::Value(Value::String(
 	       String::from(s)
      	     )))])
 	   }
@@ -1690,7 +1690,7 @@ fn func_substringafter<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, ar
        Some(i) => {
          match args[0].to_string().get(i + args[1].to_string().len()..args[0].to_string().len()) {
 	   Some(s) => {
-     	     Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+     	     Ok(vec![Rc::new(Item::Value(Value::String(
 	       String::from(s)
      	     )))])
 	   }
@@ -1731,7 +1731,7 @@ fn func_normalizespace<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args
     Ok(u) => {
       match u {
         Some(t) => {
-          Ok(vec![Rc::new(Item::Value(Value::StringOwned(
+          Ok(vec![Rc::new(Item::Value(Value::String(
             t.split_whitespace().collect()
           )))])
         }
@@ -1784,7 +1784,7 @@ fn func_translate<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: V
 	  }
 	}
       }
-      Ok(vec![Rc::new(Item::Value(Value::StringOwned(result)))])
+      Ok(vec![Rc::new(Item::Value(Value::String(result)))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
@@ -2038,7 +2038,7 @@ mod tests {
     #[test]
     fn literal_string() {
       let dc = DynamicContext::new();
-      let cons = vec![Constructor::Literal(Value::String("foobar"))];
+      let cons = vec![Constructor::Literal(Value::String("foobar".to_string()))];
       let s = evaluate(&dc, None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
@@ -2104,8 +2104,8 @@ mod tests {
     fn sequence_literal() {
       let dc = DynamicContext::new();
       let cons = vec![
-	  Constructor::Literal(Value::String("foo")),
-	  Constructor::Literal(Value::String("bar")),
+	  Constructor::Literal(Value::String("foo".to_string())),
+	  Constructor::Literal(Value::String("bar".to_string())),
 	];
       let s = evaluate(&dc, None, None, &cons)
         .expect("evaluation failed");
@@ -2120,7 +2120,7 @@ mod tests {
     fn sequence_literal_mixed() {
       let dc = DynamicContext::new();
       let cons = vec![
-	  Constructor::Literal(Value::String("foo")),
+	  Constructor::Literal(Value::String("foo".to_string())),
 	  Constructor::Literal(Value::Integer(123)),
 	];
       let s = evaluate(&dc, None, None, &cons)
@@ -2135,7 +2135,7 @@ mod tests {
     #[test]
     fn context_item() {
       let dc = DynamicContext::new();
-      let s = vec![Rc::new(Item::Value(Value::String("foobar")))];
+      let s = vec![Rc::new(Item::Value(Value::String("foobar".to_string())))];
       let cons = vec![Constructor::ContextItem];
       let result = evaluate(&dc, Some(s), Some(0), &cons)
         .expect("evaluation failed");
@@ -2153,7 +2153,7 @@ mod tests {
 	  Constructor::ContextItem,
 	  Constructor::ContextItem,
 	];
-      let result = evaluate(&dc, Some(vec![Rc::new(Item::Value(Value::String("foobar")))]), Some(0), &cons)
+      let result = evaluate(&dc, Some(vec![Rc::new(Item::Value(Value::String("foobar".to_string())))]), Some(0), &cons)
         .expect("evaluation failed");
       if result.len() == 2 {
         assert_eq!(result.to_string(), "foobarfoobar")
@@ -2253,8 +2253,8 @@ mod tests {
 	  Constructor::ValueComparison(
 	    Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo"))],
-	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![Constructor::Literal(Value::String("foo".to_string()))],
+	      vec![Constructor::Literal(Value::String("foo".to_string()))],
 	    ]
 	  )
 	];
@@ -2274,8 +2274,8 @@ mod tests {
 	  Constructor::ValueComparison(
 	    Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo"))],
-	      vec![Constructor::Literal(Value::String("bar"))],
+	      vec![Constructor::Literal(Value::String("foo".to_string()))],
+	      vec![Constructor::Literal(Value::String("bar".to_string()))],
 	    ]
 	  )
 	];
@@ -2298,10 +2298,10 @@ mod tests {
 	  Constructor::GeneralComparison(
             Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![Constructor::Literal(Value::String("foo".to_string()))],
 	      vec![
-	        Constructor::Literal(Value::String("bar")),
-	        Constructor::Literal(Value::String("foo")),
+	        Constructor::Literal(Value::String("bar".to_string())),
+	        Constructor::Literal(Value::String("foo".to_string())),
 	      ]
 	    ]
 	  )
@@ -2321,10 +2321,10 @@ mod tests {
 	  Constructor::GeneralComparison(
             Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![Constructor::Literal(Value::String("foo".to_string()))],
 	      vec![
-	        Constructor::Literal(Value::String("bar")),
-	        Constructor::Literal(Value::String("oof")),
+	        Constructor::Literal(Value::String("bar".to_string())),
+	        Constructor::Literal(Value::String("oof".to_string())),
 	      ]
 	    ]
 	  )
@@ -2345,10 +2345,10 @@ mod tests {
       let cons = vec![
 	  Constructor::Concat(
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo"))],
+	      vec![Constructor::Literal(Value::String("foo".to_string()))],
 	      vec![
-	        Constructor::Literal(Value::String("bar")),
-	        Constructor::Literal(Value::String("oof")),
+	        Constructor::Literal(Value::String("bar".to_string())),
+	        Constructor::Literal(Value::String("oof".to_string())),
 	      ]
 	    ]
 	  )
@@ -3014,8 +3014,8 @@ mod tests {
 	vec![]
       );
       let s = vec![
-        Rc::new(Item::Value(Value::String("a"))),
-        Rc::new(Item::Value(Value::String("b"))),
+        Rc::new(Item::Value(Value::String("a".to_string()))),
+        Rc::new(Item::Value(Value::String("b".to_string()))),
       ];
       let vc = vec![c];
       let r = evaluate(&dc, Some(s), Some(1), &vc).expect("evaluation failed");
@@ -3029,9 +3029,9 @@ mod tests {
 	vec![]
       );
       let s = vec![
-        Rc::new(Item::Value(Value::String("a"))),
-        Rc::new(Item::Value(Value::String("b"))),
-        Rc::new(Item::Value(Value::String("c"))),
+        Rc::new(Item::Value(Value::String("a".to_string()))),
+        Rc::new(Item::Value(Value::String("b".to_string()))),
+        Rc::new(Item::Value(Value::String("c".to_string()))),
       ];
       let vc = vec![c];
       let r = evaluate(&dc, Some(s), Some(1), &vc).expect("evaluation failed");
@@ -3044,9 +3044,9 @@ mod tests {
         Function::new("count".to_string(), vec![Param::new("i".to_string(), "t".to_string())], Some(func_count)),
 	vec![
 	  vec![
-            Constructor::Literal(Value::String("a")),
-            Constructor::Literal(Value::String("b")),
-            Constructor::Literal(Value::String("c")),
+            Constructor::Literal(Value::String("a".to_string())),
+            Constructor::Literal(Value::String("b".to_string())),
+            Constructor::Literal(Value::String("c".to_string())),
 	  ]
         ]
       );
@@ -3087,9 +3087,9 @@ mod tests {
         Function::new("string".to_string(), vec![], Some(func_string)),
 	vec![
 	  vec![
-            Constructor::Literal(Value::String("a")),
-            Constructor::Literal(Value::String("b")),
-            Constructor::Literal(Value::String("c")),
+            Constructor::Literal(Value::String("a".to_string())),
+            Constructor::Literal(Value::String("b".to_string())),
+            Constructor::Literal(Value::String("c".to_string())),
 	  ]
         ]
       );
@@ -3103,9 +3103,9 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("concat".to_string(), vec![], Some(func_concat)),
 	vec![
-	  vec![Constructor::Literal(Value::String("a"))],
-          vec![Constructor::Literal(Value::String("b"))],
-          vec![Constructor::Literal(Value::String("c"))],
+	  vec![Constructor::Literal(Value::String("a".to_string()))],
+          vec![Constructor::Literal(Value::String("b".to_string()))],
+          vec![Constructor::Literal(Value::String("c".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3118,8 +3118,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc"))],
-          vec![Constructor::Literal(Value::String("a"))],
+	  vec![Constructor::Literal(Value::String("abc".to_string()))],
+          vec![Constructor::Literal(Value::String("a".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3132,8 +3132,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc"))],
-          vec![Constructor::Literal(Value::String("b"))],
+	  vec![Constructor::Literal(Value::String("abc".to_string()))],
+          vec![Constructor::Literal(Value::String("b".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3146,8 +3146,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("contains".to_string(), vec![], Some(func_contains)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc"))],
-          vec![Constructor::Literal(Value::String("b"))],
+	  vec![Constructor::Literal(Value::String("abc".to_string()))],
+          vec![Constructor::Literal(Value::String("b".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3160,8 +3160,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("contains".to_string(), vec![], Some(func_contains)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc"))],
-          vec![Constructor::Literal(Value::String("d"))],
+	  vec![Constructor::Literal(Value::String("abc".to_string()))],
+          vec![Constructor::Literal(Value::String("d".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3174,7 +3174,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring".to_string(), vec![], Some(func_substring)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc"))],
+	  vec![Constructor::Literal(Value::String("abc".to_string()))],
           vec![Constructor::Literal(Value::Integer(2))],
         ]
       );
@@ -3188,7 +3188,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring".to_string(), vec![], Some(func_substring)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde"))],
+	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
           vec![Constructor::Literal(Value::Integer(2))],
           vec![Constructor::Literal(Value::Integer(3))],
         ]
@@ -3203,8 +3203,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde"))],
-          vec![Constructor::Literal(Value::String("bc"))],
+	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
+          vec![Constructor::Literal(Value::String("bc".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3217,8 +3217,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde"))],
-          vec![Constructor::Literal(Value::String("fg"))],
+	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
+          vec![Constructor::Literal(Value::String("fg".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3231,8 +3231,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde"))],
-          vec![Constructor::Literal(Value::String("bc"))],
+	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
+          vec![Constructor::Literal(Value::String("bc".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3245,8 +3245,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde"))],
-          vec![Constructor::Literal(Value::String("fg"))],
+	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
+          vec![Constructor::Literal(Value::String("fg".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3259,8 +3259,8 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde"))],
-          vec![Constructor::Literal(Value::String("de"))],
+	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
+          vec![Constructor::Literal(Value::String("de".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3273,7 +3273,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("normalize-space".to_string(), vec![], Some(func_normalizespace)),
 	vec![
-	  vec![Constructor::Literal(Value::String("	a b   c\nd e 	"))],
+	  vec![Constructor::Literal(Value::String("	a b   c\nd e 	".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3286,9 +3286,9 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("translate".to_string(), vec![], Some(func_translate)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcdeabcde"))],
-	  vec![Constructor::Literal(Value::String("ade"))],
-	  vec![Constructor::Literal(Value::String("XY"))],
+	  vec![Constructor::Literal(Value::String("abcdeabcde".to_string()))],
+	  vec![Constructor::Literal(Value::String("ade".to_string()))],
+	  vec![Constructor::Literal(Value::String("XY".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3302,7 +3302,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("boolean".to_string(), vec![], Some(func_boolean)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcdeabcde"))],
+	  vec![Constructor::Literal(Value::String("abcdeabcde".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3402,7 +3402,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("number".to_string(), vec![], Some(func_number)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123"))]
+	  vec![Constructor::Literal(Value::String("123".to_string()))]
         ]
       );
       let vc = vec![c];
@@ -3419,7 +3419,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("number".to_string(), vec![], Some(func_number)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456"))]
+	  vec![Constructor::Literal(Value::String("123.456".to_string()))]
         ]
       );
       let vc = vec![c];
@@ -3437,10 +3437,10 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("sum".to_string(), vec![], Some(func_sum)),
 	vec![
-	    vec![Constructor::Literal(Value::String("123.456")),
-	         Constructor::Literal(Value::String("10")),
-	         Constructor::Literal(Value::String("-20")),
-	         Constructor::Literal(Value::String("0")),
+	    vec![Constructor::Literal(Value::String("123.456".to_string())),
+	         Constructor::Literal(Value::String("10".to_string())),
+	         Constructor::Literal(Value::String("-20".to_string())),
+	         Constructor::Literal(Value::String("0".to_string())),
 	    ],
         ]
       );
@@ -3458,7 +3458,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("floor".to_string(), vec![], Some(func_floor)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456"))],
+	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3475,7 +3475,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("ceiling".to_string(), vec![], Some(func_ceiling)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456"))],
+	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3492,7 +3492,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("round".to_string(), vec![], Some(func_round)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456"))],
+	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3509,7 +3509,7 @@ mod tests {
       let c = Constructor::FunctionCall(
         Function::new("round".to_string(), vec![], Some(func_round)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.654"))],
+	  vec![Constructor::Literal(Value::String("123.654".to_string()))],
         ]
       );
       let vc = vec![c];
@@ -3526,7 +3526,7 @@ mod tests {
     fn var_ref() {
       let dc = DynamicContext::new();
       let c = vec![
-        Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::String("my variable"))]),
+        Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::String("my variable".to_string()))]),
 	Constructor::VariableReference("foo".to_string()),
       ];
       let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
@@ -3543,9 +3543,9 @@ mod tests {
 	  vec![Constructor::VariableDeclaration(
 	    "x".to_string(),
 	    vec![
-	      Constructor::Literal(Value::String("a")),
-	      Constructor::Literal(Value::String("b")),
-	      Constructor::Literal(Value::String("c")),
+	      Constructor::Literal(Value::String("a".to_string())),
+	      Constructor::Literal(Value::String("b".to_string())),
+	      Constructor::Literal(Value::String("c".to_string())),
 	    ]
 	  )],
 	  vec![Constructor::VariableReference("x".to_string())]
@@ -3568,10 +3568,10 @@ mod tests {
 	      Constructor::Literal(Value::Integer(1))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one"))
+	      Constructor::Literal(Value::String("one".to_string()))
 	    ]
 	  ],
-	  vec![Constructor::Literal(Value::String("not one"))]
+	  vec![Constructor::Literal(Value::String("not one".to_string()))]
 	)
       ];
       let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
@@ -3589,10 +3589,10 @@ mod tests {
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one"))
+	      Constructor::Literal(Value::String("one".to_string()))
 	    ]
 	  ],
-	  vec![Constructor::Literal(Value::String("not one"))]
+	  vec![Constructor::Literal(Value::String("not one".to_string()))]
 	)
       ];
       let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
@@ -3609,22 +3609,22 @@ mod tests {
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one"))
+	      Constructor::Literal(Value::String("one".to_string()))
 	    ],
 	    vec![
 	      Constructor::Literal(Value::Integer(1))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("two"))
+	      Constructor::Literal(Value::String("two".to_string()))
 	    ],
 	    vec![
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("three"))
+	      Constructor::Literal(Value::String("three".to_string()))
 	    ],
 	  ],
-	  vec![Constructor::Literal(Value::String("not any"))]
+	  vec![Constructor::Literal(Value::String("not any".to_string()))]
 	)
       ];
       let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
@@ -3802,7 +3802,7 @@ mod tests {
 	  )];
       let p = to_pattern(&cons1).expect("unable to convert to pattern");
       let cons2 = vec![
-        Constructor::Literal(Value::String("I found a matching template")),
+        Constructor::Literal(Value::String("I found a matching template".to_string())),
       ];
       let mut dc = DynamicContext::new();
       dc.add_template(p, cons2);

@@ -38,7 +38,7 @@ pub trait SequenceTrait<'a> {
   /// Push a roxmltree Node to the [Sequence]
   fn new_xnode(&mut self, n: Node<'a, 'a>);
   /// Push a [Value] to the [Sequence]
-  fn new_value(&mut self, v: Value<'a>);
+  fn new_value(&mut self, v: Value);
   /// Push a JsonValue to the [Sequence]
   fn new_jvalue(&mut self, j: JsonValue);
   /// Push an [Item] to the [Sequence]
@@ -82,7 +82,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     self.push(Rc::new(Item::XNode(n)));
   }
   /// Push a Value on to the Sequence
-  fn new_value(&mut self, v: Value<'a>) {
+  fn new_value(&mut self, v: Value) {
     self.push(Rc::new(Item::Value(v)));
   }
   /// Push a JsonValue on to the Sequence
@@ -146,7 +146,7 @@ pub enum Item<'a> {
     /// Functions are not yet supported
     Function,
     /// A scalar value
-    Value(Value<'a>),
+    Value(Value),
 }
 
 // Comparison operators
@@ -656,7 +656,7 @@ fn json_to_xml(j: &JsonValue) -> String {
 
 // A concrete type that implements atomic values
 
-impl<'a> PartialEq for Value<'a> {
+impl PartialEq for Value {
   fn eq(&self, other: &Value) -> bool {
     match self {
         Value::String(s) => s.eq(&other.to_string()),
@@ -680,12 +680,12 @@ impl<'a> PartialEq for Value<'a> {
     }
   }
 }
-impl<'a> PartialOrd for Value<'a> {
+impl PartialOrd for Value {
   fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
     match self {
         Value::String(s) => {
 	  let o: String = other.to_string();
-	  s.partial_cmp(&o.as_str())
+	  s.partial_cmp(&o)
 	},
 	Value::Boolean(_) => None,
 	Value::Decimal(d) => match other {
@@ -707,7 +707,7 @@ impl<'a> PartialOrd for Value<'a> {
 
 /// An atomic value. These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
 #[derive(Clone)]
-pub enum Value<'a> {
+pub enum Value {
     /// node or simple type
     AnyType,
     /// a not-yet-validated anyType
@@ -747,11 +747,8 @@ pub enum Value<'a> {
     DateTime,
     DateTimeStamp,
     Date,
-    /// Items are immutable, so a string slice can be referenced
-    String(&'a str),
-    /// Where the ownership of the string must be assigned to the Item
-    StringOwned(String),
-    NormalizedString(NormalizedString<'a>),
+    String(String),
+    NormalizedString(NormalizedString),
     /// Like normalizedString, but without leading, trailing and consecutive whitespace
     Token,
     /// language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
@@ -771,12 +768,11 @@ pub enum Value<'a> {
     Boolean(bool),
 }
 
-impl<'a> Value<'a> {
+impl Value {
     /// Give the string value.
     pub fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
-	    Value::StringOwned(s) => s.to_string(),
 	    Value::NormalizedString(s) => s.value.to_string(),
 	    Value::Decimal(d) => d.to_string(),
 	    Value::Float(f) => f.to_string(),
@@ -806,10 +802,6 @@ impl<'a> Value<'a> {
                 //t.is_empty()
 	        t.len() != 0
             },
-            Value::StringOwned(t) => {
-                //t.is_empty()
-	        t.len() != 0
-            },
 	    Value::NormalizedString(s) => s.value.len() != 0,
             Value::Double(n) => *n != 0.0,
             Value::Integer(i) => *i != 0,
@@ -826,12 +818,6 @@ impl<'a> Value<'a> {
 		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
 	      }
 	    }
-	    Value::StringOwned(s) => {
-	      match s.parse::<i64>() {
-	        Ok(i) => Ok(i),
-		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
-	      }
-	    }
             Value::Integer(i) => Ok(*i),
             _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
 	}
@@ -840,12 +826,6 @@ impl<'a> Value<'a> {
     pub fn to_double(&self) -> f64 {
         match &self {
 	    Value::String(s) => {
-	      match s.parse::<f64>() {
-	        Ok(i) => i,
-		Err(_) => f64::NAN,
-	      }
-	    }
-	    Value::StringOwned(s) => {
 	      match s.parse::<f64>() {
 	        Ok(i) => i,
 		Err(_) => f64::NAN,
@@ -1039,27 +1019,27 @@ impl Clone for NegativeInteger {
     }
 }
 
-pub struct NormalizedString<'a> {
-    value: &'a str,
+pub struct NormalizedString {
+    value: String,
 }
-impl<'a> NormalizedString<'a> {
-    pub fn new(v: &'a str) -> Result<Self, Error> {
+impl NormalizedString {
+    pub fn new(v: &str) -> Result<Self, Error> {
         let n: &[_] = &['\n', '\r', '\t'];
         match v.find(n) {
-	    None => Ok(NormalizedString{value: v}),
+	    None => Ok(NormalizedString{value: v.to_string()}),
 	    _ => Err(Error {
 	        kind: ErrorKind::TypeError,
 		message: String::from("value is not a normalized string"),
 	  	})
 	}
     }
-    pub fn value(self) -> &'a str {
-        self.value
+    pub fn value(self) -> String {
+        self.value.to_string()
     }
 }
-impl<'a> Clone for NormalizedString<'a> {
+impl Clone for NormalizedString {
     fn clone(&self) -> Self {
-        NormalizedString::new(self.value.clone()).expect("unable to clone NormalizedString")
+        NormalizedString::new(&self.value.clone()).expect("unable to clone NormalizedString")
     }
 }
 
@@ -1205,7 +1185,7 @@ mod tests {
     // String Values
     #[test]
     fn string_stringvalue() {
-        assert_eq!(Value::String("foobar").to_string(), "foobar")
+        assert_eq!(Value::String("foobar".to_string()).to_string(), "foobar")
     }
     #[test]
     fn decimal_stringvalue() {
@@ -1250,11 +1230,11 @@ mod tests {
 
     #[test]
     fn bool_value_string_empty() {
-      assert_eq!(Item::Value(Value::String("")).to_bool(), false)
+      assert_eq!(Item::Value(Value::String("".to_string())).to_bool(), false)
     }
     #[test]
     fn bool_value_string_nonempty() {
-      assert_eq!(Item::Value(Value::String("false")).to_bool(), true)
+      assert_eq!(Item::Value(Value::String("false".to_string())).to_bool(), true)
     }
     #[test]
     fn bool_value_int_zero() {
@@ -1269,7 +1249,7 @@ mod tests {
 
     #[test]
     fn int_value_string() {
-      match Item::Value(Value::String("1")).to_int() {
+      match Item::Value(Value::String("1".to_string())).to_int() {
         Ok(i) => assert_eq!(i, 1),
 	Err(_) => {
 	  panic!("to_int() failed")
@@ -1281,40 +1261,40 @@ mod tests {
 
     #[test]
     fn double_value_string() {
-      assert_eq!(Item::Value(Value::String("2.0")).to_double(), 2.0)
+      assert_eq!(Item::Value(Value::String("2.0".to_string())).to_double(), 2.0)
     }
 
     // value to_bool
 
     #[test]
     fn value_to_bool_string() {
-      assert_eq!(Value::String("2").to_bool(), true)
+      assert_eq!(Value::String("2".to_string()).to_bool(), true)
     }
 
     // value to_int
 
     #[test]
     fn value_to_int_string() {
-      assert_eq!(Value::String("2").to_int().expect("cannot convert to integer"), 2)
+      assert_eq!(Value::String("2".to_string()).to_int().expect("cannot convert to integer"), 2)
     }
 
     // value to_double
 
     #[test]
     fn value_to_double_string() {
-      assert_eq!(Value::String("3.0").to_double(), 3.0)
+      assert_eq!(Value::String("3.0".to_string()).to_double(), 3.0)
     }
 
     // value compare
 
     #[test]
     fn value_compare_eq() {
-      assert_eq!(Value::String("3").compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
+      assert_eq!(Value::String("3".to_string()).compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
     }
 
     #[test]
     fn value_compare_ne() {
-      assert_eq!(Value::String("3").compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
+      assert_eq!(Value::String("3".to_string()).compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
     }
 
     //#[test]
@@ -1386,7 +1366,7 @@ mod tests {
     #[test]
     fn sequence_one() {
         let mut s = Sequence::new();
-	s.new_value(Value::String("one"));
+	s.new_value(Value::String("one".to_string()));
 	let mut t = Sequence::new();
 	t.add(&s[0]);
 	assert!(Rc::ptr_eq(&s[0], &t[0]))

@@ -696,10 +696,10 @@ fn qname_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     |q| {
       match q {
         NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart)), ns: None, prefix: None}) => {
-	  vec![Constructor::Literal(Value::StringOwned(localpart))]
+	  vec![Constructor::Literal(Value::String(localpart.to_string()))]
 	}
         _ => {
-      	  vec![Constructor::Literal(Value::String("invalid qname"))]
+      	  vec![Constructor::Literal(Value::String("invalid qname".to_string()))]
 	}
       }
     }
@@ -1350,7 +1350,7 @@ fn function_call(input: &str) -> IResult<&str, Vec<Constructor>> {
       	  )]
 	}
 	_ => {
-      	  vec![Constructor::Literal(Value::String("invalid qname"))]
+      	  vec![Constructor::Literal(Value::String("invalid qname".to_string()))]
 	}
       }
     }
@@ -1501,7 +1501,7 @@ fn string_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
       string_literal_double ,
       string_literal_single
     )),
-    |s| vec![Constructor::Literal(Value::StringOwned(s))]
+    |s| vec![Constructor::Literal(Value::String(s.to_string()))]
   )
   (input)
 }
@@ -1840,7 +1840,7 @@ mod tests {
         let dc = DynamicContext::new();
         let e = parse(".").expect("failed to parse expression \".\"");
 	if e.len() == 1 {
-	  let ctxt = vec![Rc::new(Item::Value(Value::String("foobar")))];
+	  let ctxt = vec![Rc::new(Item::Value(Value::String("foobar".to_string())))];
 	  let s = evaluate(&dc, Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_string(), "foobar")
