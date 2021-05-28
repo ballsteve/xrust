@@ -87,6 +87,7 @@ Path expression: /|yes|
 Path expression: steps|yes|
 Path expression: axes|partial|
 Axis: child|yes|
+Axis: self|yes|
 Axis: descendant|yes|roxmltree
 Axis: descendant-or-self|yes|roxmltree
 Axis: ancestor|yes|
