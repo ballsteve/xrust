@@ -181,8 +181,8 @@ xsl:analyze-string/@select|no|
 xsl:analyze-string/@regex|no|
 xsl:analyze-string/@flags|no|
 xsl:apply-imports|no|
-xsl:apply-templates|no|
-xsl:apply-templates/@select|no|
+xsl:apply-templates|evaluate|Functionality has been added to evaluate module
+xsl:apply-templates/@select|evaluate|
 xsl:apply-templates/@mode|no|
 xsl:assert|no|
 xsl:assert/@test|no|
@@ -487,8 +487,8 @@ xsl:stylesheet/@exclude-result-prefixes|no|
 xsl:stylesheet/@expand-text|no|
 xsl:stylesheet/@use-when|no|
 xsl:stylesheet/@xpath-default-namespace|no|
-xsl:template|no|
-xsl:template/@match|no|
+xsl:template|evaluate|Functionality has been added to evaluate module
+xsl:template/@match|evaluate|
 xsl:template/@name|no|
 xsl:template/@priority|no|
 xsl:template/@mode|no|
