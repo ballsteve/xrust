@@ -14,7 +14,7 @@ The library separates parsing from evaluation. The XPath and XSLT are parsed (or
 
 This means it won't matter how an expression is written; it will be compiled into the same internal form. For example, the XPath expression:
 
-```rust
+```xpath
 if $a then "a is true" else ""
 ```
 
