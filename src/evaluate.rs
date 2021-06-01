@@ -40,7 +40,7 @@ impl<'a> DynamicContext<'a> {
   /// TODO: If more than one pattern matches, return the highest priority match.
   pub fn find_match(&'a self, i: &'a Rc<Item<'a>>) -> Vec<Constructor<'a>> {
     let r: Vec<Vec<Constructor>> = self.templates.iter()
-      .filter(|t| item_matches(&t.pattern, i))
+      .filter(|t| item_matches(self, &t.pattern, i))
       .map(|t| t.body.clone())
       .collect();
     if r.len() != 0 {
@@ -565,26 +565,23 @@ fn evaluate_one<'a>(
       // Evaluate 's' to find the nodes to apply templates to
       // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-      let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
-
-      // Get a list of sequence constructors
-      let cons: Vec<Vec<Constructor>> = sel.iter()
-        .map(|i| {
-	  let j = dc.find_match(i);
-	  // TODO: deal with priorities in a better way
-	  if j.len() != 0 {
-	    j.clone()
-	  } else {
-	    vec![]
+      Ok(evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression")
+        .iter().fold(
+          vec![],
+          |mut acc, i| {
+	    let mut u = dc.templates.iter()
+	      .filter(|t| {
+	        //item_matches(dc, &t.pattern, i)
+	        let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
+	        if e.len() == 0 {false} else {true}
+	      })
+	      .flat_map(|t| evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body"))
+	      .collect::<Sequence>();
+	    acc.append(&mut u);
+	    acc
 	  }
-	})
-	.collect();
-
-      // Now evaluate each of them to create the result sequence
-      let result: Sequence = cons.iter()
-        .flat_map(|c| evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate template body"))
-	.collect();
-      Ok(result.clone())
+        )
+      )
     }
     Constructor::NotImplemented(m) => {
       Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
@@ -739,9 +736,8 @@ pub enum Constructor<'a> {
 
 /// Determine if an item matches a pattern.
 /// The sequence constructor is a pattern: the steps of a path in reverse.
-fn item_matches<'a>(pat: &'a Vec<Constructor<'a>>, i: &'a Rc<Item<'a>>) -> bool {
-  let dc = DynamicContext::new();
-  let e = evaluate(&dc, Some(vec![i.clone()]), Some(0), pat)
+fn item_matches<'a>(dc: &'a DynamicContext<'a>, pat: &'a Vec<Constructor<'a>>, i: &'a Rc<Item<'a>>) -> bool {
+  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), pat)
     .expect("pattern evaluation failed");
 
   // If anything is left in the context then the pattern matched
@@ -3725,7 +3721,8 @@ mod tests {
             ]
 	  )];
       let p = to_pattern(&cons).expect("unable to reverse expression");
-      assert_eq!(item_matches(&p, &i), true);
+      let dc = DynamicContext::new();
+      assert_eq!(item_matches(&dc, &p, &i), true);
     }
     // TODO: matching a text node should return false
     #[test]
@@ -3743,7 +3740,8 @@ mod tests {
             ]
 	  )];
       let p = to_pattern(&cons).expect("unable to reverse expression");
-      assert_eq!(item_matches(&p, &i), true);
+      let dc = DynamicContext::new();
+      assert_eq!(item_matches(&dc, &p, &i), true);
     }
     #[test]
     fn pattern_2_neg() {
@@ -3760,7 +3758,8 @@ mod tests {
             ]
 	  )];
       let p = to_pattern(&cons).expect("unable to reverse expression");
-      assert_eq!(item_matches(&p, &i), false);
+      let dc = DynamicContext::new();
+      assert_eq!(item_matches(&dc, &p, &i), false);
     }
     #[test]
     fn pattern_3_pos() {
@@ -3781,7 +3780,8 @@ mod tests {
             ]
 	  )];
       let p = to_pattern(&cons).expect("unable to reverse expression");
-      assert_eq!(item_matches(&p, &i), true);
+      let dc = DynamicContext::new();
+      assert_eq!(item_matches(&dc, &p, &i), true);
     }
 
     /// Templates
@@ -3810,6 +3810,69 @@ mod tests {
       assert_eq!(t.len(), 1);
       let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("evaluation failed");
       assert_eq!(seq.to_string(), "I found a matching template")
+    }
+    #[test]
+    fn template_2() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2><Level3></Level3></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      let mut dc = DynamicContext::new();
+
+      // This constructor is "child::Test"
+      let cons1 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat1 = to_pattern(&cons1).expect("unable to convert to pattern");
+      // The constructor for the select expression is "child::*"
+      let body1 = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})},
+		vec![]
+	      )],
+	),
+      ];
+      dc.add_template(pat1, body1);
+
+      // This constructor is "child::Level2"
+      let cons2 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level2".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat2 = to_pattern(&cons2).expect("unable to convert to pattern");
+      let body2 = vec![
+        Constructor::Literal(Value::String("I found a Level2".to_string())),
+      ];
+      dc.add_template(pat2, body2);
+
+      // This constructor is "child::Level3"
+      let cons3 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level3".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat3 = to_pattern(&cons3).expect("unable to convert to pattern");
+      let body3 = vec![
+        Constructor::Literal(Value::String("I found a Level3".to_string())),
+      ];
+      dc.add_template(pat3, body3);
+
+      let t = dc.find_match(&i);
+      assert_eq!(t.len(), 1);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("evaluation failed");
+      assert_eq!(seq.to_string(), "I found a Level2I found a Level3")
     }
 }
 
