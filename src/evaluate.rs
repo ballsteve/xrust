@@ -17,6 +17,7 @@ use json::{JsonValue, object};
 /// The dynamic evaluation context.
 ///
 /// The dynamic context stores the value of declared variables.
+#[derive(Clone)]
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>,
   templates: Vec<Template<'a>>,
@@ -31,7 +32,7 @@ impl<'a> DynamicContext<'a> {
     }
   }
 
-  /// Add a template to the static context. The first argument is the pattern. The second argument is the body of the template.
+  /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template.
   pub fn add_template(&mut self, p: Vec<Constructor<'a>>, b: Vec<Constructor<'a>>) {
     self.templates.push(Template{pattern: p, body: b});
   }
@@ -1041,8 +1042,8 @@ fn general_comparison<'a>(dc: &'a DynamicContext<'a>, ctxt: Option<Sequence<'a>>
 /// A pattern is basically a Sequence Constructor in reverse.
 /// An item is evaluated against the expression, and if the result is a non-empty sequence then the pattern has matched.
 ///
-/// Converts a Sequence Constructor to a pattern. The Constructor must be a Path. The result Constructor is also a path, but it's steps are in reverse.
-pub fn to_pattern<'a>(sc: &'a Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a>>, Error> {
+/// Converts a Sequence Constructor to a pattern, consuming the constructor. The Constructor must be a Path. The result Constructor is also a path, but it's steps are in reverse.
+pub fn to_pattern<'a>(sc: Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a>>, Error> {
     if sc.len() == 1 {
       match sc[0] {
         Constructor::Path(ref s) => {
@@ -1109,6 +1110,25 @@ pub fn to_pattern<'a>(sc: &'a Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a
 	  }
 	  Ok(vec![Constructor::Path(p)])
         }
+	Constructor::Step(NodeMatch{axis: a, nodetest: ref nt}, _) => {
+	  Ok(vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: match a {
+	          Axis::Child |
+	          Axis::Selfaxis => {
+		    Axis::Selfaxis
+		  }
+	          _ => {
+		    a.opposite()
+		  }
+	        },
+		nodetest: nt.clone()
+	      },
+	      vec![],
+	    )
+	  ])
+	}
         _ => {
           Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
         }
@@ -3720,7 +3740,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let p = to_pattern(&cons).expect("unable to reverse expression");
+      let p = to_pattern(cons).expect("unable to reverse expression");
       let dc = DynamicContext::new();
       assert_eq!(item_matches(&dc, &p, &i), true);
     }
@@ -3739,7 +3759,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let p = to_pattern(&cons).expect("unable to reverse expression");
+      let p = to_pattern(cons).expect("unable to reverse expression");
       let dc = DynamicContext::new();
       assert_eq!(item_matches(&dc, &p, &i), true);
     }
@@ -3757,7 +3777,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let p = to_pattern(&cons).expect("unable to reverse expression");
+      let p = to_pattern(cons).expect("unable to reverse expression");
       let dc = DynamicContext::new();
       assert_eq!(item_matches(&dc, &p, &i), false);
     }
@@ -3779,7 +3799,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let p = to_pattern(&cons).expect("unable to reverse expression");
+      let p = to_pattern(cons).expect("unable to reverse expression");
       let dc = DynamicContext::new();
       assert_eq!(item_matches(&dc, &p, &i), true);
     }
@@ -3800,7 +3820,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let p = to_pattern(&cons1).expect("unable to convert to pattern");
+      let p = to_pattern(cons1).expect("unable to convert to pattern");
       let cons2 = vec![
         Constructor::Literal(Value::String("I found a matching template".to_string())),
       ];
@@ -3827,7 +3847,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let pat1 = to_pattern(&cons1).expect("unable to convert to pattern");
+      let pat1 = to_pattern(cons1).expect("unable to convert to pattern");
       // The constructor for the select expression is "child::*"
       let body1 = vec![
         Constructor::ApplyTemplates(
@@ -3848,7 +3868,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let pat2 = to_pattern(&cons2).expect("unable to convert to pattern");
+      let pat2 = to_pattern(cons2).expect("unable to convert to pattern");
       let body2 = vec![
         Constructor::Literal(Value::String("I found a Level2".to_string())),
       ];
@@ -3863,7 +3883,7 @@ mod tests {
 	      )],
             ]
 	  )];
-      let pat3 = to_pattern(&cons3).expect("unable to convert to pattern");
+      let pat3 = to_pattern(cons3).expect("unable to convert to pattern");
       let body3 = vec![
         Constructor::Literal(Value::String("I found a Level3".to_string())),
       ];

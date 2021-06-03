@@ -14,8 +14,9 @@ A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a 
 let xdoc = roxmltree::Document::parse("<Test/>").expect("parsing XML failed");
 let d = vec![Rc::new(Item::XNode(xdoc.root().first_child().unwrap()))];
 let xpath = parse("/child::Test").expect("XPath parsing failed");
+let dc = DynamicContext::new();
 let seq = evaluate(
-  &DynamicContext::new(),
+  &dc,
   Some(d), Some(0),
   &xpath
 ).expect("evaluation failed");
@@ -60,3 +61,6 @@ pub use xpath::parse;
 
 pub mod evaluate;
 pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
+
+pub mod xslt;
+pub use xslt::from_xnode;
