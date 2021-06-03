@@ -100,8 +100,15 @@ fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Er
 	    }
 	  }
 	}
-	_ => {
-	  Ok(Constructor::NotImplemented("literal element"))
+	(Some(XSLTNS), _) => {
+	  Ok(Constructor::NotImplemented("unsupported XSL element"))
+	}
+	(_, a) => {
+	  Ok(Constructor::LiteralElement(a.to_string(), "".to_string(), "".to_string(),
+	    n.children()
+	      .map(|d| to_constructor(d).expect("failed to compile sequence constructor"))
+	      .collect(),
+	  ))
 	}
       }
     }
@@ -187,5 +194,45 @@ mod tests {
     let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
     assert_eq!(seq.to_string(), "onetwo")
+  }
+  #[test]
+  fn sequence_3() {
+    let mut sc = StaticContext::new_with_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'>X<xsl:sequence select='.'/>Y</xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let mut t = dc.find_match(&i);
+    static_analysis(&mut t, &mut sc);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_string(), "XoneYXtwoY")
+  }
+
+  #[test]
+  fn literal_result_element_1() {
+    let mut sc = StaticContext::new_with_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><MyTest><xsl:apply-templates/></MyTest></xsl:template>
+  <xsl:template match='child::Level1'><MyLevel1><xsl:apply-templates/></MyLevel1></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let mut t = dc.find_match(&i);
+    static_analysis(&mut t, &mut sc);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_xml(), "<MyTest><MyLevel1>one</MyLevel1><MyLevel1>two</MyLevel1></MyTest>")
   }
 }

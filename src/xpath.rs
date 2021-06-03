@@ -32,7 +32,6 @@ use crate::evaluate::{
     Function,
     StaticContext,
 };
-use roxmltree::Node;
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr

@@ -81,6 +81,30 @@ fn evaluate_one<'a>(
 	seq.new_value(l.clone());
 	Ok(seq)
     }
+    // This creates a trees node
+    Constructor::LiteralElement(n, _p, _ns, c) => {
+      let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
+      let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name(n.to_string()));
+
+      // add content to newly created element
+      for i in evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content") {
+        // Item could be a Node or text
+	match &*i {
+	  Item::Node(t) => {
+	    let u = t.clone();
+	    e.push_back(unsafe{u.into_tree()});
+	  }
+	  _ => {
+	    // Values become a text node in the result tree
+	    let u = Tree::new(NodeDefn::new(NodeType::Text).set_value(i.to_string()));
+	    e.push_front(u);
+	  }
+	}
+      }
+
+      d.push_front(e);
+      Ok(vec![Rc::new(Item::Node(d))])
+    }
     Constructor::ContextItem => {
       if ctxt.is_some() {
 	let mut seq = Sequence::new();
@@ -672,6 +696,10 @@ fn find_root(n: RcNode<NodeDefn>) -> RcNode<NodeDefn> {
 pub enum Constructor<'a> {
   /// A literal, atomic value
   Literal(Value),
+  /// A literal element. This will become a node in the result tree.
+  /// TODO: this may be merged with the Literal option in a later version.
+  /// Arguments are: element name, prefix, namespace and content
+  LiteralElement(String, String, String, Vec<Constructor<'a>>),
   /// The context item from the dynamic context
   ContextItem,
   /// Logical OR. Each element of the outer vector is an operand.
@@ -1485,6 +1513,9 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
       Constructor::ContextItem |
       Constructor::Root |
       Constructor::NotImplemented(_) => {}
+      Constructor::LiteralElement(_, _, _, c) => {
+	static_analysis(c, sc)
+      }
     }
   }
 }
@@ -1960,14 +1991,19 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::Literal(l) => {
         format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
       }
+      Constructor::LiteralElement(n, _p, _ns, c) => {
+        format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", n.to_string(),
+	  format_constructor(&c, i + 4),
+	  in=i)
+      }
       Constructor::ContextItem => {
         format!("{:in$} Construct context item", "", in=i)
       }
       Constructor::Or(v) => {
         format!(
 	  "{:in$} Construct OR of:\n{}\n{}", "",
-	  format_constructor(&v[0], 4),
-	  format_constructor(&v[1], 4),
+	  format_constructor(&v[0], i + 4),
+	  format_constructor(&v[1], i + 4),
 	  in=i,
 	)
       }
@@ -3893,6 +3929,57 @@ mod tests {
       assert_eq!(t.len(), 1);
       let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("evaluation failed");
       assert_eq!(seq.to_string(), "I found a Level2I found a Level3")
+    }
+
+    // Literal result element
+
+    #[test]
+    fn literal_element_1() {
+      let dc = DynamicContext::new();
+      let cons = vec![
+        Constructor::LiteralElement("Test".to_string(), "".to_string(), "".to_string(), vec![]),
+      ];
+      let seq = evaluate(&dc, None, None, &cons).expect("evaluation failed");
+      assert_eq!(seq.to_xml(), "<Test/>")
+    }
+    #[test]
+    fn literal_element_2() {
+      let dc = DynamicContext::new();
+      let cons = vec![
+        Constructor::LiteralElement("Test".to_string(), "".to_string(), "".to_string(),
+	  vec![
+	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("Test text".to_string())),
+	      ]
+	    )
+	  ]
+	),
+      ];
+      let seq = evaluate(&dc, None, None, &cons).expect("evaluation failed");
+      assert_eq!(seq.to_xml(), "<Test><Level1>Test text</Level1></Test>")
+    }
+    #[test]
+    fn literal_element_3() {
+      let dc = DynamicContext::new();
+      let cons = vec![
+        Constructor::LiteralElement("Test".to_string(), "".to_string(), "".to_string(),
+	  vec![
+	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("one".to_string())),
+	      ]
+	    ),
+	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("two".to_string())),
+	      ]
+	    ),
+	  ]
+	),
+      ];
+      let seq = evaluate(&dc, None, None, &cons).expect("evaluation failed");
+      assert_eq!(seq.to_xml(), "<Test><Level1>one</Level1><Level1>two</Level1></Test>")
     }
 }
 

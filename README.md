@@ -33,6 +33,8 @@ will result in the same internal format as:
 3. Improve XDM, XPath.
 4. Introduce all v3.0 features to the XSLT engine.
 
+NB. We're picking the low-hanging fruit first. So major, fundamental features of the languages are being implemented to begin with. The fine detail will be added later. So although we're aiming for v1.0 functionality as a baseline, the eventual desire to implement all of v3.0 dictates that some more advanced features will be implemented sooner rather than later.
+
 ## Compliance
 
 Status of [docs/compliance.md](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) with XDM, XPath, XQuery, and XSLT.
