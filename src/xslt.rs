@@ -56,7 +56,7 @@ pub fn from_xnode<'a>(d: &'a Document<'a>) -> Result<DynamicContext<'a>, Error> 
 }
 
 /// Compile a node in a template to a sequence constructor
-fn to_constructor<'a>(n: Node) -> Result<Constructor<'a>, Error> {
+fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Error> {
   match n.node_type() {
     roxmltree::NodeType::Text => {
       match n.text() {
@@ -85,6 +85,20 @@ fn to_constructor<'a>(n: Node) -> Result<Constructor<'a>, Error> {
 	      )
 	    ]
 	  ))
+	}
+        (Some(XSLTNS), "sequence") => {
+	  match n.attribute("select") {
+	    Some(s) => {
+	      let cons = parse(s.clone()).expect("failed to compile select attribute");
+	      if cons.len() > 1 {
+	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "select attribute has more than one sequence constructor".to_string()})
+	      }
+	      Ok(cons[0].clone())
+	    }
+	    None => {
+	      return Result::Err(Error{kind: ErrorKind::TypeError, message: "missing select attribute".to_string()})
+	    }
+	  }
 	}
 	_ => {
 	  Ok(Constructor::NotImplemented("literal element"))
@@ -135,5 +149,43 @@ mod tests {
     let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
     assert_eq!(seq.to_string(), "found textfound text")
+  }
+
+  #[test]
+  fn sequence_1() {
+    let mut sc = StaticContext::new_with_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:sequence select='count(child::*)'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let mut t = dc.find_match(&i);
+    static_analysis(&mut t, &mut sc);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_string(), "2")
+  }
+  #[test]
+  fn sequence_2() {
+    let mut sc = StaticContext::new_with_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let mut t = dc.find_match(&i);
+    static_analysis(&mut t, &mut sc);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_string(), "onetwo")
   }
 }

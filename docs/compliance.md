@@ -181,8 +181,8 @@ xsl:analyze-string/@select|no|
 xsl:analyze-string/@regex|no|
 xsl:analyze-string/@flags|no|
 xsl:apply-imports|no|
-xsl:apply-templates|evaluate|Functionality has been added to evaluate module
-xsl:apply-templates/@select|evaluate|
+xsl:apply-templates|yes|
+xsl:apply-templates/@select|evaluate|Functionality has been added to evaluate module
 xsl:apply-templates/@mode|no|
 xsl:assert|no|
 xsl:assert/@test|no|
@@ -457,8 +457,8 @@ xsl:result-document/@suppress-indentation|no|
 xsl:result-document/@undeclare-prefixes|no|
 xsl:result-document/@use-character-maps|no|
 xsl:result-document/@output-version|no|
-xsl:sequence|no|
-xsl:sequence/@select|no|
+xsl:sequence|yes|
+xsl:sequence/@select|yes|
 xsl:sort|no|
 xsl:sort/@select|no|
 xsl:sort/@lang|no|
@@ -475,7 +475,7 @@ xsl:source-document/@validation|no|
 xsl:source-document/@type|no|
 xsl:strip-space|no|
 xsl:strip-space/@elements|no|
-xsl:stylesheet|no|
+xsl:stylesheet|yes|
 xsl:stylesheet/@id|no|
 xsl:stylesheet/@version|no|
 xsl:stylesheet/@default-mode|no|
@@ -487,8 +487,8 @@ xsl:stylesheet/@exclude-result-prefixes|no|
 xsl:stylesheet/@expand-text|no|
 xsl:stylesheet/@use-when|no|
 xsl:stylesheet/@xpath-default-namespace|no|
-xsl:template|evaluate|Functionality has been added to evaluate module
-xsl:template/@match|evaluate|
+xsl:template|yes|
+xsl:template/@match|yes|
 xsl:template/@name|no|
 xsl:template/@priority|no|
 xsl:template/@mode|no|
@@ -496,7 +496,7 @@ xsl:template/@as|no|
 xsl:template/@visibility|no|
 xsl:text|no|
 xsl:text/@disable-output-escaping|no|
-xsl:transform|no|
+xsl:transform|yes|
 xsl:try|no|
 xsl:try/@select|no|
 xsl:try/@rollback-output|no|
