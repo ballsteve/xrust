@@ -182,7 +182,7 @@ xsl:analyze-string/@regex|no|
 xsl:analyze-string/@flags|no|
 xsl:apply-imports|no|
 xsl:apply-templates|yes|
-xsl:apply-templates/@select|evaluate|Functionality has been added to evaluate module
+xsl:apply-templates/@select|yes|
 xsl:apply-templates/@mode|no|
 xsl:assert|no|
 xsl:assert/@test|no|

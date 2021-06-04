@@ -120,19 +120,27 @@ fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Er
     roxmltree::NodeType::Element => {
       match (n.tag_name().namespace(), n.tag_name().name()) {
         (Some(XSLTNS), "apply-templates") => {
-	  // TODO: select attribute
-	  // If there is no select attribute, then default is "child::node()"
-	  Ok(Constructor::ApplyTemplates(
-	    vec![
-	      Constructor::Step(
-	        NodeMatch{
-	      	  axis: Axis::Child,
-	      	  nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-	    	},
-	    	vec![]
-	      )
-	    ]
-	  ))
+	  match n.attribute("select") {
+	    Some(sel) => {
+	      Ok(Constructor::ApplyTemplates(
+	        parse(sel.clone()).expect("failed to compile select attribute")
+	      ))
+	    }
+	    None => {
+	      // If there is no select attribute, then default is "child::node()"
+	      Ok(Constructor::ApplyTemplates(
+	        vec![
+	      	  Constructor::Step(
+	            NodeMatch{
+	      	      axis: Axis::Child,
+	      	      nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	    	    },
+	    	    vec![]
+	      	  )
+	    	]
+	      ))
+	    }
+	  }
 	}
         (Some(XSLTNS), "sequence") => {
 	  match n.attribute("select") {
@@ -189,7 +197,7 @@ mod tests {
   }
 
   #[test]
-  fn apply_templates() {
+  fn apply_templates_1() {
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
@@ -204,6 +212,24 @@ mod tests {
     let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
     assert_eq!(seq.to_string(), "found textfound text")
+  }
+  #[test]
+  fn apply_templates_2() {
+    let instxml = roxmltree::Document::parse("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates select='child::text()'/></xsl:template>
+  <xsl:template match='child::Level1'>found Level1 element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let t = dc.find_match(&i);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_string(), "onetwothreefour")
   }
 
   #[test]
