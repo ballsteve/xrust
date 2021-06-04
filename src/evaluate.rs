@@ -502,7 +502,7 @@ fn evaluate_one<'a>(
       	  g(ctxt, posn, b)
 	}
 	None => {
-	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "call to undefined function".to_string()})
+	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("call to undefined function \"{}\"", f.name)})
 	}
       }
     }
@@ -1461,7 +1461,7 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
 	static_analysis(a, sc);
       }
       Constructor::FunctionCall(f, a) => {
-        // Fill in function body
+	// Fill in function body
 	match sc.funcs.borrow().get(&f.name) {
 	  Some(g) => {
 	    f.body.replace(g.body.unwrap());
