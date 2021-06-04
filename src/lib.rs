@@ -35,16 +35,39 @@ An explanation of the above example:
 5. The evaluation should return a sequence with one item.
 6. That item is the root element of the original XML document.
 
+See the [xslt] module for an example of how to evaluate an XSL stylesheet.
+
 ## Status
 
-The project, so far, is a proof-of-concept. It provides most of XPath v1.0 functionality, with some v2.0 and v3.2 features.
+The project, so far, is a proof-of-concept.
+
+For XPath it provides most of v1.0 functionality, with some v2.0 and v3.2 features.
+
+For XSLT, the implementation has barely started. To begin with it only supports literal result elements and literal text.
 
 The library has not been extensively tested.
 
 ## Plan
 
-1. Implement a simple XQuery application.
+1. ~~~Implement a simple XQuery application.~~~ (We've decided to go straight to XSLT)
 2. Implement a v3.1 XSLT engine.
+
+## Goals / Future Work
+
+- The library should always return errors, i.e. it should not panic
+- The library should use Traits for tree navigation and construction
+- Make the library more idiomatically Rust
+
+## Contributions
+
+We need your help!
+
+- Download the crate and try it out. Tell us what you like or don't like. How can it be improved?
+- Let us know what doesn't work. [Submit a bug report.](https://github.com/ballsteve/xrust/issues/new/choose)
+- Do you need more documentation? There can never be enough!
+- Add some tests.
+- Write some code.
+- Donate resources (i.e. $$$)
 
 */
 

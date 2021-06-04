@@ -1,6 +1,50 @@
-//! # An XSLT compiler
-//!
-//! Compile an XSLT stylesheet into a sequence constructor.
+/*! ## An XSLT compiler
+
+Compile an XSLT stylesheet into a [Sequence] [Constructor].
+
+Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
+
+```rust
+# use std::rc::Rc;
+# use xrust::xdmerror::*;
+# use xrust::item::*;
+# use roxmltree::{Document, Node};
+# use xrust::evaluate::*;
+# use xrust::xpath::*;
+# use xrust::xslt::*;
+
+// We're going to need to statically analyze the sequence constructor later on
+let mut sc = StaticContext::new_with_builtins();
+
+// This is the source document for the transformation
+let source = roxmltree::Document::parse("<Test>Check, one, two</Test>")
+  .expect("failed to parse source document");
+
+// This is the stylesheet document
+let style = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><html><body><xsl:apply-templates/></body></html></xsl:template>
+  <xsl:template match='child::text()'><p><xsl:sequence select='.'/></p></xsl:template>
+</xsl:stylesheet>")
+  .expect("failed to parse stylesheet document");
+
+// Now compile the stylesheet
+let dc = from_xnode(&style).expect("failed to compile stylesheet");
+
+// The source document root node is the initial context.
+// Find the template that matches it,
+// and use that to start the transformation
+let item = Rc::new(Item::XNode(source.root().first_child().unwrap()));
+let mut template = dc.find_match(&item);
+static_analysis(&mut template, &mut sc);
+
+// Now evaluate the stylesheet
+let sequence = evaluate(&dc, Some(vec![item.clone()]), Some(0), &template)
+  .expect("stylesheet evaluation failed");
+
+assert_eq!(sequence.to_xml(), "<html><body><p>Check, one, two</p></body></html>")
+```
+
+*/
 
 use std::rc::Rc;
 use crate::xdmerror::*;
@@ -12,6 +56,10 @@ use crate::xpath::*;
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles an XML document into a Sequence Constructor.
+///
+/// This function takes a [roxmltree::Document](https://docs.rs/roxmltree/0.14.1/roxmltree/struct.Document.html) as its argument.
+///
+/// If the stylesheet creates any elements in the result tree, they are created as [trees](https://crates.io/crates/trees) Nodes.
 pub fn from_xnode<'a>(d: &'a Document<'a>) -> Result<DynamicContext<'a>, Error> {
     let mut dc = DynamicContext::new();
 
