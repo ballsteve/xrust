@@ -177,6 +177,76 @@ fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Er
 	    }
 	  }
 	}
+	(Some(XSLTNS), "choose") => {
+	  let mut when: Vec<Vec<Constructor>> = Vec::new();
+	  let mut otherwise: Vec<Constructor> = Vec::new();
+	  let mut itr = n.children();
+
+	  loop {
+	    match itr.next() {
+	      Some(m) => {
+	        // look for when elements
+	      	// then find an otherwise
+	      	// fail on anything else (apart from whitespace, comments, PIs)
+		match m.node_type() {
+		  roxmltree::NodeType::Element => {
+      		    match (m.tag_name().namespace(), m.tag_name().name()) {
+        	      (Some(XSLTNS), "when") => {
+		        if otherwise.len() == 0 {
+			  match m.attribute("test") {
+			    Some(t) => {
+			      when.push(
+		    	        parse(t.clone()).expect("failed to compile test attribute")
+			      );
+			      when.push(
+		    	        m.children()
+		      		  .map(|d| to_constructor(d).expect("failed to compile when content"))
+		      		  .collect()
+			      );
+			    }
+	    		    None => {
+	      		      return Result::Err(Error{kind: ErrorKind::TypeError, message: "missing test attribute".to_string()})
+	    		    }
+			  }
+			} else {
+			  return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: when follows otherwise".to_string()})
+			}
+		      }
+        	      (Some(XSLTNS), "otherwise") => {
+		        if when.len() != 0 {
+			  otherwise = m.children()
+		      	    .map(|d| to_constructor(d).expect("failed to compile otherwise content"))
+		      	    .collect()
+			} else {
+			  return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: no when elements".to_string()})
+			}
+		      }
+		      _ => {
+			 return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid element content in choose element".to_string()})
+		      }
+		    }
+		  }
+		  roxmltree::NodeType::Text => {
+		    if !n.text().unwrap().trim().is_empty() {
+		      return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string()})
+		    }
+		  }
+		  roxmltree::NodeType::Comment |
+		  roxmltree::NodeType::PI => {}
+		  _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string()})
+		}
+	      }
+	      None => break,
+	    }
+	  }
+
+	  Ok(
+	    Constructor::Switch(
+	      when,
+	      otherwise,
+	    )
+	  )
+	}
 	(Some(XSLTNS), _) => {
 	  Ok(Constructor::NotImplemented("unsupported XSL element"))
 	}
@@ -337,6 +407,25 @@ mod tests {
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Level1'><xsl:if test='child::text()'>has text</xsl:if><xsl:if test='not(child::text())'>no text</xsl:if></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml, &sc).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let t = dc.find_match(&i);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_xml(), "has texthas textno text")
+  }
+
+  #[test]
+  fn choose_1() {
+    let sc = StaticContext::new_with_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1><Level1/></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:choose><xsl:when test='child::text()'>has text</xsl:when><xsl:otherwise>no text</xsl:otherwise></xsl:choose></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XSL stylesheet");
     let dc = from_xnode(&stylexml, &sc).expect("failed to compile stylesheet");
 

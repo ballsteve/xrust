@@ -210,7 +210,7 @@ xsl:catch/@errors|no|
 xsl:character-map|no|
 xsl:character-map/@name|no|
 xsl:character-map/@use-character-maps|no|
-xsl:choose|no|
+xsl:choose|yes|
 xsl:comment|no|
 xsl:comment/@select|no|
 xsl:context-item|no|
@@ -287,8 +287,8 @@ xsl:function/@cache|no|
 xsl:global-context-item|no|
 xsl:global-context-item/@as|no|
 xsl:global-context-item/@use|no|
-xsl:if|no|
-xsl:if/@test|no|
+xsl:if|yes|
+xsl:if/@test|yes|
 xsl:import|no|
 xsl:import/@href|no|
 xsl:import-schema|no|
@@ -513,8 +513,8 @@ xsl:variable/@select|no|
 xsl:variable/@as|no|
 xsl:variable/@static|no|
 xsl:variable/@visibility|no|
-xsl:when|no|
-xsl:when/@test|no|
+xsl:when|yes|
+xsl:when/@test|yes|
 xsl:where-populated|no|
 xsl:with-param|no|
 xsl:with-param/@name|no|
