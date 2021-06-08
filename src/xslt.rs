@@ -247,6 +247,24 @@ fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Er
 	    )
 	  )
 	}
+	(Some(XSLTNS), "for-each") => {
+	  match n.attribute("select") {
+	    Some(s) => {
+	      Ok(
+	        Constructor::ForEach(
+		  parse(s.clone()).expect("failed to compile select attribute"),
+		  n.children()
+		    .map(|d| to_constructor(d).expect("failed to compile for-each content"))
+		    .collect(),
+		  None,
+		)
+	      )
+	    }
+	    None => {
+	      return Result::Err(Error{kind: ErrorKind::TypeError, message: "missing select attribute".to_string()})
+	    }
+	  }
+	}
 	(Some(XSLTNS), _) => {
 	  Ok(Constructor::NotImplemented("unsupported XSL element"))
 	}
@@ -436,5 +454,24 @@ mod tests {
     let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
     assert_eq!(seq.to_xml(), "has texthas textno text")
+  }
+
+  #[test]
+  fn foreach_1() {
+    let sc = StaticContext::new_with_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each select='child::*'><group><xsl:apply-templates/></group></xsl:for-each></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml, &sc).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let t = dc.find_match(&i);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    assert_eq!(seq.to_xml(), "<group>one</group><group>two</group>")
   }
 }

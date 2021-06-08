@@ -265,8 +265,8 @@ xsl:expose/@component|no|
 xsl:expose/@names|no|
 xsl:expose/@visibility|no|
 xsl:fallback|no|
-xsl:for-each|no|
-xsl:for-each/@select|no|
+xsl:for-each|yes|
+xsl:for-each/@select|yes|
 xsl:for-each-group|no|
 xsl:for-each-group/@select|no|
 xsl:for-each-group/@group-by|no|

@@ -608,6 +608,27 @@ fn evaluate_one<'a>(
         )
       )
     }
+    Constructor::ForEach(s, t, _g) => {
+      // Evaluate 's' to find the nodes to iterate over
+      // Use 'g' to group the nodes
+      // Evaluate 't' for each group
+      let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
+      // Divide sel into groups: each item in groups is an individual group
+      let mut groups = Vec::new();
+      for i in sel {
+        groups.push(vec![i.clone()]);
+      }
+      // To start with, just process a single group (i.e. for-each rather than for-each-group)
+      Ok(groups.iter().fold(
+        vec![],
+	|mut result, grp| {
+	  // TODO: set current-grouping-key, current-group
+	  let mut tmp = evaluate(dc, Some(grp.to_vec()), Some(0), t).expect("failed to evaluate template");
+	  result.append(&mut tmp);
+	  result
+	}
+      ))
+    }
     Constructor::NotImplemented(m) => {
       Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
     }
@@ -759,8 +780,22 @@ pub enum Constructor<'a> {
   /// Find a matching template and evaluate its sequence constructor.
   /// The argument is the select attribute.
   ApplyTemplates(Vec<Constructor<'a>>),
+  /// Evaluate a sequence constructor for each item, possibly grouped.
+  /// First argument is the select expression, second argument is the template,
+  /// third argument is the (optional) grouping spec.
+  ForEach(Vec<Constructor<'a>>, Vec<Constructor<'a>>, Option<Grouping>),
   /// Something that is not yet implemented
   NotImplemented(&'static str),
+}
+
+/// Determine how a collection is to be divided into groups.
+/// This enum would normally be inside an Option. The None value means that the collection is not to be grouped.
+#[derive(Clone)]
+pub enum Grouping {
+  By,
+  StartingWith,
+  EndingWith,
+  Adjacent,
 }
 
 /// Determine if an item matches a pattern.
@@ -1509,6 +1544,10 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
       Constructor::ApplyTemplates(s) => {
 	static_analysis(s, sc)
       }
+      Constructor::ForEach(s, t, _g) => {
+	static_analysis(s, sc);
+	static_analysis(t, sc);
+      }
       Constructor::Literal(_) |
       Constructor::ContextItem |
       Constructor::Root |
@@ -2073,6 +2112,9 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       }
       Constructor::ApplyTemplates(_) => {
         format!("{:in$} apply-templates constructor", "", in=i)
+      }
+      Constructor::ForEach(_, _, _) => {
+        format!("{:in$} for-each constructor", "", in=i)
       }
       Constructor::NotImplemented(m) => {
         format!("{:in$} NotImplemented constructor: {}", "", m, in=i)
@@ -3981,5 +4023,39 @@ mod tests {
       let seq = evaluate(&dc, None, None, &cons).expect("evaluation failed");
       assert_eq!(seq.to_xml(), "<Test><Level1>one</Level1><Level1>two</Level1></Test>")
     }
+
+    // for-each, for-each-group
+
+    #[test]
+    fn foreach_1() {
+      let d = roxmltree::Document::parse("<Test><Level2></Level2><Level3></Level3></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      let dc = DynamicContext::new();
+      let cons = vec![
+        Constructor::ForEach(
+	  vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: Axis::Child,
+	      	nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	      },
+	      vec![]
+	    ),
+	  ],
+	  vec![
+	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("a group".to_string())),
+	      ]
+	    ),
+	  ],
+	  None,
+	),
+      ];
+      let seq = evaluate(&dc, Some(vec![i]), Some(0), &cons).expect("evaluation failed");
+      assert_eq!(seq.to_xml(), "<Group>a group</Group><Group>a group</Group>")
+    }
+
 }
 
