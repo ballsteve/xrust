@@ -608,17 +608,45 @@ fn evaluate_one<'a>(
         )
       )
     }
-    Constructor::ForEach(s, t, _g) => {
+    Constructor::ForEach(s, t, g) => {
       // Evaluate 's' to find the nodes to iterate over
       // Use 'g' to group the nodes
       // Evaluate 't' for each group
       let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
       // Divide sel into groups: each item in groups is an individual group
       let mut groups = Vec::new();
-      for i in sel {
-        groups.push(vec![i.clone()]);
+      let mut keys = Vec::new();
+      match g {
+        Some(Grouping::By(h)) => {
+	  // 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
+	  // Items are placed in the group with a matching key
+	  let mut map = HashMap::new();
+	  for i in sel {
+	    let keys = evaluate(dc, Some(vec![i.clone()]), Some(0), h).expect("failed to evaluate key");
+	    for j in keys {
+	      let e = map.entry(j.to_string()).or_insert(vec![]);
+	      e.push(i.clone());
+	    }
+	  }
+	  // Now construct the groups and a pair-wise vector of keys
+	  for (k, v) in map.iter() {
+	    keys.push(k);
+	    groups.push(v.to_vec());
+	  }
+	}
+        Some(Grouping::Adjacent(_h)) => {
+	}
+        Some(Grouping::StartingWith(_h)) => {
+	}
+        Some(Grouping::EndingWith(_h)) => {
+	}
+        None => {
+	  for i in sel {
+            groups.push(vec![i.clone()]);
+	  }
+	}
       }
-      // To start with, just process a single group (i.e. for-each rather than for-each-group)
+
       Ok(groups.iter().fold(
         vec![],
 	|mut result, grp| {
@@ -783,7 +811,7 @@ pub enum Constructor<'a> {
   /// Evaluate a sequence constructor for each item, possibly grouped.
   /// First argument is the select expression, second argument is the template,
   /// third argument is the (optional) grouping spec.
-  ForEach(Vec<Constructor<'a>>, Vec<Constructor<'a>>, Option<Grouping>),
+  ForEach(Vec<Constructor<'a>>, Vec<Constructor<'a>>, Option<Grouping<'a>>),
   /// Something that is not yet implemented
   NotImplemented(&'static str),
 }
@@ -791,11 +819,11 @@ pub enum Constructor<'a> {
 /// Determine how a collection is to be divided into groups.
 /// This enum would normally be inside an Option. The None value means that the collection is not to be grouped.
 #[derive(Clone)]
-pub enum Grouping {
-  By,
-  StartingWith,
-  EndingWith,
-  Adjacent,
+pub enum Grouping<'a> {
+  By(Vec<Constructor<'a>>),
+  StartingWith(Vec<Constructor<'a>>),
+  EndingWith(Vec<Constructor<'a>>),
+  Adjacent(Vec<Constructor<'a>>),
 }
 
 /// Determine if an item matches a pattern.
@@ -4051,6 +4079,38 @@ mod tests {
 	    ),
 	  ],
 	  None,
+	),
+      ];
+      let seq = evaluate(&dc, Some(vec![i]), Some(0), &cons).expect("evaluation failed");
+      assert_eq!(seq.to_xml(), "<Group>a group</Group><Group>a group</Group>")
+    }
+    #[test]
+    fn foreach_2() {
+      let d = roxmltree::Document::parse("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      let dc = DynamicContext::new();
+      let cons = vec![
+        Constructor::ForEach(
+	  vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: Axis::Child,
+	      	nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	      },
+	      vec![]
+	    ),
+	  ],
+	  vec![
+	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("a group".to_string())),
+	      ]
+	    ),
+	  ],
+	  Some(Grouping::By(
+	    vec![Constructor::ContextItem],
+	  )),
 	),
       ];
       let seq = evaluate(&dc, Some(vec![i]), Some(0), &cons).expect("evaluation failed");
