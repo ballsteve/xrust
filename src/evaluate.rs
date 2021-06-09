@@ -61,6 +61,13 @@ impl<'a> DynamicContext<'a> {
   pub fn pop_current_grouping_key(&self) {
     self.current_grouping_key.borrow_mut().pop();
   }
+
+  pub fn push_current_group(&self, g: Sequence<'a>) {
+    self.current_group.borrow_mut().push(Some(g));
+  }
+  pub fn pop_current_group(&self) {
+    self.current_group.borrow_mut().pop();
+  }
 }
 
 /// Evaluate a sequence constructor, given a dynamic context.
@@ -661,13 +668,17 @@ fn evaluate_one<'a>(
 	  let (o, v) = grp;
 	  // set current-grouping-key, current-group
 	  match o {
-	    Some(u) => {dc.push_current_grouping_key(Item::Value(Value::String(u.to_string())));}
+	    Some(u) => {
+	      dc.push_current_grouping_key(Item::Value(Value::String(u.to_string())));
+	      dc.push_current_group(v.clone());
+	    }
 	    None => {}
 	  }
 	  let mut tmp = evaluate(dc, Some(v.to_vec()), Some(0), t).expect("failed to evaluate template");
 	  result.append(&mut tmp);
 	  // Restore current-grouping-key, current-group
 	  dc.pop_current_grouping_key();
+	  dc.pop_current_group();
 	  result
 	}
       ))
@@ -1527,6 +1538,15 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_current_grouping_key)
       }
     );
+    sc.funcs.borrow_mut().insert("current-group".to_string(),
+      Function{
+        name: "current-group".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_current_group)
+      }
+    );
 
     sc
   }
@@ -2078,6 +2098,20 @@ fn func_current_grouping_key<'a>(dc: &'a DynamicContext<'a>, _ctxt: Option<Seque
     }
     None => {
       Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current grouping key"),})
+    }
+  }
+}
+
+fn func_current_group<'a>(dc: &'a DynamicContext<'a>, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match dc.current_group.borrow().last() {
+    Some(k) => {
+      match k {
+        Some(l) => Ok(l.clone()),
+	None => Ok(vec![]),
+      }
+    }
+    None => {
+      Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current group"),})
     }
   }
 }

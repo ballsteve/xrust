@@ -526,7 +526,7 @@ xsl:with-param/@tunnel|no|
 
 current|no|
 current-grouping-key|yes|
-current-group|no|
+current-group|yes|
 key|no|
 unparsed-entity-uri|no|
 unparsed-entity-public-id|no|
