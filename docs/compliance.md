@@ -522,4 +522,14 @@ xsl:with-param/@select|no|
 xsl:with-param/@as|no|
 xsl:with-param/@tunnel|no|
 
+## XSLT Functions
+
+current|no|
+current-grouping-key|yes|
+current-group|no|
+key|no|
+unparsed-entity-uri|no|
+unparsed-entity-public-id|no|
+system-property|no|
+available-system-properties|no|
 

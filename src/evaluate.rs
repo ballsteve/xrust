@@ -21,6 +21,8 @@ use json::{JsonValue, object};
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence<'a>>>>,
   templates: Vec<Template<'a>>,
+  current_grouping_key: RefCell<Vec<Option<Rc<Item<'a>>>>>,
+  current_group: RefCell<Vec<Option<Sequence<'a>>>>,
 }
 
 impl<'a> DynamicContext<'a> {
@@ -28,7 +30,9 @@ impl<'a> DynamicContext<'a> {
   pub fn new() -> DynamicContext<'a> {
     DynamicContext{
       vars: RefCell::new(HashMap::new()),
-      templates: Vec::new()
+      templates: Vec::new(),
+      current_grouping_key: RefCell::new(vec![None]),
+      current_group: RefCell::new(vec![None]),
     }
   }
 
@@ -51,6 +55,12 @@ impl<'a> DynamicContext<'a> {
     }
   }
 
+  pub fn push_current_grouping_key(&self, k: Item<'a>) {
+    self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
+  }
+  pub fn pop_current_grouping_key(&self) {
+    self.current_grouping_key.borrow_mut().pop();
+  }
 }
 
 /// Evaluate a sequence constructor, given a dynamic context.
@@ -499,7 +509,7 @@ fn evaluate_one<'a>(
             b.push(evaluate(dc, ctxt.clone(), posn, c).expect("argument evaluation failed"))
       	  }
       	  // Invoke the function
-      	  g(ctxt, posn, b)
+      	  g(dc, ctxt, posn, b)
 	}
 	None => {
 	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("call to undefined function \"{}\"", f.name)})
@@ -615,7 +625,6 @@ fn evaluate_one<'a>(
       let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
       // Divide sel into groups: each item in groups is an individual group
       let mut groups = Vec::new();
-      let mut keys = Vec::new();
       match g {
         Some(Grouping::By(h)) => {
 	  // 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
@@ -630,8 +639,7 @@ fn evaluate_one<'a>(
 	  }
 	  // Now construct the groups and a pair-wise vector of keys
 	  for (k, v) in map.iter() {
-	    keys.push(k);
-	    groups.push(v.to_vec());
+	    groups.push((Some(k.clone()), v.to_vec()));
 	  }
 	}
         Some(Grouping::Adjacent(_h)) => {
@@ -642,7 +650,7 @@ fn evaluate_one<'a>(
 	}
         None => {
 	  for i in sel {
-            groups.push(vec![i.clone()]);
+            groups.push((None, vec![i.clone()]));
 	  }
 	}
       }
@@ -650,9 +658,16 @@ fn evaluate_one<'a>(
       Ok(groups.iter().fold(
         vec![],
 	|mut result, grp| {
-	  // TODO: set current-grouping-key, current-group
-	  let mut tmp = evaluate(dc, Some(grp.to_vec()), Some(0), t).expect("failed to evaluate template");
+	  let (o, v) = grp;
+	  // set current-grouping-key, current-group
+	  match o {
+	    Some(u) => {dc.push_current_grouping_key(Item::Value(Value::String(u.to_string())));}
+	    None => {}
+	  }
+	  let mut tmp = evaluate(dc, Some(v.to_vec()), Some(0), t).expect("failed to evaluate template");
 	  result.append(&mut tmp);
+	  // Restore current-grouping-key, current-group
+	  dc.pop_current_grouping_key();
 	  result
 	}
       ))
@@ -1495,6 +1510,24 @@ impl<'a> StaticContext<'a> {
 	body: Some(func_round)
       }
     );
+
+    sc
+  }
+  /// Create a new StaticContext with builtin functions defined,
+  /// including additional functions defined by XSLT.
+  pub fn new_with_xslt_builtins() -> StaticContext<'a> {
+    let sc = StaticContext::new_with_builtins();
+
+    sc.funcs.borrow_mut().insert("current-grouping-key".to_string(),
+      Function{
+        name: "current-grouping-key".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_current_grouping_key)
+      }
+    );
+
     sc
   }
   /// Declares a function in the static context. The first argument is the name of the function. The second argument is the namespace URI (not currently supported). The third argument defines the arity of the function, and the types of each parameter (not currently supported).
@@ -1590,6 +1623,7 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
 // Functions
 
 pub type FunctionImpl<'a> = fn(
+    &'a DynamicContext<'a>,
     Option<Sequence<'a>>,		// Context
     Option<usize>,		// Context position
     Vec<Sequence<'a>>,		// Actual parameters
@@ -1623,7 +1657,7 @@ impl Param {
   }
 }
 
-fn func_position<'a>(_ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_position<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match posn {
     Some(u) => {
       Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))])
@@ -1632,7 +1666,7 @@ fn func_position<'a>(_ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Ve
   }
 }
 
-fn func_last<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_last<'a>(_: &DynamicContext, ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match ctxt {
     Some(u) => {
       Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))])
@@ -1641,7 +1675,7 @@ fn func_last<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Se
   }
 }
 
-fn func_count<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_count<'a>(_: &DynamicContext, ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match args.len() {
     0 => {
       // count the context items
@@ -1658,7 +1692,7 @@ fn func_count<'a>(ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Se
   }
 }
 
-fn func_localname<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_localname<'a>(_: &DynamicContext, ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
@@ -1676,7 +1710,7 @@ fn func_localname<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Ve
 }
 
 // TODO: handle qualified names
-fn func_name<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_name<'a>(_: &DynamicContext, ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
@@ -1694,7 +1728,7 @@ fn func_name<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, _args: Vec<Seq
 }
 
 // TODO: implement string value properly
-fn func_string<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_string<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   match args.len() {
     1 => {
       // return string value
@@ -1704,7 +1738,7 @@ fn func_string<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
   }
 }
 
-fn func_concat<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_concat<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   Ok(vec![Rc::new(Item::Value(Value::String(
     args.iter().fold(
       String::new(),
@@ -1716,7 +1750,7 @@ fn func_concat<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
   )))])
 }
 
-fn func_startswith<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_startswith<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
      // arg[0] is the string to search
@@ -1729,7 +1763,7 @@ fn func_startswith<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: 
   }
 }
 
-fn func_contains<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_contains<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
      // arg[0] is the string to search
@@ -1742,7 +1776,7 @@ fn func_contains<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Ve
   }
 }
 
-fn func_substring<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_substring<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 2 or 3 arguments
   match args.len() {
     2 => {
@@ -1765,7 +1799,7 @@ fn func_substring<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: V
   }
 }
 
-fn func_substringbefore<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_substringbefore<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
@@ -1794,7 +1828,7 @@ fn func_substringbefore<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, a
   }
 }
 
-fn func_substringafter<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_substringafter<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
@@ -1823,7 +1857,7 @@ fn func_substringafter<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, ar
   }
 }
 
-fn func_normalizespace<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_normalizespace<'a>(_: &DynamicContext, ctxt: Option<Sequence<'a>>, posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 0 or 1 arguments
   let s: Result<Option<String>, Error> = match args.len() {
     0 => {
@@ -1858,7 +1892,7 @@ fn func_normalizespace<'a>(ctxt: Option<Sequence<'a>>, posn: Option<usize>, args
   }
 }
 
-fn func_translate<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_translate<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 3 arguments
   match args.len() {
     3 => {
@@ -1904,7 +1938,7 @@ fn func_translate<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: V
   }
 }
 
-fn func_boolean<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_boolean<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 arguments
   match args.len() {
     1 => {
@@ -1914,7 +1948,7 @@ fn func_boolean<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec
   }
 }
 
-fn func_not<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_not<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 arguments
   match args.len() {
     1 => {
@@ -1924,7 +1958,7 @@ fn func_not<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Seq
   }
 }
 
-fn func_true<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_true<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 0 arguments
   match args.len() {
     0 => {
@@ -1934,7 +1968,7 @@ fn func_true<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Se
   }
 }
 
-fn func_false<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_false<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 0 arguments
   match args.len() {
     0 => {
@@ -1944,7 +1978,7 @@ fn func_false<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<S
   }
 }
 
-fn func_number<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_number<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 argument
   match args.len() {
     1 => {
@@ -1970,7 +2004,7 @@ fn func_number<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<
   }
 }
 
-fn func_sum<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_sum<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 argument
   match args.len() {
     1 => {
@@ -1980,7 +2014,7 @@ fn func_sum<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Seq
   }
 }
 
-fn func_floor<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_floor<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
     1 => {
@@ -1995,7 +2029,7 @@ fn func_floor<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<S
   }
 }
 
-fn func_ceiling<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_ceiling<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
     1 => {
@@ -2010,7 +2044,7 @@ fn func_ceiling<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec
   }
 }
 
-fn func_round<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+fn func_round<'a>(_: &DynamicContext, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
   // must have 1 or 2 arguments
   match args.len() {
     1 => {
@@ -2031,6 +2065,20 @@ fn func_round<'a>(_ctxt: Option<Sequence<'a>>, _posn: Option<usize>, args: Vec<S
       }
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+fn func_current_grouping_key<'a>(dc: &'a DynamicContext<'a>, _ctxt: Option<Sequence<'a>>, _posn: Option<usize>, _args: Vec<Sequence<'a>>) -> Result<Sequence<'a>, Error> {
+  match dc.current_grouping_key.borrow().last() {
+    Some(k) => {
+      match k {
+        Some(l) => Ok(vec![l.clone()]),
+	None => Ok(vec![]),
+      }
+    }
+    None => {
+      Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current grouping key"),})
+    }
   }
 }
 

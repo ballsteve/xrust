@@ -315,7 +315,7 @@ mod tests {
 
   #[test]
   fn literal_text() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'>Found an element</xsl:template>
@@ -333,7 +333,7 @@ mod tests {
 
   #[test]
   fn apply_templates_1() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
@@ -351,7 +351,7 @@ mod tests {
   }
   #[test]
   fn apply_templates_2() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates select='child::text()'/></xsl:template>
@@ -371,7 +371,7 @@ mod tests {
 
   #[test]
   fn sequence_1() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'><xsl:sequence select='count(child::*)'/></xsl:template>
@@ -388,7 +388,7 @@ mod tests {
   }
   #[test]
   fn sequence_2() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
@@ -406,7 +406,7 @@ mod tests {
   }
   #[test]
   fn sequence_3() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
@@ -425,7 +425,7 @@ mod tests {
 
   #[test]
   fn literal_result_element_1() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><MyTest><xsl:apply-templates/></MyTest></xsl:template>
@@ -445,7 +445,7 @@ mod tests {
 
   #[test]
   fn if_1() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1><Level1/></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
@@ -464,7 +464,7 @@ mod tests {
 
   #[test]
   fn choose_1() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1><Level1/></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
@@ -483,7 +483,7 @@ mod tests {
 
   #[test]
   fn foreach_1() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:for-each select='child::*'><group><xsl:apply-templates/></group></xsl:for-each></xsl:template>
@@ -502,11 +502,11 @@ mod tests {
 
   #[test]
   fn foreach_2() {
-    let sc = StaticContext::new_with_builtins();
+    let sc = StaticContext::new_with_xslt_builtins();
     let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("failed to parse instance XML document");
     let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:apply-templates/></group></xsl:for-each-group></xsl:template>
-  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+  <xsl:template match='child::text()'>a group</xsl:template>
 </xsl:stylesheet>").expect("failed to parse XSL stylesheet");
     let dc = from_xnode(&stylexml, &sc).expect("failed to compile stylesheet");
 
@@ -516,6 +516,25 @@ mod tests {
     let t = dc.find_match(&i);
     let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
+    assert_eq!(seq.to_xml(), "<group>a group</group><group>a group</group>")
+  }
+
+  #[test]
+  fn foreach_3() {
+    let sc = StaticContext::new_with_xslt_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:sequence select='current-grouping-key()'/></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml, &sc).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let t = dc.find_match(&i);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    // NB. the order that the groups appear in is undefined
     assert_eq!(seq.to_xml(), "<group>one</group><group>two</group>")
   }
 }
