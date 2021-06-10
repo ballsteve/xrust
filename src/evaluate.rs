@@ -637,11 +637,11 @@ fn evaluate_one<'a>(
 	  // 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
 	  // Items are placed in the group with a matching key
 	  let mut map = HashMap::new();
-	  for i in sel {
-	    let keys = evaluate(dc, Some(vec![i.clone()]), Some(0), h).expect("failed to evaluate key");
+	  for i in 0..sel.len() {
+	    let keys = evaluate(dc, Some(sel.clone()), Some(i), h).expect("failed to evaluate key");
 	    for j in keys {
 	      let e = map.entry(j.to_string()).or_insert(vec![]);
-	      e.push(i.clone());
+	      e.push(sel[i].clone());
 	    }
 	  }
 	  // Now construct the groups and a pair-wise vector of keys
@@ -649,7 +649,17 @@ fn evaluate_one<'a>(
 	    groups.push((Some(k.clone()), v.to_vec()));
 	  }
 	}
-        Some(Grouping::Adjacent(_h)) => {
+        Some(Grouping::Adjacent(h)) => {
+	  // 'h' is an expression that is evaluated for every item in 'sel'.
+	  // It must evaluate to a single item.
+	  // The first item starts the first group.
+	  // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
+	  // then it is added to the current group. Otherwise it starts a new group.
+	  //if sel.len() > 0 {
+	    //let mut curgrp = Vec::new();
+	    //let mut curkey = evaluate(dc, Some(sel), Some(1), h);
+	    
+	  //}
 	}
         Some(Grouping::StartingWith(_h)) => {
 	}

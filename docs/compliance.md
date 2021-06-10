@@ -524,6 +524,8 @@ xsl:with-param/@tunnel|no|
 
 ## XSLT Functions
 
+Function|Status|Notes
+-------|-----|-----
 current|no|
 current-grouping-key|yes|
 current-group|yes|
