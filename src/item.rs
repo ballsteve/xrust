@@ -285,8 +285,10 @@ impl<'a> Item<'a> {
       Item::Value(v) => {
         v.compare(other, op)
       }
+      Item::XNode(_) => {
+        other.compare(&Item::Value(Value::String(self.to_string())), op)
+      }
       Item::Node(_) |
-      Item::XNode(_) |
       Item::JsonValue(_) => {
         //n.compare(other, op)
 	Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
@@ -321,6 +323,17 @@ impl<'a> Item<'a> {
 	}
       }
       _ => false,
+    }
+  }
+  /// Gives the type of the item.
+  pub fn item_type(&self) -> &'static str {
+    match self {
+      Item::Node(_) => "Node",
+      Item::XNode(_) => "XNode",
+      //Item::XDoc(d) => d.to_string(),
+      Item::Function => "Function",
+      Item::Value(v) => v.value_type(),
+      Item::JsonValue(_) => "Json",
     }
   }
 }
@@ -902,7 +915,52 @@ impl Value {
     		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
 	  }
 	}
-	_ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("not yet implemented")})
+	_ => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("comparing type \"{}\" is not yet implemented", self.value_type())})
+      }
+    }
+    pub fn value_type(&self) -> &'static str {
+      match &self {
+        Value::AnyType => "AnyType",
+        Value::Untyped => "Untyped",
+        Value::AnySimpleType => "AnySimpleType",
+        Value::IDREFS => "IDREFS",
+        Value::NMTOKENS => "NMTOKENS",
+        Value::ENTITIES => "ENTITIES",
+        Value::Numeric => "Numeric",
+        Value::AnyAtomicType => "AnyAtomicType",
+        Value::UntypedAtomic => "UntypedAtomic",
+        Value::Duration => "Duration",
+        Value::Time => "Time",
+        Value::Decimal(_) => "Decimal",
+        Value::Float(_) => "Float",
+        Value::Double(_) => "Double",
+        Value::Integer(_) => "Integer",
+        Value::NonPositiveInteger(_) => "NonPositiveInteger",
+        Value::NegativeInteger(_) => "NegativeInteger",
+        Value::Long(_) => "Long",
+        Value::Int(_) => "Int",
+        Value::Short(_) => "Short",
+        Value::Byte(_) => "Byte",
+        Value::NonNegativeInteger(_) => "NonNegativeInteger",
+        Value::UnsignedLong(_) => "UnsignedLong",
+        Value::UnsignedInt(_) => "UnsignedInt",
+        Value::UnsignedShort(_) => "UnsignedShort",
+        Value::UnsignedByte(_) => "UnsignedByte",
+        Value::PositiveInteger(_) => "PositiveInteger",
+        Value::DateTime => "DateTime",
+        Value::DateTimeStamp => "DateTimeStamp",
+        Value::Date => "Date",
+        Value::String(_) => "String",
+        Value::NormalizedString(_) => "NormalizedString",
+        Value::Token => "Token",
+        Value::Language => "Language",
+        Value::NMTOKEN => "NMTOKEN",
+        Value::Name => "Name",
+        Value::NCName => "NCName",
+        Value::ID => "ID",
+        Value::IDREF => "IDREF",
+        Value::ENTITY => "ENTITY",
+	Value::Boolean(_) => "boolean",
       }
     }
 }

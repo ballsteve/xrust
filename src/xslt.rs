@@ -268,8 +268,8 @@ fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Er
 	(Some(XSLTNS), "for-each-group") => {
 	  match n.attribute("select") {
 	    Some(s) => {
-	      match n.attribute("group-by") {
-	        Some(by) => {
+	      match (n.attribute("group-by"), n.attribute("group-adjacent"), n.attribute("group-starting-with"), n.attribute("group-ending-with")) {
+	        (Some(by), None, None, None) => {
 		  Ok(
 	            Constructor::ForEach(
 		      parse(s.clone()).expect("failed to compile select attribute"),
@@ -280,8 +280,20 @@ fn to_constructor<'a, 'input>(n: Node<'a, 'input>) -> Result<Constructor<'a>, Er
 		    )
 	      	  )
 		}
-		None => {
-		  Ok(Constructor::NotImplemented("other grouping attributes not implemented"))
+	        (None, Some(adj), None, None) => {
+		  Ok(
+	            Constructor::ForEach(
+		      parse(s.clone()).expect("failed to compile select attribute"),
+		      n.children()
+		        .map(|d| to_constructor(d).expect("failed to compile for-each content"))
+		    	.collect(),
+		      Some(Grouping::Adjacent(parse(adj.clone()).expect("failed to compile group-adjacent attribute"))),
+		    )
+	      	  )
+		}
+		// TODO: group-starting-with and group-ending-with
+		_ => {
+		  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "invalid grouping attribute(s) specified".to_string()})
 		}
 	      }
 	    }
@@ -559,6 +571,28 @@ mod tests {
     // NB. the order that the groups appear in is undefined
     assert!(
       seq.to_xml() == "<group><key>one</key><members>3</members></group><group><key>two</key><members>2</members></group>" ||
+      seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
+    )
+  }
+
+  #[test]
+  fn foreach_adj() {
+    let sc = StaticContext::new_with_xslt_builtins();
+    let instxml = roxmltree::Document::parse("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>two</Level4><Level5>one</Level5></Test>").expect("failed to parse instance XML document");
+    let stylexml = roxmltree::Document::parse("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-adjacent='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XSL stylesheet");
+    let dc = from_xnode(&stylexml, &sc).expect("failed to compile stylesheet");
+
+    // Prime the stylesheet evaluation by finding the template for the document root
+    // and making the document root the initial context
+    let i = Rc::new(Item::XNode(instxml.root().first_child().unwrap()));
+    let t = dc.find_match(&i);
+    let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+    // NB. the order that the groups appear in is undefined
+    assert!(
+      seq.to_xml() == "<group><key>one</key><members>2</members></group><group><key>two</key><members>2</members></group><group><key>one</key><members>1</members></group>" ||
       seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
     )
   }

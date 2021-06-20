@@ -270,7 +270,7 @@ xsl:for-each/@select|yes|
 xsl:for-each-group|yes|
 xsl:for-each-group/@select|yes|
 xsl:for-each-group/@group-by|yes|
-xsl:for-each-group/@group-adjacent|no|
+xsl:for-each-group/@group-adjacent|yes|
 xsl:for-each-group/@group-starting-with|no|
 xsl:for-each-group/@group-ending-with|no|
 xsl:for-each-group/@composite|no|

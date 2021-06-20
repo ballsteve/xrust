@@ -114,7 +114,7 @@ fn evaluate_one<'a>(
 	  _ => {
 	    // Values become a text node in the result tree
 	    let u = Tree::new(NodeDefn::new(NodeType::Text).set_value(i.to_string()));
-	    e.push_front(u);
+	    e.push_back(u);
 	  }
 	}
       }
@@ -655,11 +655,31 @@ fn evaluate_one<'a>(
 	  // The first item starts the first group.
 	  // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
 	  // then it is added to the current group. Otherwise it starts a new group.
-	  //if sel.len() > 0 {
-	    //let mut curgrp = Vec::new();
-	    //let mut curkey = evaluate(dc, Some(sel), Some(1), h);
-	    
-	  //}
+	  if sel.len() > 0 {
+	    let mut curgrp = vec![sel[0].clone()];
+	    let mut curkey = evaluate(dc, Some(sel.clone()), Some(1), h).expect("failed to evaluate key");
+	    if curkey.len() != 1 {
+	      return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+	    }
+	    for i in 1..sel.len() {
+	      let thiskey = evaluate(dc, Some(sel.clone()), Some(i), h).expect("failed to evaluate key");
+	      if thiskey.len() == 1 {
+		if curkey[0].compare(&*thiskey[0], Operator::Equal).expect("unable to compare keys") {
+		  // Append to the current group
+		  curgrp.push(sel[i].clone());
+		} else {
+		  // Close previous group, start a new group with this item as its first member
+		  groups.push((Some(curkey.to_string()), curgrp.clone()));
+		  curgrp = vec![sel[i].clone()];
+		  curkey = thiskey;
+		}
+	      } else {
+      	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+	      }
+	    }
+	    // Close the last group
+	    groups.push((Some(curkey.to_string()), curgrp));
+	  } // else result is empty sequence
 	}
         Some(Grouping::StartingWith(_h)) => {
 	}
@@ -4209,5 +4229,49 @@ mod tests {
       assert_eq!(seq.to_xml(), "<Group>a group</Group><Group>a group</Group>")
     }
 
+    #[test]
+    fn foreach_3() {
+      let d = roxmltree::Document::parse("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>three</Level4></Test>").expect("failed to parse XML");
+      let i = Rc::new(Item::XNode(d.root().first_child().unwrap()));
+
+      let dc = DynamicContext::new();
+      let cons = vec![
+        Constructor::ForEach(
+	  vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: Axis::Child,
+	      	nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	      },
+	      vec![]
+	    ),
+	  ],
+	  vec![
+	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::FunctionCall(
+		  Function::new("current-grouping-key".to_string(), vec![], Some(func_current_grouping_key)),
+		  vec![],
+		),
+	        Constructor::FunctionCall(
+		  Function::new("count".to_string(), vec![], Some(func_count)),
+		  vec![vec![
+		    Constructor::FunctionCall(
+		      Function::new("current-group".to_string(), vec![], Some(func_current_group)),
+		      vec![],
+		    ),
+		  ]],
+		),
+	      ]
+	    ),
+	  ],
+	  Some(Grouping::Adjacent(
+	    vec![Constructor::ContextItem],
+	  )),
+	),
+      ];
+      let seq = evaluate(&dc, Some(vec![i]), Some(0), &cons).expect("evaluation failed");
+      assert_eq!(seq.to_xml(), "<Group>one2</Group><Group>two1</Group><Group>three1</Group>")
+    }
 }
 
