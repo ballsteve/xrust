@@ -8,6 +8,7 @@ use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
 //use crate::parsexml::parse;
+use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode};
 use trees::{RcNode, Tree};
 use roxmltree::Node;
 use std::collections::HashMap;
@@ -23,6 +24,7 @@ pub struct DynamicContext<'a> {
   templates: Vec<Template<'a>>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item<'a>>>>>,
   current_group: RefCell<Vec<Option<Sequence<'a>>>>,
+  doc: Option<libxmlDocument>,
 }
 
 impl<'a> DynamicContext<'a> {
@@ -33,6 +35,7 @@ impl<'a> DynamicContext<'a> {
       templates: Vec::new(),
       current_grouping_key: RefCell::new(vec![None]),
       current_group: RefCell::new(vec![None]),
+      doc: None,
     }
   }
 
@@ -68,6 +71,18 @@ impl<'a> DynamicContext<'a> {
   pub fn pop_current_group(&self) {
     self.current_group.borrow_mut().pop();
   }
+
+  pub fn new_doc(&mut self) {
+    match self.doc {
+      Some(d) => {
+        // What to do with the old document?
+	panic!("result document already exists")
+      }
+      None => {
+        self.doc.replace(libxmlDocument::new().expect("unable to create libxml Document"))
+      }
+    }
+  }
 }
 
 /// Evaluate a sequence constructor, given a dynamic context.
@@ -98,29 +113,25 @@ fn evaluate_one<'a>(
 	seq.new_value(l.clone());
 	Ok(seq)
     }
-    // This creates a trees node
+    // This creates a libxml node in the current result document
     Constructor::LiteralElement(n, _p, _ns, c) => {
-      let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
-      let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name(n.to_string()));
+      let l = libxmlNode::new(n, None, &dc.doc).expect("unable to create libxml Node");
 
       // add content to newly created element
       for i in evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content") {
         // Item could be a Node or text
 	match &*i {
-	  Item::Node(t) => {
-	    let u = t.clone();
-	    e.push_back(unsafe{u.into_tree()});
+	  Item::LNode(t) => {
+	    l.add_child(t).expect("unable to add child node");
 	  }
 	  _ => {
 	    // Values become a text node in the result tree
-	    let u = Tree::new(NodeDefn::new(NodeType::Text).set_value(i.to_string()));
-	    e.push_back(u);
+	    l.add_text_child(None, "", i);
 	  }
 	}
       }
 
-      d.push_front(e);
-      Ok(vec![Rc::new(Item::Node(d))])
+      Ok(vec![Rc::new(Item::LNode(l))])
     }
     Constructor::ContextItem => {
       if ctxt.is_some() {
@@ -262,6 +273,17 @@ fn evaluate_one<'a>(
     Constructor::Root => {
       if ctxt.is_some() {
         match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::LDocument(d) => {
+	    Ok(Rc::clone(ctxt.unwrap()[posn.unwrap()]))
+	  }
+	  Item::LNode(n) => {
+	    match dc.doc {
+	      Some(d) => {
+	        Ok(Rc::clone(dc.doc))
+	      }
+	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+	    }
+	  }
 	  Item::Node(n) => {
 	    let mut seq = Sequence::new();
 	    seq.new_node(find_root(n.clone()));
@@ -309,6 +331,90 @@ fn evaluate_one<'a>(
     Constructor::Step(nm, p) => {
       if ctxt.is_some() {
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	  Item::LDocument(d) => {
+	    match nm.axis {
+	      Axis::Child => {
+	        match d.get_root_element() {
+		  Some(n) => {
+		    Ok(vec![Item::LNode(Rc::clone(n))])
+		  }
+		  None => {
+		    Ok(vec![])
+		  }
+		}
+	      }
+	      Axis::Parent |
+	      Axes::Selfaxis => Ok(vec![]),
+	      _ => {
+	        // Not yet implemented
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
+	      }
+	    }
+	  }
+	  Item::LNode(n) => {
+	    match nm.axis {
+	      Axis::Selfaxis => {
+	        if is_lnode_match(&nm.nodetest, n) {
+		  let mut seq = Sequence::new();
+		  seq.new_lnode(*n);
+	      	  Ok(predicates(dc, seq, p))
+		} else {
+	      	  Ok(Sequence::new())
+		}
+	      }
+	      Axis::Child => {
+		let seq = n.get_child_nodes()
+		      .filter(|c| is_lnode_match(&nm.nodetest, c))
+		      .fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::Parent => {
+	        match n.get_parent() {
+		  Some(p) => {
+		    let mut seq = Sequence::new();
+		    seq.new_lnode(p.clone());
+      		    Ok(seq)
+		  }
+		  None => {
+	            // empty sequence is the result
+      		    Ok(vec![])
+		  }
+		}
+	      }
+	      Axis::Descendant => {
+	        // libxml doesn't have a descendant method
+		let seq = libxml_descend(n.get_child_nodes(), nm)
+		//n.get_child_nodes()
+		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
+		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::DescendantOrSelf => {
+	        // libxml doesn't have a descendant method
+		let seq = libxml_descend(n, nm)
+		//n.get_child_nodes()
+		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
+		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::Ancestor => {
+	        // libxml doesn't have an ancestor method
+		let seq = libxml_ascend(n.get_parent(), nm)
+		//n.get_child_nodes()
+		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
+		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::AncestorOrSelf => {
+	        // libxml doesn't have an ancestor method
+		let seq = libxml_ascend(n, nm)
+		//n.get_child_nodes()
+		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
+		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+	      	Ok(predicates(dc, seq, p))
+	      }
+	    }
+	  }
 	  Item::Node(n) => {
 	    match nm.axis {
 	      Axis::Child => {
