@@ -1,19 +1,21 @@
 //! # Evaluate a sequence constructor
 //!
 //! Evaluate a sequence constructor to produce a sequence.
+//!
+//! This library uses the traits defined in [Item], so it is independent of the tree implementation.
 
 use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
 use crate::xdmerror::*;
 use crate::item::*;
 use decimal::d128;
-//use crate::parsexml::parse;
-use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode};
-use trees::{RcNode, Tree};
-use roxmltree::Node;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
-use json::{JsonValue, object};
+//use crate::parsexml::parse;
+//use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode};
+//use trees::{RcNode, Tree};
+//use roxmltree::Node;
+//use json::{JsonValue, object};
 
 /// The dynamic evaluation context.
 ///
@@ -24,7 +26,7 @@ pub struct DynamicContext<'a> {
   templates: Vec<Template<'a>>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item<'a>>>>>,
   current_group: RefCell<Vec<Option<Sequence<'a>>>>,
-  doc: Option<libxmlDocument>,
+  doc: Option<dyn Document>,
 }
 
 impl<'a> DynamicContext<'a> {
@@ -79,7 +81,7 @@ impl<'a> DynamicContext<'a> {
 	panic!("result document already exists")
       }
       None => {
-        self.doc.replace(libxmlDocument::new().expect("unable to create libxml Document"))
+        self.doc.replace(Document::new().expect("unable to create Document"))
       }
     }
   }
@@ -115,23 +117,31 @@ fn evaluate_one<'a>(
     }
     // This creates a libxml node in the current result document
     Constructor::LiteralElement(n, _p, _ns, c) => {
-      let l = libxmlNode::new(n, None, &dc.doc).expect("unable to create libxml Node");
+      let l = match dc.doc {
+        Some(doc) => {
+	  // TODO: namespace
+	  doc.new_element(n, None).expect("unable to create Node")
+	}
+	None => {
+	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context document".to_string()})
+	}
+      }
 
       // add content to newly created element
       for i in evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content") {
         // Item could be a Node or text
 	match &*i {
-	  Item::LNode(t) => {
+	  Item::Node(t) => {
 	    l.add_child(t).expect("unable to add child node");
 	  }
 	  _ => {
 	    // Values become a text node in the result tree
-	    l.add_text_child(None, "", i);
+	    l.add_text_child(i.to_string());
 	  }
 	}
       }
 
-      Ok(vec![Rc::new(Item::LNode(l))])
+      Ok(vec![Rc::new(Item::Node(&l))])
     }
     Constructor::ContextItem => {
       if ctxt.is_some() {
@@ -273,10 +283,10 @@ fn evaluate_one<'a>(
     Constructor::Root => {
       if ctxt.is_some() {
         match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::LDocument(d) => {
+	  Item::Document(_) => {
 	    Ok(Rc::clone(ctxt.unwrap()[posn.unwrap()]))
 	  }
-	  Item::LNode(n) => {
+	  Item::Node(_) => {
 	    match dc.doc {
 	      Some(d) => {
 	        Ok(Rc::clone(dc.doc))
@@ -284,17 +294,6 @@ fn evaluate_one<'a>(
 	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
 	    }
 	  }
-	  Item::Node(n) => {
-	    let mut seq = Sequence::new();
-	    seq.new_node(find_root(n.clone()));
-      	    Ok(seq)
-	  }
-	  Item::XNode(n) => {
-	    let mut seq = Sequence::new();
-	    seq.new_xnode(n.document().root());
-	    Ok(seq)
-	  }
-	  Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::NotImplemented, message: "json unable to get containing document".to_string()}),
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	}
       } else {
@@ -331,12 +330,12 @@ fn evaluate_one<'a>(
     Constructor::Step(nm, p) => {
       if ctxt.is_some() {
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::LDocument(d) => {
+	  Item::Document(d) => {
 	    match nm.axis {
 	      Axis::Child => {
 	        match d.get_root_element() {
 		  Some(n) => {
-		    Ok(vec![Item::LNode(Rc::clone(n))])
+		    Ok(vec![Item::Node(&n)])
 		  }
 		  None => {
 		    Ok(vec![])
@@ -351,28 +350,28 @@ fn evaluate_one<'a>(
 	      }
 	    }
 	  }
-	  Item::LNode(n) => {
+	  Item::Node(n) => {
 	    match nm.axis {
 	      Axis::Selfaxis => {
-	        if is_lnode_match(&nm.nodetest, n) {
+	        if is_node_match(&nm.nodetest, n) {
 		  let mut seq = Sequence::new();
-		  seq.new_lnode(*n);
+		  seq.new_node(*n);
 	      	  Ok(predicates(dc, seq, p))
 		} else {
 	      	  Ok(Sequence::new())
 		}
 	      }
 	      Axis::Child => {
-		let seq = n.get_child_nodes()
-		      .filter(|c| is_lnode_match(&nm.nodetest, c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+		let seq = n.children()
+		      .filter(|c| is_node_match(&nm.nodetest, c))
+		      .fold(Sequence::new(), |mut c, a| {c.new_node(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::Parent => {
-	        match n.get_parent() {
+	        match n.parent() {
 		  Some(p) => {
 		    let mut seq = Sequence::new();
-		    seq.new_lnode(p.clone());
+		    seq.new_node(&p);
       		    Ok(seq)
 		  }
 		  None => {
@@ -383,146 +382,49 @@ fn evaluate_one<'a>(
 	      }
 	      Axis::Descendant => {
 	        // libxml doesn't have a descendant method
-		let seq = libxml_descend(n.get_child_nodes(), nm)
-		//n.get_child_nodes()
-		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
-		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+		let seq = n.descendants().iter()
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::DescendantOrSelf => {
-	        // libxml doesn't have a descendant method
-		let seq = libxml_descend(n, nm)
-		//n.get_child_nodes()
-		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
-		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+		let mut seq = n.descendants().iter()
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(a); c});
+		if is_node_match(&nm.nodetest, n) {
+		  seq.insert(0, n.clone());
+		}
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::Ancestor => {
-	        // libxml doesn't have an ancestor method
-		let seq = libxml_ascend(n.get_parent(), nm)
-		//n.get_child_nodes()
-		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
-		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
+		let seq = n.ancestors().iter()
+		  .filter(|p| is_node_match(&nm.nodetest, p))
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::AncestorOrSelf => {
-	        // libxml doesn't have an ancestor method
-		let seq = libxml_ascend(n, nm)
-		//n.get_child_nodes()
-		  //.filter(|c| is_lnode_match(&nm.nodetest, c))
-		  //.fold(Sequence::new(), |mut c, a| {c.new_lnode(a); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	    }
-	  }
-	  Item::Node(n) => {
-	    match nm.axis {
-	      Axis::Child => {
-	        let mut result: Sequence = Vec::new();
-	    	n.iter_rc().for_each(|c| result.new_node(c.clone()));
-	    	Ok(result)
-	      }
-	      Axis::Parent => {
-	        match n.parent() {
-		  Some(p) => {
-		    let mut seq = Sequence::new();
-		    seq.new_node(p.clone());
-      		    Ok(seq)
-		  }
-		  None => {
-	            // empty sequence is the result
-		    let seq = Sequence::new();
-      		    Ok(seq)
-		  }
+		let mut seq = n.ancestors().iter()
+		  .filter(|c| is_node_match(&nm.nodetest, c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(a); c});
+		if is_node_match(&nm.nodetest, n) {
+		  seq.insert(0, n.clone());
 		}
-	      }
-	      _ => {
-	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
-	      }
-	    }
-	  }
-	  Item::XNode(n) => {
-	    match nm.axis {
-	      Axis::Selfaxis => {
-	        if is_node_match(&nm.nodetest, n) {
-		  let mut seq = Sequence::new();
-		  seq.new_xnode(*n);
-	      	  Ok(predicates(dc, seq, p))
-		} else {
-	      	  Ok(Sequence::new())
-		}
-	      }
-	      Axis::Child => {
-	        if n.has_children() {
-		  let seq = n.children()
-		      .filter(|c| is_node_match(&nm.nodetest, c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
-	      	  Ok(predicates(dc, seq, p))
-	    	} else {
-	      	  Ok(Sequence::new())
-	    	}
-	      }
-	      Axis::Parent => {
-	        match n.parent() {
-	      	  Some(p) => {
-	            Ok(vec![Rc::new(Item::XNode(p))])
-	      	  }
-	      	  None => {
-	            Ok(vec![])
-	      	  }
-	    	}
-	      }
-	      Axis::Descendant => {
-	        // The descendant axis does not include itself,
-		// but the descendant function does
-	        let seq = n.descendants()
-		  .skip(1)
-		  .filter(|c| is_node_match(&nm.nodetest, c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::DescendantOrSelf => {
-	        // In this case the descendant function gives us what we want
-	        let seq = n.descendants()
-		  .filter(|c| is_node_match(&nm.nodetest, c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Ancestor => {
-	        // The ancestor axis does not include itself,
-		// but the ancestors function does
-	        let seq = n.ancestors()
-		  .skip(1)
-		  .filter(|c| is_node_match(&nm.nodetest, c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::AncestorOrSelf => {
-	        // In this case the ancestors function gives us what we want
-	        let seq = n.ancestors()
-		  .filter(|c| is_node_match(&nm.nodetest, c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::FollowingSibling => {
-	        // The following-sibling axis does not include itself,
-		// but the next_siblings function does
-	        let seq = n.next_siblings()
-		  .skip(1)
+	        let seq = n.following_siblings().iter()
 		  .filter(|c| is_node_match(&nm.nodetest, c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::PrecedingSibling => {
-	        // The preceding-sibling axis does not include itself,
-		// but the prev_siblings function does
-	        let seq = n.prev_siblings()
-		  .skip(1)
+	        let seq = n.preceding_siblings().iter()
 		  .filter(|c| is_node_match(&nm.nodetest, c))
 		  .fold(Sequence::new(), |mut c, a| {c.new_xnode(a); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
+	    }
+	  }
 	      Axis::Following => {
 	        // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
 		// iow, for each ancestor node, include every next sibling and its descendants

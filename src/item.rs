@@ -3,18 +3,13 @@
 //! Sequence Item module.
 //! An Item is a Node, Function or Atomic Value.
 //!
-//! Nodes are implemented either as a trait, or directly in the Item enum.
+//! Nodes are implemented as a trait.
 
+use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
-//use std::cell::RefCell;
 use decimal;
 use crate::xdmerror::{Error, ErrorKind};
-use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode};
-use libxml::parser::Parser;
-use trees::{Tree, RcNode};
-use roxmltree::Node;
-use json::JsonValue;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -34,19 +29,12 @@ pub trait SequenceTrait<'a> {
   fn to_bool(&self) -> bool;
   /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
   fn to_int(&self) -> Result<i64, Error>;
-  /// Push a libxml Document to the [Sequence]
-  fn new_ldocument(&mut self, d: libxmlDocument);
-  /// Push a libxml Node to the [Sequence]
-  fn new_lnode(&mut self, d: libxmlNode);
-  /// Push a Node (tree-based) to the [Sequence]
-  fn new_node(&mut self, n: RcNode<NodeDefn>);
-  //fn new_xdoc(&mut self, d: Document<'a>);
-  /// Push a roxmltree Node to the [Sequence]
-  fn new_xnode(&mut self, n: Node<'a, 'a>);
+  /// Push a [Document] to the [Sequence]
+  fn new_document(&mut self, d: &'a dyn Document);
+  /// Push a [Node] to the [Sequence]
+  fn new_node(&mut self, d: &'a dyn Node);
   /// Push a [Value] to the [Sequence]
   fn new_value(&mut self, v: Value);
-  /// Push a JsonValue to the [Sequence]
-  fn new_jvalue(&mut self, j: JsonValue);
   /// Push an [Item] to the [Sequence]
   fn add(&mut self, i: &Rc<Item<'a>>);
 }
@@ -76,36 +64,21 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
     r
   }
-  /// Push a libxml Document on to the [Sequence]
-  fn new_ldocument(&mut self, d: libxmlDocument) {
-    self.push(Rc::new(Item::LDocument(d)));
+  /// Push a [Document] on to the [Sequence]
+  fn new_document(&mut self, d: &'a dyn Document) {
+    self.push(Rc::new(Item::Document(d)));
   }
-  /// Push a libxml Node on to the [Sequence]
-  fn new_lnode(&mut self, n: libxmlNode) {
-    self.push(Rc::new(Item::LNode(n)));
-  }
-  /// Push a Node on to the Sequence
-  fn new_node(&mut self, n: RcNode<NodeDefn>) {
+  /// Push a [Node] on to the [Sequence]
+  fn new_node(&mut self, n: &'a dyn Node) {
     self.push(Rc::new(Item::Node(n)));
   }
-//  fn new_xdoc(&mut self, d: Document<'a>) {
-//    self.push(Rc::new(Item::XDoc(d)));
-//  }
-  /// Push a roxmltree node on to the Sequence
-  fn new_xnode(&mut self, n: Node<'a, 'a>) {
-    self.push(Rc::new(Item::XNode(n)));
-  }
-  /// Push a Value on to the Sequence
+  /// Push a [Value] on to the [Sequence]
   fn new_value(&mut self, v: Value) {
     self.push(Rc::new(Item::Value(v)));
   }
-  /// Push a JsonValue on to the Sequence
-  fn new_jvalue(&mut self, j: JsonValue) {
-    self.push(Rc::new(Item::JsonValue(j)));
-  }
   //fn new_function(&self, f: Function) -> Sequence {
   //}
-  /// Push an Item on to the Sequence. This clones the Item.
+  /// Push an [Item] on to the [Sequence]. This clones the Item.
   fn add(&mut self, i: &Rc<Item<'a>>) {
     self.push(Rc::clone(i));
   }
@@ -116,12 +89,8 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
       false
     } else {
       match *self[0] {
-        Item::LDocument(_) |
-        Item::LNode(_) |
-        Item::Node(_) |
-	Item::XNode(_) => true,
-	Item::JsonValue(_) => true,
-	//Item::XDoc(_) => true,
+        Item::Document(_) |
+        Item::Node(_) => true,
 	_ => {
 	  if self.len() == 1 {
 	    (*self[0]).to_bool()
@@ -133,7 +102,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     }
   }
 
-  /// Convenience routine for integer value of the Sequence. The Sequence must be a singleton; i.e. be a single item.
+  /// Convenience routine for integer value of the [Sequence]. The Sequence must be a singleton; i.e. be a single item.
   fn to_int(&self) -> Result<i64, Error> {
     if self.len() == 1 {
       self[0].to_int()
@@ -143,24 +112,18 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
   }
 }
 
-/// An Item in a Sequence. Can be a Node, Function or Value.
+/// An Item in a [Sequence]. Can be a [Node], Function or [Value].
+/// A [Document] is a special [Node].
 ///
-/// Nodes are a trait, such as [trees](https://crates.io/crates/trees), [roxmltree](https://crates.io/crates/roxmltree) or [JsonValue](https://crates.io/crates/json) crates.
+/// Nodes are a trait.
 ///
 /// Functions are not yet implemented.
 #[derive(Clone)]
 pub enum Item<'a> {
-    /// A libxml Document
-    LDocument(libxmlDocument),
-    /// A libxml Node
-    LNode(libxmlNode),
-    /// A trees-based Node
-    Node(RcNode<NodeDefn>),
-    /// A roxmltree-based Node
-    XNode(Node<'a, 'a>),
-    /// A JsonValue-based Node
-    JsonValue(JsonValue),
-    //XDoc(Document<'a>), cannot be cloned
+    /// A [Document]
+    Document(&'a dyn Document),
+    /// A [Node]
+    Node(&'a dyn Node),
 
     /// Functions are not yet supported
     Function,
@@ -203,40 +166,28 @@ impl<'a> Item<'a> {
   /// Gives the string value of an item. All items have a string value.
   pub fn to_string(&self) -> String {
     match self {
-      Item::LDocument(d) => ldoc_to_string(d),
-      Item::LNode(n) => lnode_to_string(n),
-      Item::Node(n) => node_to_string(n),
-      Item::XNode(n) => xnode_to_string(*n),
-      //Item::XDoc(d) => d.to_string(),
+      Item::Document(d) => d.to_string(),
+      Item::Node(n) => n.to_string(),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
-      Item::JsonValue(j) => json_to_string(j),
     }
   }
   /// Serialize as XML
   pub fn to_xml(&self) -> String {
     match self {
-      Item::LDocument(d) => ldoc_to_xml(d),
-      Item::LNode(n) => lnode_to_xml(n),
-      Item::Node(n) => node_to_xml(n),
-      Item::XNode(n) => xnode_to_xml(*n),
-      //Item::XDoc(d) => d.to_string(),
+      Item::Document(d) => d.to_xml(),
+      Item::Node(n) => n.to_xml(),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
-      Item::JsonValue(j) => json_to_xml(j),
     }
   }
   /// Serialize as JSON
   pub fn to_json(&self) -> String {
     match self {
-      Item::LDocument(d) => ldoc_to_json(d),
-      Item::LNode(n) => lnode_to_json(n),
-      Item::Node(n) => node_to_json(n),
-      Item::XNode(n) => xnode_to_json(*n),
-      //Item::XDoc(d) => d.to_string(),
+      Item::Document(d) => d.to_json(),
+      Item::Node(n) => n.to_json(),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
-      Item::JsonValue(j) => j.pretty(0),
     }
   }
 
@@ -244,27 +195,19 @@ impl<'a> Item<'a> {
   /// See XPath 2.4.3.
   pub fn to_bool(&self) -> bool {
     match self {
-      Item::LDocument(_) |
-      Item::LNode(_) |
-      Item::Node(_) |
-      Item::XNode(_) => true,
-      //Item::XDoc(_) => true,
+      Item::Document(_) |
+      Item::Node(_) => true,
       Item::Function => false,
       Item::Value(v) => v.to_bool(),
-      Item::JsonValue(_) => true,
     }
   }
 
   /// Gives the integer value of the item, if possible.
   pub fn to_int(&self) -> Result<i64, Error> {
     match self {
-      Item::LDocument(_) |
-      Item::LNode(_) |
-      Item::Node(_) |
-      Item::XNode(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
-      //Item::XDoc(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
+      Item::Document(_) |
+      Item::Node(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
       Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
-      Item::JsonValue(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a json value")}),
       Item::Value(v) => {
         match v.to_int() {
 	  Ok(i) => {
@@ -281,13 +224,9 @@ impl<'a> Item<'a> {
   /// Gives the double value of the item. Returns NaN if the value cannot be converted to a double.
   pub fn to_double(&self) -> f64 {
     match self {
-      Item::LDocument(_) |
-      Item::LNode(_) |
-      Item::Node(_) |
-      Item::XNode(_) => f64::NAN,
-      //Item::XDoc(_) => f64::NAN,
+      Item::Document(_) |
+      Item::Node(_) => f64::NAN,
       Item::Function => f64::NAN,
-      Item::JsonValue(_) => f64::NAN,
       Item::Value(v) => v.to_double(),
     }
   }
@@ -295,18 +234,7 @@ impl<'a> Item<'a> {
   /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
   pub fn to_name(&self) -> String {
     match self {
-      Item::LNode(i) => {
-	i.get_name()
-      }
-      Item::XNode(i) => {
-        match i.node_type() {
-	  roxmltree::NodeType::Root => "".to_string(),
-	  roxmltree::NodeType::Element |
-	  roxmltree::NodeType::PI => i.tag_name().name().to_string(),
-	  roxmltree::NodeType::Text |
-	  roxmltree::NodeType::Comment => "".to_string(),
-	}
-      }
+      Item::Node(i) => i.to_name(),
       _ => "".to_string()
     }
   }
@@ -320,20 +248,9 @@ impl<'a> Item<'a> {
       Item::Value(v) => {
         v.compare(other, op)
       }
-      Item::LDocument(_) |
-      Item::LNode(_) |
-      Item::XNode(_) => {
+      Item::Node(_) => {
         other.compare(&Item::Value(Value::String(self.to_string())), op)
       }
-      Item::Node(_) |
-      Item::JsonValue(_) => {
-        //n.compare(other, op)
-	Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
-      }
-      //Item::XDoc(_) => {
-        //n.compare(other, op)
-	//Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented")})
-      //}
       _ => {
         Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
       }
@@ -343,45 +260,198 @@ impl<'a> Item<'a> {
   /// Is this item an element-type node?
   pub fn is_element_node(&self) -> bool {
     match self {
-      Item::LNode(n) => {
-        n.is_element_node()
-      }
-      Item::Node(_) => {
-        // TODO
-	false
-      }
-      Item::XNode(n) => {
-        match n.node_type() {
-	  roxmltree::NodeType::Element => true,
-	  _ => false,
-	}
-      }
-      Item::JsonValue(j) => {
-        match j {
-	  JsonValue::Object(_) => true,
-	  _ => false,
-	}
-      }
+      Item::Node(n) => n.is_element(),
       _ => false,
     }
   }
   /// Gives the type of the item.
   pub fn item_type(&self) -> &'static str {
     match self {
-      Item::LDocument(_) => "LDocument",
-      Item::LNode(_) => "Node",
+      Item::Document(_) => "Document",
       Item::Node(_) => "Node",
-      Item::XNode(_) => "XNode",
-      //Item::XDoc(d) => d.to_string(),
       Item::Function => "Function",
       Item::Value(v) => v.value_type(),
-      Item::JsonValue(_) => "Json",
     }
   }
 }
 
-// Node in a tree
+/// Document tree.
+///
+/// A Document contains [Node] objects.
+pub trait Document {
+  /// Return the string value of the Document
+  fn to_string(&self) -> String;
+  /// Serialize as XML
+  fn to_xml(&self) -> String;
+  /// Serialize as JSON
+  fn to_json(&self) -> String;
+  /// Determine the effective boolean value. See XPath 2.4.3.
+  /// A (non-empty) Document always returns true.
+  fn to_bool(&self) -> bool {
+    true
+  }
+  /// Return the integer value. For a Document, this is a type error.
+  fn to_int(&self) -> Result<i64, Error> {
+    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: document")})
+  }
+  /// Return the double value. For a Document, this is a type error, i.e. NaN.
+  fn to_double(&self) -> f64 {
+    f64::NAN
+  }
+  /// Gives the name of the document. Documents do not have a name, so the default implementation returns an empty string.
+  fn to_name(&self) -> String {
+    String::new()
+  }
 
+  /// Navigate to the parent of the Document. Documents don't have a parent, so the default implementation returns None.
+  fn parent(&self) -> Option<Box<dyn Node>> {
+    None
+  }
+  /// Return the children of the Document. This may include the prologue, root element and epilogue. If the Document has no children then returns an empty vector.
+  fn children(&self) -> Vec<Box<dyn Node>>;
+  /// Return the root node of the Document.
+  fn get_root_element(&self) -> Option<Box<dyn Node>>;
+
+  /// Create an element Node in the Document.
+  fn new_element(&self, name: &str, ns: Option<&str>) -> Result<Box<dyn Node>, Error>;
+  /// Insert the root element in the Document. NB. If the element supplied is of a different concrete type to the Document then this will likely result in an error.
+  fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error>;
+}
+
+/// Node in a tree.
+///
+/// This trait defines how to navigate a tree-like structure.
+pub trait Node: Any {
+  /// Upcast to Any
+  fn as_any(&self) -> &dyn Any;
+  /// Upcast to Any, mutable
+  fn as_any_mut(&mut self) -> &mut dyn Any;
+  /// Return the string value of the Node
+  fn to_string(&self) -> String;
+  /// Serialize as XML
+  fn to_xml(&self) -> String;
+  /// Serialize as JSON
+  fn to_json(&self) -> String;
+  /// Determine the effective boolean value. See XPath 2.4.3.
+  /// A (non-empty) Node always returns true.
+  fn to_bool(&self) -> bool {
+    true
+  }
+  /// Return the integer value.
+  fn to_int(&self) -> Result<i64, Error>;
+  /// Return the double value.
+  fn to_double(&self) -> f64;
+  /// Gives the name of the node. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
+  fn to_name(&self) -> String;
+  /// Navigate to the [Document]. Not all implementations are able to do this, so if this is the case the option can be set to None.
+  fn doc(&self) -> Option<Box<dyn Document>> {
+    None
+  }
+  /// Navigate to the parent of the node.
+  fn parent(&self) -> Option<Box<dyn Node>>;
+  /// An iterator over ancestors of the Node.
+  fn ancestor_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
+    Box::new(Ancestor::new(Box::new(self)))
+  }
+  /// Return the children of the node. If the node has no children then returns an empty vector.
+  fn children(&self) -> Vec<Box<dyn Node>>;
+  /// Return descendants of the Node, but including the Node itself.
+  fn descendants(&self) -> Vec<Box<dyn Node>>;
+  /// Return the next following sibling.
+  fn get_following_sibling(&self) -> Option<Box<dyn Node>>;
+  /// An iterator over following siblings.
+  fn following_sibling_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
+    Box::new(FollowingSibling::new(Box::new(self)))
+  }
+  /// Return the next preceding sibling.
+  fn get_preceding_sibling(&self) -> Option<Box<dyn Node>>;
+  /// An iterator over preceding siblings.
+  fn preceding_sibling_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
+    Box::new(PrecedingSibling::new(Box::new(self)))
+  }
+
+  /// Returns if the node is an element-type node
+  fn is_element(&self) -> bool;
+
+  /// Insert a Node as a child. The node is appended to the list of children. NB. If the element supplied is of a different concrete type to the Node then this will likely result in an error.
+  fn add_child(&mut self, c: &mut dyn Any) -> Result<(), Error>;
+  /// Add a text node as a child.
+  fn add_text_child(&mut self, t: String) -> Result<(), Error>;
+}
+
+struct Ancestor {
+  node: Box<dyn Node>,
+}
+
+impl Ancestor {
+  fn new(n: Box<dyn Node>) -> Ancestor {
+    Ancestor{node: n}
+  }
+}
+impl Iterator for Ancestor {
+  type Item = Box<dyn Node>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    match self.node.parent() {
+      Some(n) => {
+        // The dynamic trait object is not clonable, so make a second call to the method to get an object to store in the iterator
+	self.node = self.node.parent().unwrap();
+	Some(n)
+      }
+      None => None,
+    }
+  }
+}
+
+struct FollowingSibling {
+  node: Box<dyn Node>,
+}
+
+impl FollowingSibling {
+  fn new(n: Box<dyn Node>) -> FollowingSibling {
+    FollowingSibling{node: n}
+  }
+}
+impl Iterator for FollowingSibling {
+  type Item = Box<dyn Node>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    match self.node.get_following_sibling() {
+      Some(n) => {
+        // The dynamic trait object is not clonable, so make a second call to the method to get an object to store in the iterator
+	self.node = self.node.get_following_sibling().unwrap();
+	Some(n)
+      }
+      None => None,
+    }
+  }
+}
+
+struct PrecedingSibling {
+  node: Box<dyn Node>,
+}
+
+impl PrecedingSibling {
+  fn new(n: Box<dyn Node>) -> PrecedingSibling {
+    PrecedingSibling{node: n}
+  }
+}
+impl Iterator for PrecedingSibling {
+  type Item = Box<dyn Node>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    match self.node.get_preceding_sibling() {
+      Some(n) => {
+        // The dynamic trait object is not clonable, so make a second call to the method to get an object to store in the iterator
+	self.node = self.node.get_preceding_sibling().unwrap();
+	Some(n)
+      }
+      None => None,
+    }
+  }
+}
+
+// TODO: is this still required?
 #[derive(Copy, Clone)]
 pub enum NodeType {
   Document,
@@ -390,401 +460,6 @@ pub enum NodeType {
   Attribute,
   Comment,
   ProcessingInstruction,
-}
-
-#[derive(Clone)]
-pub struct NodeDefn {
-  nodetype: NodeType,
-  name: Option<String>, // TODO: make it a QName
-  value: Option<String>,
-}
-
-impl NodeDefn {
-  pub fn new(t: NodeType) -> Self {
-    NodeDefn {
-      nodetype: t,
-      name: None,
-      value: None,
-    }
-  }
-  pub fn nodetype(&self) -> &NodeType {
-    &self.nodetype
-  }
-  pub fn set_name(mut self, n: String) -> Self {
-    // TODO: restrict which types can have a name
-    self.name.replace(n);
-    self
-  }
-  pub fn name(&self) -> &str {
-    // None => empty string
-    if self.name.is_some() {
-      self.name.as_ref().unwrap()
-    } else {
-      ""
-    }
-  }
-  pub fn set_value(mut self, v: String) -> Self {
-    self.value.replace(v);
-    self
-  }
-  pub fn value(&self) -> &str {
-    if self.value.is_some() {
-      self.value.as_ref().unwrap()
-    } else {
-      ""
-    }
-  }
-}
-
-// Find the string value of the Node
-fn node_to_string(node: &RcNode<NodeDefn>) -> String {
-  let d = node.data();
-
-  match d.nodetype {
-      NodeType::Document => {
-        if node.has_no_child() {
-	  String::new()
-	} else {
-	  node.iter_rc().fold(String::new(), |s,c| s + &node_to_string(&c))
-	}
-      }
-      NodeType::Element => {
-        if node.has_no_child() {
-	  "".to_string()
-	} else {
-	  node.iter_rc().fold(String::new(), |s,c| s + &node_to_string(&c))
-	}
-      }
-      NodeType::Text => {
-        String::from(d.value.as_ref().unwrap())
-      }
-      NodeType::Attribute |
-      NodeType::Comment |
-      NodeType::ProcessingInstruction => {
-        "".to_string()
-      }
-  }
-}
-fn node_to_xml(node: &RcNode<NodeDefn>) -> String {
-  let d = node.data();
-
-  match d.nodetype {
-      NodeType::Document => {
-        if node.has_no_child() {
-	  String::new()
-	} else {
-	  node.iter_rc().fold(String::new(), |s,c| s + &node_to_xml(&c))
-	}
-      }
-      NodeType::Element => {
-        if node.has_no_child() {
-	  format!("<{}/>", d.name.as_ref().unwrap())
-	} else {
-	  // TODO: attributes
-	  format!("<{}>{}</{}>", d.name.as_ref().unwrap(), node.iter_rc().fold(String::new(), |s,c| s + &node_to_xml(&c)), d.name.as_ref().unwrap())
-	}
-      }
-      NodeType::Text => {
-        String::from(d.value.as_ref().unwrap())
-      }
-      NodeType::Attribute => {
-        let mut r = String::new();
-        r.push_str(d.name.as_ref().unwrap().as_str());
-        r.push_str("='");
-        r.push_str(d.value.as_ref().unwrap().as_str());
-        r.push_str("'");
-        // TODO: delimiters, escaping
-	r
-      }
-      NodeType::Comment => {
-        let mut r = String::new();
-        r.push_str("<!--");
-        r.push_str(d.value.as_ref().unwrap().as_str());
-        r.push_str("-->");
-	r
-      }
-      NodeType::ProcessingInstruction => {
-        let mut r = String::new();
-        r.push_str("<?");
-        r.push_str(d.name.as_ref().unwrap().as_str());
-        r.push_str(" ");
-        r.push_str(d.value.as_ref().unwrap().as_str());
-        r.push_str("?>");
-	r
-      }
-  }
-}
-fn node_to_json(node: &RcNode<NodeDefn>) -> String {
-  let d = node.data();
-
-  match d.nodetype {
-      NodeType::Document => {
-        if node.has_no_child() {
-	  "{}".to_string()
-	} else {
-	  let mut r = String::from("{");
-	  r.push_str(node.iter_rc().fold(String::new(), |s,c| s + &node_to_json(&c)).as_str());
-	  r.push('}');
-	  r
-	}
-      }
-      NodeType::Element => {
-        if node.has_no_child() {
-	  format!("\"{}\": \"\"", d.name.as_ref().unwrap())
-	} else {
-	  format!("\"{}\": {}\n", d.name.as_ref().unwrap(), node.iter_rc().fold(String::new(), |s,c| s + &node_to_json(&c)))
-	}
-      }
-      NodeType::Text => {
-        format!("\"{}\"", String::from(d.value.as_ref().unwrap()))
-      }
-      NodeType::Attribute => {
-        "".to_string()
-      }
-      NodeType::Comment => {
-        "".to_string()
-      }
-      NodeType::ProcessingInstruction => {
-        "".to_string()
-      }
-  }
-}
-
-fn xnode_sv_helper(c: Node) -> String {
-  let mut s: String = String::new();
-  for e in c.descendants()
-    .filter(|d| d.node_type() == roxmltree::NodeType::Text) {
-    s.push_str(e.text().unwrap_or(""));
-  }
-  s
-}
-
-// Generate the string value of the Node
-fn xnode_to_string(node: Node) -> String {
-  match node.node_type() {
-      roxmltree::NodeType::Root => {
-        if node.has_children() {
-	  xnode_to_string(node.first_child().unwrap())
-	} else {
-	  String::new()
-	}
-      }
-      roxmltree::NodeType::Element => {
-        if node.has_children() {
-	  node
-	    .children()
-	    .fold(String::new(), |s,c| s + xnode_sv_helper(c).as_str())
-	} else {
-	  "".to_string()
-	}
-      }
-      roxmltree::NodeType::Text => {
-        node.text().unwrap_or("").to_string()
-      }
-      roxmltree::NodeType::Comment => {
-        node.text().unwrap_or("").to_string()
-      }
-      roxmltree::NodeType::PI => {
-        node.text().unwrap_or("").to_string()
-      }
-  }
-}
-fn xnode_to_xml(node: Node) -> String {
-  match node.node_type() {
-      roxmltree::NodeType::Root => {
-        if node.has_children() {
-	  xnode_to_xml(node.first_child().unwrap())
-	} else {
-	  String::new()
-	}
-      }
-      roxmltree::NodeType::Element => {
-        if node.has_children() {
-	  // TODO: attributes
-	  format!("<{}>{}</{}>", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_xml(c)), node.tag_name().name())
-	} else {
-	  format!("<{}/>", node.tag_name().name())
-	}
-      }
-      roxmltree::NodeType::Text => {
-        String::from(node.text().unwrap_or(""))
-      }
-      roxmltree::NodeType::Comment => {
-        let mut r = String::new();
-        r.push_str("<!--");
-        r.push_str(node.text().unwrap_or(""));
-        r.push_str("-->");
-	r
-      }
-      roxmltree::NodeType::PI => {
-        let mut r = String::new();
-        r.push_str("<?");
-        r.push_str(node.tag_name().name());
-        r.push_str(" ");
-        r.push_str(node.text().unwrap_or(""));
-        r.push_str("?>");
-	r
-      }
-  }
-}
-fn xnode_to_json(node: Node) -> String {
-  match node.node_type() {
-      roxmltree::NodeType::Root => {
-        if node.has_children() {
-	  xnode_to_string(node.first_child().unwrap())
-	} else {
-	  "{}".to_string()
-	}
-      }
-      roxmltree::NodeType::Element => {
-        if node.has_children() {
-	  // TODO: attributes
-	  format!("\"{}\": {}", node.tag_name().name(), node.children().fold(String::new(), |s,c| s + &xnode_to_json(c)))
-	} else {
-	  format!("\"{}\": \"\"", node.tag_name().name())
-	}
-      }
-      roxmltree::NodeType::Text => {
-        format!("\"{}\"", String::from(node.text().unwrap_or("")))
-      }
-      roxmltree::NodeType::Comment |
-      roxmltree::NodeType::PI => {
-        "".to_string()
-      }
-  }
-}
-
-// Generate the string value of the libxml Node
-fn ldoc_to_string(d: &libxmlDocument) -> String {
-  match d.get_root_element() {
-    Some(n) => lnode_to_string(&n),
-    None => "".to_string(),
-  }
-}
-fn lnode_to_string(node: &libxmlNode) -> String {
-  match node.get_type() {
-      Some(libxmlNodeType::ElementNode) => {
-        node
-	    .get_child_nodes()
-	    .iter()
-	    .fold(String::new(), |s,c| s + lnode_to_string(c).as_str())
-      }
-      Some(libxmlNodeType::TextNode) |
-      Some(libxmlNodeType::CommentNode) |
-      Some(libxmlNodeType::PiNode) => {
-        node.get_content()
-      }
-      _ => "".to_string(),
-  }
-}
-fn ldoc_to_xml(d: &libxmlDocument) -> String {
-  match d.get_root_element() {
-    Some(n) => lnode_to_xml(&n),
-    None => "".to_string(),
-  }
-}
-fn lnode_to_xml(node: &libxmlNode) -> String {
-  match node.get_type() {
-      Some(libxmlNodeType::ElementNode) => {
-	  // TODO: attributes
-	  format!("<{}>{}</{}>", node.get_name(), node.get_child_nodes().iter().fold(String::new(), |s,c| s + lnode_to_xml(c).as_str()), node.get_name())
-      }
-      Some(libxmlNodeType::TextNode) => {
-        node.get_content()
-      }
-      Some(libxmlNodeType::CommentNode) => {
-	let mut r = String::new();
-        r.push_str("<!--");
-        r.push_str(node.get_content().as_str());
-        r.push_str("-->");
-	r
-      }
-      Some(libxmlNodeType::PiNode) => {
-        let mut r = String::new();
-        r.push_str("<?");
-        r.push_str(node.get_name().as_str());
-        r.push_str(" ");
-        r.push_str(node.get_content().as_str());
-        r.push_str("?>");
-	r
-      }
-      _ => "".to_string(),
-  }
-}
-fn ldoc_to_json(d: &libxmlDocument) -> String {
-  match d.get_root_element() {
-    Some(n) => lnode_to_json(&n),
-    None => "".to_string(),
-  }
-}
-fn lnode_to_json(node: &libxmlNode) -> String {
-  match node.get_type() {
-      Some(libxmlNodeType::ElementNode) => {
-	  // TODO: attributes
-	  format!("\"{}\": {}", node.get_name(), node.get_child_nodes().iter().fold(String::new(), |s,c| s + lnode_to_json(c).as_str()))
-      }
-      Some(libxmlNodeType::TextNode) => {
-        format!("\"{}\"", node.get_content())
-      }
-      _ => {
-        "".to_string()
-      }
-  }
-}
-
-fn json_to_string(j: &JsonValue) -> String {
-  match j {
-      JsonValue::Null => {
-	  "{}".to_string()
-      }
-      JsonValue::Short(s) => {
-        s.to_string()
-      }
-      JsonValue::Number(s) => {
-        s.to_string()
-      }
-      JsonValue::Boolean(s) => {
-        s.to_string()
-      }
-      JsonValue::String(s) => {
-        s.to_string()
-      }
-      JsonValue::Object(_) => {
-        j.entries()
-	  .map(|(_, v)| json_to_xml(v))
-	  .fold(String::new(), |a, i| a + i.as_str())
-      }
-      JsonValue::Array(a) => {
-        a.iter().fold(String::new(), |a, i| a + json_to_xml(i).as_str())
-      }
-  }
-}
-fn json_to_xml(j: &JsonValue) -> String {
-  match j {
-      JsonValue::Null => {
-	  "{}".to_string()
-      }
-      JsonValue::Short(s) => {
-        s.to_string()
-      }
-      JsonValue::Number(s) => {
-        s.to_string()
-      }
-      JsonValue::Boolean(s) => {
-        s.to_string()
-      }
-      JsonValue::String(s) => {
-        s.to_string()
-      }
-      JsonValue::Object(_) => {
-        j.entries()
-	  .map(|(k, v)| format!("<{}>{}</{}>", k, json_to_xml(v), k))
-	  .fold(String::new(), |a, i| a + i.as_str())
-      }
-      JsonValue::Array(a) => {
-        a.iter().fold(String::new(), |a, i| a + json_to_xml(i).as_str())
-      }
-  }
 }
 
 // A concrete type that implements atomic values
@@ -1221,17 +896,6 @@ impl Clone for NormalizedString {
     }
 }
 
-fn nodetype_to_string(nt: Option<libxml::tree::NodeType>) -> &'static str {
-  match nt {
-    Some(libxml::tree::nodetype::NodeType::ElementNode) => "ElementNode",
-    Some(libxml::tree::nodetype::NodeType::TextNode) => "TextNode",
-    Some(libxml::tree::nodetype::NodeType::CommentNode) => "CommentNode",
-    Some(libxml::tree::nodetype::NodeType::PiNode) => "PiNode",
-    None => "--None--",
-    _ => "unknown",
-  }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1402,18 +1066,6 @@ mod tests {
 	let i = Value::NormalizedString(ns);
         assert_eq!(i.to_string(), "foobar")
     }
-    #[test]
-    fn xnode_stringvalue_1() {
-      let d = roxmltree::Document::parse("<Test><Level2>test text</Level2></Test>").expect("unable to parse XML");
-      let i = Item::XNode(d.root().first_child().unwrap().first_child().unwrap());
-      assert_eq!(i.to_string(), "test text")
-    }
-    #[test]
-    fn xnode_stringvalue_2() {
-      let d = roxmltree::Document::parse("<Test><Level2>test</Level2><Level3>text</Level3></Test>").expect("unable to parse XML");
-      let i = Item::XNode(d.root().first_child().unwrap());
-      assert_eq!(i.to_string(), "testtext")
-    }
 
     // to_bool
 
@@ -1492,59 +1144,6 @@ mod tests {
         //assert_eq!(i.atomize().stringvalue(), "123")
     //}
 
-    // Nodes
-
-    #[test]
-    fn node_document() {
-        RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
-        assert!(true)
-    }
-    #[test]
-    fn node_element() {
-        let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
-        let e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
-	d.push_front(e);
-        assert_eq!(node_to_string(&d), "");
-        assert_eq!(node_to_xml(&d), "<Test/>");
-        assert_eq!(node_to_json(&d), "{\"Test\": \"\"}")
-    }
-    #[test]
-    fn node_text() {
-        let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
-        let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
-        let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
-	e.push_front(t);
-	d.push_front(e);
-        assert_eq!(node_to_string(&d), "Test text");
-        assert_eq!(node_to_xml(&d), "<Test>Test text</Test>")
-    }
-    #[test]
-    fn item_node_to_string() {
-        let d = RcNode::from(Tree::new(NodeDefn::new(NodeType::Document)));
-        let mut e = Tree::new(NodeDefn::new(NodeType::Element).set_name("Test".to_string()));
-        let t = Tree::new(NodeDefn::new(NodeType::Text).set_value("Test text".to_string()));
-	e.push_front(t);
-	d.push_front(e);
-	let i = Item::Node(d);
-        assert_eq!(i.to_string(), "Test text");
-        assert_eq!(i.to_xml(), "<Test>Test text</Test>")
-    }
-
-    // Documents and Nodes using roxmltree
-//    #[test]
-//    fn xnode_doc() {
-//      let d = roxmltree::Document::parse("<Test/>").expect("unable to parse XML");
-//      let i = Item::XDoc(d);
-//      assert_eq!(i.to_string(), "<Test/>")
-//    }
-    #[test]
-    fn xnode_node() {
-      let d = roxmltree::Document::parse("<Test><Level2>test text</Level2></Test>").expect("unable to parse XML");
-      let i = Item::XNode(d.root().first_child().unwrap().first_child().unwrap());
-      assert_eq!(i.to_string(), "test text");
-      assert_eq!(i.to_xml(), "<Level2>test text</Level2>")
-    }
-
     // Sequences
 
     #[test]
@@ -1559,35 +1158,6 @@ mod tests {
 	let mut t = Sequence::new();
 	t.add(&s[0]);
 	assert!(Rc::ptr_eq(&s[0], &t[0]))
-    }
-
-    // libxml
-    #[test]
-    fn ldoc() {
-      let p = Parser::default();
-      let i = Item::LDocument(p.parse_string("<Test>a test document</Test>").expect("failed to parse XML"));
-      assert_eq!(i.to_string(), "a test document")
-    }
-    // The code must not let the libxml::Document be dropped.
-    // Any libxml::Node references will become invalid,
-    // but this is not caught by the Rust borrow checker(!)
-    #[test]
-    fn lnode() {
-      let ps = Parser::default();
-      let d = ps.parse_string("<Test>a test document</Test>")
-          .expect("failed to parse XML");
-      let di = Item::LDocument(d.clone());
-      let r = match d.get_root_element() {
-	  Some(n) => {
-	    n
-	  }
-	  None => panic!("unable to find root element"),
-      };
-      let c = r.get_child_nodes();
-
-      let i = Item::LNode(r);
-      assert_eq!(i.to_name(), "Test");
-      assert_eq!(i.to_string(), "a test document")
     }
 
     // Operators
@@ -1626,15 +1196,5 @@ mod tests {
     #[test]
     fn op_after() {
       assert_eq!(Operator::After.to_string(), ">>")
-    }
-
-    // Json
-
-    #[test]
-    fn json_value() {
-      let i = Item::JsonValue(JsonValue::String("this is json".to_string()));
-      assert_eq!(i.to_string(), "this is json");
-      assert_eq!(i.to_xml(), "this is json");
-      assert_eq!(i.to_json(), "\"this is json\"")
     }
 }

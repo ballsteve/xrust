@@ -75,15 +75,22 @@ pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
 pub mod item;
-pub use item::{Sequence, Item, Value, SequenceTrait};
+pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
+
+mod impls {
+  mod xdmlibxml;
+  pub use xdmlibxml::*;
+  //mod xdmrox;
+  //pub use xdmrox::*;
+}
 
 mod parsecommon;
 
-pub mod xpath;
-pub use xpath::parse;
+//pub mod xpath;
+//pub use xpath::parse;
 
-pub mod evaluate;
-pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
+//pub mod evaluate;
+//pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
 
-pub mod xslt;
-pub use xslt::from_xnode;
+//pub mod xslt;
+//pub use xslt::from_xnode;
