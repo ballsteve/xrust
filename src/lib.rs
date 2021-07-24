@@ -89,8 +89,8 @@ mod parsecommon;
 //pub mod xpath;
 //pub use xpath::parse;
 
-//pub mod evaluate;
-//pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
+pub mod evaluate;
+pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
 
 //pub mod xslt;
 //pub use xslt::from_xnode;

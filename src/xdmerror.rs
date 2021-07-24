@@ -5,6 +5,7 @@
 use core::{fmt, str};
 
 /// Errors defined in XPath
+#[derive(Clone)]
 pub enum ErrorKind {
     StaticAbsent, /// XPST0001
     DynamicAbsent, /// XPDY0002
@@ -43,9 +44,16 @@ impl ErrorKind {
 }
 
 /// An error returned by an XPath, XQuery or XSLT function/method
+#[derive(Clone)]
 pub struct Error {
     pub kind: ErrorKind,
     pub message: String,
+}
+
+impl Error {
+  pub fn to_string(&self) -> String {
+    self.message.clone()
+  }
 }
 
 impl fmt::Debug for Error {

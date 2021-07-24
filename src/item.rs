@@ -260,7 +260,12 @@ impl<'a> Item<'a> {
   /// Is this item an element-type node?
   pub fn is_element_node(&self) -> bool {
     match self {
-      Item::Node(n) => n.is_element(),
+      Item::Node(n) => {
+        match n.node_type() {
+	  NodeType::Element => true,
+	  _ => false,
+	}
+      }
       _ => false,
     }
   }
@@ -347,12 +352,20 @@ pub trait Node: Any {
   fn doc(&self) -> Option<Box<dyn Document>> {
     None
   }
+  /// Return the type of the Node
+  fn node_type(&self) -> NodeType;
   /// Navigate to the parent of the node.
   fn parent(&self) -> Option<Box<dyn Node>>;
   /// An iterator over ancestors of the Node.
   fn ancestor_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
     Box::new(Ancestor::new(Box::new(self)))
   }
+  /// Return all of the ancestors of the Node.
+  // TODO: this gives the error "error[E0277]: the size for values of type `Self` cannot be known at compilation time"
+  fn ancestors(&self) -> Vec<Box<dyn Node>>;
+  //{
+    //self.ancestor_iter().collect()
+  //}
   /// Return the children of the node. If the node has no children then returns an empty vector.
   fn children(&self) -> Vec<Box<dyn Node>>;
   /// Return descendants of the Node, but including the Node itself.
@@ -363,20 +376,33 @@ pub trait Node: Any {
   fn following_sibling_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
     Box::new(FollowingSibling::new(Box::new(self)))
   }
+  /// Return all of the following siblings of the Node.
+  // TODO: see above
+  fn following_siblings(&self) -> Vec<Box<dyn Node>>;
+  //{
+    //self.following_sibling_iter().collect()
+  //}
   /// Return the next preceding sibling.
   fn get_preceding_sibling(&self) -> Option<Box<dyn Node>>;
   /// An iterator over preceding siblings.
   fn preceding_sibling_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
     Box::new(PrecedingSibling::new(Box::new(self)))
   }
+  /// Return all of the preceding siblings of the Node.
+  // TODO: see above
+  fn preceding_siblings(&self) -> Vec<Box<dyn Node>>;
+  //{
+    //self.preceding_sibling_iter().collect()
+  //}
 
   /// Returns if the node is an element-type node
-  fn is_element(&self) -> bool;
+  //fn is_element(&self) -> bool;
 
   /// Insert a Node as a child. The node is appended to the list of children. NB. If the element supplied is of a different concrete type to the Node then this will likely result in an error.
-  fn add_child(&mut self, c: &mut dyn Any) -> Result<(), Error>;
+  //fn add_child(&mut self, c: &mut dyn Any) -> Result<(), Error>;
+  fn add_child(&self, c: &dyn Any) -> Result<(), Error>;
   /// Add a text node as a child.
-  fn add_text_child(&mut self, t: String) -> Result<(), Error>;
+  fn add_text_child(&self, t: String) -> Result<(), Error>;
 }
 
 struct Ancestor {
@@ -451,8 +477,7 @@ impl Iterator for PrecedingSibling {
   }
 }
 
-// TODO: is this still required?
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum NodeType {
   Document,
   Element,
@@ -460,6 +485,7 @@ pub enum NodeType {
   Attribute,
   Comment,
   ProcessingInstruction,
+  Unknown,
 }
 
 // A concrete type that implements atomic values
