@@ -5,8 +5,15 @@ use std::any::Any;
 use crate::item::{Item, Sequence, SequenceTrait, Document, Node, NodeType, Value};
 use crate::xdmerror::*;
 use crate::evaluate::*;
-use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode};
+use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode, set_node_rc_guard};
 use libxml::parser::Parser;
+
+// In order to get a mutable reference to a node to create new content,
+// the add_child, etc, methods clone the reference they are passed in order to then
+// make it mutable. However, this increments the strong count.
+fn init() {
+  set_node_rc_guard(4);
+}
 
 impl Document for libxml::tree::Document {
   fn to_string(&self) -> String {
@@ -266,7 +273,7 @@ impl Node for libxml::tree::Node {
     }
   }
   fn add_text_child(&self, t: String) -> Result<(), Error> {
-    let mut o = self.clone();
+    let o = self.clone();
     let doc = libxmlDocument::new().expect("unable to create libxml document");
     let mut n = libxmlNode::new_text(t.as_str(), &doc).expect("unable to create text node");
 
@@ -369,10 +376,11 @@ mod tests {
 
     #[test]
     fn node_create() {
+      init();
       let mut doc = libxmlDocument::new().expect("unable to create libxml document");
-      let mut r = doc.new_element("Test", None).expect("unable to create libxml element");
+      let r = doc.new_element("Test", None).expect("unable to create libxml element");
       Document::set_root_element(&mut doc, r.as_any()).expect("unable to set root element");
-      let mut n = doc.new_element("Data", None).expect("unable to create libxml element");
+      let n = doc.new_element("Data", None).expect("unable to create libxml element");
       r.add_child(n.as_any()).expect("unable to add child element");
       let di = Item::Document(Rc::new(doc));
 
@@ -381,8 +389,9 @@ mod tests {
 
     #[test]
     fn add_text() {
+      init();
       let mut doc = libxmlDocument::new().expect("unable to create libxml document");
-      let mut r = doc.new_element("Test", None).expect("unable to create libxml element");
+      let r = doc.new_element("Test", None).expect("unable to create libxml element");
       Document::set_root_element(&mut doc, r.as_any()).expect("unable to set root element");
       r.add_text_child("this is a test".to_string()).expect("unable to add child element");
       let di = Item::Document(Rc::new(doc));
@@ -1520,12 +1529,14 @@ mod tests {
 
     #[test]
     fn foreach_1() {
+      init();
       let mut dc = DynamicContext::new();
       let p = Parser::default();
       let doc = p.parse_string("<Test><Level2></Level2><Level3></Level3></Test>").expect("failed to parse XML");
       let rgdoc = Rc::new(doc) as Rc<dyn Document>;
       dc.set_doc(Rc::clone(&rgdoc));
-      let i = Rc::new(Item::Document(Rc::clone(&rgdoc)));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
 
       let cons = vec![
         Constructor::ForEach(
@@ -1556,12 +1567,14 @@ mod tests {
 
     #[test]
     fn foreach_2() {
+      init();
       let mut dc = DynamicContext::new();
       let p = Parser::default();
       let doc = p.parse_string("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("failed to parse XML");
       let rgdoc = Rc::new(doc) as Rc<dyn Document>;
       dc.set_doc(Rc::clone(&rgdoc));
-      let i = Rc::new(Item::Document(Rc::clone(&rgdoc)));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
 
       let cons = vec![
         Constructor::ForEach(
@@ -1593,12 +1606,14 @@ mod tests {
     }
     #[test]
     fn foreach_3() {
+      init();
       let mut dc = DynamicContext::new();
       let p = Parser::default();
       let doc = p.parse_string("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>three</Level4></Test>").expect("failed to parse XML");
       let rgdoc = Rc::new(doc) as Rc<dyn Document>;
       dc.set_doc(Rc::clone(&rgdoc));
-      let i = Rc::new(Item::Document(Rc::clone(&rgdoc)));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
 
       let cons = vec![
         Constructor::ForEach(
