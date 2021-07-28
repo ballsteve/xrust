@@ -5,6 +5,7 @@
 //!
 //! Nodes are implemented as a trait.
 
+//use core::fmt;
 use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
@@ -16,9 +17,9 @@ use crate::xdmerror::{Error, ErrorKind};
 /// The Rust impementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
-pub type Sequence<'a> = Vec<Rc<Item<'a>>>;
+pub type Sequence = Vec<Rc<Item>>;
 
-pub trait SequenceTrait<'a> {
+pub trait SequenceTrait {
   /// Return the string value of the [Sequence].
   fn to_string(&self) -> String;
   /// Return a XML formatted representation of the [Sequence].
@@ -30,16 +31,16 @@ pub trait SequenceTrait<'a> {
   /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
   fn to_int(&self) -> Result<i64, Error>;
   /// Push a [Document] to the [Sequence]
-  fn new_document(&mut self, d: &'a dyn Document);
+  fn new_document(&mut self, d: Rc<dyn Document>);
   /// Push a [Node] to the [Sequence]
-  fn new_node(&mut self, d: &'a dyn Node);
+  fn new_node(&mut self, d: Rc<dyn Node>);
   /// Push a [Value] to the [Sequence]
   fn new_value(&mut self, v: Value);
   /// Push an [Item] to the [Sequence]
-  fn add(&mut self, i: &Rc<Item<'a>>);
+  fn add(&mut self, i: &Rc<Item>);
 }
 
-impl<'a> SequenceTrait<'a> for Sequence<'a> {
+impl SequenceTrait for Sequence {
   /// Returns the string value of the Sequence.
   fn to_string(&self) -> String {
     let mut r = String::new();
@@ -65,11 +66,11 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
     r
   }
   /// Push a [Document] on to the [Sequence]
-  fn new_document(&mut self, d: &'a dyn Document) {
+  fn new_document(&mut self, d: Rc<dyn Document>) {
     self.push(Rc::new(Item::Document(d)));
   }
   /// Push a [Node] on to the [Sequence]
-  fn new_node(&mut self, n: &'a dyn Node) {
+  fn new_node(&mut self, n: Rc<dyn Node>) {
     self.push(Rc::new(Item::Node(n)));
   }
   /// Push a [Value] on to the [Sequence]
@@ -79,7 +80,7 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
   //fn new_function(&self, f: Function) -> Sequence {
   //}
   /// Push an [Item] on to the [Sequence]. This clones the Item.
-  fn add(&mut self, i: &Rc<Item<'a>>) {
+  fn add(&mut self, i: &Rc<Item>) {
     self.push(Rc::clone(i));
   }
 
@@ -119,11 +120,11 @@ impl<'a> SequenceTrait<'a> for Sequence<'a> {
 ///
 /// Functions are not yet implemented.
 #[derive(Clone)]
-pub enum Item<'a> {
+pub enum Item {
     /// A [Document]
-    Document(&'a dyn Document),
+    Document(Rc<dyn Document>),
     /// A [Node]
-    Node(&'a dyn Node),
+    Node(Rc<dyn Node>),
 
     /// Functions are not yet supported
     Function,
@@ -162,7 +163,7 @@ impl Operator {
   }
 }
 
-impl<'a> Item<'a> {
+impl Item {
   /// Gives the string value of an item. All items have a string value.
   pub fn to_string(&self) -> String {
     match self {
@@ -269,6 +270,19 @@ impl<'a> Item<'a> {
       _ => false,
     }
   }
+  /// If the Item is a Document type, then returns the root element of the document, otherwise returns None
+  pub fn get_root_element(&self) -> Option<Rc<dyn Node>> {
+    match self {
+      Item::Document(d) => {
+        match d.get_root_element() {
+	  Some(n) => Some(n),
+	  _ => None,
+	}
+      }
+      _ => None,
+    }
+  }
+
   /// Gives the type of the item.
   pub fn item_type(&self) -> &'static str {
     match self {
@@ -309,16 +323,16 @@ pub trait Document {
   }
 
   /// Navigate to the parent of the Document. Documents don't have a parent, so the default implementation returns None.
-  fn parent(&self) -> Option<Box<dyn Node>> {
+  fn parent(&self) -> Option<Rc<dyn Node>> {
     None
   }
   /// Return the children of the Document. This may include the prologue, root element and epilogue. If the Document has no children then returns an empty vector.
-  fn children(&self) -> Vec<Box<dyn Node>>;
+  fn children(&self) -> Vec<Rc<dyn Node>>;
   /// Return the root node of the Document.
-  fn get_root_element(&self) -> Option<Box<dyn Node>>;
+  fn get_root_element(&self) -> Option<Rc<dyn Node>>;
 
   /// Create an element Node in the Document.
-  fn new_element(&self, name: &str, ns: Option<&str>) -> Result<Box<dyn Node>, Error>;
+  fn new_element(&self, name: &str, ns: Option<&str>) -> Result<Rc<dyn Node>, Error>;
   /// Insert the root element in the Document. NB. If the element supplied is of a different concrete type to the Document then this will likely result in an error.
   fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error>;
 }
@@ -349,48 +363,51 @@ pub trait Node: Any {
   /// Gives the name of the node. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
   fn to_name(&self) -> String;
   /// Navigate to the [Document]. Not all implementations are able to do this, so if this is the case the option can be set to None.
-  fn doc(&self) -> Option<Box<dyn Document>> {
+  fn doc(&self) -> Option<Rc<dyn Document>> {
     None
   }
   /// Return the type of the Node
   fn node_type(&self) -> NodeType;
   /// Navigate to the parent of the node.
-  fn parent(&self) -> Option<Box<dyn Node>>;
+  fn parent(&self) -> Option<Rc<dyn Node>>;
   /// An iterator over ancestors of the Node.
-  fn ancestor_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
-    Box::new(Ancestor::new(Box::new(self)))
-  }
+  // TODO: rust complains about borrowing data in an 'Rc' as mutable
+  //fn ancestor_iter(self) -> Rc<dyn Iterator<Item=Rc<dyn Node>>> where Self: Sized {
+    //Rc::new(Ancestor::new(Rc::new(self)))
+  //}
   /// Return all of the ancestors of the Node.
   // TODO: this gives the error "error[E0277]: the size for values of type `Self` cannot be known at compilation time"
-  fn ancestors(&self) -> Vec<Box<dyn Node>>;
+  fn ancestors(&self) -> Vec<Rc<dyn Node>>;
   //{
     //self.ancestor_iter().collect()
   //}
   /// Return the children of the node. If the node has no children then returns an empty vector.
-  fn children(&self) -> Vec<Box<dyn Node>>;
+  fn children(&self) -> Vec<Rc<dyn Node>>;
   /// Return descendants of the Node, but including the Node itself.
-  fn descendants(&self) -> Vec<Box<dyn Node>>;
+  fn descendants(&self) -> Vec<Rc<dyn Node>>;
   /// Return the next following sibling.
-  fn get_following_sibling(&self) -> Option<Box<dyn Node>>;
+  fn get_following_sibling(&self) -> Option<Rc<dyn Node>>;
   /// An iterator over following siblings.
-  fn following_sibling_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
-    Box::new(FollowingSibling::new(Box::new(self)))
-  }
+  // TODO: rust complains about borrowing data in an 'Rc' as mutable
+  //fn following_sibling_iter(self) -> Rc<dyn Iterator<Item=Rc<dyn Node>>> where Self: Sized {
+    //Rc::new(FollowingSibling::new(Rc::new(self)))
+  //}
   /// Return all of the following siblings of the Node.
   // TODO: see above
-  fn following_siblings(&self) -> Vec<Box<dyn Node>>;
+  fn following_siblings(&self) -> Vec<Rc<dyn Node>>;
   //{
     //self.following_sibling_iter().collect()
   //}
   /// Return the next preceding sibling.
-  fn get_preceding_sibling(&self) -> Option<Box<dyn Node>>;
+  fn get_preceding_sibling(&self) -> Option<Rc<dyn Node>>;
   /// An iterator over preceding siblings.
-  fn preceding_sibling_iter(self) -> Box<dyn Iterator<Item=Box<dyn Node>>> where Self: Sized {
-    Box::new(PrecedingSibling::new(Box::new(self)))
-  }
+  // TODO: rust complains about borrowing data in an 'Rc' as mutable
+  //fn preceding_sibling_iter(self) -> Rc<dyn Iterator<Item=Rc<dyn Node>>> where Self: Sized {
+    //Rc::new(PrecedingSibling::new(Rc::new(self)))
+  //}
   /// Return all of the preceding siblings of the Node.
   // TODO: see above
-  fn preceding_siblings(&self) -> Vec<Box<dyn Node>>;
+  fn preceding_siblings(&self) -> Vec<Rc<dyn Node>>;
   //{
     //self.preceding_sibling_iter().collect()
   //}
@@ -406,16 +423,16 @@ pub trait Node: Any {
 }
 
 struct Ancestor {
-  node: Box<dyn Node>,
+  node: Rc<dyn Node>,
 }
 
 impl Ancestor {
-  fn new(n: Box<dyn Node>) -> Ancestor {
+  fn new(n: Rc<dyn Node>) -> Ancestor {
     Ancestor{node: n}
   }
 }
 impl Iterator for Ancestor {
-  type Item = Box<dyn Node>;
+  type Item = Rc<dyn Node>;
 
   fn next(&mut self) -> Option<Self::Item> {
     match self.node.parent() {
@@ -430,16 +447,16 @@ impl Iterator for Ancestor {
 }
 
 struct FollowingSibling {
-  node: Box<dyn Node>,
+  node: Rc<dyn Node>,
 }
 
 impl FollowingSibling {
-  fn new(n: Box<dyn Node>) -> FollowingSibling {
+  fn new(n: Rc<dyn Node>) -> FollowingSibling {
     FollowingSibling{node: n}
   }
 }
 impl Iterator for FollowingSibling {
-  type Item = Box<dyn Node>;
+  type Item = Rc<dyn Node>;
 
   fn next(&mut self) -> Option<Self::Item> {
     match self.node.get_following_sibling() {
@@ -454,16 +471,16 @@ impl Iterator for FollowingSibling {
 }
 
 struct PrecedingSibling {
-  node: Box<dyn Node>,
+  node: Rc<dyn Node>,
 }
 
 impl PrecedingSibling {
-  fn new(n: Box<dyn Node>) -> PrecedingSibling {
+  fn new(n: Rc<dyn Node>) -> PrecedingSibling {
     PrecedingSibling{node: n}
   }
 }
 impl Iterator for PrecedingSibling {
-  type Item = Box<dyn Node>;
+  type Item = Rc<dyn Node>;
 
   fn next(&mut self) -> Option<Self::Item> {
     match self.node.get_preceding_sibling() {
@@ -486,6 +503,20 @@ pub enum NodeType {
   Comment,
   ProcessingInstruction,
   Unknown,
+}
+
+impl NodeType {
+  pub fn to_string(&self) -> &'static str {
+    match self {
+      NodeType::Document => "Document",
+      NodeType::Element => "Element",
+      NodeType::Attribute => "Attribute",
+      NodeType::Text => "Text",
+      NodeType::ProcessingInstruction => "Processing-Instruction",
+      NodeType::Comment => "Comment",
+      NodeType::Unknown => "--None--",
+    }
+  }
 }
 
 // A concrete type that implements atomic values

@@ -79,7 +79,8 @@ pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 
 mod impls {
   mod xdmlibxml;
-  pub use xdmlibxml::*;
+  //pub use xdmlibxml::*;
+  //mod libxmleval;
   //mod xdmrox;
   //pub use xdmrox::*;
 }
