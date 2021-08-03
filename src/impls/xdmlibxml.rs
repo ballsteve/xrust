@@ -5,6 +5,7 @@ use std::any::Any;
 use crate::item::{Item, Sequence, SequenceTrait, Document, Node, NodeType, Value};
 use crate::xdmerror::*;
 use crate::evaluate::*;
+use crate::xpath::parse;
 use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode, set_node_rc_guard};
 use libxml::parser::Parser;
 
@@ -1655,6 +1656,507 @@ mod tests {
       assert_eq!(seq[0].to_xml(), "<Group>one2</Group>");
       assert_eq!(seq[1].to_xml(), "<Group>two1</Group>");
       assert_eq!(seq[2].to_xml(), "<Group>three1</Group>");
+    }
+
+    // XPath tests
+
+    #[test]
+    fn xpath_root() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let c = parse("/").expect("unable to parse XPath \"/\"");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+    }
+
+    #[test]
+    fn xpath_step_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let c = parse("/child::*").expect("failed to parse expression \"/child::*\"");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+    }
+    #[test]
+    fn xpath_step_nodetest_pos() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let c = parse("/child::Level1").expect("failed to parse expression \"/child::Level1\"");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_name(), "Level1");
+    }
+    #[test]
+    fn xpath_step_nodetest_neg() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let c = parse("/child::Test").expect("failed to parse expression \"/child::Test\"");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 0);
+    }
+    #[test]
+    fn xnode_step_2() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let c = parse("/child::*/child::*").expect("failed to parse expression \"/child::a/child::b\"");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 3);
+      assert_eq!(e[0].to_xml(), "<Level2>one</Level2>");
+      assert_eq!(e[1].to_xml(), "<Level2>two</Level2>");
+      assert_eq!(e[2].to_xml(), "<Level2>three</Level2>");
+    }
+    #[test]
+    fn xpath_descendant_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap())));
+
+      let c = parse("descendant::*").expect("failed to parse expression \"descendant::*\"");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 6);
+      assert_eq!(e[1].to_xml(), "<level3>1 1 1</level3>")
+    }
+    #[test]
+    fn xpath_descendantorself_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap())));
+
+      let c = parse("descendant-or-self::*").expect("failed to parse expression \"descendant-or-self::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[2].to_xml(), "<level3>1 1 1</level3>")
+    }
+    #[test]
+    fn xpath_ancestor_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap())));
+
+      let c = parse("ancestor::*").expect("failed to parse expression \"ancestor::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 4);
+    }
+    #[test]
+    fn xpath_ancestororself_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap())));
+
+      let c = parse("ancestor-or-self::*").expect("failed to parse expression \"ancestor-or-self::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 4);
+    }
+    #[test]
+    fn xpath_followingsibling_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap())));
+
+      let c = parse("following-sibling::*").expect("failed to parse expression \"following-sibling::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 1);
+      assert_eq!(e.to_xml(), "<level3>1 1 2</level3>");
+    }
+    #[test]
+    fn xpath_precedingsibling_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap().get_first_child().unwrap().get_last_child().unwrap())));
+
+      let c = parse("preceding-sibling::*").expect("failed to parse expression \"preceding-sibling::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 1);
+      assert_eq!(e.to_xml(), "<level3>1 1 1</level3>");
+    }
+    #[test]
+    fn xpath_following_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap().get_first_child().unwrap().get_last_child().unwrap())));
+
+      let c = parse("following::*").expect("failed to parse expression \"following::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 4);
+      assert_eq!(e.to_xml(), "<level2><level3>1 2 1</level3><level3>1 2 2</level3></level2><level3>1 2 1</level3><level3>1 2 2</level3><level1>not me</level1>");
+    }
+    #[test]
+    fn xpath_preceding_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1><level2><level3>1 1 1</level3><level3>1 1 2</level3></level2><level2><level3>1 2 1</level3><level3>1 2 2</level3></level2></level1><level1>not me</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap().get_first_child().unwrap().get_last_child().unwrap())));
+
+      let c = parse("preceding::*").expect("failed to parse expression \"preceding::*\"");
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_xml(), "<level3>1 1 1</level3>");
+    }
+
+    #[test]
+    fn parse_eval_predicate_pos() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let i = Rc::new(Item::Document(rgdoc));
+
+      let e = parse("/child::*/child::*[child::b]").expect("failed to parse expression \"//child::*/child::*[child::b]\"");
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.len(), 1);
+      assert!(
+        s.to_xml() == "<a><b/></a>" ||
+        s.to_xml() == "<a><b></b></a>"
+      )
+    }
+    #[test]
+    fn parse_eval_predicate_neg() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let e = parse("/child::*[child::b]").expect("failed to parse expression \"/child::*[child::b]\"");
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.len(), 0)
+    }
+
+    #[test]
+    fn parse_eval_fncall_position() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let mut e = parse("/child::*/child::*[position() eq 1]").expect("failed to parse expression \"/child::*/child::*[position() eq 1]\"");
+
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert!(
+        s.to_xml() == "<a><b/></a>" ||
+        s.to_xml() == "<a><b></b></a>"
+      )
+    }
+    #[test]
+    fn parse_eval_fncall_last() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let mut e = parse("/child::*/child::*[position() eq last()]").expect("failed to parse expression \"/child::*/child::*[position() eq last()]\"");
+
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert!(
+        s.to_xml() == "<a><d/></a>" ||
+	s.to_xml() == "<a><d></d></a>"
+      )
+    }
+    #[test]
+    fn parse_eval_fncall_count() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let mut e = parse("count(/child::*/child::*)").expect("failed to parse expression \"count(/child::*/child::*)\"");
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "3")
+    }
+    #[test]
+    fn parse_eval_fncall_localname() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let mut e = parse("local-name()").expect("failed to parse expression \"local-name()\"");
+
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "Test")
+    }
+    #[test]
+    fn parse_eval_fncall_name() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><a><b/></a><a><c/></a><a><d/></a></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let idoc = Item::Document(rgdoc);
+      let i = Rc::new(Item::Node(idoc.get_root_element().unwrap()));
+
+      let mut e = parse("name()").expect("failed to parse expression \"name()\"");
+
+      let mut sc = StaticContext::new_with_builtins();
+      static_analysis(&mut e, &mut sc);
+
+      let s = evaluate(&dc, Some(vec![i]), Some(0), &e).expect("evaluation failed");
+      assert_eq!(s.to_string(), "Test")
+    }
+
+    // Kind Tests
+    #[test]
+    fn xpath_kind_element_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap())));
+
+      let cons = parse("child::element()").expect("failed to parse element kind expression");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 6);
+      assert_eq!(e[0].to_name(), "level2");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_name(), "level2");
+      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[4].to_name(), "level2");
+      assert_eq!(e[5].to_name(), "level2");
+    }
+    #[test]
+    fn xpath_kind_text_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap())));
+
+      let cons = parse("child::text()").expect("failed to parse text kind expression");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 7);
+      assert_eq!(e[0].to_string(), "1");
+      assert_eq!(e[1].to_string(), "2");
+      assert_eq!(e[2].to_string(), "3");
+      assert_eq!(e[3].to_string(), "4");
+      assert_eq!(e[4].to_string(), "5");
+      assert_eq!(e[5].to_string(), "6");
+      assert_eq!(e[6].to_string(), "7");
+    }
+    #[test]
+    fn xpath_kind_any_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let p = Parser::default();
+      let doc = p.parse_string("<Test><level1>1<level2/>2<level2/>3<level2/>4<level2/>5<level2/>6<level2/>7</level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(doc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+      let r = (*rgdoc).get_root_element().unwrap();
+      let s: &dyn Any = (*r).as_any();
+      let n: &libxmlNode = match s.downcast_ref::<libxmlNode>() {
+        Some(m) => m,
+	None => panic!("root element must be a libxml Node"),
+      };
+      let i = Rc::new(Item::Node(Rc::new(n.get_first_child().unwrap())));
+
+      let cons = parse("child::node()").expect("failed to parse text kind expression");
+
+      let e = evaluate(&dc, Some(vec![i]), Some(0), &cons)
+        .expect("evaluation failed");
+      assert_eq!(e.len(), 13);
+      assert_eq!(e[0].to_string(), "1");
+      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[2].to_string(), "2");
+      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[4].to_string(), "3");
+      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[6].to_string(), "4");
+      assert_eq!(e[7].to_name(), "level2");
+      assert_eq!(e[8].to_string(), "5");
+      assert_eq!(e[9].to_name(), "level2");
+      assert_eq!(e[10].to_string(), "6");
+      assert_eq!(e[11].to_name(), "level2");
+      assert_eq!(e[12].to_string(), "7");
     }
 }
 
