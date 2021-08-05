@@ -22,7 +22,7 @@ use crate::xdmerror::*;
 use crate::parsecommon::*;
 use crate::evaluate::{
     DynamicContext,
-    evaluate,
+    StaticContext,
     static_analysis,
     Constructor,
     NameTest, WildcardOrName,
@@ -30,7 +30,7 @@ use crate::evaluate::{
     Axis,
     ArithmeticOperator, ArithmeticOperand,
     Function,
-    StaticContext,
+    evaluate,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;

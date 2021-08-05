@@ -32,7 +32,7 @@ let seq = evaluate(
   &xpath
 ).expect("evaluation failed");
 assert_eq!(seq.len(), 1);
-assert_eq!(seq[0].to_name(), "Test");
+assert_eq!(seq[0].to_name().get_localname(), "Test");
 ```
 
 An explanation of the above example:
@@ -68,7 +68,7 @@ The library has not been extensively tested.
 ## Goals / Future Work
 
 - The library should always return errors, i.e. it should not panic
-- The library should use Traits for tree navigation and construction
+- ~~~The library should use Traits for tree navigation and construction~~~ Done!
 - Make the library more idiomatically Rust
 
 ## Contributions
@@ -106,5 +106,5 @@ pub use xpath::parse;
 pub mod evaluate;
 pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
 
-//pub mod xslt;
-//pub use xslt::from_xnode;
+pub mod xslt;
+pub use xslt::from_document;

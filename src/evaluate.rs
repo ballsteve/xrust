@@ -11,11 +11,6 @@ use crate::item::*;
 use decimal::d128;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
-//use crate::parsexml::parse;
-//use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode};
-//use trees::{RcNode, Tree};
-//use roxmltree::Node;
-//use json::{JsonValue, object};
 
 /// The dynamic evaluation context.
 ///
@@ -276,7 +271,6 @@ fn evaluate_one<'a>(
       Ok(seq)
     }
     Constructor::Root => {
-      println!("Constructor::Root");
       if ctxt.is_some() {
         match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 	  Item::Document(_) => {
@@ -310,7 +304,6 @@ fn evaluate_one<'a>(
         u = vec![]
       }
 
-      println!("Constructor::Path: {} steps", s.len());
       Ok(s.iter().fold(
 	    u,
 	    |a, c| {
@@ -326,7 +319,6 @@ fn evaluate_one<'a>(
       ))
     }
     Constructor::Step(nm, p) => {
-      println!("Constructor::Step - {}", nm.to_string());
       if ctxt.is_some() {
 	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 	  Item::Document(d) => {
@@ -335,7 +327,6 @@ fn evaluate_one<'a>(
 	      Axis::Child => {
 	        match d.get_root_element() {
 		  Some(n) => {
-		    println!("Step: get_root_element returned \"{}\"", n.to_name());
 		    if is_node_match(&nm.nodetest, &n) {
 		      let seq = vec![Rc::new(Item::Node(n))];
 		      Ok(predicates(dc, seq, p))
@@ -357,7 +348,6 @@ fn evaluate_one<'a>(
 	    }
 	  }
 	  Item::Node(n) => {
-	    println!("have Node of type {} and name \"{}\"", n.node_type().to_string(), n.to_name());
 	    match nm.axis {
 	      Axis::Selfaxis => {
 	        if is_node_match(&nm.nodetest, &n) {
@@ -427,7 +417,7 @@ fn evaluate_one<'a>(
 	      Axis::PrecedingSibling => {
 	        println!("Node - Axis::PrecedingSibling");
 		let seq = n.preceding_siblings().iter()
-		  .filter(|c| {println!("pre-sib: testing \"{}\"", c.to_name()); is_node_match(&nm.nodetest, &c)})
+		  .filter(|c| is_node_match(&nm.nodetest, &c))
 		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 	      	Ok(predicates(dc, seq, p))
 	      }
@@ -447,12 +437,10 @@ fn evaluate_one<'a>(
 		// Now traverse ancestors
 		let anc: Vec<Rc<dyn Node>> = n.ancestors();
 		for a in anc {
-		  println!("traversing ancestor \"{}\"", a.to_name());
 		  let sibs: Vec<Rc<dyn Node>> = a.following_siblings();
 		  for b in sibs {
 		    d.push(b.clone());
 		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
-		    println!("sib \"{}\" (content \"{}\") has {} desc", b.to_name(), b.to_xml(), sib_descs.len());
 		    d.append(&mut sib_descs)
 		  }
 		}
@@ -475,18 +463,13 @@ fn evaluate_one<'a>(
 		  let mut b = a.descendants();
 		  d.append(&mut b);
 		}
-		println!("have {} nodes from preceding sibs", d.len());
 
 		// Now traverse ancestors
 		let anc: Vec<Rc<dyn Node>> = n.ancestors();
-		println!("Preceding: have {} ancestors", anc.len());
 		for a in anc {
-		  println!("traversing ancestor \"{}\"", a.to_name());
 		  let sibs: Vec<Rc<dyn Node>> = a.preceding_siblings();
-		  println!("there are {} preceding sibs", sibs.len());
 		  for b in sibs {
 		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
-		    println!("this sib has {} descendants", sib_descs.len());
 		    d.append(&mut sib_descs)
 		  }
 		}
@@ -881,7 +864,6 @@ pub fn item_matches<'a>(dc: &'a DynamicContext<'a>, pat: &'a Vec<Constructor<'a>
 
 // Apply the node test to a Node.
 fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
-  //println!("is_node_match: {} node={}", nt.to_string(), n.to_name());
   match nt {
     NodeTest::Name(t) => {
       match n.node_type() {
@@ -894,7 +876,7 @@ fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
 	      	  true
 	    	}
 	    	WildcardOrName::Name(s) => {
-	      	  *s == n.to_name()
+	      	  *s == n.to_name().get_localname()
 	    	}
 	      }
 	    }
@@ -1702,7 +1684,7 @@ pub fn func_localname(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<u
       // Current item must be a node
       match *u[posn.unwrap()] {
         Item::Node(ref n) => {
-      	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().to_string())))])
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().get_localname())))])
 	}
 	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
       }
@@ -1718,7 +1700,8 @@ pub fn func_name(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>
       // Current item must be a node
       match *u[posn.unwrap()] {
         Item::Node(ref n) => {
-      	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().to_string())))])
+      	  // TODO: handle QName prefixes
+	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().get_localname())))])
 	}
 	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
       }

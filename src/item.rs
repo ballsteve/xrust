@@ -233,10 +233,10 @@ impl Item {
   }
 
   /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-  pub fn to_name(&self) -> String {
+  pub fn to_name(&self) -> QualifiedName {
     match self {
       Item::Node(i) => i.to_name(),
-      _ => "".to_string()
+      _ => QualifiedName::new(None, None, "".to_string())
     }
   }
 
@@ -318,8 +318,8 @@ pub trait Document {
     f64::NAN
   }
   /// Gives the name of the document. Documents do not have a name, so the default implementation returns an empty string.
-  fn to_name(&self) -> String {
-    String::new()
+  fn to_name(&self) -> QualifiedName {
+    QualifiedName::new(None, None, String::new())
   }
 
   /// Navigate to the parent of the Document. Documents don't have a parent, so the default implementation returns None.
@@ -361,7 +361,7 @@ pub trait Node: Any {
   /// Return the double value.
   fn to_double(&self) -> f64;
   /// Gives the name of the node. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-  fn to_name(&self) -> String;
+  fn to_name(&self) -> QualifiedName;
   /// Navigate to the [Document]. Not all implementations are able to do this, so if this is the case the option can be set to None.
   fn doc(&self) -> Option<Rc<dyn Document>> {
     None
@@ -412,14 +412,51 @@ pub trait Node: Any {
     //self.preceding_sibling_iter().collect()
   //}
 
+  /// Return the value of an attribute. Returns None if the node is not an element, or the element has no such attribute.
+  fn attribute(&self, _name: &str) -> Option<String> {
+    None
+  }
   /// Returns if the node is an element-type node
-  //fn is_element(&self) -> bool;
+  fn is_element(&self) -> bool {
+    false
+  }
 
   /// Insert a Node as a child. The node is appended to the list of children. NB. If the element supplied is of a different concrete type to the Node then this will likely result in an error.
   //fn add_child(&mut self, c: &mut dyn Any) -> Result<(), Error>;
   fn add_child(&self, c: &dyn Any) -> Result<(), Error>;
   /// Add a text node as a child.
   fn add_text_child(&self, t: String) -> Result<(), Error>;
+}
+
+#[derive(Clone, Debug)]
+pub struct QualifiedName {
+  nsuri: Option<String>,
+  prefix: Option<String>,
+  localname: String,
+}
+
+// TODO: we may need methods that return a string slice, rather than a copy of the string
+impl QualifiedName {
+  pub fn new(nsuri: Option<String>, prefix: Option<String>, localname: String) -> QualifiedName {
+    QualifiedName{nsuri, prefix, localname}
+  }
+  pub fn get_nsuri(&self) -> Option<String> {
+    self.nsuri.clone()
+  }
+  pub fn get_nsuri_ref(&self) -> Option<&str> {
+    match self.nsuri {
+      Some(ref n) => {
+        Some(&n)
+      }
+      None => None,
+    }
+  }
+  pub fn get_prefix(&self) -> Option<String> {
+    self.prefix.clone()
+  }
+  pub fn get_localname(&self) -> String {
+    self.localname.clone()
+  }
 }
 
 struct Ancestor {

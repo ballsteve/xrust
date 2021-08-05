@@ -2,10 +2,11 @@
 
 use std::rc::Rc;
 use std::any::Any;
-use crate::item::{Item, Sequence, SequenceTrait, Document, Node, NodeType, Value};
+use crate::item::{Item, Sequence, SequenceTrait, Document, Node, NodeType, Value, QualifiedName};
 use crate::xdmerror::*;
 use crate::evaluate::*;
 use crate::xpath::parse;
+use crate::xslt::*;
 use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode, set_node_rc_guard};
 use libxml::parser::Parser;
 
@@ -81,8 +82,13 @@ impl Node for libxml::tree::Node {
   fn as_any_mut(&mut self) -> &mut dyn Any {
     self
   }
-  fn to_name(&self) -> String {
-    self.get_name()
+  fn to_name(&self) -> QualifiedName {
+    match self.get_namespace() {
+      Some(ns) => {
+        QualifiedName::new(Some(ns.get_href()), Some(ns.get_prefix()), self.get_name())
+      }
+      None => QualifiedName::new(None, None, self.get_name())
+    }
   }
 
   fn to_string(&self) -> String {
@@ -227,6 +233,10 @@ impl Node for libxml::tree::Node {
     }
   }
 
+  fn attribute(&self, name: &str) -> Option<String> {
+    self.get_attribute(name)
+  }
+
   fn node_type(&self) -> NodeType {
     match self.get_type() {
       Some(libxmlNodeType::ElementNode) => NodeType::Element,
@@ -253,9 +263,9 @@ impl Node for libxml::tree::Node {
       None => NodeType::Unknown,
     }
   }
-  //fn is_element(&self) -> bool {
-    //self.is_element_node()
-  //}
+  fn is_element(&self) -> bool {
+    self.is_element_node()
+  }
 
   //fn add_child(&mut self, c: &mut dyn Any) -> Result<(), Error>{
   fn add_child(&self, c: &dyn Any) -> Result<(), Error>{
@@ -371,8 +381,37 @@ mod tests {
       };
 
       let i = Item::Node(Rc::new(r));
-      assert_eq!(i.to_name(), "Test");
+      assert_eq!(i.to_name().get_localname(), "Test");
       assert_eq!(i.to_string(), "a test document")
+    }
+
+    #[test]
+    fn attr_pos() {
+      let ps = Parser::default();
+      let doc = ps.parse_string("<Test status='test'>a test document</Test>")
+          .expect("failed to parse XML");
+      let r = match doc.get_root_element() {
+	  Some(n) => {
+	    n
+	  }
+	  None => panic!("unable to find root element"),
+      };
+
+      assert_eq!(r.attribute("status"), Some("test".to_string()));
+    }
+    #[test]
+    fn attr_neg() {
+      let ps = Parser::default();
+      let doc = ps.parse_string("<Test status='test'>a test document</Test>")
+          .expect("failed to parse XML");
+      let r = match doc.get_root_element() {
+	  Some(n) => {
+	    n
+	  }
+	  None => panic!("unable to find root element"),
+      };
+
+      assert_eq!(r.attribute("role"), None);
     }
 
     #[test]
@@ -425,9 +464,9 @@ mod tests {
 //	  .get_first_element_child().unwrap()
 //	  .get_first_element_child().unwrap();
 //      let mut iter = r.ancestor_iter();
-//      assert_eq!(iter.next().unwrap().to_name(), "c");
-//      assert_eq!(iter.next().unwrap().to_name(), "a");
-//      assert_eq!(iter.next().unwrap().to_name(), "Test");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "c");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "a");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "Test");
 //      match iter.next() {
 //        None => assert!(true),
 //	Some(_) => assert!(false),
@@ -443,10 +482,10 @@ mod tests {
 //	  .get_first_element_child().unwrap();
 //      let mut iter = r.following_sibling_iter();
 //
-//      assert_eq!(iter.next().unwrap().to_name(), "b");
-//      assert_eq!(iter.next().unwrap().to_name(), "c");
-//      assert_eq!(iter.next().unwrap().to_name(), "d");
-//      assert_eq!(iter.next().unwrap().to_name(), "e");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "b");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "c");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "d");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "e");
 //      match iter.next() {
 //        None => assert!(true),
 //	Some(_) => assert!(false),
@@ -461,10 +500,10 @@ mod tests {
 //	  .get_last_element_child().unwrap();
 //      let mut iter = r.preceding_sibling_iter();
 //
-//      assert_eq!(iter.next().unwrap().to_name(), "d");
-//      assert_eq!(iter.next().unwrap().to_name(), "c");
-//      assert_eq!(iter.next().unwrap().to_name(), "b");
-//      assert_eq!(iter.next().unwrap().to_name(), "a");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "d");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "c");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "b");
+//      assert_eq!(iter.next().unwrap().to_name().get_localname(), "a");
 //      match iter.next() {
 //        None => assert!(true),
 //	Some(_) => assert!(false),
@@ -527,8 +566,8 @@ mod tests {
       let e = evaluate(&dc, Some(vec![i]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 2 {
-        assert_eq!(e[0].to_name(), "a");
-        assert_eq!(e[1].to_name(), "b");
+        assert_eq!(e[0].to_name().get_localname(), "a");
+        assert_eq!(e[1].to_name().get_localname(), "b");
       } else {
         panic!("sequence does not have 2 items: \"{}\"", e.len())
       }
@@ -561,7 +600,7 @@ mod tests {
       let e = evaluate(&dc, Some(vec![i]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_name(), "Test")
+        assert_eq!(e[0].to_name().get_localname(), "Test")
       } else {
         panic!("sequence is not a singleton")
       }
@@ -632,7 +671,7 @@ mod tests {
       let e = evaluate(&dc, Some(vec![Rc::new(i)]), Some(0), &cons)
         .expect("evaluation failed");
       if e.len() == 1 {
-        assert_eq!(e[0].to_name(), "Test")
+        assert_eq!(e[0].to_name().get_localname(), "Test")
       } else {
         panic!("sequence is not a singleton")
       }
@@ -919,9 +958,9 @@ mod tests {
       let e = evaluate(&dc, Some(vec![Rc::new(i)]), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 7);
-      assert_eq!(e[0].to_name(), "level1");
-      assert_eq!(e[1].to_name(), "level2");
-      assert_eq!(e[2].to_name(), "level3");
+      assert_eq!(e[0].to_name().get_localname(), "level1");
+      assert_eq!(e[1].to_name().get_localname(), "level2");
+      assert_eq!(e[2].to_name().get_localname(), "level3");
       assert_eq!(e[2].to_xml(), "<level3>1 1 1</level3>");
     }
 
@@ -1037,12 +1076,12 @@ mod tests {
       let e = evaluate(&dc, Some(s), Some(0), &cons)
         .expect("evaluation failed");
       assert_eq!(e.len(), 6);
-      assert_eq!(e[0].to_name(), "level2");
-      assert_eq!(e[1].to_name(), "level2");
-      assert_eq!(e[2].to_name(), "level2");
-      assert_eq!(e[3].to_name(), "level2");
-      assert_eq!(e[4].to_name(), "level2");
-      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[0].to_name().get_localname(), "level2");
+      assert_eq!(e[1].to_name().get_localname(), "level2");
+      assert_eq!(e[2].to_name().get_localname(), "level2");
+      assert_eq!(e[3].to_name().get_localname(), "level2");
+      assert_eq!(e[4].to_name().get_localname(), "level2");
+      assert_eq!(e[5].to_name().get_localname(), "level2");
     }
 
     #[test]
@@ -1111,17 +1150,17 @@ mod tests {
         .expect("evaluation failed");
       assert_eq!(e.len(), 13);
       assert_eq!(e[0].to_string(), "1");
-      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[1].to_name().get_localname(), "level2");
       assert_eq!(e[2].to_string(), "2");
-      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[3].to_name().get_localname(), "level2");
       assert_eq!(e[4].to_string(), "3");
-      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[5].to_name().get_localname(), "level2");
       assert_eq!(e[6].to_string(), "4");
-      assert_eq!(e[7].to_name(), "level2");
+      assert_eq!(e[7].to_name().get_localname(), "level2");
       assert_eq!(e[8].to_string(), "5");
-      assert_eq!(e[9].to_name(), "level2");
+      assert_eq!(e[9].to_name().get_localname(), "level2");
       assert_eq!(e[10].to_string(), "6");
-      assert_eq!(e[11].to_name(), "level2");
+      assert_eq!(e[11].to_name().get_localname(), "level2");
       assert_eq!(e[12].to_string(), "7");
     }
 
@@ -1713,7 +1752,7 @@ mod tests {
       let e = evaluate(&dc, Some(vec![i]), Some(0), &c)
         .expect("evaluation failed");
       assert_eq!(e.len(), 1);
-      assert_eq!(e[0].to_name(), "Level1");
+      assert_eq!(e[0].to_name().get_localname(), "Level1");
     }
     #[test]
     fn xpath_step_nodetest_neg() {
@@ -2086,12 +2125,12 @@ mod tests {
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 6);
-      assert_eq!(e[0].to_name(), "level2");
-      assert_eq!(e[1].to_name(), "level2");
-      assert_eq!(e[2].to_name(), "level2");
-      assert_eq!(e[3].to_name(), "level2");
-      assert_eq!(e[4].to_name(), "level2");
-      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[0].to_name().get_localname(), "level2");
+      assert_eq!(e[1].to_name().get_localname(), "level2");
+      assert_eq!(e[2].to_name().get_localname(), "level2");
+      assert_eq!(e[3].to_name().get_localname(), "level2");
+      assert_eq!(e[4].to_name().get_localname(), "level2");
+      assert_eq!(e[5].to_name().get_localname(), "level2");
     }
     #[test]
     fn xpath_kind_text_1() {
@@ -2145,18 +2184,393 @@ mod tests {
         .expect("evaluation failed");
       assert_eq!(e.len(), 13);
       assert_eq!(e[0].to_string(), "1");
-      assert_eq!(e[1].to_name(), "level2");
+      assert_eq!(e[1].to_name().get_localname(), "level2");
       assert_eq!(e[2].to_string(), "2");
-      assert_eq!(e[3].to_name(), "level2");
+      assert_eq!(e[3].to_name().get_localname(), "level2");
       assert_eq!(e[4].to_string(), "3");
-      assert_eq!(e[5].to_name(), "level2");
+      assert_eq!(e[5].to_name().get_localname(), "level2");
       assert_eq!(e[6].to_string(), "4");
-      assert_eq!(e[7].to_name(), "level2");
+      assert_eq!(e[7].to_name().get_localname(), "level2");
       assert_eq!(e[8].to_string(), "5");
-      assert_eq!(e[9].to_name(), "level2");
+      assert_eq!(e[9].to_name().get_localname(), "level2");
       assert_eq!(e[10].to_string(), "6");
-      assert_eq!(e[11].to_name(), "level2");
+      assert_eq!(e[11].to_name().get_localname(), "level2");
       assert_eq!(e[12].to_string(), "7");
+    }
+
+    // XSLT tests
+
+    #[test]
+    fn xslt_literal_text() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'>Found an element</xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_string(), "Found an element")
+    }
+
+    #[test]
+    fn xslt_apply_templates_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'>found text</xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_string(), "found textfound text")
+    }
+
+    #[test]
+    fn xslt_apply_templates_2() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates select='child::text()'/></xsl:template>
+  <xsl:template match='child::Level1'>found Level1 element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_string(), "onetwothreefour")
+    }
+
+    #[test]
+    fn xslt_sequence_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:sequence select='count(child::*)'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_string(), "2")
+    }
+
+    #[test]
+    fn xslt_sequence_2() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_string(), "onetwo")
+    }
+
+    #[test]
+    fn xslt_sequence_3() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'>X<xsl:sequence select='.'/>Y</xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_string(), "XoneYXtwoY")
+    }
+
+    #[test]
+    fn xslt_literal_result_element_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><MyTest><xsl:apply-templates/></MyTest></xsl:template>
+  <xsl:template match='child::Level1'><MyLevel1><xsl:apply-templates/></MyLevel1></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_xml(), "<MyTest><MyLevel1>one</MyLevel1><MyLevel1>two</MyLevel1></MyTest>")
+    }
+
+    #[test]
+    fn xslt_if_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:if test='child::text()'>has text</xsl:if><xsl:if test='not(child::text())'>no text</xsl:if></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_xml(), "has texthas textno text")
+    }
+
+    #[test]
+    fn xslt_choose_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:choose><xsl:when test='child::text()'>has text</xsl:when><xsl:otherwise>no text</xsl:otherwise></xsl:choose></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_xml(), "has texthas textno text")
+    }
+
+    #[test]
+    fn xslt_foreach_1() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each select='child::*'><group><xsl:apply-templates/></group></xsl:for-each></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_xml(), "<group>one</group><group>two</group>")
+    }
+
+    #[test]
+    fn xslt_foreach_2() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:apply-templates/></group></xsl:for-each-group></xsl:template>
+  <xsl:template match='child::text()'>a group</xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      assert_eq!(seq.to_xml(), "<group>a group</group><group>a group</group>")
+    }
+
+    #[test]
+    fn xslt_foreach_3() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:sequence select='current-grouping-key()'/></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      // NB. the order that the groups appear in is undefined
+      assert!(
+        seq.to_xml() == "<group>one</group><group>two</group>" ||
+      	seq.to_xml() == "<group>two</group><group>one</group>"
+      )
+    }
+
+    #[test]
+    fn xslt_foreach_4() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4><Level5>one</Level5></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      // NB. the order that the groups appear in is undefined
+      assert!(
+        seq.to_xml() == "<group><key>one</key><members>3</members></group><group><key>two</key><members>2</members></group>" ||
+      	seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
+      )
+    }
+
+  #[test]
+  fn xslt_foreach_adj() {
+      init();
+      let mut dc = DynamicContext::new();
+      let sc = StaticContext::new_with_xslt_builtins();
+      let instp = Parser::default();
+      let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>two</Level4><Level5>one</Level5></Test>").expect("failed to parse XML");
+      let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
+      dc.set_doc(Rc::clone(&rgdoc));
+
+      let stylep = Parser::default();
+      let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-adjacent='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("failed to parse XML");
+      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let i = Rc::new(Item::Document(rgdoc));
+      let t = dc.find_match(&i);
+      let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
+
+      // NB. the order that the groups appear in is undefined
+      assert!(
+        seq.to_xml() == "<group><key>one</key><members>2</members></group><group><key>two</key><members>2</members></group><group><key>one</key><members>1</members></group>" ||
+      	seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
+      )
     }
 }
 
