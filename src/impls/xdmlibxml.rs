@@ -2203,18 +2203,17 @@ mod tests {
     #[test]
     fn xslt_literal_text() {
       init();
-      let mut dc = DynamicContext::new();
       let sc = StaticContext::new_with_xslt_builtins();
       let instp = Parser::default();
       let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
       let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
-      dc.set_doc(Rc::clone(&rgdoc));
 
       let stylep = Parser::default();
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-  <xsl:template match='child::*'>Found an element</xsl:template>
+  <xsl:template match='/'>Found the document</xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let mut dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
+      dc.set_doc(Rc::clone(&rgdoc));
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2222,30 +2221,31 @@ mod tests {
       let t = dc.find_match(&i);
       let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
-      assert_eq!(seq.to_string(), "Found an element")
+      assert_eq!(seq.to_string(), "Found the document")
     }
 
     #[test]
     fn xslt_apply_templates_1() {
       init();
-      let mut dc = DynamicContext::new();
       let sc = StaticContext::new_with_xslt_builtins();
       let instp = Parser::default();
       let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
       let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
-      dc.set_doc(Rc::clone(&rgdoc));
 
       let stylep = Parser::default();
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::text()'>found text</xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let mut dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
+      dc.set_doc(Rc::clone(&rgdoc));
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
       let i = Rc::new(Item::Document(rgdoc));
       let t = dc.find_match(&i);
+      println!("found match - seq cons has {} items", t.len());
       let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
       assert_eq!(seq.to_string(), "found textfound text")
@@ -2267,7 +2267,7 @@ mod tests {
   <xsl:template match='child::Level1'>found Level1 element</xsl:template>
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2292,7 +2292,7 @@ mod tests {
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::*'><xsl:sequence select='count(child::*)'/></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2318,7 +2318,7 @@ mod tests {
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2344,7 +2344,7 @@ mod tests {
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::text()'>X<xsl:sequence select='.'/>Y</xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2371,7 +2371,7 @@ mod tests {
   <xsl:template match='child::Level1'><MyLevel1><xsl:apply-templates/></MyLevel1></xsl:template>
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2385,24 +2385,26 @@ mod tests {
     #[test]
     fn xslt_if_1() {
       init();
-      let mut dc = DynamicContext::new();
       let sc = StaticContext::new_with_xslt_builtins();
       let instp = Parser::default();
       let instdoc = instp.parse_string("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("failed to parse XML");
       let rgdoc = Rc::new(instdoc) as Rc<dyn Document>;
-      dc.set_doc(Rc::clone(&rgdoc));
 
       let stylep = Parser::default();
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Level1'><xsl:if test='child::text()'>has text</xsl:if><xsl:if test='not(child::text())'>no text</xsl:if></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let mut dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
+      dc.set_doc(Rc::clone(&rgdoc));
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
       let i = Rc::new(Item::Document(rgdoc));
+      println!("find match for source document");
       let t = dc.find_match(&i);
+      println!("evaluate seq cons of length {}", t.len());
       let seq = evaluate(&dc, Some(vec![i.clone()]), Some(0), &t).expect("failed to evaluate stylesheet");
 
       assert_eq!(seq.to_xml(), "has texthas textno text")
@@ -2423,7 +2425,7 @@ mod tests {
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Level1'><xsl:choose><xsl:when test='child::text()'>has text</xsl:when><xsl:otherwise>no text</xsl:otherwise></xsl:choose></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2449,7 +2451,7 @@ mod tests {
   <xsl:template match='child::Test'><xsl:for-each select='child::*'><group><xsl:apply-templates/></group></xsl:for-each></xsl:template>
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2475,7 +2477,7 @@ mod tests {
   <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:apply-templates/></group></xsl:for-each-group></xsl:template>
   <xsl:template match='child::text()'>a group</xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2500,7 +2502,7 @@ mod tests {
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:sequence select='current-grouping-key()'/></group></xsl:for-each-group></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2529,7 +2531,7 @@ mod tests {
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2558,7 +2560,7 @@ mod tests {
       let styledoc = stylep.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-adjacent='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
 </xsl:stylesheet>").expect("failed to parse XML");
-      let dc = from_document(styledoc, &sc).expect("failed to compile stylesheet");
+      let dc = from_document(Rc::new(styledoc), &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context

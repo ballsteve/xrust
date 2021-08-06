@@ -62,7 +62,7 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 /// Compiles a [Document] into a Sequence Constructor.
 ///
 /// If the stylesheet creates any elements in the result tree, they are created using the [DynamicContext]'s [Document] [Node] creation method.
-pub fn from_document<'a>(d: Rc<dyn Document>, sc: &'a StaticContext<'a>) -> Result<DynamicContext<'a>, Error> {
+pub fn from_document(d: Rc<dyn Document>, sc: &StaticContext) -> Result<DynamicContext, Error> {
     let mut dc = DynamicContext::new();
 
     // Check that this is a valid XSLT stylesheet
@@ -109,7 +109,7 @@ pub fn from_document<'a>(d: Rc<dyn Document>, sc: &'a StaticContext<'a>) -> Resu
 }
 
 /// Compile a node in a template to a sequence constructor
-fn to_constructor<'a>(n: Rc<dyn Node>) -> Result<Constructor<'a>, Error> {
+fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
   match n.node_type() {
     NodeType::Text => {
       Ok(Constructor::Literal(Value::String(n.to_string())))
@@ -176,11 +176,9 @@ fn to_constructor<'a>(n: Rc<dyn Node>) -> Result<Constructor<'a>, Error> {
 	(Some(XSLTNS), "choose") => {
 	  let mut when: Vec<Vec<Constructor>> = Vec::new();
 	  let mut otherwise: Vec<Constructor> = Vec::new();
-	  let mut itr = n.children().iter();
-
-	  loop {
-	    match itr.next() {
-	      Some(m) => {
+	  let mut status: Option<Error> = None;
+	  n.children().iter()
+	    .for_each(|m| {
 	        // look for when elements
 	      	// then find an otherwise
 	      	// fail on anything else (apart from whitespace, comments, PIs)
@@ -201,11 +199,11 @@ fn to_constructor<'a>(n: Rc<dyn Node>) -> Result<Constructor<'a>, Error> {
 			      );
 			    }
 	    		    None => {
-	      		      return Result::Err(Error{kind: ErrorKind::TypeError, message: "missing test attribute".to_string()})
+	      		      status.replace(Error{kind: ErrorKind::TypeError, message: "missing test attribute".to_string()});
 	    		    }
 			  }
 			} else {
-			  return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: when follows otherwise".to_string()})
+			  status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: when follows otherwise".to_string()});
 			}
 		      }
         	      (Some(XSLTNS), "otherwise") => {
@@ -214,34 +212,36 @@ fn to_constructor<'a>(n: Rc<dyn Node>) -> Result<Constructor<'a>, Error> {
 		      	    .map(|d| to_constructor(d.clone()).expect("failed to compile otherwise content"))
 		      	    .collect()
 			} else {
-			  return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: no when elements".to_string()})
+			  status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: no when elements".to_string()});
 			}
 		      }
 		      _ => {
-			 return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid element content in choose element".to_string()})
+			 status.replace(Error{kind: ErrorKind::TypeError, message: "invalid element content in choose element".to_string()});
 		      }
 		    }
 		  }
 		  NodeType::Text => {
 		    if !n.to_string().trim().is_empty() {
-		      return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string()})
+		      status.replace(Error{kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string()});
 		    }
 		  }
 		  NodeType::Comment |
 		  NodeType::ProcessingInstruction => {}
-		  _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string()})
+		  _ => {
+		    status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string()});
+		  }
 		}
-	      }
-	      None => break,
-	    }
-	  }
+	    });
 
-	  Ok(
-	    Constructor::Switch(
-	      when,
-	      otherwise,
+	  match status {
+	    Some(e) => Result::Err(e),
+	    None => Ok(
+	      Constructor::Switch(
+	        when,
+	        otherwise,
+	      )
 	    )
-	  )
+	  }
 	}
 	(Some(XSLTNS), "for-each") => {
 	  match n.attribute("select") {

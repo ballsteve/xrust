@@ -16,17 +16,17 @@ use std::cell::{RefCell, RefMut};
 ///
 /// The dynamic context stores the value of declared variables.
 //#[derive(Clone)]
-pub struct DynamicContext<'a> {
+pub struct DynamicContext {
   vars: RefCell<HashMap<String, Vec<Sequence>>>,
-  templates: Vec<Template<'a>>,
+  templates: Vec<Template>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
   doc: Option<Rc<dyn Document>>,
 }
 
-impl<'a> DynamicContext<'a> {
+impl DynamicContext {
   /// Create a dynamic context.
-  pub fn new() -> DynamicContext<'a> {
+  pub fn new() -> DynamicContext {
     DynamicContext{
       vars: RefCell::new(HashMap::new()),
       templates: Vec::new(),
@@ -37,20 +37,22 @@ impl<'a> DynamicContext<'a> {
   }
 
   /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template.
-  pub fn add_template(&mut self, p: Vec<Constructor<'a>>, b: Vec<Constructor<'a>>) {
+  pub fn add_template(&mut self, p: Vec<Constructor>, b: Vec<Constructor>) {
     self.templates.push(Template{pattern: p, body: b});
   }
   /// Determine if an item matches a pattern and return the sequence constructor for that template.
   /// If no template is found, returns None.
   /// TODO: If more than one pattern matches, return the highest priority match.
-  pub fn find_match(&'a self, i: &Rc<Item>) -> Vec<Constructor<'a>> {
-    let r: Vec<Vec<Constructor<'a>>> = self.templates.iter()
+  pub fn find_match(&self, i: &Rc<Item>) -> Vec<Constructor> {
+    let r: Vec<Vec<Constructor>> = self.templates.iter()
       .filter(|t| item_matches(self, &t.pattern, i))
       .map(|t| t.body.clone())
       .collect();
     if r.len() != 0 {
+      println!("find_match: non-empty result");
       r[0].clone()
     } else {
+      println!("find_match: empty result");
       vec![]
     }
   }
@@ -77,11 +79,11 @@ impl<'a> DynamicContext<'a> {
 /// Evaluate a sequence constructor, given a dynamic context.
 ///
 /// The dynamic context consists of the supplied context, as well as the context item. The context item, which is optional, consists of a [Sequence] and an index to an item. If the context sequence is supplied, then the index (posn) must also be supplied and be a valid index for the sequence.
-pub fn evaluate<'a>(
-    dc: &'a DynamicContext<'a>,
+pub fn evaluate(
+    dc: &DynamicContext,
     ctxt: Option<Sequence>,
     posn: Option<usize>,
-    c: &'a Vec<Constructor<'a>>
+    c: &Vec<Constructor>
   ) -> Result<Sequence, Error> {
 
   Ok(c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect())
@@ -89,11 +91,11 @@ pub fn evaluate<'a>(
 
 // Evaluate an item constructor, given a context
 // If a constructor returns a non-singleton sequence, then it is unpacked
-fn evaluate_one<'a>(
-    dc: &'a DynamicContext<'a>,
+fn evaluate_one(
+    dc: &DynamicContext,
     ctxt: Option<Sequence>,
     posn: Option<usize>,
-    c: &'a Constructor<'a>
+    c: &Constructor
   ) -> Result<Sequence, Error> {
 
   match c {
@@ -591,6 +593,7 @@ fn evaluate_one<'a>(
       // Evaluate 's' to find the nodes to apply templates to
       // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
+      println!("ApplyTemplates - s has {} constructors", s.len());
       Ok(evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression")
         .iter().fold(
           vec![],
@@ -704,7 +707,7 @@ fn evaluate_one<'a>(
 }
 
 // Push a new scope for a variable
-fn var_push<'a>(dc: &DynamicContext<'a>, v: &str, i: &Rc<Item>) {
+fn var_push(dc: &DynamicContext, v: &str, i: &Rc<Item>) {
   let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
   let mut t: Option<&mut Vec<Sequence>>;
 
@@ -733,7 +736,7 @@ fn var_pop(dc: &DynamicContext, v: &str) {
 }
 
 // Filter the sequence with each of the predicates
-fn predicates<'a>(dc: &'a DynamicContext<'a>, s: Sequence, p: &'a Vec<Vec<Constructor<'a>>>) -> Sequence {
+fn predicates(dc: &DynamicContext, s: Sequence, p: &Vec<Vec<Constructor>>) -> Sequence {
   if p.is_empty() {
     s
   } else {
@@ -763,19 +766,19 @@ fn predicates<'a>(dc: &'a DynamicContext<'a>, s: Sequence, p: &'a Vec<Vec<Constr
 ///
 /// These are usually included in a Vector, where each Constructor builds an item. If the constructor results in a singleton, then it becomes an item in the [Sequence], otherwise the sequence is unpacked into the parent [Sequence].
 #[derive(Clone)]
-pub enum Constructor<'a> {
+pub enum Constructor {
   /// A literal, atomic value
   Literal(Value),
   /// A literal element. This will become a node in the result tree.
   /// TODO: this may be merged with the Literal option in a later version.
   /// Arguments are: element name, prefix, namespace and content
-  LiteralElement(String, String, String, Vec<Constructor<'a>>),
+  LiteralElement(String, String, String, Vec<Constructor>),
   /// The context item from the dynamic context
   ContextItem,
   /// Logical OR. Each element of the outer vector is an operand.
-  Or(Vec<Vec<Constructor<'a>>>),
+  Or(Vec<Vec<Constructor>>),
   /// Logical AND. Each element of the outer vector is an operand.
-  And(Vec<Vec<Constructor<'a>>>),
+  And(Vec<Vec<Constructor>>),
   // Union,
   // IntersectExcept,
   // InstanceOf,
@@ -790,49 +793,49 @@ pub enum Constructor<'a> {
   /// A path in a tree of nodes.
   /// Each element of the outer vector is a step in the path.
   /// The result of each step becomes the new context for the next step.
-  Path(Vec<Vec<Constructor<'a>>>),
+  Path(Vec<Vec<Constructor>>),
   /// A step in a path.
   /// The second argument is zero or more predicates.
   /// Each item in the result sequence is evaluated against each predicate as a boolean.
   /// If the predicate evaluates to true it is kept, otherwise it is discarded.
-  Step(NodeMatch, Vec<Vec<Constructor<'a>>>),
+  Step(NodeMatch, Vec<Vec<Constructor>>),
   /// XPath general comparison.
   /// Each element of the outer vector is a comparator.
   /// If the comparator is a sequence then each item is compared.
-  GeneralComparison(Operator, Vec<Vec<Constructor<'a>>>),
+  GeneralComparison(Operator, Vec<Vec<Constructor>>),
   /// XPath value comparison. Compares single items.
-  ValueComparison(Operator, Vec<Vec<Constructor<'a>>>),
+  ValueComparison(Operator, Vec<Vec<Constructor>>),
   // Is,
   // Before,
   // After,
   /// Concatentate string values
-  Concat(Vec<Vec<Constructor<'a>>>),
+  Concat(Vec<Vec<Constructor>>),
   /// Construct a range of integers
-  Range(Vec<Vec<Constructor<'a>>>),
+  Range(Vec<Vec<Constructor>>),
   /// Perform addition, subtraction, multiply, divide
-  Arithmetic(Vec<ArithmeticOperand<'a>>),
+  Arithmetic(Vec<ArithmeticOperand>),
   /// Call a function
-  FunctionCall(Function<'a>, Vec<Vec<Constructor<'a>>>),
+  FunctionCall(Function, Vec<Vec<Constructor>>),
   /// Declare a variable.
   /// The variable will be available for subsequent constructors
-  VariableDeclaration(String, Vec<Constructor<'a>>),	// TODO: support QName
+  VariableDeclaration(String, Vec<Constructor>),	// TODO: support QName
   /// Reference a variable.
   VariableReference(String),				// TODO: support QName
   /// Repeating constructor (i.e. 'for').
   /// The first argument declares variables.
   /// The second argument is the body of the loop.
-  Loop(Vec<Constructor<'a>>, Vec<Constructor<'a>>),
+  Loop(Vec<Constructor>, Vec<Constructor>),
   /// Selects an arm to evaluate.
   /// The first argument is pairs of (test,body) clauses.
   /// The second argument is the otherwise clause
-  Switch(Vec<Vec<Constructor<'a>>>, Vec<Constructor<'a>>),
+  Switch(Vec<Vec<Constructor>>, Vec<Constructor>),
   /// Find a matching template and evaluate its sequence constructor.
   /// The argument is the select attribute.
-  ApplyTemplates(Vec<Constructor<'a>>),
+  ApplyTemplates(Vec<Constructor>),
   /// Evaluate a sequence constructor for each item, possibly grouped.
   /// First argument is the select expression, second argument is the template,
   /// third argument is the (optional) grouping spec.
-  ForEach(Vec<Constructor<'a>>, Vec<Constructor<'a>>, Option<Grouping<'a>>),
+  ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
   /// Something that is not yet implemented
   NotImplemented(&'static str),
 }
@@ -840,16 +843,17 @@ pub enum Constructor<'a> {
 /// Determine how a collection is to be divided into groups.
 /// This enum would normally be inside an Option. The None value means that the collection is not to be grouped.
 #[derive(Clone)]
-pub enum Grouping<'a> {
-  By(Vec<Constructor<'a>>),
-  StartingWith(Vec<Constructor<'a>>),
-  EndingWith(Vec<Constructor<'a>>),
-  Adjacent(Vec<Constructor<'a>>),
+pub enum Grouping {
+  By(Vec<Constructor>),
+  StartingWith(Vec<Constructor>),
+  EndingWith(Vec<Constructor>),
+  Adjacent(Vec<Constructor>),
 }
 
 /// Determine if an item matches a pattern.
 /// The sequence constructor is a pattern: the steps of a path in reverse.
-pub fn item_matches<'a>(dc: &'a DynamicContext<'a>, pat: &'a Vec<Constructor<'a>>, i: &Rc<Item>) -> bool {
+pub fn item_matches(dc: &DynamicContext, pat: &Vec<Constructor>, i: &Rc<Item>) -> bool {
+  println!("item_matches: item is a {}, pat:\n{}", i.item_type(), format_constructor(pat, 0));
   let e = evaluate(dc, Some(vec![i.clone()]), Some(0), pat)
     .expect("pattern evaluation failed");
 
@@ -954,7 +958,9 @@ impl NodeTest {
         NodeTest::Name(nt) => {
 	  nt.to_string()
 	}
-	_ => "--no test--".to_string()
+	NodeTest::Kind(kt) => {
+	  kt.to_string().to_string()
+	}
       }
   }
 }
@@ -971,6 +977,23 @@ pub enum KindTest {
   TextTest,
   NamespaceNodeTest,
   AnyKindTest,
+}
+
+impl KindTest {
+  pub fn to_string(&self) -> &'static str {
+    match self {
+      KindTest::DocumentTest => "DocumentTest",
+      KindTest::ElementTest => "ElementTest",
+      KindTest::AttributeTest => "AttributeTest",
+      KindTest::SchemaElementTest => "SchemaElementTest",
+      KindTest::SchemaAttributeTest => "SchemaAttributeTest",
+      KindTest::PITest => "PITest",
+      KindTest::CommentTest => "CommentTest",
+      KindTest::TextTest => "TextTest",
+      KindTest::NamespaceNodeTest => "NamespaceNodeTest",
+      KindTest::AnyKindTest => "AnyKindTest",
+    }
+  }
 }
 
 #[derive(Clone)]
@@ -1103,12 +1126,12 @@ impl ArithmeticOperator {
 }
 
 #[derive(Clone)]
-pub struct ArithmeticOperand<'a> {
+pub struct ArithmeticOperand {
   pub op: ArithmeticOperator,
-  pub operand: Vec<Constructor<'a>>,
+  pub operand: Vec<Constructor>,
 }
 
-fn general_comparison<'a>(dc: &'a DynamicContext<'a>, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
+fn general_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
   let mut b = false;
   let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
@@ -1126,10 +1149,13 @@ fn general_comparison<'a>(dc: &'a DynamicContext<'a>, ctxt: Option<Sequence>, po
 /// An item is evaluated against the expression, and if the result is a non-empty sequence then the pattern has matched.
 ///
 /// Converts a Sequence Constructor to a pattern, consuming the constructor. The Constructor must be a Path. The result Constructor is also a path, but it's steps are in reverse.
-pub fn to_pattern<'a>(sc: Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a>>, Error> {
+pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
     if sc.len() == 1 {
       match sc[0] {
-        Constructor::Path(ref s) => {
+        Constructor::Root => {
+	  Ok(vec![Constructor::Root])
+	}
+	Constructor::Path(ref s) => {
           if s.len() == 0 {
             return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must not be empty".to_string()})
 	  }
@@ -1223,9 +1249,9 @@ pub fn to_pattern<'a>(sc: Vec<Constructor<'a>>) -> Result<Vec<Constructor<'a>>, 
 
 /// A template associating a pattern to a sequence constructor
 #[derive(Clone)]
-pub struct Template<'a> {
-  pattern: Vec<Constructor<'a>>,
-  body: Vec<Constructor<'a>>,
+pub struct Template {
+  pattern: Vec<Constructor>,
+  body: Vec<Constructor>,
   // priority
   // mode
 }
@@ -1235,14 +1261,14 @@ pub struct Template<'a> {
 /// Provide a static context and analysis for a [Sequence] [Constructor].
 ///
 /// Currently, this stores the set of functions and variables available to a constructor.
-pub struct StaticContext<'a> {
-  pub funcs: RefCell<HashMap<String, Function<'a>>>,
+pub struct StaticContext {
+  pub funcs: RefCell<HashMap<String, Function>>,
   pub vars: RefCell<HashMap<String, Vec<Sequence>>>, // each entry in the vector is an inner scope of the variable
 }
 
-impl<'a> StaticContext<'a> {
+impl StaticContext {
   /// Creates a new StaticContext.
-  pub fn new() -> StaticContext<'a> {
+  pub fn new() -> StaticContext {
     StaticContext{
       funcs: RefCell::new(HashMap::new()),
       vars: RefCell::new(HashMap::new()),
@@ -1275,7 +1301,7 @@ impl<'a> StaticContext<'a> {
   /// * floor()
   /// * ceiling()
   /// * round()
-  pub fn new_with_builtins() -> StaticContext<'a> {
+  pub fn new_with_builtins() -> StaticContext {
     let sc = StaticContext{
       funcs: RefCell::new(HashMap::new()),
       vars: RefCell::new(HashMap::new()),
@@ -1492,7 +1518,7 @@ impl<'a> StaticContext<'a> {
   }
   /// Create a new StaticContext with builtin functions defined,
   /// including additional functions defined by XSLT.
-  pub fn new_with_xslt_builtins() -> StaticContext<'a> {
+  pub fn new_with_xslt_builtins() -> StaticContext {
     let sc = StaticContext::new_with_builtins();
 
     sc.funcs.borrow_mut().insert("current-grouping-key".to_string(),
@@ -1529,7 +1555,7 @@ impl<'a> StaticContext<'a> {
 /// Perform static analysis of a sequence constructor.
 ///
 /// This checks that functions and variables are declared. It also rewrites the constructors to provide the implementation of functions that are used in expressions.
-pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'a>) {
+pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
   for d in e {
     match d {
       Constructor::Switch(v, o) => {
@@ -1608,23 +1634,23 @@ pub fn static_analysis<'a>(e: &mut Vec<Constructor<'a>>, sc: &'a StaticContext<'
 
 // Functions
 
-pub type FunctionImpl<'a> = fn(
-    &'a DynamicContext<'a>,
+pub type FunctionImpl = fn(
+    &DynamicContext,
     Option<Sequence>,		// Context
     Option<usize>,		// Context position
     Vec<Sequence>,		// Actual parameters
   ) -> Result<Sequence, Error>;
 
 #[derive(Clone)]
-pub struct Function<'a> {
+pub struct Function {
   name: String,
   nsuri: Option<String>,
   prefix: Option<String>,
   params: Vec<Param>,	// The number of parameters in the vector is the arity of the function
-  body: Option<FunctionImpl<'a>>,	// Function implementation must be provided during static analysis
+  body: Option<FunctionImpl>,	// Function implementation must be provided during static analysis
 }
 
-impl Function<'_> {
+impl Function {
   pub fn new(n: String, p: Vec<Param>, i: Option<FunctionImpl>) -> Function {
     Function{name: n, nsuri: None, prefix: None, params: p, body: i}
   }
@@ -2080,7 +2106,7 @@ pub fn func_current_group(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: O
 }
 
 // Operands must be singletons
-fn value_comparison<'a>(dc: &'a DynamicContext<'a>, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &'a Vec<Constructor<'a>>, right: &'a Vec<Constructor<'a>>) -> Result<bool, Error> {
+fn value_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
   let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
   if left_seq.len() == 1 {
     let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
