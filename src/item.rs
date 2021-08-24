@@ -333,6 +333,8 @@ pub trait Document {
 
   /// Create an element Node in the Document.
   fn new_element(&self, name: &str, ns: Option<&str>) -> Result<Rc<dyn Node>, Error>;
+  /// Create a text Node in the Document.
+  fn new_text(&self, c: &str) -> Result<Rc<dyn Node>, Error>;
   /// Insert the root element in the Document. NB. If the element supplied is of a different concrete type to the Document then this will likely result in an error.
   fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error>;
 }

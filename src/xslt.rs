@@ -7,7 +7,7 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 ```rust
 # use std::rc::Rc;
 # use xrust::xdmerror::*;
-# use xrust::item::{Item, Document};
+# use xrust::item::{Item, Document, Sequence, SequenceTrait};
 # use xrust::evaluate::*;
 # use xrust::xpath::*;
 # use xrust::xslt::*;
@@ -28,19 +28,23 @@ let srcdoc = Rc::new(doc) as Rc<dyn Document>;
 // This is the stylesheet document
 let psty = Parser::default();
 let style = psty.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Test'><html><body><xsl:apply-templates/></body></html></xsl:template>
   <xsl:template match='child::text()'><p><xsl:sequence select='.'/></p></xsl:template>
 </xsl:stylesheet>")
   .expect("failed to parse source document");
 
 // Now compile the stylesheet
-let dc = from_document(style, &sc).expect("failed to compile stylesheet");
+let mut dc = from_document(Rc::new(style), &sc).expect("failed to compile stylesheet");
+
+// Set the instance document as the Document in the DynamicContext
+dc.set_doc(Rc::clone(&srcdoc));
 
 // The source document is the initial context.
 // Find the template that matches it,
 // and use that to start the transformation
 let item = Rc::new(Item::Document(srcdoc));
-let mut template = dc.find_match(&item);
+let template = dc.find_match(&item);
 
 // Now evaluate the stylesheet
 let sequence = evaluate(&dc, Some(vec![item]), Some(0), &template)
@@ -92,7 +96,6 @@ pub fn from_document(d: Rc<dyn Document>, sc: &StaticContext) -> Result<DynamicC
           Some(m) => {
 	    let n = m.clone();
 	    let a = parse(&n).expect("failed to parse match expression");
-	    println!("template match attr expr:\n{}", format_constructor(&a, 0));
 	    let mut pat = to_pattern(a).expect("failed to compile match pattern");
 	    let mut body = t.children().iter()
 	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
