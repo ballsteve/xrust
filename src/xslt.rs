@@ -92,6 +92,7 @@ pub fn from_document(d: Rc<dyn Document>, sc: &StaticContext) -> Result<DynamicC
           Some(m) => {
 	    let n = m.clone();
 	    let a = parse(&n).expect("failed to parse match expression");
+	    println!("template match attr expr:\n{}", format_constructor(&a, 0));
 	    let mut pat = to_pattern(a).expect("failed to compile match pattern");
 	    let mut body = t.children().iter()
 	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))

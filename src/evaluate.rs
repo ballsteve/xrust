@@ -19,6 +19,7 @@ use std::cell::{RefCell, RefMut};
 pub struct DynamicContext {
   vars: RefCell<HashMap<String, Vec<Sequence>>>,
   templates: Vec<Template>,
+  depth: RefCell<usize>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
   doc: Option<Rc<dyn Document>>,
@@ -30,6 +31,7 @@ impl DynamicContext {
     DynamicContext{
       vars: RefCell::new(HashMap::new()),
       templates: Vec::new(),
+      depth: RefCell::new(0),
       current_grouping_key: RefCell::new(vec![None]),
       current_group: RefCell::new(vec![None]),
       doc: None,
@@ -74,6 +76,27 @@ impl DynamicContext {
   pub fn set_doc(&mut self, d: Rc<dyn Document>) {
     self.doc.replace(d);
   }
+
+  pub fn incr_depth(&self) {
+    let cur = *self.depth.borrow();
+    self.depth.replace(cur + 1);
+  }
+  pub fn decr_depth(&self) {
+    let cur = *self.depth.borrow();
+    self.depth.replace(cur - 1);
+  }
+
+  // Printout templates, for debugging.
+  pub fn dump_templates(&self) {
+    self.templates.iter().for_each(
+      |t| {
+        println!("Template matching pattern:\n{}\nBody:\n{}",
+	  format_constructor(&t.pattern, 4),
+	  format_constructor(&t.body, 4)
+	);
+      }
+    )
+  }
 }
 
 /// Evaluate a sequence constructor, given a dynamic context.
@@ -86,7 +109,19 @@ pub fn evaluate(
     c: &Vec<Constructor>
   ) -> Result<Sequence, Error> {
 
-  Ok(c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect())
+  if ctxt.is_some() {
+    println!("evaluate: context has {} item(s) first is a {}",
+      ctxt.clone().unwrap().len(),
+      ctxt.clone().unwrap()[0].item_type());
+  } else {
+    println!("evaluate: no context");
+  }
+  let result: Sequence = c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect();
+  println!("evaluation done: result has {} item(s)", result.len());
+  result.iter().enumerate().for_each(
+    |(c, i)| {println!("item {} is a {} with value \"{}\"", c, i.item_type(), i.to_xml())}
+  );
+  Ok(result)
 }
 
 // Evaluate an item constructor, given a context
@@ -341,11 +376,16 @@ fn evaluate_one(
 		  }
 		}
 	      }
+	      // Only used for pattern matching: matches "/"
+	      Axis::SelfDocument |
+	      Axis::ParentDocument => {
+	        Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
+	      }
 	      Axis::Parent |
 	      Axis::Selfaxis => Ok(vec![]),
 	      _ => {
 	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (document)".to_string()})
 	      }
 	    }
 	  }
@@ -377,6 +417,23 @@ fn evaluate_one(
 		  None => {
 	            // empty sequence is the result
       		    Ok(vec![])
+		  }
+		}
+	      }
+	      Axis::ParentDocument => {
+	        // Only matches the Document.
+		// If no parent then return the Document
+	        match n.parent() {
+		  Some(_) => {
+      		    Ok(vec![])
+		  }
+		  None => {
+	    	    match dc.doc {
+	      	      Some(ref d) => {
+	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
+	      	      }
+	      	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+	    	    }
 		  }
 		}
 	      }
@@ -446,11 +503,9 @@ fn evaluate_one(
 		    d.append(&mut sib_descs)
 		  }
 		}
-		println!("d now has {} items", d.len());
 	        let seq = d.iter()
 		  .filter(|e| is_node_match(&nm.nodetest, &e))
 		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
-		println!("seq has {} items", seq.len());
 	      	Ok(predicates(dc, seq, p))
 	      }
 	      Axis::Preceding => {
@@ -475,15 +530,15 @@ fn evaluate_one(
 		    d.append(&mut sib_descs)
 		  }
 		}
-		println!("there are {} nodes", d.len());
 	        let seq = d.iter()
 		  .filter(|e| is_node_match(&nm.nodetest, &e))
 		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
 	      	Ok(predicates(dc, seq, p))
 	      }
+	      Axis::SelfDocument => Ok(vec![]),
 	      _ => {
 	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented".to_string()})
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
 	      }
 	    }
 	  }
@@ -593,24 +648,63 @@ fn evaluate_one(
       // Evaluate 's' to find the nodes to apply templates to
       // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-      println!("ApplyTemplates - s has {} constructors", s.len());
-      Ok(evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression")
-        .iter().fold(
+      if ctxt.is_some() {
+        println!("ApplyTemplates ({}) - s has {} constructor(s):\n{}\n{} context item(s), first is a {} named \"{}\"",
+          *dc.depth.borrow(),
+	  s.len(), format_constructor(s, 0),
+	  ctxt.clone().unwrap().len(),
+	  ctxt.clone().unwrap()[posn.unwrap()].item_type(),
+	  ctxt.clone().unwrap()[posn.unwrap()].to_name().get_localname(),
+	)
+      } else {
+        println!("ApplyTemplates ({}) - s has {} constructor(s):\n{}\nno context",
+        *dc.depth.borrow(), s.len(), format_constructor(s, 0))
+      }
+
+      let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
+      println!("select expr result has {} items:", sel.len());
+      sel.iter().enumerate().for_each(
+        |(n, i)| {
+	  println!("item {} : is a {} with name {} and value \"{}\"",
+	    n, i.item_type(), i.to_name().get_localname(), i.to_string()
+	  );
+	}
+      );
+      let result = sel.iter().fold(
           vec![],
           |mut acc, i| {
-	    let mut u = dc.templates.iter()
+	    println!("AT: finding matching template from {} options", dc.templates.len());
+	    let matching_template: Vec<&Template> = dc.templates.iter()
 	      .filter(|t| {
 	        //item_matches(dc, &t.pattern, i)
-	        let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
-	        if e.len() == 0 {false} else {true}
+	        println!("AT: evaluate template pattern to find match:\npattern is:\"{}\"\nitem is a {} with name {}",
+		  format_constructor(&t.pattern, 4),
+		  i.item_type(), i.to_name().get_localname());
+		let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
+	        if e.len() == 0 {println!("reject this template"); false} else {println!("template pattern matched \"{}\"", format_constructor(&t.pattern, 0)); true}
 	      })
-	      .flat_map(|t| evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body"))
+	      .collect();
+	    // there must be only one matching template
+	    if matching_template.len() != 1 {
+	      //return Result::Err(Error{kind: ErrorKind::TypeError, message: "too many matching templates".to_string()})
+	      panic!("too many matching templates")
+	    }
+	    let mut u = matching_template.iter()
+	      .flat_map(|t| {
+	        println!("eval template body \"{}\" with item type={} value=\"{}\"", format_constructor(&t.body, 0), i.item_type(), i.to_xml());
+		dc.incr_depth();
+		let r = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+		println!("template body evaluation resulted in {} items value=\"{}\"", r.len(), r.to_string());
+		r
+	      })
 	      .collect::<Sequence>();
+	    dc.decr_depth();
+	    println!("template constructor evaluated to \"{}\"", u.to_string());
 	    acc.append(&mut u);
 	    acc
 	  }
-        )
-      )
+        );
+      Ok(result)
     }
     Constructor::ForEach(s, t, g) => {
       // Evaluate 's' to find the nodes to iterate over
@@ -646,7 +740,7 @@ fn evaluate_one(
 	    let mut curgrp = vec![sel[0].clone()];
 	    let mut curkey = evaluate(dc, Some(sel.clone()), Some(1), h).expect("failed to evaluate key");
 	    if curkey.len() != 1 {
-	      return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "group-adjacent attribute must evaluate to a single item".to_string()})
 	    }
 	    for i in 1..sel.len() {
 	      let thiskey = evaluate(dc, Some(sel.clone()), Some(i), h).expect("failed to evaluate key");
@@ -1033,10 +1127,12 @@ pub enum Axis {
   DescendantOrSelf,
   Attribute,
   Selfaxis,
+  SelfDocument, // a special axis, only for matching the Document in a pattern match
   Following,
   FollowingSibling,
   Namespace,
   Parent,
+  ParentDocument, // a special axis, only for matching in a pattern match. Matches the parent as well as the Document.
   Ancestor,
   AncestorOrSelf,
   Preceding,
@@ -1070,10 +1166,12 @@ impl Axis {
       Axis::DescendantOrSelf => "descendant-or-self".to_string(),
       Axis::Attribute => "attribute".to_string(),
       Axis::Selfaxis => "self".to_string(),
+      Axis::SelfDocument => "self-document".to_string(),
       Axis::Following => "following".to_string(),
       Axis::FollowingSibling => "following-sibling".to_string(),
       Axis::Namespace => "namespace".to_string(),
       Axis::Parent => "parent".to_string(),
+      Axis::ParentDocument => "parent-document".to_string(),
       Axis::Ancestor => "ancestor".to_string(),
       Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
       Axis::Preceding => "preceding".to_string(),
@@ -1082,6 +1180,7 @@ impl Axis {
     }
   }
   fn opposite(&self) -> Axis {
+    // SelfDocument opposite is undefined
     match self {
       Axis::Child => Axis::Parent,
       Axis::Descendant => Axis::Ancestor,
@@ -1152,8 +1251,16 @@ fn general_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<
 pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
     if sc.len() == 1 {
       match sc[0] {
-        Constructor::Root => {
-	  Ok(vec![Constructor::Root])
+	Constructor::Root => {
+	  Ok(vec![
+	    Constructor::Step(
+	      NodeMatch {
+	        axis: Axis::SelfDocument,
+	        nodetest: NodeTest::Kind(KindTest::AnyKindTest),
+	      },
+	      vec![]
+	    )
+	  ])
 	}
 	Constructor::Path(ref s) => {
           if s.len() == 0 {
@@ -1165,6 +1272,15 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 	  let mut last_axis;
 	  if step0.len() == 1 {
 	    match step0[0] {
+              Constructor::Root => {
+	        p.push(vec![
+		  Constructor::Step(
+		    NodeMatch{axis: Axis::SelfDocument, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		    vec![]
+		  )
+		]);
+		last_axis = Axis::SelfDocument;
+	      }
 	      Constructor::Step(NodeMatch{axis: a, nodetest: ref nt}, _) => {
 	        p.push(vec![
 	          Constructor::Step(
@@ -1185,19 +1301,32 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 	        ]);
 	        last_axis = a.opposite();
 	      }
-	      _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()}),
+	      _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step (1)".to_string()}),
 	    };
 	  } else {
 	    return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be steps".to_string()})
 	  }
 
+	  println!("about to enter loop");
 	  loop {
 	    let n = it.next();
 	    if n.is_none() {break};
-	    if n.unwrap().len() != 1 {return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()})};
+	    if n.unwrap().len() != 1 {return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step (2)".to_string()})};
 
 	    // TODO: predicates
+	    println!("constructor: {}", format_constructor(&n.unwrap(), 0));
 	    match n.unwrap()[0] {
+	      Constructor::Root => p.push(
+	        vec![
+		  Constructor::Step(
+		    NodeMatch{
+		      axis: Axis::ParentDocument,
+		      nodetest: NodeTest::Kind(KindTest::AnyKindTest),
+		    },
+		    vec![],
+		  )
+		]
+	      ),
 	      Constructor::Step(NodeMatch{axis: _, nodetest: ref nt}, _) => p.push(
 	        vec![
 	          Constructor::Step(
@@ -1209,7 +1338,7 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 	          )
 	        ]
 	      ),
-	      _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step".to_string()}),
+	      _ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a step (3)".to_string()}),
 	    }
 
 	    last_axis = match n.unwrap()[0] {

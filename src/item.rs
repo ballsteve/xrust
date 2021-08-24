@@ -463,11 +463,11 @@ struct Ancestor {
   node: Rc<dyn Node>,
 }
 
-impl Ancestor {
-  fn new(n: Rc<dyn Node>) -> Ancestor {
-    Ancestor{node: n}
-  }
-}
+//impl Ancestor {
+//  fn new(n: Rc<dyn Node>) -> Ancestor {
+//    Ancestor{node: n}
+//  }
+//}
 impl Iterator for Ancestor {
   type Item = Rc<dyn Node>;
 
@@ -487,11 +487,11 @@ struct FollowingSibling {
   node: Rc<dyn Node>,
 }
 
-impl FollowingSibling {
-  fn new(n: Rc<dyn Node>) -> FollowingSibling {
-    FollowingSibling{node: n}
-  }
-}
+//impl FollowingSibling {
+//  fn new(n: Rc<dyn Node>) -> FollowingSibling {
+//    FollowingSibling{node: n}
+//  }
+//}
 impl Iterator for FollowingSibling {
   type Item = Rc<dyn Node>;
 
@@ -511,11 +511,11 @@ struct PrecedingSibling {
   node: Rc<dyn Node>,
 }
 
-impl PrecedingSibling {
-  fn new(n: Rc<dyn Node>) -> PrecedingSibling {
-    PrecedingSibling{node: n}
-  }
-}
+//impl PrecedingSibling {
+//  fn new(n: Rc<dyn Node>) -> PrecedingSibling {
+//    PrecedingSibling{node: n}
+//  }
+//}
 impl Iterator for PrecedingSibling {
   type Item = Rc<dyn Node>;
 
