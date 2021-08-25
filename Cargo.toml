@@ -1,7 +1,7 @@
 [package]
 name = "xrust"
 version = "0.3.0"
-keywords = ["xml", "json", "xpath", "xslt", "tree", "libxml"]
+keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"
 authors = ["Steve Ball <Steve.Ball@explain.com.au>"]
