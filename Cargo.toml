@@ -1,9 +1,9 @@
 [package]
 name = "xrust"
-version = "0.2.0"
-keywords = ["xml", "json", "xpath", "xslt", "tree"]
+version = "0.3.0"
+keywords = ["xml", "json", "xpath", "xslt", "tree", "libxml"]
 categories = ["parser-implementations"]
-description = "Support for XPath, XQuery, and XSLT"
+description = "Support for XPath, and XSLT"
 authors = ["Steve Ball <Steve.Ball@explain.com.au>"]
 license = "Apache-2.0"
 repository = "https://github.com/ballsteve/xrust"
