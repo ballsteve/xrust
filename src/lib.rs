@@ -43,7 +43,7 @@ An explanation of the above example:
 4. A [Sequence] is created with one item: the document we just created.
 5. Parse an XPath expression. This results in a sequence constructor.
 6. Evaluate the sequence constructor.
-    1) A default [DynamicContext] is provided.
+    1) The [DynamicContext] created earlier is used.
     2) The [Sequence] created earlier is provided as the initial context for the evaluation.
 7. The evaluation should return a sequence with one item.
 8. That item is the root element of the original XML document.
@@ -54,7 +54,7 @@ See the [xslt] module for an example of how to evaluate an XSL stylesheet.
 
 The project, so far, is a proof-of-concept.
 
-For XPath it provides most of v1.0 functionality, with some v2.0 and v3.2 features.
+For XPath it provides most of v1.0 functionality, with some v2.0 and v3.1 features.
 
 For XSLT, the implementation has barely started. To begin with it only supports literal result elements and literal text.
 
