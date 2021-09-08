@@ -307,12 +307,22 @@ fn evaluate_one(
 	    Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
 	  }
 	  // Some implementations represent the document as a special kind of node
-	  Item::Node(_) => {
+	  Item::Node(n) => {
 	    match dc.doc {
 	      Some(ref d) => {
 	        Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
 	      }
-	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+	      None => {
+	        // Try to navigate to the Document from the Node
+		match n.doc() {
+		  Some(d) => {
+		    Ok(vec![Rc::new(Item::Document(d))])
+		  }
+		  None => {
+	      	    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+		  }
+		}
+	      }
 	    }
 	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})

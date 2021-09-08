@@ -2473,7 +2473,7 @@ mod tests {
       assert_eq!(seq.to_string(), "XoneYXtwoY")
     }
 
-    //#[test]
+    #[test]
     fn xslt_literal_result_element_1() {
       init();
       let sc = StaticContext::new_with_xslt_builtins();

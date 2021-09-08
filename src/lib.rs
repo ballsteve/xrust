@@ -93,6 +93,7 @@ pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 mod impls {
   mod xdmlibxml;
   //pub use xdmlibxml::*;
+  mod xdmtrees;
   //mod libxmleval;
   //mod xdmrox;
   //pub use xdmrox::*;
