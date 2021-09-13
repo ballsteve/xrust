@@ -90,13 +90,10 @@ pub use xdmerror::{Error, ErrorKind};
 pub mod item;
 pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 
+mod xdmgraph;
+
 mod impls {
-  mod xdmlibxml;
-  //pub use xdmlibxml::*;
-  mod xdmtrees;
-  //mod libxmleval;
-  //mod xdmrox;
-  //pub use xdmrox::*;
+  //mod graph;
 }
 
 mod parsecommon;
