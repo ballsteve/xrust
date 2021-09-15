@@ -93,7 +93,7 @@ pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 mod xdmgraph;
 
 mod impls {
-  //mod graph;
+  mod graphitem;
 }
 
 mod parsecommon;

@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use petgraph::graph::{Graph, NodeIndex};
 use petgraph::Direction;
-use crate::item::Value;
+use crate::item::{Value, QualifiedName};
 
 pub type XDMTree = Rc<RefCell<Graph<NodeType, EdgeType>>>;
 
@@ -15,9 +15,7 @@ pub struct XDMTreeNode {
 }
 
 pub struct ElementType {
-  localname: String,
-  // prefix: String,
-  // nsuri: String,
+  pub name: QualifiedName,
 }
 
 pub enum NodeType {
@@ -39,14 +37,20 @@ pub enum EdgeType {
 }
 
 impl XDMTreeNode {
-  fn new(g: XDMTree) -> XDMTreeNode {
+  pub fn new(g: XDMTree) -> XDMTreeNode {
     let n = g.borrow_mut().add_node(NodeType::Document);
     XDMTreeNode{g: g.clone(), n: n}
   }
-  fn get_doc(&self) -> XDMTree {
+  pub fn new_node(g: XDMTree, n: NodeIndex) -> XDMTreeNode {
+    XDMTreeNode{g, n}
+  }
+  pub fn get_doc(&self) -> XDMTree {
     self.g.clone()
   }
-  fn get_doc_node(&self) -> XDMTreeNode {
+  pub fn get_index(&self) -> NodeIndex {
+    self.n.clone()
+  }
+  pub fn get_doc_node(&self) -> XDMTreeNode {
     match self.g.borrow().node_indices()
       .find(|i| match self.g.borrow()[*i] {
           NodeType::Document => true,
@@ -58,19 +62,19 @@ impl XDMTreeNode {
       }
     }
   }
-  fn children(&self) -> Children {
+  pub fn child_iter(&self) -> Children {
     Children::new(self.clone())
   }
-  fn ancestors(&self) -> Ancestors {
+  pub fn ancestor_iter(&self) -> Ancestors {
     Ancestors::new(self.clone())
   }
-  fn siblings(&self) -> Siblings {
+  pub fn sibling_iter(&self) -> Siblings {
     Siblings::new(self.clone())
   }
-  fn preceding_siblings(&self) -> PrecedingSiblings {
+  pub fn preceding_sibling_iter(&self) -> PrecedingSiblings {
     PrecedingSiblings::new(self.clone())
   }
-  fn get_first_child(&self) -> Option<XDMTreeNode> {
+  pub fn get_first_child(&self) -> Option<XDMTreeNode> {
     let c1: Vec<NodeIndex> = self.g.borrow()
       .neighbors_directed(self.n, Direction::Outgoing)
       .filter(|i| self.g.borrow().edges_connecting(self.n, *i)
@@ -89,14 +93,14 @@ impl XDMTreeNode {
     }
   }
   pub fn get_last_sibling(&self) -> Option<XDMTreeNode> {
-    self.siblings().last()
+    self.sibling_iter().last()
   }
 
-  pub fn new_element(&self, localname: String, _prefix: Option<String>, _nsuri: Option<String>) -> XDMTreeNode {
+  pub fn new_element(&self, name: QualifiedName) -> XDMTreeNode {
     let r = self.get_doc_node();
     let mut b = self.g.borrow_mut();
     let n: NodeIndex = b.add_node(NodeType::Element(ElementType{
-        localname: localname,
+        name,
       }));
     b.add_edge(n, r.n, EdgeType::Document);
     XDMTreeNode{g: self.g.clone(), n: n}
@@ -118,17 +122,17 @@ impl XDMTreeNode {
       Some(c) => {
         match c.get_last_sibling() {
 	  Some(d) => {
-            println!("append_child: have first child and sibling");
+            //println!("append_child: have first child and sibling");
 	    (None, Some(d.n))
 	  }
 	  None => {
-            println!("append_child: have first child but no sibling");
+            //println!("append_child: have first child but no sibling");
 	    (None, Some(c.n))
 	  }
 	}
       }
       None => {
-            println!("append_child: no first child");
+            //println!("append_child: no first child");
         (Some(child.n), None)
       }
     };
@@ -146,22 +150,22 @@ impl XDMTreeNode {
     }
   }
 
-  fn to_xml(&self) -> String {
-    //println!("to_xml({})", self.n.index());
+  pub fn to_xml_int(&self) -> String {
+    //println!("to_xml_int({})", self.n.index());
     match &self.g.borrow()[self.n] {
       NodeType::Element(e) => {
         //println!("Element");
 	let mut ret: String = String::new();
       	ret.push_str("<");
-      	ret.push_str(e.localname.as_str());
+      	ret.push_str(e.name.get_localname().as_str());
       	ret.push_str(">");
-      	self.children().for_each(
+      	self.child_iter().for_each(
           |c| {
-	    ret.push_str(c.to_xml().as_str());
+	    ret.push_str(c.to_xml_int().as_str());
 	  }
         );
       	ret.push_str("</");
-      	ret.push_str(e.localname.as_str());
+      	ret.push_str(e.name.get_localname().as_str());
       	ret.push_str(">");
       	ret
       }
@@ -172,13 +176,13 @@ impl XDMTreeNode {
       NodeType::Document => {
         //println!("Document");
 	self.get_first_child()
-	  .map_or("".to_string(), |n| n.to_xml())
+	  .map_or("".to_string(), |n| n.to_xml_int())
       }
     }
   }
 }
 
-struct Children {
+pub struct Children {
   parent: XDMTreeNode,
   node: Option<XDMTreeNode>,
 }
@@ -196,7 +200,7 @@ impl Iterator for Children {
     match &self.node {
       Some(n) => {
         // get the next sibling
-	match n.siblings().nth(0) {
+	match n.sibling_iter().nth(0) {
 	  Some(c) => {
 	    self.node = Some(c.clone());
 	    Some(c)
@@ -218,7 +222,7 @@ impl Iterator for Children {
   }
 }
 
-struct Ancestors {
+pub struct Ancestors {
   node: XDMTreeNode,
 }
 
@@ -254,7 +258,7 @@ impl Iterator for Ancestors {
   }
 }
 
-struct Siblings {
+pub struct Siblings {
   node: XDMTreeNode,
 }
 
@@ -289,7 +293,7 @@ impl Iterator for Siblings {
   }
 }
 
-struct PrecedingSiblings {
+pub struct PrecedingSiblings {
   node: XDMTreeNode,
 }
 
@@ -339,111 +343,126 @@ mod tests {
     fn new_element() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r);
 	assert_eq!(d.get_doc().borrow().node_count(), 2);
-	assert_eq!(d.to_xml(), "<Test></Test>");
+	assert_eq!(d.to_xml_int(), "<Test></Test>");
     }
 
     #[test]
     fn new_value() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
 	let u = d.new_value(Value::String("this is a test".to_string()));
 	r.append_child(u);
 	assert_eq!(t.borrow().node_count(), 3);
-	assert_eq!(d.to_xml(), "<Test>this is a test</Test>");
+	assert_eq!(d.to_xml_int(), "<Test>this is a test</Test>");
     }
 
     #[test]
     fn multi_elements() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
-	let c1 = d.new_element("Data".to_string(), None, None);
+	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u1 = d.new_value(Value::String("one".to_string()));
 	c1.append_child(u1);
 	r.append_child(c1.clone());
-	let c2 = d.new_element("Data".to_string(), None, None);
+	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u2 = d.new_value(Value::String("two".to_string()));
 	c2.append_child(u2);
 	r.append_child(c2.clone());
 	assert_eq!(t.borrow().node_count(), 6);
-	assert_eq!(d.to_xml(), "<Test><Data>one</Data><Data>two</Data></Test>");
+	assert_eq!(d.to_xml_int(), "<Test><Data>one</Data><Data>two</Data></Test>");
     }
 
     #[test]
     fn children() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
-	let c1 = d.new_element("Data".to_string(), None, None);
+	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u1 = d.new_value(Value::String("one".to_string()));
 	c1.append_child(u1);
 	r.append_child(c1.clone());
-	let c2 = d.new_element("Data".to_string(), None, None);
+	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u2 = d.new_value(Value::String("two".to_string()));
 	c2.append_child(u2);
 	r.append_child(c2.clone());
 
-	assert_eq!(r.children().collect::<Vec<XDMTreeNode>>().len(), 2);
+	assert_eq!(r.child_iter().collect::<Vec<XDMTreeNode>>().len(), 2);
+    }
+    #[test]
+    fn descend() {
+        let t = Rc::new(RefCell::new(Graph::new()));
+	let d = XDMTreeNode::new(t.clone());
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child(r.clone());
+	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
+	r.append_child(c1.clone());
+	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
+	c1.append_child(c2.clone());
+	let c3 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
+	c2.append_child(c3.clone());
+
+	assert_eq!(r.to_xml_int(), "<Test><Data><Data><Data></Data></Data></Data></Test>");
     }
 
     #[test]
     fn siblings() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
-	let c1 = d.new_element("Data".to_string(), None, None);
+	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u1 = d.new_value(Value::String("one".to_string()));
 	c1.append_child(u1);
 	r.append_child(c1.clone());
-	let c2 = d.new_element("Data".to_string(), None, None);
+	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u2 = d.new_value(Value::String("two".to_string()));
 	c2.append_child(u2);
 	r.append_child(c2.clone());
 
-	assert_eq!(c1.siblings().collect::<Vec<XDMTreeNode>>().len(), 1);
+	assert_eq!(c1.sibling_iter().collect::<Vec<XDMTreeNode>>().len(), 1);
     }
 
     #[test]
     fn preceding_siblings() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
-	let c1 = d.new_element("Data".to_string(), None, None);
+	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u1 = d.new_value(Value::String("one".to_string()));
 	c1.append_child(u1);
 	r.append_child(c1.clone());
-	let c2 = d.new_element("Data".to_string(), None, None);
+	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u2 = d.new_value(Value::String("two".to_string()));
 	c2.append_child(u2);
 	r.append_child(c2.clone());
 
-	assert_eq!(c2.preceding_siblings().collect::<Vec<XDMTreeNode>>().len(), 1);
+	assert_eq!(c2.preceding_sibling_iter().collect::<Vec<XDMTreeNode>>().len(), 1);
     }
 
     #[test]
     fn ancestors() {
         let t = Rc::new(RefCell::new(Graph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element("Test".to_string(), None, None);
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
-	let c1 = d.new_element("Data".to_string(), None, None);
+	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u1 = d.new_value(Value::String("one".to_string()));
 	c1.append_child(u1);
 	r.append_child(c1.clone());
-	let c2 = d.new_element("Data".to_string(), None, None);
+	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
 	let u2 = d.new_value(Value::String("two".to_string()));
 	c2.append_child(u2.clone());
 	r.append_child(c2.clone());
 
-	assert_eq!(u2.ancestors().collect::<Vec<XDMTreeNode>>().len(), 2);
+	assert_eq!(u2.ancestor_iter().collect::<Vec<XDMTreeNode>>().len(), 2);
     }
 }
