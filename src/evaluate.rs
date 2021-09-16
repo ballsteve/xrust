@@ -315,12 +315,8 @@ fn evaluate_one(
 	      None => {
 	        // Try to navigate to the Document from the Node
 		match n.doc() {
-		  Some(d) => {
-		    Ok(vec![Rc::new(Item::Document(d))])
-		  }
-		  None => {
-	      	    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
-		  }
+		  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
+		  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
 		}
 	      }
 	    }
@@ -433,7 +429,12 @@ fn evaluate_one(
 	      	      Some(ref d) => {
 	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
 	      	      }
-	      	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+	      	      None => {
+		        match n.doc() {
+			  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
+			  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
+			}
+		      }
 	    	    }
 		  }
 		}
