@@ -526,6 +526,7 @@ fn evaluate_one(
 		for a in anc {
 		  let sibs: Vec<Rc<dyn Node>> = a.preceding_siblings();
 		  for b in sibs {
+		    d.push(b.clone());
 		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
 		    d.append(&mut sib_descs)
 		  }

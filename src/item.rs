@@ -385,7 +385,7 @@ pub trait Node: Any {
   //}
   /// Return the children of the node. If the node has no children then returns an empty vector.
   fn children(&self) -> Vec<Rc<dyn Node>>;
-  /// Return descendants of the Node, but including the Node itself.
+  /// Return descendants of the Node, but not including the Node itself.
   fn descendants(&self) -> Vec<Rc<dyn Node>>;
   /// Return the next following sibling.
   fn get_following_sibling(&self) -> Option<Rc<dyn Node>>;
