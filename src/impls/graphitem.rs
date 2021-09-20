@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::cell::RefCell;
 use std::any::Any;
 use petgraph::graph::Graph;
-use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType};
+use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
 use crate::item::*;
 use crate::evaluate::*;
 use crate::xdmerror::*;
@@ -1987,5 +1987,138 @@ mod tests {
       assert_eq!(e.len(), 2);
       assert_eq!(e[0].to_string(), "I found a Level2");
       assert_eq!(e[1].to_string(), "I found a Level3");
+    }
+
+    // for-each, for-each-group
+
+    #[test]
+    fn foreach_1() {
+      let d = from("<Test><Level2></Level2><Level3></Level3></Test>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let cons = vec![
+        Constructor::ForEach(
+	  vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: Axis::Child,
+	      	nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	      },
+	      vec![]
+	    ),
+	  ],
+	  vec![
+	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("a group".to_string())),
+	      ]
+	    ),
+	  ],
+	  None,
+	),
+      ];
+
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 2);
+      assert_eq!(seq[0].to_xml(), "<Group>a group</Group>");
+      assert_eq!(seq[1].to_xml(), "<Group>a group</Group>");
+    }
+
+    #[test]
+    fn foreach_2() {
+      let d = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let cons = vec![
+        Constructor::ForEach(
+	  vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: Axis::Child,
+	      	nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	      },
+	      vec![]
+	    ),
+	  ],
+	  vec![
+	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("a group".to_string())),
+	      ]
+	    ),
+	  ],
+	  Some(Grouping::By(
+	    vec![Constructor::ContextItem],
+	  )),
+	),
+      ];
+
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 2);
+      assert_eq!(seq[0].to_xml(), "<Group>a group</Group>");
+      assert_eq!(seq[1].to_xml(), "<Group>a group</Group>");
+    }
+
+    #[test]
+    fn foreach_3() {
+      let d = from("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>three</Level4></Test>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let cons = vec![
+        Constructor::ForEach(
+	  vec![
+	    Constructor::Step(
+	      NodeMatch{
+	        axis: Axis::Child,
+	      	nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	      },
+	      vec![]
+	    ),
+	  ],
+	  vec![
+	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::FunctionCall(
+		  Function::new("current-grouping-key".to_string(), vec![], Some(func_current_grouping_key)),
+		  vec![],
+		),
+	        Constructor::FunctionCall(
+		  Function::new("count".to_string(), vec![], Some(func_count)),
+		  vec![vec![
+		    Constructor::FunctionCall(
+		      Function::new("current-group".to_string(), vec![], Some(func_current_group)),
+		      vec![],
+		    ),
+		  ]],
+		),
+	      ]
+	    ),
+	  ],
+	  Some(Grouping::Adjacent(
+	    vec![Constructor::ContextItem],
+	  )),
+	),
+      ];
+
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 3);
+      assert_eq!(seq[0].to_xml(), "<Group>one2</Group>");
+      assert_eq!(seq[1].to_xml(), "<Group>two1</Group>");
+      assert_eq!(seq[2].to_xml(), "<Group>three1</Group>");
     }
 }
