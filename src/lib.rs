@@ -98,6 +98,9 @@ mod impls {
 
 mod parsecommon;
 
+pub mod parsexml;
+//pub use parsexml::parse;
+
 pub mod xpath;
 pub use xpath::parse;
 

@@ -507,7 +507,9 @@ mod tests {
       c3.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("this is a test".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Root];
       let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
@@ -539,7 +541,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::*
       let cons = vec![
 	  Constructor::Step(
@@ -580,7 +584,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == self::*
       let cons = vec![
 	  Constructor::Step(
@@ -623,7 +629,9 @@ mod tests {
       c4.add_text_child("four".to_string()).expect("unable to add text");
       let uv = c1.children();
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == self::*
       let cons = vec![
 	  Constructor::Step(
@@ -664,7 +672,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == parent::*
       let cons = vec![Constructor::Step(
 	  NodeMatch{
@@ -704,7 +714,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == descendant::*
       let cons = vec![
 	  Constructor::Step(
@@ -745,7 +757,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == descendant-or-self::*
       let cons = vec![
 	  Constructor::Step(
@@ -786,7 +800,9 @@ mod tests {
       c3.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == ancestor::*
       let cons = vec![
 	  Constructor::Step(
@@ -827,7 +843,9 @@ mod tests {
       c3.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == ancestor-or-self::*
       let cons = vec![
 	  Constructor::Step(
@@ -868,7 +886,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == following-sibling::*
       let cons = vec![
 	  Constructor::Step(
@@ -909,7 +929,9 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == preceding-sibling::*
       let cons = vec![
 	  Constructor::Step(
@@ -954,7 +976,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == follow::*
       let cons = vec![
 	  Constructor::Step(
@@ -999,7 +1023,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == preceding::*
       let cons = vec![
 	  Constructor::Step(
@@ -1044,7 +1070,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::*/child::*
       let cons = vec![
 	  Constructor::Path(
@@ -1087,7 +1115,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Test
       let cons = vec![
 	  Constructor::Path(
@@ -1127,7 +1157,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Foo
       let cons = vec![
 	  Constructor::Path(
@@ -1170,7 +1202,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::element()
       let cons = vec![
 	  Constructor::Step(
@@ -1213,7 +1247,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::text()
       let cons = vec![
 	  Constructor::Step(
@@ -1256,7 +1292,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::node()
       let cons = vec![
 	  Constructor::Step(
@@ -1300,7 +1338,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[Level2]
       let cons = vec![
 	  Constructor::Path(
@@ -1348,7 +1388,9 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[foo]
       let cons = vec![
 	  Constructor::Path(
@@ -1387,7 +1429,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[foo]
       let cons = vec![
 	  Constructor::FunctionCall(
@@ -1417,7 +1461,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[foo]
       let cons = vec![
 	  Constructor::FunctionCall(
@@ -1450,7 +1496,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == *
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1480,7 +1528,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::Test
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1508,7 +1558,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1537,7 +1589,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == child::Test/child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1570,7 +1624,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Test/child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1605,7 +1661,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Test/child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1641,7 +1699,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1668,7 +1728,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let dc = DynamicContext::new();
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1696,10 +1758,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let x: XDMTree = Rc::new(RefCell::new(Graph::new()));
-      XDMTreeNode::new(x.clone());
-      let mut dc = DynamicContext::new();
-      dc.set_doc(Rc::new(x.clone()));
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
 
       let cons = vec![
         Constructor::LiteralElement("New".to_string(), "".to_string(), "".to_string(), vec![]),
@@ -1729,10 +1790,9 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let x: XDMTree = Rc::new(RefCell::new(Graph::new()));
-      XDMTreeNode::new(x.clone());
-      let mut dc = DynamicContext::new();
-      dc.set_doc(Rc::new(x.clone()));
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
 
       let cons = vec![
         Constructor::LiteralElement("New".to_string(), "".to_string(), "".to_string(),
@@ -1751,5 +1811,181 @@ mod tests {
 
       assert_eq!(e.len(), 1);
       assert_eq!(e[0].to_xml(), "<New><Level1>Test text</Level1></New>");
+    }
+
+    #[test]
+    fn literal_element_3() {
+      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+      d.add_child(r.as_any()).expect("unable to add child");
+      r.add_text_child("i1".to_string()).expect("unable to add text");
+      let l1 = t.new_element("Level1", None).expect("unable to create element");
+      r.add_child(l1.as_any()).expect("unable to add child");
+      r.add_text_child("i2".to_string()).expect("unable to add text");
+      let l2 = t.new_element("Level2", None).expect("unable to create element");
+      r.add_child(l2.as_any()).expect("unable to add child");
+      r.add_text_child("i3".to_string()).expect("unable to add text");
+
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+
+      let cons = vec![
+        Constructor::LiteralElement("New".to_string(), "".to_string(), "".to_string(),
+	  vec![
+	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("one".to_string())),
+	      ]
+	    ),
+	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	      vec![
+	        Constructor::Literal(Value::String("two".to_string())),
+	      ]
+	    ),
+	  ]
+	),
+      ];
+
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_xml(), "<New><Level1>one</Level1><Level1>two</Level1></New>");
+    }
+
+    // Templates
+
+    #[test]
+    fn template_1() {
+      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+      d.add_child(r.as_any()).expect("unable to add child");
+      r.add_text_child("i1".to_string()).expect("unable to add text");
+      let l1 = t.new_element("Level1", None).expect("unable to create element");
+      r.add_child(l1.as_any()).expect("unable to add child");
+      r.add_text_child("i2".to_string()).expect("unable to add text");
+      let l2 = t.new_element("Level2", None).expect("unable to create element");
+      r.add_child(l2.as_any()).expect("unable to add child");
+      r.add_text_child("i3".to_string()).expect("unable to add text");
+
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let mut dc = DynamicContext::new(Some(&rd));
+
+      // This constructor is "child::Test"
+      let cons1 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let p = to_pattern(cons1).expect("unable to convert to pattern");
+      let cons2 = vec![
+        Constructor::Literal(Value::String("I found a matching template".to_string())),
+      ];
+      dc.add_template(p, cons2);
+
+      let s = Rc::new(Item::Node(Rc::new(r)));
+      let u = dc.find_match(&s);
+      assert_eq!(u.len(), 1);
+
+      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_string(), "I found a matching template");
+    }
+
+    #[test]
+    fn template_2() {
+      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+      d.add_child(r.as_any()).expect("unable to add child");
+      r.add_text_child("i1".to_string()).expect("unable to add text");
+      let l1 = t.new_element("Level1", None).expect("unable to create element");
+      r.add_child(l1.as_any()).expect("unable to add child");
+      r.add_text_child("i2".to_string()).expect("unable to add text");
+      let l2 = t.new_element("Level2", None).expect("unable to create element");
+      r.add_child(l2.as_any()).expect("unable to add child");
+      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let l3 = t.new_element("Level3", None).expect("unable to create element");
+      r.add_child(l3.as_any()).expect("unable to add child");
+      r.add_text_child("i4".to_string()).expect("unable to add text");
+
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let mut dc = DynamicContext::new(Some(&rd));
+
+      // This constructor is "child::Test"
+      let cons1 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Test".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat1 = to_pattern(cons1).expect("unable to convert to pattern");
+      // The constructor for the select expression is "child::*"
+      let body1 = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})},
+		vec![]
+	      )],
+	),
+      ];
+      dc.add_template(pat1, body1);
+
+      // This constructor is "child::Level2"
+      let cons2 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level2".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat2 = to_pattern(cons2).expect("unable to convert to pattern");
+      let body2 = vec![
+        Constructor::Literal(Value::String("I found a Level2".to_string())),
+      ];
+      dc.add_template(pat2, body2);
+
+      // This constructor is "child::Level3"
+      let cons3 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level3".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat3 = to_pattern(cons3).expect("unable to convert to pattern");
+      let body3 = vec![
+        Constructor::Literal(Value::String("I found a Level3".to_string())),
+      ];
+      dc.add_template(pat3, body3);
+
+      let s = Rc::new(Item::Node(Rc::new(r)));
+      let u = dc.find_match(&s);
+      assert_eq!(u.len(), 1);
+
+      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+        .expect("evaluation failed");
+
+      e.iter().enumerate().for_each(|(i, z)| {
+        println!("result item {} is \"{}\"", i, z.to_string())
+      });
+
+      assert_eq!(e.len(), 2);
+      assert_eq!(e[0].to_string(), "I found a Level2");
+      assert_eq!(e[1].to_string(), "I found a Level3");
     }
 }

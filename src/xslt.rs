@@ -64,10 +64,12 @@ use crate::xpath::*;
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Document] into a Sequence Constructor.
-///
-/// If the stylesheet creates any elements in the result tree, they are created using the [DynamicContext]'s [Document] [Node] creation method.
-pub fn from_document(d: Rc<dyn Document>, sc: &StaticContext) -> Result<DynamicContext, Error> {
-    let mut dc = DynamicContext::new();
+pub fn from_document<'a>(
+  d: Rc<dyn Document>,
+  resultdoc: &'a dyn Document,
+  sc: &StaticContext
+) -> Result<DynamicContext<'a>, Error> {
+    let mut dc = DynamicContext::new(Some(resultdoc));
 
     // Check that this is a valid XSLT stylesheet
     let root = match d.get_root_element() {

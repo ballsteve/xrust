@@ -459,6 +459,15 @@ impl QualifiedName {
   pub fn get_localname(&self) -> String {
     self.localname.clone()
   }
+  pub fn to_string(&self) -> String {
+    let mut result = String::new();
+    self.prefix.as_ref().map_or((), |p| {
+      result.push_str(p.as_str());
+      result.push(':');
+    });
+    result.push_str(self.localname.as_str());
+    result
+  }
 }
 
 struct Ancestor {
@@ -1292,5 +1301,16 @@ mod tests {
     #[test]
     fn op_after() {
       assert_eq!(Operator::After.to_string(), ">>")
+    }
+
+    // QualifiedName
+
+    #[test]
+    fn qn_unqualified() {
+      assert_eq!(QualifiedName::new(None, None, "foo".to_string()).to_string(), "foo")
+    }
+    #[test]
+    fn qn_qualified() {
+      assert_eq!(QualifiedName::new(Some("http://example.org/whatsinaname/".to_string()), Some("x".to_string()), "foo".to_string()).to_string(), "x:foo")
     }
 }

@@ -2,9 +2,12 @@
 
 use std::rc::Rc;
 use std::cell::RefCell;
+use std::collections::HashMap;
 use petgraph::graph::{Graph, NodeIndex};
 use petgraph::Direction;
 use crate::item::{Value, QualifiedName};
+use crate::parsexml::*;
+use crate::xdmerror::*;
 
 pub type XDMTree = Rc<RefCell<Graph<NodeType, EdgeType>>>;
 
@@ -151,13 +154,34 @@ impl XDMTreeNode {
   }
 
   pub fn to_xml_int(&self) -> String {
-    //println!("to_xml_int({})", self.n.index());
     match &self.g.borrow()[self.n] {
       NodeType::Element(e) => {
-        //println!("Element");
 	let mut ret: String = String::new();
       	ret.push_str("<");
+      	match e.name.get_prefix() {
+	  Some(p) => {
+	    ret.push_str(p.as_str());
+	    ret.push(':');
+	  }
+	  _ => {},
+	}
       	ret.push_str(e.name.get_localname().as_str());
+	// TODO: don't emit namespace declaration if it is already declared in ancestor element
+	match e.name.get_nsuri_ref() {
+	  Some(uri) => {
+	    println!("found nsuri");
+	    ret.push(' ');
+	    ret.push_str("xmlns:");
+	    // TODO: handle default namespace declaration
+	    ret.push_str(e.name.get_prefix().unwrap().as_str());
+	    ret.push_str("='");
+	    ret.push_str(uri);
+	    ret.push_str("'");
+	  }
+	  None => {
+	    println!("no nsuri");
+	  }
+	}
       	ret.push_str(">");
       	self.child_iter().for_each(
           |c| {
@@ -165,12 +189,18 @@ impl XDMTreeNode {
 	  }
         );
       	ret.push_str("</");
-      	ret.push_str(e.name.get_localname().as_str());
+      	match e.name.get_prefix() {
+	  Some(p) => {
+	    ret.push_str(p.as_str());
+	    ret.push(':');
+	  }
+	  _ => {},
+	}
+	ret.push_str(e.name.get_localname().as_str());
       	ret.push_str(">");
       	ret
       }
       NodeType::Text(t) => {
-        //println!("Text");
         t.to_string()
       }
       NodeType::Document => {
@@ -328,6 +358,92 @@ impl Iterator for PrecedingSiblings {
   }
 }
 
+/// Parse XML and return a fully populated XDMTree
+pub fn from(input: &str) -> Result<XDMTreeNode, Error> {
+  let d = match parse(input) {
+    Ok(x) => x,
+    Err(e) => return Result::Err(e),
+  };
+  // Map namespace prefix to namespace URI
+  if d.content.len() == 0 {
+    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no content")})
+  } else {
+    let mut ns: HashMap<String, String> = HashMap::new();
+    let t = Rc::new(RefCell::new(Graph::new()));
+    let r = XDMTreeNode::new(t.clone());
+    parse_node(&d.content[0], r.clone(), &mut ns);
+    Ok(r)
+  }
+}
+fn parse_node(
+  e: &XMLNode,
+  parent: XDMTreeNode,
+  ns: &mut HashMap<String, String>
+) {
+  match e {
+    XMLNode::Element(n, a, c) => {
+      // NB. the parsexml parser could do the namespace resolution,
+      // but we'll do it here since we have to make a pass through the
+      // structure anyway.
+
+      // Add any namespace declarations to the hashmap
+      a.iter()
+        .filter(|b| {
+          match b {
+	    XMLNode::Attribute(qn, _) => {
+	      match qn.get_prefix() {
+	        Some(p) => {
+		  if p == "xmlns" {
+		    true
+	      	  } else {
+	            false
+	      	  }
+		}
+		_ => false,
+	      }
+	    }
+	    _ => false,
+	  }
+        })
+        .for_each(|b| {
+	  match b {
+	    XMLNode::Attribute(qn, v) => {
+	      // add map from prefix to uri in hashmap
+	      match ns.insert(qn.get_localname(), v.to_string()) {
+		Some(_) => {}, // TODO: handle inner scope of declaration
+		None => {},
+	      }
+	    }
+	    _ => {}
+	  }
+	});
+      // Add the element to the tree
+      let newns = match n.get_prefix() {
+        Some(p) => ns.get(&p),
+	None => None,
+      };
+      let new = parent.new_element(
+        QualifiedName::new(
+	  newns.map(|m| m.clone()),
+	  n.get_prefix(),
+	  n.get_localname()
+	)
+      );
+      parent.append_child(new.clone());
+      c.iter().cloned().for_each(|f| {
+        parse_node(&f, new.clone(), ns)
+      });
+    }
+    XMLNode::Text(v) => {
+      let u = parent.new_value(v.clone());
+      parent.append_child(u);
+    }
+    _ => {
+      // TODO: Not yet implemented
+    }
+  }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -464,5 +580,54 @@ mod tests {
 	r.append_child(c2.clone());
 
 	assert_eq!(u2.ancestor_iter().collect::<Vec<XDMTreeNode>>().len(), 2);
+    }
+
+    // Parsing XML
+
+    #[test]
+    fn parse_empty() {
+      let r = from("<Test/>").expect("unable to parse \"<Test/>\"");
+
+      let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
+      assert_eq!(c.len(), 1);
+      assert_eq!(c[0].to_xml_int(), "<Test></Test>");
+    }
+
+    #[test]
+    fn parse_empty_qualified() {
+      let r = from("<x:Test xmlns:x='urn:my-test'/>").expect("unable to parse \"<x:Test xlmns:x='urn:my-test'/>\"");
+
+      let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
+      assert_eq!(c.len(), 1);
+      assert_eq!(c[0].to_xml_int(), "<x:Test xmlns:x='urn:my-test'></x:Test>");
+    }
+
+    #[test]
+    fn parse_text() {
+      let r = from("<Test>foobar</Test>").expect("unable to parse \"<Test><foobar</Test>\"");
+
+      let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
+      assert_eq!(c.len(), 1);
+      assert_eq!(c[0].to_xml_int(), "<Test>foobar</Test>");
+    }
+
+    #[test]
+    fn parse_element_children() {
+      let r = from("<Test><a/><b/><c/></Test>").expect("unable to parse \"<Test><a/><b/><c/></Test>\"");
+
+      let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
+      assert_eq!(c.len(), 1);
+      assert!(c[0].to_xml_int() == "<Test><a/><b/><c/></Test>" ||
+        c[0].to_xml_int() == "<Test><a></a><b></b><c></c></Test>"
+      );
+    }
+
+    #[test]
+    fn parse_mixed() {
+      let r = from("<Test>i1<child>one</child>i2<child>two</child>i3</Test>").expect("unable to parse \"<Test>i1<child>one</child>i2<child>two</child>i3</Test>\"");
+
+      let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
+      assert_eq!(c.len(), 1);
+      assert_eq!(c[0].to_xml_int(), "<Test>i1<child>one</child>i2<child>two</child>i3</Test>");
     }
 }
