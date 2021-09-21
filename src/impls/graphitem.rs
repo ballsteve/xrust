@@ -7,6 +7,8 @@ use petgraph::graph::Graph;
 use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
 use crate::item::*;
 use crate::evaluate::*;
+use crate::xpath::*;
+use crate::xslt::*;
 use crate::xdmerror::*;
 
 impl Document for XDMTree {
@@ -95,6 +97,9 @@ impl Node for XDMTreeNode {
       TreeNodeType::Text(ref t) => {
         t.to_string()
       }
+      TreeNodeType::Attribute(ref v) => {
+        v.to_string()
+      }
     }
   }
   fn to_xml(&self) -> String {
@@ -134,6 +139,9 @@ impl Node for XDMTreeNode {
       TreeNodeType::Text(_) => {
         QualifiedName::new(None, None, "".to_string())
       }
+      TreeNodeType::Attribute(_) => {
+        self.get_name()
+      }
     }
   }
 
@@ -146,6 +154,7 @@ impl Node for XDMTreeNode {
       TreeNodeType::Document => NodeType::Document,
       TreeNodeType::Element(_) => NodeType::Element,
       TreeNodeType::Text(_) => NodeType::Text,
+      TreeNodeType::Attribute(_) => NodeType::Attribute,
     }
   }
 
@@ -266,14 +275,16 @@ impl Node for XDMTreeNode {
   }
 
   // TODO
-  fn attribute(&self, _name: &str) -> Option<String> {
-    None
+  fn attribute(&self, name: &str) -> Option<String> {
+    self.get_attribute(QualifiedName::new(None, None, name.to_string()))
+      .map(|v| v.to_string())
   }
 
   fn is_element(&self) -> bool {
     match self.get_doc().borrow()[self.get_index()] {
       TreeNodeType::Element(_) => true,
       TreeNodeType::Document |
+      TreeNodeType::Attribute(_) |
       TreeNodeType::Text(_) => false,
     }
   }
@@ -2120,5 +2131,50 @@ mod tests {
       assert_eq!(seq[0].to_xml(), "<Group>one2</Group>");
       assert_eq!(seq[1].to_xml(), "<Group>two1</Group>");
       assert_eq!(seq[2].to_xml(), "<Group>three1</Group>");
+    }
+
+    // XPath tests
+
+    #[test]
+    fn xpath_root() {
+      let d = from("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let dc = DynamicContext::new(None);
+      let cons = parse("/").expect("unable to parse XPath \"/\"");
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 1);
+      assert_eq!(seq[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+    }
+
+    // XSLT tests
+
+    #[test]
+    fn xslt_literal_text() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'>Found the document</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "Found the document")
     }
 }

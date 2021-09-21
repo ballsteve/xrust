@@ -27,7 +27,7 @@ pub enum NodeType {
   Text(Value),
   // Comment(String),
   // PI(String, String),
-  // Attribute(Value),
+  Attribute(Value),
 }
 
 pub enum EdgeType {
@@ -36,7 +36,7 @@ pub enum EdgeType {
   Parent,
   NextSibling,
   PrecedingSibling,
-  // Attribute,
+  Attribute(QualifiedName),
 }
 
 impl XDMTreeNode {
@@ -63,6 +63,31 @@ impl XDMTreeNode {
       None => {
         panic!("no document node")
       }
+    }
+  }
+  // Get the name for the node
+  pub fn get_name(&self) -> QualifiedName {
+    match self.g.borrow()[self.n] {
+      NodeType::Element(ref e) => e.name.clone(),
+      NodeType::Attribute(_) => {
+        // Find the edge to the parent
+	let mut result = QualifiedName::new(None, None, "".to_string());
+	self.g.borrow()
+	  .neighbors_directed(self.n, Direction::Incoming)
+	  .for_each(|e| {
+	    self.g.borrow().edges_connecting(self.n, e)
+	      .for_each(|f| {
+	        match f.weight() {
+		  EdgeType::Attribute(qn) => {
+		    result = qn.clone();
+		  }
+		  _ => {}
+		}
+	      })
+	  });
+	result
+      }
+      _ => QualifiedName::new(None, None, "".to_string()),
     }
   }
   pub fn child_iter(&self) -> Children {
@@ -153,6 +178,53 @@ impl XDMTreeNode {
     }
   }
 
+  pub fn new_attribute(&self, name: QualifiedName, v: Value) -> XDMTreeNode {
+    let r = self.get_doc_node();
+    let mut b = self.g.borrow_mut();
+    let n: NodeIndex = b.add_node(NodeType::Attribute(v));
+
+    b.add_edge(n, r.n, EdgeType::Document);
+
+    b.add_edge(self.n, n, EdgeType::Attribute(name.clone()));
+    b.add_edge(n, self.n, EdgeType::Parent);
+
+    XDMTreeNode{g: self.g.clone(), n: n}
+  }
+  pub fn get_attribute(&self, name: QualifiedName) -> Option<Value> {
+    let a: Vec<NodeIndex> = self.g.borrow()
+      .neighbors_directed(self.n, Direction::Outgoing)
+      .filter(|i| self.g.borrow().edges_connecting(self.n, *i)
+        .fold(false, |s, e| {
+	  match e.weight() {
+	    EdgeType::Attribute(att) => {
+	      match (name.get_nsuri(), att.get_nsuri()) {
+	        (Some(namens), Some(attns)) => {
+		  // prefixed
+		  namens == attns &&
+		  name.get_localname() == att.get_localname()
+		}
+		(None, None) => {
+		  // unprefixed
+		  name.get_localname() == att.get_localname()
+		}
+		_ => false,
+	      }
+	    }
+	    _ => s,
+	  }
+	})
+      )
+      .collect();
+    if a.len() == 1 {
+      match self.g.borrow()[a[0]] {
+        NodeType::Attribute(ref v) => Some(v.clone()),
+	_ => None, // this shouldn't happen
+      }
+    } else {
+      None
+    }
+  }
+
   pub fn to_xml_int(&self) -> String {
     match &self.g.borrow()[self.n] {
       NodeType::Element(e) => {
@@ -169,7 +241,6 @@ impl XDMTreeNode {
 	// TODO: don't emit namespace declaration if it is already declared in ancestor element
 	match e.name.get_nsuri_ref() {
 	  Some(uri) => {
-	    println!("found nsuri");
 	    ret.push(' ');
 	    ret.push_str("xmlns:");
 	    // TODO: handle default namespace declaration
@@ -178,10 +249,32 @@ impl XDMTreeNode {
 	    ret.push_str(uri);
 	    ret.push_str("'");
 	  }
-	  None => {
-	    println!("no nsuri");
-	  }
+	  None => {}
 	}
+	self.g.borrow()
+	  .neighbors_directed(self.n, Direction::Outgoing)
+	  .for_each(|i| {
+	    self.g.borrow()
+	      .edges_connecting(self.n, i)
+	      .for_each(|e| {
+	        match e.weight() {
+		  EdgeType::Attribute(att) => {
+		    ret.push(' ');
+		    ret.push_str(att.to_string().as_str());
+		    ret.push_str("='");
+		    match self.g.borrow()[i] {
+		      NodeType::Attribute(ref v) => {
+		        // TODO: escape special characters
+			ret.push_str(v.to_string().as_str())
+		      }
+		      _ => {} // shouldn't happen
+		    }
+		    ret.push_str("'");
+		  }
+		  _ => {}
+		}
+	      })
+	    });
       	ret.push_str(">");
       	self.child_iter().for_each(
           |c| {
@@ -201,13 +294,15 @@ impl XDMTreeNode {
       	ret
       }
       NodeType::Text(t) => {
-        t.to_string()
+        // TODO: escape special characters
+	t.to_string()
       }
       NodeType::Document => {
         //println!("Document");
 	self.get_first_child()
 	  .map_or("".to_string(), |n| n.to_xml_int())
       }
+      NodeType::Attribute(_) => {"".to_string()} // these are handled in the element arm
     }
   }
 }
@@ -430,6 +525,26 @@ fn parse_node(
 	)
       );
       parent.append_child(new.clone());
+
+      a.iter()
+        .for_each(|b| {
+	  match b {
+	    XMLNode::Attribute(qn, v) => {
+	      match qn.get_prefix() {
+	        Some(p) => {
+		  if p == "xmlns" {
+		    // Don't add this: it is a namespace declaration
+	      	  } else {
+	            new.new_attribute(qn.clone(), v.clone());
+	      	  }
+		}
+		_ => {new.new_attribute(qn.clone(), v.clone());}
+	      }
+	    }
+	    _ => {}, // shouldn't happen
+	  }
+	});
+
       c.iter().cloned().for_each(|f| {
         parse_node(&f, new.clone(), ns)
       });
@@ -580,6 +695,34 @@ mod tests {
 	r.append_child(c2.clone());
 
 	assert_eq!(u2.ancestor_iter().collect::<Vec<XDMTreeNode>>().len(), 2);
+    }
+
+    #[test]
+    fn attribute() {
+        let t = Rc::new(RefCell::new(Graph::new()));
+	let d = XDMTreeNode::new(t.clone());
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child(r.clone());
+	r.new_attribute(
+	  QualifiedName::new(None, None, "status".to_string()),
+	  Value::String("testing".to_string())
+	);
+
+	assert_eq!(d.to_xml_int(), "<Test status='testing'></Test>");
+    }
+
+    #[test]
+    fn get_attribute() {
+        let t = Rc::new(RefCell::new(Graph::new()));
+	let d = XDMTreeNode::new(t.clone());
+	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child(r.clone());
+	r.new_attribute(
+	  QualifiedName::new(None, None, "status".to_string()),
+	  Value::String("testing".to_string())
+	);
+
+	assert_eq!(d.get_first_child().unwrap().get_attribute(QualifiedName::new(None, None, "status".to_string())).unwrap().to_string(), "testing");
     }
 
     // Parsing XML
