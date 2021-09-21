@@ -132,6 +132,7 @@ fn evaluate_one(
     }
     // This creates a Node in the current result document
     Constructor::LiteralElement(n, _p, _ns, c) => {
+      println!("Constructor::LiteralElement");
       let l = match dc.resultdoc {
         Some(doc) => {
 	  // TODO: namespace
@@ -139,6 +140,7 @@ fn evaluate_one(
 	}
 	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
+      println!("Constructor::LiteralElement: created element node");
 
       // add content to newly created element
       evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content").iter()
@@ -147,22 +149,23 @@ fn evaluate_one(
 	    // Item could be a Node or text
 	    match **i {
 	      Item::Node(ref t) => {
+		println!("ApplyTemplates: adding node content ({}) \"{}\" value \"{}\"",
+		  t.node_type().to_string(), t.to_name().get_localname(),
+		  t.to_string());
 		l.add_child(t.as_any()).expect("unable to add child node");
+		println!("ApplyTemplates: adding node content: done");
 	      }
 	      _ => {
 	        // Values become a text node in the result tree
-//		let t = dc.doc.as_ref().unwrap().new_text(i.to_string().as_str()).expect("unable to create text Node");
-//	        l.add_child(
-//		  dc.doc.as_ref().unwrap()
-//		    .new_text(i.to_string().as_str()).expect("unable to create text Node")
-//		    .as_any()
-//		).expect("unable to add text child node");
+		println!("ApplyTemplates: create text node");
 		l.add_text_child(i.to_string()).expect("unable to add text child node");
+		println!("ApplyTemplates: create text node: done");
 	      }
 	    }
 	  }
 	);
 
+      println!("Constructor::LiteralElement: finished");
       Ok(vec![Rc::new(Item::Node(l))])
     }
     Constructor::ContextItem => {

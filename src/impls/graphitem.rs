@@ -2177,4 +2177,398 @@ mod tests {
 
       assert_eq!(seq.to_string(), "Found the document")
     }
+
+    #[test]
+    fn xslt_apply_templates_1() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'>found text</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "found textfound text")
+    }
+
+    #[test]
+    fn xslt_apply_templates_2() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates select='child::text()'/></xsl:template>
+  <xsl:template match='child::Level1'>found Level1 element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "onetwothreefour")
+    }
+
+    #[test]
+    fn xslt_sequence_1() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::*'><xsl:sequence select='count(child::*)'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "2")
+    }
+
+    #[test]
+    fn xslt_sequence_2() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "onetwo")
+    }
+
+    #[test]
+    fn xslt_sequence_3() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'>X<xsl:sequence select='.'/>Y</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "XoneYXtwoY")
+    }
+
+    #[test]
+    fn xslt_literal_result_element_1() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><MyTest><xsl:apply-templates/></MyTest></xsl:template>
+  <xsl:template match='child::Level1'><MyLevel1><xsl:apply-templates/></MyLevel1></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_xml(), "<MyTest><MyLevel1>one</MyLevel1><MyLevel1>two</MyLevel1></MyTest>")
+    }
+
+    #[test]
+    fn xslt_if_1() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1><Level1><text/></Level1></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:if test='child::text()'>has text</xsl:if><xsl:if test='not(child::text())'>no text</xsl:if></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_xml(), "has texthas textno text")
+    }
+
+    #[test]
+    fn xslt_choose_1() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1><Level1><text/></Level1></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:choose><xsl:when test='child::text()'>has text</xsl:when><xsl:otherwise>no text</xsl:otherwise></xsl:choose></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_xml(), "has texthas textno text")
+    }
+
+    #[test]
+    fn xslt_foreach_1() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:for-each select='child::*'><group><xsl:apply-templates/></group></xsl:for-each></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_xml(), "<group>one</group><group>two</group>")
+    }
+
+    #[test]
+    fn xslt_foreach_2() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:apply-templates/></group></xsl:for-each-group></xsl:template>
+  <xsl:template match='child::text()'>a group</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_xml(), "<group>a group</group><group>a group</group>")
+    }
+
+    #[test]
+    fn xslt_foreach_3() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><xsl:sequence select='current-grouping-key()'/></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      // NB. the order that the groups appear in is undefined
+      assert!(
+        seq.to_xml() == "<group>one</group><group>two</group>" ||
+      	seq.to_xml() == "<group>two</group><group>one</group>"
+      )
+    }
+
+    #[test]
+    fn xslt_foreach_4() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4><Level5>one</Level5></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-by='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      // NB. the order that the groups appear in is undefined
+      assert!(
+        seq.to_xml() == "<group><key>one</key><members>3</members></group><group><key>two</key><members>2</members></group>" ||
+      	seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
+      )
+    }
+
+    #[test]
+    fn xslt_foreach_adj() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>two</Level4><Level5>one</Level5></Test>")
+        .expect("unable to parse XML");
+      let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:for-each-group select='child::*' group-adjacent='.'><group><key><xsl:sequence select='current-grouping-key()'/></key><members><xsl:sequence select='count(current-group())'/></members></group></xsl:for-each-group></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      // NB. the order that the groups appear in is undefined
+      assert!(
+        seq.to_xml() == "<group><key>one</key><members>2</members></group><group><key>two</key><members>2</members></group><group><key>one</key><members>1</members></group>" ||
+      	seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
+      )
+    }
 }

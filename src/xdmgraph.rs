@@ -127,21 +127,47 @@ impl XDMTreeNode {
   pub fn new_element(&self, name: QualifiedName) -> XDMTreeNode {
     let r = self.get_doc_node();
     let mut b = self.g.borrow_mut();
+    let dbg = name.get_localname().clone();
     let n: NodeIndex = b.add_node(NodeType::Element(ElementType{
         name,
       }));
     b.add_edge(n, r.n, EdgeType::Document);
+    println!("created element \"{}\" idx {}", dbg, n.index());
     XDMTreeNode{g: self.g.clone(), n: n}
   }
   pub fn new_value(&self, v: Value) -> XDMTreeNode {
+    println!("new_value");
     let r = self.get_doc_node();
     let mut b = self.g.borrow_mut();
     let n: NodeIndex = b.add_node(NodeType::Text(v));
     b.add_edge(n, r.n, EdgeType::Document);
+    println!("created text idx {}", n.index());
     XDMTreeNode{g: self.g.clone(), n: n}
   }
 
   pub fn append_child(&self, child: XDMTreeNode) {
+    println!("append_child: self idx \"{}\" child idx \"{}\"",
+      self.n.index(),
+      child.n.index()
+    );
+    // Are the two nodes in the same Graph?
+    // If not, make a deep-copy of the child
+    let nchild: XDMTreeNode;
+    if Rc::ptr_eq(&self.g, &child.g) {
+      println!("nodes are in the same graph");
+      nchild = child;
+    } else {
+      println!("nodes are NOT in the same graph");
+      match child.g.borrow()[child.n] {
+        NodeType::Text(ref v) => {
+	  nchild = self.new_value(v.clone());
+	}
+	_ => {
+	  // TODO
+	  nchild = self.new_element(QualifiedName::new(None, None, "TODO".to_string()));
+	}
+      }
+    }
     // Does the parent have any children?
     // If not then this is the first child,
     // otherwise find the last child and add this node as it's next sibling
@@ -150,32 +176,59 @@ impl XDMTreeNode {
       Some(c) => {
         match c.get_last_sibling() {
 	  Some(d) => {
-            //println!("append_child: have first child and sibling");
+            println!("append_child: have first child and sibling");
 	    (None, Some(d.n))
 	  }
 	  None => {
-            //println!("append_child: have first child but no sibling");
+            println!("append_child: have first child but no sibling");
 	    (None, Some(c.n))
 	  }
 	}
       }
       None => {
-            //println!("append_child: no first child");
-        (Some(child.n), None)
+            println!("append_child: no first child");
+        (Some(nchild.n), None)
       }
     };
+    println!("add edges: self idx \"{}\" child idx \"{}\"",
+      self.n.index(),
+      nchild.n.index()
+    );
+    println!("graph has {} nodes:", self.g.borrow().node_count());
+    self.g.borrow().node_indices()
+      .for_each(|i| {
+        let mut result = String::new();
+	match self.g.borrow()[i] {
+	    NodeType::Element(ref e) => {
+	      result.push_str("element \"");
+	      result.push_str(e.name.get_localname().as_str());
+	      result.push_str("\"");
+	    }
+	    NodeType::Document => result.push_str("Document"),
+	    NodeType::Text(ref v) => {
+	      result.push_str("text: ");
+	      result.push_str(v.to_string().as_str());
+	    }
+	    _ => result.push_str("--not an element--"),
+	  };
+	println!("node {} is a \"{}\"", i.index(), result);
+      });
     let mut b = self.g.borrow_mut();
-    b.add_edge(child.n, self.n, EdgeType::Parent);
+    b.add_edge(nchild.n, self.n, EdgeType::Parent);
+    println!("parent edge added");
     match (first, sib) {
       (None, Some(d)) => {
-	b.add_edge(d, child.n, EdgeType::NextSibling);
-        b.add_edge(child.n, d, EdgeType::PrecedingSibling);
+	println!("no first, have sib");
+	b.add_edge(d, nchild.n, EdgeType::NextSibling);
+        b.add_edge(nchild.n, d, EdgeType::PrecedingSibling);
       }
       (Some(d), None) => {
+	println!("have first, no sib");
 	b.add_edge(self.n, d, EdgeType::FirstChild);
       }
       _ => {}
     }
+    println!("end append_child");
   }
 
   pub fn new_attribute(&self, name: QualifiedName, v: Value) -> XDMTreeNode {
