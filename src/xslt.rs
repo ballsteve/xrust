@@ -4,55 +4,6 @@ Compile an XSLT stylesheet into a [Sequence] [Constructor].
 
 Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
 
-```rust
-# use std::rc::Rc;
-# use xrust::xdmerror::*;
-# use xrust::item::{Item, Document, Sequence, SequenceTrait};
-# use xrust::evaluate::*;
-# use xrust::xpath::*;
-# use xrust::xslt::*;
-# use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode, set_node_rc_guard};
-# use libxml::parser::Parser;
-
-# set_node_rc_guard(4);
-
-// We're going to need to statically analyze the sequence constructor later on
-let sc = StaticContext::new_with_builtins();
-
-// This is the source document for the transformation
-let psrc = Parser::default();
-let doc = psrc.parse_string("<Test>Check, one, two</Test>")
-  .expect("failed to parse source document");
-let srcdoc = Rc::new(doc) as Rc<dyn Document>;
-
-// This is the stylesheet document
-let psty = Parser::default();
-let style = psty.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
-  <xsl:template match='child::Test'><html><body><xsl:apply-templates/></body></html></xsl:template>
-  <xsl:template match='child::text()'><p><xsl:sequence select='.'/></p></xsl:template>
-</xsl:stylesheet>")
-  .expect("failed to parse source document");
-
-// Now compile the stylesheet
-let mut dc = from_document(Rc::new(style), &sc).expect("failed to compile stylesheet");
-
-// Set the instance document as the Document in the DynamicContext
-dc.set_doc(Rc::clone(&srcdoc));
-
-// The source document is the initial context.
-// Find the template that matches it,
-// and use that to start the transformation
-let item = Rc::new(Item::Document(srcdoc));
-let template = dc.find_match(&item);
-
-// Now evaluate the stylesheet
-let sequence = evaluate(&dc, Some(vec![item]), Some(0), &template)
-  .expect("stylesheet evaluation failed");
-
-assert_eq!(sequence.to_xml(), "<html><body><p>Check, one, two</p></body></html>")
-```
-
 */
 
 use std::rc::Rc;

@@ -1,4 +1,44 @@
-/// Document and Node implementation using XDMTree
+/*! Document and Node implementation using XDMTree
+
+```rust
+# use std::rc::Rc;
+# use std::cell::RefCell;
+# use xrust::item::{Item, Document, Sequence, SequenceTrait};
+# use xrust::evaluate::{StaticContext, DynamicContext, evaluate};
+# use xrust::xpath::parse;
+# use xrust::xslt::from_document;
+# use petgraph::graph::Graph;
+# use xrust::xdmgraph::{XDMTree, XDMTreeNode, from};
+
+// First create a XDMTreeNode from the source XML
+let src = from("<MyTest>This is the source document</MyTest>").expect("unable to parse source XML");
+// Make this an [Item]
+let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
+
+// Parse the XSL stylesheet
+let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'>It works!</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XSL stylesheet");
+let istyle = Rc::new(style.get_doc());
+
+// Setup dynamic context with result document
+let sc = StaticContext::new_with_xslt_builtins();
+let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+XDMTreeNode::new(rd.clone());
+let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+
+// Prime the stylesheet evaluation by finding the template for the document root
+// and making the document root the initial context
+let t = dc.find_match(&isrc);
+
+// Now evaluate the Sequence Constructor
+// with the source document as the initial context
+let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+assert_eq!(seq.to_string(), "It works!");
+```
+
+*/
 
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -1990,10 +2030,6 @@ mod tests {
 
       let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
         .expect("evaluation failed");
-
-      e.iter().enumerate().for_each(|(i, z)| {
-        println!("result item {} is \"{}\"", i, z.to_string())
-      });
 
       assert_eq!(e.len(), 2);
       assert_eq!(e[0].to_string(), "I found a Level2");
