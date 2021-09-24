@@ -428,6 +428,9 @@ pub trait Node: Any {
   fn add_child(&self, c: &dyn Any) -> Result<(), Error>;
   /// Add a text node as a child.
   fn add_text_child(&self, t: String) -> Result<(), Error>;
+
+  /// Remove a node from its parent
+  fn remove(&self) -> Result<(), Error>;
 }
 
 #[derive(Clone, Debug)]

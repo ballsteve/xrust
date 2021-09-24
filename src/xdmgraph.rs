@@ -3,8 +3,9 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use petgraph::graph::{Graph, NodeIndex};
+use petgraph::graph::*;
 use petgraph::Direction;
+use petgraph::visit::*;
 use crate::item::{Value, QualifiedName};
 use crate::parsexml::*;
 use crate::xdmerror::*;
@@ -253,6 +254,137 @@ impl XDMTreeNode {
     } else {
       None
     }
+  }
+
+  // Removes a node from the tree.
+  pub fn remove_node(&self) {
+    let parent = self.ancestor_iter().nth(0).unwrap();
+    //let mut h = self.g.borrow_mut();
+    // Remove all attributes
+    let mut attr: Option<(NodeIndex, EdgeIndex)> = None;
+    self.g.borrow().edges_directed(self.n, Direction::Outgoing)
+      .for_each(|e| {
+        match e.weight() {
+	  EdgeType::Attribute(_) => {
+	    attr = Some((e.target(), e.id()));
+	  }
+	  _ => {}
+	}
+      });
+    attr.map(|(t, e)| {
+      self.g.borrow_mut().remove_node(t);
+      self.g.borrow_mut().remove_edge(e);
+    });
+
+    // Remove children
+    self.child_iter()
+      .for_each(|c| c.remove_node());
+
+    // Remove and repoint siblings
+    let mut preceding: Option<(NodeIndex, EdgeIndex)> = None;
+    let mut following: Option<(NodeIndex, EdgeIndex)> = None;
+    self.g.borrow().edges_directed(self.n, Direction::Outgoing)
+      .for_each(|e| {
+        match e.weight() {
+	  EdgeType::PrecedingSibling => {
+	    preceding = Some((e.target(), e.id()));
+	  }
+	  EdgeType::NextSibling => {
+	    following = Some((e.target(), e.id()));
+	  }
+	  _ => {}
+	}
+      });
+    match (preceding, following) {
+      (Some((pre, preid)), Some((next, nextid))) => {
+        // In the middle: join the preceding to the following
+	self.g.borrow_mut().remove_edge(preid);
+	self.g.borrow_mut().remove_edge(nextid);
+	self.g.borrow_mut().add_edge(pre, next, EdgeType::NextSibling);
+	self.g.borrow_mut().add_edge(next, pre, EdgeType::PrecedingSibling);
+      }
+      (Some((pre, preid)), None) => {
+        // At the end of the line
+	self.g.borrow_mut().remove_edge(preid);
+	let mut edge: Option<EdgeIndex> = None;
+	self.g.borrow().edges_directed(pre, Direction::Outgoing)
+	  .for_each(|e| {
+	    match e.weight() {
+	      EdgeType::NextSibling => {
+	        edge = Some(e.id());
+	      }
+	      _ => {}
+	    }
+	  });
+	edge.map(|e| self.g.borrow_mut().remove_edge(e));
+      }
+      (None, Some((next, nextid))) => {
+        // First child
+	self.g.borrow_mut().remove_edge(nextid);
+	let mut edge: Option<EdgeIndex> = None;
+	self.g.borrow().edges_directed(next, Direction::Outgoing)
+	  .for_each(|e| {
+	    match e.weight() {
+	      EdgeType::PrecedingSibling => {
+	        edge = Some(e.id());
+	      }
+	      _ => {}
+	    }
+	  });
+	edge.map(|e| self.g.borrow_mut().remove_edge(e));
+    	// Remove parent's child edge
+	edge = None;
+	self.g.borrow().edges_directed(parent.n, Direction::Outgoing)
+	  .for_each(|e| {
+	    match e.weight() {
+	      EdgeType::FirstChild => {
+	        if e.target() == self.n {
+		  edge = Some(e.id());
+		}
+	      }
+	      _ => {}
+	    }
+	  });
+	edge.map(|e| self.g.borrow_mut().remove_edge(e));
+	// Repoint parent's child to sibling
+	self.g.borrow_mut().add_edge(parent.n, next, EdgeType::FirstChild);
+      }
+      (None, None) => {
+    	// Remove parent's child edge
+	let mut edge: Option<EdgeIndex> = None;
+	self.g.borrow().edges_directed(parent.n, Direction::Outgoing)
+	  .for_each(|e| {
+	    match e.weight() {
+	      EdgeType::FirstChild => {
+	        if e.target() == self.n {
+		  edge = Some(e.id());
+		}
+	      }
+	      _ => {}
+	    }
+	  });
+	edge.map(|e| self.g.borrow_mut().remove_edge(e));
+      }
+    }
+
+    // Remove parent edge
+    // Remove document edge
+    {
+      let mut edge: Option<EdgeIndex> = None;
+      self.g.borrow().edges_directed(self.n, Direction::Outgoing)
+      .for_each(|e| {
+        match e.weight() {
+	  EdgeType::Document |
+	  EdgeType::Parent => {
+	    edge = Some(e.id());
+	  }
+	  _ => {}
+	}
+      });
+      edge.map(|e| self.g.borrow_mut().remove_edge(e));
+    }
+    // Remove node
+    self.g.borrow_mut().remove_node(self.n);
   }
 
   pub fn to_xml_int(&self) -> String {
@@ -801,5 +933,55 @@ mod tests {
       let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
       assert_eq!(c.len(), 1);
       assert_eq!(c[0].to_xml_int(), "<Test>i1<child>one</child>i2<child>two</child>i3</Test>");
+    }
+
+    // Change structure
+
+    #[test]
+    fn remove_1() {
+      let r = from("<Test><a><b/></a></Test>").expect("unable to parse XML");
+      let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
+      c.remove_node();
+      assert_eq!(r.to_xml_int(), "<Test><a></a></Test>");
+    }
+
+    #[test]
+    fn remove_2() {
+      let r = from("<Test><a><b att1='val1'/></a></Test>").expect("unable to parse XML");
+      let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
+      c.remove_node();
+      assert_eq!(r.to_xml_int(), "<Test><a></a></Test>");
+    }
+
+    #[test]
+    fn remove_3() {
+      let r = from("<Test><a><b><c/></b></a></Test>").expect("unable to parse XML");
+      let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
+      c.remove_node();
+      assert_eq!(r.to_xml_int(), "<Test><a></a></Test>");
+    }
+
+    #[test]
+    fn remove_4() {
+      let r = from("<Test><a><b/><c/></a></Test>").expect("unable to parse XML");
+      let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
+      c.remove_node();
+      assert_eq!(r.to_xml_int(), "<Test><a><c></c></a></Test>");
+    }
+
+    #[test]
+    fn remove_5() {
+      let r = from("<Test><a><p/><b/></a></Test>").expect("unable to parse XML");
+      let c = r.get_first_child().unwrap().get_first_child().unwrap().child_iter().nth(1).unwrap();
+      c.remove_node();
+      assert_eq!(r.to_xml_int(), "<Test><a><p></p></a></Test>");
+    }
+
+    #[test]
+    fn remove_6() {
+      let r = from("<Test><a><p/><b/><c/></a></Test>").expect("unable to parse XML");
+      let c = r.get_first_child().unwrap().get_first_child().unwrap().child_iter().nth(1).unwrap();
+      c.remove_node();
+      assert_eq!(r.to_xml_int(), "<Test><a><p></p><c></c></a></Test>");
     }
 }

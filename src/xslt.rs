@@ -15,6 +15,7 @@ use crate::xpath::*;
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Document] into a Sequence Constructor.
+/// NB. Due to whitespace stripping, this is destructive of the stylesheet.
 pub fn from_document<'a>(
   d: Rc<dyn Document>,
   resultdoc: &'a dyn Document,
@@ -34,8 +35,8 @@ pub fn from_document<'a>(
     }
     // TODO: check version attribute
 
-    // Strip/preserve whitespace
-    // TODO
+    // Strip whitespace from the stylesheet
+    strip_whitespace(d);
 
     // Iterate over children, looking for templates
     // * compile match pattern
@@ -274,3 +275,43 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     }
   }
 }
+
+/// Strip whitespace nodes from a XDM [Document].
+/// See [XSLT 4.3](https://www.w3.org/TR/2017/REC-xslt-30-20170608/#stylesheet-stripping)
+pub fn strip_whitespace(d: Rc<dyn Document>) {
+  let c = d.children();
+  if c.len() == 1 {
+    strip_whitespace_node(c[0].clone());
+  }
+}
+
+fn strip_whitespace_node(n: Rc<dyn Node>) {
+  match n.node_type() {
+    NodeType::Comment |
+    NodeType::ProcessingInstruction => {
+      // Merge text nodes that are now adjacent
+      n.remove().expect("unable to remove text node");
+    }
+    NodeType::Element => {
+      n.children().iter()
+        .for_each(|m| strip_whitespace_node(m.clone()));
+    }
+    NodeType::Text => {
+      match n.parent() {
+        Some(p) => {
+	  match (p.to_name().get_nsuri_ref(), p.to_name().get_localname().as_str()) {
+	    (Some(XSLTNS), "text") => {} // TODO: also check for xml:space attribute on ancestor element
+	    _ => {
+	      if n.to_string().trim().is_empty() {
+		n.remove().expect("unable to remove text node")
+	      }
+	    }
+	  }
+	}
+	None => {}
+      }
+    }
+    _ => {}
+  }
+}
+

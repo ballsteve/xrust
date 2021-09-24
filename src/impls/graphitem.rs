@@ -341,6 +341,10 @@ impl Node for XDMTreeNode {
     self.append_child(t);
     Ok(())
   }
+  fn remove(&self) -> Result<(), Error> {
+    self.remove_node();
+    Ok(())
+  }
 }
 
 fn get_doc_node(g: &XDMTree) -> XDMTreeNode {
