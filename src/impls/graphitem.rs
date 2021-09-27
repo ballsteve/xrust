@@ -7,7 +7,7 @@
 # use xrust::evaluate::{StaticContext, DynamicContext, evaluate};
 # use xrust::xpath::parse;
 # use xrust::xslt::from_document;
-# use petgraph::graph::Graph;
+# use petgraph::stable_graph::StableGraph;
 # use xrust::xdmgraph::{XDMTree, XDMTreeNode, from};
 
 // First create a XDMTreeNode from the source XML
@@ -23,7 +23,7 @@ let istyle = Rc::new(style.get_doc());
 
 // Setup dynamic context with result document
 let sc = StaticContext::new_with_xslt_builtins();
-let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
 XDMTreeNode::new(rd.clone());
 let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -43,7 +43,7 @@ assert_eq!(seq.to_string(), "It works!");
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::any::Any;
-use petgraph::graph::Graph;
+use petgraph::stable_graph::StableGraph;
 use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
 use crate::item::*;
 use crate::evaluate::*;
@@ -370,14 +370,14 @@ mod tests {
 
     #[test]
     fn doc() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(t.clone());
       Item::Document(Rc::new(t));
     }
 
     #[test]
     fn node() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r);
@@ -386,7 +386,7 @@ mod tests {
 
     #[test]
     fn node_xml() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r);
@@ -397,7 +397,7 @@ mod tests {
 
     #[test]
     fn node_str() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       let u = d.new_value(Value::String("this is a test".to_string()));
@@ -410,7 +410,7 @@ mod tests {
 
     #[test]
     fn doc_name() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       let u = d.new_value(Value::String("this is a test".to_string()));
@@ -422,7 +422,7 @@ mod tests {
     }
     #[test]
     fn element_name() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       let u = d.new_value(Value::String("this is a test".to_string()));
@@ -435,7 +435,7 @@ mod tests {
 
     #[test]
     fn new_element() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -449,7 +449,7 @@ mod tests {
 
     #[test]
     fn new_value() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -464,7 +464,7 @@ mod tests {
 
     #[test]
     fn descend() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -483,7 +483,7 @@ mod tests {
 
     #[test]
     fn ascend() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -502,7 +502,7 @@ mod tests {
 
     #[test]
     fn siblings() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -524,7 +524,7 @@ mod tests {
 
     #[test]
     fn preceding_siblings() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -548,7 +548,7 @@ mod tests {
 
     #[test]
     fn eval_root() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -562,7 +562,7 @@ mod tests {
       c3.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("this is a test".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /
@@ -579,7 +579,7 @@ mod tests {
 
     #[test]
     fn eval_child_all() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -596,7 +596,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::*
@@ -622,7 +622,7 @@ mod tests {
 
     #[test]
     fn eval_self_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -639,7 +639,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == self::*
@@ -666,7 +666,7 @@ mod tests {
 
     #[test]
     fn eval_self_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -684,7 +684,7 @@ mod tests {
       c4.add_text_child("four".to_string()).expect("unable to add text");
       let uv = c1.children();
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == self::*
@@ -710,7 +710,7 @@ mod tests {
 
     #[test]
     fn eval_parent_any() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -727,7 +727,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == parent::*
@@ -752,7 +752,7 @@ mod tests {
 
     #[test]
     fn eval_descendant_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -769,7 +769,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == descendant::*
@@ -795,7 +795,7 @@ mod tests {
 
     #[test]
     fn eval_descendantorself_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -812,7 +812,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == descendant-or-self::*
@@ -838,7 +838,7 @@ mod tests {
 
     #[test]
     fn eval_ancestor_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -855,7 +855,7 @@ mod tests {
       c3.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == ancestor::*
@@ -881,7 +881,7 @@ mod tests {
 
     #[test]
     fn eval_ancestororself_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -898,7 +898,7 @@ mod tests {
       c3.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == ancestor-or-self::*
@@ -924,7 +924,7 @@ mod tests {
 
     #[test]
     fn eval_followingsibling_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -941,7 +941,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == following-sibling::*
@@ -967,7 +967,7 @@ mod tests {
 
     #[test]
     fn eval_precedingsibling_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -984,7 +984,7 @@ mod tests {
       r.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == preceding-sibling::*
@@ -1010,7 +1010,7 @@ mod tests {
 
     #[test]
     fn eval_following_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1031,7 +1031,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == follow::*
@@ -1057,7 +1057,7 @@ mod tests {
 
     #[test]
     fn eval_preceding_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1078,7 +1078,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == preceding::*
@@ -1104,7 +1104,7 @@ mod tests {
 
     #[test]
     fn eval_path_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1125,7 +1125,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::*/child::*
@@ -1149,7 +1149,7 @@ mod tests {
 
     #[test]
     fn eval_nametest_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1170,7 +1170,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Test
@@ -1191,7 +1191,7 @@ mod tests {
     }
     #[test]
     fn eval_nametest_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1212,7 +1212,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Foo
@@ -1233,7 +1233,7 @@ mod tests {
 
     #[test]
     fn eval_kindtest_element() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1257,7 +1257,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::element()
@@ -1278,7 +1278,7 @@ mod tests {
     }
     #[test]
     fn eval_kindtest_text() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1302,7 +1302,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::text()
@@ -1323,7 +1323,7 @@ mod tests {
     }
     #[test]
     fn eval_kindtest_any() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1347,7 +1347,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::node()
@@ -1369,7 +1369,7 @@ mod tests {
 
     #[test]
     fn eval_predicate_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1393,7 +1393,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[Level2]
@@ -1419,7 +1419,7 @@ mod tests {
     }
     #[test]
     fn eval_predicate_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1443,7 +1443,7 @@ mod tests {
       l2.add_child(c4.as_any()).expect("unable to add child");
       c4.add_text_child("four".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[foo]
@@ -1472,7 +1472,7 @@ mod tests {
 
     #[test]
     fn eval_fncall_localname() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1484,7 +1484,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[foo]
@@ -1504,7 +1504,7 @@ mod tests {
 
     #[test]
     fn eval_fncall_name() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1516,7 +1516,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /Test[foo]
@@ -1539,7 +1539,7 @@ mod tests {
 
     #[test]
     fn pattern_1_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1551,7 +1551,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == *
@@ -1571,7 +1571,7 @@ mod tests {
 
     #[test]
     fn pattern_2_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1583,7 +1583,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::Test
@@ -1601,7 +1601,7 @@ mod tests {
     }
     #[test]
     fn pattern_2_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1613,7 +1613,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::Level2
@@ -1632,7 +1632,7 @@ mod tests {
 
     #[test]
     fn pattern_3_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1644,7 +1644,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == child::Test/child::Level2
@@ -1667,7 +1667,7 @@ mod tests {
 
     #[test]
     fn pattern_4_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.append_child(r.clone());
@@ -1679,7 +1679,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Test/child::Level2
@@ -1702,7 +1702,7 @@ mod tests {
     }
     #[test]
     fn pattern_4_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let x = d.new_element(QualifiedName::new(None, None, "Root".to_string()));
       d.append_child(x.clone());
@@ -1716,7 +1716,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /child::Test/child::Level2
@@ -1740,7 +1740,7 @@ mod tests {
 
     #[test]
     fn pattern_5_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let x = d.new_element(QualifiedName::new(None, None, "Root".to_string()));
       d.append_child(x.clone());
@@ -1754,7 +1754,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /
@@ -1769,7 +1769,7 @@ mod tests {
     }
     #[test]
     fn pattern_5_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let x = d.new_element(QualifiedName::new(None, None, "Root".to_string()));
       d.append_child(x.clone());
@@ -1783,7 +1783,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /
@@ -1801,7 +1801,7 @@ mod tests {
 
     #[test]
     fn literal_element_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.add_child(r.as_any()).expect("unable to add child");
@@ -1813,7 +1813,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
@@ -1833,7 +1833,7 @@ mod tests {
 
     #[test]
     fn literal_element_2() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.add_child(r.as_any()).expect("unable to add child");
@@ -1845,7 +1845,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
@@ -1870,7 +1870,7 @@ mod tests {
 
     #[test]
     fn literal_element_3() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.add_child(r.as_any()).expect("unable to add child");
@@ -1882,7 +1882,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
@@ -1914,7 +1914,7 @@ mod tests {
 
     #[test]
     fn template_1() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.add_child(r.as_any()).expect("unable to add child");
@@ -1926,7 +1926,7 @@ mod tests {
       r.add_child(l2.as_any()).expect("unable to add child");
       r.add_text_child("i3".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let mut dc = DynamicContext::new(Some(&rd));
 
@@ -1958,7 +1958,7 @@ mod tests {
 
     #[test]
     fn template_2() {
-      let t: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
       let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
       d.add_child(r.as_any()).expect("unable to add child");
@@ -1973,7 +1973,7 @@ mod tests {
       r.add_child(l3.as_any()).expect("unable to add child");
       r.add_text_child("i4".to_string()).expect("unable to add text");
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let mut dc = DynamicContext::new(Some(&rd));
 
@@ -2069,7 +2069,7 @@ mod tests {
 	),
       ];
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
@@ -2109,7 +2109,7 @@ mod tests {
 	),
       ];
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
@@ -2161,7 +2161,7 @@ mod tests {
 	),
       ];
 
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
@@ -2204,7 +2204,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2233,7 +2233,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2263,7 +2263,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2291,7 +2291,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2320,7 +2320,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2349,7 +2349,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2379,7 +2379,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2409,7 +2409,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2439,7 +2439,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2469,7 +2469,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2499,7 +2499,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2528,7 +2528,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2561,7 +2561,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2594,7 +2594,7 @@ mod tests {
       let istyle = Rc::new(style.get_doc());
 
       // Setup dynamic context with result document
-      let rd: XDMTree = Rc::new(RefCell::new(Graph::new()));
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
@@ -2610,5 +2610,32 @@ mod tests {
         seq.to_xml() == "<group><key>one</key><members>2</members></group><group><key>two</key><members>2</members></group><group><key>one</key><members>1</members></group>" ||
       	seq.to_xml() == "<group><key>two</key><members>2</members></group><group><key>one</key><members>3</members></group>"
       )
+    }
+
+    #[test]
+    fn strip_ws() {
+      let src = from("<Test>
+  <Level1>
+    <Level2>
+      <Level3>
+        <Level4>
+          <Level5>  deepest 1  </Level5>
+        </Level4>
+      </Level3>
+    </Level2>
+  </Level1>
+  <Level1>
+    <Level2>
+      <Level3>
+        <Level4>
+          <Level5>deepest 2</Level5>
+        </Level4>
+      </Level3>
+    </Level2>
+  </Level1>
+</Test>")
+        .expect("unable to parse XML");
+      strip_whitespace(Rc::new(src.get_doc()));
+      assert_eq!(src.to_xml(), "<Test><Level1><Level2><Level3><Level4><Level5>  deepest 1  </Level5></Level4></Level3></Level2></Level1><Level1><Level2><Level3><Level4><Level5>deepest 2</Level5></Level4></Level3></Level2></Level1></Test>")
     }
 }

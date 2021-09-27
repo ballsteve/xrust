@@ -3,14 +3,14 @@
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::collections::HashMap;
-use petgraph::graph::*;
+use petgraph::stable_graph::*;
 use petgraph::Direction;
 use petgraph::visit::*;
 use crate::item::{Value, QualifiedName};
 use crate::parsexml::*;
 use crate::xdmerror::*;
 
-pub type XDMTree = Rc<RefCell<Graph<NodeType, EdgeType>>>;
+pub type XDMTree = Rc<RefCell<StableGraph<NodeType, EdgeType>>>;
 
 #[derive(Clone)]
 pub struct XDMTreeNode {
@@ -74,17 +74,12 @@ impl XDMTreeNode {
         // Find the edge to the parent
 	let mut result = QualifiedName::new(None, None, "".to_string());
 	self.g.borrow()
-	  .neighbors_directed(self.n, Direction::Incoming)
-	  .for_each(|e| {
-	    self.g.borrow().edges_connecting(self.n, e)
-	      .for_each(|f| {
-	        match f.weight() {
-		  EdgeType::Attribute(qn) => {
-		    result = qn.clone();
-		  }
-		  _ => {}
-		}
-	      })
+	  .edges_directed(self.n, Direction::Incoming)
+	  .for_each(|e| match e.weight() {
+	    EdgeType::Attribute(qn) => {
+	      result = qn.clone();
+	    }
+	    _ => {}
 	  });
 	result
       }
@@ -104,16 +99,21 @@ impl XDMTreeNode {
     PrecedingSiblings::new(self.clone())
   }
   pub fn get_first_child(&self) -> Option<XDMTreeNode> {
-    let c1: Vec<NodeIndex> = self.g.borrow()
-      .neighbors_directed(self.n, Direction::Outgoing)
-      .filter(|i| self.g.borrow().edges_connecting(self.n, *i)
-	.fold(false, |s, e| {
-	  match e.weight() {
-	    EdgeType::FirstChild => true,
-	    _ => s,
+    let h = self.g.borrow();
+    let c1: Vec<NodeIndex> = h
+      .edges_directed(self.n, Direction::Outgoing)
+      .filter(|e| match e.weight() {
+        EdgeType::FirstChild => true,
+	_ => false,
+      })
+      .map(|e| {
+        match h.edge_endpoints(e.id()) {
+	  Some((_, t)) => {
+	    t
 	  }
-        })
-      )
+	  None => panic!("unable to find first child")
+	}
+      })
       .collect();
     if c1.len() == 1 {
       Some(XDMTreeNode{g: self.g.clone(), n: c1[0]})
@@ -155,6 +155,7 @@ impl XDMTreeNode {
 	}
 	_ => {
 	  // TODO
+	  println!("TODO: append element node from another graph");
 	  nchild = self.new_element(QualifiedName::new(None, None, "TODO".to_string()));
 	}
       }
@@ -222,12 +223,11 @@ impl XDMTreeNode {
     XDMTreeNode{g: self.g.clone(), n: n}
   }
   pub fn get_attribute(&self, name: QualifiedName) -> Option<Value> {
-    let a: Vec<NodeIndex> = self.g.borrow()
-      .neighbors_directed(self.n, Direction::Outgoing)
-      .filter(|i| self.g.borrow().edges_connecting(self.n, *i)
-        .fold(false, |s, e| {
-	  match e.weight() {
-	    EdgeType::Attribute(att) => {
+    let h = self.g.borrow();
+    let a: Vec<Option<NodeIndex>> = h
+      .edges_directed(self.n, Direction::Outgoing)
+      .filter(|e| match e.weight() {
+        EdgeType::Attribute(att) => {
 	      match (name.get_nsuri(), att.get_nsuri()) {
 	        (Some(namens), Some(attns)) => {
 		  // prefixed
@@ -240,16 +240,23 @@ impl XDMTreeNode {
 		}
 		_ => false,
 	      }
-	    }
-	    _ => s,
-	  }
-	})
-      )
+	}
+	_ => false,
+      })
+      .map(|e| match h.edge_endpoints(e.id()) {
+        Some((_, t)) => Some(t),
+	None => None,
+      })
       .collect();
     if a.len() == 1 {
-      match self.g.borrow()[a[0]] {
-        NodeType::Attribute(ref v) => Some(v.clone()),
-	_ => None, // this shouldn't happen
+      match a[0] {
+        Some(i) => {
+	  match &h[i] {
+	    NodeType::Attribute(v) => Some(v.clone()),
+	    _ => None,
+	  }
+	}
+	_ => None,
       }
     } else {
       None
@@ -388,7 +395,8 @@ impl XDMTreeNode {
   }
 
   pub fn to_xml_int(&self) -> String {
-    match &self.g.borrow()[self.n] {
+    let h = self.g.borrow();
+    match &h[self.n] {
       NodeType::Element(e) => {
 	let mut ret: String = String::new();
       	ret.push_str("<");
@@ -413,30 +421,28 @@ impl XDMTreeNode {
 	  }
 	  None => {}
 	}
-	self.g.borrow()
-	  .neighbors_directed(self.n, Direction::Outgoing)
-	  .for_each(|i| {
-	    self.g.borrow()
-	      .edges_connecting(self.n, i)
-	      .for_each(|e| {
-	        match e.weight() {
-		  EdgeType::Attribute(att) => {
+	h.edges_directed(self.n, Direction::Outgoing)
+	  .for_each(|e| match e.weight() {
+	    EdgeType::Attribute(qn) => {
 		    ret.push(' ');
-		    ret.push_str(att.to_string().as_str());
+		    ret.push_str(qn.to_string().as_str());
 		    ret.push_str("='");
-		    match self.g.borrow()[i] {
-		      NodeType::Attribute(ref v) => {
-		        // TODO: escape special characters
-			ret.push_str(v.to_string().as_str())
+		    match h.edge_endpoints(e.id()) {
+		      Some((_, t)) => {
+		        match h[t] {
+		      	  NodeType::Attribute(ref v) => {
+		            // TODO: escape special characters
+			    ret.push_str(v.to_string().as_str())
+			  }
+		      	  _ => {} // shouldn't happen
+			}
 		      }
-		      _ => {} // shouldn't happen
-		    }
+		      None => {}
+		    };
 		    ret.push_str("'");
-		  }
-		  _ => {}
-		}
-	      })
-	    });
+	    }
+	    _ => {}
+	  });
       	ret.push_str(">");
       	self.child_iter().for_each(
           |c| {
@@ -523,21 +529,32 @@ impl Iterator for Ancestors {
 
   fn next(&mut self) -> Option<Self::Item> {
     // get the parent
-    let v: Vec<NodeIndex> = self.node.g.borrow()
-      .neighbors_directed(self.node.n, Direction::Outgoing)
-      .filter(|i| self.node.g.borrow()
-        .edges_connecting(self.node.n, *i)
-	.fold(false, |s, e| {
-	  match e.weight() {
+    let h = self.node.g.borrow();
+    let v: Vec<Option<NodeIndex>> = h
+      .edges_directed(self.node.n, Direction::Outgoing)
+      .filter(|e| match e.weight() {
 	    EdgeType::Parent => true,
-	    _ => s,
-	  }
-	})
-      )
+	    _ => false,
+      })
+      .map(|e| match h.edge_endpoints(e.id()) {
+        Some((_, t)) => Some(t),
+	_ => None,
+      })
       .collect();
     if v.len() == 1 {
-      self.node.n = v[0];
-      Some(self.node.clone())
+      match v[0] {
+        Some(m) => {
+	  // Don't include the Document node
+	  match h[m] {
+	    NodeType::Document => None,
+	    _ => {
+	      self.node.n = m;
+	      Some(self.node.clone())
+	    }
+	  }
+	}
+	None => None,
+      }
     } else {
       None
     }
@@ -558,21 +575,26 @@ impl Iterator for Siblings {
   type Item = XDMTreeNode;
 
   fn next(&mut self) -> Option<Self::Item> {
-    let v: Vec<NodeIndex> = self.node.g.borrow()
-      .neighbors_directed(self.node.n, Direction::Outgoing)
-      .filter(|i| self.node.g.borrow()
-        .edges_connecting(self.node.n, *i)
-        .fold(false, |s, e| {
-	  match e.weight() {
+    let h = self.node.g.borrow();
+    let v: Vec<Option<NodeIndex>> = h
+      .edges_directed(self.node.n, Direction::Outgoing)
+      .filter(|e| match e.weight() {
 	    EdgeType::NextSibling => true,
-	    _ => s,
-	  }
-	})
-      )
+	    _ => false,
+      })
+      .map(|e| match h.edge_endpoints(e.id()) {
+        Some((_, t)) => Some(t),
+	_ => None,
+      })
       .collect();
     if v.len() == 1 {
-      self.node.n = v[0];
-      Some(self.node.clone())
+      match v[0] {
+        Some(m) => {
+	  self.node.n = m;
+	  Some(self.node.clone())
+	}
+	None => None,
+      }
     } else {
       None
     }
@@ -593,21 +615,26 @@ impl Iterator for PrecedingSiblings {
   type Item = XDMTreeNode;
 
   fn next(&mut self) -> Option<Self::Item> {
-    let v: Vec<NodeIndex> = self.node.g.borrow()
-      .neighbors_directed(self.node.n, Direction::Outgoing)
-      .filter(|i| self.node.g.borrow()
-        .edges_connecting(self.node.n, *i)
-        .fold(false, |s, e| {
-	  match e.weight() {
+    let h = self.node.g.borrow();
+    let v: Vec<Option<NodeIndex>> = h
+      .edges_directed(self.node.n, Direction::Outgoing)
+      .filter(|e| match e.weight() {
 	    EdgeType::PrecedingSibling => true,
-	    _ => s,
-	  }
-	})
-      )
+	    _ => false,
+      })
+      .map(|e| match h.edge_endpoints(e.id()) {
+        Some((_, t)) => Some(t),
+	_ => None,
+      })
       .collect();
     if v.len() == 1 {
-      self.node.n = v[0];
-      Some(self.node.clone())
+      match v[0] {
+        Some(m) => {
+	  self.node.n = m;
+	  Some(self.node.clone())
+	}
+	None => None,
+      }
     } else {
       None
     }
@@ -625,7 +652,7 @@ pub fn from(input: &str) -> Result<XDMTreeNode, Error> {
     Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("no content")})
   } else {
     let mut ns: HashMap<String, String> = HashMap::new();
-    let t = Rc::new(RefCell::new(Graph::new()));
+    let t = Rc::new(RefCell::new(StableGraph::new()));
     let r = XDMTreeNode::new(t.clone());
     parse_node(&d.content[0], r.clone(), &mut ns);
     Ok(r)
@@ -726,14 +753,14 @@ mod tests {
 
     #[test]
     fn new_doc() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	XDMTreeNode::new(t.clone());
 	assert_eq!(t.borrow().node_count(), 1);
     }
 
     #[test]
     fn new_element() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r);
@@ -743,7 +770,7 @@ mod tests {
 
     #[test]
     fn new_value() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -755,7 +782,7 @@ mod tests {
 
     #[test]
     fn multi_elements() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -773,7 +800,7 @@ mod tests {
 
     #[test]
     fn children() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -790,7 +817,7 @@ mod tests {
     }
     #[test]
     fn descend() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -806,7 +833,7 @@ mod tests {
 
     #[test]
     fn siblings() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -824,7 +851,7 @@ mod tests {
 
     #[test]
     fn preceding_siblings() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -842,7 +869,7 @@ mod tests {
 
     #[test]
     fn ancestors() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -860,7 +887,7 @@ mod tests {
 
     #[test]
     fn attribute() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
@@ -874,7 +901,7 @@ mod tests {
 
     #[test]
     fn get_attribute() {
-        let t = Rc::new(RefCell::new(Graph::new()));
+        let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
 	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child(r.clone());
