@@ -74,7 +74,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     }
     NodeType::Element => {
       match (n.to_name().get_nsuri_ref(), n.to_name().get_localname().as_str()) {
-        (Some(XSLTNS), "apply-templates") => {
+        (Some(XSLTNS), "text") => {
+	  Ok(Constructor::Literal(Value::String(n.to_string())))
+	}
+	(Some(XSLTNS), "apply-templates") => {
 	  match n.attribute("select") {
 	    Some(sel) => {
 	      Ok(Constructor::ApplyTemplates(
@@ -256,8 +259,8 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	    }
 	  }
 	}
-	(Some(XSLTNS), _) => {
-	  Ok(Constructor::NotImplemented("unsupported XSL element"))
+	(Some(XSLTNS), u) => {
+	  Ok(Constructor::NotImplemented(format!("unsupported XSL element \"{}\"", u)))
 	}
 	(_, a) => {
 	  // TODO: Handle qualified element name
@@ -271,7 +274,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     }
     _ => {
       // TODO: literal elements, etc, pretty much everything in the XSLT spec
-      Ok(Constructor::NotImplemented("other template content"))
+      Ok(Constructor::NotImplemented("other template content".to_string()))
     }
   }
 }

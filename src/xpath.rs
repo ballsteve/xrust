@@ -449,7 +449,7 @@ fn union_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
         }
         s
       } else {
-        vec![Constructor::NotImplemented("union_expr")]
+        vec![Constructor::NotImplemented("union_expr".to_string())]
       }
     }
   )
@@ -488,7 +488,7 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 //	  r.push(d);
 //	}
 //        vec![SequenceConstructor::new(cons_intersectexcept).set_args(Some(r))]
-        vec![Constructor::NotImplemented("intersectexcept")]
+        vec![Constructor::NotImplemented("intersectexcept".to_string())]
       }
     }
   )
@@ -515,7 +515,7 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_instanceof).set_args(Some(r))]
-          vec![Constructor::NotImplemented("instance_of")]
+          vec![Constructor::NotImplemented("instance_of".to_string())]
 	}
       }
     }
@@ -555,7 +555,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_treat).set_args(Some(r))]
-          vec![Constructor::NotImplemented("treat")]
+          vec![Constructor::NotImplemented("treat".to_string())]
 	}
       }
     }
@@ -583,7 +583,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_castable).set_args(Some(r))]
-          vec![Constructor::NotImplemented("castable")]
+          vec![Constructor::NotImplemented("castable".to_string())]
 	}
       }
     }
@@ -639,7 +639,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //let (_a, _b, _c, _d, _e, st) = t;
 	  //r.push(st);
 	  //vec![SequenceConstructor::new(cons_cast).set_args(Some(r))]
-          vec![Constructor::NotImplemented("cast")]
+          vec![Constructor::NotImplemented("cast".to_string())]
 	}
       }
     }
@@ -668,7 +668,7 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
         u
       } else {
         //vec![SequenceConstructor::new(cons_arrow)]
-        vec![Constructor::NotImplemented("arrow")]
+        vec![Constructor::NotImplemented("arrow".to_string())]
       }
     }
   )
@@ -745,7 +745,7 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	//}
 	//a.push(v);
         //vec![SequenceConstructor::new(cons_unary).set_args(Some(a))]
-        vec![Constructor::NotImplemented("unary")]
+        vec![Constructor::NotImplemented("unary".to_string())]
       }
     }
   )
@@ -776,7 +776,7 @@ fn value_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	  //s.push(b);
 	//}
         //vec![SequenceConstructor::new(cons_simplemap).set_args(Some(s))]
-        vec![Constructor::NotImplemented("value")]
+        vec![Constructor::NotImplemented("value".to_string())]
       }
     }
   )
@@ -837,7 +837,7 @@ fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     ),
     |(_u, _v)| {
       vec![Constructor::Root,
-	Constructor::NotImplemented("absolute_descendant")]
+	Constructor::NotImplemented("absolute_descendant".to_string())]
 	// TODO: process v to implement descendant-or-self
     }
   )
@@ -910,7 +910,7 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 //    break;
 //  }
 //
-//  Ok((myin, vec![Constructor::NotImplemented("relpathdbg")]))
+//  Ok((myin, vec![Constructor::NotImplemented("relpathdbg".to_string())]))
 //}
 
 // StepExpr ::= PostfixExpr | AxisStep

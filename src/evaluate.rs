@@ -900,7 +900,7 @@ pub enum Constructor {
   /// third argument is the (optional) grouping spec.
   ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
   /// Something that is not yet implemented
-  NotImplemented(&'static str),
+  NotImplemented(String),
 }
 
 /// Determine how a collection is to be divided into groups.
