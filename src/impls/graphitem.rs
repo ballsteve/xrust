@@ -2635,7 +2635,14 @@ mod tests {
   </Level1>
 </Test>")
         .expect("unable to parse XML");
-      strip_whitespace(Rc::new(src.get_doc()));
+      // equivalent to <xsl:strip-space elements="*"/>
+      strip_whitespace(
+        Rc::new(src.get_doc()),
+	true,
+	vec![NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})],
+	vec![]
+      );
+
       assert_eq!(src.to_xml(), "<Test><Level1><Level2><Level3><Level4><Level5>  deepest 1  </Level5></Level4></Level3></Level2></Level1><Level1><Level2><Level3><Level4><Level5>deepest 2</Level5></Level4></Level3></Level2></Level1></Test>")
     }
 

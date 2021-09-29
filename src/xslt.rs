@@ -36,7 +36,11 @@ pub fn from_document<'a>(
     // TODO: check version attribute
 
     // Strip whitespace from the stylesheet
-    strip_whitespace(d);
+    strip_whitespace(d,
+      true,
+      vec![NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})],
+      vec![NodeTest::Name(NameTest{ns: Some(WildcardOrName::Name(XSLTNS.to_string())), prefix: Some("xsl".to_string()), name: Some(WildcardOrName::Name("text".to_string()))})]
+    );
 
     // Iterate over children, looking for templates
     // * compile match pattern
@@ -281,37 +285,168 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 
 /// Strip whitespace nodes from a XDM [Document].
 /// See [XSLT 4.3](https://www.w3.org/TR/2017/REC-xslt-30-20170608/#stylesheet-stripping)
-pub fn strip_whitespace(d: Rc<dyn Document>) {
+pub fn strip_whitespace(
+  d: Rc<dyn Document>,
+  cpi: bool, // strip comments and PIs?
+  strip: Vec<NodeTest>,
+  preserve: Vec<NodeTest>,
+) {
   let c = d.children();
   if c.len() == 1 {
-    strip_whitespace_node(c[0].clone());
+    strip_whitespace_node(
+      c[0].clone(),
+      cpi,
+      strip,
+      preserve,
+      true
+    );
   }
 }
 
-fn strip_whitespace_node(n: Rc<dyn Node>) {
+// TODO: the rules for stripping/preserving are a lot more complex
+fn strip_whitespace_node(
+  n: Rc<dyn Node>,
+  cpi: bool, // strip comments and PIs?
+  strip: Vec<NodeTest>,
+  preserve: Vec<NodeTest>,
+  keep: bool
+) {
   match n.node_type() {
     NodeType::Comment |
     NodeType::ProcessingInstruction => {
-      // Merge text nodes that are now adjacent
-      n.remove().expect("unable to remove text node");
+      if cpi {
+        n.remove().expect("unable to remove text node");
+      	// TODO: Merge text nodes that are now adjacent
+      }
     }
     NodeType::Element => {
-      n.children().iter()
-        .for_each(|m| strip_whitespace_node(m.clone()));
-    }
-    NodeType::Text => {
-      match n.parent() {
-        Some(p) => {
-	  match (p.to_name().get_nsuri_ref(), p.to_name().get_localname().as_str()) {
-	    (Some(XSLTNS), "text") => {} // TODO: also check for xml:space attribute on ancestor element
-	    _ => {
-	      if n.to_string().trim().is_empty() {
-		n.remove().expect("unable to remove text node")
+      // Determine if this element toggles the strip/preserve setting
+      // Match a strip NodeTest or a preserve NodeTest
+      // The 'strength' of the match determines which setting wins
+      let mut ss = -1.0;
+      let mut ps = -1.0;
+      strip.iter()
+        .for_each(|t| {
+	  match t {
+	    NodeTest::Kind(KindTest::AnyKindTest) |
+	    NodeTest::Kind(KindTest::ElementTest) => ss = -0.5,
+	    NodeTest::Name(nt) => {
+	      match (nt.ns.as_ref(), nt.name.as_ref()) {
+	        (None, Some(WildcardOrName::Wildcard)) => {
+		  ss = -0.25;
+		}
+		(None, Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(_), _) => {}
+		    (None, ename) => {
+		      if *name == ename {
+		        ss = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(ens), ename) => {
+		      if *ns == ens && *name == ename {
+		        ss = 0.5;
+		      }
+		    }
+		    (None, ename) => {
+		      if *name == ename {
+		        ss = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) => {
+		  ss = -0.25;
+		}
+	        (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => {
+		  ss = -0.25;
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => {
+		  ss = -0.5;
+		}
+		_ => {}
 	      }
 	    }
+	    _ => {}
 	  }
-	}
-	None => {}
+	});
+      preserve.iter()
+        .for_each(|t| {
+	  match t {
+	    NodeTest::Kind(KindTest::AnyKindTest) |
+	    NodeTest::Kind(KindTest::ElementTest) => ps = -0.5,
+	    NodeTest::Name(nt) => {
+	      match (nt.ns.as_ref(), nt.name.as_ref()) {
+	        (None, Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(_), _) => {}
+		    (None, ename) => {
+		      if *name == ename {
+		        ps = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(ens), ename) => {
+		      if *ns == ens && *name == ename {
+		        ps = 0.5;
+		      }
+		    }
+		    (None, ename) => {
+		      if *name == ename {
+		        ps = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) => {
+		  ps = -0.25;
+		}
+	        (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => {
+		  ps = -0.25;
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => {
+		  ps = -0.5;
+		}
+		_ => {}
+	      }
+	    }
+	    _ => {}
+	  }
+	});
+      n.children().iter()
+        .for_each(|m| {
+	  strip_whitespace_node(
+	    m.clone(),
+	    cpi,
+	    strip.clone(),  // TODO: borrow instead
+	    preserve.clone(), // TODO: borrow instead
+	    if ss > -1.0 {
+	      if ps >= ss {
+	        // Assume preserve-space is later in document order than strip-space
+		true
+	      } else {
+	        false
+	      }
+	    } else {
+	      if ps > -1.0 {
+	        true
+	      } else {
+	        keep
+	      }
+	    }
+	  )
+	});
+    }
+    NodeType::Text => {
+      if n.to_string().trim().is_empty() && !keep {
+        n.remove().expect("unable to remove text node");
       }
     }
     _ => {}
