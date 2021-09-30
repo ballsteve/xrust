@@ -424,8 +424,8 @@ xsl:param/@tunnel|no|
 xsl:param/@static|no|
 xsl:perform-sort|no|
 xsl:perform-sort/@select|no|
-xsl:preserve-space|no|
-xsl:preserve-space/@elements|no|
+xsl:preserve-space|yes|More work to do to support import priorities
+xsl:preserve-space/@elements|yes|
 xsl:processing-instruction|no|
 xsl:processing-instruction/@name|no|
 xsl:processing-instruction/@select|no|
@@ -473,8 +473,8 @@ xsl:source-document/@streamable|no|
 xsl:source-document/@use-accumulators|no|
 xsl:source-document/@validation|no|
 xsl:source-document/@type|no|
-xsl:strip-space|no|
-xsl:strip-space/@elements|no|
+xsl:strip-space|yes|More work to do to support import priorities
+xsl:strip-space/@elements|yes|
 xsl:stylesheet|yes|
 xsl:stylesheet/@id|no|
 xsl:stylesheet/@version|no|
