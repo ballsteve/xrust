@@ -5,50 +5,7 @@ The library separates parsing from evaluation. An expression is compiled to crea
 
 A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a Rust Vector. An [Item] is a Node, Function or atomic [Value].
 
-```rust
-# use std::rc::Rc;
-# use xrust::item::{Item, Document};
-# use xrust::evaluate::{DynamicContext, evaluate};
-# use xrust::xpath::parse;
-# use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode, set_node_rc_guard};
-# use libxml::parser::Parser;
-
-# set_node_rc_guard(4);
-
-let mut dc = DynamicContext::new();
-
-let p = Parser::default();
-let doc = p.parse_string("<Test/>").expect("parsing XML failed");
-let rgdoc = Rc::new(doc) as Rc<dyn Document>;
-
-dc.set_doc(Rc::clone(&rgdoc));
-
-let s = vec![Rc::new(Item::Document(Rc::clone(&rgdoc)))];
-
-let xpath = parse("/child::Test").expect("XPath parsing failed");
-let seq = evaluate(
-  &dc,
-  Some(s), Some(0),
-  &xpath
-).expect("evaluation failed");
-assert_eq!(seq.len(), 1);
-assert_eq!(seq[0].to_name().get_localname(), "Test");
-```
-
-An explanation of the above example:
-
-1. The [libxml crate](https://crates.io/crates/libxml) is used to create an XML document.
-2. The libxml Document is cast to a generic [Document].
-3. The [Document] is set as the context document in the [DynamicContext].
-4. A [Sequence] is created with one item: the document we just created.
-5. Parse an XPath expression. This results in a sequence constructor.
-6. Evaluate the sequence constructor.
-    1) The [DynamicContext] created earlier is used.
-    2) The [Sequence] created earlier is provided as the initial context for the evaluation.
-7. The evaluation should return a sequence with one item.
-8. That item is the root element of the original XML document.
-
-See the [xslt] module for an example of how to evaluate an XSL stylesheet.
+See the [graphitem](impls/graphitem/index.html) module for an example of how to evaluate an XSL stylesheet.
 
 ## Status
 
@@ -90,15 +47,16 @@ pub use xdmerror::{Error, ErrorKind};
 pub mod item;
 pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 
-mod impls {
-  mod xdmlibxml;
-  //pub use xdmlibxml::*;
-  //mod libxmleval;
-  //mod xdmrox;
-  //pub use xdmrox::*;
+pub mod xdmgraph;
+
+pub mod impls {
+  pub mod graphitem;
 }
 
 mod parsecommon;
+
+pub mod parsexml;
+//pub use parsexml::parse;
 
 pub mod xpath;
 pub use xpath::parse;

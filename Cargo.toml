@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "0.3.0"
+version = "0.4.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"
@@ -17,8 +17,5 @@ edition = "2018"
 decimal = "2.1.0"
 lexers = "0.1.2"
 nom = "6.2.0"
-roxmltree = "0.14.1"
-trees = "0.4.2"
-libxml = "0.3.0"
-json = "0.12.4"
 unicode-segmentation = "1.7.1"
+petgraph = "0.6.0"

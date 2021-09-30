@@ -16,18 +16,21 @@ use std::cell::{RefCell, RefMut};
 ///
 /// The dynamic context stores the value of declared variables.
 //#[derive(Clone)]
-pub struct DynamicContext {
+pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence>>>,
   templates: Vec<Template>,
   depth: RefCell<usize>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
   doc: Option<Rc<dyn Document>>,
+  // TODO: accept a closure that is a 'Document factory'
+  //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
+  resultdoc: Option<&'a dyn Document>,
 }
 
-impl DynamicContext {
+impl<'a> DynamicContext<'a> {
   /// Create a dynamic context.
-  pub fn new() -> DynamicContext {
+  pub fn new(resultdoc: Option<&'a dyn Document>) -> DynamicContext<'a> {
     DynamicContext{
       vars: RefCell::new(HashMap::new()),
       templates: Vec::new(),
@@ -35,6 +38,7 @@ impl DynamicContext {
       current_grouping_key: RefCell::new(vec![None]),
       current_group: RefCell::new(vec![None]),
       doc: None,
+      resultdoc: resultdoc,
     }
   }
 
@@ -126,16 +130,14 @@ fn evaluate_one(
 	seq.new_value(l.clone());
 	Ok(seq)
     }
-    // This creates a libxml node in the current result document
+    // This creates a Node in the current result document
     Constructor::LiteralElement(n, _p, _ns, c) => {
-      let l = match dc.doc {
-        Some(ref doc) => {
+      let l = match dc.resultdoc {
+        Some(doc) => {
 	  // TODO: namespace
 	  doc.new_element(n, None).expect("unable to create Node")
 	}
-	None => {
-	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context document".to_string()})
-	}
+	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
 
       // add content to newly created element
@@ -149,12 +151,6 @@ fn evaluate_one(
 	      }
 	      _ => {
 	        // Values become a text node in the result tree
-//		let t = dc.doc.as_ref().unwrap().new_text(i.to_string().as_str()).expect("unable to create text Node");
-//	        l.add_child(
-//		  dc.doc.as_ref().unwrap()
-//		    .new_text(i.to_string().as_str()).expect("unable to create text Node")
-//		    .as_any()
-//		).expect("unable to add text child node");
 		l.add_text_child(i.to_string()).expect("unable to add text child node");
 	      }
 	    }
@@ -307,12 +303,18 @@ fn evaluate_one(
 	    Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
 	  }
 	  // Some implementations represent the document as a special kind of node
-	  Item::Node(_) => {
+	  Item::Node(n) => {
 	    match dc.doc {
 	      Some(ref d) => {
 	        Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
 	      }
-	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+	      None => {
+	        // Try to navigate to the Document from the Node
+		match n.doc() {
+		  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
+		  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
+		}
+	      }
 	    }
 	  }
 	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
@@ -423,7 +425,12 @@ fn evaluate_one(
 	      	      Some(ref d) => {
 	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
 	      	      }
-	      	      None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document")})
+	      	      None => {
+		        match n.doc() {
+			  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
+			  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
+			}
+		      }
 	    	    }
 		  }
 		}
@@ -516,6 +523,7 @@ fn evaluate_one(
 		for a in anc {
 		  let sibs: Vec<Rc<dyn Node>> = a.preceding_siblings();
 		  for b in sibs {
+		    d.push(b.clone());
 		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
 		    d.append(&mut sib_descs)
 		  }
@@ -650,17 +658,18 @@ fn evaluate_one(
 	      })
 	      .collect();
 	    // there must be only one matching template
-	    if matching_template.len() != 1 {
+	    if matching_template.len() > 1 {
 	      //return Result::Err(Error{kind: ErrorKind::TypeError, message: "too many matching templates".to_string()})
 	      panic!("too many matching templates")
 	    }
 	    let mut u = matching_template.iter()
 	      .flat_map(|t| {
 		dc.incr_depth();
-		evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body")
+		let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	dc.decr_depth();
+		rs
 	      })
 	      .collect::<Sequence>();
-	    dc.decr_depth();
 	    acc.append(&mut u);
 	    acc
 	  }
@@ -891,7 +900,7 @@ pub enum Constructor {
   /// third argument is the (optional) grouping spec.
   ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
   /// Something that is not yet implemented
-  NotImplemented(&'static str),
+  NotImplemented(String),
 }
 
 /// Determine how a collection is to be divided into groups.
@@ -1005,6 +1014,37 @@ pub enum NodeTest {
 }
 
 impl NodeTest {
+  pub fn from(s: &str) -> Result<NodeTest, Error> {
+    // Import this from xpath.rs?
+    let tok: Vec<&str> = s.split(':').collect();
+    match tok.len() {
+      1 => {
+        // unprefixed
+	if tok[0] == "*" {
+	  Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: None, prefix: None}))
+	} else {
+	  Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(tok[0].to_string())), ns: None, prefix: None}))
+	}
+      }
+      2 => {
+        // prefixed
+	if tok[0] == "*" {
+	  if tok[1] == "*" {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: Some(WildcardOrName::Wildcard), prefix: None}))
+	  } else {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(tok[1].to_string())), ns: Some(WildcardOrName::Wildcard), prefix: None}))
+	  }
+	} else {
+	  if tok[1] == "*" {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: None, prefix: Some(tok[0].to_string())}))
+	  } else {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(tok[1].to_string())), ns: None, prefix: Some(tok[0].to_string())}))
+	  }
+	}
+      }
+      _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid NodeTest".to_string()})
+    }
+  }
   pub fn to_string(&self) -> String {
       match self {
         NodeTest::Name(nt) => {
@@ -2315,7 +2355,7 @@ mod tests {
 
     #[test]
     fn literal_string() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![Constructor::Literal(Value::String("foobar".to_string()))];
       let s = evaluate(&dc, None, None, &cons)
 	.expect("evaluation failed");
@@ -2328,7 +2368,7 @@ mod tests {
 
     #[test]
     fn literal_int() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![Constructor::Literal(Value::Integer(456))];
       let s = evaluate(&dc, None, None, &cons)
 	.expect("evaluation failed");
@@ -2341,7 +2381,7 @@ mod tests {
 
     #[test]
     fn literal_decimal() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![Constructor::Literal(Value::Decimal(d128!(34.56)))];
       let s = evaluate(&dc, None, None, &cons)
         .expect("evaluation failed");
@@ -2354,7 +2394,7 @@ mod tests {
 
     #[test]
     fn literal_bool() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![Constructor::Literal(Value::Boolean(false))];
       let s = evaluate(&dc, None, None, &cons)
         .expect("evaluation failed");
@@ -2367,7 +2407,7 @@ mod tests {
 
     #[test]
     fn literal_double() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![Constructor::Literal(Value::Double(4.56))];
       let s = evaluate(&dc, None, None, &cons)
         .expect("evaluation failed");
@@ -2380,7 +2420,7 @@ mod tests {
 
     #[test]
     fn sequence_literal() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::Literal(Value::String("foo".to_string())),
 	  Constructor::Literal(Value::String("bar".to_string())),
@@ -2396,7 +2436,7 @@ mod tests {
 
     #[test]
     fn sequence_literal_mixed() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::Literal(Value::String("foo".to_string())),
 	  Constructor::Literal(Value::Integer(123)),
@@ -2412,7 +2452,7 @@ mod tests {
 
     #[test]
     fn context_item() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let s = vec![Rc::new(Item::Value(Value::String("foobar".to_string())))];
       let cons = vec![Constructor::ContextItem];
       let result = evaluate(&dc, Some(s), Some(0), &cons)
@@ -2426,7 +2466,7 @@ mod tests {
 
     #[test]
     fn context_item_2() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::ContextItem,
 	  Constructor::ContextItem,
@@ -2442,7 +2482,7 @@ mod tests {
 
     #[test]
     fn or() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::Or(
 	    vec![
@@ -2463,7 +2503,7 @@ mod tests {
 
     #[test]
     fn and() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::And(
 	    vec![
@@ -2484,7 +2524,7 @@ mod tests {
 
     #[test]
     fn value_comparison_int_true() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
@@ -2505,7 +2545,7 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_int_false() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
@@ -2526,7 +2566,7 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_true() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
@@ -2547,7 +2587,7 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_false() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
@@ -2571,7 +2611,7 @@ mod tests {
 
     #[test]
     fn general_comparison_string_true() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::GeneralComparison(
             Operator::Equal,
@@ -2594,7 +2634,7 @@ mod tests {
     }
     #[test]
     fn general_comparison_string_false() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::GeneralComparison(
             Operator::Equal,
@@ -2619,7 +2659,7 @@ mod tests {
 
     #[test]
     fn concat() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::Concat(
 	    vec![
@@ -2642,7 +2682,7 @@ mod tests {
 
     #[test]
     fn range() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::Range(
 	    vec![
@@ -2663,7 +2703,7 @@ mod tests {
 
     #[test]
     fn arithmetic_double_add() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let cons = vec![
 	  Constructor::Arithmetic(
 	    vec![
@@ -2692,7 +2732,7 @@ mod tests {
 
     #[test]
     fn function_call_position() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("position".to_string(), vec![], Some(func_position)),
 	vec![]
@@ -2707,7 +2747,7 @@ mod tests {
     }
     #[test]
     fn function_call_last() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("last".to_string(), vec![], Some(func_last)),
 	vec![]
@@ -2723,7 +2763,7 @@ mod tests {
     }
     #[test]
     fn function_call_count() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("count".to_string(), vec![Param::new("i".to_string(), "t".to_string())], Some(func_count)),
 	vec![
@@ -2740,7 +2780,7 @@ mod tests {
     }
     #[test]
     fn function_call_string_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("string".to_string(), vec![], Some(func_string)),
 	vec![
@@ -2757,7 +2797,7 @@ mod tests {
     }
     #[test]
     fn function_call_concat_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("concat".to_string(), vec![], Some(func_concat)),
 	vec![
@@ -2772,7 +2812,7 @@ mod tests {
     }
     #[test]
     fn function_call_startswith_pos() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
 	vec![
@@ -2786,7 +2826,7 @@ mod tests {
     }
     #[test]
     fn function_call_startswith_neg() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
 	vec![
@@ -2800,7 +2840,7 @@ mod tests {
     }
     #[test]
     fn function_call_contains_pos() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("contains".to_string(), vec![], Some(func_contains)),
 	vec![
@@ -2814,7 +2854,7 @@ mod tests {
     }
     #[test]
     fn function_call_contains_neg() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("contains".to_string(), vec![], Some(func_contains)),
 	vec![
@@ -2828,7 +2868,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_2() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring".to_string(), vec![], Some(func_substring)),
 	vec![
@@ -2842,7 +2882,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_3() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring".to_string(), vec![], Some(func_substring)),
 	vec![
@@ -2857,7 +2897,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_before_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
 	vec![
@@ -2871,7 +2911,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_before_neg() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
 	vec![
@@ -2885,7 +2925,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_after_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
@@ -2899,7 +2939,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_after_neg_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
@@ -2913,7 +2953,7 @@ mod tests {
     }
     #[test]
     fn function_call_substring_after_neg_2() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
@@ -2927,7 +2967,7 @@ mod tests {
     }
     #[test]
     fn function_call_normalizespace() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("normalize-space".to_string(), vec![], Some(func_normalizespace)),
 	vec![
@@ -2940,7 +2980,7 @@ mod tests {
     }
     #[test]
     fn function_call_translate() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("translate".to_string(), vec![], Some(func_translate)),
 	vec![
@@ -2956,7 +2996,7 @@ mod tests {
     // TODO: test using non-ASCII characters
     #[test]
     fn function_call_boolean_true() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("boolean".to_string(), vec![], Some(func_boolean)),
 	vec![
@@ -2973,7 +3013,7 @@ mod tests {
     }
     #[test]
     fn function_call_boolean_false() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("boolean".to_string(), vec![], Some(func_boolean)),
 	vec![
@@ -2990,7 +3030,7 @@ mod tests {
     }
     #[test]
     fn function_call_not_false() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("not".to_string(), vec![], Some(func_not)),
 	vec![
@@ -3007,7 +3047,7 @@ mod tests {
     }
     #[test]
     fn function_call_not_true() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("not".to_string(), vec![], Some(func_not)),
 	vec![
@@ -3024,7 +3064,7 @@ mod tests {
     }
     #[test]
     fn function_call_true() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("true".to_string(), vec![], Some(func_true)),
 	vec![
@@ -3040,7 +3080,7 @@ mod tests {
     }
     #[test]
     fn function_call_false() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("false".to_string(), vec![], Some(func_false)),
 	vec![
@@ -3056,7 +3096,7 @@ mod tests {
     }
     #[test]
     fn function_call_number_int() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("number".to_string(), vec![], Some(func_number)),
 	vec![
@@ -3073,7 +3113,7 @@ mod tests {
     }
     #[test]
     fn function_call_number_double() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("number".to_string(), vec![], Some(func_number)),
 	vec![
@@ -3091,7 +3131,7 @@ mod tests {
     // TODO: test NaN result
     #[test]
     fn function_call_sum() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("sum".to_string(), vec![], Some(func_sum)),
 	vec![
@@ -3112,7 +3152,7 @@ mod tests {
     }
     #[test]
     fn function_call_floor() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("floor".to_string(), vec![], Some(func_floor)),
 	vec![
@@ -3129,7 +3169,7 @@ mod tests {
     }
     #[test]
     fn function_call_ceiling() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("ceiling".to_string(), vec![], Some(func_ceiling)),
 	vec![
@@ -3146,7 +3186,7 @@ mod tests {
     }
     #[test]
     fn function_call_round_down() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("round".to_string(), vec![], Some(func_round)),
 	vec![
@@ -3163,7 +3203,7 @@ mod tests {
     }
     #[test]
     fn function_call_round_up() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = Constructor::FunctionCall(
         Function::new("round".to_string(), vec![], Some(func_round)),
 	vec![
@@ -3182,7 +3222,7 @@ mod tests {
     // Variables
     #[test]
     fn var_ref() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = vec![
         Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::String("my variable".to_string()))]),
 	Constructor::VariableReference("foo".to_string()),
@@ -3194,7 +3234,7 @@ mod tests {
     // Loops
     #[test]
     fn loop_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       // This is "for $x in ('a', 'b', 'c') return $x"
       let c = vec![
         Constructor::Loop(
@@ -3217,7 +3257,7 @@ mod tests {
     // Switch
     #[test]
     fn switch_1() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       // implements "if (1) then 'one' else 'not one'"
       let c = vec![
         Constructor::Switch(
@@ -3238,7 +3278,7 @@ mod tests {
     }
     #[test]
     fn switch_2() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       // implements "if (0) then 'one' else 'not one'"
       let c = vec![
         Constructor::Switch(
@@ -3259,7 +3299,7 @@ mod tests {
     }    
     #[test]
     fn switch_3() {
-      let dc = DynamicContext::new();
+      let dc = DynamicContext::new(None);
       let c = vec![
         Constructor::Switch(
 	  vec![

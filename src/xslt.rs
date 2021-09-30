@@ -4,55 +4,6 @@ Compile an XSLT stylesheet into a [Sequence] [Constructor].
 
 Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
 
-```rust
-# use std::rc::Rc;
-# use xrust::xdmerror::*;
-# use xrust::item::{Item, Document, Sequence, SequenceTrait};
-# use xrust::evaluate::*;
-# use xrust::xpath::*;
-# use xrust::xslt::*;
-# use libxml::tree::{NodeType as libxmlNodeType, Document as libxmlDocument, Node as libxmlNode, set_node_rc_guard};
-# use libxml::parser::Parser;
-
-# set_node_rc_guard(4);
-
-// We're going to need to statically analyze the sequence constructor later on
-let sc = StaticContext::new_with_builtins();
-
-// This is the source document for the transformation
-let psrc = Parser::default();
-let doc = psrc.parse_string("<Test>Check, one, two</Test>")
-  .expect("failed to parse source document");
-let srcdoc = Rc::new(doc) as Rc<dyn Document>;
-
-// This is the stylesheet document
-let psty = Parser::default();
-let style = psty.parse_string("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
-  <xsl:template match='child::Test'><html><body><xsl:apply-templates/></body></html></xsl:template>
-  <xsl:template match='child::text()'><p><xsl:sequence select='.'/></p></xsl:template>
-</xsl:stylesheet>")
-  .expect("failed to parse source document");
-
-// Now compile the stylesheet
-let mut dc = from_document(Rc::new(style), &sc).expect("failed to compile stylesheet");
-
-// Set the instance document as the Document in the DynamicContext
-dc.set_doc(Rc::clone(&srcdoc));
-
-// The source document is the initial context.
-// Find the template that matches it,
-// and use that to start the transformation
-let item = Rc::new(Item::Document(srcdoc));
-let template = dc.find_match(&item);
-
-// Now evaluate the stylesheet
-let sequence = evaluate(&dc, Some(vec![item]), Some(0), &template)
-  .expect("stylesheet evaluation failed");
-
-assert_eq!(sequence.to_xml(), "<html><body><p>Check, one, two</p></body></html>")
-```
-
 */
 
 use std::rc::Rc;
@@ -64,10 +15,13 @@ use crate::xpath::*;
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Document] into a Sequence Constructor.
-///
-/// If the stylesheet creates any elements in the result tree, they are created using the [DynamicContext]'s [Document] [Node] creation method.
-pub fn from_document(d: Rc<dyn Document>, sc: &StaticContext) -> Result<DynamicContext, Error> {
-    let mut dc = DynamicContext::new();
+/// NB. Due to whitespace stripping, this is destructive of the stylesheet.
+pub fn from_document<'a>(
+  d: Rc<dyn Document>,
+  resultdoc: &'a dyn Document,
+  sc: &StaticContext
+) -> Result<DynamicContext<'a>, Error> {
+    let mut dc = DynamicContext::new(Some(resultdoc));
 
     // Check that this is a valid XSLT stylesheet
     let root = match d.get_root_element() {
@@ -81,8 +35,12 @@ pub fn from_document(d: Rc<dyn Document>, sc: &StaticContext) -> Result<DynamicC
     }
     // TODO: check version attribute
 
-    // Strip/preserve whitespace
-    // TODO
+    // Strip whitespace from the stylesheet
+    strip_whitespace(d,
+      true,
+      vec![NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})],
+      vec![NodeTest::Name(NameTest{ns: Some(WildcardOrName::Name(XSLTNS.to_string())), prefix: Some("xsl".to_string()), name: Some(WildcardOrName::Name("text".to_string()))})]
+    );
 
     // Iterate over children, looking for templates
     // * compile match pattern
@@ -120,7 +78,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     }
     NodeType::Element => {
       match (n.to_name().get_nsuri_ref(), n.to_name().get_localname().as_str()) {
-        (Some(XSLTNS), "apply-templates") => {
+        (Some(XSLTNS), "text") => {
+	  Ok(Constructor::Literal(Value::String(n.to_string())))
+	}
+	(Some(XSLTNS), "apply-templates") => {
 	  match n.attribute("select") {
 	    Some(sel) => {
 	      Ok(Constructor::ApplyTemplates(
@@ -302,8 +263,8 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	    }
 	  }
 	}
-	(Some(XSLTNS), _) => {
-	  Ok(Constructor::NotImplemented("unsupported XSL element"))
+	(Some(XSLTNS), u) => {
+	  Ok(Constructor::NotImplemented(format!("unsupported XSL element \"{}\"", u)))
 	}
 	(_, a) => {
 	  // TODO: Handle qualified element name
@@ -317,7 +278,226 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     }
     _ => {
       // TODO: literal elements, etc, pretty much everything in the XSLT spec
-      Ok(Constructor::NotImplemented("other template content"))
+      Ok(Constructor::NotImplemented("other template content".to_string()))
     }
   }
 }
+
+/// Strip whitespace nodes from a XDM [Document].
+/// See [XSLT 4.3](https://www.w3.org/TR/2017/REC-xslt-30-20170608/#stylesheet-stripping)
+pub fn strip_whitespace(
+  d: Rc<dyn Document>,
+  cpi: bool, // strip comments and PIs?
+  strip: Vec<NodeTest>,
+  preserve: Vec<NodeTest>,
+) {
+  let c = d.children();
+  if c.len() == 1 {
+    strip_whitespace_node(
+      c[0].clone(),
+      cpi,
+      strip,
+      preserve,
+      true
+    );
+  }
+}
+
+/// Strip whitespace nodes from a XDM [Document].
+/// This function operates under the direction of the xsl:strip-space and xsl:preserve-space directives in a XSLT stylesheet.
+pub fn strip_source_document(
+  src: Rc<dyn Document>,
+  style: Rc<dyn Document>
+) {
+  // Find strip-space element, if any, and use it to construct a vector of NodeTests.
+  // Ditto for preserve-space.
+  let ss: Vec<NodeTest> = style.get_root_element().unwrap()	// this should be the xsl:stylesheet element
+    .children().iter()
+    .filter(|e| match (e.node_type(), e.to_name().get_nsuri_ref(), e.to_name().get_localname().as_str()) {
+      (NodeType::Element, Some(XSLTNS), "strip-space") => true,
+      _ => false,
+    })
+    .fold(vec![], |mut s, e| {
+      match e.attribute("elements") {
+        Some(v) => {
+	  v.split_whitespace()
+	    .for_each(|t| {
+	      s.push(NodeTest::from(t).expect("not a NodeTest"))
+	    })
+	}
+	None => {}	// should return an error
+      };
+      s
+    });
+  let ps: Vec<NodeTest> = style.get_root_element().unwrap()	// this should be the xsl:stylesheet element
+    .children().iter()
+    .filter(|e| match (e.node_type(), e.to_name().get_nsuri_ref(), e.to_name().get_localname().as_str()) {
+      (NodeType::Element, Some(XSLTNS), "preserve-space") => true,
+      _ => false,
+    })
+    .fold(vec![], |mut s, e| {
+      match e.attribute("elements") {
+        Some(v) => {
+	  v.split_whitespace()
+	    .for_each(|t| {
+	      s.push(NodeTest::from(t).expect("not a NodeTest"))
+	    })
+	}
+	None => {}	// should return an error
+      }
+      s
+    });
+
+  strip_whitespace(src, false, ss, ps);
+}
+
+// TODO: the rules for stripping/preserving are a lot more complex
+fn strip_whitespace_node(
+  n: Rc<dyn Node>,
+  cpi: bool, // strip comments and PIs?
+  strip: Vec<NodeTest>,
+  preserve: Vec<NodeTest>,
+  keep: bool
+) {
+  match n.node_type() {
+    NodeType::Comment |
+    NodeType::ProcessingInstruction => {
+      if cpi {
+        n.remove().expect("unable to remove text node");
+      	// TODO: Merge text nodes that are now adjacent
+      }
+    }
+    NodeType::Element => {
+      // Determine if this element toggles the strip/preserve setting
+      // Match a strip NodeTest or a preserve NodeTest
+      // The 'strength' of the match determines which setting wins
+      let mut ss = -1.0;
+      let mut ps = -1.0;
+      strip.iter()
+        .for_each(|t| {
+	  match t {
+	    NodeTest::Kind(KindTest::AnyKindTest) |
+	    NodeTest::Kind(KindTest::ElementTest) => ss = -0.5,
+	    NodeTest::Name(nt) => {
+	      match (nt.ns.as_ref(), nt.name.as_ref()) {
+	        (None, Some(WildcardOrName::Wildcard)) => {
+		  ss = -0.25;
+		}
+		(None, Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(_), _) => {}
+		    (None, ename) => {
+		      if *name == ename {
+		        ss = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(ens), ename) => {
+		      if *ns == ens && *name == ename {
+		        ss = 0.5;
+		      }
+		    }
+		    (None, ename) => {
+		      if *name == ename {
+		        ss = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) => {
+		  ss = -0.25;
+		}
+	        (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => {
+		  ss = -0.25;
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => {
+		  ss = -0.5;
+		}
+		_ => {}
+	      }
+	    }
+	    _ => {}
+	  }
+	});
+      preserve.iter()
+        .for_each(|t| {
+	  match t {
+	    NodeTest::Kind(KindTest::AnyKindTest) |
+	    NodeTest::Kind(KindTest::ElementTest) => ps = -0.5,
+	    NodeTest::Name(nt) => {
+	      match (nt.ns.as_ref(), nt.name.as_ref()) {
+	        (None, Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(_), _) => {}
+		    (None, ename) => {
+		      if *name == ename {
+		        ps = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
+		  match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+		    (Some(ens), ename) => {
+		      if *ns == ens && *name == ename {
+		        ps = 0.5;
+		      }
+		    }
+		    (None, ename) => {
+		      if *name == ename {
+		        ps = 0.5;
+		      }
+		    }
+		  }
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) => {
+		  ps = -0.25;
+		}
+	        (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => {
+		  ps = -0.25;
+		}
+	        (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => {
+		  ps = -0.5;
+		}
+		_ => {}
+	      }
+	    }
+	    _ => {}
+	  }
+	});
+      n.children().iter()
+        .for_each(|m| {
+	  strip_whitespace_node(
+	    m.clone(),
+	    cpi,
+	    strip.clone(),  // TODO: borrow instead
+	    preserve.clone(), // TODO: borrow instead
+	    if ss > -1.0 {
+	      if ps >= ss {
+	        // Assume preserve-space is later in document order than strip-space
+		true
+	      } else {
+	        false
+	      }
+	    } else {
+	      if ps > -1.0 {
+	        true
+	      } else {
+	        keep
+	      }
+	    }
+	  )
+	});
+    }
+    NodeType::Text => {
+      if n.to_string().trim().is_empty() && !keep {
+        n.remove().expect("unable to remove text node");
+      }
+    }
+    _ => {}
+  }
+}
+
