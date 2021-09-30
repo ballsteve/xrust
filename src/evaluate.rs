@@ -1014,6 +1014,37 @@ pub enum NodeTest {
 }
 
 impl NodeTest {
+  pub fn from(s: &str) -> Result<NodeTest, Error> {
+    // Import this from xpath.rs?
+    let tok: Vec<&str> = s.split(':').collect();
+    match tok.len() {
+      1 => {
+        // unprefixed
+	if tok[0] == "*" {
+	  Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: None, prefix: None}))
+	} else {
+	  Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(tok[0].to_string())), ns: None, prefix: None}))
+	}
+      }
+      2 => {
+        // prefixed
+	if tok[0] == "*" {
+	  if tok[1] == "*" {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: Some(WildcardOrName::Wildcard), prefix: None}))
+	  } else {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(tok[1].to_string())), ns: Some(WildcardOrName::Wildcard), prefix: None}))
+	  }
+	} else {
+	  if tok[1] == "*" {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: None, prefix: Some(tok[0].to_string())}))
+	  } else {
+	    Ok(NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(tok[1].to_string())), ns: None, prefix: Some(tok[0].to_string())}))
+	  }
+	}
+      }
+      _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid NodeTest".to_string()})
+    }
+  }
   pub fn to_string(&self) -> String {
       match self {
         NodeTest::Name(nt) => {

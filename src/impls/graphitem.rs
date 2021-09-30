@@ -2706,4 +2706,74 @@ four
 ----
 ")
     }
+
+    // Test stripping whitespace from the source document using XSL stylesheet directives
+    #[test]
+    fn strip_ws_3() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let src = from("<Test>
+  <Level1>one</Level1>
+  <Level1>two</Level1>
+  <Level1>three</Level1>
+  <Level1>four</Level1>
+</Test>").expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:strip-space elements='Test'/>
+  <xsl:template match='/'>
+    <xsl:apply-templates/>
+  </xsl:template>
+  <xsl:template match='child::Test'>
+    <xsl:apply-templates/>
+  </xsl:template>
+  <xsl:template match='child::Level1'>
+    <xsl:text>
+Level1
+</xsl:text>
+    <xsl:apply-templates/>
+    <xsl:text>
+----
+</xsl:text>
+  </xsl:template>
+  <xsl:template match='child::text()'>
+    <xsl:sequence select='.'/>
+  </xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+      let istyle = Rc::new(style.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+
+      assert_eq!(seq.to_string(), "
+Level1
+one
+----
+
+Level1
+two
+----
+
+Level1
+three
+----
+
+Level1
+four
+----
+")
+    }
 }

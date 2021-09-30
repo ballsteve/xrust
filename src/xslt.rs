@@ -303,6 +303,54 @@ pub fn strip_whitespace(
   }
 }
 
+/// Strip whitespace nodes from a XDM [Document].
+/// This function operates under the direction of the xsl:strip-space and xsl:preserve-space directives in a XSLT stylesheet.
+pub fn strip_source_document(
+  src: Rc<dyn Document>,
+  style: Rc<dyn Document>
+) {
+  // Find strip-space element, if any, and use it to construct a vector of NodeTests.
+  // Ditto for preserve-space.
+  let ss: Vec<NodeTest> = style.get_root_element().unwrap()	// this should be the xsl:stylesheet element
+    .children().iter()
+    .filter(|e| match (e.node_type(), e.to_name().get_nsuri_ref(), e.to_name().get_localname().as_str()) {
+      (NodeType::Element, Some(XSLTNS), "strip-space") => true,
+      _ => false,
+    })
+    .fold(vec![], |mut s, e| {
+      match e.attribute("elements") {
+        Some(v) => {
+	  v.split_whitespace()
+	    .for_each(|t| {
+	      s.push(NodeTest::from(t).expect("not a NodeTest"))
+	    })
+	}
+	None => {}	// should return an error
+      };
+      s
+    });
+  let ps: Vec<NodeTest> = style.get_root_element().unwrap()	// this should be the xsl:stylesheet element
+    .children().iter()
+    .filter(|e| match (e.node_type(), e.to_name().get_nsuri_ref(), e.to_name().get_localname().as_str()) {
+      (NodeType::Element, Some(XSLTNS), "preserve-space") => true,
+      _ => false,
+    })
+    .fold(vec![], |mut s, e| {
+      match e.attribute("elements") {
+        Some(v) => {
+	  v.split_whitespace()
+	    .for_each(|t| {
+	      s.push(NodeTest::from(t).expect("not a NodeTest"))
+	    })
+	}
+	None => {}	// should return an error
+      }
+      s
+    });
+
+  strip_whitespace(src, false, ss, ps);
+}
+
 // TODO: the rules for stripping/preserving are a lot more complex
 fn strip_whitespace_node(
   n: Rc<dyn Node>,
