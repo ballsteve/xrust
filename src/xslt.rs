@@ -60,7 +60,49 @@ pub fn from_document<'a>(
 	      .collect();
 	    static_analysis(&mut pat, &sc);
 	    static_analysis(&mut body, &sc);
-	    dc.add_template(pat, body);
+	    // Determine the priority of the template
+	    let prio;
+	    match t.attribute("priority") {
+	      Some(pr) => prio = pr.parse::<f64>().unwrap(), // TODO: better error handling
+	      None => {
+	        // Calculate the default priority
+		// TODO: more work to be done interpreting XSLT 6.5
+		if pat.len() <= 1 {
+		  match &pat[0] {
+		    Constructor::Root => prio = -0.5,
+		    Constructor::Path(_) => prio = -0.5,
+		    Constructor::Step(nm, _pred) => {
+		      match &nm.nodetest {
+		        NodeTest::Name(nt) => {
+			  match (nt.ns.as_ref(), nt.name.as_ref()) {
+			    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => prio =-0.5,
+			    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) |
+			    (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => prio = -0.25,
+			    (None, Some(WildcardOrName::Wildcard)) => prio = -0.25,
+			    (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Name(_))) => prio = 0.0,
+			    (None, Some(WildcardOrName::Name(_))) => prio = 0.0,
+			    _ => prio = 0.5,
+			  }
+			}
+			NodeTest::Kind(kt) => {
+			  match kt {
+			    KindTest::DocumentTest |
+			    KindTest::ElementTest |
+			    KindTest::AttributeTest => prio = -0.5,
+			    _ => prio = 0.5,
+			  }
+			}
+		      }
+		    }
+		    _ => prio = 0.5,
+		  }
+		} else {
+		  // TODO: calculate the priority of each branch of the pattern
+		  prio = 0.5
+		}
+	      }
+	    }
+	    dc.add_template(pat, body, None, prio);
 	  }
 	  None => {
 	    return Result::Err(Error{kind: ErrorKind::TypeError, message: "template does not have a match attribute".to_string()})

@@ -42,18 +42,35 @@ impl<'a> DynamicContext<'a> {
     }
   }
 
-  /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template.
-  pub fn add_template(&mut self, p: Vec<Constructor>, b: Vec<Constructor>) {
-    self.templates.push(Template{pattern: p, body: b});
+  /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.
+  pub fn add_template(&mut self,
+    p: Vec<Constructor>,
+    b: Vec<Constructor>,
+    m: Option<String>,
+    pr: f64,
+  ) {
+    self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
   }
-  /// Determine if an item matches a pattern and return the sequence constructor for that template.
+  /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
   /// If no template is found, returns None.
-  /// TODO: If more than one pattern matches, return the highest priority match.
   pub fn find_match(&self, i: &Rc<Item>) -> Vec<Constructor> {
+//    let r: Vec<Vec<Constructor>> = self.templates.iter()
+//      .filter(|t| item_matches(self, &t.pattern, i))
+//      .map(|t| t.body.clone())
+//      .collect();
     let r: Vec<Vec<Constructor>> = self.templates.iter()
-      .filter(|t| item_matches(self, &t.pattern, i))
-      .map(|t| t.body.clone())
+      .scan(-2.0,
+        |prio, t| {
+	  if item_matches(self, &t.pattern, i) && *prio < t.priority {
+	    *prio = t.priority;
+	    Some(t.body.clone())
+	  } else {
+	    None
+	  }
+	}
+      )
       .collect();
+
     if r.len() != 0 {
       r[0].clone()
     } else {
@@ -92,7 +109,9 @@ impl<'a> DynamicContext<'a> {
   pub fn dump_templates(&self) {
     self.templates.iter().for_each(
       |t| {
-        println!("Template matching pattern:\n{}\nBody:\n{}",
+        println!("Template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
+	  t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
+	  t.priority,
 	  format_constructor(&t.pattern, 4),
 	  format_constructor(&t.body, 4)
 	);
@@ -656,6 +675,16 @@ fn evaluate_one(
 		let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
 	        if e.len() == 0 {false} else {true}
 	      })
+	      .scan(-2.0,
+	        |prio, t| {
+		  if *prio < t.priority {
+		    *prio = t.priority;
+		    Some(t)
+		  } else {
+		    None
+		  }
+		}
+	      )
 	      .collect();
 	    // there must be only one matching template
 	    if matching_template.len() > 1 {
@@ -1377,8 +1406,8 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 pub struct Template {
   pattern: Vec<Constructor>,
   body: Vec<Constructor>,
-  // priority
-  // mode
+  priority: f64,
+  mode: Option<String>,
 }
 
 /// # Static context

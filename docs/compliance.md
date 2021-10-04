@@ -61,13 +61,13 @@ Data type: xs:NOTATION|no|
 Functions|no|
 Map|no|
 Array|no|
-Document node|yes|roxmltree|\
-Element node|yes|roxmltree, json
-Attribute node|no|
+Document node|yes||\
+Element node|yes|
+Attribute node|yes|
 Namespace node|no|
-PI node|yes|roxmltree
-Comment node|yes|roxmltree
-Text node|yes|roxmltree, json
+PI node|yes|
+Comment node|yes|
+Text node|yes|
 Accessor|no|
 
 ## XPath
@@ -88,8 +88,8 @@ Path expression: steps|yes|
 Path expression: axes|partial|
 Axis: child|yes|
 Axis: self|yes|
-Axis: descendant|yes|roxmltree
-Axis: descendant-or-self|yes|roxmltree
+Axis: descendant|yes|
+Axis: descendant-or-self|yes|
 Axis: ancestor|yes|
 Axis: ancestor-or-self|yes|
 Axis: parent|yes|
