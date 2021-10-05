@@ -2125,6 +2125,107 @@ mod tests {
       assert_eq!(e[2].to_string(), "Default template");
     }
 
+    #[test]
+    fn template_builtin_1() {
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
+      d.add_child(r.as_any()).expect("unable to add child");
+      r.add_text_child("i1".to_string()).expect("unable to add text");
+      let l1 = t.new_element("Level1", None).expect("unable to create element");
+      r.add_child(l1.as_any()).expect("unable to add child");
+      r.add_text_child("i2".to_string()).expect("unable to add text");
+      let l2 = t.new_element("Level2", None).expect("unable to create element");
+      r.add_child(l2.as_any()).expect("unable to add child");
+      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let l3 = t.new_element("Level3", None).expect("unable to create element");
+      r.add_child(l3.as_any()).expect("unable to add child");
+      r.add_text_child("i4".to_string()).expect("unable to add text");
+
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let mut dc = DynamicContext::new(Some(&rd));
+
+      // Built-in constructor(s) for "document-node()|element()"
+      let built1 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Root],
+            ]
+	  )];
+      let builtpat1 = to_pattern(built1).expect("unable to convert to pattern");
+      // The constructor for the select expression is "child::node()"
+      let builtbody1 = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		vec![]
+	      )],
+	),
+      ];
+      dc.add_builtin_template(builtpat1, builtbody1, None, -1.0);
+      let built2 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let builtpat2 = to_pattern(built2).expect("unable to convert to pattern");
+      // The constructor for the select expression is "child::node()"
+      let builtbody2 = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		vec![]
+	      )],
+	),
+      ];
+      dc.add_builtin_template(builtpat2, builtbody2, None, -1.0);
+
+      // This builtin constructor is for "child::text()"
+      let built3 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::TextTest)},
+		vec![]
+	      )],
+            ]
+	  )];
+      let builtpat3 = to_pattern(built3).expect("unable to convert to pattern");
+      let builtbody3 = vec![Constructor::ContextItem];
+      dc.add_builtin_template(builtpat3, builtbody3, None, -0.5);
+
+      // This constructor is "child::Level2"
+      let cons2 = vec![Constructor::Path(
+	    vec![
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name("Level2".to_string()))})},
+		vec![]
+	      )],
+            ]
+	  )];
+      let pat2 = to_pattern(cons2).expect("unable to convert to pattern");
+      let body2 = vec![
+        Constructor::Literal(Value::String("I found a Level2".to_string())),
+      ];
+      dc.add_template(pat2, body2, None, 0.0);
+
+      let s = Rc::new(Item::Node(Rc::new(r)));
+      let u = dc.find_match(&s);
+      assert_eq!(u.len(), 1);
+
+      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 5);
+      assert_eq!(e[0].to_string(), "i1");
+      assert_eq!(e[1].to_string(), "i2");
+      assert_eq!(e[2].to_string(), "I found a Level2");
+      assert_eq!(e[3].to_string(), "i3");
+      assert_eq!(e[4].to_string(), "i4");
+    }
+
     // for-each, for-each-group
 
     #[test]

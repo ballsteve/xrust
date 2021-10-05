@@ -19,6 +19,7 @@ use std::cell::{RefCell, RefMut};
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence>>>,
   templates: Vec<Template>,
+  builtin_templates: Vec<Template>,	// TODO: use import precedence for builtins
   depth: RefCell<usize>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
@@ -34,6 +35,7 @@ impl<'a> DynamicContext<'a> {
     DynamicContext{
       vars: RefCell::new(HashMap::new()),
       templates: Vec::new(),
+      builtin_templates: Vec::new(),
       depth: RefCell::new(0),
       current_grouping_key: RefCell::new(vec![None]),
       current_group: RefCell::new(vec![None]),
@@ -51,30 +53,35 @@ impl<'a> DynamicContext<'a> {
   ) {
     self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
   }
+  /// Add a template to the set of builtin templates in the dynamic context. See above for arguments.
+  pub fn add_builtin_template(&mut self,
+    p: Vec<Constructor>,
+    b: Vec<Constructor>,
+    m: Option<String>,
+    pr: f64,
+  ) {
+    self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
+  }
   /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
   /// If no template is found, returns None.
   pub fn find_match(&self, i: &Rc<Item>) -> Vec<Constructor> {
-//    let r: Vec<Vec<Constructor>> = self.templates.iter()
-//      .filter(|t| item_matches(self, &t.pattern, i))
-//      .map(|t| t.body.clone())
-//      .collect();
-    let r: Vec<Vec<Constructor>> = self.templates.iter()
-      .scan(-2.0,
-        |prio, t| {
-	  if item_matches(self, &t.pattern, i) && *prio < t.priority {
-	    *prio = t.priority;
-	    Some(t.body.clone())
-	  } else {
-	    None
-	  }
-	}
-      )
-      .collect();
+    let r: Option<&Template> = self.templates.iter()
+      .filter(|t| item_matches(self, &t.pattern, i))
+      .reduce(|a, b| if a.priority < b.priority {b} else {a});
 
-    if r.len() != 0 {
-      r[0].clone()
+    if r.is_some() {
+      r.unwrap().body.clone()
     } else {
-      vec![]
+      // Try builtin templates
+      let s: Option<&Template> = self.builtin_templates.iter()
+        .filter(|t| item_matches(self, &t.pattern, i))
+	.reduce(|a, b| if a.priority < b.priority {b} else {a});
+
+      if s.is_some() {
+        s.unwrap().body.clone()
+      } else {
+        vec![]
+      }
     }
   }
 
@@ -686,20 +693,54 @@ fn evaluate_one(
 		}
 	      )
 	      .collect();
-	    // there must be only one matching template
+	    // there must be at most one matching template
 	    if matching_template.len() > 1 {
 	      //return Result::Err(Error{kind: ErrorKind::TypeError, message: "too many matching templates".to_string()})
 	      panic!("too many matching templates")
 	    }
-	    let mut u = matching_template.iter()
-	      .flat_map(|t| {
-		dc.incr_depth();
-		let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
-	    	dc.decr_depth();
-		rs
-	      })
-	      .collect::<Sequence>();
-	    acc.append(&mut u);
+	    // If no templates match then apply a built-in template
+	    // See XSLT 6.7.
+	    // TODO: use import precedence to implement this feature
+	    if matching_template.len() == 0 {
+	      let builtin_template: Vec<&Template> = dc.builtin_templates.iter()
+	        .filter(|t| {
+		  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
+	          if e.len() == 0 {false} else {true}
+	        })
+	        .scan(-2.0,
+	          |prio, t| {
+		    if *prio < t.priority {
+		      *prio = t.priority;
+		      Some(t)
+		    } else {
+		      None
+		    }
+		  }
+	        )
+	        .collect();
+	      if builtin_template.len() > 1 {
+	        panic!("too many matching builtin templates")
+	      }
+	      let mut u = builtin_template.iter()
+	        .flat_map(|t| {
+		  dc.incr_depth();
+		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	  dc.decr_depth();
+		  rs
+	        })
+	        .collect::<Sequence>();
+	      acc.append(&mut u);
+	    } else {
+	      let mut u = matching_template.iter()
+	        .flat_map(|t| {
+		  dc.incr_depth();
+		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	  dc.decr_depth();
+		  rs
+	        })
+	        .collect::<Sequence>();
+	      acc.append(&mut u);
+	    }
 	    acc
 	  }
         );

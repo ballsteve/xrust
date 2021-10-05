@@ -490,7 +490,7 @@ xsl:stylesheet/@xpath-default-namespace|no|
 xsl:template|yes|
 xsl:template/@match|yes|
 xsl:template/@name|no|
-xsl:template/@priority|no|
+xsl:template/@priority|yes|
 xsl:template/@mode|no|
 xsl:template/@as|no|
 xsl:template/@visibility|no|
