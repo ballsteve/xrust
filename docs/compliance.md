@@ -336,7 +336,7 @@ xsl:mode|no|
 xsl:mode/@name|no|
 xsl:mode/@streamable|no|
 xsl:mode/@use-accumulators|no|
-xsl:mode/@on-no-match|no|
+xsl:mode/@on-no-match|partial|text-only-copy is the default
 xsl:mode/@on-multiple-match|no|
 xsl:mode/@warning-on-no-match|no|
 xsl:mode/@warning-on-multiple-match|no|

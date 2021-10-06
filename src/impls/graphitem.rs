@@ -43,6 +43,7 @@ assert_eq!(seq.to_string(), "It works!");
 use std::rc::Rc;
 use std::cell::RefCell;
 use std::any::Any;
+use std::fs;
 use petgraph::stable_graph::StableGraph;
 use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
 use crate::item::*;
@@ -2961,5 +2962,40 @@ Level1
 four
 ----
 ")
+    }
+
+    // Test stripping whitespace with an empty XSL stylesheet
+    #[test]
+    fn xsl_empty() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      //let pwd = std::env::current_dir().expect("cannot get pwd");
+      //println!("pwd = {}", pwd.display());
+
+      let content = fs::read_to_string("tests/xml/test1.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/empty.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/txt/result1.txt")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_string())
     }
 }

@@ -42,6 +42,61 @@ pub fn from_document<'a>(
       vec![NodeTest::Name(NameTest{ns: Some(WildcardOrName::Name(XSLTNS.to_string())), prefix: Some("xsl".to_string()), name: Some(WildcardOrName::Name("text".to_string()))})]
     );
 
+    // Define the builtin templates
+    // See XSLT 6.7. This implements text-only-copy.
+    // TODO: Support deep-copy, shallow-copy, deep-skin, shallow-skip and fail
+
+    // This matches "/" and processes the root element
+    let bi1pat = to_pattern(
+      vec![Constructor::Path(
+	vec![
+          vec![Constructor::Root],
+        ]
+      )])
+      .expect("unable to convert pattern");
+    let bi1bod = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		vec![]
+	      )],
+	),
+      ];
+    dc.add_builtin_template(bi1pat, bi1bod, None, -1.0);
+    // This matches "*" and applies templates to all children
+    let bi2pat = to_pattern(
+      vec![Constructor::Path(
+	vec![
+          vec![Constructor::Step(
+	    NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})},
+	    vec![]
+	  )],
+        ]
+      )])
+      .expect("unable to convert pattern");
+    let bi2bod = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		vec![]
+	      )],
+	),
+      ];
+    dc.add_builtin_template(bi2pat, bi2bod, None, -1.0);
+    // This matches "text()" and copies content
+    let bi3pat = to_pattern(
+      vec![Constructor::Path(
+	vec![
+          vec![Constructor::Step(
+	    NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::TextTest)},
+	    vec![]
+	  )],
+        ]
+      )])
+      .expect("unable to convert pattern");
+    let bi3bod = vec![Constructor::ContextItem];
+    dc.add_builtin_template(bi3pat, bi3bod, None, -1.0);
+
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
