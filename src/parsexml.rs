@@ -19,6 +19,7 @@ use nom:: {
   bytes::complete::{tag, take_until},
   sequence::delimited,
 };
+use crate::qname::*;
 use crate::item::*;
 use crate::parsecommon::*;
 use crate::xdmerror::*;

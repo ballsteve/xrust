@@ -8,6 +8,7 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 
 use std::rc::Rc;
 use crate::xdmerror::*;
+use crate::qname::*;
 use crate::item::*;
 use crate::evaluate::*;
 use crate::xpath::*;
@@ -102,12 +103,14 @@ pub fn from_document<'a>(
     // * compile content into sequence constructor
     // * register template in dynamic context
     for t in root.children().iter()
+      //.inspect(|x| println!("checking {} node", x.node_type().to_string()))
       .filter(|c| c.is_element() &&
                   c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
-		  c.to_name().get_localname() == "template") {
-      match t.attribute("match") {
+		  c.to_name().get_localname() == "template")
+    {
+      match t.get_attribute(&QualifiedName::new(None, None, "match".to_string())) {
           Some(m) => {
-	    let n = m.clone();
+	    let n = m.clone().to_string();
 	    let a = parse(&n).expect("failed to parse match expression");
 	    let mut pat = to_pattern(a).expect("failed to compile match pattern");
 	    let mut body = t.children().iter()
@@ -117,8 +120,8 @@ pub fn from_document<'a>(
 	    static_analysis(&mut body, &sc);
 	    // Determine the priority of the template
 	    let prio;
-	    match t.attribute("priority") {
-	      Some(pr) => prio = pr.parse::<f64>().unwrap(), // TODO: better error handling
+	    match t.get_attribute(&QualifiedName::new(None, None, "priority".to_string())) {
+	      Some(pr) => prio = pr.to_string().parse::<f64>().unwrap(), // TODO: better error handling
 	      None => {
 	        // Calculate the default priority
 		// TODO: more work to be done interpreting XSLT 6.5
@@ -179,10 +182,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  Ok(Constructor::Literal(Value::String(n.to_string())))
 	}
 	(Some(XSLTNS), "apply-templates") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(sel) => {
 	      Ok(Constructor::ApplyTemplates(
-	        parse(&sel).expect("failed to compile select attribute")
+	        parse(&sel.to_string()).expect("failed to compile select attribute")
 	      ))
 	    }
 	    None => {
@@ -202,9 +205,9 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
         (Some(XSLTNS), "sequence") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
-	      let cons = parse(&s).expect("failed to compile select attribute");
+	      let cons = parse(&s.to_string()).expect("failed to compile select attribute");
 	      if cons.len() > 1 {
 	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "select attribute has more than one sequence constructor".to_string()})
 	      }
@@ -216,12 +219,12 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
 	(Some(XSLTNS), "if") => {
-	  match n.attribute("test") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "test".to_string())) {
 	    Some(t) => {
 	      Ok(
 	        Constructor::Switch(
 		  vec![
-		    parse(&t).expect("failed to compile test attribute"),
+		    parse(&t.to_string()).expect("failed to compile test attribute"),
 		    n.children().iter()
 		      .map(|d| to_constructor(d.clone()).expect("failed to compile test content"))
 		      .collect()
@@ -249,10 +252,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
       		    match (m.to_name().get_nsuri_ref(), m.to_name().get_localname().as_str()) {
         	      (Some(XSLTNS), "when") => {
 		        if otherwise.len() == 0 {
-			  match m.attribute("test") {
+			  match m.get_attribute(&QualifiedName::new(None, None, "test".to_string())) {
 			    Some(t) => {
 			      when.push(
-		    	        parse(&t).expect("failed to compile test attribute")
+		    	        parse(&t.to_string()).expect("failed to compile test attribute")
 			      );
 			      when.push(
 		    	        m.children().iter()
@@ -306,11 +309,11 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
 	(Some(XSLTNS), "for-each") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
 	      Ok(
 	        Constructor::ForEach(
-		  parse(&s).expect("failed to compile select attribute"),
+		  parse(&s.to_string()).expect("failed to compile select attribute"),
 		  n.children().iter()
 		    .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    .collect(),
@@ -324,28 +327,31 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
 	(Some(XSLTNS), "for-each-group") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
-	      match (n.attribute("group-by"), n.attribute("group-adjacent"), n.attribute("group-starting-with"), n.attribute("group-ending-with")) {
+	      match (n.get_attribute(&QualifiedName::new(None, None, "group-by".to_string())),
+	        n.get_attribute(&QualifiedName::new(None, None, "group-adjacent".to_string())),
+		n.get_attribute(&QualifiedName::new(None, None, "group-starting-with".to_string())),
+		n.get_attribute(&QualifiedName::new(None, None, "group-ending-with".to_string()))) {
 	        (Some(by), None, None, None) => {
 		  Ok(
 	            Constructor::ForEach(
-		      parse(&s).expect("failed to compile select attribute"),
+		      parse(&s.to_string()).expect("failed to compile select attribute"),
 		      n.children().iter()
 		        .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    	.collect(),
-		      Some(Grouping::By(parse(&by).expect("failed to compile group-by attribute"))),
+		      Some(Grouping::By(parse(&by.to_string()).expect("failed to compile group-by attribute"))),
 		    )
 	      	  )
 		}
 	        (None, Some(adj), None, None) => {
 		  Ok(
 	            Constructor::ForEach(
-		      parse(&s).expect("failed to compile select attribute"),
+		      parse(&s.to_string()).expect("failed to compile select attribute"),
 		      n.children().iter()
 		        .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    	.collect(),
-		      Some(Grouping::Adjacent(parse(&adj).expect("failed to compile group-adjacent attribute"))),
+		      Some(Grouping::Adjacent(parse(&adj.to_string()).expect("failed to compile group-adjacent attribute"))),
 		    )
 	      	  )
 		}
@@ -360,12 +366,21 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	    }
 	  }
 	}
+	(Some(XSLTNS), "copy") => {
+	  // TODO: handle select attribute
+	  Ok(Constructor::Copy(vec![],
+	    n.children().iter()
+	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
+	      .collect(),
+	  ))
+	}
 	(Some(XSLTNS), u) => {
 	  Ok(Constructor::NotImplemented(format!("unsupported XSL element \"{}\"", u)))
 	}
 	(_, a) => {
 	  // TODO: Handle qualified element name
-	  Ok(Constructor::LiteralElement(a.to_string(), "".to_string(), "".to_string(),
+	  Ok(Constructor::LiteralElement(
+	    QualifiedName::new(None, None, a.to_string()),
 	    n.children().iter()
 	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
 	      .collect(),
@@ -415,9 +430,9 @@ pub fn strip_source_document(
       _ => false,
     })
     .fold(vec![], |mut s, e| {
-      match e.attribute("elements") {
+      match e.get_attribute(&QualifiedName::new(None, None, "elements".to_string())) {
         Some(v) => {
-	  v.split_whitespace()
+	  v.to_string().split_whitespace()
 	    .for_each(|t| {
 	      s.push(NodeTest::from(t).expect("not a NodeTest"))
 	    })
@@ -433,9 +448,9 @@ pub fn strip_source_document(
       _ => false,
     })
     .fold(vec![], |mut s, e| {
-      match e.attribute("elements") {
+      match e.get_attribute(&QualifiedName::new(None, None, "elements".to_string())) {
         Some(v) => {
-	  v.split_whitespace()
+	  v.to_string().split_whitespace()
 	    .for_each(|t| {
 	      s.push(NodeTest::from(t).expect("not a NodeTest"))
 	    })

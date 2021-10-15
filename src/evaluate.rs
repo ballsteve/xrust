@@ -6,8 +6,9 @@
 
 use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
+use crate::qname::*;
 use crate::xdmerror::*;
-use crate::item::*;
+use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator};
 use decimal::d128;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
@@ -157,11 +158,10 @@ fn evaluate_one(
 	Ok(seq)
     }
     // This creates a Node in the current result document
-    Constructor::LiteralElement(n, _p, _ns, c) => {
+    Constructor::LiteralElement(n, c) => {
       let l = match dc.resultdoc {
         Some(doc) => {
-	  // TODO: namespace
-	  doc.new_element(n, None).expect("unable to create Node")
+	  doc.new_element(n.clone()).expect("unable to create Node")
 	}
 	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
@@ -173,17 +173,115 @@ fn evaluate_one(
 	    // Item could be a Node or text
 	    match **i {
 	      Item::Node(ref t) => {
-		l.add_child(t.as_any()).expect("unable to add child node");
+		l.append_child(t.as_any()).expect("unable to add child node");
 	      }
 	      _ => {
 	        // Values become a text node in the result tree
-		l.add_text_child(i.to_string()).expect("unable to add text child node");
+		l.append_text_child(Value::String(i.to_string())).expect("unable to add text child node");
 	      }
 	    }
 	  }
 	);
 
       Ok(vec![Rc::new(Item::Node(l))])
+    }
+    Constructor::Copy(i, c) => {
+      let orig = if i.is_empty() {
+        // Copy the context item
+	if ctxt.is_some() {
+	  &ctxt.as_ref().unwrap()[posn.unwrap()]
+	} else {
+	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	}
+      } else {
+        // Evaluate the expression and copy the resulting items
+	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
+      };
+
+      match **orig {
+	Item::Value(_) => {
+	  Ok(vec![orig.clone()])
+	}
+	Item::Node(ref n) => {
+	  let doc = match dc.resultdoc {
+	    Some(d) => d,
+	    None => {
+	      return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+	    }
+	  };
+	  match n.node_type() {
+	    NodeType::Element => {
+	      match doc.new_element(n.to_name()) {
+	        Ok(e) => {
+      		  // Add content to the new element
+      		  evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content").iter()
+        	    .for_each(|i| {
+	    	      // Item could be a Node or text
+	    	      match **i {
+	      	        Item::Node(ref t) => {
+			  e.append_child(t.as_any()).expect("unable to add child node");
+	      		}
+	      		_ => {
+	        	  // Values become a text node in the result tree
+			  e.append_text_child(Value::String(i.to_string()))
+			    .expect("unable to add text child node");
+	      		}
+	    	      }
+	  	    });
+		  Ok(vec![Rc::new(Item::Node(e))])
+		}
+		_ => {
+	  	  return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create element node".to_string()})
+		}
+	      }
+	    }
+	    NodeType::Text => {
+	      match doc.new_text(Value::String(n.to_string())) {
+	        Ok(m) => {
+      		  Ok(vec![Rc::new(Item::Node(m))])
+		}
+		_ => {
+	  	  return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create text node".to_string()})
+		}
+	      }
+	    }
+	    NodeType::Attribute => {
+	      // Supply dummy value on creation. Content of constructor will replace this value.
+	      match doc.new_attribute(n.to_name(), Value::String("".to_string())) {
+	        Ok(a) => {
+      		  // Set the value of the new attribute
+      		  evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content").iter()
+        	    .for_each(|i| {
+	    	      // Item could be a Node or text
+	    	      match **i {
+	      	        Item::Node(ref t) => {
+			  // TODO: cannot add an element to the value of the attribute
+			  a.set_value(Value::String(t.to_string()))
+	      		}
+			Item::Value(ref v) => {
+			  a.set_value(v.clone())
+			}
+	      		_ => {
+			  a.set_value(Value::String(i.to_string()))
+	      		}
+	    	      }
+	  	    });
+		  Ok(vec![Rc::new(Item::Node(a))])
+		}
+		_ => {
+	  	  return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create attribute node".to_string()})
+		}
+	      }
+	    }
+	    _ => {
+	      return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
+	    }
+	  }
+	}
+	_ => {
+	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not implemented".to_string()})
+	}
+      }
     }
     Constructor::ContextItem => {
       if ctxt.is_some() {
@@ -336,7 +434,7 @@ fn evaluate_one(
 	      }
 	      None => {
 	        // Try to navigate to the Document from the Node
-		match n.doc() {
+		match n.owner_document() {
 		  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
 		  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
 		}
@@ -452,7 +550,7 @@ fn evaluate_one(
 	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
 	      	      }
 	      	      None => {
-		        match n.doc() {
+		        match n.owner_document() {
 			  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
 			  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
 			}
@@ -904,8 +1002,10 @@ pub enum Constructor {
   Literal(Value),
   /// A literal element. This will become a node in the result tree.
   /// TODO: this may be merged with the Literal option in a later version.
-  /// Arguments are: element name, prefix, namespace and content
-  LiteralElement(String, String, String, Vec<Constructor>),
+  /// Arguments are: element name, content
+  LiteralElement(QualifiedName, Vec<Constructor>),
+  /// Construct a node by copying something. The first argument is what to copy; an empty vector selects the current item. The second argument constructs the content.
+  Copy(Vec<Constructor>, Vec<Constructor>),
   /// The context item from the dynamic context
   ContextItem,
   /// Logical OR. Each element of the outer vector is an operand.
@@ -1434,7 +1534,8 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 	  ])
 	}
         _ => {
-          Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
+          println!("have constructor:\n{}", format_constructor(&sc, 4));
+	  Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
         }
       }
     } else {
@@ -1816,13 +1917,14 @@ pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
 	static_analysis(s, sc);
 	static_analysis(t, sc);
       }
+      Constructor::Copy(_, c) |
+      Constructor::LiteralElement(_, c) => {
+	static_analysis(c, sc)
+      }
       Constructor::Literal(_) |
       Constructor::ContextItem |
       Constructor::Root |
       Constructor::NotImplemented(_) => {}
-      Constructor::LiteralElement(_, _, _, c) => {
-	static_analysis(c, sc)
-      }
     }
   }
 }
@@ -2324,8 +2426,13 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::Literal(l) => {
         format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
       }
-      Constructor::LiteralElement(n, _p, _ns, c) => {
-        format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", n.to_string(),
+      Constructor::LiteralElement(qn, c) => {
+        format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", qn.get_localname(),
+	  format_constructor(&c, i + 4),
+	  in=i)
+      }
+      Constructor::Copy(_sel, c) => {
+        format!("{:in$} Construct copy with content:\n{}", "",
 	  format_constructor(&c, i + 4),
 	  in=i)
       }

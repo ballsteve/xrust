@@ -45,8 +45,9 @@ use std::cell::RefCell;
 use std::any::Any;
 use std::fs;
 use petgraph::stable_graph::StableGraph;
+use crate::qname::QualifiedName;
 use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
-use crate::item::*;
+use crate::item::{SequenceTrait, Item, Value, Document, Node, NodeType};
 use crate::evaluate::*;
 use crate::xpath::*;
 use crate::xslt::*;
@@ -94,12 +95,15 @@ impl Document for XDMTree {
       None
     }
   }
-  fn new_element(&self, name: &str, _ns: Option<&str>) -> Result<Rc<dyn Node>, Error> {
+  fn new_element(&self, name: QualifiedName) -> Result<Rc<dyn Node>, Error> {
     // TODO: namespaces
-    Ok(Rc::new(get_doc_node(self).new_element(QualifiedName::new(None, None, name.to_string()))))
+    Ok(Rc::new(get_doc_node(self).new_element_node(name)))
   }
-  fn new_text(&self, c: &str) -> Result<Rc<dyn Node>, Error> {
-    Ok(Rc::new(get_doc_node(self).new_value(Value::String(c.to_string()))))
+  fn new_text(&self, c: Value) -> Result<Rc<dyn Node>, Error> {
+    Ok(Rc::new(get_doc_node(self).new_value_node(c)))
+  }
+  fn new_attribute(&self, name: QualifiedName, v: Value) -> Result<Rc<dyn Node>, Error> {
+    Ok(Rc::new(get_doc_node(self).new_attribute_node(name, v)))
   }
   fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error> {
     let n: &XDMTreeNode = match r.downcast_ref::<XDMTreeNode>() {
@@ -107,7 +111,7 @@ impl Document for XDMTree {
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "root element must be a XDMTreeNode".to_string()}),
     };
     // TODO: If the document already has a root element then remove it
-    get_doc_node(self).append_child(n.clone());
+    get_doc_node(self).append_child_node(n.clone()).expect("unable to append child node");
     Ok(())
   }
 }
@@ -138,7 +142,7 @@ impl Node for XDMTreeNode {
       TreeNodeType::Text(ref t) => {
         t.to_string()
       }
-      TreeNodeType::Attribute(ref v) => {
+      TreeNodeType::Attribute(_, ref v) => {
         v.to_string()
       }
     }
@@ -173,20 +177,19 @@ impl Node for XDMTreeNode {
       TreeNodeType::Document => {
         QualifiedName::new(None, None, "".to_string())
       }
-      TreeNodeType::Element(ref e) => {
-      	// TODO: namespaces
-	e.name.clone()
+      TreeNodeType::Element(ref qn) => {
+	qn.clone()
       }
       TreeNodeType::Text(_) => {
         QualifiedName::new(None, None, "".to_string())
       }
-      TreeNodeType::Attribute(_) => {
-        self.get_name()
+      TreeNodeType::Attribute(ref qn, _) => {
+        qn.clone()
       }
     }
   }
 
-  fn doc(&self) -> Option<Rc<dyn Document>> {
+  fn owner_document(&self) -> Option<Rc<dyn Document>> {
     Some(Rc::new(self.get_doc()))
   }
 
@@ -195,7 +198,7 @@ impl Node for XDMTreeNode {
       TreeNodeType::Document => NodeType::Document,
       TreeNodeType::Element(_) => NodeType::Element,
       TreeNodeType::Text(_) => NodeType::Text,
-      TreeNodeType::Attribute(_) => NodeType::Attribute,
+      TreeNodeType::Attribute(_, _) => NodeType::Attribute,
     }
   }
 
@@ -315,31 +318,54 @@ impl Node for XDMTreeNode {
     }
   }
 
-  // TODO
-  fn attribute(&self, name: &str) -> Option<String> {
-    self.get_attribute(QualifiedName::new(None, None, name.to_string()))
-      .map(|v| v.to_string())
+  fn set_value(&self, v: Value) {
+    self.node_value(v);
+  }
+
+  fn set_attribute(&self, name: QualifiedName, val: Value) {
+    if self.is_element() {
+      // if attribute already exists, remove it
+      match self.get_attribute_node(&name) {
+        Some(a) => a.remove().expect("unable to remove attribute"),
+        None => {}
+      }
+      self.add_attribute(self.new_attribute_node(name, val)).expect("unable to add attribute");
+    } else {} // since this is not an element, no effect
+  }
+  fn get_attribute(&self, name: &QualifiedName) -> Option<Value> {
+    if self.is_element() {
+      self.get_attribute(name)
+        .map(|v| v.clone())
+    } else {None}
+  }
+//  fn attribute_iter(&self) -> Self::AttributeIterator {
+//    self.attr_node_iter()
+//  }
+  fn attributes(&self) -> Vec<Rc<dyn Node>> {
+    let mut v: Vec<Rc<dyn Node>> = vec![];
+    self.attr_node_iter().for_each(|a| v.push(Rc::new(a)));
+    v
   }
 
   fn is_element(&self) -> bool {
     match self.get_doc().borrow()[self.get_index()] {
       TreeNodeType::Element(_) => true,
       TreeNodeType::Document |
-      TreeNodeType::Attribute(_) |
+      TreeNodeType::Attribute(_, _) |
       TreeNodeType::Text(_) => false,
     }
   }
 
-  fn add_child(&self, c: &dyn Any) -> Result<(), Error> {
+  fn append_child(&self, c: &dyn Any) -> Result<(), Error> {
     let e = match c.downcast_ref::<XDMTreeNode>() {
       Some(d) => d,
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "child node must be a XDMTreeNode".to_string()}),
     };
-    Ok(self.append_child(e.clone()))
+    Ok(self.append_child_node(e.clone()).expect("unable to append child"))
   }
-  fn add_text_child(&self, t: String) -> Result<(), Error> {
-    let t = self.new_value(Value::String(t));
-    self.append_child(t);
+  fn append_text_child(&self, t: Value) -> Result<(), Error> {
+    let t = self.new_value_node(t);
+    self.append_child_node(t).expect("unable to append child");
     Ok(())
   }
   fn remove(&self) -> Result<(), Error> {
@@ -380,8 +406,8 @@ mod tests {
     fn node() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r);
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
       Item::Node(Rc::new(d));
     }
 
@@ -389,8 +415,8 @@ mod tests {
     fn node_xml() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r);
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
       let i = Item::Node(Rc::new(d));
 
       assert!(i.to_xml() == "<Test/>" || i.to_xml() == "<Test></Test>")
@@ -400,10 +426,10 @@ mod tests {
     fn node_str() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      let u = d.new_value(Value::String("this is a test".to_string()));
-      r.append_child(u);
-      d.append_child(r);
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      let u = t.new_text(Value::String("this is a test".to_string())).expect("unable to create text");
+      r.append_child(u.as_any()).expect("unable to append child node");
+      d.append_child(r.as_any()).expect("unable to append child node");
       let i = Item::Node(Rc::new(d));
 
       assert_eq!(i.to_string(), "this is a test")
@@ -413,10 +439,10 @@ mod tests {
     fn doc_name() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      let u = d.new_value(Value::String("this is a test".to_string()));
-      r.append_child(u);
-      d.append_child(r);
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      let u = t.new_text(Value::String("this is a test".to_string())).expect("unable to create text");
+      r.append_child(u.as_any()).expect("unable to append child node");
+      d.append_child(r.as_any()).expect("unable to append child node");
       let i = Item::Node(Rc::new(d));
 
       assert_eq!(i.to_name().get_localname(), "")
@@ -425,11 +451,11 @@ mod tests {
     fn element_name() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      let u = d.new_value(Value::String("this is a test".to_string()));
-      r.append_child(u);
-      d.append_child(r.clone());
-      let i = Item::Node(Rc::new(r));
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      let u = t.new_text(Value::String("this is a test".to_string())).expect("unable to create text");
+      r.append_child(u.as_any()).expect("unable to append child node");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let i = Item::Node(r);
 
       assert_eq!(i.to_name().get_localname(), "Test")
     }
@@ -438,10 +464,10 @@ mod tests {
     fn new_element() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let n = t.new_element("Data", None).expect("unable to create element");
-      r.add_child(n.as_any()).expect("unable to add child");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let n = t.new_element(QualifiedName::new(None, None, "Data".to_string())).expect("unable to create element");
+      r.append_child(n.as_any()).expect("unable to add child");
 
       let e = Item::Document(Rc::new(t));
 
@@ -452,123 +478,113 @@ mod tests {
     fn new_value() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let n = t.new_element("Data", None).expect("unable to create element");
-      r.add_child(n.as_any()).expect("unable to add child");
-      n.add_text_child("this is a test".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let n = t.new_element(QualifiedName::new(None, None, "Data".to_string())).expect("unable to create element");
+      r.append_child(n.as_any()).expect("unable to add child");
+      n.append_text_child(Value::String("this is a test".to_string())).expect("unable to add text");
 
       let e = Item::Document(Rc::new(t));
 
       assert_eq!(e.to_xml(), "<Test><Data>this is a test</Data></Test>");
     }
 
-    #[test]
-    fn descend() {
+    // Setup source documents to test operations
+    fn setup_deep() -> Rc<dyn Node> {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      c3.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("this is a test".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      r.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child2".to_string())).expect("unable to create element");
+      c1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      c3.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("this is a test".to_string())).expect("unable to add text");
+      r
+    }
+    fn setup_broad() -> Rc<dyn Node> {
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      r.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child2".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      r.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      r.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      r.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
+      r
+    }
+
+    #[test]
+    fn descend() {
+      let r = setup_deep();
 
       assert_eq!(r.descendants().len(), 5);
     }
 
     #[test]
     fn ascend() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      c3.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("this is a test".to_string()).expect("unable to add text");
+      let r = setup_deep();
 
-      assert_eq!(c4.ancestors().len(), 4);
+      assert_eq!(r
+        .children().iter().nth(0).unwrap()
+	.children().iter().nth(0).unwrap()
+	.children().iter().nth(0).unwrap()
+	.children().iter().nth(0).unwrap()
+	.ancestors().len(),
+	4
+      );
     }
 
     #[test]
     fn siblings() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_broad();
 
-      assert_eq!(c1.following_siblings().len(), 3);
+      assert_eq!(r.children().iter().nth(0).unwrap()
+        .following_siblings().len(),
+	3
+      );
     }
 
     #[test]
     fn preceding_siblings() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_broad();
 
-      assert_eq!(c4.preceding_siblings().len(), 3);
+      assert_eq!(r.children().iter().last().unwrap()
+        .preceding_siblings().len(),
+	3
+      );
     }
 
     // Evaluation tests
 
     #[test]
     fn eval_root() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      c3.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("this is a test".to_string()).expect("unable to add text");
+      let r = setup_deep();
+      let c1v = r.children();
+      let c1 = c1v.iter().nth(0).unwrap();
+      let c2v = c1.children();
+      let c2 = c2v.iter().nth(0).unwrap();
+      let c4v = c2.children();
+      let c4 = c4v.iter().nth(0).unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Root];
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       if e.len() == 1 {
@@ -580,22 +596,7 @@ mod tests {
 
     #[test]
     fn eval_child_all() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_broad();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -615,7 +616,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4)
@@ -623,22 +624,7 @@ mod tests {
 
     #[test]
     fn eval_self_pos() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_deep();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -658,7 +644,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -667,23 +653,11 @@ mod tests {
 
     #[test]
     fn eval_self_neg() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
-      let uv = c1.children();
+      let r = setup_broad();
+      let uv = r.children();
+      let uv1 = uv.iter().nth(0).unwrap();
+      let vv = uv1.children();
+      let vv1 = vv.iter().nth(0).unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -703,7 +677,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(uv[0].clone()))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(vv1.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 0);
@@ -711,22 +685,9 @@ mod tests {
 
     #[test]
     fn eval_parent_any() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_deep();
+      let c1v = r.children();
+      let c1 = c1v.iter().nth(0).unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -744,7 +705,7 @@ mod tests {
 	  vec![]
 	)];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c1))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c1.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -753,22 +714,7 @@ mod tests {
 
     #[test]
     fn eval_descendant_1() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_deep();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -788,7 +734,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -796,22 +742,7 @@ mod tests {
 
     #[test]
     fn eval_descendantorself_1() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_deep();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -831,7 +762,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 5);
@@ -839,22 +770,15 @@ mod tests {
 
     #[test]
     fn eval_ancestor_1() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      c1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      c2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      c3.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_deep();
+      let c1v = r.children();
+      let c1 = c1v.iter().nth(0).unwrap();
+      let c2v = c1.children();
+      let c2 = c2v.iter().nth(0).unwrap();
+      let c3v = c2.children();
+      let c3 = c3v.iter().nth(0).unwrap();
+      let c4v = c3.children();
+      let c4 = c4v.iter().nth(0).unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -874,7 +798,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -882,22 +806,15 @@ mod tests {
 
     #[test]
     fn eval_ancestororself_1() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      c1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      c2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      c3.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_deep();
+      let c1v = r.children();
+      let c1 = c1v.iter().nth(0).unwrap();
+      let c2v = c1.children();
+      let c2 = c2v.iter().nth(0).unwrap();
+      let c3v = c2.children();
+      let c3 = c3v.iter().nth(0).unwrap();
+      let c4v = c3.children();
+      let c4 = c4v.iter().nth(0).unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -917,7 +834,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 5);
@@ -925,22 +842,9 @@ mod tests {
 
     #[test]
     fn eval_followingsibling_1() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_broad();
+      let c1v = r.children();
+      let c1 = c1v.iter().nth(0).unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -960,7 +864,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c1))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c1.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -968,22 +872,9 @@ mod tests {
 
     #[test]
     fn eval_precedingsibling_1() {
-      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
-      let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      r.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      r.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      r.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      r.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = setup_broad();
+      let c4v = r.children();
+      let c4 = c4v.iter().last().unwrap();
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1003,7 +894,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -1013,24 +904,24 @@ mod tests {
     fn eval_following_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child1", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1060,24 +951,24 @@ mod tests {
     fn eval_preceding_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1107,24 +998,24 @@ mod tests {
     fn eval_path_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1152,24 +1043,24 @@ mod tests {
     fn eval_nametest_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1184,7 +1075,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1194,24 +1085,24 @@ mod tests {
     fn eval_nametest_neg() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1226,7 +1117,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 0);
@@ -1236,27 +1127,24 @@ mod tests {
     fn eval_kindtest_element() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1272,7 +1160,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 2);
@@ -1281,27 +1169,27 @@ mod tests {
     fn eval_kindtest_text() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      r.append_text_child(Value::String("l1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("l2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
+      r.append_text_child(Value::String("end".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1317,7 +1205,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -1326,27 +1214,24 @@ mod tests {
     fn eval_kindtest_any() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1362,37 +1247,34 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
-      assert_eq!(e.len(), 5);
+      assert_eq!(e.len(), 2);
     }
 
     #[test]
     fn eval_predicate_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1413,7 +1295,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1422,27 +1304,24 @@ mod tests {
     fn eval_predicate_neg() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let c1 = t.new_element("Child1", None).expect("unable to create element");
-      c1.add_text_child("one".to_string()).expect("unable to add text");
-      l1.add_child(c1.as_any()).expect("unable to add child");
-      let c2 = t.new_element("Child2", None).expect("unable to create element");
-      c2.add_text_child("two".to_string()).expect("unable to add text");
-      l1.add_child(c2.as_any()).expect("unable to add child");
-      let c3 = t.new_element("Child3", None).expect("unable to create element");
-      c3.add_text_child("three".to_string()).expect("unable to add text");
-      l2.add_child(c3.as_any()).expect("unable to add child");
-      let c4 = t.new_element("Child4", None).expect("unable to create element");
-      l2.add_child(c4.as_any()).expect("unable to add child");
-      c4.add_text_child("four".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      let c1 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c1.append_text_child(Value::String("one".to_string())).expect("unable to add text");
+      l1.append_child(c1.as_any()).expect("unable to add child");
+      let c2 = t.new_element(QualifiedName::new(None, None, "Child1".to_string())).expect("unable to create element");
+      c2.append_text_child(Value::String("two".to_string())).expect("unable to add text");
+      l1.append_child(c2.as_any()).expect("unable to add child");
+      let c3 = t.new_element(QualifiedName::new(None, None, "Child3".to_string())).expect("unable to create element");
+      c3.append_text_child(Value::String("three".to_string())).expect("unable to add text");
+      l2.append_child(c3.as_any()).expect("unable to add child");
+      let c4 = t.new_element(QualifiedName::new(None, None, "Child4".to_string())).expect("unable to create element");
+      l2.append_child(c4.as_any()).expect("unable to add child");
+      c4.append_text_child(Value::String("four".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1463,7 +1342,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 0);
@@ -1475,15 +1354,15 @@ mod tests {
     fn eval_fncall_localname() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1496,7 +1375,7 @@ mod tests {
       	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1507,15 +1386,15 @@ mod tests {
     fn eval_fncall_name() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to create element");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1528,7 +1407,7 @@ mod tests {
       	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1542,15 +1421,15 @@ mod tests {
     fn pattern_1_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to create element");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1566,7 +1445,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(Rc::new(r)))), true);
+      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(r))), true);
     }
     // TODO: matching a text node should return false
 
@@ -1574,15 +1453,15 @@ mod tests {
     fn pattern_2_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to create element");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1598,21 +1477,21 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(Rc::new(r)))), true);
+      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(r))), true);
     }
     #[test]
     fn pattern_2_neg() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to create element");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1628,22 +1507,22 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(Rc::new(r)))), false);
+      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(r))), false);
     }
 
     #[test]
     fn pattern_3_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to create element");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1670,15 +1549,15 @@ mod tests {
     fn pattern_4_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.append_child(r.clone());
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to create element");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1705,17 +1584,17 @@ mod tests {
     fn pattern_4_neg() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let x = d.new_element(QualifiedName::new(None, None, "Root".to_string()));
-      d.append_child(x.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      x.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let x = t.new_element(QualifiedName::new(None, None, "Root".to_string())).expect("unable to create element");
+      d.append_child(x.as_any()).expect("unable to add child");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      x.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1743,17 +1622,17 @@ mod tests {
     fn pattern_5_pos() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let x = d.new_element(QualifiedName::new(None, None, "Root".to_string()));
-      d.append_child(x.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      x.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let x = t.new_element(QualifiedName::new(None, None, "Root".to_string())).expect("unable to create element");
+      d.append_child(x.as_any()).expect("unable to add child");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      x.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1772,17 +1651,17 @@ mod tests {
     fn pattern_5_neg() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let x = d.new_element(QualifiedName::new(None, None, "Root".to_string()));
-      d.append_child(x.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      x.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let x = t.new_element(QualifiedName::new(None, None, "Root".to_string())).expect("unable to create element");
+      d.append_child(x.as_any()).expect("unable to add child");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      x.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1804,25 +1683,25 @@ mod tests {
     fn literal_element_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
       let cons = vec![
-        Constructor::LiteralElement("New".to_string(), "".to_string(), "".to_string(), vec![]),
+        Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()), vec![]),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1836,24 +1715,24 @@ mod tests {
     fn literal_element_2() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
       let cons = vec![
-        Constructor::LiteralElement("New".to_string(), "".to_string(), "".to_string(),
+        Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string(),),
 	  vec![
-	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
 	      vec![
 	        Constructor::Literal(Value::String("Test text".to_string())),
 	      ]
@@ -1862,7 +1741,7 @@ mod tests {
 	),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1873,29 +1752,29 @@ mod tests {
     fn literal_element_3() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
 
       let cons = vec![
-        Constructor::LiteralElement("New".to_string(), "".to_string(), "".to_string(),
+        Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()),
 	  vec![
-	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
 	      vec![
 	        Constructor::Literal(Value::String("one".to_string())),
 	      ]
 	    ),
-	    Constructor::LiteralElement("Level1".to_string(), "".to_string(), "".to_string(),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
 	      vec![
 	        Constructor::Literal(Value::String("two".to_string())),
 	      ]
@@ -1904,7 +1783,7 @@ mod tests {
 	),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(Rc::new(r)))]), Some(0), &cons)
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1917,15 +1796,15 @@ mod tests {
     fn template_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -1946,7 +1825,7 @@ mod tests {
       ];
       dc.add_template(p, cons2, None, 0.0);
 
-      let s = Rc::new(Item::Node(Rc::new(r)));
+      let s = Rc::new(Item::Node(r));
       let u = dc.find_match(&s);
       assert_eq!(u.len(), 1);
 
@@ -1961,18 +1840,18 @@ mod tests {
     fn template_2() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let l3 = t.new_element("Level3", None).expect("unable to create element");
-      r.add_child(l3.as_any()).expect("unable to add child");
-      r.add_text_child("i4".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
+      let l3 = t.new_element(QualifiedName::new(None, None, "Level3".to_string())).expect("unable to create element");
+      r.append_child(l3.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i4".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -2029,7 +1908,7 @@ mod tests {
       ];
       dc.add_template(pat3, body3, None, 0.0);
 
-      let s = Rc::new(Item::Node(Rc::new(r)));
+      let s = Rc::new(Item::Node(r));
       let u = dc.find_match(&s);
       assert_eq!(u.len(), 1);
 
@@ -2045,18 +1924,18 @@ mod tests {
     fn template_prio_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let l3 = t.new_element("Level3", None).expect("unable to create element");
-      r.add_child(l3.as_any()).expect("unable to add child");
-      r.add_text_child("i4".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
+      let l3 = t.new_element(QualifiedName::new(None, None, "Level3".to_string())).expect("unable to create element");
+      r.append_child(l3.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i4".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -2113,7 +1992,7 @@ mod tests {
       ];
       dc.add_template(pat3, body3, None, 0.0);
 
-      let s = Rc::new(Item::Node(Rc::new(r)));
+      let s = Rc::new(Item::Node(r));
       let u = dc.find_match(&s);
       assert_eq!(u.len(), 1);
 
@@ -2130,18 +2009,18 @@ mod tests {
     fn template_builtin_1() {
       let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       let d = XDMTreeNode::new(t.clone());
-      let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-      d.add_child(r.as_any()).expect("unable to add child");
-      r.add_text_child("i1".to_string()).expect("unable to add text");
-      let l1 = t.new_element("Level1", None).expect("unable to create element");
-      r.add_child(l1.as_any()).expect("unable to add child");
-      r.add_text_child("i2".to_string()).expect("unable to add text");
-      let l2 = t.new_element("Level2", None).expect("unable to create element");
-      r.add_child(l2.as_any()).expect("unable to add child");
-      r.add_text_child("i3".to_string()).expect("unable to add text");
-      let l3 = t.new_element("Level3", None).expect("unable to create element");
-      r.add_child(l3.as_any()).expect("unable to add child");
-      r.add_text_child("i4".to_string()).expect("unable to add text");
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
+      let l3 = t.new_element(QualifiedName::new(None, None, "Level3".to_string())).expect("unable to create element");
+      r.append_child(l3.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i4".to_string())).expect("unable to add text");
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
@@ -2212,7 +2091,7 @@ mod tests {
       ];
       dc.add_template(pat2, body2, None, 0.0);
 
-      let s = Rc::new(Item::Node(Rc::new(r)));
+      let s = Rc::new(Item::Node(r));
       let u = dc.find_match(&s);
       assert_eq!(u.len(), 1);
 
@@ -2246,7 +2125,7 @@ mod tests {
 	    ),
 	  ],
 	  vec![
-	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Group".to_string()),
 	      vec![
 	        Constructor::Literal(Value::String("a group".to_string())),
 	      ]
@@ -2284,7 +2163,7 @@ mod tests {
 	    ),
 	  ],
 	  vec![
-	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Group".to_string()),
 	      vec![
 	        Constructor::Literal(Value::String("a group".to_string())),
 	      ]
@@ -2324,7 +2203,7 @@ mod tests {
 	    ),
 	  ],
 	  vec![
-	    Constructor::LiteralElement("Group".to_string(), "".to_string(), "".to_string(),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Group".to_string()),
 	      vec![
 	        Constructor::FunctionCall(
 		  Function::new("current-grouping-key".to_string(), vec![], Some(func_current_grouping_key)),
@@ -2382,9 +2261,11 @@ mod tests {
     fn xslt_literal_text() {
       let sc = StaticContext::new_with_xslt_builtins();
 
+      println!("parse source doc");
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
 
+      println!("parse stylesheet");
       let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'>Found the document</xsl:template>
 </xsl:stylesheet>").expect("unable to parse XML");
@@ -2393,6 +2274,7 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
+      println!("compile stylesheet");
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
@@ -2400,6 +2282,7 @@ mod tests {
       let t = dc.find_match(&isrc);
       assert!(t.len() >= 1);
 
+      println!("evaluate");
       let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "Found the document")
@@ -2969,9 +2852,6 @@ four
     fn xsl_empty() {
       let sc = StaticContext::new_with_xslt_builtins();
 
-      //let pwd = std::env::current_dir().expect("cannot get pwd");
-      //println!("pwd = {}", pwd.display());
-
       let content = fs::read_to_string("tests/xml/test1.xml")
         .expect("unable to read XML source");
       let src = from(content.trim()).expect("unable to parse XML");
@@ -2995,6 +2875,37 @@ four
 
       let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/txt/result1.txt")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_string())
+    }
+
+    #[test]
+    fn xsl_identity() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test2.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/identity.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result2.xml")
         .expect("unable to read expected result");
       assert_eq!(expected_result.trim(), seq.to_string())
     }

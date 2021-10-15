@@ -6,7 +6,8 @@ use std::collections::HashMap;
 use petgraph::stable_graph::*;
 use petgraph::Direction;
 use petgraph::visit::*;
-use crate::item::{Value, QualifiedName};
+use crate::qname::QualifiedName;
+use crate::item::Value;
 use crate::parsexml::*;
 use crate::xdmerror::*;
 
@@ -18,17 +19,14 @@ pub struct XDMTreeNode {
   n: NodeIndex,
 }
 
-pub struct ElementType {
-  pub name: QualifiedName,
-}
-
+#[derive(Clone)]
 pub enum NodeType {
   Document,
-  Element(ElementType),
+  Element(QualifiedName),
   Text(Value),
   // Comment(String),
   // PI(String, String),
-  Attribute(Value),
+  Attribute(QualifiedName, Value),
 }
 
 pub enum EdgeType {
@@ -37,7 +35,7 @@ pub enum EdgeType {
   Parent,
   NextSibling,
   PrecedingSibling,
-  Attribute(QualifiedName),
+  Attribute(QualifiedName),	// Attribute name is duplicated in both the edge and the node, since attributes are also nodes in their own right
 }
 
 impl XDMTreeNode {
@@ -69,21 +67,17 @@ impl XDMTreeNode {
   // Get the name for the node
   pub fn get_name(&self) -> QualifiedName {
     match self.g.borrow()[self.n] {
-      NodeType::Element(ref e) => e.name.clone(),
-      NodeType::Attribute(_) => {
-        // Find the edge to the parent
-	let mut result = QualifiedName::new(None, None, "".to_string());
-	self.g.borrow()
-	  .edges_directed(self.n, Direction::Incoming)
-	  .for_each(|e| match e.weight() {
-	    EdgeType::Attribute(qn) => {
-	      result = qn.clone();
-	    }
-	    _ => {}
-	  });
-	result
-      }
+      NodeType::Element(ref qn) => qn.clone(),
+      NodeType::Attribute(ref qn, _) => qn.clone(),
       _ => QualifiedName::new(None, None, "".to_string()),
+    }
+  }
+  // Get the value for the node
+  pub fn get_value(&self) -> Value {
+    match self.g.borrow()[self.n] {
+      NodeType::Text(ref v) => v.clone(),
+      NodeType::Attribute(_, ref v) => v.clone(),
+      _ => Value::String("".to_string()),
     }
   }
   pub fn child_iter(&self) -> Children {
@@ -125,16 +119,14 @@ impl XDMTreeNode {
     self.sibling_iter().last()
   }
 
-  pub fn new_element(&self, name: QualifiedName) -> XDMTreeNode {
+  pub fn new_element_node(&self, name: QualifiedName) -> XDMTreeNode {
     let r = self.get_doc_node();
     let mut b = self.g.borrow_mut();
-    let n: NodeIndex = b.add_node(NodeType::Element(ElementType{
-        name,
-      }));
+    let n: NodeIndex = b.add_node(NodeType::Element(name));
     b.add_edge(n, r.n, EdgeType::Document);
     XDMTreeNode{g: self.g.clone(), n: n}
   }
-  pub fn new_value(&self, v: Value) -> XDMTreeNode {
+  pub fn new_value_node(&self, v: Value) -> XDMTreeNode {
     let r = self.get_doc_node();
     let mut b = self.g.borrow_mut();
     let n: NodeIndex = b.add_node(NodeType::Text(v));
@@ -142,7 +134,26 @@ impl XDMTreeNode {
     XDMTreeNode{g: self.g.clone(), n: n}
   }
 
-  pub fn append_child(&self, child: XDMTreeNode) {
+  /// Set the value for a text, attribute, comment or PI node
+  pub fn node_value(&self, v: Value) {
+    match self.g.borrow()[self.n] {
+      NodeType::Attribute(ref qn, _) => {
+        self.g.borrow_mut().node_weight_mut(self.n).replace(&mut NodeType::Attribute(qn.clone(), v));
+      }
+      NodeType::Text(_) => {
+        self.g.borrow_mut().node_weight_mut(self.n).replace(&mut NodeType::Text(v));
+      }
+      _ => {}
+    }
+  }
+
+  pub fn append_child_node(&self, child: XDMTreeNode) -> Result<(), Error> {
+    // First, child must not be an attribute
+    match child.g.borrow()[child.n] {
+      NodeType::Attribute(_, _) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "cannot append an attribute node".to_string()}),
+      _ => {}
+    }
+
     // Are the two nodes in the same Graph?
     // If not, make a deep-copy of the child
     let nchild: XDMTreeNode;
@@ -151,12 +162,11 @@ impl XDMTreeNode {
     } else {
       match child.g.borrow()[child.n] {
         NodeType::Text(ref v) => {
-	  nchild = self.new_value(v.clone());
+	  nchild = self.new_value_node(v.clone());
 	}
 	_ => {
 	  // TODO
-	  println!("TODO: append element node from another graph");
-	  nchild = self.new_element(QualifiedName::new(None, None, "TODO".to_string()));
+	  nchild = self.new_element_node(QualifiedName::new(None, None, "TODO".to_string()));
 	}
       }
     }
@@ -183,9 +193,9 @@ impl XDMTreeNode {
       .for_each(|i| {
         let mut result = String::new();
 	match self.g.borrow()[i] {
-	    NodeType::Element(ref e) => {
+	    NodeType::Element(ref qn) => {
 	      result.push_str("element \"");
-	      result.push_str(e.name.get_localname().as_str());
+	      result.push_str(qn.get_localname().as_str());
 	      result.push_str("\"");
 	    }
 	    NodeType::Document => result.push_str("Document"),
@@ -207,39 +217,64 @@ impl XDMTreeNode {
 	b.add_edge(self.n, d, EdgeType::FirstChild);
       }
       _ => {}
-    }
+    };
+
+    Ok(())
   }
 
-  pub fn new_attribute(&self, name: QualifiedName, v: Value) -> XDMTreeNode {
+  // Creates an attribute type node, but not attached (yet) to an element
+  pub fn new_attribute_node(&self, name: QualifiedName, v: Value) -> XDMTreeNode {
     let r = self.get_doc_node();
     let mut b = self.g.borrow_mut();
-    let n: NodeIndex = b.add_node(NodeType::Attribute(v));
+    let n: NodeIndex = b.add_node(NodeType::Attribute(name, v));
 
     b.add_edge(n, r.n, EdgeType::Document);
 
-    b.add_edge(self.n, n, EdgeType::Attribute(name.clone()));
-    b.add_edge(n, self.n, EdgeType::Parent);
-
-    XDMTreeNode{g: self.g.clone(), n: n}
+    XDMTreeNode{
+      g: self.g.clone(),
+      n: n,
+    }
   }
-  pub fn get_attribute(&self, name: QualifiedName) -> Option<Value> {
+
+  // Attach an attribute node to an element
+  pub fn add_attribute(&self, a: XDMTreeNode) -> Result<(), Error> {
+    // The node must be an element node
+    match self.g.borrow()[self.n] {
+      NodeType::Element(_) => {}
+      _ => return Result::Err(Error{kind: ErrorKind::Unknown, message: "not an element".to_string()})
+    }
+
+    let mut b = self.g.borrow_mut();
+
+    match b[a.n] {
+      NodeType::Attribute(ref qn, _) => {
+        let newqn = qn.clone();
+	b.add_edge(self.n, a.n, EdgeType::Attribute(newqn));
+      }
+      _ => {}
+    }
+    b.add_edge(a.n, self.n, EdgeType::Parent);
+
+    Ok(())
+  }
+  pub fn get_attribute_node(&self, name: &QualifiedName) -> Option<XDMTreeNode> {
     let h = self.g.borrow();
     let a: Vec<Option<NodeIndex>> = h
       .edges_directed(self.n, Direction::Outgoing)
       .filter(|e| match e.weight() {
         EdgeType::Attribute(att) => {
-	      match (name.get_nsuri(), att.get_nsuri()) {
-	        (Some(namens), Some(attns)) => {
-		  // prefixed
-		  namens == attns &&
-		  name.get_localname() == att.get_localname()
-		}
-		(None, None) => {
-		  // unprefixed
-		  name.get_localname() == att.get_localname()
-		}
-		_ => false,
-	      }
+	  match (name.get_nsuri(), att.get_nsuri()) {
+	    (Some(namens), Some(attns)) => {
+	      // prefixed
+	      namens == attns &&
+	      name.get_localname() == att.get_localname()
+	    }
+	    (None, None) => {
+	      // unprefixed
+	      name.get_localname() == att.get_localname()
+	    }
+	    _ => false,
+	  }
 	}
 	_ => false,
       })
@@ -252,7 +287,7 @@ impl XDMTreeNode {
       match a[0] {
         Some(i) => {
 	  match &h[i] {
-	    NodeType::Attribute(v) => Some(v.clone()),
+	    NodeType::Attribute(_, _) => Some(XDMTreeNode{g: self.g.clone(), n: i}),
 	    _ => None,
 	  }
 	}
@@ -262,133 +297,77 @@ impl XDMTreeNode {
       None
     }
   }
+  pub fn get_attribute(&self, name: &QualifiedName) -> Option<Value> {
+    match self.get_attribute_node(name) {
+      Some(a) => {
+        match self.g.borrow()[a.n] {
+	  NodeType::Attribute(_, ref v) => Some(v.clone()),
+	  _ => None,
+	}
+      }
+      None => None,
+    }
+  }
+  pub fn attr_node_iter(&self) -> Box<Attributes> {
+    Box::new(Attributes::new(self.clone()))
+  }
 
   // Removes a node from the tree.
   pub fn remove_node(&self) {
     let parent = self.ancestor_iter().nth(0).unwrap();
-    //let mut h = self.g.borrow_mut();
-    // Remove all attributes
-    let mut attr: Option<(NodeIndex, EdgeIndex)> = None;
-    self.g.borrow().edges_directed(self.n, Direction::Outgoing)
-      .for_each(|e| {
-        match e.weight() {
-	  EdgeType::Attribute(_) => {
-	    attr = Some((e.target(), e.id()));
-	  }
-	  _ => {}
-	}
-      });
-    attr.map(|(t, e)| {
-      self.g.borrow_mut().remove_node(t);
-      self.g.borrow_mut().remove_edge(e);
-    });
 
-    // Remove children
-    self.child_iter()
-      .for_each(|c| c.remove_node());
-
-    // Remove and repoint siblings
-    let mut preceding: Option<(NodeIndex, EdgeIndex)> = None;
-    let mut following: Option<(NodeIndex, EdgeIndex)> = None;
-    self.g.borrow().edges_directed(self.n, Direction::Outgoing)
-      .for_each(|e| {
-        match e.weight() {
-	  EdgeType::PrecedingSibling => {
-	    preceding = Some((e.target(), e.id()));
-	  }
-	  EdgeType::NextSibling => {
-	    following = Some((e.target(), e.id()));
-	  }
-	  _ => {}
-	}
-      });
-    match (preceding, following) {
-      (Some((pre, preid)), Some((next, nextid))) => {
-        // In the middle: join the preceding to the following
-	self.g.borrow_mut().remove_edge(preid);
-	self.g.borrow_mut().remove_edge(nextid);
-	self.g.borrow_mut().add_edge(pre, next, EdgeType::NextSibling);
-	self.g.borrow_mut().add_edge(next, pre, EdgeType::PrecedingSibling);
-      }
-      (Some((pre, preid)), None) => {
-        // At the end of the line
-	self.g.borrow_mut().remove_edge(preid);
-	let mut edge: Option<EdgeIndex> = None;
-	self.g.borrow().edges_directed(pre, Direction::Outgoing)
-	  .for_each(|e| {
-	    match e.weight() {
-	      EdgeType::NextSibling => {
-	        edge = Some(e.id());
-	      }
-	      _ => {}
-	    }
-	  });
-	edge.map(|e| self.g.borrow_mut().remove_edge(e));
-      }
-      (None, Some((next, nextid))) => {
-        // First child
-	self.g.borrow_mut().remove_edge(nextid);
-	let mut edge: Option<EdgeIndex> = None;
-	self.g.borrow().edges_directed(next, Direction::Outgoing)
-	  .for_each(|e| {
-	    match e.weight() {
-	      EdgeType::PrecedingSibling => {
-	        edge = Some(e.id());
-	      }
-	      _ => {}
-	    }
-	  });
-	edge.map(|e| self.g.borrow_mut().remove_edge(e));
-    	// Remove parent's child edge
-	edge = None;
-	self.g.borrow().edges_directed(parent.n, Direction::Outgoing)
-	  .for_each(|e| {
-	    match e.weight() {
-	      EdgeType::FirstChild => {
-	        if e.target() == self.n {
-		  edge = Some(e.id());
-		}
-	      }
-	      _ => {}
-	    }
-	  });
-	edge.map(|e| self.g.borrow_mut().remove_edge(e));
-	// Repoint parent's child to sibling
-	self.g.borrow_mut().add_edge(parent.n, next, EdgeType::FirstChild);
-      }
-      (None, None) => {
-    	// Remove parent's child edge
-	let mut edge: Option<EdgeIndex> = None;
-	self.g.borrow().edges_directed(parent.n, Direction::Outgoing)
-	  .for_each(|e| {
-	    match e.weight() {
-	      EdgeType::FirstChild => {
-	        if e.target() == self.n {
-		  edge = Some(e.id());
-		}
-	      }
-	      _ => {}
-	    }
-	  });
-	edge.map(|e| self.g.borrow_mut().remove_edge(e));
-      }
-    }
-
-    // Remove parent edge
-    // Remove document edge
+    let nt: NodeType;
     {
-      let mut edge: Option<EdgeIndex> = None;
-      self.g.borrow().edges_directed(self.n, Direction::Outgoing)
-      .for_each(|e| {
-        match e.weight() {
-	  EdgeType::Document |
-	  EdgeType::Parent => {
-	    edge = Some(e.id());
-	  }
-	  _ => {}
+      nt = self.g.borrow()[self.n].clone();
+    }
+    match nt {
+      NodeType::Element(_) => {
+        // Remove all attributes
+	self.attr_node_iter()
+	  .for_each(|a| a.remove_node());
+
+    	// Remove children
+    	self.child_iter()
+      	  .for_each(|c| c.remove_node());
+
+    	// Remove and repoint siblings
+	remove_repoint_siblings(self.g.clone(), parent.n, self.n);
+
+    	// Remove parent edge
+    	// Remove document edge
+	remove_docparent(self.g.clone(), self.n);
+      }
+      NodeType::Attribute(_, _) => {
+	// Detach from the parent element (if any)
+    	let mut edges: Vec<EdgeIndex> = vec![];
+	{
+	  self.g.borrow().edges_directed(self.n, Direction::Incoming)
+	    .for_each(|e| {
+	      match e.weight() {
+	        EdgeType::Attribute(_) => {
+	          edges.push(e.id());
+	        }
+	      	EdgeType::Document |
+	      	EdgeType::Parent => {
+	          edges.push(e.id());
+	        }
+	        _ => {}
+	      }
+	    });
 	}
-      });
-      edge.map(|e| self.g.borrow_mut().remove_edge(e));
+	{
+	  let mut h = self.g.borrow_mut();
+	  edges.iter().for_each(|i| {h.remove_edge(*i);});
+	}
+      }
+      NodeType::Text(_) => {
+    	// Remove parent edge
+    	// Remove document edge
+	remove_docparent(self.g.clone(), self.n);
+	// repoint sibling edges
+	remove_repoint_siblings(self.g.clone(), parent.n, self.n);
+      }
+      _ => {}
     }
     // Remove node
     self.g.borrow_mut().remove_node(self.n);
@@ -397,51 +376,37 @@ impl XDMTreeNode {
   pub fn to_xml_int(&self) -> String {
     let h = self.g.borrow();
     match &h[self.n] {
-      NodeType::Element(e) => {
+      NodeType::Element(ref qn) => {
 	let mut ret: String = String::new();
       	ret.push_str("<");
-      	match e.name.get_prefix() {
+      	match qn.get_prefix() {
 	  Some(p) => {
 	    ret.push_str(p.as_str());
 	    ret.push(':');
 	  }
 	  _ => {},
 	}
-      	ret.push_str(e.name.get_localname().as_str());
+      	ret.push_str(qn.get_localname().as_str());
 	// TODO: don't emit namespace declaration if it is already declared in ancestor element
-	match e.name.get_nsuri_ref() {
+	match qn.get_nsuri_ref() {
 	  Some(uri) => {
 	    ret.push(' ');
 	    ret.push_str("xmlns:");
 	    // TODO: handle default namespace declaration
-	    ret.push_str(e.name.get_prefix().unwrap().as_str());
+	    ret.push_str(qn.get_prefix().unwrap().as_str());
 	    ret.push_str("='");
 	    ret.push_str(uri);
 	    ret.push_str("'");
 	  }
 	  None => {}
 	}
-	h.edges_directed(self.n, Direction::Outgoing)
-	  .for_each(|e| match e.weight() {
-	    EdgeType::Attribute(qn) => {
-		    ret.push(' ');
-		    ret.push_str(qn.to_string().as_str());
-		    ret.push_str("='");
-		    match h.edge_endpoints(e.id()) {
-		      Some((_, t)) => {
-		        match h[t] {
-		      	  NodeType::Attribute(ref v) => {
-		            // TODO: escape special characters
-			    ret.push_str(v.to_string().as_str())
-			  }
-		      	  _ => {} // shouldn't happen
-			}
-		      }
-		      None => {}
-		    };
-		    ret.push_str("'");
-	    }
-	    _ => {}
+	self.attr_node_iter()
+	  .for_each(|a| {
+	    ret.push(' ');
+	    ret.push_str(a.get_name().to_string().as_str());
+	    ret.push_str("='");
+	    ret.push_str(a.get_value().to_string().as_str());
+	    ret.push_str("'");
 	  });
       	ret.push_str(">");
       	self.child_iter().for_each(
@@ -450,14 +415,14 @@ impl XDMTreeNode {
 	  }
         );
       	ret.push_str("</");
-      	match e.name.get_prefix() {
+      	match qn.get_prefix() {
 	  Some(p) => {
 	    ret.push_str(p.as_str());
 	    ret.push(':');
 	  }
 	  _ => {},
 	}
-	ret.push_str(e.name.get_localname().as_str());
+	ret.push_str(qn.get_localname().as_str());
       	ret.push_str(">");
       	ret
       }
@@ -469,7 +434,143 @@ impl XDMTreeNode {
 	self.get_first_child()
 	  .map_or("".to_string(), |n| n.to_xml_int())
       }
-      NodeType::Attribute(_) => {"".to_string()} // these are handled in the element arm
+      NodeType::Attribute(_, _) => {"".to_string()} // these are handled in the element arm
+    }
+  }
+}
+
+fn remove_docparent(g: XDMTree, n: NodeIndex) {
+  let mut edge: Option<EdgeIndex> = None;
+  g.borrow().edges_directed(n, Direction::Outgoing)
+    .for_each(|e| {
+      match e.weight() {
+        EdgeType::Document |
+	EdgeType::Parent => {
+	  edge = Some(e.id());
+	}
+	_ => {}
+      }
+    });
+  edge.map(|e| g.borrow_mut().remove_edge(e));
+}
+fn remove_repoint_siblings(g: XDMTree, parent: NodeIndex, n: NodeIndex) {
+  let mut preceding: Option<(NodeIndex, EdgeIndex)> = None;
+  let mut following: Option<(NodeIndex, EdgeIndex)> = None;
+  g.borrow().edges_directed(n, Direction::Outgoing)
+    .for_each(|e| {
+      match e.weight() {
+        EdgeType::PrecedingSibling => {
+	  preceding = Some((e.target(), e.id()));
+	}
+	EdgeType::NextSibling => {
+	  following = Some((e.target(), e.id()));
+	}
+	_ => {}
+      }
+    });
+  match (preceding, following) {
+    (Some((pre, preid)), Some((next, nextid))) => {
+      // In the middle: join the preceding to the following
+      g.borrow_mut().remove_edge(preid);
+      g.borrow_mut().remove_edge(nextid);
+      g.borrow_mut().add_edge(pre, next, EdgeType::NextSibling);
+      g.borrow_mut().add_edge(next, pre, EdgeType::PrecedingSibling);
+    }
+    (Some((pre, preid)), None) => {
+      // At the end of the line
+      g.borrow_mut().remove_edge(preid);
+      let mut edge: Option<EdgeIndex> = None;
+      g.borrow().edges_directed(pre, Direction::Outgoing)
+	.for_each(|e| {
+	  match e.weight() {
+	    EdgeType::NextSibling => {
+	      edge = Some(e.id());
+	    }
+	    _ => {}
+	  }
+	});
+      edge.map(|e| g.borrow_mut().remove_edge(e));
+    }
+    (None, Some((next, nextid))) => {
+      // First child
+      g.borrow_mut().remove_edge(nextid);
+      let mut edge: Option<EdgeIndex> = None;
+      g.borrow().edges_directed(next, Direction::Outgoing)
+	.for_each(|e| {
+	  match e.weight() {
+	    EdgeType::PrecedingSibling => {
+	      edge = Some(e.id());
+	    }
+	    _ => {}
+	  }
+	});
+      edge.map(|e| g.borrow_mut().remove_edge(e));
+      // Remove parent's child edge
+      edge = None;
+      g.borrow().edges_directed(parent, Direction::Outgoing)
+	.for_each(|e| {
+	  match e.weight() {
+	    EdgeType::FirstChild => {
+	      if e.target() == n {
+	        edge = Some(e.id());
+	      }
+	    }
+	    _ => {}
+	  }
+	});
+      edge.map(|e| g.borrow_mut().remove_edge(e));
+      // Repoint parent's child to sibling
+      g.borrow_mut().add_edge(parent, next, EdgeType::FirstChild);
+    }
+    (None, None) => {
+      // Remove parent's child edge
+      let mut edge: Option<EdgeIndex> = None;
+      g.borrow().edges_directed(parent, Direction::Outgoing)
+	.for_each(|e| {
+	  match e.weight() {
+	    EdgeType::FirstChild => {
+	      if e.target() == n {
+	        edge = Some(e.id());
+	      }
+	    }
+	    _ => {}
+	  }
+	});
+      edge.map(|e| g.borrow_mut().remove_edge(e));
+    }
+  }
+}
+
+pub struct Attributes {
+  attrs: Vec<XDMTreeNode>,
+}
+
+impl Attributes {
+  pub fn new(parent: XDMTreeNode) -> Attributes {
+    // Find all of the attributes and store their indices
+    let mut a: Vec<XDMTreeNode> = vec![];
+    let h = parent.g.borrow();
+    h.edges_directed(parent.n, Direction::Outgoing)
+      .filter(|e| match e.weight() {
+        EdgeType::Attribute(_) => true,
+	_ => false,
+      })
+      .for_each(|e| match h.edge_endpoints(e.id()) {
+        Some((_, t)) => a.push(XDMTreeNode{g: parent.g.clone(), n: t}),
+	None => {}
+      });
+
+    Attributes{attrs: a}
+  }
+}
+
+impl Iterator for Attributes {
+  type Item = XDMTreeNode;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    match self.attrs.pop() {
+      Some(a) => Some(a),
+      None => None,
     }
   }
 }
@@ -705,14 +806,14 @@ fn parse_node(
         Some(p) => ns.get(&p),
 	None => None,
       };
-      let new = parent.new_element(
+      let new = parent.new_element_node(
         QualifiedName::new(
 	  newns.map(|m| m.clone()),
 	  n.get_prefix(),
 	  n.get_localname()
 	)
       );
-      parent.append_child(new.clone());
+      parent.append_child_node(new.clone()).expect("unable to append child node");
 
       a.iter()
         .for_each(|b| {
@@ -723,10 +824,10 @@ fn parse_node(
 		  if p == "xmlns" {
 		    // Don't add this: it is a namespace declaration
 	      	  } else {
-	            new.new_attribute(qn.clone(), v.clone());
+	            new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())).expect("unable to add attribute");
 	      	  }
 		}
-		_ => {new.new_attribute(qn.clone(), v.clone());}
+		_ => {new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())).expect("unable to add attribute")}
 	      }
 	    }
 	    _ => {}, // shouldn't happen
@@ -738,8 +839,8 @@ fn parse_node(
       });
     }
     XMLNode::Text(v) => {
-      let u = parent.new_value(v.clone());
-      parent.append_child(u);
+      let u = parent.new_value_node(v.clone());
+      parent.append_child_node(u).expect("unable to append child node");
     }
     _ => {
       // TODO: Not yet implemented
@@ -762,8 +863,8 @@ mod tests {
     fn new_element() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r);
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r).expect("unable to append child node");
 	assert_eq!(d.get_doc().borrow().node_count(), 2);
 	assert_eq!(d.to_xml_int(), "<Test></Test>");
     }
@@ -772,10 +873,10 @@ mod tests {
     fn new_value() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let u = d.new_value(Value::String("this is a test".to_string()));
-	r.append_child(u);
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let u = d.new_value_node(Value::String("this is a test".to_string()));
+	r.append_child_node(u).expect("unable to append child node");
 	assert_eq!(t.borrow().node_count(), 3);
 	assert_eq!(d.to_xml_int(), "<Test>this is a test</Test>");
     }
@@ -784,16 +885,16 @@ mod tests {
     fn multi_elements() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u1 = d.new_value(Value::String("one".to_string()));
-	c1.append_child(u1);
-	r.append_child(c1.clone());
-	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u2 = d.new_value(Value::String("two".to_string()));
-	c2.append_child(u2);
-	r.append_child(c2.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let c1 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u1 = d.new_value_node(Value::String("one".to_string()));
+	c1.append_child_node(u1).expect("unable to append child node");
+	r.append_child_node(c1.clone()).expect("unable to append child node");
+	let c2 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u2 = d.new_value_node(Value::String("two".to_string()));
+	c2.append_child_node(u2).expect("unable to append child node");
+	r.append_child_node(c2.clone()).expect("unable to append child node");
 	assert_eq!(t.borrow().node_count(), 6);
 	assert_eq!(d.to_xml_int(), "<Test><Data>one</Data><Data>two</Data></Test>");
     }
@@ -802,16 +903,16 @@ mod tests {
     fn children() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u1 = d.new_value(Value::String("one".to_string()));
-	c1.append_child(u1);
-	r.append_child(c1.clone());
-	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u2 = d.new_value(Value::String("two".to_string()));
-	c2.append_child(u2);
-	r.append_child(c2.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let c1 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u1 = d.new_value_node(Value::String("one".to_string()));
+	c1.append_child_node(u1).expect("unable to append child node");
+	r.append_child_node(c1.clone()).expect("unable to append child node");
+	let c2 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u2 = d.new_value_node(Value::String("two".to_string()));
+	c2.append_child_node(u2).expect("unable to append child node");
+	r.append_child_node(c2.clone()).expect("unable to append child node");
 
 	assert_eq!(r.child_iter().collect::<Vec<XDMTreeNode>>().len(), 2);
     }
@@ -819,14 +920,14 @@ mod tests {
     fn descend() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	r.append_child(c1.clone());
-	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	c1.append_child(c2.clone());
-	let c3 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	c2.append_child(c3.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let c1 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	r.append_child_node(c1.clone()).expect("unable to append child node");
+	let c2 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	c1.append_child_node(c2.clone()).expect("unable to append child node");
+	let c3 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	c2.append_child_node(c3.clone()).expect("unable to append child node");
 
 	assert_eq!(r.to_xml_int(), "<Test><Data><Data><Data></Data></Data></Data></Test>");
     }
@@ -835,16 +936,16 @@ mod tests {
     fn siblings() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u1 = d.new_value(Value::String("one".to_string()));
-	c1.append_child(u1);
-	r.append_child(c1.clone());
-	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u2 = d.new_value(Value::String("two".to_string()));
-	c2.append_child(u2);
-	r.append_child(c2.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let c1 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u1 = d.new_value_node(Value::String("one".to_string()));
+	c1.append_child_node(u1).expect("unable to append child node");
+	r.append_child_node(c1.clone()).expect("unable to append child node");
+	let c2 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u2 = d.new_value_node(Value::String("two".to_string()));
+	c2.append_child_node(u2).expect("unable to append child node");
+	r.append_child_node(c2.clone()).expect("unable to append child node");
 
 	assert_eq!(c1.sibling_iter().collect::<Vec<XDMTreeNode>>().len(), 1);
     }
@@ -853,16 +954,16 @@ mod tests {
     fn preceding_siblings() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u1 = d.new_value(Value::String("one".to_string()));
-	c1.append_child(u1);
-	r.append_child(c1.clone());
-	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u2 = d.new_value(Value::String("two".to_string()));
-	c2.append_child(u2);
-	r.append_child(c2.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let c1 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u1 = d.new_value_node(Value::String("one".to_string()));
+	c1.append_child_node(u1).expect("unable to append child node");
+	r.append_child_node(c1.clone()).expect("unable to append child node");
+	let c2 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u2 = d.new_value_node(Value::String("two".to_string()));
+	c2.append_child_node(u2).expect("unable to append child node");
+	r.append_child_node(c2.clone()).expect("unable to append child node");
 
 	assert_eq!(c2.preceding_sibling_iter().collect::<Vec<XDMTreeNode>>().len(), 1);
     }
@@ -871,16 +972,16 @@ mod tests {
     fn ancestors() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	let c1 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u1 = d.new_value(Value::String("one".to_string()));
-	c1.append_child(u1);
-	r.append_child(c1.clone());
-	let c2 = d.new_element(QualifiedName::new(None, None, "Data".to_string()));
-	let u2 = d.new_value(Value::String("two".to_string()));
-	c2.append_child(u2.clone());
-	r.append_child(c2.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	let c1 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u1 = d.new_value_node(Value::String("one".to_string()));
+	c1.append_child_node(u1).expect("unable to append child node");
+	r.append_child_node(c1.clone()).expect("unable to append child node");
+	let c2 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
+	let u2 = d.new_value_node(Value::String("two".to_string()));
+	c2.append_child_node(u2.clone()).expect("unable to append child node");
+	r.append_child_node(c2.clone()).expect("unable to append child node");
 
 	assert_eq!(u2.ancestor_iter().collect::<Vec<XDMTreeNode>>().len(), 2);
     }
@@ -889,12 +990,14 @@ mod tests {
     fn attribute() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	r.new_attribute(
-	  QualifiedName::new(None, None, "status".to_string()),
-	  Value::String("testing".to_string())
-	);
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	r.add_attribute(
+	  r.new_attribute_node(
+	    QualifiedName::new(None, None, "status".to_string()),
+	    Value::String("testing".to_string())
+	  )
+	).expect("unable to add attribute");
 
 	assert_eq!(d.to_xml_int(), "<Test status='testing'></Test>");
     }
@@ -903,14 +1006,48 @@ mod tests {
     fn get_attribute() {
         let t = Rc::new(RefCell::new(StableGraph::new()));
 	let d = XDMTreeNode::new(t.clone());
-	let r = d.new_element(QualifiedName::new(None, None, "Test".to_string()));
-	d.append_child(r.clone());
-	r.new_attribute(
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	r.add_attribute(
+	  r.new_attribute_node(
+	    QualifiedName::new(None, None, "status".to_string()),
+	    Value::String("testing".to_string())
+	  )
+	).expect("unable to add attribute");
+
+	assert_eq!(d.get_first_child().unwrap().get_attribute(&QualifiedName::new(None, None, "status".to_string())).unwrap().to_string(), "testing");
+    }
+
+    #[test]
+    fn attribute_iter() {
+        let t = Rc::new(RefCell::new(StableGraph::new()));
+	let d = XDMTreeNode::new(t.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	r.add_attribute(r.new_attribute_node(
 	  QualifiedName::new(None, None, "status".to_string()),
 	  Value::String("testing".to_string())
+	)).expect("unable to add attribute");
+	r.add_attribute(r.new_attribute_node(
+	  QualifiedName::new(None, None, "mode".to_string()),
+	  Value::String("test".to_string())
+	)).expect("unable to add attribute");
+	let mut atts = r.attr_node_iter();
+	let at1 = atts.next().unwrap();
+	assert!(
+	  at1.get_name().get_localname() == "status" ||
+	  at1.get_name().get_localname() == "mode"
+	);
+	let at2 = atts.next().unwrap();
+	assert!(
+	  at2.get_name().get_localname() == "status" ||
+	  at2.get_name().get_localname() == "mode"
 	);
 
-	assert_eq!(d.get_first_child().unwrap().get_attribute(QualifiedName::new(None, None, "status".to_string())).unwrap().to_string(), "testing");
+	match atts.next() {
+	  None => {}
+	  Some(_) => panic!("unexpected result")
+	}
     }
 
     // Parsing XML

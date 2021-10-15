@@ -126,6 +126,7 @@ Simple map operator: !|no|
 Arrow operator: =>|no|
 Unary expression|no|
 Comments|yes|
+Union|no|
 
 ## XPath Functions
 
@@ -216,7 +217,7 @@ xsl:comment/@select|no|
 xsl:context-item|no|
 xsl:context-item/@as|no|
 xsl:context-item/@use|no|
-xsl:copy|no|
+xsl:copy|yes|
 xsl:copy/@select|no|
 xsl:copy/@copy-namespaces|no|
 xsl:copy/@inherit-namespaces|no|
