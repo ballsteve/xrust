@@ -97,7 +97,7 @@ Axis: following|yes|
 Axis: following-sibling|yes|
 Axis: preceding|yes|
 Axis: preceding-sibling|yes|
-Axis: attribute|no|
+Axis: attribute|yes|
 Axis: namespace|no|
 Path expression: Node tests|yes|
 Path expression: Predicates within steps|yes|

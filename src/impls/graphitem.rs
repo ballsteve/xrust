@@ -713,6 +713,46 @@ mod tests {
     }
 
     #[test]
+    fn eval_attribute_all() {
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to append child node");
+      r.set_attribute(
+        QualifiedName::new(None, None, "test".to_string()),
+	Value::String("attribute test".to_string())
+      );
+      r.set_attribute(
+        QualifiedName::new(None, None, "class".to_string()),
+	Value::String("eval_test".to_string())
+      );
+
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+      // XPath == attribute::*
+      let cons = vec![Constructor::Step(
+	  NodeMatch{
+	    axis: Axis::Attribute,
+	    nodetest: NodeTest::Name(NameTest{
+	      ns: None,
+	      prefix: None,
+	      name: Some(WildcardOrName::Wildcard)
+	    })
+	  },
+	  vec![]
+	)];
+
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 2);
+      // NB. the order of attributes is undefined
+      assert_eq!(e[0].to_name().get_localname(), "test");
+      assert_eq!(e[1].to_name().get_localname(), "class");
+    }
+
+    #[test]
     fn eval_descendant_1() {
       let r = setup_deep();
 

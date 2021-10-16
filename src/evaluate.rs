@@ -500,7 +500,8 @@ fn evaluate_one(
 	        Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
 	      }
 	      Axis::Parent |
-	      Axis::Selfaxis => Ok(vec![]),
+	      Axis::Selfaxis |
+	      Axis::Attribute => Ok(vec![]),
 	      _ => {
 	        // Not yet implemented
 		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (document)".to_string()})
@@ -656,6 +657,13 @@ fn evaluate_one(
 		  .filter(|e| is_node_match(&nm.nodetest, &e))
 		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
 	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::Attribute => {
+		let attrs = n.attributes().iter()
+		  .inspect(|a| println!("processing attr {}", a.to_name().get_localname()))
+		  .filter(|c| is_node_match(&nm.nodetest, &c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+		Ok(predicates(dc, attrs, p))
 	      }
 	      Axis::SelfDocument => Ok(vec![]),
 	      _ => {
@@ -1102,7 +1110,8 @@ fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
   match nt {
     NodeTest::Name(t) => {
       match n.node_type() {
-        NodeType::Element => {
+        NodeType::Element |
+	NodeType::Attribute => {
       	  // TODO: namespaces
       	  match &t.name {
             Some(a) => {
