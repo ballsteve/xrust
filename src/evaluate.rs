@@ -191,6 +191,7 @@ fn evaluate_one(
 	if ctxt.is_some() {
 	  &ctxt.as_ref().unwrap()[posn.unwrap()]
 	} else {
+	  // TODO: evaluate the select expression to determine what is to be copied
 	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
 	}
       } else {
@@ -219,7 +220,16 @@ fn evaluate_one(
 	    	      // Item could be a Node or text
 	    	      match **i {
 	      	        Item::Node(ref t) => {
-			  e.append_child(t.as_any()).expect("unable to add child node");
+			  match t.node_type() {
+			    NodeType::Element |
+			    NodeType::Text => {
+			      e.append_child(t.as_any()).expect("unable to add child node");
+			    }
+			    NodeType::Attribute => {
+			      e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
+			    }
+			    _ => {} // TODO: work out what to do with documents, etc
+			  }
 	      		}
 	      		_ => {
 	        	  // Values become a text node in the result tree
@@ -246,26 +256,9 @@ fn evaluate_one(
 	      }
 	    }
 	    NodeType::Attribute => {
-	      // Supply dummy value on creation. Content of constructor will replace this value.
-	      match doc.new_attribute(n.to_name(), Value::String("".to_string())) {
+	      // TODO: add a 'to_value' method
+	      match doc.new_attribute(n.to_name(), Value::String(n.to_string())) {
 	        Ok(a) => {
-      		  // Set the value of the new attribute
-      		  evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content").iter()
-        	    .for_each(|i| {
-	    	      // Item could be a Node or text
-	    	      match **i {
-	      	        Item::Node(ref t) => {
-			  // TODO: cannot add an element to the value of the attribute
-			  a.set_value(Value::String(t.to_string()))
-	      		}
-			Item::Value(ref v) => {
-			  a.set_value(v.clone())
-			}
-	      		_ => {
-			  a.set_value(Value::String(i.to_string()))
-	      		}
-	    	      }
-	  	    });
 		  Ok(vec![Rc::new(Item::Node(a))])
 		}
 		_ => {
@@ -660,7 +653,6 @@ fn evaluate_one(
 	      }
 	      Axis::Attribute => {
 		let attrs = n.attributes().iter()
-		  .inspect(|a| println!("processing attr {}", a.to_name().get_localname()))
 		  .filter(|c| is_node_match(&nm.nodetest, &c))
 		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 		Ok(predicates(dc, attrs, p))
@@ -1543,7 +1535,6 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 	  ])
 	}
         _ => {
-          println!("have constructor:\n{}", format_constructor(&sc, 4));
 	  Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
         }
       }

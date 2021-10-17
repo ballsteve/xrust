@@ -441,6 +441,7 @@ pub trait Node: Any {
   /// Add a text node as a child.
   fn append_text_child(&self, t: Value) -> Result<(), Error>;
   // TODO: insert_before, replace_child
+  fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error>;
 
   /// Remove a node from its parent
   fn remove(&self) -> Result<(), Error>;

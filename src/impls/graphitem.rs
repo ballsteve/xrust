@@ -368,6 +368,14 @@ impl Node for XDMTreeNode {
     self.append_child_node(t).expect("unable to append child");
     Ok(())
   }
+  fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error> {
+    let e = match a.downcast_ref::<XDMTreeNode>() {
+      Some(d) => d,
+      None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "attribute node must be a XDMTreeNode".to_string()}),
+    };
+    self.add_attribute(e.clone()).expect("unable to add attribute");
+    Ok(())
+  }
   fn remove(&self) -> Result<(), Error> {
     self.remove_node();
     Ok(())
@@ -2301,11 +2309,9 @@ mod tests {
     fn xslt_literal_text() {
       let sc = StaticContext::new_with_xslt_builtins();
 
-      println!("parse source doc");
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
 
-      println!("parse stylesheet");
       let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'>Found the document</xsl:template>
 </xsl:stylesheet>").expect("unable to parse XML");
@@ -2314,7 +2320,6 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      println!("compile stylesheet");
       let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
@@ -2322,7 +2327,6 @@ mod tests {
       let t = dc.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      println!("evaluate");
       let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "Found the document")
@@ -2947,6 +2951,6 @@ four
       let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result2.xml")
         .expect("unable to read expected result");
-      assert_eq!(expected_result.trim(), seq.to_string())
+      assert_eq!(expected_result.trim(), seq.to_xml())
     }
 }
