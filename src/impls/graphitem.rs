@@ -47,7 +47,7 @@ use std::fs;
 use petgraph::stable_graph::StableGraph;
 use crate::qname::QualifiedName;
 use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
-use crate::item::{SequenceTrait, Item, Value, Document, Node, NodeType};
+use crate::item::{SequenceTrait, Item, Value, Document, Node, NodeType, OutputDefinition};
 use crate::evaluate::*;
 use crate::xpath::*;
 use crate::xslt::*;
@@ -59,6 +59,9 @@ impl Document for XDMTree {
   }
   fn to_xml(&self) -> String {
     get_doc_node(self).to_xml()
+  }
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    get_doc_node(self).to_xml_int(Some(od), 2)
   }
   fn to_json(&self) -> String {
     // TODO
@@ -148,7 +151,10 @@ impl Node for XDMTreeNode {
     }
   }
   fn to_xml(&self) -> String {
-    self.to_xml_int()
+    self.to_xml_int(None, 0)
+  }
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    self.to_xml_int(Some(od), 2)
   }
   fn to_json(&self) -> String {
     // TODO
@@ -2952,5 +2958,36 @@ four
       let expected_result = fs::read_to_string("tests/xml/result2.xml")
         .expect("unable to read expected result");
       assert_eq!(expected_result.trim(), seq.to_xml())
+    }
+
+    #[test]
+    fn xsl_pretty_print() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test3.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/pretty-print.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result3.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
     }
 }

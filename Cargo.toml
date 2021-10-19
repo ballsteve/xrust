@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "0.4.0"
+version = "0.5.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"

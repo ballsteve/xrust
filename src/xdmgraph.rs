@@ -7,7 +7,7 @@ use petgraph::stable_graph::*;
 use petgraph::Direction;
 use petgraph::visit::*;
 use crate::qname::QualifiedName;
-use crate::item::Value;
+use crate::item::{Value, OutputDefinition};
 use crate::parsexml::*;
 use crate::xdmerror::*;
 
@@ -373,7 +373,7 @@ impl XDMTreeNode {
     self.g.borrow_mut().remove_node(self.n);
   }
 
-  pub fn to_xml_int(&self) -> String {
+  pub fn to_xml_int(&self, od: Option<&OutputDefinition>, indent: usize) -> String {
     let h = self.g.borrow();
     match &h[self.n] {
       NodeType::Element(ref qn) => {
@@ -409,11 +409,42 @@ impl XDMTreeNode {
 	    ret.push_str("'");
 	  });
       	ret.push_str(">");
-      	self.child_iter().for_each(
+
+	// Content of the element.
+	// If the indent option is enabled, if no child is a text node then add spacing
+	let do_indent: bool = od.as_ref().map_or(
+	  false,
+	  |o| {
+	    if o.get_indent() {
+	      self.child_iter().fold(
+	        true,
+	        |a, c| {
+	          match &h[c.n] {
+	            NodeType::Text(_) => false,
+		    _ => a,
+	          }
+	        }
+	      )
+	    } else {
+	      false
+	    }
+	  }
+	);
+
+	self.child_iter().for_each(
           |c| {
-	    ret.push_str(c.to_xml_int().as_str());
+	    if do_indent {
+	      ret.push('\n');
+	      (0..indent).for_each(|_| ret.push(' '));
+	    };
+	    // TODO: parameterise the number of spaces to indent
+	    ret.push_str(c.to_xml_int(od, indent + 2).as_str());
 	  }
         );
+	if do_indent {
+	  ret.push('\n');
+	  (0..(indent - 2)).for_each(|_| ret.push(' '));
+	};
       	ret.push_str("</");
       	match qn.get_prefix() {
 	  Some(p) => {
@@ -432,7 +463,7 @@ impl XDMTreeNode {
       }
       NodeType::Document => {
 	self.get_first_child()
-	  .map_or("".to_string(), |n| n.to_xml_int())
+	  .map_or("".to_string(), |n| n.to_xml_int(od, indent))
       }
       NodeType::Attribute(_, _) => {"".to_string()} // these are handled in the element arm
     }
@@ -866,7 +897,7 @@ mod tests {
 	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
 	d.append_child_node(r).expect("unable to append child node");
 	assert_eq!(d.get_doc().borrow().node_count(), 2);
-	assert_eq!(d.to_xml_int(), "<Test></Test>");
+	assert_eq!(d.to_xml_int(None, 0), "<Test></Test>");
     }
 
     #[test]
@@ -878,7 +909,7 @@ mod tests {
 	let u = d.new_value_node(Value::String("this is a test".to_string()));
 	r.append_child_node(u).expect("unable to append child node");
 	assert_eq!(t.borrow().node_count(), 3);
-	assert_eq!(d.to_xml_int(), "<Test>this is a test</Test>");
+	assert_eq!(d.to_xml_int(None, 0), "<Test>this is a test</Test>");
     }
 
     #[test]
@@ -896,7 +927,7 @@ mod tests {
 	c2.append_child_node(u2).expect("unable to append child node");
 	r.append_child_node(c2.clone()).expect("unable to append child node");
 	assert_eq!(t.borrow().node_count(), 6);
-	assert_eq!(d.to_xml_int(), "<Test><Data>one</Data><Data>two</Data></Test>");
+	assert_eq!(d.to_xml_int(None, 0), "<Test><Data>one</Data><Data>two</Data></Test>");
     }
 
     #[test]
@@ -929,7 +960,7 @@ mod tests {
 	let c3 = d.new_element_node(QualifiedName::new(None, None, "Data".to_string()));
 	c2.append_child_node(c3.clone()).expect("unable to append child node");
 
-	assert_eq!(r.to_xml_int(), "<Test><Data><Data><Data></Data></Data></Data></Test>");
+	assert_eq!(r.to_xml_int(None, 0), "<Test><Data><Data><Data></Data></Data></Data></Test>");
     }
 
     #[test]
@@ -999,7 +1030,7 @@ mod tests {
 	  )
 	).expect("unable to add attribute");
 
-	assert_eq!(d.to_xml_int(), "<Test status='testing'></Test>");
+	assert_eq!(d.to_xml_int(None, 0), "<Test status='testing'></Test>");
     }
 
     #[test]
@@ -1058,7 +1089,7 @@ mod tests {
 
       let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
       assert_eq!(c.len(), 1);
-      assert_eq!(c[0].to_xml_int(), "<Test></Test>");
+      assert_eq!(c[0].to_xml_int(None, 0), "<Test></Test>");
     }
 
     #[test]
@@ -1067,7 +1098,7 @@ mod tests {
 
       let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
       assert_eq!(c.len(), 1);
-      assert_eq!(c[0].to_xml_int(), "<x:Test xmlns:x='urn:my-test'></x:Test>");
+      assert_eq!(c[0].to_xml_int(None, 0), "<x:Test xmlns:x='urn:my-test'></x:Test>");
     }
 
     #[test]
@@ -1076,7 +1107,7 @@ mod tests {
 
       let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
       assert_eq!(c.len(), 1);
-      assert_eq!(c[0].to_xml_int(), "<Test>foobar</Test>");
+      assert_eq!(c[0].to_xml_int(None, 0), "<Test>foobar</Test>");
     }
 
     #[test]
@@ -1085,8 +1116,8 @@ mod tests {
 
       let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
       assert_eq!(c.len(), 1);
-      assert!(c[0].to_xml_int() == "<Test><a/><b/><c/></Test>" ||
-        c[0].to_xml_int() == "<Test><a></a><b></b><c></c></Test>"
+      assert!(c[0].to_xml_int(None, 0) == "<Test><a/><b/><c/></Test>" ||
+        c[0].to_xml_int(None, 0) == "<Test><a></a><b></b><c></c></Test>"
       );
     }
 
@@ -1096,7 +1127,7 @@ mod tests {
 
       let c = r.child_iter().collect::<Vec<XDMTreeNode>>();
       assert_eq!(c.len(), 1);
-      assert_eq!(c[0].to_xml_int(), "<Test>i1<child>one</child>i2<child>two</child>i3</Test>");
+      assert_eq!(c[0].to_xml_int(None, 0), "<Test>i1<child>one</child>i2<child>two</child>i3</Test>");
     }
 
     // Change structure
@@ -1106,7 +1137,7 @@ mod tests {
       let r = from("<Test><a><b/></a></Test>").expect("unable to parse XML");
       let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
       c.remove_node();
-      assert_eq!(r.to_xml_int(), "<Test><a></a></Test>");
+      assert_eq!(r.to_xml_int(None, 0), "<Test><a></a></Test>");
     }
 
     #[test]
@@ -1114,7 +1145,7 @@ mod tests {
       let r = from("<Test><a><b att1='val1'/></a></Test>").expect("unable to parse XML");
       let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
       c.remove_node();
-      assert_eq!(r.to_xml_int(), "<Test><a></a></Test>");
+      assert_eq!(r.to_xml_int(None, 0), "<Test><a></a></Test>");
     }
 
     #[test]
@@ -1122,7 +1153,7 @@ mod tests {
       let r = from("<Test><a><b><c/></b></a></Test>").expect("unable to parse XML");
       let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
       c.remove_node();
-      assert_eq!(r.to_xml_int(), "<Test><a></a></Test>");
+      assert_eq!(r.to_xml_int(None, 0), "<Test><a></a></Test>");
     }
 
     #[test]
@@ -1130,7 +1161,7 @@ mod tests {
       let r = from("<Test><a><b/><c/></a></Test>").expect("unable to parse XML");
       let c = r.get_first_child().unwrap().get_first_child().unwrap().get_first_child().unwrap();
       c.remove_node();
-      assert_eq!(r.to_xml_int(), "<Test><a><c></c></a></Test>");
+      assert_eq!(r.to_xml_int(None, 0), "<Test><a><c></c></a></Test>");
     }
 
     #[test]
@@ -1138,7 +1169,7 @@ mod tests {
       let r = from("<Test><a><p/><b/></a></Test>").expect("unable to parse XML");
       let c = r.get_first_child().unwrap().get_first_child().unwrap().child_iter().nth(1).unwrap();
       c.remove_node();
-      assert_eq!(r.to_xml_int(), "<Test><a><p></p></a></Test>");
+      assert_eq!(r.to_xml_int(None, 0), "<Test><a><p></p></a></Test>");
     }
 
     #[test]
@@ -1146,6 +1177,6 @@ mod tests {
       let r = from("<Test><a><p/><b/><c/></a></Test>").expect("unable to parse XML");
       let c = r.get_first_child().unwrap().get_first_child().unwrap().child_iter().nth(1).unwrap();
       c.remove_node();
-      assert_eq!(r.to_xml_int(), "<Test><a><p></p><c></c></a></Test>");
+      assert_eq!(r.to_xml_int(None, 0), "<Test><a><p></p><c></c></a></Test>");
     }
 }

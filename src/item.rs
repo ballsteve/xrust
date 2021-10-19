@@ -25,6 +25,8 @@ pub trait SequenceTrait {
   fn to_string(&self) -> String;
   /// Return a XML formatted representation of the [Sequence].
   fn to_xml(&self) -> String;
+  /// Return a XML formatted representation of the [Sequence], controlled by the supplied output definition.
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
   /// Return a JSON formatted representation of the [Sequence].
   fn to_json(&self) -> String;
   /// Return the Effective Boolean Value of the [Sequence].
@@ -55,6 +57,14 @@ impl SequenceTrait for Sequence {
     let mut r = String::new();
     for i in self {
       r.push_str(i.to_xml().as_str())
+    }
+    r
+  }
+  /// Renders the Sequence as XML
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    let mut r = String::new();
+    for i in self {
+      r.push_str(i.to_xml_with_options(od).as_str())
     }
     r
   }
@@ -183,6 +193,15 @@ impl Item {
       Item::Value(v) => v.to_string(),
     }
   }
+  /// Serialize as XML, with options
+  pub fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    match self {
+      Item::Document(d) => d.to_xml_with_options(od),
+      Item::Node(n) => n.to_xml_with_options(od),
+      Item::Function => "".to_string(),
+      Item::Value(v) => v.to_string(),
+    }
+  }
   /// Serialize as JSON
   pub fn to_json(&self) -> String {
     match self {
@@ -303,6 +322,8 @@ pub trait Document {
   fn to_string(&self) -> String;
   /// Serialize as XML
   fn to_xml(&self) -> String;
+  /// Serialize as XML, with options
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
   /// Serialize as JSON
   fn to_json(&self) -> String;
   /// Determine the effective boolean value. See XPath 2.4.3.
@@ -355,6 +376,8 @@ pub trait Node: Any {
   fn to_string(&self) -> String;
   /// Serialize as XML
   fn to_xml(&self) -> String;
+  /// Serialize as XML, with options
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
   /// Serialize as JSON
   fn to_json(&self) -> String;
   /// Determine the effective boolean value. See XPath 2.4.3.
@@ -977,6 +1000,35 @@ impl Clone for NormalizedString {
     fn clone(&self) -> Self {
         NormalizedString::new(&self.value.clone()).expect("unable to clone NormalizedString")
     }
+}
+
+/// An output definition. See XSLT v3.0 26 Serialization
+#[derive(Clone)]
+pub struct OutputDefinition {
+  name: Option<QualifiedName>,	// TODO: EQName
+  indent: bool,
+  // TODO: all the other myriad output parameters
+}
+
+impl OutputDefinition {
+  pub fn new() -> OutputDefinition {
+    OutputDefinition{name: None, indent: false}
+  }
+  pub fn get_name(&self) -> Option<QualifiedName> {
+    self.name.clone()
+  }
+  pub fn set_name(&mut self, name: Option<QualifiedName>) {
+    match name {
+      Some(n) => {self.name.replace(n);},
+      None => {self.name = None;},
+    }
+  }
+  pub fn get_indent(&self) -> bool {
+    self.indent
+  }
+  pub fn set_indent(&mut self, ind: bool) {
+    self.indent = ind;
+  }
 }
 
 #[cfg(test)]

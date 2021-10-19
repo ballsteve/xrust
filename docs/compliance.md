@@ -385,7 +385,7 @@ xsl:output/@encoding|no|
 xsl:output/@escape-uri-attributes|no|
 xsl:output/@html-version|no|
 xsl:output/@include-content-type|no|
-xsl:output/@indent|no|
+xsl:output/@indent|yes|
 xsl:output/@item-separator|no|
 xsl:output/@json-node-output-method|no|
 xsl:output/@media-type|no|

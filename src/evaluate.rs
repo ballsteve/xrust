@@ -8,7 +8,7 @@ use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
 use crate::qname::*;
 use crate::xdmerror::*;
-use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator};
+use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator, OutputDefinition};
 use decimal::d128;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
@@ -28,6 +28,7 @@ pub struct DynamicContext<'a> {
   // TODO: accept a closure that is a 'Document factory'
   //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
   resultdoc: Option<&'a dyn Document>,
+  od: OutputDefinition,	// Output definition for the final result tree
 }
 
 impl<'a> DynamicContext<'a> {
@@ -42,6 +43,7 @@ impl<'a> DynamicContext<'a> {
       current_group: RefCell::new(vec![None]),
       doc: None,
       resultdoc: resultdoc,
+      od: OutputDefinition::new(),
     }
   }
 
@@ -111,6 +113,13 @@ impl<'a> DynamicContext<'a> {
   pub fn decr_depth(&self) {
     let cur = *self.depth.borrow();
     self.depth.replace(cur - 1);
+  }
+  // TODO: return borrowed/reference
+  pub fn get_output_definition(&self) -> OutputDefinition {
+    self.od.clone()
+  }
+  pub fn set_output_definition(&mut self, od: OutputDefinition) {
+    self.od = od;
   }
 
   // Printout templates, for debugging.

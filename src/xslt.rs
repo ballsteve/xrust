@@ -98,6 +98,28 @@ pub fn from_document<'a>(
     let bi3bod = vec![Constructor::ContextItem];
     dc.add_builtin_template(bi3pat, bi3bod, None, -1.0);
 
+    // Setup the serialization of the primary result document
+    for o in root.children().iter()
+      .filter(|c| c.is_element() &&
+		  c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
+		  c.to_name().get_localname() == "output") {
+      match o.get_attribute(&QualifiedName::new(None, None, "indent".to_string())) {
+        Some(i) => {
+	  let b: bool = match i.to_string().as_str() {
+	    "yes" |
+	    "true" |
+	    "1" => true,
+	    _ => false,
+	  };
+
+      	  let mut od = OutputDefinition::new();
+      	  od.set_indent(b);
+      	  dc.set_output_definition(od);
+	}
+	None => {}
+      };
+    };
+
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
