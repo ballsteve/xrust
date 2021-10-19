@@ -10,6 +10,7 @@ use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
 use decimal;
+use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// In XPath, the Sequence is the fundamental data structure.
@@ -24,6 +25,8 @@ pub trait SequenceTrait {
   fn to_string(&self) -> String;
   /// Return a XML formatted representation of the [Sequence].
   fn to_xml(&self) -> String;
+  /// Return a XML formatted representation of the [Sequence], controlled by the supplied output definition.
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
   /// Return a JSON formatted representation of the [Sequence].
   fn to_json(&self) -> String;
   /// Return the Effective Boolean Value of the [Sequence].
@@ -54,6 +57,14 @@ impl SequenceTrait for Sequence {
     let mut r = String::new();
     for i in self {
       r.push_str(i.to_xml().as_str())
+    }
+    r
+  }
+  /// Renders the Sequence as XML
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    let mut r = String::new();
+    for i in self {
+      r.push_str(i.to_xml_with_options(od).as_str())
     }
     r
   }
@@ -182,6 +193,15 @@ impl Item {
       Item::Value(v) => v.to_string(),
     }
   }
+  /// Serialize as XML, with options
+  pub fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    match self {
+      Item::Document(d) => d.to_xml_with_options(od),
+      Item::Node(n) => n.to_xml_with_options(od),
+      Item::Function => "".to_string(),
+      Item::Value(v) => v.to_string(),
+    }
+  }
   /// Serialize as JSON
   pub fn to_json(&self) -> String {
     match self {
@@ -302,6 +322,8 @@ pub trait Document {
   fn to_string(&self) -> String;
   /// Serialize as XML
   fn to_xml(&self) -> String;
+  /// Serialize as XML, with options
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
   /// Serialize as JSON
   fn to_json(&self) -> String;
   /// Determine the effective boolean value. See XPath 2.4.3.
@@ -332,9 +354,12 @@ pub trait Document {
   fn get_root_element(&self) -> Option<Rc<dyn Node>>;
 
   /// Create an element Node in the Document.
-  fn new_element(&self, name: &str, ns: Option<&str>) -> Result<Rc<dyn Node>, Error>;
+  fn new_element(&self, name: QualifiedName) -> Result<Rc<dyn Node>, Error>;
   /// Create a text Node in the Document.
-  fn new_text(&self, c: &str) -> Result<Rc<dyn Node>, Error>;
+  fn new_text(&self, c: Value) -> Result<Rc<dyn Node>, Error>;
+  /// Create an attribute Node in the Document.
+  fn new_attribute(&self, name: QualifiedName, v: Value) -> Result<Rc<dyn Node>, Error>;
+  // TODO: new_comment, new_PI
   /// Insert the root element in the Document. NB. If the element supplied is of a different concrete type to the Document then this will likely result in an error.
   fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error>;
 }
@@ -351,6 +376,8 @@ pub trait Node: Any {
   fn to_string(&self) -> String;
   /// Serialize as XML
   fn to_xml(&self) -> String;
+  /// Serialize as XML, with options
+  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
   /// Serialize as JSON
   fn to_json(&self) -> String;
   /// Determine the effective boolean value. See XPath 2.4.3.
@@ -365,7 +392,7 @@ pub trait Node: Any {
   /// Gives the name of the node. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
   fn to_name(&self) -> QualifiedName;
   /// Navigate to the [Document]. Not all implementations are able to do this, so if this is the case the option can be set to None.
-  fn doc(&self) -> Option<Rc<dyn Document>> {
+  fn owner_document(&self) -> Option<Rc<dyn Document>> {
     None
   }
   /// Return the type of the Node
@@ -415,65 +442,36 @@ pub trait Node: Any {
   //}
 
   /// Return the value of an attribute. Returns None if the node is not an element, or the element has no such attribute.
-  fn attribute(&self, _name: &str) -> Option<String> {
+  fn get_attribute(&self, _name: &QualifiedName) -> Option<Value> {
     None
   }
+  /// Add an attribute to an element node. If the attribute already exists, it's value is overwritten. If the Node is not an element then this operation has no effect.
+  fn set_attribute(&self, name: QualifiedName, val: Value);
+  /// Iterator for attributes
+  //type AttributeIterator: Iterator<Item=dyn Node>;
+  //fn attribute_iter(&self) -> Self::AttributeIterator;
+  //fn attribute_iter(&self) -> Box<dyn Iterator<Item=dyn Node>>;
+  fn attributes(&self) -> Vec<Rc<dyn Node>>;
+  /// Set the value for nodes that have values (text, attribute, comment, PI). No effect on other nodes.
+  fn set_value(&self, v: Value);
   /// Returns if the node is an element-type node
   fn is_element(&self) -> bool {
     false
   }
 
   /// Insert a Node as a child. The node is appended to the list of children. NB. If the element supplied is of a different concrete type to the Node then this will likely result in an error.
-  //fn add_child(&mut self, c: &mut dyn Any) -> Result<(), Error>;
-  fn add_child(&self, c: &dyn Any) -> Result<(), Error>;
+  fn append_child(&self, c: &dyn Any) -> Result<(), Error>;
   /// Add a text node as a child.
-  fn add_text_child(&self, t: String) -> Result<(), Error>;
+  fn append_text_child(&self, t: Value) -> Result<(), Error>;
+  // TODO: insert_before, replace_child
+  fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error>;
 
   /// Remove a node from its parent
   fn remove(&self) -> Result<(), Error>;
+  // TODO: remove_child
 }
 
-#[derive(Clone, Debug)]
-pub struct QualifiedName {
-  nsuri: Option<String>,
-  prefix: Option<String>,
-  localname: String,
-}
-
-// TODO: we may need methods that return a string slice, rather than a copy of the string
-impl QualifiedName {
-  pub fn new(nsuri: Option<String>, prefix: Option<String>, localname: String) -> QualifiedName {
-    QualifiedName{nsuri, prefix, localname}
-  }
-  pub fn get_nsuri(&self) -> Option<String> {
-    self.nsuri.clone()
-  }
-  pub fn get_nsuri_ref(&self) -> Option<&str> {
-    match self.nsuri {
-      Some(ref n) => {
-        Some(&n)
-      }
-      None => None,
-    }
-  }
-  pub fn get_prefix(&self) -> Option<String> {
-    self.prefix.clone()
-  }
-  pub fn get_localname(&self) -> String {
-    self.localname.clone()
-  }
-  pub fn to_string(&self) -> String {
-    let mut result = String::new();
-    self.prefix.as_ref().map_or((), |p| {
-      result.push_str(p.as_str());
-      result.push(':');
-    });
-    result.push_str(self.localname.as_str());
-    result
-  }
-}
-
-struct Ancestor {
+pub struct Ancestor {
   node: Rc<dyn Node>,
 }
 
@@ -1004,6 +1002,35 @@ impl Clone for NormalizedString {
     }
 }
 
+/// An output definition. See XSLT v3.0 26 Serialization
+#[derive(Clone)]
+pub struct OutputDefinition {
+  name: Option<QualifiedName>,	// TODO: EQName
+  indent: bool,
+  // TODO: all the other myriad output parameters
+}
+
+impl OutputDefinition {
+  pub fn new() -> OutputDefinition {
+    OutputDefinition{name: None, indent: false}
+  }
+  pub fn get_name(&self) -> Option<QualifiedName> {
+    self.name.clone()
+  }
+  pub fn set_name(&mut self, name: Option<QualifiedName>) {
+    match name {
+      Some(n) => {self.name.replace(n);},
+      None => {self.name = None;},
+    }
+  }
+  pub fn get_indent(&self) -> bool {
+    self.indent
+  }
+  pub fn set_indent(&mut self, ind: bool) {
+    self.indent = ind;
+  }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -1304,16 +1331,5 @@ mod tests {
     #[test]
     fn op_after() {
       assert_eq!(Operator::After.to_string(), ">>")
-    }
-
-    // QualifiedName
-
-    #[test]
-    fn qn_unqualified() {
-      assert_eq!(QualifiedName::new(None, None, "foo".to_string()).to_string(), "foo")
-    }
-    #[test]
-    fn qn_qualified() {
-      assert_eq!(QualifiedName::new(Some("http://example.org/whatsinaname/".to_string()), Some("x".to_string()), "foo".to_string()).to_string(), "x:foo")
     }
 }

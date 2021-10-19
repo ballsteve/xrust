@@ -8,6 +8,7 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 
 use std::rc::Rc;
 use crate::xdmerror::*;
+use crate::qname::*;
 use crate::item::*;
 use crate::evaluate::*;
 use crate::xpath::*;
@@ -42,17 +43,96 @@ pub fn from_document<'a>(
       vec![NodeTest::Name(NameTest{ns: Some(WildcardOrName::Name(XSLTNS.to_string())), prefix: Some("xsl".to_string()), name: Some(WildcardOrName::Name("text".to_string()))})]
     );
 
+    // Define the builtin templates
+    // See XSLT 6.7. This implements text-only-copy.
+    // TODO: Support deep-copy, shallow-copy, deep-skin, shallow-skip and fail
+
+    // This matches "/" and processes the root element
+    let bi1pat = to_pattern(
+      vec![Constructor::Path(
+	vec![
+          vec![Constructor::Root],
+        ]
+      )])
+      .expect("unable to convert pattern");
+    let bi1bod = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		vec![]
+	      )],
+	),
+      ];
+    dc.add_builtin_template(bi1pat, bi1bod, None, -1.0);
+    // This matches "*" and applies templates to all children
+    let bi2pat = to_pattern(
+      vec![Constructor::Path(
+	vec![
+          vec![Constructor::Step(
+	    NodeMatch{axis: Axis::Child, nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})},
+	    vec![]
+	  )],
+        ]
+      )])
+      .expect("unable to convert pattern");
+    let bi2bod = vec![
+        Constructor::ApplyTemplates(
+              vec![Constructor::Step(
+	        NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::AnyKindTest)},
+		vec![]
+	      )],
+	),
+      ];
+    dc.add_builtin_template(bi2pat, bi2bod, None, -1.0);
+    // This matches "text()" and copies content
+    let bi3pat = to_pattern(
+      vec![Constructor::Path(
+	vec![
+          vec![Constructor::Step(
+	    NodeMatch{axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::TextTest)},
+	    vec![]
+	  )],
+        ]
+      )])
+      .expect("unable to convert pattern");
+    let bi3bod = vec![Constructor::ContextItem];
+    dc.add_builtin_template(bi3pat, bi3bod, None, -1.0);
+
+    // Setup the serialization of the primary result document
+    for o in root.children().iter()
+      .filter(|c| c.is_element() &&
+		  c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
+		  c.to_name().get_localname() == "output") {
+      match o.get_attribute(&QualifiedName::new(None, None, "indent".to_string())) {
+        Some(i) => {
+	  let b: bool = match i.to_string().as_str() {
+	    "yes" |
+	    "true" |
+	    "1" => true,
+	    _ => false,
+	  };
+
+      	  let mut od = OutputDefinition::new();
+      	  od.set_indent(b);
+      	  dc.set_output_definition(od);
+	}
+	None => {}
+      };
+    };
+
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
     // * register template in dynamic context
     for t in root.children().iter()
+      //.inspect(|x| println!("checking {} node", x.node_type().to_string()))
       .filter(|c| c.is_element() &&
                   c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
-		  c.to_name().get_localname() == "template") {
-      match t.attribute("match") {
+		  c.to_name().get_localname() == "template")
+    {
+      match t.get_attribute(&QualifiedName::new(None, None, "match".to_string())) {
           Some(m) => {
-	    let n = m.clone();
+	    let n = m.clone().to_string();
 	    let a = parse(&n).expect("failed to parse match expression");
 	    let mut pat = to_pattern(a).expect("failed to compile match pattern");
 	    let mut body = t.children().iter()
@@ -60,7 +140,49 @@ pub fn from_document<'a>(
 	      .collect();
 	    static_analysis(&mut pat, &sc);
 	    static_analysis(&mut body, &sc);
-	    dc.add_template(pat, body);
+	    // Determine the priority of the template
+	    let prio;
+	    match t.get_attribute(&QualifiedName::new(None, None, "priority".to_string())) {
+	      Some(pr) => prio = pr.to_string().parse::<f64>().unwrap(), // TODO: better error handling
+	      None => {
+	        // Calculate the default priority
+		// TODO: more work to be done interpreting XSLT 6.5
+		if pat.len() <= 1 {
+		  match &pat[0] {
+		    Constructor::Root => prio = -0.5,
+		    Constructor::Path(_) => prio = -0.5,
+		    Constructor::Step(nm, _pred) => {
+		      match &nm.nodetest {
+		        NodeTest::Name(nt) => {
+			  match (nt.ns.as_ref(), nt.name.as_ref()) {
+			    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard)) => prio =-0.5,
+			    (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_))) |
+			    (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Wildcard)) => prio = -0.25,
+			    (None, Some(WildcardOrName::Wildcard)) => prio = -0.25,
+			    (Some(WildcardOrName::Name(_)), Some(WildcardOrName::Name(_))) => prio = 0.0,
+			    (None, Some(WildcardOrName::Name(_))) => prio = 0.0,
+			    _ => prio = 0.5,
+			  }
+			}
+			NodeTest::Kind(kt) => {
+			  match kt {
+			    KindTest::DocumentTest |
+			    KindTest::ElementTest |
+			    KindTest::AttributeTest => prio = -0.5,
+			    _ => prio = 0.5,
+			  }
+			}
+		      }
+		    }
+		    _ => prio = 0.5,
+		  }
+		} else {
+		  // TODO: calculate the priority of each branch of the pattern
+		  prio = 0.5
+		}
+	      }
+	    }
+	    dc.add_template(pat, body, None, prio);
 	  }
 	  None => {
 	    return Result::Err(Error{kind: ErrorKind::TypeError, message: "template does not have a match attribute".to_string()})
@@ -82,10 +204,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  Ok(Constructor::Literal(Value::String(n.to_string())))
 	}
 	(Some(XSLTNS), "apply-templates") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(sel) => {
 	      Ok(Constructor::ApplyTemplates(
-	        parse(&sel).expect("failed to compile select attribute")
+	        parse(&sel.to_string()).expect("failed to compile select attribute")
 	      ))
 	    }
 	    None => {
@@ -105,9 +227,9 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
         (Some(XSLTNS), "sequence") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
-	      let cons = parse(&s).expect("failed to compile select attribute");
+	      let cons = parse(&s.to_string()).expect("failed to compile select attribute");
 	      if cons.len() > 1 {
 	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "select attribute has more than one sequence constructor".to_string()})
 	      }
@@ -119,12 +241,12 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
 	(Some(XSLTNS), "if") => {
-	  match n.attribute("test") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "test".to_string())) {
 	    Some(t) => {
 	      Ok(
 	        Constructor::Switch(
 		  vec![
-		    parse(&t).expect("failed to compile test attribute"),
+		    parse(&t.to_string()).expect("failed to compile test attribute"),
 		    n.children().iter()
 		      .map(|d| to_constructor(d.clone()).expect("failed to compile test content"))
 		      .collect()
@@ -152,10 +274,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
       		    match (m.to_name().get_nsuri_ref(), m.to_name().get_localname().as_str()) {
         	      (Some(XSLTNS), "when") => {
 		        if otherwise.len() == 0 {
-			  match m.attribute("test") {
+			  match m.get_attribute(&QualifiedName::new(None, None, "test".to_string())) {
 			    Some(t) => {
 			      when.push(
-		    	        parse(&t).expect("failed to compile test attribute")
+		    	        parse(&t.to_string()).expect("failed to compile test attribute")
 			      );
 			      when.push(
 		    	        m.children().iter()
@@ -209,11 +331,11 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
 	(Some(XSLTNS), "for-each") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
 	      Ok(
 	        Constructor::ForEach(
-		  parse(&s).expect("failed to compile select attribute"),
+		  parse(&s.to_string()).expect("failed to compile select attribute"),
 		  n.children().iter()
 		    .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    .collect(),
@@ -227,28 +349,31 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  }
 	}
 	(Some(XSLTNS), "for-each-group") => {
-	  match n.attribute("select") {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
-	      match (n.attribute("group-by"), n.attribute("group-adjacent"), n.attribute("group-starting-with"), n.attribute("group-ending-with")) {
+	      match (n.get_attribute(&QualifiedName::new(None, None, "group-by".to_string())),
+	        n.get_attribute(&QualifiedName::new(None, None, "group-adjacent".to_string())),
+		n.get_attribute(&QualifiedName::new(None, None, "group-starting-with".to_string())),
+		n.get_attribute(&QualifiedName::new(None, None, "group-ending-with".to_string()))) {
 	        (Some(by), None, None, None) => {
 		  Ok(
 	            Constructor::ForEach(
-		      parse(&s).expect("failed to compile select attribute"),
+		      parse(&s.to_string()).expect("failed to compile select attribute"),
 		      n.children().iter()
 		        .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    	.collect(),
-		      Some(Grouping::By(parse(&by).expect("failed to compile group-by attribute"))),
+		      Some(Grouping::By(parse(&by.to_string()).expect("failed to compile group-by attribute"))),
 		    )
 	      	  )
 		}
 	        (None, Some(adj), None, None) => {
 		  Ok(
 	            Constructor::ForEach(
-		      parse(&s).expect("failed to compile select attribute"),
+		      parse(&s.to_string()).expect("failed to compile select attribute"),
 		      n.children().iter()
 		        .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    	.collect(),
-		      Some(Grouping::Adjacent(parse(&adj).expect("failed to compile group-adjacent attribute"))),
+		      Some(Grouping::Adjacent(parse(&adj.to_string()).expect("failed to compile group-adjacent attribute"))),
 		    )
 	      	  )
 		}
@@ -263,12 +388,21 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	    }
 	  }
 	}
+	(Some(XSLTNS), "copy") => {
+	  // TODO: handle select attribute
+	  Ok(Constructor::Copy(vec![],
+	    n.children().iter()
+	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
+	      .collect(),
+	  ))
+	}
 	(Some(XSLTNS), u) => {
 	  Ok(Constructor::NotImplemented(format!("unsupported XSL element \"{}\"", u)))
 	}
 	(_, a) => {
 	  // TODO: Handle qualified element name
-	  Ok(Constructor::LiteralElement(a.to_string(), "".to_string(), "".to_string(),
+	  Ok(Constructor::LiteralElement(
+	    QualifiedName::new(None, None, a.to_string()),
 	    n.children().iter()
 	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
 	      .collect(),
@@ -318,9 +452,9 @@ pub fn strip_source_document(
       _ => false,
     })
     .fold(vec![], |mut s, e| {
-      match e.attribute("elements") {
+      match e.get_attribute(&QualifiedName::new(None, None, "elements".to_string())) {
         Some(v) => {
-	  v.split_whitespace()
+	  v.to_string().split_whitespace()
 	    .for_each(|t| {
 	      s.push(NodeTest::from(t).expect("not a NodeTest"))
 	    })
@@ -336,9 +470,9 @@ pub fn strip_source_document(
       _ => false,
     })
     .fold(vec![], |mut s, e| {
-      match e.attribute("elements") {
+      match e.get_attribute(&QualifiedName::new(None, None, "elements".to_string())) {
         Some(v) => {
-	  v.split_whitespace()
+	  v.to_string().split_whitespace()
 	    .for_each(|t| {
 	      s.push(NodeTest::from(t).expect("not a NodeTest"))
 	    })

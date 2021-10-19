@@ -6,8 +6,9 @@
 
 use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
+use crate::qname::*;
 use crate::xdmerror::*;
-use crate::item::*;
+use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator, OutputDefinition};
 use decimal::d128;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
@@ -19,6 +20,7 @@ use std::cell::{RefCell, RefMut};
 pub struct DynamicContext<'a> {
   vars: RefCell<HashMap<String, Vec<Sequence>>>,
   templates: Vec<Template>,
+  builtin_templates: Vec<Template>,	// TODO: use import precedence for builtins
   depth: RefCell<usize>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
@@ -26,6 +28,7 @@ pub struct DynamicContext<'a> {
   // TODO: accept a closure that is a 'Document factory'
   //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
   resultdoc: Option<&'a dyn Document>,
+  od: OutputDefinition,	// Output definition for the final result tree
 }
 
 impl<'a> DynamicContext<'a> {
@@ -34,30 +37,54 @@ impl<'a> DynamicContext<'a> {
     DynamicContext{
       vars: RefCell::new(HashMap::new()),
       templates: Vec::new(),
+      builtin_templates: Vec::new(),
       depth: RefCell::new(0),
       current_grouping_key: RefCell::new(vec![None]),
       current_group: RefCell::new(vec![None]),
       doc: None,
       resultdoc: resultdoc,
+      od: OutputDefinition::new(),
     }
   }
 
-  /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template.
-  pub fn add_template(&mut self, p: Vec<Constructor>, b: Vec<Constructor>) {
-    self.templates.push(Template{pattern: p, body: b});
+  /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.
+  pub fn add_template(&mut self,
+    p: Vec<Constructor>,
+    b: Vec<Constructor>,
+    m: Option<String>,
+    pr: f64,
+  ) {
+    self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
   }
-  /// Determine if an item matches a pattern and return the sequence constructor for that template.
+  /// Add a template to the set of builtin templates in the dynamic context. See above for arguments.
+  pub fn add_builtin_template(&mut self,
+    p: Vec<Constructor>,
+    b: Vec<Constructor>,
+    m: Option<String>,
+    pr: f64,
+  ) {
+    self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
+  }
+  /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
   /// If no template is found, returns None.
-  /// TODO: If more than one pattern matches, return the highest priority match.
   pub fn find_match(&self, i: &Rc<Item>) -> Vec<Constructor> {
-    let r: Vec<Vec<Constructor>> = self.templates.iter()
+    let r: Option<&Template> = self.templates.iter()
       .filter(|t| item_matches(self, &t.pattern, i))
-      .map(|t| t.body.clone())
-      .collect();
-    if r.len() != 0 {
-      r[0].clone()
+      .reduce(|a, b| if a.priority < b.priority {b} else {a});
+
+    if r.is_some() {
+      r.unwrap().body.clone()
     } else {
-      vec![]
+      // Try builtin templates
+      let s: Option<&Template> = self.builtin_templates.iter()
+        .filter(|t| item_matches(self, &t.pattern, i))
+	.reduce(|a, b| if a.priority < b.priority {b} else {a});
+
+      if s.is_some() {
+        s.unwrap().body.clone()
+      } else {
+        vec![]
+      }
     }
   }
 
@@ -87,12 +114,21 @@ impl<'a> DynamicContext<'a> {
     let cur = *self.depth.borrow();
     self.depth.replace(cur - 1);
   }
+  // TODO: return borrowed/reference
+  pub fn get_output_definition(&self) -> OutputDefinition {
+    self.od.clone()
+  }
+  pub fn set_output_definition(&mut self, od: OutputDefinition) {
+    self.od = od;
+  }
 
   // Printout templates, for debugging.
   pub fn dump_templates(&self) {
     self.templates.iter().for_each(
       |t| {
-        println!("Template matching pattern:\n{}\nBody:\n{}",
+        println!("Template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
+	  t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
+	  t.priority,
 	  format_constructor(&t.pattern, 4),
 	  format_constructor(&t.body, 4)
 	);
@@ -131,11 +167,10 @@ fn evaluate_one(
 	Ok(seq)
     }
     // This creates a Node in the current result document
-    Constructor::LiteralElement(n, _p, _ns, c) => {
+    Constructor::LiteralElement(n, c) => {
       let l = match dc.resultdoc {
         Some(doc) => {
-	  // TODO: namespace
-	  doc.new_element(n, None).expect("unable to create Node")
+	  doc.new_element(n.clone()).expect("unable to create Node")
 	}
 	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
@@ -147,17 +182,108 @@ fn evaluate_one(
 	    // Item could be a Node or text
 	    match **i {
 	      Item::Node(ref t) => {
-		l.add_child(t.as_any()).expect("unable to add child node");
+		l.append_child(t.as_any()).expect("unable to add child node");
 	      }
 	      _ => {
 	        // Values become a text node in the result tree
-		l.add_text_child(i.to_string()).expect("unable to add text child node");
+		l.append_text_child(Value::String(i.to_string())).expect("unable to add text child node");
 	      }
 	    }
 	  }
 	);
 
       Ok(vec![Rc::new(Item::Node(l))])
+    }
+    Constructor::Copy(i, c) => {
+      let orig = if i.is_empty() {
+        // Copy the context item
+	if ctxt.is_some() {
+	  &ctxt.as_ref().unwrap()[posn.unwrap()]
+	} else {
+	  // TODO: evaluate the select expression to determine what is to be copied
+	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+	}
+      } else {
+        // Evaluate the expression and copy the resulting items
+	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
+      };
+
+      match **orig {
+	Item::Value(_) => {
+	  Ok(vec![orig.clone()])
+	}
+	Item::Node(ref n) => {
+	  let doc = match dc.resultdoc {
+	    Some(d) => d,
+	    None => {
+	      return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+	    }
+	  };
+	  match n.node_type() {
+	    NodeType::Element => {
+	      match doc.new_element(n.to_name()) {
+	        Ok(e) => {
+      		  // Add content to the new element
+      		  evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content").iter()
+        	    .for_each(|i| {
+	    	      // Item could be a Node or text
+	    	      match **i {
+	      	        Item::Node(ref t) => {
+			  match t.node_type() {
+			    NodeType::Element |
+			    NodeType::Text => {
+			      e.append_child(t.as_any()).expect("unable to add child node");
+			    }
+			    NodeType::Attribute => {
+			      e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
+			    }
+			    _ => {} // TODO: work out what to do with documents, etc
+			  }
+	      		}
+	      		_ => {
+	        	  // Values become a text node in the result tree
+			  e.append_text_child(Value::String(i.to_string()))
+			    .expect("unable to add text child node");
+	      		}
+	    	      }
+	  	    });
+		  Ok(vec![Rc::new(Item::Node(e))])
+		}
+		_ => {
+	  	  return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create element node".to_string()})
+		}
+	      }
+	    }
+	    NodeType::Text => {
+	      match doc.new_text(Value::String(n.to_string())) {
+	        Ok(m) => {
+      		  Ok(vec![Rc::new(Item::Node(m))])
+		}
+		_ => {
+	  	  return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create text node".to_string()})
+		}
+	      }
+	    }
+	    NodeType::Attribute => {
+	      // TODO: add a 'to_value' method
+	      match doc.new_attribute(n.to_name(), Value::String(n.to_string())) {
+	        Ok(a) => {
+		  Ok(vec![Rc::new(Item::Node(a))])
+		}
+		_ => {
+	  	  return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create attribute node".to_string()})
+		}
+	      }
+	    }
+	    _ => {
+	      return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
+	    }
+	  }
+	}
+	_ => {
+	  return Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not implemented".to_string()})
+	}
+      }
     }
     Constructor::ContextItem => {
       if ctxt.is_some() {
@@ -310,7 +436,7 @@ fn evaluate_one(
 	      }
 	      None => {
 	        // Try to navigate to the Document from the Node
-		match n.doc() {
+		match n.owner_document() {
 		  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
 		  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
 		}
@@ -376,7 +502,8 @@ fn evaluate_one(
 	        Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
 	      }
 	      Axis::Parent |
-	      Axis::Selfaxis => Ok(vec![]),
+	      Axis::Selfaxis |
+	      Axis::Attribute => Ok(vec![]),
 	      _ => {
 	        // Not yet implemented
 		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (document)".to_string()})
@@ -426,7 +553,7 @@ fn evaluate_one(
 	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
 	      	      }
 	      	      None => {
-		        match n.doc() {
+		        match n.owner_document() {
 			  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
 			  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
 			}
@@ -532,6 +659,12 @@ fn evaluate_one(
 		  .filter(|e| is_node_match(&nm.nodetest, &e))
 		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
 	      	Ok(predicates(dc, seq, p))
+	      }
+	      Axis::Attribute => {
+		let attrs = n.attributes().iter()
+		  .filter(|c| is_node_match(&nm.nodetest, &c))
+		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+		Ok(predicates(dc, attrs, p))
 	      }
 	      Axis::SelfDocument => Ok(vec![]),
 	      _ => {
@@ -656,21 +789,65 @@ fn evaluate_one(
 		let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
 	        if e.len() == 0 {false} else {true}
 	      })
+	      .scan(-2.0,
+	        |prio, t| {
+		  if *prio < t.priority {
+		    *prio = t.priority;
+		    Some(t)
+		  } else {
+		    None
+		  }
+		}
+	      )
 	      .collect();
-	    // there must be only one matching template
+	    // there must be at most one matching template
 	    if matching_template.len() > 1 {
 	      //return Result::Err(Error{kind: ErrorKind::TypeError, message: "too many matching templates".to_string()})
 	      panic!("too many matching templates")
 	    }
-	    let mut u = matching_template.iter()
-	      .flat_map(|t| {
-		dc.incr_depth();
-		let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
-	    	dc.decr_depth();
-		rs
-	      })
-	      .collect::<Sequence>();
-	    acc.append(&mut u);
+	    // If no templates match then apply a built-in template
+	    // See XSLT 6.7.
+	    // TODO: use import precedence to implement this feature
+	    if matching_template.len() == 0 {
+	      let builtin_template: Vec<&Template> = dc.builtin_templates.iter()
+	        .filter(|t| {
+		  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
+	          if e.len() == 0 {false} else {true}
+	        })
+	        .scan(-2.0,
+	          |prio, t| {
+		    if *prio < t.priority {
+		      *prio = t.priority;
+		      Some(t)
+		    } else {
+		      None
+		    }
+		  }
+	        )
+	        .collect();
+	      if builtin_template.len() > 1 {
+	        panic!("too many matching builtin templates")
+	      }
+	      let mut u = builtin_template.iter()
+	        .flat_map(|t| {
+		  dc.incr_depth();
+		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	  dc.decr_depth();
+		  rs
+	        })
+	        .collect::<Sequence>();
+	      acc.append(&mut u);
+	    } else {
+	      let mut u = matching_template.iter()
+	        .flat_map(|t| {
+		  dc.incr_depth();
+		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	  dc.decr_depth();
+		  rs
+	        })
+	        .collect::<Sequence>();
+	      acc.append(&mut u);
+	    }
 	    acc
 	  }
         );
@@ -834,8 +1011,10 @@ pub enum Constructor {
   Literal(Value),
   /// A literal element. This will become a node in the result tree.
   /// TODO: this may be merged with the Literal option in a later version.
-  /// Arguments are: element name, prefix, namespace and content
-  LiteralElement(String, String, String, Vec<Constructor>),
+  /// Arguments are: element name, content
+  LiteralElement(QualifiedName, Vec<Constructor>),
+  /// Construct a node by copying something. The first argument is what to copy; an empty vector selects the current item. The second argument constructs the content.
+  Copy(Vec<Constructor>, Vec<Constructor>),
   /// The context item from the dynamic context
   ContextItem,
   /// Logical OR. Each element of the outer vector is an operand.
@@ -932,7 +1111,8 @@ fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
   match nt {
     NodeTest::Name(t) => {
       match n.node_type() {
-        NodeType::Element => {
+        NodeType::Element |
+	NodeType::Attribute => {
       	  // TODO: namespaces
       	  match &t.name {
             Some(a) => {
@@ -1364,7 +1544,7 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 	  ])
 	}
         _ => {
-          Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
+	  Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must be a path".to_string()})
         }
       }
     } else {
@@ -1377,8 +1557,8 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 pub struct Template {
   pattern: Vec<Constructor>,
   body: Vec<Constructor>,
-  // priority
-  // mode
+  priority: f64,
+  mode: Option<String>,
 }
 
 /// # Static context
@@ -1746,13 +1926,14 @@ pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
 	static_analysis(s, sc);
 	static_analysis(t, sc);
       }
+      Constructor::Copy(_, c) |
+      Constructor::LiteralElement(_, c) => {
+	static_analysis(c, sc)
+      }
       Constructor::Literal(_) |
       Constructor::ContextItem |
       Constructor::Root |
       Constructor::NotImplemented(_) => {}
-      Constructor::LiteralElement(_, _, _, c) => {
-	static_analysis(c, sc)
-      }
     }
   }
 }
@@ -2254,8 +2435,13 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::Literal(l) => {
         format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
       }
-      Constructor::LiteralElement(n, _p, _ns, c) => {
-        format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", n.to_string(),
+      Constructor::LiteralElement(qn, c) => {
+        format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", qn.get_localname(),
+	  format_constructor(&c, i + 4),
+	  in=i)
+      }
+      Constructor::Copy(_sel, c) => {
+        format!("{:in$} Construct copy with content:\n{}", "",
 	  format_constructor(&c, i + 4),
 	  in=i)
       }

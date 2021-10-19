@@ -61,13 +61,13 @@ Data type: xs:NOTATION|no|
 Functions|no|
 Map|no|
 Array|no|
-Document node|yes|roxmltree|\
-Element node|yes|roxmltree, json
-Attribute node|no|
+Document node|yes||\
+Element node|yes|
+Attribute node|yes|
 Namespace node|no|
-PI node|yes|roxmltree
-Comment node|yes|roxmltree
-Text node|yes|roxmltree, json
+PI node|yes|
+Comment node|yes|
+Text node|yes|
 Accessor|no|
 
 ## XPath
@@ -88,8 +88,8 @@ Path expression: steps|yes|
 Path expression: axes|partial|
 Axis: child|yes|
 Axis: self|yes|
-Axis: descendant|yes|roxmltree
-Axis: descendant-or-self|yes|roxmltree
+Axis: descendant|yes|
+Axis: descendant-or-self|yes|
 Axis: ancestor|yes|
 Axis: ancestor-or-self|yes|
 Axis: parent|yes|
@@ -97,7 +97,7 @@ Axis: following|yes|
 Axis: following-sibling|yes|
 Axis: preceding|yes|
 Axis: preceding-sibling|yes|
-Axis: attribute|no|
+Axis: attribute|yes|
 Axis: namespace|no|
 Path expression: Node tests|yes|
 Path expression: Predicates within steps|yes|
@@ -126,6 +126,7 @@ Simple map operator: !|no|
 Arrow operator: =>|no|
 Unary expression|no|
 Comments|yes|
+Union|no|
 
 ## XPath Functions
 
@@ -216,7 +217,7 @@ xsl:comment/@select|no|
 xsl:context-item|no|
 xsl:context-item/@as|no|
 xsl:context-item/@use|no|
-xsl:copy|no|
+xsl:copy|yes|
 xsl:copy/@select|no|
 xsl:copy/@copy-namespaces|no|
 xsl:copy/@inherit-namespaces|no|
@@ -336,7 +337,7 @@ xsl:mode|no|
 xsl:mode/@name|no|
 xsl:mode/@streamable|no|
 xsl:mode/@use-accumulators|no|
-xsl:mode/@on-no-match|no|
+xsl:mode/@on-no-match|partial|text-only-copy is the default
 xsl:mode/@on-multiple-match|no|
 xsl:mode/@warning-on-no-match|no|
 xsl:mode/@warning-on-multiple-match|no|
@@ -384,7 +385,7 @@ xsl:output/@encoding|no|
 xsl:output/@escape-uri-attributes|no|
 xsl:output/@html-version|no|
 xsl:output/@include-content-type|no|
-xsl:output/@indent|no|
+xsl:output/@indent|yes|
 xsl:output/@item-separator|no|
 xsl:output/@json-node-output-method|no|
 xsl:output/@media-type|no|
@@ -490,7 +491,7 @@ xsl:stylesheet/@xpath-default-namespace|no|
 xsl:template|yes|
 xsl:template/@match|yes|
 xsl:template/@name|no|
-xsl:template/@priority|no|
+xsl:template/@priority|yes|
 xsl:template/@mode|no|
 xsl:template/@as|no|
 xsl:template/@visibility|no|

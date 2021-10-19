@@ -44,6 +44,8 @@ We need your help!
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
+pub mod qname;
+
 pub mod item;
 pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 
