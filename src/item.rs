@@ -9,7 +9,7 @@
 use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
-use decimal;
+//use decimal;
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -578,10 +578,10 @@ impl PartialEq for Value {
 	  Value::Boolean(c) => b == c,
 	  _ => false, // type error?
 	},
-	Value::Decimal(d) => match other {
-	  Value::Decimal(e) => d == e,
-	  _ => false, // type error?
-	},
+//	Value::Decimal(d) => match other {
+//	  Value::Decimal(e) => d == e,
+//	  _ => false, // type error?
+//	},
 	Value::Integer(i) => match other {
 	  Value::Integer(j) => i == j,
 	  _ => false, // type error? coerce to integer?
@@ -602,10 +602,10 @@ impl PartialOrd for Value {
 	  s.partial_cmp(&o)
 	},
 	Value::Boolean(_) => None,
-	Value::Decimal(d) => match other {
-	  Value::Decimal(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
+//	Value::Decimal(d) => match other {
+//	  Value::Decimal(e) => d.partial_cmp(e),
+//	  _ => None, // type error?
+//	}
 	Value::Integer(d) => match other {
 	  Value::Integer(e) => d.partial_cmp(e),
 	  _ => None, // type error?
@@ -642,7 +642,9 @@ pub enum Value {
     UntypedAtomic,
     Duration,
     Time,
-    Decimal(decimal::d128),
+// web_sys doesn't like decimal
+//    Decimal(decimal::d128),
+    Decimal,
     Float(f32),
     Double(f64),
     Integer(i64),
@@ -688,7 +690,7 @@ impl Value {
 	match self {
 	    Value::String(s) => s.to_string(),
 	    Value::NormalizedString(s) => s.value.to_string(),
-	    Value::Decimal(d) => d.to_string(),
+//	    Value::Decimal(d) => d.to_string(),
 	    Value::Float(f) => f.to_string(),
 	    Value::Double(d) => d.to_string(),
 	    Value::Integer(i) => i.to_string(),
@@ -832,7 +834,7 @@ impl Value {
         Value::UntypedAtomic => "UntypedAtomic",
         Value::Duration => "Duration",
         Value::Time => "Time",
-        Value::Decimal(_) => "Decimal",
+//        Value::Decimal(_) => "Decimal",
         Value::Float(_) => "Float",
         Value::Double(_) => "Double",
         Value::Integer(_) => "Integer",
@@ -1175,10 +1177,10 @@ mod tests {
     fn string_stringvalue() {
         assert_eq!(Value::String("foobar".to_string()).to_string(), "foobar")
     }
-    #[test]
-    fn decimal_stringvalue() {
-        assert_eq!(Value::Decimal(decimal::d128!(001.23)).to_string(), "1.23")
-    }
+//    #[test]
+//    fn decimal_stringvalue() {
+//        assert_eq!(Value::Decimal(decimal::d128!(001.23)).to_string(), "1.23")
+//    }
     #[test]
     fn float_stringvalue() {
         assert_eq!(Value::Float(001.2300_f32).to_string(), "1.23")
