@@ -1,0 +1,10 @@
+<Test>
+  <level1>
+    <data>
+      <deeper>one</deeper>
+    </data>
+  </level1>
+  <data role='test'>
+    <deeper>one</deeper>
+  </data>
+</Test>

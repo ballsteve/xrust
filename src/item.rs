@@ -9,7 +9,8 @@
 use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
-//use decimal;
+use rust_decimal::Decimal;
+use rust_decimal_macros::dec;
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -344,6 +345,11 @@ pub trait Document {
     QualifiedName::new(None, None, String::new())
   }
 
+  /// Callback for logging/debugging, particularly in a web_sys environment
+  fn log(&self, _m: &str) {
+    // Noop
+  }
+
   /// Navigate to the parent of the Document. Documents don't have a parent, so the default implementation returns None.
   fn parent(&self) -> Option<Rc<dyn Node>> {
     None
@@ -578,10 +584,10 @@ impl PartialEq for Value {
 	  Value::Boolean(c) => b == c,
 	  _ => false, // type error?
 	},
-//	Value::Decimal(d) => match other {
-//	  Value::Decimal(e) => d == e,
-//	  _ => false, // type error?
-//	},
+	Value::Decimal(d) => match other {
+	  Value::Decimal(e) => d == e,
+	  _ => false, // type error?
+	},
 	Value::Integer(i) => match other {
 	  Value::Integer(j) => i == j,
 	  _ => false, // type error? coerce to integer?
@@ -602,10 +608,10 @@ impl PartialOrd for Value {
 	  s.partial_cmp(&o)
 	},
 	Value::Boolean(_) => None,
-//	Value::Decimal(d) => match other {
-//	  Value::Decimal(e) => d.partial_cmp(e),
-//	  _ => None, // type error?
-//	}
+	Value::Decimal(d) => match other {
+	  Value::Decimal(e) => d.partial_cmp(e),
+	  _ => None, // type error?
+	}
 	Value::Integer(d) => match other {
 	  Value::Integer(e) => d.partial_cmp(e),
 	  _ => None, // type error?
@@ -642,9 +648,7 @@ pub enum Value {
     UntypedAtomic,
     Duration,
     Time,
-// web_sys doesn't like decimal
-//    Decimal(decimal::d128),
-    Decimal,
+    Decimal(Decimal),
     Float(f32),
     Double(f64),
     Integer(i64),
@@ -690,7 +694,7 @@ impl Value {
 	match self {
 	    Value::String(s) => s.to_string(),
 	    Value::NormalizedString(s) => s.value.to_string(),
-//	    Value::Decimal(d) => d.to_string(),
+	    Value::Decimal(d) => d.to_string(),
 	    Value::Float(f) => f.to_string(),
 	    Value::Double(d) => d.to_string(),
 	    Value::Integer(i) => i.to_string(),
@@ -834,7 +838,7 @@ impl Value {
         Value::UntypedAtomic => "UntypedAtomic",
         Value::Duration => "Duration",
         Value::Time => "Time",
-//        Value::Decimal(_) => "Decimal",
+        Value::Decimal(_) => "Decimal",
         Value::Float(_) => "Float",
         Value::Double(_) => "Double",
         Value::Integer(_) => "Integer",
@@ -1093,7 +1097,7 @@ mod tests {
 //    }
 //    #[test]
 //    fn numeric_decimal() {
-//        assert_eq!(Numeric::new(decimal::d128!(123.456)).value, 123.456);
+//        assert_eq!(Numeric::new(dec!(123.456)), 123.456);
 //    }
 
     #[test]
@@ -1177,10 +1181,10 @@ mod tests {
     fn string_stringvalue() {
         assert_eq!(Value::String("foobar".to_string()).to_string(), "foobar")
     }
-//    #[test]
-//    fn decimal_stringvalue() {
-//        assert_eq!(Value::Decimal(decimal::d128!(001.23)).to_string(), "1.23")
-//    }
+    #[test]
+    fn decimal_stringvalue() {
+        assert_eq!(Value::Decimal(dec!(001.23)).to_string(), "1.23")
+    }
     #[test]
     fn float_stringvalue() {
         assert_eq!(Value::Float(001.2300_f32).to_string(), "1.23")

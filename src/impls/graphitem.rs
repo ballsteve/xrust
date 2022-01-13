@@ -1161,6 +1161,7 @@ mod tests {
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
+
       // XPath == /child::Foo
       let cons = vec![
 	  Constructor::Path(
@@ -2309,6 +2310,39 @@ mod tests {
       assert_eq!(seq[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
     }
 
+    #[test]
+    fn xpath_expr_1_pos() {
+      let d = from("<Level1 foo='bar'></Level1>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let dc = DynamicContext::new(None);
+      let cons = parse("attribute::foo eq 'bar'").expect("unable to parse XPath \"/\"");
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 1);
+      match *seq[0] {
+        Item::Value(Value::Boolean(true)) => assert!(true),
+	_ => panic!("not equal"),
+      }
+    }
+    #[test]
+    fn xpath_expr_1_neg() {
+      let d = from("<Level1 foo='bar'></Level1>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let dc = DynamicContext::new(None);
+      let cons = parse("attribute::foo eq 'foo'").expect("unable to parse XPath \"/\"");
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 1);
+      match *seq[0] {
+        Item::Value(Value::Boolean(false)) => assert!(true),
+	_ => panic!("is equal"),
+      }
+    }
+
     // XSLT tests
 
     #[test]
@@ -2989,5 +3023,73 @@ four
       let expected_result = fs::read_to_string("tests/xml/result3.xml")
         .expect("unable to read expected result");
       assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+    }
+
+    // This issue was found in web_sys actionsheet project
+    #[test]
+    fn xsl_switch() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test4.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/switch.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result4.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+    }
+
+    #[test]
+    fn deepcopy() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test5.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/copyof.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result5.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+      // TODO: make sure that the copied nodes are not merely references to the source nodes. Perhaps use generate-id() type of function?
     }
 }

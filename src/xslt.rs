@@ -390,11 +390,25 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	}
 	(Some(XSLTNS), "copy") => {
 	  // TODO: handle select attribute
-	  Ok(Constructor::Copy(vec![],
+	  Ok(Constructor::Copy(
+	    vec![],
+	    // The content of this element is a template for the content of the new item
 	    n.children().iter()
 	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
 	      .collect(),
 	  ))
+	}
+	(Some(XSLTNS), "copy-of") => {
+	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
+	    Some(s) => {
+	      Ok(Constructor::DeepCopy(
+	        parse(&s.to_string()).expect("failed to compile select attribute"),
+	      ))
+	    }
+	    None => {
+	      return Result::Err(Error{kind: ErrorKind::TypeError, message: "missing select attribute".to_string()})
+	    }
+	  }
 	}
 	(Some(XSLTNS), u) => {
 	  Ok(Constructor::NotImplemented(format!("unsupported XSL element \"{}\"", u)))
