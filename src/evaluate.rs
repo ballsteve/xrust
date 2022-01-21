@@ -195,6 +195,17 @@ fn evaluate_one(
 
       Ok(vec![Rc::new(Item::Node(l))])
     }
+    // This creates a Node in the current result document
+    Constructor::LiteralAttribute(n, v) => {
+      let l = match dc.resultdoc {
+        Some(doc) => {
+	  doc.new_attribute(n.clone(), v.clone()).expect("unable to create Node")
+	}
+	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+      };
+
+      Ok(vec![Rc::new(Item::Node(l))])
+    }
     Constructor::Copy(i, c) => {
       let orig = if i.is_empty() {
         // Copy the context item
@@ -1130,6 +1141,10 @@ pub enum Constructor {
   /// TODO: this may be merged with the Literal option in a later version.
   /// Arguments are: element name, content
   LiteralElement(QualifiedName, Vec<Constructor>),
+  /// A literal attribute. This will become a node in the result tree.
+  /// TODO: allow for attribute value templates
+  /// Arguments are: attribute name, value
+  LiteralAttribute(QualifiedName, Value),
   /// Construct a node by copying something. The first argument is what to copy; an empty vector selects the current item. The second argument constructs the content.
   Copy(Vec<Constructor>, Vec<Constructor>),
   DeepCopy(Vec<Constructor>),
@@ -2058,6 +2073,7 @@ pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
 	static_analysis(c, sc);
       }
       Constructor::Literal(_) |
+      Constructor::LiteralAttribute(_, _) |
       Constructor::ContextItem |
       Constructor::Root |
       Constructor::NotImplemented(_) => {}
@@ -2564,6 +2580,12 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
     match v {
       Constructor::Literal(l) => {
         format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
+      }
+      Constructor::LiteralAttribute(qn, v) => {
+        format!("{:in$} Construct literal attribute \"{}\" with value \"{}\"", "",
+	  qn.get_localname(),
+	  v.to_string(),
+	  in=i)
       }
       Constructor::LiteralElement(qn, c) => {
         format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", qn.get_localname(),

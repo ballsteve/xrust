@@ -367,7 +367,10 @@ impl Node for XDMTreeNode {
       Some(d) => d,
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "child node must be a XDMTreeNode".to_string()}),
     };
-    Ok(self.append_child_node(e.clone()).expect("unable to append child"))
+    match e.node_type() {
+      NodeType::Attribute => Ok(self.add_attribute(e.clone()).expect("unable to add attribute")),
+      _ => Ok(self.append_child_node(e.clone()).expect("unable to append child"))
+    }
   }
   fn append_text_child(&self, t: Value) -> Result<(), Error> {
     let t = self.new_value_node(t);
@@ -1843,6 +1846,58 @@ mod tests {
 
       assert_eq!(e.len(), 1);
       assert_eq!(e[0].to_xml(), "<New><Level1>one</Level1><Level1>two</Level1></New>");
+    }
+
+    // This test will add attributes
+    #[test]
+    fn literal_element_4() {
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
+
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+
+      let cons = vec![
+        Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()),
+	  vec![
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
+	      vec![
+		Constructor::LiteralAttribute(
+		  QualifiedName::new(None, None, "mode".to_string()),
+		  Value::String(String::from("testA"))
+		),
+	        Constructor::Literal(Value::String("one".to_string())),
+	      ]
+	    ),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
+	      vec![
+		Constructor::LiteralAttribute(
+		  QualifiedName::new(None, None, "mode".to_string()),
+		  Value::String(String::from("testB"))
+		),
+	        Constructor::Literal(Value::String("two".to_string())),
+	      ]
+	    ),
+	  ]
+	),
+      ];
+
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_xml(), "<New><Level1 mode='testA'>one</Level1><Level1 mode='testB'>two</Level1></New>");
     }
 
     // Templates
