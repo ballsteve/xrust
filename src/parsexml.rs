@@ -33,13 +33,14 @@ use crate::xdmerror::*;
 // This structure allows multiple root elements.
 // An XML document will only be well-formed if there is exactly one element.
 // However, external general entities may have more than one element.
+#[derive(PartialEq)]
 pub struct XMLDocument {
   pub prologue: Vec<XMLNode>,
   pub content: Vec<XMLNode>,
   pub epilogue: Vec<XMLNode>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum XMLNode {
   Element(QualifiedName, Vec<XMLNode>, Vec<XMLNode>), // Element name, attributes, content
   Attribute(QualifiedName, Value),
