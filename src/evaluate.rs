@@ -203,9 +203,11 @@ fn evaluate_one(
     }
     // This creates a Node in the current result document
     Constructor::LiteralAttribute(n, v) => {
+      let w = evaluate(dc, ctxt.clone(), posn, v)
+        .expect("failed to evaluate attribute value");
       let l = match dc.resultdoc {
         Some(doc) => {
-	  doc.new_attribute(n.clone(), v.clone()).expect("unable to create Node")
+	  doc.new_attribute(n.clone(), Value::String(w.to_string())).expect("unable to create Node")
 	}
 	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
@@ -1150,7 +1152,7 @@ pub enum Constructor {
   /// A literal attribute. This will become a node in the result tree.
   /// TODO: allow for attribute value templates
   /// Arguments are: attribute name, value
-  LiteralAttribute(QualifiedName, Value),
+  LiteralAttribute(QualifiedName, Vec<Constructor>),
   /// Construct a node by copying something. The first argument is what to copy; an empty vector selects the current item. The second argument constructs the content.
   Copy(Vec<Constructor>, Vec<Constructor>),
   DeepCopy(Vec<Constructor>),
@@ -2595,7 +2597,7 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::LiteralAttribute(qn, v) => {
         format!("{:in$} Construct literal attribute \"{}\" with value \"{}\"", "",
 	  qn.get_localname(),
-	  v.to_string(),
+	  format_constructor(&v, i + 4),
 	  in=i)
       }
       Constructor::LiteralElement(qn, c) => {

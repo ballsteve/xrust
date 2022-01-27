@@ -410,6 +410,21 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	    }
 	  }
 	}
+	(Some(XSLTNS), "attribute") => {
+	  match n.get_attribute(&QualifiedName::new(None, None, "name".to_string())) {
+	    Some(m) => {
+      	      Ok(Constructor::LiteralAttribute(
+	        QualifiedName::new(None, None, m.to_string()),
+		n.children().iter()
+		  .map(|d| to_constructor(d.clone()).expect("failed to compile attribute content"))
+		  .collect(),
+	      ))
+	    }
+	    None => {
+	      return Result::Err(Error{kind: ErrorKind::TypeError, message: "missing select attribute".to_string()})
+	    }
+	  }
+	}
 	(Some(XSLTNS), u) => {
 	  Ok(Constructor::NotImplemented(format!("unsupported XSL element \"{}\"", u)))
 	}
@@ -429,7 +444,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     }
     NodeType::Attribute => {
       // Get value as a Value
-      Ok(Constructor::LiteralAttribute(n.to_name(), Value::String(n.to_string())))
+      Ok(Constructor::LiteralAttribute(n.to_name(), vec![Constructor::Literal(Value::String(n.to_string()))]))
     }
     _ => {
       // TODO: literal elements, etc, pretty much everything in the XSLT spec
