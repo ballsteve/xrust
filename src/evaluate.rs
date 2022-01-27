@@ -123,6 +123,12 @@ impl<'a> DynamicContext<'a> {
     self.od = od;
   }
 
+  // Stylesheet parameters. Overrides the previous value if it is already set.
+  // TODO: namespaced name
+  pub fn set_parameter(&mut self, name: String, value: Sequence) {
+    self.vars.borrow_mut().insert(name, vec![value]);
+  }
+
   // Printout templates, for debugging.
   pub fn dump_templates(&self) {
     self.templates.iter().for_each(
@@ -1982,6 +1988,11 @@ impl StaticContext {
     );
 
     sc
+  }
+  /// Register an extension function
+  pub fn extension_function(&mut self, name: String, _ns: String, f: Function) {
+    // TODO: namespace
+    self.funcs.borrow_mut().insert(name, f);
   }
   /// Declares a function in the static context. The first argument is the name of the function. The second argument is the namespace URI (not currently supported). The third argument defines the arity of the function, and the types of each parameter (not currently supported).
   pub fn declare_function(&self, n: String, _ns: String, p: Vec<Param>) {

@@ -1,0 +1,11 @@
+<html xmlns:xlink="http://www.w3.org/1999/xlink">
+  <body id="top">
+    <div role="data" class="child">
+      <span class="deep">one</span>
+    </div>
+    <div role='data' class="child">
+      <span class="deep">two</span>
+    </div>
+    <a xlink:href="urn:test-data">hotspot</a>
+  </body>
+</html>

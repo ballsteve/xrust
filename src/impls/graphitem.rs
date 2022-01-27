@@ -3147,4 +3147,37 @@ four
       assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
       // TODO: make sure that the copied nodes are not merely references to the source nodes. Perhaps use generate-id() type of function?
     }
+
+    #[test]
+    fn xslt_literal_attribute() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test6.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/literal_attribute.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result6.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+    }
 }

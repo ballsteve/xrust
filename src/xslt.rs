@@ -415,14 +415,21 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	}
 	(_, a) => {
 	  // TODO: Handle qualified element name
+	  let mut content = vec![];
+	  n.attributes().iter()
+	      .for_each(|d| content.push(to_constructor(d.clone()).expect("failed to compile sequence constructor")));
+	  n.children().iter()
+	      .for_each(|d| content.push(to_constructor(d.clone()).expect("failed to compile sequence constructor")));
 	  Ok(Constructor::LiteralElement(
 	    QualifiedName::new(None, None, a.to_string()),
-	    n.children().iter()
-	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
-	      .collect(),
+	    content
 	  ))
 	}
       }
+    }
+    NodeType::Attribute => {
+      // Get value as a Value
+      Ok(Constructor::LiteralAttribute(n.to_name(), Value::String(n.to_string())))
     }
     _ => {
       // TODO: literal elements, etc, pretty much everything in the XSLT spec
