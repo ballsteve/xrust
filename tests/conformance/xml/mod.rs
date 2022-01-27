@@ -7,5 +7,7 @@ mod xmltest_valid_ext_sa;
 mod xmltest_valid_not_sa;
 mod xmltest_valid_sa;
 mod xmltest_valid_sa_canonicalonly;
+mod oasis_invalid;
+mod oasis_valid;
 
 
