@@ -2528,6 +2528,7 @@ fn notwfsa168() {
 
     let testxml = parsexml::parse(&fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml").unwrap());
 
+    assert!(testxml.is_err());
 }
 
 #[test]
@@ -2542,6 +2543,7 @@ fn notwfsa169() {
 
     let testxml = parsexml::parse(&fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml").unwrap());
 
+    assert!(testxml.is_err());
 }
 
 #[test]
@@ -2556,6 +2558,7 @@ fn notwfsa170() {
 
     let testxml = parsexml::parse(&fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml").unwrap());
 
+    assert!(testxml.is_err());
 }
 
 #[test]
