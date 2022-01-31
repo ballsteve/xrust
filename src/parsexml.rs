@@ -15,7 +15,7 @@ use nom:: {
   character::complete::{char, multispace0, multispace1, none_of,},
   sequence::tuple,
   multi::{many0, many1},
-  combinator::{map, opt},
+  combinator::{map, opt, value},
   bytes::complete::{tag, take_until},
   sequence::delimited,
 };
@@ -285,13 +285,24 @@ fn misc(input: &str) -> IResult<&str, Vec<XMLNode>> {
 
 // CharData ::= [^<&]* - (']]>')
 fn chardata(input: &str) -> IResult<&str, String> {
-  map(
-    many1(none_of("<&")),
-    |v| {
-      v.iter().collect::<String>()
-    }
-  )
-  (input)
+    map(
+        many0(alt((
+        value(">".to_string(),tag("&gt;")),
+        value("<".to_string(),tag("&lt;")),
+        value("&".to_string(),tag("&amp;")),
+        value("\"".to_string(),tag("&quot;")),
+        value("\'".to_string(),tag("&apos;")),
+        map(
+            many1(none_of("<&")),
+            |v| {
+                v.iter().collect::<String>()
+            }
+        )
+    ))),
+              |v| {
+                  v.join("")
+              }
+        )(input)
 }
 
 // QualifiedName
