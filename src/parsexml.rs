@@ -15,7 +15,7 @@ use nom:: {
   character::complete::{char, multispace0, multispace1, none_of,},
   sequence::tuple,
   multi::{many0, many1},
-  combinator::{map, opt},
+  combinator::{map, opt, value},
   bytes::complete::{tag, take_until},
   sequence::delimited,
 };
@@ -33,13 +33,14 @@ use crate::xdmerror::*;
 // This structure allows multiple root elements.
 // An XML document will only be well-formed if there is exactly one element.
 // However, external general entities may have more than one element.
+#[derive(PartialEq)]
 pub struct XMLDocument {
   pub prologue: Vec<XMLNode>,
   pub content: Vec<XMLNode>,
   pub epilogue: Vec<XMLNode>,
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq)]
 pub enum XMLNode {
   Element(QualifiedName, Vec<XMLNode>, Vec<XMLNode>), // Element name, attributes, content
   Attribute(QualifiedName, Value),
@@ -284,13 +285,24 @@ fn misc(input: &str) -> IResult<&str, Vec<XMLNode>> {
 
 // CharData ::= [^<&]* - (']]>')
 fn chardata(input: &str) -> IResult<&str, String> {
-  map(
-    many1(none_of("<&")),
-    |v| {
-      v.iter().collect::<String>()
-    }
-  )
-  (input)
+    map(
+        many0(alt((
+        value(">".to_string(),tag("&gt;")),
+        value("<".to_string(),tag("&lt;")),
+        value("&".to_string(),tag("&amp;")),
+        value("\"".to_string(),tag("&quot;")),
+        value("\'".to_string(),tag("&apos;")),
+        map(
+            many1(none_of("<&")),
+            |v| {
+                v.iter().collect::<String>()
+            }
+        )
+    ))),
+              |v| {
+                  v.join("")
+              }
+        )(input)
 }
 
 // QualifiedName
