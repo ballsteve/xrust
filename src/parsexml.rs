@@ -9,6 +9,8 @@
 //!	CDATA sections
 
 extern crate nom;
+
+use std::str::FromStr;
 use nom:: {
   IResult,
   branch::alt,
@@ -16,7 +18,7 @@ use nom:: {
   sequence::tuple,
   multi::{many0, many1},
   combinator::{map, opt, value},
-  bytes::complete::{tag, take_until},
+  bytes::complete::{tag, take_until, take_while_m_n},
   sequence::delimited,
 };
 use crate::qname::*;
@@ -286,24 +288,58 @@ fn misc(input: &str) -> IResult<&str, Vec<XMLNode>> {
 // CharData ::= [^<&]* - (']]>')
 fn chardata(input: &str) -> IResult<&str, String> {
     map(
-        many0(alt((
+        many0(
+            alt((
+                chardata_escapes,
+                chardata_literal
+            ))
+        ),
+        |v| {
+                  v.join("")
+              }
+        )(input)
+}
+
+fn chardata_escapes(input: &str) -> IResult<&str, String> {
+    alt((
+
         value(">".to_string(),tag("&gt;")),
         value("<".to_string(),tag("&lt;")),
         value("&".to_string(),tag("&amp;")),
         value("\"".to_string(),tag("&quot;")),
         value("\'".to_string(),tag("&apos;")),
-        map(
-            many1(none_of("<&")),
-            |v| {
-                v.iter().collect::<String>()
-            }
-        )
-    ))),
-              |v| {
-                  v.join("")
-              }
-        )(input)
+    ))(input)
 }
+
+fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
+    let parse_hex =
+        map (
+        take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
+            |hex| u32::from_str_radix(hex, 16)
+        );
+
+    let parse_decimal =
+        map (
+            take_while_m_n(1, 6, |c: char| c.is_ascii_digit()),
+            |hex| u32::from_str(hex).unwrap()
+        );
+
+
+    alt((
+        delimited(tag("#x"),,tag(";")),
+        delimited(tag("#"),,tag(";")),
+        ))
+}
+
+fn chardata_literal(input: &str) -> IResult<&str, String> {
+    map(
+        many1(none_of("<&")),
+        |v| {
+            v.iter().collect::<String>()
+        }
+    )(input)
+}
+
 
 // QualifiedName
 fn qualname(input: &str) -> IResult<&str, QualifiedName> {
