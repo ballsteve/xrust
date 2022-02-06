@@ -21,6 +21,7 @@ use nom:: {
   bytes::complete::{tag, take_until, take_while_m_n},
   sequence::delimited,
 };
+use nom::combinator::{map_opt, map_res};
 use crate::qname::*;
 use crate::item::*;
 use crate::parsecommon::*;
@@ -302,7 +303,7 @@ fn chardata(input: &str) -> IResult<&str, String> {
 
 fn chardata_escapes(input: &str) -> IResult<&str, String> {
     alt((
-
+        //chardata_unicode_codepoint,
         value(">".to_string(),tag("&gt;")),
         value("<".to_string(),tag("&lt;")),
         value("&".to_string(),tag("&amp;")),
@@ -315,20 +316,24 @@ fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
     let parse_hex =
         map (
         take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
-            |hex| u32::from_str_radix(hex, 16)
+            |hex| {
+                u32::from_str_radix(hex, 16)
+            }
         );
 
     let parse_decimal =
         map (
             take_while_m_n(1, 6, |c: char| c.is_ascii_digit()),
-            |hex| u32::from_str(hex).unwrap()
+            |hex| u32::from_str(hex)
         );
 
-
+    map_opt(
     alt((
-        delimited(tag("#x"),,tag(";")),
-        delimited(tag("#"),,tag(";")),
-        ))
+        delimited(tag("#x"),parse_hex,tag(";")),
+        delimited(tag("#"),parse_decimal,tag(";")),
+        )),
+    |value| Option::from(std::char::from_u32(value.unwrap()).unwrap().to_string())
+    )(input)
 }
 
 fn chardata_literal(input: &str) -> IResult<&str, String> {
