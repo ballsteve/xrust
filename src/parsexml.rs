@@ -291,6 +291,7 @@ fn chardata(input: &str) -> IResult<&str, String> {
     map(
         many0(
             alt((
+                chardata_cdata,
                 chardata_escapes,
                 chardata_literal
             ))
@@ -301,9 +302,18 @@ fn chardata(input: &str) -> IResult<&str, String> {
         )(input)
 }
 
+fn chardata_cdata(input: &str) -> IResult<&str, String> {
+    map(
+    delimited(
+        tag("<![CDATA["),take_until("]]>"),tag("]]>")
+        ),
+        |cd: &str| cd.to_string()
+    )(input)
+}
+
 fn chardata_escapes(input: &str) -> IResult<&str, String> {
     alt((
-        //chardata_unicode_codepoint,
+        chardata_unicode_codepoint,
         value(">".to_string(),tag("&gt;")),
         value("<".to_string(),tag("&lt;")),
         value("&".to_string(),tag("&amp;")),
@@ -317,6 +327,8 @@ fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
         map (
         take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
             |hex| {
+                println!("H1-{:?}", hex);
+                println!("H2-{:?}", u32::from_str_radix(hex, 16));
                 u32::from_str_radix(hex, 16)
             }
         );
@@ -324,13 +336,17 @@ fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
     let parse_decimal =
         map (
             take_while_m_n(1, 6, |c: char| c.is_ascii_digit()),
-            |hex| u32::from_str(hex)
+            |dec| {
+                println!("D1-{:?}", dec);
+                println!("D2-{:?}", u32::from_str_radix(dec, 16));
+                u32::from_str(dec)
+            }
         );
 
     map_opt(
     alt((
-        delimited(tag("#x"),parse_hex,tag(";")),
-        delimited(tag("#"),parse_decimal,tag(";")),
+        delimited(tag("&#x"),parse_hex,tag(";")),
+        delimited(tag("&#"),parse_decimal,tag(";")),
         )),
     |value| Option::from(std::char::from_u32(value.unwrap()).unwrap().to_string())
     )(input)
@@ -530,5 +546,15 @@ mod tests {
 	    panic!("root is not an element node")
 	  }
 	}
+    }
+
+    #[test]
+    fn test_cdata(){
+        let doc = "<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>";
+        let result = parse(doc).unwrap();
+        //println!("{:?}",&result.prologue.len());
+        //println!("{:?}",&result.content[0][0]);
+        //println!("{:?}",&result.epilogue.len());
+        assert_eq!(1,1);
     }
 }
