@@ -769,6 +769,7 @@ mod tests {
       assert_eq!(e[1].to_name().get_localname(), "class");
     }
 
+    // Start from a Node item
     #[test]
     fn eval_descendant_1() {
       let r = setup_deep();
@@ -792,6 +793,36 @@ mod tests {
 	];
 
       let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 4);
+    }
+
+    // Start from a Document item
+    #[test]
+    fn eval_descendant_2() {
+      let r = setup_deep();
+      let t = Rc::new(r.owner_document().unwrap());
+      let it = Rc::new(Item::Document((*t).clone()));
+
+      let dc = DynamicContext::new(None);
+
+      // XPath == descendant::*
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Descendant,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+
+      let e = evaluate(&dc, Some(vec![it]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -1875,7 +1906,7 @@ mod tests {
 	      vec![
 		Constructor::LiteralAttribute(
 		  QualifiedName::new(None, None, "mode".to_string()),
-		  Value::String(String::from("testA"))
+		  vec![Constructor::Literal(Value::String(String::from("testA")))]
 		),
 	        Constructor::Literal(Value::String("one".to_string())),
 	      ]
@@ -1884,7 +1915,7 @@ mod tests {
 	      vec![
 		Constructor::LiteralAttribute(
 		  QualifiedName::new(None, None, "mode".to_string()),
-		  Value::String(String::from("testB"))
+		  vec![Constructor::Literal(Value::String(String::from("testB")))]
 		),
 	        Constructor::Literal(Value::String("two".to_string())),
 	      ]

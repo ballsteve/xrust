@@ -493,6 +493,17 @@ fn evaluate_one(
 		  }
 		}
 	      }
+	      Axis::Descendant => {
+		match d.get_root_element() {
+		  Some(n) => {
+		    let seq = n.descendants().iter()
+		      .filter(|c| is_node_match(&nm.nodetest, &c))
+		      .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+	      	    Ok(predicates(dc, seq, p))
+		  }
+		  None => Ok(vec![])
+		}
+	      }
 	      // Only used for pattern matching: matches "/"
 	      Axis::SelfDocument |
 	      Axis::ParentDocument => {
@@ -503,7 +514,7 @@ fn evaluate_one(
 	      Axis::Attribute => Ok(vec![]),
 	      _ => {
 	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (document)".to_string()})
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("not yet implemented (document) ({})", nm.axis.to_string())})
 	      }
 	    }
 	  }
