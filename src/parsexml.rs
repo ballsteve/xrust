@@ -289,7 +289,7 @@ fn misc(input: &str) -> IResult<&str, Vec<XMLNode>> {
 // CharData ::= [^<&]* - (']]>')
 fn chardata(input: &str) -> IResult<&str, String> {
     map(
-        many0(
+        many1(
             alt((
                 chardata_cdata,
                 chardata_escapes,
@@ -297,7 +297,9 @@ fn chardata(input: &str) -> IResult<&str, String> {
             ))
         ),
         |v| {
-                  v.join("")
+                v.join("")
+            //v.into_iter().collect::<String>()
+            //if v.len() > 0  { v.join("") }
               }
         )(input)
 }
@@ -415,146 +417,163 @@ mod tests {
     #[test]
     fn empty() {
         let doc = parse("<Test/>").expect("failed to parse XML \"<Test/>\"");
-	assert_eq!(doc.prologue.len(), 0);
-	assert_eq!(doc.epilogue.len(), 0);
-	assert_eq!(doc.content.len(), 1);
-	match &doc.content[0] {
-	  XMLNode::Element(n, a, c) => {
-	    assert_eq!(n.get_localname(), "Test");
-	    assert_eq!(a.len(), 0);
-	    assert_eq!(c.len(), 0);
-	  }
-	  _ => {
-	    panic!("root is not an element node")
-	  }
-	}
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 0);
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
     }
 
     #[test]
     fn root_element() {
         let doc = parse("<Test></Test>").expect("failed to parse XML \"<Test></Test>\"");
-	assert_eq!(doc.prologue.len(), 0);
-	assert_eq!(doc.epilogue.len(), 0);
-	assert_eq!(doc.content.len(), 1);
-	match &doc.content[0] {
-	  XMLNode::Element(n, a, c) => {
-	    assert_eq!(n.get_localname(), "Test");
-	    assert_eq!(a.len(), 0);
-	    assert_eq!(c.len(), 0);
-	  }
-	  _ => {
-	    panic!("root is not an element node")
-	  }
-	}
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 0);
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
     }
 
     #[test]
     fn root_element_text() {
         let doc = parse("<Test>Foobar</Test>").expect("failed to parse XML \"<Test>Foobar</Test>\"");
-	assert_eq!(doc.prologue.len(), 0);
-	assert_eq!(doc.epilogue.len(), 0);
-	assert_eq!(doc.content.len(), 1);
-	match &doc.content[0] {
-	  XMLNode::Element(n, a, c) => {
-	    assert_eq!(n.get_localname(), "Test");
-	    assert_eq!(a.len(), 0);
-	    assert_eq!(c.len(), 1);
-	    match &c[0] {
-	      XMLNode::Text(v) => {
-	        assert_eq!(v.to_string(), "Foobar")
-	      }
-	      _ => panic!("root element content is not text"),
-	    }
-	  }
-	  _ => {
-	    panic!("root is not an element node")
-	  }
-	}
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 1);
+                match &c[0] {
+                    XMLNode::Text(v) => {
+                        assert_eq!(v.to_string(), "Foobar")
+                    }
+                    _ => panic!("root element content is not text"),
+                }
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
     }
 
     #[test]
     fn nested() {
         let doc = parse("<Test><Foo>bar</Foo></Test>").expect("failed to parse XML \"<Test><Foo>bar</Foo></Test>\"");
-	assert_eq!(doc.prologue.len(), 0);
-	assert_eq!(doc.epilogue.len(), 0);
-	assert_eq!(doc.content.len(), 1);
-	match &doc.content[0] {
-	  XMLNode::Element(n, a, c) => {
-	    assert_eq!(n.get_localname(), "Test");
-	    assert_eq!(a.len(), 0);
-	    assert_eq!(c.len(), 1);
-	    match &c[0] {
-	      XMLNode::Element(m, b, d) => {
-	        assert_eq!(m.get_localname(), "Foo");
-	    	assert_eq!(b.len(), 0);
-	    	assert_eq!(d.len(), 1);
-	    	match &d[0] {
-	      	  XMLNode::Text(w) => {
-	            assert_eq!(w.to_string(), "bar")
-	      	  }
-	      	  _ => panic!("child element content is not text"),
-	    	}
-	      }
-	      _ => panic!("child element is not an element"),
-	    }
-	  }
-	  _ => {
-	    panic!("root is not an element node")
-	  }
-	}
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 1);
+                match &c[0] {
+                    XMLNode::Element(m, b, d) => {
+                        assert_eq!(m.get_localname(), "Foo");
+                        assert_eq!(b.len(), 0);
+                        assert_eq!(d.len(), 1);
+                        match &d[0] {
+                            XMLNode::Text(w) => {
+                                assert_eq!(w.to_string(), "bar")
+                            }
+                            _ => panic!("child element content is not text"),
+                        }
+                    }
+                    _ => panic!("child element is not an element"),
+                }
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
     }
 
     #[test]
     fn mixed() {
         let doc = parse("<Test>i1<Foo>bar</Foo>i2</Test>").expect("failed to parse XML \"<Test>i1<Foo>bar</Foo>i2</Test>\"");
-	assert_eq!(doc.prologue.len(), 0);
-	assert_eq!(doc.epilogue.len(), 0);
-	assert_eq!(doc.content.len(), 1);
-	match &doc.content[0] {
-	  XMLNode::Element(n, a, c) => {
-	    assert_eq!(n.get_localname(), "Test");
-	    assert_eq!(a.len(), 0);
-	    assert_eq!(c.len(), 3);
-	    match &c[0] {
-	      XMLNode::Text(y) => {
-	        assert_eq!(y.to_string(), "i1")
-	      }
-	      _ => panic!("first mixed element content is not text")
-	    };
-	    match &c[1] {
-	      XMLNode::Element(m, b, d) => {
-	        assert_eq!(m.get_localname(), "Foo");
-	    	assert_eq!(b.len(), 0);
-	    	assert_eq!(d.len(), 1);
-	    	match &d[0] {
-	      	  XMLNode::Text(w) => {
-	            assert_eq!(w.to_string(), "bar")
-	      	  }
-	      	  _ => panic!("child element content is not text"),
-	    	}
-	      }
-	      _ => panic!("child element is not an element"),
-	    };
-	    match &c[2] {
-	      XMLNode::Text(z) => {
-	        assert_eq!(z.to_string(), "i2")
-	      }
-	      _ => panic!("third mixed element content is not text")
-	    };
-	  }
-	  _ => {
-	    panic!("root is not an element node")
-	  }
-	}
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 3);
+                match &c[0] {
+                    XMLNode::Text(y) => {
+                        assert_eq!(y.to_string(), "i1")
+                    }
+                    _ => panic!("first mixed element content is not text")
+                };
+                match &c[1] {
+                    XMLNode::Element(m, b, d) => {
+                        assert_eq!(m.get_localname(), "Foo");
+                        assert_eq!(b.len(), 0);
+                        assert_eq!(d.len(), 1);
+                        match &d[0] {
+                            XMLNode::Text(w) => {
+                                assert_eq!(w.to_string(), "bar")
+                            }
+                            _ => panic!("child element content is not text"),
+                        }
+                    }
+                    _ => panic!("child element is not an element"),
+                };
+                match &c[2] {
+                    XMLNode::Text(z) => {
+                        assert_eq!(z.to_string(), "i2")
+                    }
+                    _ => panic!("third mixed element content is not text")
+                };
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
     }
 
     #[test]
-    fn test_cdata(){
+    fn cdata() {
         let doc = "<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>";
-        let result = parse(doc).unwrap();
-        //println!("{:?}",&result.prologue.len());
-        //println!("{:?}",&result.content[0][0]);
-        //println!("{:?}",&result.epilogue.len());
-        assert_eq!(1,1);
+        let result = parse(doc).expect("failed to parse XML \"<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>\"");
+        assert_eq!(result.prologue.len(), 0);
+        assert_eq!(result.epilogue.len(), 0);
+        assert_eq!(result.content.len(), 1);
+        match &result.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "doc");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 1);
+                match &c[0]{
+                    XMLNode::Text(T) => {
+                        assert_eq!(T.to_string(), "<doc<!DOCTYPE&a%b&#c]] >] ]> ]<![CDATA[");
+                    }
+                    _ => {
+                        panic!("element content is not text")
+                    }
+                }
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
     }
 }
