@@ -11,6 +11,7 @@ use std::cmp::Ordering;
 use std::rc::Rc;
 use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
+use chrono::{Date, DateTime, Local};
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -647,7 +648,7 @@ pub enum Value {
     /// untyped atomic value
     UntypedAtomic,
     Duration,
-    Time,
+    Time(DateTime<Local>),	// Ignore the date part. Perhaps use Instant instead?
     Decimal(Decimal),
     Float(f32),
     Double(f64),
@@ -664,9 +665,9 @@ pub enum Value {
     UnsignedShort(u16),
     UnsignedByte(u8),
     PositiveInteger(PositiveInteger),
-    DateTime,
+    DateTime(DateTime<Local>),
     DateTimeStamp,
-    Date,
+    Date(Date<Local>),
     String(String),
     NormalizedString(NormalizedString),
     /// Like normalizedString, but without leading, trailing and consecutive whitespace
@@ -710,6 +711,9 @@ impl Value {
 	    Value::NonNegativeInteger(i) => i.value().to_string(),
 	    Value::PositiveInteger(i) => i.value().to_string(),
 	    Value::NegativeInteger(i) => i.value().to_string(),
+	    Value::Time(t) => t.to_string(),
+	    Value::DateTime(dt) => dt.to_string(),
+	    Value::Date(d) => d.to_string(),
  	    _ => "".to_string(),
 	}
     }
@@ -837,7 +841,7 @@ impl Value {
         Value::AnyAtomicType => "AnyAtomicType",
         Value::UntypedAtomic => "UntypedAtomic",
         Value::Duration => "Duration",
-        Value::Time => "Time",
+        Value::Time(_) => "Time",
         Value::Decimal(_) => "Decimal",
         Value::Float(_) => "Float",
         Value::Double(_) => "Double",
@@ -854,9 +858,9 @@ impl Value {
         Value::UnsignedShort(_) => "UnsignedShort",
         Value::UnsignedByte(_) => "UnsignedByte",
         Value::PositiveInteger(_) => "PositiveInteger",
-        Value::DateTime => "DateTime",
+        Value::DateTime(_) => "DateTime",
         Value::DateTimeStamp => "DateTimeStamp",
-        Value::Date => "Date",
+        Value::Date(_) => "Date",
         Value::String(_) => "String",
         Value::NormalizedString(_) => "NormalizedString",
         Value::Token => "Token",

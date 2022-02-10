@@ -7,7 +7,9 @@
 use std::rc::Rc;
 use std::ops::ControlFlow;
 use unicode_segmentation::UnicodeSegmentation;
+use chrono::{DateTime, Local, Datelike, Timelike, FixedOffset};
 use crate::qname::*;
+use crate::parsepicture::parse as picture_parse;
 use crate::xdmerror::*;
 use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator, OutputDefinition};
 //use decimal::d128;
@@ -1761,6 +1763,14 @@ impl StaticContext {
   /// * floor()
   /// * ceiling()
   /// * round()
+  /// These functions are defined for XPath 2.0:
+  ///
+  /// * current-dateTime()
+  /// * current-date()
+  /// * current-time()
+  /// * format-dateTime()
+  /// * format-date()
+  /// * format-time()
   pub fn new_with_builtins() -> StaticContext {
     let sc = StaticContext{
       funcs: RefCell::new(HashMap::new()),
@@ -1971,6 +1981,60 @@ impl StaticContext {
 	prefix: None,
 	params: vec![],
 	body: Some(func_round)
+      }
+    );
+    sc.funcs.borrow_mut().insert("current-dateTime".to_string(),
+      Function{
+        name: "current-dateTime".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_current_date_time)
+      }
+    );
+    sc.funcs.borrow_mut().insert("current-date".to_string(),
+      Function{
+        name: "current-date".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_current_date)
+      }
+    );
+    sc.funcs.borrow_mut().insert("current-time".to_string(),
+      Function{
+        name: "current-time".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_current_time)
+      }
+    );
+    sc.funcs.borrow_mut().insert("format-dateTime".to_string(),
+      Function{
+        name: "format-dateTime".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_format_date_time)
+      }
+    );
+    sc.funcs.borrow_mut().insert("format-date".to_string(),
+      Function{
+        name: "format-date".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_format_date)
+      }
+    );
+    sc.funcs.borrow_mut().insert("format-time".to_string(),
+      Function{
+        name: "format-time".to_string(),
+	nsuri: None,
+	prefix: None,
+	params: vec![],
+	body: Some(func_format_time)
       }
     );
 
@@ -2547,6 +2611,150 @@ pub fn func_round(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
       }
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
+  }
+}
+
+pub fn func_current_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+  // must have 0 arguments
+  // TODO: check number of arguments
+  // TODO: do the check in static analysis phase
+
+  Ok(vec![Rc::new(Item::Value(Value::DateTime(Local::now())))])
+}
+
+pub fn func_current_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+  // must have 0 arguments
+  // TODO: check number of arguments
+  // TODO: do the check in static analysis phase
+
+  Ok(vec![Rc::new(Item::Value(Value::Date(Local::today())))])
+}
+
+pub fn func_current_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+  // must have 0 arguments
+  // TODO: check number of arguments
+  // TODO: do the check in static analysis phase
+
+  Ok(vec![Rc::new(Item::Value(Value::Time(Local::now())))])
+}
+
+pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+  // must have 2 or 5 arguments
+  // TODO: implement 5 argument version
+
+  match args.len() {
+    2 => {
+      // First argument is the dateTime value
+      // Second argument is the picture
+      let pic = match picture_parse(&args[1].to_string()) {
+        Ok(p) => p,
+	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("bad picture"),})
+      };
+
+      match args[0].len() {
+        0 => Ok(vec![]),	// Empty value returns empty sequence
+        1 => {
+	  match *args[0][0] {
+	    Item::Value(Value::DateTime(dt)) => {
+	      Ok(vec![Rc::new(Item::Value(Value::String(dt.format(&pic).to_string())))])
+	    }
+	    Item::Value(Value::String(ref s)) => {
+	      // Try and coerce into a DateTime value
+	      match DateTime::<FixedOffset>::parse_from_rfc3339(s.as_str()) {
+	        Ok(dt) => {
+	      	  Ok(vec![Rc::new(Item::Value(Value::String(dt.format(&pic).to_string())))])
+		}
+		Err(e) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine date value"),})
+	      }
+	    }
+	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a dateTime value"),})
+	  }
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),}),
+      }
+    }
+    5 => Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented"),}),
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),}),
+  }
+}
+
+pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+  // must have 2 or 5 arguments
+  // TODO: implement 5 argument version
+
+  match args.len() {
+    2 => {
+      // First argument is the date value
+      // Second argument is the picture
+      let pic = match picture_parse(&args[1].to_string()) {
+        Ok(p) => p,
+	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("bad picture"),})
+      };
+      match args[0].len() {
+        0 => Ok(vec![]),	// Empty value returns empty sequence
+        1 => {
+	  match *args[0][0] {
+	    Item::Value(Value::Date(dt)) => {
+	      Ok(vec![Rc::new(Item::Value(Value::String(dt.format(&pic).to_string())))])
+	    }
+	    Item::Value(Value::String(ref s)) => {
+	      // Try and coerce into a Date value
+	      let a = format!("{}T00:00:00Z", s);
+	      match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
+	        Ok(dt) => {
+	      	  Ok(vec![Rc::new(Item::Value(Value::String(dt.date().format(&pic).to_string())))])
+		}
+		Err(e) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine date value"),})
+	      }
+	    }
+	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a date value"),})
+	  }
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),}),
+      }
+    }
+    5 => Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented"),}),
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),}),
+  }
+}
+
+pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+  // must have 2 or 5 arguments
+  // TODO: implement 5 argument version
+
+  match args.len() {
+    2 => {
+      // First argument is the time value
+      // Second argument is the picture
+      let pic = match picture_parse(&args[1].to_string()) {
+        Ok(p) => p,
+	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("bad picture"),})
+      };
+      match args[0].len() {
+        0 => Ok(vec![]),	// Empty value returns empty sequence
+        1 => {
+	  match *args[0][0] {
+	    Item::Value(Value::Time(dt)) => {
+	      Ok(vec![Rc::new(Item::Value(Value::String(dt.format(&pic).to_string())))])
+	    }
+	    Item::Value(Value::String(ref s)) => {
+	      // Try and coerce into a DateTime value
+	      let a = format!("1900-01-01T{}Z", s);
+	      match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
+	        Ok(dt) => {
+	      	  Ok(vec![Rc::new(Item::Value(Value::String(dt.time().format(&pic).to_string())))])
+		}
+		Err(e) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine time value"),})
+	      }
+	    }
+	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a time value"),})
+	  }
+	}
+	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a singleton sequence"),}),
+      }
+    }
+    5 => Result::Err(Error{kind: ErrorKind::NotImplemented, message: String::from("not yet implemented"),}),
+    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),}),
   }
 }
 
@@ -3593,6 +3801,128 @@ mod tests {
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
 	_ => panic!("not a singleton double value")
+      }
+    }
+
+    // Date/time related functions
+
+    #[test]
+    fn function_call_current_date() {
+      let dc = DynamicContext::new(None);
+      let c = Constructor::FunctionCall(
+        Function::new("current-date".to_string(), vec![], Some(func_current_date)),
+	vec![]
+      );
+      let vc = vec![c];
+      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match &*r[0] {
+        Item::Value(Value::Date(d)) => {
+	  assert_eq!(d.year(), Local::today().year());
+	  assert_eq!(d.month(), Local::today().month());
+	  assert_eq!(d.day(), Local::today().day());
+	}
+	_ => panic!("not a singleton date value")
+      }
+    }
+
+    #[test]
+    fn function_call_current_time() {
+      let dc = DynamicContext::new(None);
+      let c = Constructor::FunctionCall(
+        Function::new("current-time".to_string(), vec![], Some(func_current_time)),
+	vec![]
+      );
+      let vc = vec![c];
+      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match &*r[0] {
+        Item::Value(Value::Time(t)) => {
+	  assert_eq!(t.hour(), Local::now().hour());
+	  assert_eq!(t.minute(), Local::now().minute());
+	  assert_eq!(t.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+	}
+	_ => panic!("not a singleton time value")
+      }
+    }
+
+    #[test]
+    fn function_call_current_date_time() {
+      let dc = DynamicContext::new(None);
+      let c = Constructor::FunctionCall(
+        Function::new("current-dateTime".to_string(), vec![], Some(func_current_date_time)),
+	vec![]
+      );
+      let vc = vec![c];
+      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match &*r[0] {
+        Item::Value(Value::DateTime(dt)) => {
+	  assert_eq!(dt.year(), Local::today().year());
+	  assert_eq!(dt.month(), Local::today().month());
+	  assert_eq!(dt.day(), Local::today().day());
+	  assert_eq!(dt.hour(), Local::now().hour());
+	  assert_eq!(dt.minute(), Local::now().minute());
+	  assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+	}
+	_ => panic!("not a singleton dateTime value")
+      }
+    }
+
+    #[test]
+    fn function_call_format_date() {
+      let dc = DynamicContext::new(None);
+      let c = Constructor::FunctionCall(
+        Function::new("format-date".to_string(), vec![], Some(func_format_date)),
+	vec![
+	  vec![Constructor::Literal(Value::String("2022-01-03".to_string()))],
+	  vec![Constructor::Literal(Value::String("[D] [M] [Y]".to_string()))],
+	]
+      );
+      let vc = vec![c];
+      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match &*r[0] {
+        Item::Value(Value::String(d)) => assert_eq!(d, "03 01 2022"),
+	_ => panic!("not a singleton string value")
+      }
+    }
+
+    #[test]
+    fn function_call_format_date_time() {
+      let dc = DynamicContext::new(None);
+      let c = Constructor::FunctionCall(
+        Function::new("format-dateTime".to_string(), vec![], Some(func_format_date_time)),
+	vec![
+	  vec![Constructor::Literal(Value::String("2022-01-03T04:05:06.789+10:00".to_string()))],
+	  vec![Constructor::Literal(Value::String("[H]:[m] [D]/[M]/[Y]".to_string()))],
+	]
+      );
+      let vc = vec![c];
+      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match &*r[0] {
+        Item::Value(Value::String(d)) => assert_eq!(d, "04:05 03/01/2022"),
+	_ => panic!("not a singleton string value")
+      }
+    }
+
+    #[test]
+    fn function_call_format_time() {
+      let dc = DynamicContext::new(None);
+      let c = Constructor::FunctionCall(
+        Function::new("format-time".to_string(), vec![], Some(func_format_time)),
+	vec![
+	  vec![Constructor::Literal(Value::String("04:05:06.789".to_string()))],
+	  vec![Constructor::Literal(Value::String("[H]:[m]:[s]".to_string()))],
+	]
+      );
+      let vc = vec![c];
+      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      assert_eq!(r.len(), 1);
+      match &*r[0] {
+        Item::Value(Value::String(d)) => assert_eq!(d, "04:05:06"),
+	_ => panic!("not a singleton string value")
       }
     }
 
