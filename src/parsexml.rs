@@ -357,7 +357,7 @@ fn chardata_literal(input: &str) -> IResult<&str, String> {
                    let CDEnd = &[']',']','>'][..];
                    let mut w = v.clone();
                    while !w.is_empty() {
-                       if w.starts_with(CDEnd) { return false; };
+                       if w.starts_with(CDEnd) { return false; }
                        w = &w[1..];
                    }
                    true
