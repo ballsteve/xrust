@@ -297,8 +297,6 @@ fn chardata(input: &str) -> IResult<&str, String> {
         ),
         |v| {
                 v.join("")
-            //v.into_iter().collect::<String>()
-            //if v.len() > 0  { v.join("") }
               }
         )(input)
 }
@@ -328,8 +326,6 @@ fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
         map (
         take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
             |hex| {
-                println!("H1-{:?}", hex);
-                println!("H2-{:?}", u32::from_str_radix(hex, 16));
                 u32::from_str_radix(hex, 16)
             }
         );
@@ -338,8 +334,6 @@ fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
         map (
             take_while_m_n(1, 6, |c: char| c.is_ascii_digit()),
             |dec| {
-                println!("D1-{:?}", dec);
-                println!("D2-{:?}", u32::from_str_radix(dec, 16));
                 u32::from_str(dec)
             }
         );
@@ -363,7 +357,7 @@ fn chardata_literal(input: &str) -> IResult<&str, String> {
                    let CDEnd = &[']',']','>'][..];
                    let mut w = v.clone();
                    while !w.is_empty() {
-                       if w.starts_with(CDEnd) { return false; }
+                       if w.starts_with(CDEnd) { return false; };
                        w = &w[1..];
                    }
                    true
@@ -371,17 +365,6 @@ fn chardata_literal(input: &str) -> IResult<&str, String> {
     ),
         |c| c.iter().collect::<String>()
     )(input)
-/*
-    let chars = map(
-        many1(none_of("<&")),
-        |v| {
-            v.iter().collect::<String>()
-        }
-    );
-
-    verify(chars,
-        |c: &str| !c.iter().collect::<String>().contains("]]>")
-   )(input) */
 }
 
 
