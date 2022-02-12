@@ -17,13 +17,10 @@ use nom:: {
   character::complete::{char, multispace0, multispace1, none_of,},
   sequence::tuple,
   multi::{many0, many1},
-  combinator::{fail, map, opt, value},
+  combinator::{map, map_opt, opt, value,verify},
   bytes::complete::{tag, take_until, take_while_m_n},
   sequence::delimited,
 };
-use nom::combinator::{map_opt, map_res};
-use nom::Err::Error;
-use nom::error::make_error;
 use crate::qname::*;
 use crate::item::*;
 use crate::parsecommon::*;
@@ -356,19 +353,35 @@ fn chardata_unicode_codepoint(input: &str) -> IResult<&str, String> {
     )(input)
 }
 
-fn chardata_literal(input: &str) -> IResult<&str, String, Error> {
+fn chardata_literal(input: &str) -> IResult<&str, String> {
+
     map(
-        many1(none_of("<&]")),
-        |v| {
-            let cl = v.iter().collect::<String>();
-            if contains(&cl, "]]>"){
-                Err(Error( ))
-                //fail
-            } else {
-                cl
-            }
-        }
+    verify(many1(none_of("<&")),
+           |v: &[char]|
+               {
+                   // chardata cannot contain ]]>
+                   let CDEnd = &[']',']','>'][..];
+                   let mut w = v.clone();
+                   while !w.is_empty() {
+                       if w.starts_with(CDEnd) { return false; }
+                       w = &w[1..];
+                   }
+                   true
+               }
+    ),
+        |c| c.iter().collect::<String>()
     )(input)
+/*
+    let chars = map(
+        many1(none_of("<&")),
+        |v| {
+            v.iter().collect::<String>()
+        }
+    );
+
+    verify(chars,
+        |c: &str| !c.iter().collect::<String>().contains("]]>")
+   )(input) */
 }
 
 
