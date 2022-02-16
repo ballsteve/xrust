@@ -711,9 +711,9 @@ impl Value {
 	    Value::NonNegativeInteger(i) => i.value().to_string(),
 	    Value::PositiveInteger(i) => i.value().to_string(),
 	    Value::NegativeInteger(i) => i.value().to_string(),
-	    Value::Time(t) => t.to_string(),
-	    Value::DateTime(dt) => dt.to_string(),
-	    Value::Date(d) => d.to_string(),
+	    Value::Time(t) => t.format("%H:%M:%S.%f").to_string(),
+	    Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
+	    Value::Date(d) => d.format("%Y-%m-%d").to_string(),
  	    _ => "".to_string(),
 	}
     }

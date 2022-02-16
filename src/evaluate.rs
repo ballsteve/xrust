@@ -2664,7 +2664,7 @@ pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn:
 	        Ok(dt) => {
 	      	  Ok(vec![Rc::new(Item::Value(Value::String(dt.format(&pic).to_string())))])
 		}
-		Err(e) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine date value"),})
+		Err(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine date value"),})
 	      }
 	    }
 	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a dateTime value"),})
@@ -2704,7 +2704,7 @@ pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
 	        Ok(dt) => {
 	      	  Ok(vec![Rc::new(Item::Value(Value::String(dt.date().format(&pic).to_string())))])
 		}
-		Err(e) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine date value"),})
+		Err(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine date value"),})
 	      }
 	    }
 	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a date value"),})
@@ -2744,7 +2744,7 @@ pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
 	        Ok(dt) => {
 	      	  Ok(vec![Rc::new(Item::Value(Value::String(dt.time().format(&pic).to_string())))])
 		}
-		Err(e) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine time value"),})
+		Err(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("unable to determine time value"),})
 	      }
 	    }
 	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a time value"),})
