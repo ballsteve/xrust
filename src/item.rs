@@ -10,6 +10,7 @@ use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
 use rust_decimal::Decimal;
+#[cfg(test)]
 use rust_decimal_macros::dec;
 use chrono::{Date, DateTime, Local};
 use crate::qname::QualifiedName;

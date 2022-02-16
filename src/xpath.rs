@@ -5,6 +5,7 @@
 extern crate nom;
 use std::str::FromStr;
 use rust_decimal::Decimal;
+#[cfg(test)]
 use std::rc::Rc;
 use nom::{
   IResult,
@@ -22,15 +23,18 @@ use crate::item::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
 use crate::evaluate::{
-    DynamicContext,
-    StaticContext,
-    static_analysis,
     Constructor,
     NameTest, WildcardOrName,
     NodeTest, NodeMatch, KindTest,
     Axis,
     ArithmeticOperator, ArithmeticOperand,
     Function,
+};
+#[cfg(test)]
+use crate::evaluate::{
+    DynamicContext,
+    StaticContext,
+    static_analysis,
     evaluate,
 };
 

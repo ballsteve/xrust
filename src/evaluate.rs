@@ -7,6 +7,7 @@
 use std::rc::Rc;
 use std::ops::ControlFlow;
 use unicode_segmentation::UnicodeSegmentation;
+#[allow(unused_imports)]
 use chrono::{DateTime, Local, Datelike, Timelike, FixedOffset};
 use crate::qname::*;
 use crate::parsepicture::parse as picture_parse;
@@ -2191,6 +2192,22 @@ impl Function {
   pub fn new(n: String, p: Vec<Param>, i: Option<FunctionImpl>) -> Function {
     Function{name: n, nsuri: None, prefix: None, params: p, body: i}
   }
+  pub fn get_name(&self) -> String {
+    self.name.clone()
+  }
+  pub fn get_nsuri(&self) -> Option<String> {
+    self.nsuri.clone()
+  }
+  pub fn get_prefix(&self) -> Option<String> {
+    self.prefix.clone()
+  }
+  // TODO: make this an iterator over the formal parameters
+  pub fn get_params(&self) -> Vec<Param> {
+    self.params.clone()
+  }
+  pub fn get_body(&self) -> Option<FunctionImpl> {
+    self.body.clone()
+  }
 }
 
 // A formal parameter
@@ -2203,6 +2220,12 @@ pub struct Param {
 impl Param {
   pub fn new(n: String, t: String) -> Param {
     Param{name: n, datatype: t}
+  }
+  pub fn get_name(&self) -> String {
+    self.name.clone()
+  }
+  pub fn get_datatype(&self) -> String {
+    self.datatype.clone()
   }
 }
 

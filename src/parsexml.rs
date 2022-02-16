@@ -354,10 +354,10 @@ fn chardata_literal(input: &str) -> IResult<&str, String> {
            |v: &[char]|
                {
                    // chardata cannot contain ]]>
-                   let CDEnd = &[']',']','>'][..];
+                   let cd_end = &[']',']','>'][..];
                    let mut w = v.clone();
                    while !w.is_empty() {
-                       if w.starts_with(CDEnd) { return false; }
+                       if w.starts_with(cd_end) { return false; }
                        w = &w[1..];
                    }
                    true
@@ -567,8 +567,8 @@ mod tests {
                 assert_eq!(a.len(), 0);
                 assert_eq!(c.len(), 1);
                 match &c[0]{
-                    XMLNode::Text(T) => {
-                        assert_eq!(T.to_string(), "<doc<!DOCTYPE&a%b&#c]] >] ]> ]<![CDATA[");
+                    XMLNode::Text(t) => {
+                        assert_eq!(t.to_string(), "<doc<!DOCTYPE&a%b&#c]] >] ]> ]<![CDATA[");
                     }
                     _ => {
                         panic!("element content is not text")

@@ -41,15 +41,26 @@ assert_eq!(seq.to_string(), "It works!");
 */
 
 use std::rc::Rc;
+#[cfg(test)]
 use std::cell::RefCell;
 use std::any::Any;
+#[cfg(test)]
 use std::fs;
+#[cfg(test)]
 use petgraph::stable_graph::StableGraph;
 use crate::qname::QualifiedName;
-use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
-use crate::item::{SequenceTrait, Item, Value, Document, Node, NodeType, OutputDefinition};
+use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType};
+#[cfg(test)]
+use crate::xdmgraph::from;
+#[allow(unused_imports)]
+use crate::item::{SequenceTrait, Value, Document, Node, NodeType, OutputDefinition};
+#[cfg(test)]
+use crate::item::Item;
+#[cfg(test)]
 use crate::evaluate::*;
+#[cfg(test)]
 use crate::xpath::*;
+#[cfg(test)]
 use crate::xslt::*;
 use crate::xdmerror::*;
 

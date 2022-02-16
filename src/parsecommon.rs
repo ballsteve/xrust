@@ -46,6 +46,7 @@ fn is_namechar(ch: char) -> bool {
     }
   }
 }
+#[cfg(test)]
 fn ncnamechar(input: &str) -> IResult<&str, &str> {
   take_while_m_n(1, 1, is_ncnamechar)
   (input)
