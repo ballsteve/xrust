@@ -155,7 +155,7 @@ pub fn is_char(ch: &char) -> bool {
     | '\u{000D}' // #xD
     | '\u{0020}'..='\u{D7FF}' //  [#x0020-#xD7FF]
     | '\u{E000}'..='\u{FFFD}' //  [#xE000-#xFFFD]
-    | '\u{10000}'..='\u{EFFFF}' //  [#x10000-#xEFFFF]
+    | '\u{10000}'..='\u{10FFFF}' //  [#x10000-#10FFFF]
     => {
       true
     },
