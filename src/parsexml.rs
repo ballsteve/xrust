@@ -10,6 +10,7 @@
 
 extern crate nom;
 
+use std::collections::HashSet;
 use std::str::FromStr;
 use nom:: {
   IResult,
@@ -105,7 +106,7 @@ fn taggedelem(input: &str) -> IResult<&str, XMLNode> {
     tuple((
       tag("<"),
       qualname,
-      many0(attribute),
+      attributes, //many0(attribute),
       multispace0,
       tag(">"),
       content,
@@ -128,7 +129,7 @@ fn emptyelem(input: &str) -> IResult<&str, XMLNode> {
     tuple((
       tag("<"),
       qualname,
-      many0(attribute),
+      attributes, //many0(attribute),
       multispace0,
       tag("/>"),
     )),
@@ -137,6 +138,30 @@ fn emptyelem(input: &str) -> IResult<&str, XMLNode> {
     }
   )
   (input)
+}
+
+fn attributes(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    //this is just a wrapper around the attribute function, that checks for duplicates.
+    verify(many0(attribute),
+           |v: &[XMLNode]|
+               {
+                   let attrs = v.clone();
+                   let uniqueattrs: HashSet<_> = attrs.iter()
+                       .map(
+                           |xmlnode|
+                               match xmlnode {
+                                   XMLNode::Attribute(q, _) => {q.to_string()}
+                                   _ => "".to_string()
+                               }
+                       )
+                       .collect();
+                   if &v.len() == &uniqueattrs.len(){
+                       true
+                   } else {
+                       false
+                   }
+               }
+    )(input)
 }
 
 // Attribute ::= Name '=' AttValue
