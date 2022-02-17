@@ -104,19 +104,17 @@ fn taggedelem(input: &str) -> IResult<&str, XMLNode> {
   map(
     tuple((
       tag("<"),
-      multispace0,
       qualname,
       many0(attribute),
       multispace0,
       tag(">"),
       content,
       tag("</"),
-      multispace0,
       qualname,
       multispace0,
       tag(">"),
     )),
-    |(_, _, n, a, _, _, c, _, _, _e, _, _)| {
+    |(_, n, a, _, _, c, _, _e, _, _)| {
       // TODO: check that the start tag name and end tag name match (n == e)
       XMLNode::Element(n, a, c)
     }
@@ -129,13 +127,12 @@ fn emptyelem(input: &str) -> IResult<&str, XMLNode> {
   map(
     tuple((
       tag("<"),
-      multispace0,
       qualname,
       many0(attribute),
       multispace0,
       tag("/>"),
     )),
-    |(_, _, n, a, _, _)| {
+    |(_, n, a, _, _)| {
       XMLNode::Element(n, a, vec![])
     }
   )
@@ -358,6 +355,7 @@ fn chardata_literal(input: &str) -> IResult<&str, String> {
                    let mut w = v.clone();
                    while !w.is_empty() {
                        if w.starts_with(cd_end) { return false; }
+                       if !is_char(&w[0]) {return false;}
                        w = &w[1..];
                    }
                    true

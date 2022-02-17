@@ -148,6 +148,22 @@ fn is_ncnamestartchar(ch: char) -> bool {
   }
 }
 
+pub fn is_char(ch: &char) -> bool {
+  match ch {
+    '\u{0009}' // #x9
+    | '\u{000A}' // #xA
+    | '\u{000D}' // #xD
+    | '\u{0020}'..='\u{D7FF}' //  [#x0020-#xD7FF]
+    | '\u{E000}'..='\u{FFFD}' //  [#xE000-#xFFFD]
+    | '\u{10000}'..='\u{EFFFF}' //  [#x10000-#xEFFFF]
+    => {
+      true
+    },
+    // etc
+    _ => false
+  }
+}
+
 
 #[cfg(test)]
 mod tests {
