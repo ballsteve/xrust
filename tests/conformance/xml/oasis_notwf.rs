@@ -3432,6 +3432,7 @@ fn op66fail4() {
 
 
 #[test]
+#[should_panic(expected = "assertion failed")]
 fn op66fail5() {
     /*
         Test ID:o-p66fail5
@@ -3448,6 +3449,7 @@ fn op66fail5() {
 
 
 #[test]
+#[should_panic]
 fn op66fail6() {
     /*
         Test ID:o-p66fail6

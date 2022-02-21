@@ -199,7 +199,34 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     NodeType::Element => {
       match (n.to_name().get_nsuri_ref(), n.to_name().get_localname().as_str()) {
         (Some(XSLTNS), "text") => {
-	  Ok(Constructor::Literal(Value::String(n.to_string())))
+			match n.get_attribute(&QualifiedName::new(None, None, "disable-output-escaping".to_string())){
+				Some(doe) => {
+					match &doe.to_string()[..]  {
+						"yes" => Ok(Constructor::Literal(Value::String(n.to_string()))),
+						"no" => {
+							let text = n.to_string()
+								.replace("&","&amp;")
+								.replace(">", "&gt;")
+								.replace("<", "&lt;")
+								.replace("'", "&apos;")
+								.replace("\"", "&quot;");
+							Ok(Constructor::Literal(Value::String(text)))
+						}
+						_ => {
+							return Result::Err(Error{kind: ErrorKind::TypeError, message: "disable-output-escaping only accepts values yes or no.".to_string()})
+						}
+					}
+				}
+				None => {
+					let text = n.to_string()
+						.replace("&","&amp;")
+						.replace(">", "&gt;")
+						.replace("<", "&lt;")
+						.replace("'", "&apos;")
+						.replace("\"", "&quot;");
+					Ok(Constructor::Literal(Value::String(text)))
+				}
+			}
 	}
 	(Some(XSLTNS), "apply-templates") => {
 	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {

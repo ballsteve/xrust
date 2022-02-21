@@ -10,6 +10,7 @@
 
 extern crate nom;
 
+use std::collections::HashSet;
 use std::str::FromStr;
 use nom:: {
   IResult,
@@ -104,19 +105,17 @@ fn taggedelem(input: &str) -> IResult<&str, XMLNode> {
   map(
     tuple((
       tag("<"),
-      multispace0,
       qualname,
-      many0(attribute),
+      attributes, //many0(attribute),
       multispace0,
       tag(">"),
       content,
       tag("</"),
-      multispace0,
       qualname,
       multispace0,
       tag(">"),
     )),
-    |(_, _, n, a, _, _, c, _, _, _e, _, _)| {
+    |(_, n, a, _, _, c, _, _e, _, _)| {
       // TODO: check that the start tag name and end tag name match (n == e)
       XMLNode::Element(n, a, c)
     }
@@ -129,17 +128,40 @@ fn emptyelem(input: &str) -> IResult<&str, XMLNode> {
   map(
     tuple((
       tag("<"),
-      multispace0,
       qualname,
-      many0(attribute),
+      attributes, //many0(attribute),
       multispace0,
       tag("/>"),
     )),
-    |(_, _, n, a, _, _)| {
+    |(_, n, a, _, _)| {
       XMLNode::Element(n, a, vec![])
     }
   )
   (input)
+}
+
+fn attributes(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    //this is just a wrapper around the attribute function, that checks for duplicates.
+    verify(many0(attribute),
+           |v: &[XMLNode]|
+               {
+                   let attrs = v.clone();
+                   let uniqueattrs: HashSet<_> = attrs.iter()
+                       .map(
+                           |xmlnode|
+                               match xmlnode {
+                                   XMLNode::Attribute(q, _) => {q.to_string()}
+                                   _ => "".to_string()
+                               }
+                       )
+                       .collect();
+                   if &v.len() == &uniqueattrs.len(){
+                       true
+                   } else {
+                       false
+                   }
+               }
+    )(input)
 }
 
 // Attribute ::= Name '=' AttValue
@@ -358,6 +380,7 @@ fn chardata_literal(input: &str) -> IResult<&str, String> {
                    let mut w = v.clone();
                    while !w.is_empty() {
                        if w.starts_with(cd_end) { return false; }
+                       if !is_char(&w[0]) {return false;}
                        w = &w[1..];
                    }
                    true
