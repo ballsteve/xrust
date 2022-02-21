@@ -314,7 +314,10 @@ impl XDMTreeNode {
 
   // Removes a node from the tree.
   pub fn remove_node(&self) {
-    let parent = self.ancestor_iter().nth(0).unwrap();
+    let parent = match self.ancestor_iter().nth(0) {
+      Some(p) => p,
+      None => return,
+    };
 
     let nt: NodeType;
     {
@@ -391,9 +394,16 @@ impl XDMTreeNode {
 	match qn.get_nsuri_ref() {
 	  Some(uri) => {
 	    ret.push(' ');
-	    ret.push_str("xmlns:");
-	    // TODO: handle default namespace declaration
-	    ret.push_str(qn.get_prefix().unwrap().as_str());
+	    match qn.get_prefix() {
+	      Some(p) => {
+	        ret.push_str("xmlns:");
+	    	ret.push_str(p.as_str());
+	      }
+	      None => {
+	        // Default namespace
+	        ret.push_str("xmlns");
+	      }
+	    }
 	    ret.push_str("='");
 	    ret.push_str(uri);
 	    ret.push_str("'");
@@ -786,7 +796,7 @@ pub fn from(input: &str) -> Result<XDMTreeNode, Error> {
     let mut ns: HashMap<String, String> = HashMap::new();
     let t = Rc::new(RefCell::new(StableGraph::new()));
     let r = XDMTreeNode::new(t.clone());
-    parse_node(&d.content[0], r.clone(), &mut ns);
+    parse_node(&d.content[0], r.clone(), &mut ns)?;
     Ok(r)
   }
 }
@@ -794,7 +804,7 @@ fn parse_node(
   e: &XMLNode,
   parent: XDMTreeNode,
   ns: &mut HashMap<String, String>
-) {
+) -> Result<(), Error> {
   match e {
     XMLNode::Element(n, a, c) => {
       // NB. the parsexml parser could do the namespace resolution,
@@ -844,8 +854,12 @@ fn parse_node(
 	  n.get_localname()
 	)
       );
-      parent.append_child_node(new.clone()).expect("unable to append child node");
+      match parent.append_child_node(new.clone()) {
+        Ok(_) => {}
+	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unable to append child node")})
+      };
 
+      let mut status: Option<String> = None;
       a.iter()
         .for_each(|b| {
 	  match b {
@@ -855,28 +869,57 @@ fn parse_node(
 		  if p == "xmlns" {
 		    // Don't add this: it is a namespace declaration
 	      	  } else {
-	            new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())).expect("unable to add attribute");
+	            match new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())) {
+        	      Ok(_) => {}
+		      Err(_) => {
+		        status = Some(String::from("unable to add attribute"))
+		      }
+      		    };
 	      	  }
 		}
-		_ => {new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())).expect("unable to add attribute")}
+		_ => {
+		  match new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())) {
+        	      Ok(_) => {}
+		      Err(_) => {
+		        status = Some(String::from("unable to add attribute"))
+		      }
+		  };
+		}
 	      }
 	    }
 	    _ => {}, // shouldn't happen
 	  }
 	});
 
+      if status.is_some() {
+        return Result::Err(Error{kind: ErrorKind::Unknown, message: status.unwrap()})
+      }
+
       c.iter().cloned().for_each(|f| {
-        parse_node(&f, new.clone(), ns)
+        match parse_node(&f, new.clone(), ns) {
+	  Ok(_) => {}
+	  Err(e) => {
+	    status = Some(e.to_string())
+	  }
+	}
       });
+
+      if status.is_some() {
+        return Result::Err(Error{kind: ErrorKind::Unknown, message: status.unwrap()})
+      }
     }
     XMLNode::Text(v) => {
       let u = parent.new_value_node(v.clone());
-      parent.append_child_node(u).expect("unable to append child node");
+      match parent.append_child_node(u) {
+        Ok(_) => {}
+	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unable to append child node")})
+      }
     }
     _ => {
       // TODO: Not yet implemented
     }
   }
+  Ok(())
 }
 
 #[cfg(test)]

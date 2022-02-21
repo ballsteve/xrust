@@ -125,7 +125,7 @@ impl Document for XDMTree {
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "root element must be a XDMTreeNode".to_string()}),
     };
     // TODO: If the document already has a root element then remove it
-    get_doc_node(self).append_child_node(n.clone()).expect("unable to append child node");
+    get_doc_node(self).append_child_node(n.clone())?;
     Ok(())
   }
 }
@@ -339,6 +339,7 @@ impl Node for XDMTreeNode {
     self.node_value(v);
   }
 
+  // TODO: Return Result to propagate error
   fn set_attribute(&self, name: QualifiedName, val: Value) {
     if self.is_element() {
       // if attribute already exists, remove it
@@ -379,13 +380,13 @@ impl Node for XDMTreeNode {
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "child node must be a XDMTreeNode".to_string()}),
     };
     match e.node_type() {
-      NodeType::Attribute => Ok(self.add_attribute(e.clone()).expect("unable to add attribute")),
-      _ => Ok(self.append_child_node(e.clone()).expect("unable to append child"))
+      NodeType::Attribute => Ok(self.add_attribute(e.clone())?),
+      _ => Ok(self.append_child_node(e.clone())?)
     }
   }
   fn append_text_child(&self, t: Value) -> Result<(), Error> {
     let t = self.new_value_node(t);
-    self.append_child_node(t).expect("unable to append child");
+    self.append_child_node(t)?;
     Ok(())
   }
   fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error> {
@@ -393,7 +394,7 @@ impl Node for XDMTreeNode {
       Some(d) => d,
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "attribute node must be a XDMTreeNode".to_string()}),
     };
-    self.add_attribute(e.clone()).expect("unable to add attribute");
+    self.add_attribute(e.clone())?;
     Ok(())
   }
   fn remove(&self) -> Result<(), Error> {

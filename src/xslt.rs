@@ -53,8 +53,7 @@ pub fn from_document<'a>(
 	vec![
           vec![Constructor::Root],
         ]
-      )])
-      .expect("unable to convert pattern");
+      )])?;
     let bi1bod = vec![
         Constructor::ApplyTemplates(
               vec![Constructor::Step(
@@ -73,8 +72,7 @@ pub fn from_document<'a>(
 	    vec![]
 	  )],
         ]
-      )])
-      .expect("unable to convert pattern");
+      )])?;
     let bi2bod = vec![
         Constructor::ApplyTemplates(
               vec![Constructor::Step(
@@ -93,8 +91,7 @@ pub fn from_document<'a>(
 	    vec![]
 	  )],
         ]
-      )])
-      .expect("unable to convert pattern");
+      )])?;
     let bi3bod = vec![Constructor::ContextItem];
     dc.add_builtin_template(bi3pat, bi3bod, None, -1.0);
 
@@ -124,6 +121,7 @@ pub fn from_document<'a>(
     // * compile match pattern
     // * compile content into sequence constructor
     // * register template in dynamic context
+    // TODO: Don't Panic
     for t in root.children().iter()
       //.inspect(|x| println!("checking {} node", x.node_type().to_string()))
       .filter(|c| c.is_element() &&
@@ -207,7 +205,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(sel) => {
 	      Ok(Constructor::ApplyTemplates(
-	        parse(&sel.to_string()).expect("failed to compile select attribute")
+	        parse(&sel.to_string())?
 	      ))
 	    }
 	    None => {
@@ -229,7 +227,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
         (Some(XSLTNS), "sequence") => {
 	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
-	      let cons = parse(&s.to_string()).expect("failed to compile select attribute");
+	      let cons = parse(&s.to_string())?;
 	      if cons.len() > 1 {
 	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "select attribute has more than one sequence constructor".to_string()})
 	      }
@@ -244,9 +242,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  match n.get_attribute(&QualifiedName::new(None, None, "test".to_string())) {
 	    Some(t) => {
 	      Ok(
-	        Constructor::Switch(
+	        // TODO: Don't Panic
+		Constructor::Switch(
 		  vec![
-		    parse(&t.to_string()).expect("failed to compile test attribute"),
+		    parse(&t.to_string())?,
 		    n.children().iter()
 		      .map(|d| to_constructor(d.clone()).expect("failed to compile test content"))
 		      .collect()
@@ -264,6 +263,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  let mut when: Vec<Vec<Constructor>> = Vec::new();
 	  let mut otherwise: Vec<Constructor> = Vec::new();
 	  let mut status: Option<Error> = None;
+	  // TODO: Don't Panic
 	  n.children().iter()
 	    .for_each(|m| {
 	        // look for when elements
@@ -333,9 +333,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	(Some(XSLTNS), "for-each") => {
 	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
+	      // TODO: Don't Panic
 	      Ok(
 	        Constructor::ForEach(
-		  parse(&s.to_string()).expect("failed to compile select attribute"),
+		  parse(&s.to_string())?,
 		  n.children().iter()
 		    .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    .collect(),
@@ -356,9 +357,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 		n.get_attribute(&QualifiedName::new(None, None, "group-starting-with".to_string())),
 		n.get_attribute(&QualifiedName::new(None, None, "group-ending-with".to_string()))) {
 	        (Some(by), None, None, None) => {
+		  // TODO: Don't Panic
 		  Ok(
 	            Constructor::ForEach(
-		      parse(&s.to_string()).expect("failed to compile select attribute"),
+		      parse(&s.to_string())?,
 		      n.children().iter()
 		        .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    	.collect(),
@@ -367,13 +369,14 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	      	  )
 		}
 	        (None, Some(adj), None, None) => {
+		  // TODO: Don't Panic
 		  Ok(
 	            Constructor::ForEach(
-		      parse(&s.to_string()).expect("failed to compile select attribute"),
+		      parse(&s.to_string())?,
 		      n.children().iter()
 		        .map(|d| to_constructor(d.clone()).expect("failed to compile for-each content"))
 		    	.collect(),
-		      Some(Grouping::Adjacent(parse(&adj.to_string()).expect("failed to compile group-adjacent attribute"))),
+		      Some(Grouping::Adjacent(parse(&adj.to_string())?)),
 		    )
 	      	  )
 		}
@@ -390,6 +393,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	}
 	(Some(XSLTNS), "copy") => {
 	  // TODO: handle select attribute
+	  // TODO: Don't Panic
 	  Ok(Constructor::Copy(
 	    vec![],
 	    // The content of this element is a template for the content of the new item
@@ -402,7 +406,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	  match n.get_attribute(&QualifiedName::new(None, None, "select".to_string())) {
 	    Some(s) => {
 	      Ok(Constructor::DeepCopy(
-	        parse(&s.to_string()).expect("failed to compile select attribute"),
+	        parse(&s.to_string())?,
 	      ))
 	    }
 	    None => {
@@ -413,7 +417,8 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	(Some(XSLTNS), "attribute") => {
 	  match n.get_attribute(&QualifiedName::new(None, None, "name".to_string())) {
 	    Some(m) => {
-      	      Ok(Constructor::LiteralAttribute(
+      	      // TODO: Don't Panic
+	      Ok(Constructor::LiteralAttribute(
 	        QualifiedName::new(None, None, m.to_string()),
 		n.children().iter()
 		  .map(|d| to_constructor(d.clone()).expect("failed to compile attribute content"))
@@ -431,8 +436,10 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 	(_, a) => {
 	  // TODO: Handle qualified element name
 	  let mut content = vec![];
+	  // TODO: Don't Panic
 	  n.attributes().iter()
 	      .for_each(|d| content.push(to_constructor(d.clone()).expect("failed to compile sequence constructor")));
+	  // TODO: Don't Panic
 	  n.children().iter()
 	      .for_each(|d| content.push(to_constructor(d.clone()).expect("failed to compile sequence constructor")));
 	  Ok(Constructor::LiteralElement(
@@ -490,6 +497,7 @@ pub fn strip_source_document(
     .fold(vec![], |mut s, e| {
       match e.get_attribute(&QualifiedName::new(None, None, "elements".to_string())) {
         Some(v) => {
+	  // TODO: Don't Panic
 	  v.to_string().split_whitespace()
 	    .for_each(|t| {
 	      s.push(NodeTest::from(t).expect("not a NodeTest"))
@@ -508,6 +516,7 @@ pub fn strip_source_document(
     .fold(vec![], |mut s, e| {
       match e.get_attribute(&QualifiedName::new(None, None, "elements".to_string())) {
         Some(v) => {
+	  // TODO: Don't Panic
 	  v.to_string().split_whitespace()
 	    .for_each(|t| {
 	      s.push(NodeTest::from(t).expect("not a NodeTest"))
@@ -522,6 +531,7 @@ pub fn strip_source_document(
 }
 
 // TODO: the rules for stripping/preserving are a lot more complex
+// TODO: Return Result so that errors can be propagated
 fn strip_whitespace_node(
   n: Rc<dyn Node>,
   cpi: bool, // strip comments and PIs?

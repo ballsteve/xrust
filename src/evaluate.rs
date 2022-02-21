@@ -157,8 +157,35 @@ pub fn evaluate(
     c: &Vec<Constructor>
   ) -> Result<Sequence, Error> {
 
-  let result: Sequence = c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect();
-  Ok(result)
+  // Original panicky version
+  //let result: Sequence = c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect();
+  //Ok(result)
+
+  // Evaluate all sequence constructors. This will result in a sequence of sequences.
+  // If an error occurs, propagate the first error (TODO: return all errors)
+  // Otherwise, flatten the sequences into a single sequence
+
+  let (results, errors): (Vec<_>, Vec<_>) = c.iter()
+    .map(|a| evaluate_one(dc, ctxt.clone(), posn, a))
+    .partition(Result::is_ok);
+  if errors.len() != 0 {
+    Result::Err(
+      errors.iter()
+        .nth(0)
+	.map(|e| e.clone().err().unwrap())
+	.unwrap()
+    )
+  } else {
+    Ok(
+      results.iter()
+        .map(|a| {
+	  let b: Sequence = a.clone().ok().unwrap_or(vec![]);
+	  b
+	})
+	.flatten()
+	.collect::<Vec<Rc<Item>>>()
+    )
+  }
 }
 
 // Evaluate an item constructor, given a context
@@ -180,37 +207,36 @@ fn evaluate_one(
     Constructor::LiteralElement(n, c) => {
       let l = match dc.resultdoc {
         Some(doc) => {
-	  doc.new_element(n.clone()).expect("unable to create Node")
+	  doc.new_element(n.clone())?
 	}
 	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
 
       // add content to newly created element
-      evaluate(dc, ctxt.clone(), posn, c).expect("failed to evaluate element content").iter()
-        .for_each(
+      evaluate(dc, ctxt.clone(), posn, c)?.iter()
+        .try_for_each(
 	  |i| {
 	    // Item could be a Node or text
 	    match **i {
 	      Item::Node(ref t) => {
-		l.append_child(t.as_any()).expect("unable to add child node");
+		l.append_child(t.as_any())
 	      }
 	      _ => {
 	        // Values become a text node in the result tree
-		l.append_text_child(Value::String(i.to_string())).expect("unable to add text child node");
+		l.append_text_child(Value::String(i.to_string()))
 	      }
 	    }
 	  }
-	);
+	)?;
 
       Ok(vec![Rc::new(Item::Node(l))])
     }
     // This creates a Node in the current result document
     Constructor::LiteralAttribute(n, v) => {
-      let w = evaluate(dc, ctxt.clone(), posn, v)
-        .expect("failed to evaluate attribute value");
+      let w = evaluate(dc, ctxt.clone(), posn, v)?;
       let l = match dc.resultdoc {
         Some(doc) => {
-	  doc.new_attribute(n.clone(), Value::String(w.to_string())).expect("unable to create Node")
+	  doc.new_attribute(n.clone(), Value::String(w.to_string()))?
 	}
 	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
       };
@@ -223,38 +249,55 @@ fn evaluate_one(
 	if ctxt.is_some() {
 	  vec![ctxt.as_ref().unwrap()[posn.unwrap()].clone()]
 	} else {
-	  evaluate(dc, ctxt.clone(), posn, i)
-	    .expect("failed to evaluate select expression")
+	  evaluate(dc, ctxt.clone(), posn, i)?
 	}
       } else {
-	evaluate(dc, ctxt.clone(), posn, i)
-	  .expect("failed to evaluate select expression")
+	evaluate(dc, ctxt.clone(), posn, i)?
       };
 
-      let mut result = vec![];
-      orig.iter()
-        .for_each(
-	  |i| {
-	    result.push(item_copy(i.clone(), dc, c, ctxt.clone(), posn)
-	      .expect("unable to copy item"))
-	  }
-	);
-      Ok(result)
+      // Original panicky version
+      //Ok(orig.iter().map(|i| item_copy(i.clone(), dc, c, ctxt.clone(), posn).expect("oops")).collect())
+
+      // Non-panicing version
+      let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
+        .map(|i| item_copy(i.clone(), dc, c, ctxt.clone(), posn))
+	.partition(Result::is_ok);
+      if errors.len() != 0 {
+        Result::Err(
+      	  errors.iter()
+            .nth(0)
+	    .map(|e| e.clone().err().unwrap())
+	    .unwrap()
+    	)
+      } else {
+        Ok(
+	  results.iter()
+	    .map(|r| r.clone().ok().unwrap())
+	    .collect::<Vec<Rc<Item>>>()
+	)
+      }
     }
     // Does the same as identity stylesheet template
     Constructor::DeepCopy(sel) => {
-      let orig = evaluate(dc, ctxt.clone(), posn, sel)
-	    .expect("failed to evaluate select expression");
+      let orig = evaluate(dc, ctxt.clone(), posn, sel)?;
 
-      let mut result = vec![];
-      orig.iter()
-        .for_each(
-	  |i| {
-	    result.push(item_deep_copy((*i).clone(), dc, ctxt.clone(), posn)
-	      .expect("unable to copy item"))
-	  }
-	);
-      Ok(result)
+      let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
+        .map(|i| item_deep_copy((*i).clone(), dc, ctxt.clone(), posn))
+	.partition(Result::is_ok);
+      if errors.len() != 0 {
+        Result::Err(
+      	  errors.iter()
+            .nth(0)
+	    .map(|e| e.clone().err().unwrap())
+	    .unwrap()
+    	)
+      } else {
+        Ok(
+	  results.iter()
+	    .map(|r| r.clone().ok().unwrap())
+	    .collect::<Vec<Rc<Item>>>()
+	)
+      }
     }
     Constructor::ContextItem => {
       if ctxt.is_some() {
@@ -274,7 +317,7 @@ fn evaluate_one(
 	  Item::Node(nd) => {
 	    match nd.node_type() {
 	      NodeType::Element => {
-	        let attval = evaluate(dc, ctxt.clone(), posn, v).expect("unable to evaluate attribute value");
+	        let attval = evaluate(dc, ctxt.clone(), posn, v)?;
 		if attval.len() == 1 {
 		  match &*attval[0] {
 		    Item::Value(av) => nd.set_attribute(n.clone(), av.clone()),
@@ -300,7 +343,7 @@ fn evaluate_one(
       // Future: Evaluate every operand to check for dynamic errors
       let mut b = false;
       for i in v {
-	let k = evaluate(dc, ctxt.clone(), posn, i).expect("evaluating operand failed");
+	let k = evaluate(dc, ctxt.clone(), posn, i)?;
 	b = k.to_bool();
 	if b {break};
       }
@@ -314,7 +357,7 @@ fn evaluate_one(
       // Future: Evaluate every operand to check for dynamic errors
       let mut b = true;
       for i in v {
-	let k = evaluate(dc, ctxt.clone(), posn, i).expect("evaluating operand failed");
+	let k = evaluate(dc, ctxt.clone(), posn, i)?;
 	b = k.to_bool();
 	if !b {break};
       }
@@ -326,8 +369,7 @@ fn evaluate_one(
       if v.len() == 2 {
 	let mut seq = Sequence::new();
 	seq.new_value(Value::Boolean(
-	  general_comparison(dc, ctxt, posn, *o, &v[0], &v[1])
-	    .expect("comparison evaluation failed")
+	  general_comparison(dc, ctxt, posn, *o, &v[0], &v[1])?
 	  ));
       	Ok(seq)
       } else {
@@ -338,8 +380,7 @@ fn evaluate_one(
       if v.len() == 2 {
 	let mut seq = Sequence::new();
 	seq.new_value(Value::Boolean(
-	  value_comparison(dc, ctxt, posn, *o, &v[0], &v[1])
-	    .expect("comparison evaluation failed")
+	  value_comparison(dc, ctxt, posn, *o, &v[0], &v[1])?
 	));
       	Ok(seq)
       } else {
@@ -349,7 +390,7 @@ fn evaluate_one(
     Constructor::Concat(v) => {
       let mut r = String::new();
       for u in v {
-	let t = evaluate(dc, ctxt.clone(), posn, u).expect("evaluating operand failed");
+	let t = evaluate(dc, ctxt.clone(), posn, u)?;
 	r.push_str(t.to_string().as_str());
       }
       let mut seq = Sequence::new();
@@ -359,8 +400,8 @@ fn evaluate_one(
     Constructor::Range(v) => {
       if v.len() == 2 {
         // Evaluate the two operands: they must both be literal integer items
-	let start = evaluate(dc, ctxt.clone(), posn, &v[0]).expect("evaluating start operand failed");
-	let end = evaluate(dc, ctxt.clone(), posn, &v[1]).expect("evaluating end operand failed");
+	let start = evaluate(dc, ctxt.clone(), posn, &v[0])?;
+	let end = evaluate(dc, ctxt.clone(), posn, &v[1])?;
 	if start.len() == 0 || end.len() == 0 {
 	  // empty sequence is the result
 	  Ok(vec![])
@@ -401,7 +442,7 @@ fn evaluate_one(
       let mut acc: f64 = 0.0;
 
       for j in v {
-	let k = evaluate(dc, ctxt.clone(), posn, &j.operand).expect("evaluating operand failed");
+	let k = evaluate(dc, ctxt.clone(), posn, &j.operand)?;
 	let u: f64;
 	if k.len() != 1 {
 	  return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
@@ -462,6 +503,7 @@ fn evaluate_one(
         u = vec![]
       }
 
+      // TODO: Don't Panic
       Ok(s.iter().fold(
 	    u,
 	    |a, c| {
@@ -696,7 +738,7 @@ fn evaluate_one(
       	  // Evaluate the arguments
       	  let mut b = Vec::new();
       	  for c in a {
-            b.push(evaluate(dc, ctxt.clone(), posn, c).expect("argument evaluation failed"))
+            b.push(evaluate(dc, ctxt.clone(), posn, c)?)
       	  }
       	  // Invoke the function
       	  g(dc, ctxt, posn, b)
@@ -707,7 +749,7 @@ fn evaluate_one(
       }
     }
     Constructor::VariableDeclaration(v, a) => {
-      let s = evaluate(dc, ctxt, posn, a).expect("failed to evaluate variable value");
+      let s = evaluate(dc, ctxt, posn, a)?;
       let mut t: Vec<Sequence>;
       match dc.vars.borrow().get(v) {
         Some(u) => {
@@ -748,13 +790,12 @@ fn evaluate_one(
         match &v[0] {
           Constructor::VariableDeclaration(v, a) => {
 
-	    let s: Sequence = evaluate(dc, ctxt.clone(), posn, &a)
-	      .expect("failed to evaluate variable binding");
+	    let s: Sequence = evaluate(dc, ctxt.clone(), posn, &a)?;
 
 	    for i in s {
 	      // Push the new value for this variable
 	      var_push(dc, v, &i);
-	      let mut x = evaluate(dc, ctxt.clone(), posn, b).expect("failed to evaluate loop body");
+	      let mut x = evaluate(dc, ctxt.clone(), posn, b)?;
 	      result.append(&mut x);
 	      // Pop the value for this variable
 	      var_pop(dc, v);
@@ -773,9 +814,10 @@ fn evaluate_one(
       // evaluate tests to a boolean until the first true result; evaluate it's body as the result
       // of all tests fail then evaluate otherwise clause
 
+      // TODO: Don't Panic
       Ok(
         match v.chunks(2).try_fold(
-          evaluate(dc, ctxt.clone(), posn, o).expect("failed to evaluate otherwise clause"),
+          evaluate(dc, ctxt.clone(), posn, o)?,
 	  |acc, t| {
 	    if evaluate(dc, ctxt.clone(), posn, &t[0]).expect("failed to evaluate clause test").to_bool() {
 	      ControlFlow::Break(evaluate(dc, ctxt.clone(), posn, &t[1]).expect("failed to evaluate clause body"))
@@ -793,7 +835,8 @@ fn evaluate_one(
       // Evaluate 's' to find the nodes to apply templates to
       // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-      let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
+      // TODO: Don't Panic
+      let sel = evaluate(dc, ctxt.clone(), posn, s)?;
       let result = sel.iter().fold(
           vec![],
           |mut acc, i| {
@@ -871,7 +914,7 @@ fn evaluate_one(
       // Evaluate 's' to find the nodes to iterate over
       // Use 'g' to group the nodes
       // Evaluate 't' for each group
-      let sel = evaluate(dc, ctxt.clone(), posn, s).expect("failed to evaluate select expression");
+      let sel = evaluate(dc, ctxt.clone(), posn, s)?;
       // Divide sel into groups: each item in groups is an individual group
       let mut groups = Vec::new();
       match g {
@@ -880,7 +923,7 @@ fn evaluate_one(
 	  // Items are placed in the group with a matching key
 	  let mut map = HashMap::new();
 	  for i in 0..sel.len() {
-	    let keys = evaluate(dc, Some(sel.clone()), Some(i), h).expect("failed to evaluate key");
+	    let keys = evaluate(dc, Some(sel.clone()), Some(i), h)?;
 	    for j in keys {
 	      let e = map.entry(j.to_string()).or_insert(vec![]);
 	      e.push(sel[i].clone());
@@ -899,14 +942,14 @@ fn evaluate_one(
 	  // then it is added to the current group. Otherwise it starts a new group.
 	  if sel.len() > 0 {
 	    let mut curgrp = vec![sel[0].clone()];
-	    let mut curkey = evaluate(dc, Some(sel.clone()), Some(1), h).expect("failed to evaluate key");
+	    let mut curkey = evaluate(dc, Some(sel.clone()), Some(1), h)?;
 	    if curkey.len() != 1 {
 	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "group-adjacent attribute must evaluate to a single item".to_string()})
 	    }
 	    for i in 1..sel.len() {
-	      let thiskey = evaluate(dc, Some(sel.clone()), Some(i), h).expect("failed to evaluate key");
+	      let thiskey = evaluate(dc, Some(sel.clone()), Some(i), h)?;
 	      if thiskey.len() == 1 {
-		if curkey[0].compare(&*thiskey[0], Operator::Equal).expect("unable to compare keys") {
+		if curkey[0].compare(&*thiskey[0], Operator::Equal)? {
 		  // Append to the current group
 		  curgrp.push(sel[i].clone());
 		} else {
@@ -946,6 +989,7 @@ fn evaluate_one(
 	    }
 	    None => {}
 	  }
+	  // TODO: Don't Panic
 	  let mut tmp = evaluate(dc, Some(v.to_vec()), Some(0), t).expect("failed to evaluate template");
 	  result.append(&mut tmp);
 	  // Restore current-grouping-key, current-group
@@ -969,7 +1013,7 @@ fn item_deep_copy(
   posn: Option<usize>,
 ) -> Result<Rc<Item>, Error> {
 
-  let cp = item_copy(orig.clone(), dc, &vec![], ctxt.clone(), posn).expect("unable to copy item");
+  let cp = item_copy(orig.clone(), dc, &vec![], ctxt.clone(), posn)?;
 
   // If this item is an element node, then copy all of its attributes and children
   match *orig {
@@ -987,6 +1031,7 @@ fn item_deep_copy(
 	      cur.set_attribute(a.to_name(), Value::String(a.to_string()));
 	    });
 	  let child_list = n.children();
+	  // Don't Panic
 	  child_list.iter()
 	    .for_each(|c| {
 	      let cpc = item_deep_copy(Rc::new(Item::Node(c.clone())), dc, ctxt.clone(), posn)
@@ -1033,31 +1078,31 @@ fn item_copy(
 	  match doc.new_element(n.to_name()) {
 	    Ok(e) => {
 	      // Add content to the new element
-	      evaluate(dc, ctxt.clone(), posn, content)
-	        .expect("failed to evaluate element content")
+	      // TODO: Don't Panic
+	      evaluate(dc, ctxt.clone(), posn, content)?
 		.iter()
         	  .for_each(|i| {
 	    	    // Item could be a Node or text
 	    	    match **i {
 	      	      Item::Node(ref t) => {
 		        match t.node_type() {
-		        NodeType::Element |
-		        NodeType::Text => {
-		          e.append_child(t.as_any()).expect("unable to add child node");
+		          NodeType::Element |
+		          NodeType::Text => {
+		            e.append_child(t.as_any()).expect("unable to add child node");
+		          }
+		          NodeType::Attribute => {
+		            e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
+		          }
+		          _ => {} // TODO: work out what to do with documents, etc
 		        }
-		        NodeType::Attribute => {
-		          e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
-		        }
-		        _ => {} // TODO: work out what to do with documents, etc
-		      }
-	      	    }
-	      	    _ => {
-	              // Values become a text node in the result tree
-		      e.append_text_child(Value::String(i.to_string()))
-		        .expect("unable to add text child node");
-	      	    }
-	    	  }
-	        });
+	      	      }
+	      	      _ => {
+	                // Values become a text node in the result tree
+		        e.append_text_child(Value::String(i.to_string()))
+		          .expect("unable to add text child node");
+	      	      }
+	    	    }
+	          });
 	      Ok(Rc::new(Item::Node(e)))
 	    }
 	    _ => {
@@ -1127,6 +1172,8 @@ fn var_pop(dc: &DynamicContext, v: &str) {
 }
 
 // Filter the sequence with each of the predicates
+// TODO: return a Result so that errors can propagate
+// TODO: Don't Panic
 fn predicates(dc: &DynamicContext, s: Sequence, p: &Vec<Vec<Constructor>>) -> Sequence {
   if p.is_empty() {
     s
@@ -1253,6 +1300,8 @@ pub enum Grouping {
 /// Determine if an item matches a pattern.
 /// The sequence constructor is a pattern: the steps of a path in reverse.
 pub fn item_matches(dc: &DynamicContext, pat: &Vec<Constructor>, i: &Rc<Item>) -> bool {
+  // TODO: Return a Result so errors can be propagated
+  // TODO: Don't Panic
   let e = evaluate(dc, Some(vec![i.clone()]), Some(0), pat)
     .expect("pattern evaluation failed");
 
@@ -1568,8 +1617,8 @@ pub struct ArithmeticOperand {
 
 fn general_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
   let mut b = false;
-  let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
-  let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
+  let left_seq = evaluate(dc, ctxt.clone(), posn, left)?;
+  let right_seq = evaluate(dc, ctxt.clone(), posn, right)?;
   for l in left_seq {
     for r in &right_seq {
       b = l.compare(&*r, op).unwrap();
@@ -2353,7 +2402,7 @@ pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
      // arg[1] is the index to start at
      // 2-argument version takes the rest of the string
      Ok(vec![Rc::new(Item::Value(Value::String(
-       args[0].to_string().graphemes(true).skip(args[1].to_int().expect("not an integer") as usize - 1).collect()
+       args[0].to_string().graphemes(true).skip(args[1].to_int()? as usize - 1).collect()
      )))])
     }
     3 => {
@@ -2361,7 +2410,7 @@ pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
      // arg[1] is the index to start at
      // arg[2] is the length of the substring to extract
      Ok(vec![Rc::new(Item::Value(Value::String(
-       args[0].to_string().graphemes(true).skip(args[1].to_int().expect("not an integer") as usize - 1).take(args[2].to_int().expect("not an integer") as usize).collect()
+       args[0].to_string().graphemes(true).skip(args[1].to_int()? as usize - 1).take(args[2].to_int()? as usize).collect()
      )))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
@@ -2811,12 +2860,12 @@ pub fn func_current_group(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: O
 
 // Operands must be singletons
 fn value_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
-  let left_seq = evaluate(dc, ctxt.clone(), posn, left).expect("evaluating left-hand sequence failed");
+  let left_seq = evaluate(dc, ctxt.clone(), posn, left)?;
   if left_seq.len() == 0 {
     return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is empty"),})
   }
   if left_seq.len() == 1 {
-    let right_seq = evaluate(dc, ctxt.clone(), posn, right).expect("evaluating right-hand sequence failed");
+    let right_seq = evaluate(dc, ctxt.clone(), posn, right)?;
     if right_seq.len() == 1 {
       Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
     } else {
