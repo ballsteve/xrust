@@ -381,7 +381,24 @@ impl XDMTreeNode {
     match &h[self.n] {
       NodeType::Element(ref qn) => {
 	let mut ret: String = String::new();
-      	ret.push_str("<");
+
+	// Do any XML Namespaces need to be declared?
+	// Either for the element or any attributes
+	// TODO: don't emit namespace declaration if it is already declared in ancestor element
+	let mut nsdecls: HashMap<String, Option<String>> = HashMap::new();
+	if let Some(uri) = qn.get_nsuri() {
+	  nsdecls.insert(uri, qn.get_prefix());
+	}
+	self.attr_node_iter()
+	  .for_each(|a| {
+	    if let Some(uri) = a.get_name().get_nsuri() {
+	      if !nsdecls.contains_key(uri.as_str()) {
+	        nsdecls.insert(uri, a.get_name().get_prefix());
+	      }
+	    }
+	  });
+
+	ret.push_str("<");
       	match qn.get_prefix() {
 	  Some(p) => {
 	    ret.push_str(p.as_str());
@@ -390,26 +407,22 @@ impl XDMTreeNode {
 	  _ => {},
 	}
       	ret.push_str(qn.get_localname().as_str());
-	// TODO: don't emit namespace declaration if it is already declared in ancestor element
-	match qn.get_nsuri_ref() {
-	  Some(uri) => {
-	    ret.push(' ');
-	    match qn.get_prefix() {
+	nsdecls.iter()
+	  .for_each(|(uri, prefix)| {
+	    ret.push_str(" xmlns");
+	    match prefix {
 	      Some(p) => {
-	        ret.push_str("xmlns:");
+	        ret.push(':');
 	    	ret.push_str(p.as_str());
 	      }
 	      None => {
 	        // Default namespace
-	        ret.push_str("xmlns");
 	      }
 	    }
 	    ret.push_str("='");
 	    ret.push_str(uri);
 	    ret.push_str("'");
-	  }
-	  None => {}
-	}
+	  });
 	self.attr_node_iter()
 	  .for_each(|a| {
 	    ret.push(' ');
@@ -869,12 +882,15 @@ fn parse_node(
 		  if p == "xmlns" {
 		    // Don't add this: it is a namespace declaration
 	      	  } else {
-	            match new.add_attribute(parent.new_attribute_node(qn.clone(), v.clone())) {
-        	      Ok(_) => {}
-		      Err(_) => {
-		        status = Some(String::from("unable to add attribute"))
-		      }
-      		    };
+		    let ans = ns.get(&p).unwrap_or(&"".to_string()).clone();
+		    match new.add_attribute(parent.new_attribute_node(
+		      QualifiedName::new(Some(ans), Some(p), qn.get_localname()),
+		      v.clone())) {
+        	        Ok(_) => {}
+		        Err(_) => {
+		          status = Some(String::from("unable to add attribute"))
+		        }
+      		      };
 	      	  }
 		}
 		_ => {
