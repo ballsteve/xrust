@@ -14,10 +14,10 @@ Data type: xs:anyAtomicType|no|
 Data type: xs:duration|no|
 Data type: xs:dayTimeDuration|no|
 Data type: xs:yearMonthDuration|no|
-Data type: xs:dateTime|no|
+Data type: xs:dateTime|yes|
 Data type: xs:dateTimeStamp|no|
-Data type: xs:date|no|
-Data type: xs:time|no|
+Data type: xs:date|yes|
+Data type: xs:time|yes|
 Data type: xs:gYearMonth|no|
 Data type: xs:gYear|no|
 Data type: xs:gMonthDay|no|
@@ -224,8 +224,8 @@ xsl:copy/@inherit-namespaces|no|
 xsl:copy/@use-attribute-sets|no|
 xsl:copy/@type|no|
 xsl:copy/@validation|no|
-xsl:copy-of|no|
-xsl:copy-of/@select|no|
+xsl:copy-of|yes|
+xsl:copy-of/@select|yes|
 xsl:copy-of/@copy-accumulators|no|
 xsl:copy-of/@copy-namespaces|no|
 xsl:copy-of/@type|no|
@@ -371,7 +371,7 @@ xsl:on-empty|no|
 xsl:on-empty/@select|no|
 xsl:on-non-empty|no|
 xsl:on-non-empty/@select|no|
-xsl:otherwise|no|
+xsl:otherwise|yes|
 xsl:output|no|
 xsl:output/@name|no|
 xsl:output/@method|no|
@@ -416,7 +416,7 @@ xsl:package/@exclude-result-prefixes|no|
 xsl:package/@expand-text|no|
 xsl:package/@use-when|no|
 xsl:package/@xpath-default-namespace|no|
-xsl:param|no|
+xsl:param|yes|partial support for stylesheet
 xsl:param/@name|no|
 xsl:param/@select|no|
 xsl:param/@as|no|
@@ -495,7 +495,7 @@ xsl:template/@priority|yes|
 xsl:template/@mode|no|
 xsl:template/@as|no|
 xsl:template/@visibility|no|
-xsl:text|no|
+xsl:text|yes|
 xsl:text/@disable-output-escaping|no|
 xsl:transform|yes|
 xsl:try|no|
