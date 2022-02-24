@@ -13,19 +13,21 @@ The project, so far, is a proof-of-concept.
 
 For XPath it provides most of v1.0 functionality, with some v2.0 and v3.1 features.
 
-For XSLT, the implementation has barely started. To begin with it only supports literal result elements and literal text.
+The XSLT implementation is bare-bones. It supports basic templating, literal result elements, attributes, and text. Also conditionals (if, choose), repetition (for-each, for-each-group), and copying (copy, copy-of).
 
-The library has not been extensively tested.
+NB, the library has not been extensively tested.
 
 ## Plan
 
-1. ~~~Implement a simple XQuery application.~~~ (We've decided to go straight to XSLT)
-2. Implement a v3.1 XSLT engine.
+1. Complete the XPath 1.0 implementation.
+2. Implement all v1.0 XSLT functionality.
+3. Implement all XPath 3.1 data model and functions.
+4. Complete the v3.1 XSLT engine.
 
 ## Goals / Future Work
 
 - The library should always return errors, i.e. it should not panic
-- ~~~The library should use Traits for tree navigation and construction~~~ Done!
+- The library uses dynamic Trait objects for tree navigation and construction, but this imposes a runtime penalty. Use monomorphisation to use traits statically at compile-time.
 - Make the library more idiomatically Rust
 
 ## Contributions
