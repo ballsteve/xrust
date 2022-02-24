@@ -115,7 +115,6 @@ fn validsa007() {
 }
 
 #[test]
-#[ignore]
 fn validsa008() {
     /*
         Test ID:valid-sa-008
@@ -268,7 +267,6 @@ fn validsa017() {
 }
 
 #[test]
-#[ignore]
 fn validsa018() {
     /*
         Test ID:valid-sa-018
@@ -284,7 +282,6 @@ fn validsa018() {
 }
 
 #[test]
-#[ignore]
 fn validsa019() {
     /*
         Test ID:valid-sa-019
@@ -300,7 +297,6 @@ fn validsa019() {
 }
 
 #[test]
-#[ignore]
 fn validsa020() {
     /*
         Test ID:valid-sa-020
@@ -678,7 +674,6 @@ fn validsa043() {
 }
 
 #[test]
-#[ignore]
 fn validsa044() {
     /*
         Test ID:valid-sa-044
@@ -724,7 +719,6 @@ fn validsa046() {
 }
 
 #[test]
-#[ignore]
 fn validsa047() {
     /*
         Test ID:valid-sa-047
@@ -785,7 +779,6 @@ fn validsa050() {
 }
 
 #[test]
-#[ignore]
 fn validsa051() {
     /*
         Test ID:valid-sa-051
@@ -907,7 +900,6 @@ fn validsa058() {
 }
 
 #[test]
-#[ignore]
 fn validsa059() {
     /*
         Test ID:valid-sa-059
@@ -923,7 +915,6 @@ fn validsa059() {
 }
 
 #[test]
-#[ignore]
 fn validsa060() {
     /*
         Test ID:valid-sa-060
@@ -969,7 +960,6 @@ fn validsa062() {
 }
 
 #[test]
-#[ignore]
 fn validsa063() {
     /*
         Test ID:valid-sa-063
@@ -1030,7 +1020,6 @@ fn validsa066() {
 }
 
 #[test]
-#[ignore]
 fn validsa067() {
     /*
         Test ID:valid-sa-067
@@ -1046,7 +1035,6 @@ fn validsa067() {
 }
 
 #[test]
-#[ignore]
 fn validsa068() {
     /*
         Test ID:valid-sa-068
@@ -1349,7 +1337,6 @@ fn validsa087() {
 }
 
 #[test]
-#[ignore]
 fn validsa088() {
     /*
         Test ID:valid-sa-088
@@ -1412,7 +1399,6 @@ fn validsa091() {
 }
 
 #[test]
-#[ignore]
 fn validsa092() {
     /*
         Test ID:valid-sa-092
@@ -1428,7 +1414,6 @@ fn validsa092() {
 }
 
 #[test]
-#[ignore]
 fn validsa093() {
     /*
         Test ID:valid-sa-093
@@ -1579,7 +1564,6 @@ fn validsa102() {
 }
 
 #[test]
-#[ignore]
 fn validsa103() {
     /*
         Test ID:valid-sa-103
@@ -1745,7 +1729,6 @@ fn validsa113() {
 }
 
 #[test]
-#[ignore]
 fn validsa114() {
     /*
         Test ID:valid-sa-114
@@ -1776,7 +1759,6 @@ fn validsa115() {
 }
 
 #[test]
-#[ignore]
 fn validsa116() {
     /*
         Test ID:valid-sa-116

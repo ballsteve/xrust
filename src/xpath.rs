@@ -3,7 +3,9 @@
 //! An XPath parser as a nom parser combinator.
 
 extern crate nom;
-use decimal;
+use std::str::FromStr;
+use rust_decimal::Decimal;
+#[cfg(test)]
 use std::rc::Rc;
 use nom::{
   IResult,
@@ -21,15 +23,18 @@ use crate::item::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
 use crate::evaluate::{
-    DynamicContext,
-    StaticContext,
-    static_analysis,
     Constructor,
     NameTest, WildcardOrName,
     NodeTest, NodeMatch, KindTest,
     Axis,
     ArithmeticOperator, ArithmeticOperand,
     Function,
+};
+#[cfg(test)]
+use crate::evaluate::{
+    DynamicContext,
+    StaticContext,
+    static_analysis,
     evaluate,
 };
 
@@ -1419,7 +1424,7 @@ fn decimal_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
       let n = s.parse::<f64>();
       let i = match n {
         Ok(m) => Value::Double(m),
-	Err(_) => Value::Decimal(decimal::d128!(s)),
+	Err(_) => Value::Decimal(Decimal::from_str(s).unwrap()),
       };
       vec![Constructor::Literal(i)]
     }

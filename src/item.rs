@@ -9,7 +9,10 @@
 use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
-use decimal;
+use rust_decimal::Decimal;
+#[cfg(test)]
+use rust_decimal_macros::dec;
+use chrono::{Date, DateTime, Local};
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -344,6 +347,11 @@ pub trait Document {
     QualifiedName::new(None, None, String::new())
   }
 
+  /// Callback for logging/debugging, particularly in a web_sys environment
+  fn log(&self, _m: &str) {
+    // Noop
+  }
+
   /// Navigate to the parent of the Document. Documents don't have a parent, so the default implementation returns None.
   fn parent(&self) -> Option<Rc<dyn Node>> {
     None
@@ -641,8 +649,8 @@ pub enum Value {
     /// untyped atomic value
     UntypedAtomic,
     Duration,
-    Time,
-    Decimal(decimal::d128),
+    Time(DateTime<Local>),	// Ignore the date part. Perhaps use Instant instead?
+    Decimal(Decimal),
     Float(f32),
     Double(f64),
     Integer(i64),
@@ -658,9 +666,9 @@ pub enum Value {
     UnsignedShort(u16),
     UnsignedByte(u8),
     PositiveInteger(PositiveInteger),
-    DateTime,
+    DateTime(DateTime<Local>),
     DateTimeStamp,
-    Date,
+    Date(Date<Local>),
     String(String),
     NormalizedString(NormalizedString),
     /// Like normalizedString, but without leading, trailing and consecutive whitespace
@@ -704,6 +712,9 @@ impl Value {
 	    Value::NonNegativeInteger(i) => i.value().to_string(),
 	    Value::PositiveInteger(i) => i.value().to_string(),
 	    Value::NegativeInteger(i) => i.value().to_string(),
+	    Value::Time(t) => t.format("%H:%M:%S.%f").to_string(),
+	    Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
+	    Value::Date(d) => d.format("%Y-%m-%d").to_string(),
  	    _ => "".to_string(),
 	}
     }
@@ -831,7 +842,7 @@ impl Value {
         Value::AnyAtomicType => "AnyAtomicType",
         Value::UntypedAtomic => "UntypedAtomic",
         Value::Duration => "Duration",
-        Value::Time => "Time",
+        Value::Time(_) => "Time",
         Value::Decimal(_) => "Decimal",
         Value::Float(_) => "Float",
         Value::Double(_) => "Double",
@@ -848,9 +859,9 @@ impl Value {
         Value::UnsignedShort(_) => "UnsignedShort",
         Value::UnsignedByte(_) => "UnsignedByte",
         Value::PositiveInteger(_) => "PositiveInteger",
-        Value::DateTime => "DateTime",
+        Value::DateTime(_) => "DateTime",
         Value::DateTimeStamp => "DateTimeStamp",
-        Value::Date => "Date",
+        Value::Date(_) => "Date",
         Value::String(_) => "String",
         Value::NormalizedString(_) => "NormalizedString",
         Value::Token => "Token",
@@ -1091,7 +1102,7 @@ mod tests {
 //    }
 //    #[test]
 //    fn numeric_decimal() {
-//        assert_eq!(Numeric::new(decimal::d128!(123.456)).value, 123.456);
+//        assert_eq!(Numeric::new(dec!(123.456)), 123.456);
 //    }
 
     #[test]
@@ -1177,7 +1188,7 @@ mod tests {
     }
     #[test]
     fn decimal_stringvalue() {
-        assert_eq!(Value::Decimal(decimal::d128!(001.23)).to_string(), "1.23")
+        assert_eq!(Value::Decimal(dec!(001.23)).to_string(), "1.23")
     }
     #[test]
     fn float_stringvalue() {

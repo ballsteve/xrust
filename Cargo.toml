@@ -14,8 +14,10 @@ edition = "2018"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-decimal = "2.1.0"
+rust_decimal = "1.20"
+rust_decimal_macros = "1.20"
 lexers = "0.1.2"
 nom = "6.2.0"
 unicode-segmentation = "1.7.1"
 petgraph = "0.6.0"
+chrono = "0.4"

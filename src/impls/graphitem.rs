@@ -41,15 +41,26 @@ assert_eq!(seq.to_string(), "It works!");
 */
 
 use std::rc::Rc;
+#[cfg(test)]
 use std::cell::RefCell;
 use std::any::Any;
+#[cfg(test)]
 use std::fs;
+#[cfg(test)]
 use petgraph::stable_graph::StableGraph;
 use crate::qname::QualifiedName;
-use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType, from};
-use crate::item::{SequenceTrait, Item, Value, Document, Node, NodeType, OutputDefinition};
+use crate::xdmgraph::{XDMTree, XDMTreeNode, NodeType as TreeNodeType};
+#[cfg(test)]
+use crate::xdmgraph::from;
+#[allow(unused_imports)]
+use crate::item::{SequenceTrait, Value, Document, Node, NodeType, OutputDefinition};
+#[cfg(test)]
+use crate::item::Item;
+#[cfg(test)]
 use crate::evaluate::*;
+#[cfg(test)]
 use crate::xpath::*;
+#[cfg(test)]
 use crate::xslt::*;
 use crate::xdmerror::*;
 
@@ -114,7 +125,7 @@ impl Document for XDMTree {
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "root element must be a XDMTreeNode".to_string()}),
     };
     // TODO: If the document already has a root element then remove it
-    get_doc_node(self).append_child_node(n.clone()).expect("unable to append child node");
+    get_doc_node(self).append_child_node(n.clone())?;
     Ok(())
   }
 }
@@ -328,6 +339,7 @@ impl Node for XDMTreeNode {
     self.node_value(v);
   }
 
+  // TODO: Return Result to propagate error
   fn set_attribute(&self, name: QualifiedName, val: Value) {
     if self.is_element() {
       // if attribute already exists, remove it
@@ -367,11 +379,14 @@ impl Node for XDMTreeNode {
       Some(d) => d,
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "child node must be a XDMTreeNode".to_string()}),
     };
-    Ok(self.append_child_node(e.clone()).expect("unable to append child"))
+    match e.node_type() {
+      NodeType::Attribute => Ok(self.add_attribute(e.clone())?),
+      _ => Ok(self.append_child_node(e.clone())?)
+    }
   }
   fn append_text_child(&self, t: Value) -> Result<(), Error> {
     let t = self.new_value_node(t);
-    self.append_child_node(t).expect("unable to append child");
+    self.append_child_node(t)?;
     Ok(())
   }
   fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error> {
@@ -379,7 +394,7 @@ impl Node for XDMTreeNode {
       Some(d) => d,
       None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "attribute node must be a XDMTreeNode".to_string()}),
     };
-    self.add_attribute(e.clone()).expect("unable to add attribute");
+    self.add_attribute(e.clone())?;
     Ok(())
   }
   fn remove(&self) -> Result<(), Error> {
@@ -766,6 +781,7 @@ mod tests {
       assert_eq!(e[1].to_name().get_localname(), "class");
     }
 
+    // Start from a Node item
     #[test]
     fn eval_descendant_1() {
       let r = setup_deep();
@@ -789,6 +805,36 @@ mod tests {
 	];
 
       let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 4);
+    }
+
+    // Start from a Document item
+    #[test]
+    fn eval_descendant_2() {
+      let r = setup_deep();
+      let t = Rc::new(r.owner_document().unwrap());
+      let it = Rc::new(Item::Document((*t).clone()));
+
+      let dc = DynamicContext::new(None);
+
+      // XPath == descendant::*
+      let cons = vec![
+	  Constructor::Step(
+	    NodeMatch{
+	      axis: Axis::Descendant,
+	      nodetest: NodeTest::Name(NameTest{
+	        ns: None,
+		prefix: None,
+		name: Some(WildcardOrName::Wildcard)
+	      })
+	    },
+	    vec![]
+	  )
+	];
+
+      let e = evaluate(&dc, Some(vec![it]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -1161,6 +1207,7 @@ mod tests {
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
       let dc = DynamicContext::new(Some(&rd));
+
       // XPath == /child::Foo
       let cons = vec![
 	  Constructor::Path(
@@ -1844,6 +1891,58 @@ mod tests {
       assert_eq!(e[0].to_xml(), "<New><Level1>one</Level1><Level1>two</Level1></New>");
     }
 
+    // This test will add attributes
+    #[test]
+    fn literal_element_4() {
+      let t: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      let d = XDMTreeNode::new(t.clone());
+      let r = t.new_element(QualifiedName::new(None, None, "Test".to_string())).expect("unable to create element");
+      d.append_child(r.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i1".to_string())).expect("unable to add text");
+      let l1 = t.new_element(QualifiedName::new(None, None, "Level1".to_string())).expect("unable to create element");
+      r.append_child(l1.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i2".to_string())).expect("unable to add text");
+
+      let l2 = t.new_element(QualifiedName::new(None, None, "Level2".to_string())).expect("unable to create element");
+      r.append_child(l2.as_any()).expect("unable to add child");
+      r.append_text_child(Value::String("i3".to_string())).expect("unable to add text");
+
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = DynamicContext::new(Some(&rd));
+
+      let cons = vec![
+        Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()),
+	  vec![
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
+	      vec![
+		Constructor::LiteralAttribute(
+		  QualifiedName::new(None, None, "mode".to_string()),
+		  vec![Constructor::Literal(Value::String(String::from("testA")))]
+		),
+	        Constructor::Literal(Value::String("one".to_string())),
+	      ]
+	    ),
+	    Constructor::LiteralElement(QualifiedName::new(None, None, "Level1".to_string()),
+	      vec![
+		Constructor::LiteralAttribute(
+		  QualifiedName::new(None, None, "mode".to_string()),
+		  vec![Constructor::Literal(Value::String(String::from("testB")))]
+		),
+	        Constructor::Literal(Value::String("two".to_string())),
+	      ]
+	    ),
+	  ]
+	),
+      ];
+
+      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+        .expect("evaluation failed");
+
+      assert_eq!(e.len(), 1);
+      assert_eq!(e[0].to_xml(), "<New><Level1 mode='testA'>one</Level1><Level1 mode='testB'>two</Level1></New>");
+    }
+
     // Templates
 
     #[test]
@@ -2307,6 +2406,39 @@ mod tests {
 
       assert_eq!(seq.len(), 1);
       assert_eq!(seq[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
+    }
+
+    #[test]
+    fn xpath_expr_1_pos() {
+      let d = from("<Level1 foo='bar'></Level1>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let dc = DynamicContext::new(None);
+      let cons = parse("attribute::foo eq 'bar'").expect("unable to parse XPath \"/\"");
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 1);
+      match *seq[0] {
+        Item::Value(Value::Boolean(true)) => assert!(true),
+	_ => panic!("not equal"),
+      }
+    }
+    #[test]
+    fn xpath_expr_1_neg() {
+      let d = from("<Level1 foo='bar'></Level1>").expect("unable to parse XML");
+      let r = d.children().iter().nth(0).unwrap().clone();
+
+      let dc = DynamicContext::new(None);
+      let cons = parse("attribute::foo eq 'foo'").expect("unable to parse XPath \"/\"");
+
+      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+
+      assert_eq!(seq.len(), 1);
+      match *seq[0] {
+        Item::Value(Value::Boolean(false)) => assert!(true),
+	_ => panic!("is equal"),
+      }
     }
 
     // XSLT tests
@@ -2987,6 +3119,107 @@ four
 
       let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result3.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+    }
+
+    // This issue was found in web_sys actionsheet project
+    #[test]
+    fn xsl_switch() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test4.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/switch.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result4.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+    }
+
+    #[test]
+    fn deepcopy() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test5.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/copyof.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result5.xml")
+        .expect("unable to read expected result");
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+      // TODO: make sure that the copied nodes are not merely references to the source nodes. Perhaps use generate-id() type of function?
+    }
+
+    #[test]
+    fn xslt_literal_attribute() {
+      let sc = StaticContext::new_with_xslt_builtins();
+
+      let content = fs::read_to_string("tests/xml/test6.xml")
+        .expect("unable to read XML source");
+      let src = from(content.trim()).expect("unable to parse XML");
+      let rsrc = Rc::new(src.get_doc());
+      let isrc = Rc::new(Item::Document(rsrc.clone()));
+
+      let style = fs::read_to_string("tests/xsl/literal_attribute.xsl")
+        .expect("unable to read XSL stylesheet");
+      let styledoc = from(style.trim()).expect("unable to parse XSL");
+      let istyle = Rc::new(styledoc.get_doc());
+
+      strip_source_document(rsrc.clone(), istyle.clone());
+
+      // Setup dynamic context with result document
+      let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
+      XDMTreeNode::new(rd.clone());
+      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+
+      // Prime the stylesheet evaluation by finding the template for the document root
+      // and making the document root the initial context
+      let t = dc.find_match(&isrc);
+      assert!(t.len() >= 1);
+
+      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let expected_result = fs::read_to_string("tests/xml/result6.xml")
         .expect("unable to read expected result");
       assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
     }

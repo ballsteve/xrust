@@ -1,0 +1,11 @@
+<Test>
+  <level1>
+    <data role='test'>
+      <deeper>one</deeper>
+    </data>
+    <data role='dev'>
+      <deeper>two</deeper>
+    </data>
+    <link>hotspot</link>
+  </level1>
+</Test>
