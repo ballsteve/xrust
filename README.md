@@ -28,9 +28,9 @@ will result in the same internal format as:
 
 ## The Plan
 
-1. ~~An XQuery processor.~~ (We're skipping this and going straight to XSLT)
-2. An XSLT processor, implementing approximately v1.0 functionality.
-3. Improve XDM, XPath.
+1. Complete the XPath 1.0 implementation.
+2. Implement all XSLT v1.0 functionality.
+3. Improve XDM, XPath; achieve v2.0-v3.1 compliance.
 4. Introduce all v3.0 features to the XSLT engine.
 
 NB. We're picking the low-hanging fruit first. So major, fundamental features of the languages are being implemented to begin with. The fine detail will be added later. So although we're aiming for v1.0 functionality as a baseline, the eventual desire to implement all of v3.0 dictates that some more advanced features will be implemented sooner rather than later.
