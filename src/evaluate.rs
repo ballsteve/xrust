@@ -16,6 +16,7 @@ use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType
 //use decimal::d128;
 use std::collections::HashMap;
 use std::cell::{RefCell, RefMut};
+use http::Uri;
 
 /// The dynamic evaluation context.
 ///
@@ -33,6 +34,8 @@ pub struct DynamicContext<'a> {
   //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
   resultdoc: Option<&'a dyn Document>,
   od: OutputDefinition,	// Output definition for the final result tree
+  base: Option<Uri>,	// The base URI of the primary stylesheet
+  deps: Vec<Uri>,	// URIs for included/imported stylesheets
 }
 
 impl<'a> DynamicContext<'a> {
@@ -48,7 +51,27 @@ impl<'a> DynamicContext<'a> {
       doc: None,
       resultdoc: resultdoc,
       od: OutputDefinition::new(),
+      base: None,
+      deps: vec![],
     }
+  }
+
+  /// Base URI
+  pub fn baseuri(self) -> Option<Uri> {
+    self.base.clone()
+  }
+  /// Set the Base URI
+  pub fn set_baseuri(&mut self, uri: Uri) {
+    self.base = Some(uri);
+  }
+  /// Retrieve the dependencies for the stylesheet
+  // TODO: make this an iterator
+  pub fn dependencies(&self) -> Vec<Uri> {
+    self.deps.clone()
+  }
+  /// Add a dependency
+  pub fn add_dependency(&mut self, u: Uri) {
+    self.deps.push(u);
   }
 
   /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.

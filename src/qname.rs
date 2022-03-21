@@ -74,6 +74,7 @@ impl Hash for QualifiedName {
     self.localname.hash(state);
   }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

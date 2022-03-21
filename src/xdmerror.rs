@@ -5,7 +5,7 @@
 use core::{fmt, str};
 
 /// Errors defined in XPath
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum ErrorKind {
     StaticAbsent, /// XPST0001
     DynamicAbsent, /// XPDY0002
@@ -50,7 +50,12 @@ pub struct Error {
     pub message: String,
 }
 
+impl std::error::Error for Error {}
+
 impl Error {
+  pub fn new(kind: ErrorKind, message: String) -> Self {
+    Error{kind, message}
+  }
   pub fn to_string(&self) -> String {
     self.message.clone()
   }
@@ -62,3 +67,8 @@ impl fmt::Debug for Error {
     }
 }
 
+impl fmt::Display for Error {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.message)
+    }
+}

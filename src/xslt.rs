@@ -117,13 +117,29 @@ pub fn from_document<'a>(
       };
     };
 
+    // Iterate over children, looking for includes
+    // * resolve href
+    // * fetch document
+    // * parse XML
+    // * replace xsl:include element with content
+    for i in root.children().iter()
+      .filter(|c| c.is_element() &&
+      		  c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
+		  c.to_name().get_localname() == "include")
+    {
+      if let Some(h) = i.get_attribute(&QualifiedName::new(None, None, String::from("href"))) {
+      } else {
+	  return Result::Err(Error{kind: ErrorKind::TypeError, message: "include does not have a href attribute".to_string()})
+      }
+    };
+
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
     // * register template in dynamic context
     // TODO: Don't Panic
     for t in root.children().iter()
-      //.inspect(|x| println!("checking {} node", x.node_type().to_string()))
+      //.inspect(|x| eprintln!("checking {} node", x.node_type().to_string()))
       .filter(|c| c.is_element() &&
                   c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
 		  c.to_name().get_localname() == "template")

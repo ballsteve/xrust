@@ -5,10 +5,11 @@
 //!
 //! Nodes are implemented as a trait.
 
-//use core::fmt;
+use core::fmt;
 use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
+use std::convert::TryFrom;
 use rust_decimal::Decimal;
 #[cfg(test)]
 use rust_decimal_macros::dec;
@@ -576,58 +577,8 @@ impl NodeType {
   }
 }
 
-// A concrete type that implements atomic values
-
-impl PartialEq for Value {
-  fn eq(&self, other: &Value) -> bool {
-    match self {
-        Value::String(s) => s.eq(&other.to_string()),
-	Value::Boolean(b) => match other {
-	  Value::Boolean(c) => b == c,
-	  _ => false, // type error?
-	},
-	Value::Decimal(d) => match other {
-	  Value::Decimal(e) => d == e,
-	  _ => false, // type error?
-	},
-	Value::Integer(i) => match other {
-	  Value::Integer(j) => i == j,
-	  _ => false, // type error? coerce to integer?
-	},
-	Value::Double(d) => match other {
-	  Value::Double(e) => d == e,
-	  _ => false, // type error? coerce to integer?
-	},
-        _ => false, // not yet implemented
-    }
-  }
-}
-impl PartialOrd for Value {
-  fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
-    match self {
-        Value::String(s) => {
-	  let o: String = other.to_string();
-	  s.partial_cmp(&o)
-	},
-	Value::Boolean(_) => None,
-	Value::Decimal(d) => match other {
-	  Value::Decimal(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
-	Value::Integer(d) => match other {
-	  Value::Integer(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
-	Value::Double(d) => match other {
-	  Value::Double(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
-	_ => None,
-    }
-  }
-}
-
-/// An atomic value. These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
+/// A concrete type that implements atomic values.
+/// These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
 #[derive(Clone)]
 pub enum Value {
     /// node or simple type
@@ -695,7 +646,7 @@ impl Value {
     pub fn to_string(&self) -> String {
 	match self {
 	    Value::String(s) => s.to_string(),
-	    Value::NormalizedString(s) => s.value.to_string(),
+	    Value::NormalizedString(s) => s.0.to_string(),
 	    Value::Decimal(d) => d.to_string(),
 	    Value::Float(f) => f.to_string(),
 	    Value::Double(d) => d.to_string(),
@@ -708,10 +659,10 @@ impl Value {
 	    Value::UnsignedShort(s) => s.to_string(),
 	    Value::UnsignedInt(i) => i.to_string(),
 	    Value::UnsignedByte(b) => b.to_string(),
-	    Value::NonPositiveInteger(i) => i.value().to_string(),
-	    Value::NonNegativeInteger(i) => i.value().to_string(),
-	    Value::PositiveInteger(i) => i.value().to_string(),
-	    Value::NegativeInteger(i) => i.value().to_string(),
+	    Value::NonPositiveInteger(i) => i.0.to_string(),
+	    Value::NonNegativeInteger(i) => i.0.to_string(),
+	    Value::PositiveInteger(i) => i.0.to_string(),
+	    Value::NegativeInteger(i) => i.0.to_string(),
 	    Value::Time(t) => t.format("%H:%M:%S.%f").to_string(),
 	    Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
 	    Value::Date(d) => d.format("%Y-%m-%d").to_string(),
@@ -721,15 +672,16 @@ impl Value {
 
     /// Give the effective boolean value.
     pub fn to_bool(&self) -> bool {
-        match &self {
+	match &self {
             Value::Boolean(b) => *b == true,
             Value::String(t) => {
                 //t.is_empty()
 	        t.len() != 0
             },
-	    Value::NormalizedString(s) => s.value.len() != 0,
+	    Value::NormalizedString(s) => s.0.len() != 0,
             Value::Double(n) => *n != 0.0,
             Value::Integer(i) => *i != 0,
+            Value::Int(i) => *i != 0,
             _ => false
 	}
     }
@@ -877,144 +829,219 @@ impl Value {
     }
 }
 
-pub struct NonPositiveInteger {
-    value: i64,
+impl PartialEq for Value {
+  fn eq(&self, other: &Value) -> bool {
+    match self {
+        Value::String(s) => s.eq(&other.to_string()),
+	Value::Boolean(b) => match other {
+	  Value::Boolean(c) => b == c,
+	  _ => false, // type error?
+	},
+	Value::Decimal(d) => match other {
+	  Value::Decimal(e) => d == e,
+	  _ => false, // type error?
+	},
+	Value::Integer(i) => match other {
+	  Value::Integer(j) => i == j,
+	  _ => false, // type error? coerce to integer?
+	},
+	Value::Double(d) => match other {
+	  Value::Double(e) => d == e,
+	  _ => false, // type error? coerce to integer?
+	},
+        _ => false, // not yet implemented
+    }
+  }
 }
-impl NonPositiveInteger {
-    pub fn new(v: i64) -> Result<Self, Error> {
-        if v > 0 {
-	    let e = Error {
-	    	kind: ErrorKind::TypeError,
-		message: String::from("nonPositiveInteger must be zero or less"),
-	    };
-	    Err(e)
-	} else {
-	    let n = NonPositiveInteger {
-	        value: v,
-	    };
-	    Ok(n)
+impl PartialOrd for Value {
+  fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
+    match self {
+        Value::String(s) => {
+	  let o: String = other.to_string();
+	  s.partial_cmp(&o)
+	},
+	Value::Boolean(_) => None,
+	Value::Decimal(d) => match other {
+	  Value::Decimal(e) => d.partial_cmp(e),
+	  _ => None, // type error?
 	}
+	Value::Integer(d) => match other {
+	  Value::Integer(e) => d.partial_cmp(e),
+	  _ => None, // type error?
+	}
+	Value::Double(d) => match other {
+	  Value::Double(e) => d.partial_cmp(e),
+	  _ => None, // type error?
+	}
+	_ => None,
     }
-    pub fn value(&self) -> i64 {
-        self.value
-    }
+  }
 }
-impl Clone for NonPositiveInteger {
-    fn clone(&self) -> Self {
-        NonPositiveInteger::new(self.value).expect("unable to clone NonPositiveInteger")
+
+impl From<String> for Value {
+  fn from(s: String) -> Self {
+    Value::String(s)
+  }
+}
+impl From<&str> for Value {
+  fn from(s: &str) -> Self {
+    Value::String(String::from(s))
+  }
+}
+impl From<Decimal> for Value {
+  fn from(d: Decimal) -> Self {
+    Value::Decimal(d)
+  }
+}
+impl From<f32> for Value {
+  fn from(f: f32) -> Self {
+    Value::Float(f)
+  }
+}
+impl From<f64> for Value {
+  fn from(f: f64) -> Self {
+    Value::Double(f)
+  }
+}
+impl From<i64> for Value {
+  fn from(i: i64) -> Self {
+    Value::Integer(i)
+  }
+}
+impl From<i32> for Value {
+  fn from(i: i32) -> Self {
+    Value::Int(i)
+  }
+}
+impl From<i16> for Value {
+  fn from(i: i16) -> Self {
+    Value::Short(i)
+  }
+}
+impl From<i8> for Value {
+  fn from(i: i8) -> Self {
+    Value::Byte(i)
+  }
+}
+impl From<u64> for Value {
+  fn from(i: u64) -> Self {
+    Value::UnsignedLong(i)
+  }
+}
+impl From<u32> for Value {
+  fn from(i: u32) -> Self {
+    Value::UnsignedInt(i)
+  }
+}
+impl From<u16> for Value {
+  fn from(i: u16) -> Self {
+    Value::UnsignedShort(i)
+  }
+}
+impl From<u8> for Value {
+  fn from(i: u8) -> Self {
+    Value::UnsignedByte(i)
+  }
+}
+impl From<bool> for Value {
+  fn from(b: bool) -> Self {
+    Value::Boolean(b)
+  }
+}
+
+#[derive(Clone, Debug)]
+pub struct NonPositiveInteger(i64);
+impl TryFrom<i64> for NonPositiveInteger {
+  type Error = Error;
+  fn try_from(v: i64) -> Result<Self, Self::Error> {
+    if v > 0 {
+      Err(Error::new(ErrorKind::TypeError, String::from("NonPositiveInteger must be less than zero")))
+    } else {
+      Ok(NonPositiveInteger(v))
+    }
+  }
+}
+impl fmt::Display for NonPositiveInteger {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0.to_string())
     }
 }
 
-pub struct PositiveInteger {
-    value: i64,
-}
-impl PositiveInteger {
-    pub fn new(v: i64) -> Result<Self, Error> {
-        if v <= 0 {
-	    let e = Error {
-	    	kind: ErrorKind::TypeError,
-		message: String::from("PositiveInteger must be greater than zero"),
-	    };
-	    Err(e)
-	} else {
-	    let n = PositiveInteger {
-	        value: v,
-	    };
-	    Ok(n)
-	}
+#[derive(Clone, Debug)]
+pub struct PositiveInteger(i64);
+impl TryFrom<i64> for PositiveInteger {
+  type Error = Error;
+  fn try_from(v: i64) -> Result<Self, Self::Error> {
+    if v <= 0 {
+      Err(Error::new(ErrorKind::TypeError, String::from("PositiveInteger must be greater than zero")))
+    } else {
+      Ok(PositiveInteger(v))
     }
-    pub fn value(&self) -> i64 {
-        self.value
-    }
+  }
 }
-impl Clone for PositiveInteger {
-    fn clone(&self) -> Self {
-        PositiveInteger::new(self.value).expect("unable to clone PositiveInteger")
+impl fmt::Display for PositiveInteger {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0.to_string())
     }
 }
 
-pub struct NonNegativeInteger {
-    value: i64,
-}
-impl NonNegativeInteger {
-    pub fn new(v: i64) -> Result<Self, Error> {
-        if v < 0 {
-	    let e = Error {
-	    	kind: ErrorKind::TypeError,
-		message: String::from("nonNegativeInteger must be zero or greater"),
-	    };
-	    Err(e)
-	} else {
-	    let n = NonNegativeInteger {
-	        value: v,
-	    };
-	    Ok(n)
-	}
+#[derive(Clone, Debug)]
+pub struct NonNegativeInteger(i64);
+impl TryFrom<i64> for NonNegativeInteger {
+  type Error = Error;
+  fn try_from(v: i64) -> Result<Self, Self::Error> {
+    if v < 0 {
+      Err(Error::new(ErrorKind::TypeError, String::from("NonNegativeInteger must be zero or greater")))
+    } else {
+      Ok(NonNegativeInteger(v))
     }
-    pub fn value(&self) -> i64 {
-        self.value
-    }
+  }
 }
-impl Clone for NonNegativeInteger {
-    fn clone(&self) -> Self {
-        NonNegativeInteger::new(self.value).expect("unable to clone NonNegativeInteger")
+impl fmt::Display for NonNegativeInteger {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0.to_string())
     }
 }
 
-pub struct NegativeInteger {
-    value: i64,
-}
-impl NegativeInteger {
-    pub fn new(v: i64) -> Result<Self, Error> {
-        if v >= 0 {
-	    let e = Error {
-	    	kind: ErrorKind::TypeError,
-		message: String::from("NegativeInteger must be less than zero"),
-	    };
-	    Err(e)
-	} else {
-	    let n = NegativeInteger {
-	        value: v,
-	    };
-	    Ok(n)
-	}
+#[derive(Clone, Debug)]
+pub struct NegativeInteger(i64);
+impl TryFrom<i64> for NegativeInteger {
+  type Error = Error;
+  fn try_from(v: i64) -> Result<Self, Self::Error> {
+    if v >= 0 {
+      Err(Error::new(ErrorKind::TypeError, String::from("NegativeInteger must be less than zero")))
+    } else {
+      Ok(NegativeInteger(v))
     }
-    pub fn value(&self) -> i64 {
-        self.value
-    }
+  }
 }
-impl Clone for NegativeInteger {
-    fn clone(&self) -> Self {
-        NegativeInteger::new(self.value).expect("unable to clone NegativeInteger")
+impl fmt::Display for NegativeInteger {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0.to_string())
     }
 }
 
-pub struct NormalizedString {
-    value: String,
-}
-impl NormalizedString {
-    pub fn new(v: &str) -> Result<Self, Error> {
-        let n: &[_] = &['\n', '\r', '\t'];
-        match v.find(n) {
-	    None => Ok(NormalizedString{value: v.to_string()}),
-	    _ => Err(Error {
-	        kind: ErrorKind::TypeError,
-		message: String::from("value is not a normalized string"),
-	  	})
-	}
+#[derive(Clone, Debug)]
+pub struct NormalizedString(String);
+impl TryFrom<&str> for NormalizedString {
+  type Error = Error;
+  fn try_from(v: &str) -> Result<Self, Self::Error> {
+    let n: &[_] = &['\n', '\r', '\t'];
+    if v.find(n).is_none() {
+      Ok(NormalizedString(v.to_string()))
+    } else {
+      Err(Error::new(ErrorKind::TypeError, String::from("value is not a normalized string")))
     }
-    pub fn value(self) -> String {
-        self.value.to_string()
-    }
+  }
 }
-impl Clone for NormalizedString {
-    fn clone(&self) -> Self {
-        NormalizedString::new(&self.value.clone()).expect("unable to clone NormalizedString")
+impl fmt::Display for NormalizedString {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(&self.0.to_string())
     }
 }
 
 /// An output definition. See XSLT v3.0 26 Serialization
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct OutputDefinition {
   name: Option<QualifiedName>,	// TODO: EQName
   indent: bool,
@@ -1041,26 +1068,48 @@ impl OutputDefinition {
     self.indent = ind;
   }
 }
+impl fmt::Display for OutputDefinition {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.indent {
+	  f.write_str("indent output")
+	} else {
+	  f.write_str("do not indent output")
+	}
+    }
+}
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
+    fn from_string() {
+        assert_eq!(Value::from(String::from("foobar")).to_string(), "foobar");
+    }
+    #[test]
+    fn from_str() {
+        assert_eq!(Value::from("foobar").to_string(), "foobar");
+    }
+    #[test]
+    fn from_decimal() {
+        assert_eq!(Value::from(dec!(001.23)).to_string(), "1.23");
+    }
+
+    #[test]
     fn normalizedstring_valid_empty() {
-        assert_eq!(NormalizedString::new("").expect("invalid NormalizedString").value, "");
+        assert_eq!(NormalizedString::try_from("").expect("invalid NormalizedString").0, "");
     }
     #[test]
     fn normalizedstring_valid() {
-        assert_eq!(NormalizedString::new("notinvalid").expect("invalid NormalizedString").value, "notinvalid");
+        assert_eq!(NormalizedString::try_from("notinvalid").expect("invalid NormalizedString").0, "notinvalid");
     }
     #[test]
     fn normalizedstring_valid_spaces() {
-        assert_eq!(NormalizedString::new("not an invalid string").expect("invalid NormalizedString").value, "not an invalid string");
+        assert_eq!(NormalizedString::try_from("not an invalid string").expect("invalid NormalizedString").0, "not an invalid string");
     }
     #[test]
     fn normalizedstring_invalid_tab() {
-        let r = NormalizedString::new("contains tab	character");
+        let r = NormalizedString::try_from("contains tab	character");
 	assert!(match r {
 	    Ok(_) => panic!("string contains tab character"),
 	    Err(_) => true,
@@ -1068,7 +1117,7 @@ mod tests {
     }
     #[test]
     fn normalizedstring_invalid_newline() {
-        let r = NormalizedString::new("contains newline\ncharacter");
+        let r = NormalizedString::try_from("contains newline\ncharacter");
 	assert!(match r {
 	    Ok(_) => panic!("string contains newline character"),
 	    Err(_) => true,
@@ -1076,7 +1125,7 @@ mod tests {
     }
     #[test]
     fn normalizedstring_invalid_cr() {
-        let r = NormalizedString::new("contains carriage return\rcharacter");
+        let r = NormalizedString::try_from("contains carriage return\rcharacter");
 	assert!(match r {
 	    Ok(_) => panic!("string contains cr character"),
 	    Err(_) => true,
@@ -1084,7 +1133,7 @@ mod tests {
     }
     #[test]
     fn normalizedstring_invalid_all() {
-        let r = NormalizedString::new("contains	all\rforbidden\ncharacters");
+        let r = NormalizedString::try_from("contains	all\rforbidden\ncharacters");
 	assert!(match r {
 	    Ok(_) => panic!("string contains at least one forbidden character"),
 	    Err(_) => true,
@@ -1107,15 +1156,15 @@ mod tests {
 
     #[test]
     fn nonpositiveinteger_valid() {
-        assert_eq!(NonPositiveInteger::new(-10).expect("invalid NonPositiveInteger").value, -10);
+        assert_eq!(NonPositiveInteger::try_from(-10).expect("invalid NonPositiveInteger").0, -10);
     }
     #[test]
     fn nonpositiveinteger_valid_zero() {
-        assert_eq!(NonPositiveInteger::new(0).expect("invalid NonPositiveInteger").value, 0);
+        assert_eq!(NonPositiveInteger::try_from(0).expect("invalid NonPositiveInteger").0, 0);
     }
     #[test]
     fn nonpositiveinteger_invalid() {
-        let r = NonPositiveInteger::new(10);
+        let r = NonPositiveInteger::try_from(10);
 	assert!(match r {
 	    Ok(_) => panic!("10 is not a nonPositiveInteger"),
 	    Err(_) => true,
@@ -1124,11 +1173,11 @@ mod tests {
 
     #[test]
     fn positiveinteger_valid() {
-        assert_eq!(PositiveInteger::new(10).expect("invalid PositiveInteger").value, 10);
+        assert_eq!(PositiveInteger::try_from(10).expect("invalid PositiveInteger").0, 10);
     }
     #[test]
     fn positiveinteger_invalid_zero() {
-        let r = PositiveInteger::new(0);
+        let r = PositiveInteger::try_from(0);
 	assert!(match r {
 	    Ok(_) => panic!("0 is not a PositiveInteger"),
 	    Err(_) => true,
@@ -1136,7 +1185,7 @@ mod tests {
     }
     #[test]
     fn positiveinteger_invalid() {
-        let r = PositiveInteger::new(-10);
+        let r = PositiveInteger::try_from(-10);
 	assert!(match r {
 	    Ok(_) => panic!("-10 is not a PositiveInteger"),
 	    Err(_) => true,
@@ -1145,15 +1194,15 @@ mod tests {
 
     #[test]
     fn nonnegativeinteger_valid() {
-        assert_eq!(NonNegativeInteger::new(10).expect("invalid NonNegativeInteger").value, 10);
+        assert_eq!(NonNegativeInteger::try_from(10).expect("invalid NonNegativeInteger").0, 10);
     }
     #[test]
     fn nonnegativeinteger_valid_zero() {
-        assert_eq!(NonNegativeInteger::new(0).expect("invalid NonNegativeInteger").value, 0);
+        assert_eq!(NonNegativeInteger::try_from(0).expect("invalid NonNegativeInteger").0, 0);
     }
     #[test]
     fn nonnegativeinteger_invalid() {
-        let r = NonNegativeInteger::new(-10);
+        let r = NonNegativeInteger::try_from(-10);
 	assert!(match r {
 	    Ok(_) => panic!("-10 is not a NonNegativeInteger"),
 	    Err(_) => true,
@@ -1162,11 +1211,11 @@ mod tests {
 
     #[test]
     fn negativeinteger_valid() {
-        assert_eq!(NegativeInteger::new(-10).expect("invalid NegativeInteger").value, -10);
+        assert_eq!(NegativeInteger::try_from(-10).expect("invalid NegativeInteger").0, -10);
     }
     #[test]
     fn negativeinteger_invalid_zero() {
-        let r = NegativeInteger::new(0);
+        let r = NegativeInteger::try_from(0);
 	assert!(match r {
 	    Ok(_) => panic!("0 is not a NegativeInteger"),
 	    Err(_) => true,
@@ -1174,7 +1223,7 @@ mod tests {
     }
     #[test]
     fn negativeinteger_invalid() {
-        let r = NegativeInteger::new(10);
+        let r = NegativeInteger::try_from(10);
 	assert!(match r {
 	    Ok(_) => panic!("10 is not a NegativeInteger"),
 	    Err(_) => true,
@@ -1196,19 +1245,19 @@ mod tests {
     }
     #[test]
     fn nonpositiveinteger_stringvalue() {
-        let npi = NonPositiveInteger::new(-00123).expect("invalid nonPositiveInteger");
+        let npi = NonPositiveInteger::try_from(-00123).expect("invalid nonPositiveInteger");
 	let i = Value::NonPositiveInteger(npi);
         assert_eq!(i.to_string(), "-123")
     }
     #[test]
     fn nonnegativeinteger_stringvalue() {
-        let nni = NonNegativeInteger::new(00123).expect("invalid nonNegativeInteger");
+        let nni = NonNegativeInteger::try_from(00123).expect("invalid nonNegativeInteger");
 	let i = Value::NonNegativeInteger(nni);
         assert_eq!(i.to_string(), "123")
     }
     #[test]
     fn normalizedstring_stringvalue() {
-        let ns = NormalizedString::new("foobar").expect("invalid normalizedString");
+        let ns = NormalizedString::try_from("foobar").expect("invalid normalizedString");
 	let i = Value::NormalizedString(ns);
         assert_eq!(i.to_string(), "foobar")
     }
@@ -1217,26 +1266,26 @@ mod tests {
 
     #[test]
     fn bool_value_string_empty() {
-      assert_eq!(Item::Value(Value::String("".to_string())).to_bool(), false)
+      assert_eq!(Item::Value(Value::from("")).to_bool(), false)
     }
     #[test]
     fn bool_value_string_nonempty() {
-      assert_eq!(Item::Value(Value::String("false".to_string())).to_bool(), true)
+      assert_eq!(Item::Value(Value::from("false")).to_bool(), true)
     }
     #[test]
     fn bool_value_int_zero() {
-      assert_eq!(Item::Value(Value::Integer(0)).to_bool(), false)
+      assert_eq!(Item::Value(Value::from(0)).to_bool(), false)
     }
     #[test]
     fn bool_value_int_nonzero() {
-      assert_eq!(Item::Value(Value::Integer(42)).to_bool(), true)
+      assert_eq!(Item::Value(Value::from(42)).to_bool(), true)
     }
 
     // to_int
 
     #[test]
     fn int_value_string() {
-      match Item::Value(Value::String("1".to_string())).to_int() {
+      match Item::Value(Value::from("1")).to_int() {
         Ok(i) => assert_eq!(i, 1),
 	Err(_) => {
 	  panic!("to_int() failed")
@@ -1248,40 +1297,40 @@ mod tests {
 
     #[test]
     fn double_value_string() {
-      assert_eq!(Item::Value(Value::String("2.0".to_string())).to_double(), 2.0)
+      assert_eq!(Item::Value(Value::from("2.0")).to_double(), 2.0)
     }
 
     // value to_bool
 
     #[test]
     fn value_to_bool_string() {
-      assert_eq!(Value::String("2".to_string()).to_bool(), true)
+      assert_eq!(Value::from("2").to_bool(), true)
     }
 
     // value to_int
 
     #[test]
     fn value_to_int_string() {
-      assert_eq!(Value::String("2".to_string()).to_int().expect("cannot convert to integer"), 2)
+      assert_eq!(Value::from("2").to_int().expect("cannot convert to integer"), 2)
     }
 
     // value to_double
 
     #[test]
     fn value_to_double_string() {
-      assert_eq!(Value::String("3.0".to_string()).to_double(), 3.0)
+      assert_eq!(Value::from("3.0").to_double(), 3.0)
     }
 
     // value compare
 
     #[test]
     fn value_compare_eq() {
-      assert_eq!(Value::String("3".to_string()).compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
+      assert_eq!(Value::from("3").compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
     }
 
     #[test]
     fn value_compare_ne() {
-      assert_eq!(Value::String("3".to_string()).compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
+      assert_eq!(Value::from("3").compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
     }
 
     //#[test]
@@ -1300,7 +1349,7 @@ mod tests {
     #[test]
     fn sequence_one() {
         let mut s = Sequence::new();
-	s.new_value(Value::String("one".to_string()));
+	s.new_value(Value::from("one"));
 	let mut t = Sequence::new();
 	t.add(&s[0]);
 	assert!(Rc::ptr_eq(&s[0], &t[0]))

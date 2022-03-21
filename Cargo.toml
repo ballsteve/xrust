@@ -21,3 +21,5 @@ nom = "6.2.0"
 unicode-segmentation = "1.7.1"
 petgraph = "0.6.0"
 chrono = "0.4"
+http = "0.2.6"
+
