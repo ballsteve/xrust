@@ -4,7 +4,7 @@
 # use std::rc::Rc;
 # use std::cell::RefCell;
 # use xrust::item::{Item, Document, Sequence, SequenceTrait};
-# use xrust::evaluate::{StaticContext, DynamicContext, evaluate};
+# use xrust::evaluate::{StaticContext, Evaluator};
 # use xrust::xpath::parse;
 # use xrust::xslt::from_document;
 # use petgraph::stable_graph::StableGraph;
@@ -22,18 +22,18 @@ let style = from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transfor
 let istyle = Rc::new(style.get_doc());
 
 // Setup dynamic context with result document
-let sc = StaticContext::new_with_xslt_builtins();
+let mut sc = StaticContext::new_with_xslt_builtins();
 let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
 XDMTreeNode::new(rd.clone());
-let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
 // Prime the stylesheet evaluation by finding the template for the document root
 // and making the document root the initial context
-let t = dc.find_match(&isrc);
+let t = ev.find_match(&isrc);
 
 // Now evaluate the Sequence Constructor
 // with the source document as the initial context
-let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
 assert_eq!(seq.to_string(), "It works!");
 ```
@@ -610,10 +610,10 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Root];
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       if e.len() == 1 {
@@ -629,7 +629,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::*
       let cons = vec![
 	  Constructor::Step(
@@ -645,7 +645,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4)
@@ -657,7 +657,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == self::*
       let cons = vec![
 	  Constructor::Step(
@@ -673,7 +673,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -690,7 +690,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == self::*
       let cons = vec![
 	  Constructor::Step(
@@ -706,7 +706,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(vv1.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(vv1.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 0);
@@ -720,7 +720,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == parent::*
       let cons = vec![Constructor::Step(
 	  NodeMatch{
@@ -734,7 +734,7 @@ mod tests {
 	  vec![]
 	)];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c1.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c1.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -758,7 +758,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == attribute::*
       let cons = vec![Constructor::Step(
 	  NodeMatch{
@@ -772,7 +772,7 @@ mod tests {
 	  vec![]
 	)];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 2);
@@ -788,7 +788,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == descendant::*
       let cons = vec![
 	  Constructor::Step(
@@ -804,7 +804,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -817,7 +817,7 @@ mod tests {
       let t = Rc::new(r.owner_document().unwrap());
       let it = Rc::new(Item::Document((*t).clone()));
 
-      let dc = DynamicContext::new(None);
+      let ev = Evaluator::new(None);
 
       // XPath == descendant::*
       let cons = vec![
@@ -834,7 +834,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![it]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![it]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -846,7 +846,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == descendant-or-self::*
       let cons = vec![
 	  Constructor::Step(
@@ -862,7 +862,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 5);
@@ -882,7 +882,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == ancestor::*
       let cons = vec![
 	  Constructor::Step(
@@ -898,7 +898,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -918,7 +918,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == ancestor-or-self::*
       let cons = vec![
 	  Constructor::Step(
@@ -934,7 +934,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 5);
@@ -948,7 +948,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == following-sibling::*
       let cons = vec![
 	  Constructor::Step(
@@ -964,7 +964,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c1.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c1.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -978,7 +978,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == preceding-sibling::*
       let cons = vec![
 	  Constructor::Step(
@@ -994,7 +994,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c4.clone()))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -1025,7 +1025,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == follow::*
       let cons = vec![
 	  Constructor::Step(
@@ -1041,7 +1041,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c2))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c2))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -1072,7 +1072,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == preceding::*
       let cons = vec![
 	  Constructor::Step(
@@ -1088,7 +1088,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 4);
@@ -1119,7 +1119,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /child::*/child::*
       let cons = vec![
 	  Constructor::Path(
@@ -1131,7 +1131,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(c4))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 2);
@@ -1164,7 +1164,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /child::Test
       let cons = vec![
 	  Constructor::Path(
@@ -1175,7 +1175,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1206,7 +1206,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
       // XPath == /child::Foo
       let cons = vec![
@@ -1218,7 +1218,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 0);
@@ -1249,7 +1249,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::element()
       let cons = vec![
 	  Constructor::Step(
@@ -1261,7 +1261,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 2);
@@ -1294,7 +1294,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::text()
       let cons = vec![
 	  Constructor::Step(
@@ -1306,7 +1306,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -1336,7 +1336,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::node()
       let cons = vec![
 	  Constructor::Step(
@@ -1348,7 +1348,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 2);
@@ -1379,7 +1379,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /Test[Level2]
       let cons = vec![
 	  Constructor::Path(
@@ -1396,7 +1396,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1426,7 +1426,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /Test[foo]
       let cons = vec![
 	  Constructor::Path(
@@ -1443,7 +1443,7 @@ mod tests {
 	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 0);
@@ -1467,7 +1467,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /Test[foo]
       let cons = vec![
 	  Constructor::FunctionCall(
@@ -1476,7 +1476,7 @@ mod tests {
       	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1499,7 +1499,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /Test[foo]
       let cons = vec![
 	  Constructor::FunctionCall(
@@ -1508,7 +1508,7 @@ mod tests {
       	  )
 	];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1534,7 +1534,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == *
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1546,7 +1546,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(r))), true);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(r))).expect("unable to match item"), true);
     }
     // TODO: matching a text node should return false
 
@@ -1566,7 +1566,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::Test
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1578,7 +1578,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(r))), true);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(r))).expect("unable to match item"), true);
     }
     #[test]
     fn pattern_2_neg() {
@@ -1596,7 +1596,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1608,7 +1608,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(r))), false);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(r))).expect("unable to match item"), false);
     }
 
     #[test]
@@ -1627,7 +1627,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == child::Test/child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1643,7 +1643,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(l2))), true);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(l2))).expect("unable to match item"), true);
     }
 
     #[test]
@@ -1662,7 +1662,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /child::Test/child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1679,7 +1679,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(l2))), true);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(l2))).expect("unable to match item"), true);
     }
     #[test]
     fn pattern_4_neg() {
@@ -1699,7 +1699,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /child::Test/child::Level2
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1716,7 +1716,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(l2))), false);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(l2))).expect("unable to match item"), false);
     }
 
     #[test]
@@ -1737,7 +1737,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1746,7 +1746,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Document(Rc::new(t)))), true);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Document(Rc::new(t)))).expect("unable to match item"), true);
     }
     #[test]
     fn pattern_5_neg() {
@@ -1766,7 +1766,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
       // XPath == /
       let cons = vec![Constructor::Path(
 	    vec![
@@ -1775,7 +1775,7 @@ mod tests {
 	  )];
       let p = to_pattern(cons).expect("unable to reverse expression");
 
-      assert_eq!(item_matches(&dc, &p, &Rc::new(Item::Node(l2))), false);
+      assert_eq!(ev.item_matches(&p, &Rc::new(Item::Node(l2))).expect("unable to match item"), false);
     }
 
     // Literal result elements
@@ -1796,13 +1796,13 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
       let cons = vec![
         Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()), vec![]),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1828,7 +1828,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
       let cons = vec![
         Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string(),),
@@ -1842,7 +1842,7 @@ mod tests {
 	),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1865,7 +1865,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
       let cons = vec![
         Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()),
@@ -1884,7 +1884,7 @@ mod tests {
 	),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1909,7 +1909,7 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
       let cons = vec![
         Constructor::LiteralElement(QualifiedName::new(None, None, "New".to_string()),
@@ -1936,7 +1936,7 @@ mod tests {
 	),
       ];
 
-      let e = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
+      let e = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -1961,7 +1961,8 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let mut dc = DynamicContext::new(Some(&rd));
+
+      let mut ev = Evaluator::new(Some(&rd));
 
       // This constructor is "child::Test"
       let cons1 = vec![Constructor::Path(
@@ -1976,13 +1977,13 @@ mod tests {
       let cons2 = vec![
         Constructor::Literal(Value::String("I found a matching template".to_string())),
       ];
-      dc.add_template(p, cons2, None, 0.0);
+      ev.add_template(p, cons2, None, 0.0);
 
       let s = Rc::new(Item::Node(r));
-      let u = dc.find_match(&s);
+      let u = ev.find_match(&s);
       assert_eq!(u.len(), 1);
 
-      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+      let e = ev.evaluate(Some(vec![s]), Some(0), &u)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 1);
@@ -2008,7 +2009,8 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let mut dc = DynamicContext::new(Some(&rd));
+
+      let mut ev = Evaluator::new(Some(&rd));
 
       // This constructor is "child::Test"
       let cons1 = vec![Constructor::Path(
@@ -2029,7 +2031,7 @@ mod tests {
 	      )],
 	),
       ];
-      dc.add_template(pat1, body1, None, 0.0);
+      ev.add_template(pat1, body1, None, 0.0);
 
       // This constructor is "child::Level2"
       let cons2 = vec![Constructor::Path(
@@ -2044,7 +2046,7 @@ mod tests {
       let body2 = vec![
         Constructor::Literal(Value::String("I found a Level2".to_string())),
       ];
-      dc.add_template(pat2, body2, None, 0.0);
+      ev.add_template(pat2, body2, None, 0.0);
 
       // This constructor is "child::Level3"
       let cons3 = vec![Constructor::Path(
@@ -2059,13 +2061,13 @@ mod tests {
       let body3 = vec![
         Constructor::Literal(Value::String("I found a Level3".to_string())),
       ];
-      dc.add_template(pat3, body3, None, 0.0);
+      ev.add_template(pat3, body3, None, 0.0);
 
       let s = Rc::new(Item::Node(r));
-      let u = dc.find_match(&s);
+      let u = ev.find_match(&s);
       assert_eq!(u.len(), 1);
 
-      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+      let e = ev.evaluate(Some(vec![s]), Some(0), &u)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 2);
@@ -2092,7 +2094,8 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let mut dc = DynamicContext::new(Some(&rd));
+
+      let mut ev = Evaluator::new(Some(&rd));
 
       // This constructor is "child::Test"
       let cons1 = vec![Constructor::Path(
@@ -2113,7 +2116,7 @@ mod tests {
 	      )],
 	),
       ];
-      dc.add_template(pat1, body1, None, 0.0);
+      ev.add_template(pat1, body1, None, 0.0);
 
       // This constructor is "child::Level2"
       let cons2 = vec![Constructor::Path(
@@ -2128,7 +2131,7 @@ mod tests {
       let body2 = vec![
         Constructor::Literal(Value::String("I found a Level2".to_string())),
       ];
-      dc.add_template(pat2, body2, None, 0.0);
+      ev.add_template(pat2, body2, None, 0.0);
 
       // This constructor is "child::*"
       let cons3 = vec![Constructor::Path(
@@ -2143,13 +2146,13 @@ mod tests {
       let body3 = vec![
         Constructor::Literal(Value::String("Default template".to_string())),
       ];
-      dc.add_template(pat3, body3, None, 0.0);
+      ev.add_template(pat3, body3, None, 0.0);
 
       let s = Rc::new(Item::Node(r));
-      let u = dc.find_match(&s);
+      let u = ev.find_match(&s);
       assert_eq!(u.len(), 1);
 
-      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+      let e = ev.evaluate(Some(vec![s]), Some(0), &u)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 3);
@@ -2177,7 +2180,8 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let mut dc = DynamicContext::new(Some(&rd));
+
+      let mut ev = Evaluator::new(Some(&rd));
 
       // Built-in constructor(s) for "document-node()|element()"
       let built1 = vec![Constructor::Path(
@@ -2195,7 +2199,7 @@ mod tests {
 	      )],
 	),
       ];
-      dc.add_builtin_template(builtpat1, builtbody1, None, -1.0);
+      ev.add_builtin_template(builtpat1, builtbody1, None, -1.0);
       let built2 = vec![Constructor::Path(
 	    vec![
               vec![Constructor::Step(
@@ -2214,7 +2218,7 @@ mod tests {
 	      )],
 	),
       ];
-      dc.add_builtin_template(builtpat2, builtbody2, None, -1.0);
+      ev.add_builtin_template(builtpat2, builtbody2, None, -1.0);
 
       // This builtin constructor is for "child::text()"
       let built3 = vec![Constructor::Path(
@@ -2227,7 +2231,7 @@ mod tests {
 	  )];
       let builtpat3 = to_pattern(built3).expect("unable to convert to pattern");
       let builtbody3 = vec![Constructor::ContextItem];
-      dc.add_builtin_template(builtpat3, builtbody3, None, -0.5);
+      ev.add_builtin_template(builtpat3, builtbody3, None, -0.5);
 
       // This constructor is "child::Level2"
       let cons2 = vec![Constructor::Path(
@@ -2242,13 +2246,13 @@ mod tests {
       let body2 = vec![
         Constructor::Literal(Value::String("I found a Level2".to_string())),
       ];
-      dc.add_template(pat2, body2, None, 0.0);
+      ev.add_template(pat2, body2, None, 0.0);
 
       let s = Rc::new(Item::Node(r));
-      let u = dc.find_match(&s);
+      let u = ev.find_match(&s);
       assert_eq!(u.len(), 1);
 
-      let e = evaluate(&dc, Some(vec![s]), Some(0), &u)
+      let e = ev.evaluate(Some(vec![s]), Some(0), &u)
         .expect("evaluation failed");
 
       assert_eq!(e.len(), 5);
@@ -2290,9 +2294,9 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
-      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
 
       assert_eq!(seq.len(), 2);
       assert_eq!(seq[0].to_xml(), "<Group>a group</Group>");
@@ -2330,9 +2334,9 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
-      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
 
       assert_eq!(seq.len(), 2);
       assert_eq!(seq[0].to_xml(), "<Group>a group</Group>");
@@ -2382,9 +2386,9 @@ mod tests {
 
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = DynamicContext::new(Some(&rd));
+      let ev = Evaluator::new(Some(&rd));
 
-      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
 
       assert_eq!(seq.len(), 3);
       assert_eq!(seq[0].to_xml(), "<Group>one2</Group>");
@@ -2399,10 +2403,10 @@ mod tests {
       let d = from("<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>").expect("unable to parse XML");
       let r = d.children().iter().nth(0).unwrap().clone();
 
-      let dc = DynamicContext::new(None);
+      let ev = Evaluator::new(None);
       let cons = parse("/").expect("unable to parse XPath \"/\"");
 
-      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
 
       assert_eq!(seq.len(), 1);
       assert_eq!(seq[0].to_xml(), "<Level1><Level2>one</Level2><Level2>two</Level2><Level2>three</Level2></Level1>");
@@ -2413,10 +2417,10 @@ mod tests {
       let d = from("<Level1 foo='bar'></Level1>").expect("unable to parse XML");
       let r = d.children().iter().nth(0).unwrap().clone();
 
-      let dc = DynamicContext::new(None);
+      let ev = Evaluator::new(None);
       let cons = parse("attribute::foo eq 'bar'").expect("unable to parse XPath \"/\"");
 
-      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
 
       assert_eq!(seq.len(), 1);
       match *seq[0] {
@@ -2429,10 +2433,10 @@ mod tests {
       let d = from("<Level1 foo='bar'></Level1>").expect("unable to parse XML");
       let r = d.children().iter().nth(0).unwrap().clone();
 
-      let dc = DynamicContext::new(None);
+      let ev = Evaluator::new(None);
       let cons = parse("attribute::foo eq 'foo'").expect("unable to parse XPath \"/\"");
 
-      let seq = evaluate(&dc, Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![Rc::new(Item::Node(r))]), Some(0), &cons).expect("evaluation failed");
 
       assert_eq!(seq.len(), 1);
       match *seq[0] {
@@ -2445,7 +2449,7 @@ mod tests {
 
     #[test]
     fn xslt_literal_text() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2458,21 +2462,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "Found the document")
     }
 
     #[test]
     fn xslt_apply_templates_1() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2487,21 +2491,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "found textfound text")
     }
 
     #[test]
     fn xslt_apply_templates_2() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2517,21 +2521,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "onetwothreefour")
     }
 
     #[test]
     fn xslt_sequence_1() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2545,21 +2549,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "2")
     }
 
     #[test]
     fn xslt_sequence_2() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2574,21 +2578,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "onetwo")
     }
 
     #[test]
     fn xslt_sequence_3() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2603,21 +2607,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "XoneYXtwoY")
     }
 
     #[test]
     fn xslt_literal_result_element_1() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2633,21 +2637,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_xml(), "<MyTest><MyLevel1>one</MyLevel1><MyLevel1>two</MyLevel1></MyTest>")
     }
 
     #[test]
     fn xslt_if_1() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1><Level1><text/></Level1></Test>")
         .expect("unable to parse XML");
@@ -2663,21 +2667,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_xml(), "has texthas textno text")
     }
 
     #[test]
     fn xslt_choose_1() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1><Level1><text/></Level1></Test>")
         .expect("unable to parse XML");
@@ -2693,21 +2697,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_xml(), "has texthas textno text")
     }
 
     #[test]
     fn xslt_foreach_1() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
         .expect("unable to parse XML");
@@ -2723,21 +2727,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_xml(), "<group>one</group><group>two</group>")
     }
 
     #[test]
     fn xslt_foreach_2() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>")
         .expect("unable to parse XML");
@@ -2753,21 +2757,21 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_xml(), "<group>a group</group><group>a group</group>")
     }
 
     #[test]
     fn xslt_foreach_3() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4></Test>")
         .expect("unable to parse XML");
@@ -2782,14 +2786,14 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       // NB. the order that the groups appear in is undefined
       assert!(
@@ -2800,7 +2804,7 @@ mod tests {
 
     #[test]
     fn xslt_foreach_4() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level2>two</Level2><Level3>one</Level3><Level4>two</Level4><Level5>one</Level5></Test>")
         .expect("unable to parse XML");
@@ -2815,14 +2819,14 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       // NB. the order that the groups appear in is undefined
       assert!(
@@ -2833,7 +2837,7 @@ mod tests {
 
     #[test]
     fn xslt_foreach_adj() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level2>one</Level2><Level3>two</Level3><Level4>two</Level4><Level5>one</Level5></Test>")
         .expect("unable to parse XML");
@@ -2848,14 +2852,14 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       // NB. the order that the groups appear in is undefined
       assert!(
@@ -2901,7 +2905,7 @@ mod tests {
     // Test stripping whitespace from the stylesheet
     #[test]
     fn strip_ws_2() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test><Level1>one</Level1><Level1>two</Level1><Level1>three</Level1><Level1>four</Level1></Test>").expect("unable to parse XML");
       let isrc = Rc::new(Item::Document(Rc::new(src.get_doc())));
@@ -2931,14 +2935,14 @@ Level1
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle, &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "
 Level1
@@ -2962,7 +2966,7 @@ four
     // Test stripping whitespace from the source document using XSL stylesheet directives
     #[test]
     fn strip_ws_3() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let src = from("<Test>
   <Level1>one</Level1>
@@ -2999,16 +3003,16 @@ Level1
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
       strip_source_document(rsrc.clone(), istyle.clone());
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
 
       assert_eq!(seq.to_string(), "
 Level1
@@ -3032,7 +3036,7 @@ four
     // Test stripping whitespace with an empty XSL stylesheet
     #[test]
     fn xsl_empty() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let content = fs::read_to_string("tests/xml/test1.xml")
         .expect("unable to read XML source");
@@ -3048,14 +3052,14 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/txt/result1.txt")
         .expect("unable to read expected result");
       assert_eq!(expected_result.trim(), seq.to_string())
@@ -3063,7 +3067,7 @@ four
 
     #[test]
     fn xsl_identity() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let content = fs::read_to_string("tests/xml/test2.xml")
         .expect("unable to read XML source");
@@ -3079,14 +3083,14 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result2.xml")
         .expect("unable to read expected result");
       assert_eq!(expected_result.trim(), seq.to_xml())
@@ -3094,7 +3098,7 @@ four
 
     #[test]
     fn xsl_pretty_print() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let content = fs::read_to_string("tests/xml/test3.xml")
         .expect("unable to read XML source");
@@ -3110,23 +3114,23 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result3.xml")
         .expect("unable to read expected result");
-      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&ev.get_output_definition()))
     }
 
     // This issue was found in web_sys actionsheet project
     #[test]
     fn xsl_switch() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let content = fs::read_to_string("tests/xml/test4.xml")
         .expect("unable to read XML source");
@@ -3144,22 +3148,22 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result4.xml")
         .expect("unable to read expected result");
-      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&ev.get_output_definition()))
     }
 
     #[test]
     fn deepcopy() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let content = fs::read_to_string("tests/xml/test5.xml")
         .expect("unable to read XML source");
@@ -3177,23 +3181,23 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result5.xml")
         .expect("unable to read expected result");
-      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&ev.get_output_definition()))
       // TODO: make sure that the copied nodes are not merely references to the source nodes. Perhaps use generate-id() type of function?
     }
 
     #[test]
     fn xslt_literal_attribute() {
-      let sc = StaticContext::new_with_xslt_builtins();
+      let mut sc = StaticContext::new_with_xslt_builtins();
 
       let content = fs::read_to_string("tests/xml/test6.xml")
         .expect("unable to read XML source");
@@ -3211,16 +3215,16 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let dc = from_document(istyle.clone(), &rd, &sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
-      let t = dc.find_match(&isrc);
+      let t = ev.find_match(&isrc);
       assert!(t.len() >= 1);
 
-      let seq = evaluate(&dc, Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
+      let seq = ev.evaluate(Some(vec![isrc]), Some(0), &t).expect("evaluation failed");
       let expected_result = fs::read_to_string("tests/xml/result6.xml")
         .expect("unable to read expected result");
-      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&dc.get_output_definition()))
+      assert_eq!(expected_result.trim(), seq.to_xml_with_options(&ev.get_output_definition()))
     }
 }

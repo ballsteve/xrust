@@ -7,6 +7,7 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 */
 
 use std::rc::Rc;
+use std::convert::TryFrom;
 use crate::xdmerror::*;
 use crate::qname::*;
 use crate::item::*;
@@ -15,14 +16,14 @@ use crate::xpath::*;
 
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
-/// Compiles a [Document] into a Sequence Constructor.
+/// Compiles a [Document] into an Evaluator.
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
 pub fn from_document<'a>(
   d: Rc<dyn Document>,
   resultdoc: &'a dyn Document,
-  sc: &StaticContext
-) -> Result<DynamicContext<'a>, Error> {
-    let mut dc = DynamicContext::new(Some(resultdoc));
+  sc: &mut StaticContext
+) -> Result<Evaluator<'a>, Error> {
+    let mut ev = Evaluator::new(Some(resultdoc));
 
     // Check that this is a valid XSLT stylesheet
     let root = match d.get_root_element() {
@@ -62,7 +63,7 @@ pub fn from_document<'a>(
 	      )],
 	),
       ];
-    dc.add_builtin_template(bi1pat, bi1bod, None, -1.0);
+    ev.add_builtin_template(bi1pat, bi1bod, None, -1.0);
     // This matches "*" and applies templates to all children
     let bi2pat = to_pattern(
       vec![Constructor::Path(
@@ -81,7 +82,7 @@ pub fn from_document<'a>(
 	      )],
 	),
       ];
-    dc.add_builtin_template(bi2pat, bi2bod, None, -1.0);
+    ev.add_builtin_template(bi2pat, bi2bod, None, -1.0);
     // This matches "text()" and copies content
     let bi3pat = to_pattern(
       vec![Constructor::Path(
@@ -93,7 +94,7 @@ pub fn from_document<'a>(
         ]
       )])?;
     let bi3bod = vec![Constructor::ContextItem];
-    dc.add_builtin_template(bi3pat, bi3bod, None, -1.0);
+    ev.add_builtin_template(bi3pat, bi3bod, None, -1.0);
 
     // Setup the serialization of the primary result document
     for o in root.children().iter()
@@ -111,7 +112,7 @@ pub fn from_document<'a>(
 
       	  let mut od = OutputDefinition::new();
       	  od.set_indent(b);
-      	  dc.set_output_definition(od);
+      	  ev.set_output_definition(od);
 	}
 	None => {}
       };
@@ -127,7 +128,8 @@ pub fn from_document<'a>(
       		  c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
 		  c.to_name().get_localname() == "include")
     {
-      if let Some(h) = i.get_attribute(&QualifiedName::new(None, None, String::from("href"))) {
+      if let Some(_h) = i.get_attribute(&QualifiedName::new(None, None, String::from("href"))) {
+        println!("do something here");
       } else {
 	  return Result::Err(Error{kind: ErrorKind::TypeError, message: "include does not have a href attribute".to_string()})
       }
@@ -152,8 +154,8 @@ pub fn from_document<'a>(
 	    let mut body = t.children().iter()
 	      .map(|d| to_constructor(d.clone()).expect("failed to compile sequence constructor"))
 	      .collect();
-	    static_analysis(&mut pat, &sc);
-	    static_analysis(&mut body, &sc);
+	    sc.static_analysis(&mut pat);
+	    sc.static_analysis(&mut body);
 	    // Determine the priority of the template
 	    let prio;
 	    match t.get_attribute(&QualifiedName::new(None, None, "priority".to_string())) {
@@ -196,14 +198,15 @@ pub fn from_document<'a>(
 		}
 	      }
 	    }
-	    dc.add_template(pat, body, None, prio);
+	    ev.add_template(pat, body, None, prio);
 	  }
 	  None => {
 	    return Result::Err(Error{kind: ErrorKind::TypeError, message: "template does not have a match attribute".to_string()})
 	  }
       }
     };
-    Ok(dc)
+
+    Ok(ev)
 }
 
 /// Compile a node in a template to a sequence constructor
@@ -215,7 +218,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
     NodeType::Element => {
       match (n.to_name().get_nsuri_ref(), n.to_name().get_localname().as_str()) {
         (Some(XSLTNS), "text") => {
-			match n.get_attribute(&QualifiedName::new(None, None, "disable-output-escaping".to_string())){
+	  match n.get_attribute(&QualifiedName::new(None, None, "disable-output-escaping".to_string())){
 				Some(doe) => {
 					match &doe.to_string()[..]  {
 						"yes" => Ok(Constructor::Literal(Value::String(n.to_string()))),
@@ -226,7 +229,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 								.replace("<", "&lt;")
 								.replace("'", "&apos;")
 								.replace("\"", "&quot;");
-							Ok(Constructor::Literal(Value::String(text)))
+							Ok(Constructor::Literal(Value::from(text)))
 						}
 						_ => {
 							return Result::Err(Error{kind: ErrorKind::TypeError, message: "disable-output-escaping only accepts values yes or no.".to_string()})
@@ -240,7 +243,7 @@ fn to_constructor(n: Rc<dyn Node>) -> Result<Constructor, Error> {
 						.replace("<", "&lt;")
 						.replace("'", "&apos;")
 						.replace("\"", "&quot;");
-					Ok(Constructor::Literal(Value::String(text)))
+					Ok(Constructor::Literal(Value::from(text)))
 				}
 			}
 	}
@@ -543,7 +546,7 @@ pub fn strip_source_document(
 	  // TODO: Don't Panic
 	  v.to_string().split_whitespace()
 	    .for_each(|t| {
-	      s.push(NodeTest::from(t).expect("not a NodeTest"))
+	      s.push(NodeTest::try_from(t).expect("not a NodeTest"))
 	    })
 	}
 	None => {}	// should return an error
@@ -562,7 +565,7 @@ pub fn strip_source_document(
 	  // TODO: Don't Panic
 	  v.to_string().split_whitespace()
 	    .for_each(|t| {
-	      s.push(NodeTest::from(t).expect("not a NodeTest"))
+	      s.push(NodeTest::try_from(t).expect("not a NodeTest"))
 	    })
 	}
 	None => {}	// should return an error

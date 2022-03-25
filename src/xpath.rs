@@ -32,10 +32,8 @@ use crate::evaluate::{
 };
 #[cfg(test)]
 use crate::evaluate::{
-    DynamicContext,
+    Evaluator,
     StaticContext,
-    static_analysis,
-    evaluate,
 };
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -485,7 +483,7 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 	// second is the value
 //	let mut r = Vec::new();
 
-//        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String("".to_string()))))]);
+//        r.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::from(""))))]);
 //	r.push(a);
 
 //	for ((_x, c, _y), d) in b {
@@ -700,10 +698,10 @@ fn qname_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     |q| {
       match q {
         NodeTest::Name(NameTest{name: Some(WildcardOrName::Name(localpart)), ns: None, prefix: None}) => {
-	  vec![Constructor::Literal(Value::String(localpart.to_string()))]
+	  vec![Constructor::Literal(Value::from(localpart))]
 	}
         _ => {
-      	  vec![Constructor::Literal(Value::String("invalid qname".to_string()))]
+      	  vec![Constructor::Literal(Value::from("invalid qname"))]
 	}
       }
     }
@@ -774,10 +772,10 @@ fn value_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
         u
       } else {
         //let mut s = Vec::new();
-	//s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from("")))))]);
+	//s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::from(""))))]);
 	//s.push(u);
 	//for (a, b) in v {
-	  //s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::String(String::from(a)))))]);
+	  //s.push(vec![SequenceConstructor::new(cons_literal).set_data(Some(Box::new(Value::from(a))))]);
 	  //s.push(b);
 	//}
         //vec![SequenceConstructor::new(cons_simplemap).set_args(Some(s))]
@@ -1354,7 +1352,7 @@ fn function_call(input: &str) -> IResult<&str, Vec<Constructor>> {
       	  )]
 	}
 	_ => {
-      	  vec![Constructor::Literal(Value::String("invalid qname".to_string()))]
+      	  vec![Constructor::Literal(Value::from("invalid qname"))]
 	}
       }
     }
@@ -1505,7 +1503,7 @@ fn string_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
       string_literal_double ,
       string_literal_single
     )),
-    |s| vec![Constructor::Literal(Value::String(s.to_string()))]
+    |s| vec![Constructor::Literal(Value::from(s))]
   )
   (input)
 }
@@ -1645,10 +1643,10 @@ mod tests {
     // Parses to a singleton integer sequence constructor
     #[test]
     fn nomxpath_parse_int() {
-        let dc = DynamicContext::new(None);
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e)
+	    .expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_int().unwrap(), 1)
 	  } else {
@@ -1661,10 +1659,10 @@ mod tests {
     // Parses to a singleton double/decimal sequence constructor
     #[test]
     fn nomxpath_parse_decimal() {
-        let dc = DynamicContext::new(None);
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e)
+	    .expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_double(), 1.2)
 	  } else {
@@ -1677,10 +1675,9 @@ mod tests {
     // Parses to a singleton double sequence constructor
     #[test]
     fn nomxpath_parse_double() {
-        let dc = DynamicContext::new(None);
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_double(), 120.0)
 	  } else {
@@ -1697,10 +1694,9 @@ mod tests {
     // Parses to a singleton string
     #[test]
     fn nomxpath_parse_string_apos() {
-        let dc = DynamicContext::new(None);
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc")
 	  } else {
@@ -1713,10 +1709,9 @@ mod tests {
     // Parses to a singleton string
     #[test]
     fn nomxpath_parse_string_apos_esc() {
-        let dc = DynamicContext::new(None);
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc'def")
 	  } else {
@@ -1729,10 +1724,9 @@ mod tests {
     // Parses to a singleton string
     #[test]
     fn nomxpath_parse_string_quot() {
-        let dc = DynamicContext::new(None);
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), "abc")
 	  } else {
@@ -1745,10 +1739,9 @@ mod tests {
     // Parses to a singleton string
     #[test]
     fn nomxpath_parse_string_quot_esc() {
-        let dc = DynamicContext::new(None);
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_string(), r#"abc"def"#)
 	  } else {
@@ -1760,10 +1753,9 @@ mod tests {
     }
     #[test]
     fn nomxpath_parse_literal_sequence() {
-        let dc = DynamicContext::new(None);
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1777,10 +1769,9 @@ mod tests {
     }
     #[test]
     fn nomxpath_parse_literal_seq_ws() {
-        let dc = DynamicContext::new(None);
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1822,10 +1813,9 @@ mod tests {
     }
     #[test]
     fn nomxpath_parse_ws_comment_2() {
-        let dc = DynamicContext::new(None);
         let e = parse("1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2").expect("failed to parse \"1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2\"");
 	if e.len() == 3 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 3 {
 	     assert_eq!(s[0].to_int().unwrap(), 1);
 	     assert_eq!(s[1].to_string(), r#"abc"#);
@@ -1841,11 +1831,10 @@ mod tests {
     // Parses to a singleton context item sequence constructor
     #[test]
     fn nomxpath_parse_context_item() {
-        let dc = DynamicContext::new(None);
         let e = parse(".").expect("failed to parse expression \".\"");
 	if e.len() == 1 {
-	  let ctxt = vec![Rc::new(Item::Value(Value::String("foobar".to_string())))];
-	  let s = evaluate(&dc, Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
+	  let ctxt = vec![Rc::new(Item::Value(Value::from("foobar")))];
+	  let s = Evaluator::new(None).evaluate(Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	    assert_eq!(s[0].to_string(), "foobar")
 	  } else {
@@ -1863,10 +1852,9 @@ mod tests {
     }
     #[test]
     fn nomxpath_parse_singleton_paren() {
-        let dc = DynamicContext::new(None);
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
-	  let s = evaluate(&dc, None, None, &e).expect("unable to evaluate sequence constructor");
+	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
 	  if s.len() == 1 {
 	     assert_eq!(s[0].to_int().unwrap(), 1)
 	  } else {
@@ -2025,128 +2013,107 @@ mod tests {
 
     #[test]
     fn parse_eval_fncall_string() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("string(('a', 'b', 'c'))").expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "abc")
     }
     #[test]
     fn parse_eval_fncall_concat() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("concat('a', 'b', 'c')").expect("failed to parse expression \"concat('a', 'b', 'c')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "abc")
     }
     #[test]
     fn parse_eval_fncall_startswith_pos() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("starts-with('abc', 'a')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), true)
     }
     #[test]
     fn parse_eval_fncall_startswith_neg() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("starts-with('abc', 'b')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), false)
     }
     #[test]
     fn parse_eval_fncall_contains_pos() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("contains('abc', 'b')").expect("failed to parse expression \"contains('abc', 'b')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), true)
     }
     #[test]
     fn parse_eval_fncall_contains_neg() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("contains('abc', 'd')").expect("failed to parse expression \"contains('abc', 'd')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_bool(), false)
     }
     #[test]
     fn parse_eval_fncall_substringbefore_pos() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("substring-before('abc', 'b')").expect("failed to parse expression \"substring-before('abc', 'b')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("substring-before('abc', 'b')")
+        .expect("failed to parse expression \"substring-before('abc', 'b')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "a")
     }
     #[test]
     fn parse_eval_fncall_substringbefore_neg() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("substring-before('abc', 'd')").expect("failed to parse expression \"substring-before('abc', 'd')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("substring-before('abc', 'd')")
+        .expect("failed to parse expression \"substring-before('abc', 'd')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
     #[test]
     fn parse_eval_fncall_substringafter_pos_1() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("substring-after('abc', 'b')").expect("failed to parse expression \"substring-after('abc', 'b')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("substring-after('abc', 'b')")
+        .expect("failed to parse expression \"substring-after('abc', 'b')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "c")
     }
     #[test]
     fn parse_eval_fncall_substringafter_pos_2() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("substring-after('abc', 'c')").expect("failed to parse expression \"substring-after('abc', 'b')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("substring-after('abc', 'c')")
+        .expect("failed to parse expression \"substring-after('abc', 'b')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
     #[test]
     fn parse_eval_fncall_substringafter_neg() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("substring-after('abc', 'd')").expect("failed to parse expression \"substring-after('abc', 'd')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("substring-after('abc', 'd')")
+        .expect("failed to parse expression \"substring-after('abc', 'd')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "")
     }
     #[test]
     fn parse_eval_fncall_normalizespace() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("normalize-space('	a  b\nc 	')").expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("normalize-space('	a  b\nc 	')")
+        .expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "abc")
     }
     #[test]
     fn parse_eval_fncall_translate() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("translate('abcdeabcde', 'ade', 'XY')").expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("translate('abcdeabcde', 'ade', 'XY')")
+        .expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "XbcYXbcY")
     }
     #[test]
     fn parse_eval_fncall_boolean_true() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("boolean('abcdeabcde')").expect("failed to parse expression \"boolean('abcdeabcde')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
@@ -2155,11 +2122,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_boolean_false() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("boolean('')").expect("failed to parse expression \"boolean('')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
@@ -2168,11 +2133,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_not_true() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("not('')").expect("failed to parse expression \"not('')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
@@ -2181,11 +2144,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_not_false() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("not('abc')").expect("failed to parse expression \"not('abc')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
@@ -2194,11 +2155,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_true() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("true()").expect("failed to parse expression \"true()\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
@@ -2207,11 +2166,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_false() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("false()").expect("failed to parse expression \"false()\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
@@ -2220,11 +2177,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_number_int() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("number('123')").expect("failed to parse expression \"number('123')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
@@ -2233,11 +2188,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_number_double() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("number('123.456')").expect("failed to parse expression \"number('123.456')\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
@@ -2246,11 +2199,10 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_sum() {
-      let dc = DynamicContext::new(None);
-      let mut e = parse("sum(('123.456', 10, 20, '0'))").expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      let mut e = parse("sum(('123.456', 10, 20, '0'))")
+        .expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 + 20.0),
@@ -2259,11 +2211,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_floor() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("floor(123.456)").expect("failed to parse expression \"floor(123.456)\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
@@ -2272,11 +2222,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_ceiling() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("ceiling(123.456)").expect("failed to parse expression \"ceiling(123.456)\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
@@ -2285,11 +2233,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_round_down() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("round(123.456)").expect("failed to parse expression \"round(123.456)\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
@@ -2298,11 +2244,9 @@ mod tests {
     }
     #[test]
     fn parse_eval_fncall_round_up() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("round(123.654)").expect("failed to parse expression \"round(123.654)\"");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       match *s[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
@@ -2313,20 +2257,16 @@ mod tests {
     // Variables
     #[test]
     fn parse_eval_let_1() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("let $x := 'a' return ($x, $x)").expect("failed to parse let expression");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.to_string(), "aa")
     }
     #[test]
     fn parse_eval_let_2() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("let $x := 'a', $y := 'b' return ($x, $y)").expect("failed to parse let expression");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 2);
       assert_eq!(s.to_string(), "ab")
     }
@@ -2334,42 +2274,34 @@ mod tests {
     // Loops
     #[test]
     fn parse_eval_for_1() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("for $x in ('a', 'b', 'c') return ($x, $x)").expect("failed to parse let expression");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 6);
       assert_eq!(s.to_string(), "aabbcc")
     }
     #[test]
     fn parse_eval_for_2() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("for $x in (1, 2, 3) return $x * 2").expect("failed to parse let expression");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 3);
       assert_eq!(s.to_string(), "246")
     }
 
     #[test]
     fn parse_eval_if_1() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("if (1) then 'one' else 'not one'").expect("failed to parse let expression");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       assert_eq!(s.to_string(), "one")
     }
     #[test]
     fn parse_eval_if_2() {
-      let dc = DynamicContext::new(None);
       let mut e = parse("if (0) then 'one' else 'not one'").expect("failed to parse let expression");
-      let mut sc = StaticContext::new_with_builtins();
-      static_analysis(&mut e, &mut sc);
-      let s = evaluate(&dc, None, None, &e).expect("evaluation failed");
+      StaticContext::new_with_builtins().static_analysis(&mut e);
+      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
       assert_eq!(s.len(), 1);
       assert_eq!(s.to_string(), "not one")
     }

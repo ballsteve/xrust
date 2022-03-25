@@ -5,54 +5,147 @@
 //! This library uses the traits defined in [Item], so it is independent of the tree implementation.
 
 use std::rc::Rc;
+use std::cell::{RefCell, RefMut};
 use std::ops::ControlFlow;
+use std::convert::TryFrom;
+use std::collections::HashMap;
 use unicode_segmentation::UnicodeSegmentation;
 #[allow(unused_imports)]
 use chrono::{DateTime, Local, Datelike, Timelike, FixedOffset};
+#[cfg(test)]
+use rust_decimal_macros::dec;
 use crate::qname::*;
 use crate::parsepicture::parse as picture_parse;
 use crate::xdmerror::*;
 use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator, OutputDefinition};
-//use decimal::d128;
-use std::collections::HashMap;
-use std::cell::{RefCell, RefMut};
 use http::Uri;
 
-/// The dynamic evaluation context.
-///
-/// The dynamic context stores the value of declared variables.
-//#[derive(Clone)]
-pub struct DynamicContext<'a> {
+// The dynamic evaluation context.
+//
+// The dynamic context stores parts that can change as evaluation proceeds,
+// such as the value of declared variables.
+pub struct DynamicContext {
   vars: RefCell<HashMap<String, Vec<Sequence>>>,
-  templates: Vec<Template>,
-  builtin_templates: Vec<Template>,	// TODO: use import precedence for builtins
   depth: RefCell<usize>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
+  deps: RefCell<Vec<Uri>>,	// URIs for included/imported stylesheets
+}
+
+impl DynamicContext {
+  pub fn new() -> Self {
+    DynamicContext{
+      vars: RefCell::new(HashMap::new()),
+      depth: RefCell::new(0),
+      current_grouping_key: RefCell::new(vec![None]),
+      current_group: RefCell::new(vec![None]),
+      deps: RefCell::new(vec![]),
+    }
+  }
+  /// Retrieve the dependencies for the stylesheet
+  // TODO: make this an iterator
+  pub fn dependencies(&self) -> Vec<Uri> {
+    self.deps.borrow().clone()
+  }
+  /// Add a dependency
+  pub fn add_dependency(&self, u: Uri) {
+    self.deps.borrow_mut().push(u);
+  }
+
+  fn push_current_grouping_key(&self, k: Item) {
+    self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
+  }
+  fn pop_current_grouping_key(&self) {
+    self.current_grouping_key.borrow_mut().pop();
+  }
+
+  fn push_current_group(&self, g: Sequence) {
+    self.current_group.borrow_mut().push(Some(g));
+  }
+  fn pop_current_group(&self) {
+    self.current_group.borrow_mut().pop();
+  }
+  fn depth_incr(&self) {
+    let mut d = self.depth.borrow_mut();
+    *d += 1;
+  }
+  fn depth_decr(&self) {
+    let mut d = self.depth.borrow_mut();
+    *d -= 1;
+  }
+
+  // Push a new scope for a variable
+  fn var_push(&self, v: &str, s: Sequence) {
+    let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
+    let mut t: Option<&mut Vec<Sequence>>;
+
+    h = self.vars.borrow_mut();
+    t = h.get_mut(v);
+    match t.as_mut() {
+      Some(u) => {
+        // If the variable already has a value, then this is a new, inner scope
+      	u.push(s);
+      }
+      None => {
+        // Otherwise this is the first scope for the variable
+      	h.insert(v.to_string(), vec![s]);
+      }
+    }
+  }
+  // Pop scope for a variable
+  // Prerequisite: scope must have already been pushed
+  fn var_pop(&self, v: &str) {
+    self.vars.borrow_mut().get_mut(v).map(|u| u.pop());
+  }
+
+  // Stylesheet parameters. Overrides the previous value if it is already set.
+  // TODO: namespaced name
+  pub fn set_parameter(&self, name: String, value: Sequence) {
+    self.vars.borrow_mut().insert(name, vec![value]);
+  }
+}
+
+/// A sequence constructor evaluator.
+/// This interprets the sequence constructor to produce a sequence.
+/// IDEA: make the evaluate method an iterator, emitting one sequence item at a time
+/// IDEA: Combine the sequence constructor and the evaluator. Perhaps a closure?
+pub struct Evaluator<'a> {
+  dc: DynamicContext,
+  templates: Vec<Template>,
+  builtin_templates: Vec<Template>,	// TODO: use import precedence for builtins
   doc: Option<Rc<dyn Document>>,
   // TODO: accept a closure that is a 'Document factory'
   //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
   resultdoc: Option<&'a dyn Document>,
   od: OutputDefinition,	// Output definition for the final result tree
   base: Option<Uri>,	// The base URI of the primary stylesheet
-  deps: Vec<Uri>,	// URIs for included/imported stylesheets
 }
 
-impl<'a> DynamicContext<'a> {
+impl<'a> Evaluator<'a> {
   /// Create a dynamic context.
-  pub fn new(resultdoc: Option<&'a dyn Document>) -> DynamicContext<'a> {
-    DynamicContext{
-      vars: RefCell::new(HashMap::new()),
+  pub fn new(resultdoc: Option<&'a dyn Document>) -> Evaluator<'a> {
+    Evaluator{
+      dc: DynamicContext::new(),
       templates: Vec::new(),
       builtin_templates: Vec::new(),
-      depth: RefCell::new(0),
-      current_grouping_key: RefCell::new(vec![None]),
-      current_group: RefCell::new(vec![None]),
       doc: None,
-      resultdoc: resultdoc,
+      resultdoc,
       od: OutputDefinition::new(),
       base: None,
-      deps: vec![],
+    }
+  }
+  pub fn from_dynamic_context(
+    dc: DynamicContext,
+    resultdoc: Option<&'a dyn Document>
+  ) -> Evaluator<'a> {
+    Evaluator{
+      dc,
+      templates: Vec::new(),
+      builtin_templates: Vec::new(),
+      doc: None,
+      resultdoc,
+      od: OutputDefinition::new(),
+      base: None,
     }
   }
 
@@ -63,15 +156,6 @@ impl<'a> DynamicContext<'a> {
   /// Set the Base URI
   pub fn set_baseuri(&mut self, uri: Uri) {
     self.base = Some(uri);
-  }
-  /// Retrieve the dependencies for the stylesheet
-  // TODO: make this an iterator
-  pub fn dependencies(&self) -> Vec<Uri> {
-    self.deps.clone()
-  }
-  /// Add a dependency
-  pub fn add_dependency(&mut self, u: Uri) {
-    self.deps.push(u);
   }
 
   /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.
@@ -95,8 +179,9 @@ impl<'a> DynamicContext<'a> {
   /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
   /// If no template is found, returns None.
   pub fn find_match(&self, i: &Rc<Item>) -> Vec<Constructor> {
+    // TODO: Don't Panic
     let r: Option<&Template> = self.templates.iter()
-      .filter(|t| item_matches(self, &t.pattern, i))
+      .filter(|t| self.item_matches(&t.pattern, i).expect("unable to match item"))
       .reduce(|a, b| if a.priority < b.priority {b} else {a});
 
     if r.is_some() {
@@ -104,7 +189,7 @@ impl<'a> DynamicContext<'a> {
     } else {
       // Try builtin templates
       let s: Option<&Template> = self.builtin_templates.iter()
-        .filter(|t| item_matches(self, &t.pattern, i))
+        .filter(|t| self.item_matches(&t.pattern, i).expect("unable to match item"))
 	.reduce(|a, b| if a.priority < b.priority {b} else {a});
 
       if s.is_some() {
@@ -115,44 +200,16 @@ impl<'a> DynamicContext<'a> {
     }
   }
 
-  pub fn push_current_grouping_key(&self, k: Item) {
-    self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
-  }
-  pub fn pop_current_grouping_key(&self) {
-    self.current_grouping_key.borrow_mut().pop();
-  }
-
-  pub fn push_current_group(&self, g: Sequence) {
-    self.current_group.borrow_mut().push(Some(g));
-  }
-  pub fn pop_current_group(&self) {
-    self.current_group.borrow_mut().pop();
-  }
-
   pub fn set_doc(&mut self, d: Rc<dyn Document>) {
     self.doc.replace(d);
   }
 
-  pub fn incr_depth(&self) {
-    let cur = *self.depth.borrow();
-    self.depth.replace(cur + 1);
-  }
-  pub fn decr_depth(&self) {
-    let cur = *self.depth.borrow();
-    self.depth.replace(cur - 1);
-  }
   // TODO: return borrowed/reference
   pub fn get_output_definition(&self) -> OutputDefinition {
     self.od.clone()
   }
   pub fn set_output_definition(&mut self, od: OutputDefinition) {
     self.od = od;
-  }
-
-  // Stylesheet parameters. Overrides the previous value if it is already set.
-  // TODO: namespaced name
-  pub fn set_parameter(&mut self, name: String, value: Sequence) {
-    self.vars.borrow_mut().insert(name, vec![value]);
   }
 
   // Printout templates, for debugging.
@@ -168,705 +225,698 @@ impl<'a> DynamicContext<'a> {
       }
     )
   }
-}
 
-/// Evaluate a sequence constructor, given a dynamic context.
-///
-/// The dynamic context consists of the supplied context, as well as the context item. The context item, which is optional, consists of a [Sequence] and an index to an item. If the context sequence is supplied, then the index (posn) must also be supplied and be a valid index for the sequence.
-pub fn evaluate(
-    dc: &DynamicContext,
+  /// Evaluate a sequence constructor, given a dynamic context.
+  ///
+  /// The dynamic context consists of the supplied context, as well as the context item. The context item, which is optional, consists of a [Sequence] and an index to an item. If the context sequence is supplied, then the index (posn) must also be supplied and be a valid index for the sequence.
+  pub fn evaluate(
+    &self,
     ctxt: Option<Sequence>,
     posn: Option<usize>,
     c: &Vec<Constructor>
   ) -> Result<Sequence, Error> {
 
-  // Original panicky version
-  //let result: Sequence = c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect();
-  //Ok(result)
+    // Evaluate all sequence constructors. This will result in a sequence of sequences.
+    // If an error occurs, propagate the first error (TODO: return all errors)
+    // Otherwise, flatten the sequences into a single sequence
 
-  // Evaluate all sequence constructors. This will result in a sequence of sequences.
-  // If an error occurs, propagate the first error (TODO: return all errors)
-  // Otherwise, flatten the sequences into a single sequence
-
-  let (results, errors): (Vec<_>, Vec<_>) = c.iter()
-    .map(|a| evaluate_one(dc, ctxt.clone(), posn, a))
-    .partition(Result::is_ok);
-  if errors.len() != 0 {
-    Result::Err(
-      errors.iter()
-        .nth(0)
-	.map(|e| e.clone().err().unwrap())
-	.unwrap()
-    )
-  } else {
-    Ok(
-      results.iter()
-        .map(|a| {
-	  let b: Sequence = a.clone().ok().unwrap_or(vec![]);
-	  b
-	})
-	.flatten()
-	.collect::<Vec<Rc<Item>>>()
-    )
+    let (results, errors): (Vec<_>, Vec<_>) = c.iter()
+      .map(|a| self.evaluate_one(ctxt.clone(), posn, a))
+      .partition(Result::is_ok);
+    if errors.len() != 0 {
+      Result::Err(
+        errors.iter()
+          .nth(0)
+	  .map(|e| e.clone().err().unwrap())
+	  .unwrap()
+      )
+    } else {
+      Ok(
+        results.iter()
+          .map(|a| {
+	    let b: Sequence = a.clone().ok().unwrap_or(vec![]);
+	    b
+	  })
+	  .flatten()
+	  .collect::<Vec<Rc<Item>>>()
+      )
+    }
   }
-}
 
-// Evaluate an item constructor, given a context
-// If a constructor returns a non-singleton sequence, then it is unpacked
-fn evaluate_one(
-    dc: &DynamicContext,
+  // Evaluate an item constructor, given a context
+  // If a constructor returns a non-singleton sequence, then it is unpacked
+  fn evaluate_one(
+    &self,
     ctxt: Option<Sequence>,
     posn: Option<usize>,
     c: &Constructor
   ) -> Result<Sequence, Error> {
 
-  match c {
-    Constructor::Literal(l) => {
+    match c {
+      Constructor::Literal(l) => {
 	let mut seq = Sequence::new();
 	seq.new_value(l.clone());
 	Ok(seq)
-    }
-    // This creates a Node in the current result document
-    Constructor::LiteralElement(n, c) => {
-      let l = match dc.resultdoc {
-        Some(doc) => {
-	  doc.new_element(n.clone())?
-	}
-	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
-      };
+      }
+      // This creates a Node in the current result document
+      Constructor::LiteralElement(n, c) => {
+        let l = match self.resultdoc {
+          Some(doc) => {
+	    doc.new_element(n.clone())?
+	  }
+	  None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+        };
 
-      // add content to newly created element
-      evaluate(dc, ctxt.clone(), posn, c)?.iter()
-        .try_for_each(
-	  |i| {
-	    // Item could be a Node or text
-	    match **i {
-	      Item::Node(ref t) => {
-		l.append_child(t.as_any())
-	      }
-	      _ => {
-	        // Values become a text node in the result tree
-		l.append_text_child(Value::String(i.to_string()))
+      	// add content to newly created element
+      	self.evaluate(ctxt.clone(), posn, c)?.iter()
+          .try_for_each(
+	    |i| {
+	      // Item could be a Node or text
+	      match **i {
+	        Item::Node(ref t) => {
+		  l.append_child(t.as_any())
+	        }
+	      	_ => {
+	          // Values become a text node in the result tree
+		  l.append_text_child(Value::from(i.to_string()))
+	        }
 	      }
 	    }
+	  )?;
+
+        Ok(vec![Rc::new(Item::Node(l))])
+      }
+      // This creates a Node in the current result document
+      Constructor::LiteralAttribute(n, v) => {
+        let w = self.evaluate(ctxt.clone(), posn, v)?;
+      	let l = match self.resultdoc {
+          Some(doc) => {
+	    doc.new_attribute(n.clone(), Value::from(w.to_string()))?
 	  }
-	)?;
+	  None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+        };
 
-      Ok(vec![Rc::new(Item::Node(l))])
-    }
-    // This creates a Node in the current result document
-    Constructor::LiteralAttribute(n, v) => {
-      let w = evaluate(dc, ctxt.clone(), posn, v)?;
-      let l = match dc.resultdoc {
-        Some(doc) => {
-	  doc.new_attribute(n.clone(), Value::String(w.to_string()))?
-	}
-	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
-      };
-
-      Ok(vec![Rc::new(Item::Node(l))])
-    }
-    Constructor::Copy(i, c) => {
-      let orig = if i.is_empty() {
-        // Copy the context item
-	if ctxt.is_some() {
-	  vec![ctxt.as_ref().unwrap()[posn.unwrap()].clone()]
-	} else {
-	  evaluate(dc, ctxt.clone(), posn, i)?
-	}
-      } else {
-	evaluate(dc, ctxt.clone(), posn, i)?
-      };
-
-      // Original panicky version
-      //Ok(orig.iter().map(|i| item_copy(i.clone(), dc, c, ctxt.clone(), posn).expect("oops")).collect())
-
-      // Non-panicing version
-      let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
-        .map(|i| item_copy(i.clone(), dc, c, ctxt.clone(), posn))
-	.partition(Result::is_ok);
-      if errors.len() != 0 {
-        Result::Err(
-      	  errors.iter()
-            .nth(0)
-	    .map(|e| e.clone().err().unwrap())
-	    .unwrap()
-    	)
-      } else {
-        Ok(
-	  results.iter()
-	    .map(|r| r.clone().ok().unwrap())
-	    .collect::<Vec<Rc<Item>>>()
-	)
+      	Ok(vec![Rc::new(Item::Node(l))])
       }
-    }
-    // Does the same as identity stylesheet template
-    Constructor::DeepCopy(sel) => {
-      let orig = evaluate(dc, ctxt.clone(), posn, sel)?;
+      Constructor::Copy(i, c) => {
+        let orig = if i.is_empty() {
+          // Copy the context item
+	  if ctxt.is_some() {
+	    vec![ctxt.as_ref().unwrap()[posn.unwrap()].clone()]
+	  } else {
+	    self.evaluate(ctxt.clone(), posn, i)?
+	  }
+        } else {
+	  self.evaluate(ctxt.clone(), posn, i)?
+        };
 
-      let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
-        .map(|i| item_deep_copy((*i).clone(), dc, ctxt.clone(), posn))
-	.partition(Result::is_ok);
-      if errors.len() != 0 {
-        Result::Err(
-      	  errors.iter()
-            .nth(0)
-	    .map(|e| e.clone().err().unwrap())
-	    .unwrap()
-    	)
-      } else {
-        Ok(
-	  results.iter()
-	    .map(|r| r.clone().ok().unwrap())
-	    .collect::<Vec<Rc<Item>>>()
-	)
+      	// Non-panicing version
+      	let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
+          .map(|i| self.item_copy(i.clone(), c, ctxt.clone(), posn))
+	  .partition(Result::is_ok);
+        if errors.len() != 0 {
+          Result::Err(
+      	    errors.iter()
+              .nth(0)
+	      .map(|e| e.clone().err().unwrap())
+	      .unwrap()
+    	  )
+        } else {
+          Ok(
+	    results.iter()
+	      .map(|r| r.clone().ok().unwrap())
+	      .collect::<Vec<Rc<Item>>>()
+	  )
+        }
       }
-    }
-    Constructor::ContextItem => {
-      if ctxt.is_some() {
-	let mut seq = Sequence::new();
-	seq.add(&ctxt.as_ref().unwrap()[posn.unwrap()]);
-	Ok(seq)
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+      // Does the same as identity stylesheet template
+      Constructor::DeepCopy(sel) => {
+        let orig = self.evaluate(ctxt.clone(), posn, sel)?;
+
+      	let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
+          .map(|i| self.item_deep_copy((*i).clone(), ctxt.clone(), posn))
+	  .partition(Result::is_ok);
+        if errors.len() != 0 {
+          Result::Err(
+      	    errors.iter()
+              .nth(0)
+	      .map(|e| e.clone().err().unwrap())
+	      .unwrap()
+    	  )
+        } else {
+          Ok(
+	    results.iter()
+	      .map(|r| r.clone().ok().unwrap())
+	      .collect::<Vec<Rc<Item>>>()
+	  )
+        }
       }
-    }
-    Constructor::SetAttribute(n, v) => {
-      // The context item must be an element node (TODO: use an expression to select the element)
-      // If the element does not have an attribute with the given name, create it
-      // Otherwise replace the attribute's value with the supplied value
-      if ctxt.is_some() {
-        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Node(nd) => {
-	    match nd.node_type() {
-	      NodeType::Element => {
-	        let attval = evaluate(dc, ctxt.clone(), posn, v)?;
-		if attval.len() == 1 {
-		  match &*attval[0] {
-		    Item::Value(av) => nd.set_attribute(n.clone(), av.clone()),
-		    _ => nd.set_attribute(n.clone(), Value::String(attval.to_string())),
+      Constructor::ContextItem => {
+        if ctxt.is_some() {
+	  let mut seq = Sequence::new();
+	  seq.add(&ctxt.as_ref().unwrap()[posn.unwrap()]);
+	  Ok(seq)
+        } else {
+	  Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        }
+      }
+      Constructor::SetAttribute(n, v) => {
+        // The context item must be an element node (TODO: use an expression to select the element)
+      	// If the element does not have an attribute with the given name, create it
+      	// Otherwise replace the attribute's value with the supplied value
+      	if ctxt.is_some() {
+          match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	    Item::Node(nd) => {
+	      match nd.node_type() {
+	        NodeType::Element => {
+	          let attval = self.evaluate(ctxt.clone(), posn, v)?;
+		  if attval.len() == 1 {
+		    match &*attval[0] {
+		      Item::Value(av) => nd.set_attribute(n.clone(), av.clone()),
+		      _ => nd.set_attribute(n.clone(), Value::from(attval.to_string())),
+		    }
+		  } else {
+		    nd.set_attribute(n.clone(), Value::from(attval.to_string()))
 		  }
-		} else {
-		  nd.set_attribute(n.clone(), Value::String(attval.to_string()))
-		}
-		Ok(vec![])
+		  Ok(vec![])
+	        }
+	      	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item is not an element".to_string()})
 	      }
-	      _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item is not an element".to_string()})
 	    }
+	    _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item must be an element node".to_string()})
 	  }
-	  _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item must be an element node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        } else {
+	  Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        }
       }
-    }
-    Constructor::Or(v) => {
-      // Evaluate each operand to a boolean result. Return true if any of the operands' result is true
-      // Optimisation: stop upon the first true result.
-      // Future: Evaluate every operand to check for dynamic errors
-      let mut b = false;
-      for i in v {
-	let k = evaluate(dc, ctxt.clone(), posn, i)?;
-	b = k.to_bool();
-	if b {break};
+      Constructor::Or(v) => {
+        // Evaluate each operand to a boolean result. Return true if any of the operands' result is true
+      	// Optimisation: stop upon the first true result.
+      	// Future: Evaluate every operand to check for dynamic errors
+      	let mut b = false;
+      	for i in v {
+	  let k = self.evaluate(ctxt.clone(), posn, i)?;
+	  b = k.to_bool();
+	  if b {break};
+        }
+      	let mut seq = Sequence::new();
+      	seq.new_value(Value::Boolean(b));
+      	Ok(seq)
       }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::Boolean(b));
-      Ok(seq)
-    }
-    Constructor::And(v) => {
-      // Evaluate each operand to a boolean result. Return false if any of the operands' result is false
-      // Optimisation: stop upon the first false result.
-      // Future: Evaluate every operand to check for dynamic errors
-      let mut b = true;
-      for i in v {
-	let k = evaluate(dc, ctxt.clone(), posn, i)?;
-	b = k.to_bool();
-	if !b {break};
+      Constructor::And(v) => {
+        // Evaluate each operand to a boolean result. Return false if any of the operands' result is false
+      	// Optimisation: stop upon the first false result.
+      	// Future: Evaluate every operand to check for dynamic errors
+      	let mut b = true;
+	for i in v {
+	  let k = self.evaluate(ctxt.clone(), posn, i)?;
+	  b = k.to_bool();
+	  if !b {break};
+        }
+      	let mut seq = Sequence::new();
+      	seq.new_value(Value::from(b));
+      	Ok(seq)
       }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::Boolean(b));
-      Ok(seq)
-    }
-    Constructor::GeneralComparison(o, v) => {
-      if v.len() == 2 {
-	let mut seq = Sequence::new();
-	seq.new_value(Value::Boolean(
-	  general_comparison(dc, ctxt, posn, *o, &v[0], &v[1])?
+      Constructor::GeneralComparison(o, v) => {
+        if v.len() == 2 {
+	  let mut seq = Sequence::new();
+	  seq.new_value(Value::from(
+	    self.general_comparison(ctxt, posn, *o, &v[0], &v[1])?
 	  ));
+      	  Ok(seq)
+        } else {
+	  Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+        }
+      }
+      Constructor::ValueComparison(o, v) => {
+        if v.len() == 2 {
+	  let mut seq = Sequence::new();
+	  seq.new_value(Value::from(
+	    self.value_comparison(ctxt, posn, *o, &v[0], &v[1])?
+	  ));
+      	  Ok(seq)
+        } else {
+	  Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+        }
+      }
+      Constructor::Concat(v) => {
+        let mut r = String::new();
+      	for u in v {
+	  let t = self.evaluate(ctxt.clone(), posn, u)?;
+	  r.push_str(t.to_string().as_str());
+        }
+      	let mut seq = Sequence::new();
+      	seq.new_value(Value::from(r));
       	Ok(seq)
-      } else {
-	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
       }
-    }
-    Constructor::ValueComparison(o, v) => {
-      if v.len() == 2 {
-	let mut seq = Sequence::new();
-	seq.new_value(Value::Boolean(
-	  value_comparison(dc, ctxt, posn, *o, &v[0], &v[1])?
-	));
-      	Ok(seq)
-      } else {
-	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-      }
-    }
-    Constructor::Concat(v) => {
-      let mut r = String::new();
-      for u in v {
-	let t = evaluate(dc, ctxt.clone(), posn, u)?;
-	r.push_str(t.to_string().as_str());
-      }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::String(r));
-      Ok(seq)
-    }
-    Constructor::Range(v) => {
-      if v.len() == 2 {
-        // Evaluate the two operands: they must both be literal integer items
-	let start = evaluate(dc, ctxt.clone(), posn, &v[0])?;
-	let end = evaluate(dc, ctxt.clone(), posn, &v[1])?;
-	if start.len() == 0 || end.len() == 0 {
-	  // empty sequence is the result
-	  Ok(vec![])
-	} else if start.len() == 1 {
-	  if end.len() == 1 {
-	    let i = start[0].to_int().unwrap();
-	    let j = end[0].to_int().unwrap();
-	    if i > j {
-	      // empty sequence result
-	      Ok(vec![])
-	    } else if i == j {
-	      let mut seq = Sequence::new();
-	      seq.new_value(Value::Integer(i));
-      	      Ok(seq)
-	    } else {
-	      let mut result = Sequence::new();
-	      for k in i..=j {
-	        result.new_value(Value::Integer(k))
+      Constructor::Range(v) => {
+        if v.len() == 2 {
+          // Evaluate the two operands: they must both be literal integer items
+	  let start = self.evaluate(ctxt.clone(), posn, &v[0])?;
+	  let end   = self.evaluate(ctxt.clone(), posn, &v[1])?;
+	  if start.len() == 0 || end.len() == 0 {
+	    // empty sequence is the result
+	    Ok(vec![])
+	  } else if start.len() == 1 {
+	    if end.len() == 1 {
+	      let i = start[0].to_int().unwrap();
+	      let j = end[0].to_int().unwrap();
+	      if i > j {
+	        // empty sequence result
+	      	Ok(vec![])
+	      } else if i == j {
+	        let mut seq = Sequence::new();
+	      	seq.new_value(Value::Integer(i));
+      	      	Ok(seq)
+	      } else {
+	        let mut result = Sequence::new();
+	      	for k in i..=j {
+	          result.new_value(Value::from(k))
+	        }
+	      	Ok(result)
 	      }
-	      Ok(result)
+	    } else {
+	      Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
 	    }
 	  } else {
-	    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
+	    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
 	  }
-	} else {
-	  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+        } else {
+	  Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+        }
       }
-    }
-    Constructor::Arithmetic(v) => {
-      // Type: the result will be a number, but integer or double?
-      // If all of the operands are integers, then the result is integer otherwise double
-      // TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
-      // In the meantime, let's assume the result will be double and convert any integers
+      Constructor::Arithmetic(v) => {
+        // Type: the result will be a number, but integer or double?
+      	// If all of the operands are integers, then the result is integer otherwise double
+      	// TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
+      	// In the meantime, let's assume the result will be double and convert any integers
 
-      let mut acc: f64 = 0.0;
+      	let mut acc: f64 = 0.0;
 
-      for j in v {
-	let k = evaluate(dc, ctxt.clone(), posn, &j.operand)?;
-	let u: f64;
-	if k.len() != 1 {
-	  return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
-	} else {
-	  u = k[0].to_double();
-	  match j.op {
-	    ArithmeticOperator::Noop => acc = u,
-	    ArithmeticOperator::Add => acc += u,
-	    ArithmeticOperator::Subtract => acc -= u,
-	    ArithmeticOperator::Multiply => acc *= u,
-	    ArithmeticOperator::Divide => acc /= u,
-	    ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
-	    ArithmeticOperator::Modulo => acc = acc % u,
-	  }
-	}
-      }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::Double(acc));
-      Ok(seq)
-    }
-    Constructor::Root => {
-      if ctxt.is_some() {
-        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Document(_) => {
-	    Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
-	  }
-	  // Some implementations represent the document as a special kind of node
-	  Item::Node(n) => {
-	    match dc.doc {
-	      Some(ref d) => {
-	        Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
-	      }
-	      None => {
-	        // Try to navigate to the Document from the Node
-		match n.owner_document() {
-		  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
-		  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
-		}
-	      }
+      	for j in v {
+	  let k = self.evaluate(ctxt.clone(), posn, &j.operand)?;
+	  let u: f64;
+	  if k.len() != 1 {
+	    return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
+	  } else {
+	    u = k[0].to_double();
+	    match j.op {
+	      ArithmeticOperator::Noop => acc = u,
+	      ArithmeticOperator::Add => acc += u,
+	      ArithmeticOperator::Subtract => acc -= u,
+	      ArithmeticOperator::Multiply => acc *= u,
+	      ArithmeticOperator::Divide => acc /= u,
+	      ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
+	      ArithmeticOperator::Modulo => acc = acc % u,
 	    }
 	  }
-	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        }
+      	let mut seq = Sequence::new();
+      	seq.new_value(Value::from(acc));
+      	Ok(seq)
       }
-    }
-    Constructor::Path(s) => {
-      // s is a vector of sequence constructors
-      // Each step creates a new context for the next step
-      // TODO: if initial context is None then error
-
-      let u: Sequence; // accumulator - each time around the loop this will be the new context
-
-      if ctxt.is_some() {
-        u = ctxt.unwrap().clone()
-      } else {
-        u = vec![]
+      Constructor::Root => {
+        if ctxt.is_some() {
+          match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	    Item::Document(_) => {
+	      Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
+	    }
+	    // Some implementations represent the document as a special kind of node
+	    Item::Node(n) => {
+	      match self.doc {
+	        Some(ref d) => {
+	          Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
+	        }
+	      	None => {
+	          // Try to navigate to the Document from the Node
+		  match n.owner_document() {
+		    Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
+		    None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
+		  }
+	        }
+	      }
+	    }
+	    _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+	  }
+        } else {
+	  Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        }
       }
+      Constructor::Path(s) => {
+        // s is a vector of sequence constructors
+      	// Each step creates a new context for the next step
+      	// TODO: if initial context is None then error
 
-      // TODO: Don't Panic
-      Ok(s.iter().fold(
+      	let u: Sequence; // accumulator - each time around the loop this will be the new context
+
+      	if ctxt.is_some() {
+          u = ctxt.unwrap().clone()
+        } else {
+          u = vec![]
+        }
+
+      	// TODO: Don't Panic
+      	Ok(s.iter().fold(
 	    u,
 	    |a, c| {
 	      // evaluate this step for each item in the context
 	      // Add the result of each evaluation to an accummulator sequence
 	      let mut b: Sequence = Vec::new();
 	      for i in 0..a.len() {
-	        let mut d = evaluate(dc, Some(a.clone()), Some(i), c).expect("failed to evaluate step");
+	        let mut d = self.evaluate(Some(a.clone()), Some(i), c).expect("failed to evaluate step");
 		b.append(&mut d);
 	      }
 	      b
 	    }
-      ))
-    }
-    Constructor::Step(nm, p) => {
-      if ctxt.is_some() {
-	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Document(d) => {
-	    match nm.axis {
-	      Axis::Child => {
-	        match d.get_root_element() {
-		  Some(n) => {
-		    if is_node_match(&nm.nodetest, &n) {
-		      let seq = vec![Rc::new(Item::Node(n))];
-		      Ok(predicates(dc, seq, p))
-		    } else {
+        ))
+      }
+      Constructor::Step(nm, p) => {
+        if ctxt.is_some() {
+	  match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+	    Item::Document(d) => {
+	      match nm.axis {
+	        Axis::Child => {
+	          match d.get_root_element() {
+		    Some(n) => {
+		      if is_node_match(&nm.nodetest, &n) {
+		        let seq = vec![Rc::new(Item::Node(n))];
+		      	Ok(self.predicates(seq, p)?)
+		      } else {
+		        Ok(vec![])
+		      }
+		    }
+		    None => {
 		      Ok(vec![])
 		    }
 		  }
-		  None => {
-		    Ok(vec![])
+	        }
+	      	Axis::Descendant => {
+		  match d.get_root_element() {
+		    Some(n) => {
+		      let seq = n.descendants().iter()
+		        .filter(|c| is_node_match(&nm.nodetest, &c))
+		      	.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+	      	      Ok(self.predicates(seq, p)?)
+		    }
+		    None => Ok(vec![])
 		  }
-		}
-	      }
-	      Axis::Descendant => {
-		match d.get_root_element() {
-		  Some(n) => {
-		    let seq = n.descendants().iter()
-		      .filter(|c| is_node_match(&nm.nodetest, &c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	    Ok(predicates(dc, seq, p))
-		  }
-		  None => Ok(vec![])
-		}
-	      }
-	      // Only used for pattern matching: matches "/"
-	      Axis::SelfDocument |
-	      Axis::ParentDocument => {
-	        Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
-	      }
-	      Axis::Parent |
-	      Axis::Selfaxis |
-	      Axis::Attribute => Ok(vec![]),
-	      _ => {
-	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("not yet implemented (document) ({})", nm.axis.to_string())})
+	        }
+	      	// Only used for pattern matching: matches "/"
+	      	Axis::SelfDocument |
+	      	Axis::ParentDocument => {
+	          Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
+	        }
+	      	Axis::Parent |
+	      	Axis::Selfaxis |
+	      	Axis::Attribute => Ok(vec![]),
+	      	_ => {
+	          // Not yet implemented
+		  Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("not yet implemented (document) ({})", nm.axis.to_string())})
+	        }
 	      }
 	    }
-	  }
-	  Item::Node(n) => {
-	    match nm.axis {
-	      Axis::Selfaxis => {
-	        if is_node_match(&nm.nodetest, &n) {
-		  let mut seq = Sequence::new();
-		  seq.new_node(Rc::clone(n));
-	      	  Ok(predicates(dc, seq, p))
-		} else {
-	      	  Ok(Sequence::new())
-		}
-	      }
-	      Axis::Child => {
-		let seq = n.children().iter()
-		      .filter(|c| is_node_match(&nm.nodetest, &c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Parent => {
-	        match n.parent() {
-		  Some(p) => {
+	    Item::Node(n) => {
+	      match nm.axis {
+	        Axis::Selfaxis => {
+	          if is_node_match(&nm.nodetest, &n) {
 		    let mut seq = Sequence::new();
-		    seq.new_node(Rc::clone(&p));
-      		    Ok(seq)
+		    seq.new_node(Rc::clone(n));
+	      	    Ok(self.predicates(seq, p)?)
+		  } else {
+	      	    Ok(Sequence::new())
 		  }
-		  None => {
-	            // empty sequence is the result
-      		    Ok(vec![])
+	        }
+	      	Axis::Child => {
+		  let seq = n.children().iter()
+		      .filter(|c| is_node_match(&nm.nodetest, &c))
+		      .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+		  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::Parent => {
+	          match n.parent() {
+		    Some(p) => {
+		      let mut seq = Sequence::new();
+		      seq.new_node(Rc::clone(&p));
+      		      Ok(seq)
+		    }
+		    None => {
+	              // empty sequence is the result
+      		      Ok(vec![])
+		    }
 		  }
-		}
-	      }
-	      Axis::ParentDocument => {
-	        // Only matches the Document.
-		// If no parent then return the Document
-	        match n.parent() {
-		  Some(_) => {
-      		    Ok(vec![])
+	        }
+	      	Axis::ParentDocument => {
+	          // Only matches the Document.
+		  // If no parent then return the Document
+	          match n.parent() {
+		    Some(_) => {
+      		      Ok(vec![])
+		    }
+		    None => {
+	    	      match self.doc {
+	      	        Some(ref d) => {
+	                  Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
+	      	        }
+	      	      	None => {
+		          match n.owner_document() {
+			    Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
+			    None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
+			  }
+		        }
+	    	      }
+		    }
 		  }
-		  None => {
-	    	    match dc.doc {
-	      	      Some(ref d) => {
-	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
-	      	      }
-	      	      None => {
-		        match n.owner_document() {
-			  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
-			  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
-			}
-		      }
-	    	    }
+	        }
+	      	Axis::Descendant => {
+		  let seq = n.descendants().iter()
+		    .filter(|c| is_node_match(&nm.nodetest, &c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::DescendantOrSelf => {
+		  let mut seq = n.descendants().iter()
+		    .filter(|c| is_node_match(&nm.nodetest, &c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+		  if is_node_match(&nm.nodetest, &n) {
+		    seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
 		  }
-		}
-	      }
-	      Axis::Descendant => {
-		let seq = n.descendants().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::DescendantOrSelf => {
-		let mut seq = n.descendants().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		if is_node_match(&nm.nodetest, &n) {
-		  seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
-		}
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Ancestor => {
-		let seq = n.ancestors().iter()
-		  .filter(|p| is_node_match(&nm.nodetest, &p))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::AncestorOrSelf => {
-		let mut seq = n.ancestors().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		if is_node_match(&nm.nodetest, &n) {
-		  seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
-		}
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::FollowingSibling => {
-	        let seq = n.following_siblings().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::PrecedingSibling => {
-		let seq = n.preceding_siblings().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Following => {
-	        // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
-		// iow, for each ancestor-or-self node, include every next sibling and its descendants
-
-		let mut d: Vec<Rc<dyn Node>> = Vec::new();
-
-		// Start with following siblings of self
-		for a in n.following_siblings() {
-		  d.push(a.clone());
-		  let mut b = a.descendants();
-		  d.append(&mut b);
-		}
-
-		// Now traverse ancestors
-		let anc: Vec<Rc<dyn Node>> = n.ancestors();
-		for a in anc {
-		  let sibs: Vec<Rc<dyn Node>> = a.following_siblings();
-		  for b in sibs {
-		    d.push(b.clone());
-		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
-		    d.append(&mut sib_descs)
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::Ancestor => {
+		  let seq = n.ancestors().iter()
+		    .filter(|p| is_node_match(&nm.nodetest, &p))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::AncestorOrSelf => {
+		  let mut seq = n.ancestors().iter()
+		    .filter(|c| is_node_match(&nm.nodetest, &c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+		  if is_node_match(&nm.nodetest, &n) {
+		    seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
 		  }
-		}
-	        let seq = d.iter()
-		  .filter(|e| is_node_match(&nm.nodetest, &e))
-		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Preceding => {
-	        // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
-		// iow, for each ancestor-or-self node, include every previous sibling and its descendants
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::FollowingSibling => {
+	          let seq = n.following_siblings().iter()
+		    .filter(|c| is_node_match(&nm.nodetest, &c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::PrecedingSibling => {
+		  let seq = n.preceding_siblings().iter()
+		    .filter(|c| is_node_match(&nm.nodetest, &c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::Following => {
+	          // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
+		  // iow, for each ancestor-or-self node, include every next sibling and its descendants
 
-		let mut d: Vec<Rc<dyn Node>> = Vec::new();
+		  let mut d: Vec<Rc<dyn Node>> = Vec::new();
 
-		// Start with preceding siblings of self
-		for a in n.preceding_siblings() {
-		  d.push(a.clone());
-		  let mut b = a.descendants();
-		  d.append(&mut b);
-		}
-
-		// Now traverse ancestors
-		let anc: Vec<Rc<dyn Node>> = n.ancestors();
-		for a in anc {
-		  let sibs: Vec<Rc<dyn Node>> = a.preceding_siblings();
-		  for b in sibs {
-		    d.push(b.clone());
-		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
-		    d.append(&mut sib_descs)
+		  // Start with following siblings of self
+		  for a in n.following_siblings() {
+		    d.push(a.clone());
+		    let mut b = a.descendants();
+		    d.append(&mut b);
 		  }
-		}
-	        let seq = d.iter()
-		  .filter(|e| is_node_match(&nm.nodetest, &e))
-		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Attribute => {
-		let attrs = n.attributes().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		Ok(predicates(dc, attrs, p))
-	      }
-	      Axis::SelfDocument => Ok(vec![]),
-	      _ => {
-	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
+
+		  // Now traverse ancestors
+		  let anc: Vec<Rc<dyn Node>> = n.ancestors();
+		  for a in anc {
+		    let sibs: Vec<Rc<dyn Node>> = a.following_siblings();
+		    for b in sibs {
+		      d.push(b.clone());
+		      let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
+		      d.append(&mut sib_descs)
+		    }
+		  }
+	          let seq = d.iter()
+		    .filter(|e| is_node_match(&nm.nodetest, &e))
+		    .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::Preceding => {
+	          // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
+		  // iow, for each ancestor-or-self node, include every previous sibling and its descendants
+
+		  let mut d: Vec<Rc<dyn Node>> = Vec::new();
+
+		  // Start with preceding siblings of self
+		  for a in n.preceding_siblings() {
+		    d.push(a.clone());
+		    let mut b = a.descendants();
+		    d.append(&mut b);
+		  }
+
+		  // Now traverse ancestors
+		  let anc: Vec<Rc<dyn Node>> = n.ancestors();
+		  for a in anc {
+		    let sibs: Vec<Rc<dyn Node>> = a.preceding_siblings();
+		    for b in sibs {
+		      d.push(b.clone());
+		      let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
+		      d.append(&mut sib_descs)
+		    }
+		  }
+	          let seq = d.iter()
+		    .filter(|e| is_node_match(&nm.nodetest, &e))
+		    .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
+	      	  Ok(self.predicates(seq, p)?)
+	        }
+	      	Axis::Attribute => {
+		  let attrs = n.attributes().iter()
+		    .filter(|c| is_node_match(&nm.nodetest, &c))
+		    .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+		  Ok(self.predicates(attrs, p)?)
+	        }
+	      	Axis::SelfDocument => Ok(vec![]),
+	      	_ => {
+	          // Not yet implemented
+		  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
+	        }
 	      }
 	    }
+	    _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
 	  }
-	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        } else {
+	  Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+        }
       }
-    }
-    Constructor::FunctionCall(f, a) => {
-      match f.body {
-        Some(g) => {
-      	  // Evaluate the arguments
-      	  let mut b = Vec::new();
-      	  for c in a {
-            b.push(evaluate(dc, ctxt.clone(), posn, c)?)
+      Constructor::FunctionCall(f, a) => {
+        match f.body {
+          Some(g) => {
+      	    // Evaluate the arguments
+      	    let mut b = Vec::new();
+      	    for c in a {
+              b.push(self.evaluate(ctxt.clone(), posn, c)?)
+      	    }
+      	    // Invoke the function
+      	    g(self, ctxt, posn, b)
+	  }
+	  None => {
+	    Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("call to undefined function \"{}\"", f.name)})
+	  }
+        }
+      }
+      Constructor::VariableDeclaration(v, a) => {
+        let s = self.evaluate(ctxt, posn, a)?;
+//     	let mut t: Vec<Sequence>;
+	self.dc.var_push(v, s);
+//      	match dc.vars.borrow().get(v) {
+//          Some(u) => {
+//	    t = u.to_vec();
+//	    t.push(s)
+//	  }
+//	  None => {
+//	    t = vec![s]
+//	  }
+//        }
+//      	dc.vars.insert(v.to_string(), t);
+      	Ok(Sequence::new())
+      }
+      Constructor::VariableReference(v) => {
+        match self.dc.vars.borrow().get(v) {
+          Some(s) => {
+	    match s.last() {
+	      Some(t) => Ok(t.clone()),
+	      None => Result::Err(Error{kind: ErrorKind::Unknown, message: "no value for variable".to_string()})
+	    }
+	  }
+	  None => {
+      	    Result::Err(Error{kind: ErrorKind::Unknown, message: format!("reference to undefined variable \"{}\"", v)})
+	  }
+        }
+      }
+      Constructor::Loop(v, b) => {
+        // TODO: this supports only one variable binding - need to support more than one binding
+      	// Evaluate the variable value
+      	// Iterate over the items in the sequence
+      	// Set the variable value to the item
+      	// Evaluate the body, collecting the results
+
+      	if v.is_empty() {
+      	  Result::Err(Error{kind: ErrorKind::Unknown, message: "no variable bindings".to_string()})
+        } else {
+          let mut result: Sequence = vec![];
+          match &v[0] {
+            Constructor::VariableDeclaration(v, a) => {
+
+	      let s: Sequence = self.evaluate(ctxt.clone(), posn, &a)?;
+
+	      for i in s {
+	        // Push the new value for this variable
+	      	self.dc.var_push(v, vec![i]);
+	      	let mut x = self.evaluate(ctxt.clone(), posn, b)?;
+	      	result.append(&mut x);
+	      	// Pop the value for this variable
+	      	self.dc.var_pop(v);
+	      }
+	    }
+	    _ => {
+	      // Error: no variable bindings
+	    }
       	  }
-      	  // Invoke the function
-      	  g(dc, ctxt, posn, b)
-	}
-	None => {
-	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("call to undefined function \"{}\"", f.name)})
-	}
+	  Ok(result)
+        }
       }
-    }
-    Constructor::VariableDeclaration(v, a) => {
-      let s = evaluate(dc, ctxt, posn, a)?;
-      let mut t: Vec<Sequence>;
-      match dc.vars.borrow().get(v) {
-        Some(u) => {
-	  t = u.to_vec();
-	  t.push(s)
-	}
-	None => {
-	  t = vec![s]
-	}
-      }
-      dc.vars.borrow_mut().insert(v.to_string(), t);
-      Ok(Sequence::new())
-    }
-    Constructor::VariableReference(v) => {
-      match dc.vars.borrow().get(v) {
-        Some(s) => {
-	  match s.last() {
-	    Some(t) => Ok(t.clone()),
-	    None => Result::Err(Error{kind: ErrorKind::Unknown, message: "no value for variable".to_string()})
-	  }
-	}
-	None => {
-      	  Result::Err(Error{kind: ErrorKind::Unknown, message: format!("reference to undefined variable \"{}\"", v)})
-	}
-      }
-    }
-    Constructor::Loop(v, b) => {
-      // TODO: this supports only one variable binding - need to support more than one binding
-      // Evaluate the variable value
-      // Iterate over the items in the sequence
-      // Set the variable value to the item
-      // Evaluate the body, collecting the results
+      Constructor::Switch(v, o) => {
+        // 'v' are pairs of test,body
+      	// 'o' is the otherwise clause
+      	// evaluate tests to a boolean until the first true result; evaluate it's body as the result
+      	// of all tests fail then evaluate otherwise clause
 
-      if v.is_empty() {
-      	Result::Err(Error{kind: ErrorKind::Unknown, message: "no variable bindings".to_string()})
-      } else {
-        let mut result: Sequence = vec![];
-        match &v[0] {
-          Constructor::VariableDeclaration(v, a) => {
-
-	    let s: Sequence = evaluate(dc, ctxt.clone(), posn, &a)?;
-
-	    for i in s {
-	      // Push the new value for this variable
-	      var_push(dc, v, &i);
-	      let mut x = evaluate(dc, ctxt.clone(), posn, b)?;
-	      result.append(&mut x);
-	      // Pop the value for this variable
-	      var_pop(dc, v);
+      	// TODO: Don't Panic
+      	Ok(
+          match v.chunks(2).try_fold(
+            self.evaluate(ctxt.clone(), posn, o)?,
+	    |acc, t| {
+	      if self.evaluate(ctxt.clone(), posn, &t[0]).expect("failed to evaluate clause test").to_bool() {
+	        ControlFlow::Break(self.evaluate(ctxt.clone(), posn, &t[1]).expect("failed to evaluate clause body"))
+	      } else {
+	        ControlFlow::Continue(acc)
+	      }
 	    }
+          ) {
+	    ControlFlow::Continue(r) => r,
+	    ControlFlow::Break(r) => r,
 	  }
-	  _ => {
-	    // Error: no variable bindings
-	  }
-      	}
-	Ok(result)
+        )
       }
-    }
-    Constructor::Switch(v, o) => {
-      // 'v' are pairs of test,body
-      // 'o' is the otherwise clause
-      // evaluate tests to a boolean until the first true result; evaluate it's body as the result
-      // of all tests fail then evaluate otherwise clause
+      Constructor::ApplyTemplates(s) => {
+        // Evaluate 's' to find the nodes to apply templates to
+      	// For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-      // TODO: Don't Panic
-      Ok(
-        match v.chunks(2).try_fold(
-          evaluate(dc, ctxt.clone(), posn, o)?,
-	  |acc, t| {
-	    if evaluate(dc, ctxt.clone(), posn, &t[0]).expect("failed to evaluate clause test").to_bool() {
-	      ControlFlow::Break(evaluate(dc, ctxt.clone(), posn, &t[1]).expect("failed to evaluate clause body"))
-	    } else {
-	      ControlFlow::Continue(acc)
-	    }
-	  }
-        ) {
-	  ControlFlow::Continue(r) => r,
-	  ControlFlow::Break(r) => r,
-	}
-      )
-    }
-    Constructor::ApplyTemplates(s) => {
-      // Evaluate 's' to find the nodes to apply templates to
-      // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
-
-      // TODO: Don't Panic
-      let sel = evaluate(dc, ctxt.clone(), posn, s)?;
-      let result = sel.iter().fold(
+      	// TODO: Don't Panic
+      	let sel = self.evaluate(ctxt.clone(), posn, s)?;
+      	let result = sel.iter().fold(
           vec![],
           |mut acc, i| {
-	    let matching_template: Vec<&Template> = dc.templates.iter()
+	    let matching_template: Vec<&Template> = self.templates.iter()
 	      .filter(|t| {
-	        //item_matches(dc, &t.pattern, i)
-		let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
+	        //item_matches(&t.pattern, i)
+		let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
 	        if e.len() == 0 {false} else {true}
 	      })
 	      .scan(-2.0,
@@ -889,9 +939,9 @@ fn evaluate_one(
 	    // See XSLT 6.7.
 	    // TODO: use import precedence to implement this feature
 	    if matching_template.len() == 0 {
-	      let builtin_template: Vec<&Template> = dc.builtin_templates.iter()
+	      let builtin_template: Vec<&Template> = self.builtin_templates.iter()
 	        .filter(|t| {
-		  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
+		  let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
 	          if e.len() == 0 {false} else {true}
 	        })
 	        .scan(-2.0,
@@ -910,9 +960,9 @@ fn evaluate_one(
 	      }
 	      let mut u = builtin_template.iter()
 	        .flat_map(|t| {
-		  dc.incr_depth();
-		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
-	    	  dc.decr_depth();
+		  self.dc.depth_incr();
+		  let rs = self.evaluate(Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	  self.dc.depth_decr();
 		  rs
 	        })
 	        .collect::<Sequence>();
@@ -920,9 +970,9 @@ fn evaluate_one(
 	    } else {
 	      let mut u = matching_template.iter()
 	        .flat_map(|t| {
-		  dc.incr_depth();
-		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
-	    	  dc.decr_depth();
+		  self.dc.depth_incr();
+		  let rs = self.evaluate(Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
+	    	  self.dc.depth_decr();
 		  rs
 	        })
 	        .collect::<Sequence>();
@@ -931,294 +981,325 @@ fn evaluate_one(
 	    acc
 	  }
         );
+      	Ok(result)
+      }
+      Constructor::ForEach(s, t, g) => {
+        // Evaluate 's' to find the nodes to iterate over
+      	// Use 'g' to group the nodes
+      	// Evaluate 't' for each group
+      	let sel = self.evaluate(ctxt.clone(), posn, s)?;
+      	// Divide sel into groups: each item in groups is an individual group
+      	let mut groups = Vec::new();
+      	match g {
+          Some(Grouping::By(h)) => {
+	    // 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
+	    // Items are placed in the group with a matching key
+	    let mut map = HashMap::new();
+	    for i in 0..sel.len() {
+	      let keys = self.evaluate(Some(sel.clone()), Some(i), h)?;
+	      for j in keys {
+	        let e = map.entry(j.to_string()).or_insert(vec![]);
+	      	e.push(sel[i].clone());
+	      }
+	    }
+	    // Now construct the groups and a pair-wise vector of keys
+	    for (k, v) in map.iter() {
+	      groups.push((Some(k.clone()), v.to_vec()));
+	    }
+	  }
+          Some(Grouping::Adjacent(h)) => {
+	    // 'h' is an expression that is evaluated for every item in 'sel'.
+	    // It must evaluate to a single item.
+	    // The first item starts the first group.
+	    // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
+	    // then it is added to the current group. Otherwise it starts a new group.
+	    if sel.len() > 0 {
+	      let mut curgrp = vec![sel[0].clone()];
+	      let mut curkey = self.evaluate(Some(sel.clone()), Some(1), h)?;
+	      if curkey.len() != 1 {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+	      }
+	      for i in 1..sel.len() {
+	        let thiskey = self.evaluate(Some(sel.clone()), Some(i), h)?;
+	      	if thiskey.len() == 1 {
+		  if curkey[0].compare(&*thiskey[0], Operator::Equal)? {
+		    // Append to the current group
+		    curgrp.push(sel[i].clone());
+		  } else {
+		    // Close previous group, start a new group with this item as its first member
+		    groups.push((Some(curkey.to_string()), curgrp.clone()));
+		    curgrp = vec![sel[i].clone()];
+		    curkey = thiskey;
+		  }
+	        } else {
+      	          return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+	        }
+	      }
+	      // Close the last group
+	      groups.push((Some(curkey.to_string()), curgrp));
+	    } // else result is empty sequence
+	  }
+          Some(Grouping::StartingWith(_h)) => {}
+          Some(Grouping::EndingWith(_h)) => {}
+          None => {
+	    for i in sel {
+              groups.push((None, vec![i.clone()]));
+	    }
+	  }
+        }
+
+      	Ok(groups.iter().fold(
+          vec![],
+	  |mut result, grp| {
+	    let (o, v) = grp;
+	    // set current-grouping-key, current-group
+	    match o {
+	      Some(u) => {
+	        self.dc.push_current_grouping_key(Item::Value(Value::from(u.to_string())));
+	        self.dc.push_current_group(v.clone());
+	      }
+	      None => {}
+	    }
+	    // TODO: Don't Panic
+	    let mut tmp = self.evaluate(Some(v.to_vec()), Some(0), t).expect("failed to evaluate template");
+	    result.append(&mut tmp);
+	    // Restore current-grouping-key, current-group
+	    self.dc.pop_current_grouping_key();
+	    self.dc.pop_current_group();
+	    result
+	  }
+        ))
+      }
+      Constructor::NotImplemented(m) => {
+        Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
+      }
+    }
+  }
+
+  // Deep copy an item
+  fn item_deep_copy(
+    &self,
+    orig: Rc<Item>,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+  ) -> Result<Rc<Item>, Error> {
+
+    let cp = self.item_copy(orig.clone(), &vec![], ctxt.clone(), posn)?;
+
+    // If this item is an element node, then copy all of its attributes and children
+    match *orig {
+      Item::Node(ref n) => {
+        match n.node_type() {
+          NodeType::Element => {
+	    let cur = match *cp {
+	      Item::Node(ref m) => m,
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to copy element node".to_string()})
+	      }
+	    };
+	    n.attributes().iter()
+	      .for_each(|a| {
+	        cur.set_attribute(a.to_name(), Value::from(a.to_string()));
+	      });
+	    let child_list = n.children();
+	    // Don't Panic
+	    child_list.iter()
+	      .for_each(|c| {
+	        let cpc = self.item_deep_copy(Rc::new(Item::Node(c.clone())), ctxt.clone(), posn)
+	          .expect("unable to copy item");
+	        match *cpc {
+	          Item::Node(ref cpcn) => {
+	      	    cur.append_child(cpcn.as_any()).expect("unable to append copied child");
+		  }
+		  _ => {} // this should never happen
+	        }
+	    });
+	  }
+	  _ => {}
+        }
+      }
+      _ => {}
+    }
+
+    Ok(cp)
+  }
+
+  // Copy an item
+  fn item_copy(
+    &self,
+    orig: Rc<Item>,
+    content: &Vec<Constructor>,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+  ) -> Result<Rc<Item>, Error> {
+    match *orig {
+      Item::Value(_) => {
+        Ok(orig.clone())
+      }
+      Item::Node(ref n) => {
+        let doc = match self.resultdoc {
+          Some(d) => d,
+	  None => {
+	    return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+	  }
+        };
+
+        match n.node_type() {
+          NodeType::Element => {
+	    match doc.new_element(n.to_name()) {
+	      Ok(e) => {
+	        // Add content to the new element
+	      	// TODO: Don't Panic
+	      	self.evaluate(ctxt.clone(), posn, content)?
+		  .iter()
+        	    .for_each(|i| {
+	    	      // Item could be a Node or text
+	    	      match **i {
+	      	        Item::Node(ref t) => {
+		          match t.node_type() {
+		            NodeType::Element |
+		            NodeType::Text => {
+		              e.append_child(t.as_any()).expect("unable to add child node");
+		            }
+		            NodeType::Attribute => {
+		              e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
+		            }
+		            _ => {} // TODO: work out what to do with documents, etc
+		          }
+	      	        }
+	      	      	_ => {
+	                  // Values become a text node in the result tree
+		          e.append_text_child(Value::from(i.to_string()))
+		            .expect("unable to add text child node");
+	      	        }
+	    	      }
+	            });
+	        Ok(Rc::new(Item::Node(e)))
+	      }
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create element node".to_string()})
+	      }
+	    }
+	  }
+	  NodeType::Text => {
+	    match doc.new_text(Value::from(n.to_string())) {
+	      Ok(m) => {
+	        Ok(Rc::new(Item::Node(m)))
+	      }
+	      _ => {
+	        return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create text node".to_string()})
+	      }
+	    }
+	  }
+	  NodeType::Attribute => {
+	    // TODO: add a 'to_value' method
+	    match doc.new_attribute(n.to_name(), Value::from(n.to_string())) {
+	      Ok(a) => {
+	        Ok(Rc::new(Item::Node(a)))
+	      }
+	      _ => {
+	        Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create attribute node".to_string()})
+	      }
+	    }
+	  }
+	  _ => {
+	    Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
+	  }
+        }
+      }
+      _ => {
+        Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not implemented".to_string()})
+      }
+    }
+  }
+
+  // Filter the sequence with each of the predicates
+  fn predicates(&self,
+    s: Sequence,
+    p: &Vec<Vec<Constructor>>
+  ) -> Result<Sequence, Error> {
+    if p.is_empty() {
+      Ok(s)
+    } else {
+      let mut result = s.clone();
+
+      // iterate over the predicates
+      for q in p {
+      	let mut new: Sequence = Vec::new();
+
+      	// for each predicate, evaluate each item in s to a boolean
+      	for i in 0..result.len() {
+          let b = self.evaluate(Some(result.clone()), Some(i), q)?;
+	  if b.to_bool() == true {
+	    new.push(result[i].clone());
+	  }
+        }
+      	result.clear();
+      	result.append(&mut new);
+      }
+
       Ok(result)
     }
-    Constructor::ForEach(s, t, g) => {
-      // Evaluate 's' to find the nodes to iterate over
-      // Use 'g' to group the nodes
-      // Evaluate 't' for each group
-      let sel = evaluate(dc, ctxt.clone(), posn, s)?;
-      // Divide sel into groups: each item in groups is an individual group
-      let mut groups = Vec::new();
-      match g {
-        Some(Grouping::By(h)) => {
-	  // 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
-	  // Items are placed in the group with a matching key
-	  let mut map = HashMap::new();
-	  for i in 0..sel.len() {
-	    let keys = evaluate(dc, Some(sel.clone()), Some(i), h)?;
-	    for j in keys {
-	      let e = map.entry(j.to_string()).or_insert(vec![]);
-	      e.push(sel[i].clone());
-	    }
-	  }
-	  // Now construct the groups and a pair-wise vector of keys
-	  for (k, v) in map.iter() {
-	    groups.push((Some(k.clone()), v.to_vec()));
-	  }
-	}
-        Some(Grouping::Adjacent(h)) => {
-	  // 'h' is an expression that is evaluated for every item in 'sel'.
-	  // It must evaluate to a single item.
-	  // The first item starts the first group.
-	  // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
-	  // then it is added to the current group. Otherwise it starts a new group.
-	  if sel.len() > 0 {
-	    let mut curgrp = vec![sel[0].clone()];
-	    let mut curkey = evaluate(dc, Some(sel.clone()), Some(1), h)?;
-	    if curkey.len() != 1 {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "group-adjacent attribute must evaluate to a single item".to_string()})
-	    }
-	    for i in 1..sel.len() {
-	      let thiskey = evaluate(dc, Some(sel.clone()), Some(i), h)?;
-	      if thiskey.len() == 1 {
-		if curkey[0].compare(&*thiskey[0], Operator::Equal)? {
-		  // Append to the current group
-		  curgrp.push(sel[i].clone());
-		} else {
-		  // Close previous group, start a new group with this item as its first member
-		  groups.push((Some(curkey.to_string()), curgrp.clone()));
-		  curgrp = vec![sel[i].clone()];
-		  curkey = thiskey;
-		}
-	      } else {
-      	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
-	      }
-	    }
-	    // Close the last group
-	    groups.push((Some(curkey.to_string()), curgrp));
-	  } // else result is empty sequence
-	}
-        Some(Grouping::StartingWith(_h)) => {
-	}
-        Some(Grouping::EndingWith(_h)) => {
-	}
-        None => {
-	  for i in sel {
-            groups.push((None, vec![i.clone()]));
-	  }
-	}
-      }
-
-      Ok(groups.iter().fold(
-        vec![],
-	|mut result, grp| {
-	  let (o, v) = grp;
-	  // set current-grouping-key, current-group
-	  match o {
-	    Some(u) => {
-	      dc.push_current_grouping_key(Item::Value(Value::String(u.to_string())));
-	      dc.push_current_group(v.clone());
-	    }
-	    None => {}
-	  }
-	  // TODO: Don't Panic
-	  let mut tmp = evaluate(dc, Some(v.to_vec()), Some(0), t).expect("failed to evaluate template");
-	  result.append(&mut tmp);
-	  // Restore current-grouping-key, current-group
-	  dc.pop_current_grouping_key();
-	  dc.pop_current_group();
-	  result
-	}
-      ))
-    }
-    Constructor::NotImplemented(m) => {
-      Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
-    }
-  }
-}
-
-// Deep copy an item
-fn item_deep_copy(
-  orig: Rc<Item>,
-  dc: &DynamicContext,
-  ctxt: Option<Sequence>,
-  posn: Option<usize>,
-) -> Result<Rc<Item>, Error> {
-
-  let cp = item_copy(orig.clone(), dc, &vec![], ctxt.clone(), posn)?;
-
-  // If this item is an element node, then copy all of its attributes and children
-  match *orig {
-    Item::Node(ref n) => {
-      match n.node_type() {
-        NodeType::Element => {
-	  let cur = match *cp {
-	    Item::Node(ref m) => m,
-	    _ => {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to copy element node".to_string()})
-	    }
-	  };
-	  n.attributes().iter()
-	    .for_each(|a| {
-	      cur.set_attribute(a.to_name(), Value::String(a.to_string()));
-	    });
-	  let child_list = n.children();
-	  // Don't Panic
-	  child_list.iter()
-	    .for_each(|c| {
-	      let cpc = item_deep_copy(Rc::new(Item::Node(c.clone())), dc, ctxt.clone(), posn)
-	        .expect("unable to copy item");
-	      match *cpc {
-	        Item::Node(ref cpcn) => {
-	      	  cur.append_child(cpcn.as_any()).expect("unable to append copied child");
-		}
-		_ => {} // this should never happen
-	      }
-	    });
-	}
-	_ => {}
-      }
-    }
-    _ => {}
   }
 
-  Ok(cp)
-}
+  /// Determine if an item matches a pattern.
+  /// The sequence constructor is a pattern: the steps of a path in reverse.
+  pub fn item_matches(&self,
+    pat: &Vec<Constructor>,
+    i: &Rc<Item>
+  ) -> Result<bool, Error> {
+    let e = self.evaluate(Some(vec![i.clone()]), Some(0), pat)?;
 
-// Copy an item
-fn item_copy(
-  orig: Rc<Item>,
-  dc: &DynamicContext,
-  content: &Vec<Constructor>,
-  ctxt: Option<Sequence>,
-  posn: Option<usize>,
-) -> Result<Rc<Item>, Error> {
-  match *orig {
-    Item::Value(_) => {
-      Ok(orig.clone())
-    }
-    Item::Node(ref n) => {
-      let doc = match dc.resultdoc {
-        Some(d) => d,
-	None => {
-	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
-	}
-      };
-
-      match n.node_type() {
-        NodeType::Element => {
-	  match doc.new_element(n.to_name()) {
-	    Ok(e) => {
-	      // Add content to the new element
-	      // TODO: Don't Panic
-	      evaluate(dc, ctxt.clone(), posn, content)?
-		.iter()
-        	  .for_each(|i| {
-	    	    // Item could be a Node or text
-	    	    match **i {
-	      	      Item::Node(ref t) => {
-		        match t.node_type() {
-		          NodeType::Element |
-		          NodeType::Text => {
-		            e.append_child(t.as_any()).expect("unable to add child node");
-		          }
-		          NodeType::Attribute => {
-		            e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
-		          }
-		          _ => {} // TODO: work out what to do with documents, etc
-		        }
-	      	      }
-	      	      _ => {
-	                // Values become a text node in the result tree
-		        e.append_text_child(Value::String(i.to_string()))
-		          .expect("unable to add text child node");
-	      	      }
-	    	    }
-	          });
-	      Ok(Rc::new(Item::Node(e)))
-	    }
-	    _ => {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create element node".to_string()})
-	    }
-	  }
-	}
-	NodeType::Text => {
-	  match doc.new_text(Value::String(n.to_string())) {
-	    Ok(m) => {
-	      Ok(Rc::new(Item::Node(m)))
-	    }
-	    _ => {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create text node".to_string()})
-	    }
-	  }
-	}
-	NodeType::Attribute => {
-	  // TODO: add a 'to_value' method
-	  match doc.new_attribute(n.to_name(), Value::String(n.to_string())) {
-	    Ok(a) => {
-	      Ok(Rc::new(Item::Node(a)))
-	    }
-	    _ => {
-	      Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create attribute node".to_string()})
-	    }
-	  }
-	}
-	_ => {
-	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
-	}
-      }
-    }
-    _ => {
-      Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not implemented".to_string()})
+    // If anything is left in the context then the pattern matched
+    if e.len() != 0 {
+      Ok(true)
+    } else {
+      Ok(false)
     }
   }
-}
 
-// Push a new scope for a variable
-fn var_push(dc: &DynamicContext, v: &str, i: &Rc<Item>) {
-  let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-  let mut t: Option<&mut Vec<Sequence>>;
-
-  h = dc.vars.borrow_mut();
-  t = h.get_mut(v);
-  match t.as_mut() {
-    Some(u) => {
-      // If the variable already has a value, then this is a new, inner scope
-      u.push(vec![i.clone()]);
-    }
-    None => {
-      // Otherwise this is the first scope for the variable
-      h.insert(v.to_string(), vec![vec![i.clone()]]);
-    }
-  }
-}
-// Pop scope for a variable
-// Prerequisite: scope must have already been pushed
-fn var_pop(dc: &DynamicContext, v: &str) {
-  let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-  let t: Option<&mut Vec<Sequence>>;
-
-  h = dc.vars.borrow_mut();
-  t = h.get_mut(v);
-  t.map(|u| u.pop());
-}
-
-// Filter the sequence with each of the predicates
-// TODO: return a Result so that errors can propagate
-// TODO: Don't Panic
-fn predicates(dc: &DynamicContext, s: Sequence, p: &Vec<Vec<Constructor>>) -> Sequence {
-  if p.is_empty() {
-    s
-  } else {
-    let mut result = s.clone();
-
-    // iterate over the predicates
-    for q in p {
-      let mut new: Sequence = Vec::new();
-
-      // for each predicate, evaluate each item in s to a boolean
-      for i in 0..result.len() {
-        let b = evaluate(dc, Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
-	if b.to_bool() == true {
-	  new.push(result[i].clone());
-	}
+  fn general_comparison(&self,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+    op: Operator,
+    left: &Vec<Constructor>,
+    right: &Vec<Constructor>
+  ) -> Result<bool, Error> {
+    let mut b = false;
+    let left_seq =  self.evaluate(ctxt.clone(), posn, left)?;
+    let right_seq = self.evaluate(ctxt.clone(), posn, right)?;
+    for l in left_seq {
+      for r in &right_seq {
+        b = l.compare(&*r, op).unwrap();
+      	if b { break }
       }
-      result.clear();
-      result.append(&mut new);
-    }
+      if b { break }
+    };
+    Ok(b)
+  }
 
-    result
+  // Operands must be singletons
+  fn value_comparison(&self,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+    op: Operator,
+    left: &Vec<Constructor>,
+    right: &Vec<Constructor>
+  ) -> Result<bool, Error> {
+    let left_seq = self.evaluate(ctxt.clone(), posn, left)?;
+    if left_seq.len() == 0 {
+      return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is empty"),})
+    }
+    if left_seq.len() == 1 {
+      let right_seq = self.evaluate(ctxt.clone(), posn, right)?;
+      if right_seq.len() == 1 {
+        Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
+      } else {
+        Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("right-hand sequence is not a singleton sequence"),})
+      }
+    } else {
+      Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is not a singleton sequence"),})
+    }
   }
 }
 
@@ -1320,23 +1401,8 @@ pub enum Grouping {
   Adjacent(Vec<Constructor>),
 }
 
-/// Determine if an item matches a pattern.
-/// The sequence constructor is a pattern: the steps of a path in reverse.
-pub fn item_matches(dc: &DynamicContext, pat: &Vec<Constructor>, i: &Rc<Item>) -> bool {
-  // TODO: Return a Result so errors can be propagated
-  // TODO: Don't Panic
-  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), pat)
-    .expect("pattern evaluation failed");
-
-  // If anything is left in the context then the pattern matched
-  if e.len() != 0 {
-    true
-  } else {
-    false
-  }
-}
-
 // Apply the node test to a Node.
+// TODO: Make this a method of the Node trait?
 fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
   match nt {
     NodeTest::Name(t) => {
@@ -1423,8 +1489,10 @@ pub enum NodeTest {
   Name(NameTest),
 }
 
-impl NodeTest {
-  pub fn from(s: &str) -> Result<NodeTest, Error> {
+impl TryFrom<&str> for NodeTest {
+  type Error = Error;
+
+  fn try_from(s: &str) -> Result<Self, Self::Error> {
     // Import this from xpath.rs?
     let tok: Vec<&str> = s.split(':').collect();
     match tok.len() {
@@ -1455,6 +1523,9 @@ impl NodeTest {
       _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid NodeTest".to_string()})
     }
   }
+}
+
+impl NodeTest {
   pub fn to_string(&self) -> String {
       match self {
         NodeTest::Name(nt) => {
@@ -1548,8 +1619,8 @@ pub enum Axis {
   Unknown,
 }
 
-impl Axis {
-  pub fn from(s: &str) -> Axis {
+impl From<&str> for Axis {
+  fn from(s: &str) -> Self {
     match s {
       "child" => Axis::Child,
       "descendant" => Axis::Descendant,
@@ -1567,6 +1638,9 @@ impl Axis {
       _ => Axis::Unknown,
     }
   }
+}
+
+impl Axis {
   pub fn to_string(&self) -> String {
     match self {
       Axis::Child => "child".to_string(),
@@ -1618,8 +1692,9 @@ pub enum ArithmeticOperator {
   Subtract,
   Modulo,
 }
-impl ArithmeticOperator {
-  pub fn from(a: &str) -> ArithmeticOperator {
+
+impl From<&str> for ArithmeticOperator {
+  fn from(a: &str) -> Self {
     match a {
       "+" => ArithmeticOperator::Add,
       "*" => ArithmeticOperator::Multiply,
@@ -1636,20 +1711,6 @@ impl ArithmeticOperator {
 pub struct ArithmeticOperand {
   pub op: ArithmeticOperator,
   pub operand: Vec<Constructor>,
-}
-
-fn general_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
-  let mut b = false;
-  let left_seq = evaluate(dc, ctxt.clone(), posn, left)?;
-  let right_seq = evaluate(dc, ctxt.clone(), posn, right)?;
-  for l in left_seq {
-    for r in &right_seq {
-      b = l.compare(&*r, op).unwrap();
-      if b { break }
-    }
-    if b { break }
-  };
-  Ok(b)
 }
 
 /// A pattern is basically a Sequence Constructor in reverse.
@@ -2152,92 +2213,95 @@ impl StaticContext {
   pub fn declare_variable(&self, n: String, _ns:String) {
     self.vars.borrow_mut().insert(n.clone(), vec![]);
   }
-}
 
-/// Perform static analysis of a sequence constructor.
-///
-/// This checks that functions and variables are declared. It also rewrites the constructors to provide the implementation of functions that are used in expressions.
-pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
-  for d in e {
-    match d {
-      Constructor::Switch(v, o) => {
-        for i in v {
-	  static_analysis(i, sc)
-	}
-	static_analysis(o, sc);
-      }
-      Constructor::Loop(v, a) => {
-	static_analysis(v, sc);
-	static_analysis(a, sc);
-      }
-      Constructor::SetAttribute(_, v) => {
-        static_analysis(v, sc);
-      }
-      Constructor::FunctionCall(f, a) => {
-	// Fill in function body
-	match sc.funcs.borrow().get(&f.name) {
-	  Some(g) => {
-	    f.body.replace(g.body.unwrap());
+  /// Perform static analysis of a sequence constructor.
+  ///
+  /// This checks that functions and variables are declared. It also rewrites the constructors to provide the implementation of functions that are used in expressions.
+  pub fn static_analysis(&mut self, e: &mut Vec<Constructor>) {
+    // TODO: return Result
+    // TODO: iterate through the tree structure instead of doing a recursive depth first search. This should mean that the method would not have to use interior mutability
+    for d in e {
+      match d {
+        Constructor::Switch(v, o) => {
+          for i in v {
+	    self.static_analysis(i)
 	  }
-	  None => {
-	    panic!("call to unknown function \"{}\"", f.name)
+	  self.static_analysis(o);
+	}
+      	Constructor::Loop(v, a) => {
+	  self.static_analysis(v);
+	  self.static_analysis(a);
+        }
+      	Constructor::SetAttribute(_, v) => {
+          self.static_analysis(v);
+        }
+      	Constructor::FunctionCall(f, a) => {
+	  // Fill in function body
+	  match self.funcs.borrow().get(&f.name) {
+	    Some(g) => {
+	      f.body.replace(g.body.unwrap());
+	    }
+	    None => {
+	      // TODO: Don't Panic
+	      panic!("call to unknown function \"{}\"", f.name)
+	    }
 	  }
-	}
-        for i in a {
-	  static_analysis(i, sc)
-	}
+          for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::VariableDeclaration(v, a) => {
+          self.declare_variable(v.to_string(), "".to_string());
+	  self.static_analysis(a)
+        }
+      	Constructor::VariableReference(_v) => {
+          // TODO: check that variable has been declared
+        }
+      	Constructor::Or(a) |
+      	Constructor::And(a) |
+      	Constructor::Path(a) |
+      	Constructor::Concat(a) |
+      	Constructor::Range(a) => {
+	  for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::Step(_, a) => {
+          for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::GeneralComparison(_, a) |
+      	Constructor::ValueComparison(_, a) => {
+          for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::Arithmetic(a) => {
+          for i in a {
+	    self.static_analysis(&mut i.operand)
+	  }
+        }
+      	Constructor::ApplyTemplates(s) => {
+	  self.static_analysis(s)
+        }
+      	Constructor::ForEach(s, t, _g) => {
+	  self.static_analysis(s);
+	  self.static_analysis(t);
+        }
+      	Constructor::Copy(_, c) |
+      	Constructor::LiteralElement(_, c) => {
+	  self.static_analysis(c)
+        }
+      	Constructor::DeepCopy(c) => {
+	  self.static_analysis(c);
+        }
+      	Constructor::Literal(_) |
+      	Constructor::LiteralAttribute(_, _) |
+      	Constructor::ContextItem |
+      	Constructor::Root |
+      	Constructor::NotImplemented(_) => {}
       }
-      Constructor::VariableDeclaration(v, a) => {
-        sc.declare_variable(v.to_string(), "".to_string());
-	static_analysis(a, sc)
-      }
-      Constructor::VariableReference(_v) => {
-        // TODO: check that variable has been declared
-      }
-      Constructor::Or(a) |
-      Constructor::And(a) |
-      Constructor::Path(a) |
-      Constructor::Concat(a) |
-      Constructor::Range(a) => {
-        for i in a {
-	  static_analysis(i, sc)
-	}
-      }
-      Constructor::Step(_, a) => {
-        for i in a {
-	  static_analysis(i, sc)
-	}
-      }
-      Constructor::GeneralComparison(_, a) |
-      Constructor::ValueComparison(_, a) => {
-        for i in a {
-	  static_analysis(i, sc)
-	}
-      }
-      Constructor::Arithmetic(a) => {
-        for i in a {
-	  static_analysis(&mut i.operand, sc)
-	}
-      }
-      Constructor::ApplyTemplates(s) => {
-	static_analysis(s, sc)
-      }
-      Constructor::ForEach(s, t, _g) => {
-	static_analysis(s, sc);
-	static_analysis(t, sc);
-      }
-      Constructor::Copy(_, c) |
-      Constructor::LiteralElement(_, c) => {
-	static_analysis(c, sc)
-      }
-      Constructor::DeepCopy(c) => {
-	static_analysis(c, sc);
-      }
-      Constructor::Literal(_) |
-      Constructor::LiteralAttribute(_, _) |
-      Constructor::ContextItem |
-      Constructor::Root |
-      Constructor::NotImplemented(_) => {}
     }
   }
 }
@@ -2245,7 +2309,7 @@ pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
 // Functions
 
 pub type FunctionImpl = fn(
-    &DynamicContext,
+    &Evaluator,
     Option<Sequence>,		// Context
     Option<usize>,		// Context position
     Vec<Sequence>,		// Actual parameters
@@ -2301,7 +2365,7 @@ impl Param {
   }
 }
 
-fn func_position(_: &DynamicContext, _ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+fn func_position(_: &Evaluator, _ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   match posn {
     Some(u) => {
       Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))])
@@ -2310,7 +2374,7 @@ fn func_position(_: &DynamicContext, _ctxt: Option<Sequence>, posn: Option<usize
   }
 }
 
-fn func_last(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+fn func_last(_: &Evaluator, ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   match ctxt {
     Some(u) => {
       Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))])
@@ -2319,7 +2383,7 @@ fn func_last(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usize>, _
   }
 }
 
-pub fn func_count(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_count(_: &Evaluator, ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   match args.len() {
     0 => {
       // count the context items
@@ -2336,7 +2400,7 @@ pub fn func_count(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usiz
   }
 }
 
-pub fn func_localname(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_localname(_: &Evaluator, ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
@@ -2352,7 +2416,7 @@ pub fn func_localname(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<u
 }
 
 // TODO: handle qualified names
-pub fn func_name(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_name(_: &Evaluator, ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
@@ -2369,7 +2433,7 @@ pub fn func_name(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>
 }
 
 // TODO: implement string value properly
-pub fn func_string(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_string(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   match args.len() {
     1 => {
       // return string value
@@ -2379,7 +2443,7 @@ pub fn func_string(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<us
   }
 }
 
-pub fn func_concat(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_concat(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   Ok(vec![Rc::new(Item::Value(Value::String(
     args.iter().fold(
       String::new(),
@@ -2391,7 +2455,7 @@ pub fn func_concat(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<us
   )))])
 }
 
-pub fn func_startswith(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_startswith(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
      // arg[0] is the string to search
@@ -2404,7 +2468,7 @@ pub fn func_startswith(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Optio
   }
 }
 
-pub fn func_contains(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_contains(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
      // arg[0] is the string to search
@@ -2417,7 +2481,7 @@ pub fn func_contains(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<
   }
 }
 
-pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_substring(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 2 or 3 arguments
   match args.len() {
     2 => {
@@ -2440,7 +2504,7 @@ pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
   }
 }
 
-pub fn func_substringbefore(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_substringbefore(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
@@ -2469,7 +2533,7 @@ pub fn func_substringbefore(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: 
   }
 }
 
-pub fn func_substringafter(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_substringafter(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
@@ -2498,7 +2562,7 @@ pub fn func_substringafter(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: O
   }
 }
 
-pub fn func_normalizespace(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_normalizespace(_: &Evaluator, ctxt: Option<Sequence>, posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 0 or 1 arguments
   let s: Result<Option<String>, Error> = match args.len() {
     0 => {
@@ -2533,7 +2597,7 @@ pub fn func_normalizespace(_: &DynamicContext, ctxt: Option<Sequence>, posn: Opt
   }
 }
 
-pub fn func_translate(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_translate(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 3 arguments
   match args.len() {
     3 => {
@@ -2579,7 +2643,7 @@ pub fn func_translate(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
   }
 }
 
-pub fn func_boolean(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_boolean(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 arguments
   match args.len() {
     1 => {
@@ -2589,7 +2653,7 @@ pub fn func_boolean(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<u
   }
 }
 
-pub fn func_not(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_not(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 arguments
   match args.len() {
     1 => {
@@ -2599,7 +2663,7 @@ pub fn func_not(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize
   }
 }
 
-pub fn func_true(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_true(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 0 arguments
   match args.len() {
     0 => {
@@ -2609,7 +2673,7 @@ pub fn func_true(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usiz
   }
 }
 
-pub fn func_false(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_false(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 0 arguments
   match args.len() {
     0 => {
@@ -2619,7 +2683,7 @@ pub fn func_false(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
   }
 }
 
-pub fn func_number(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_number(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 argument
   match args.len() {
     1 => {
@@ -2645,7 +2709,7 @@ pub fn func_number(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<us
   }
 }
 
-pub fn func_sum(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_sum(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 argument
   match args.len() {
     1 => {
@@ -2655,7 +2719,7 @@ pub fn func_sum(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize
   }
 }
 
-pub fn func_floor(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_floor(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
     1 => {
@@ -2670,7 +2734,7 @@ pub fn func_floor(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
   }
 }
 
-pub fn func_ceiling(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_ceiling(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
     1 => {
@@ -2685,7 +2749,7 @@ pub fn func_ceiling(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<u
   }
 }
 
-pub fn func_round(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_round(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 1 or 2 arguments
   match args.len() {
     1 => {
@@ -2709,7 +2773,7 @@ pub fn func_round(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
   }
 }
 
-pub fn func_current_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_current_date_time(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
   // TODO: do the check in static analysis phase
@@ -2717,7 +2781,7 @@ pub fn func_current_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn
   Ok(vec![Rc::new(Item::Value(Value::DateTime(Local::now())))])
 }
 
-pub fn func_current_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_current_date(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
   // TODO: do the check in static analysis phase
@@ -2725,7 +2789,7 @@ pub fn func_current_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opt
   Ok(vec![Rc::new(Item::Value(Value::Date(Local::today())))])
 }
 
-pub fn func_current_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_current_time(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
   // TODO: do the check in static analysis phase
@@ -2733,7 +2797,7 @@ pub fn func_current_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opt
   Ok(vec![Rc::new(Item::Value(Value::Time(Local::now())))])
 }
 
-pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_format_date_time(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
 
@@ -2773,7 +2837,7 @@ pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn:
   }
 }
 
-pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_format_date(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
 
@@ -2813,7 +2877,7 @@ pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
   }
 }
 
-pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_format_time(_: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
 
@@ -2853,8 +2917,8 @@ pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
   }
 }
 
-pub fn func_current_grouping_key(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
-  match dc.current_grouping_key.borrow().last() {
+pub fn func_current_grouping_key(e: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+  match e.dc.current_grouping_key.borrow().last() {
     Some(k) => {
       match k {
         Some(l) => Ok(vec![l.clone()]),
@@ -2867,8 +2931,8 @@ pub fn func_current_grouping_key(dc: &DynamicContext, _ctxt: Option<Sequence>, _
   }
 }
 
-pub fn func_current_group(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
-  match dc.current_group.borrow().last() {
+pub fn func_current_group(e: &Evaluator, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+  match e.dc.current_group.borrow().last() {
     Some(k) => {
       match k {
         Some(l) => Ok(l.clone()),
@@ -2878,24 +2942,6 @@ pub fn func_current_group(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: O
     None => {
       Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current group"),})
     }
-  }
-}
-
-// Operands must be singletons
-fn value_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
-  let left_seq = evaluate(dc, ctxt.clone(), posn, left)?;
-  if left_seq.len() == 0 {
-    return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is empty"),})
-  }
-  if left_seq.len() == 1 {
-    let right_seq = evaluate(dc, ctxt.clone(), posn, right)?;
-    if right_seq.len() == 1 {
-      Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
-    } else {
-      Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("right-hand sequence is not a singleton sequence"),})
-    }
-  } else {
-    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is not a singleton sequence"),})
   }
 }
 
@@ -3031,9 +3077,9 @@ mod tests {
 
     #[test]
     fn literal_string() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::String("foobar".to_string()))];
-      let s = evaluate(&dc, None, None, &cons)
+      let e = Evaluator::new(None);
+      let cons = vec![Constructor::Literal(Value::from("foobar"))];
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "foobar")
@@ -3044,9 +3090,9 @@ mod tests {
 
     #[test]
     fn literal_int() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![Constructor::Literal(Value::Integer(456))];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_int().unwrap(), 456)
@@ -3055,24 +3101,24 @@ mod tests {
       }
     }
 
-//    #[test]
-//    fn literal_decimal() {
-//      let dc = DynamicContext::new(None);
-//      let cons = vec![Constructor::Literal(Value::Decimal(d128!(34.56)))];
-//      let s = evaluate(&dc, None, None, &cons)
-//        .expect("evaluation failed");
-//      if s.len() == 1 {
-//        assert_eq!(s.to_string(), "34.56")
-//      } else {
-//        panic!("sequence is not a singleton")
-//      }
-//    }
+    #[test]
+    fn literal_decimal() {
+      let e = Evaluator::new(None);
+      let cons = vec![Constructor::Literal(Value::Decimal(dec!(34.56)))];
+      let s = e.evaluate(None, None, &cons)
+        .expect("evaluation failed");
+      if s.len() == 1 {
+        assert_eq!(s.to_string(), "34.56")
+      } else {
+        panic!("sequence is not a singleton")
+      }
+    }
 
     #[test]
     fn literal_bool() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::Boolean(false))];
-      let s = evaluate(&dc, None, None, &cons)
+      let e = Evaluator::new(None);
+      let cons = vec![Constructor::Literal(Value::from(false))];
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -3083,9 +3129,9 @@ mod tests {
 
     #[test]
     fn literal_double() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::Double(4.56))];
-      let s = evaluate(&dc, None, None, &cons)
+      let e = Evaluator::new(None);
+      let cons = vec![Constructor::Literal(Value::from(4.56))];
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 4.56)
@@ -3096,12 +3142,12 @@ mod tests {
 
     #[test]
     fn sequence_literal() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
-	  Constructor::Literal(Value::String("foo".to_string())),
-	  Constructor::Literal(Value::String("bar".to_string())),
+	  Constructor::Literal(Value::from("foo")),
+	  Constructor::Literal(Value::from("bar")),
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 2 {
         assert_eq!(s.to_string(), "foobar")
@@ -3112,12 +3158,12 @@ mod tests {
 
     #[test]
     fn sequence_literal_mixed() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
-	  Constructor::Literal(Value::String("foo".to_string())),
+	  Constructor::Literal(Value::from("foo")),
 	  Constructor::Literal(Value::Integer(123)),
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 2 {
         assert_eq!(s.to_string(), "foo123")
@@ -3128,10 +3174,10 @@ mod tests {
 
     #[test]
     fn context_item() {
-      let dc = DynamicContext::new(None);
-      let s = vec![Rc::new(Item::Value(Value::String("foobar".to_string())))];
+      let e = Evaluator::new(None);
+      let s = vec![Rc::new(Item::Value(Value::from("foobar")))];
       let cons = vec![Constructor::ContextItem];
-      let result = evaluate(&dc, Some(s), Some(0), &cons)
+      let result = e.evaluate(Some(s), Some(0), &cons)
         .expect("evaluation failed");
       if result.len() == 1 {
         assert_eq!(result[0].to_string(), "foobar")
@@ -3142,12 +3188,12 @@ mod tests {
 
     #[test]
     fn context_item_2() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::ContextItem,
 	  Constructor::ContextItem,
 	];
-      let result = evaluate(&dc, Some(vec![Rc::new(Item::Value(Value::String("foobar".to_string())))]), Some(0), &cons)
+      let result = e.evaluate(Some(vec![Rc::new(Item::Value(Value::from("foobar")))]), Some(0), &cons)
         .expect("evaluation failed");
       if result.len() == 2 {
         assert_eq!(result.to_string(), "foobarfoobar")
@@ -3158,16 +3204,16 @@ mod tests {
 
     #[test]
     fn or() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::Or(
 	    vec![
-	      vec![Constructor::Literal(Value::Boolean(true))],
-	      vec![Constructor::Literal(Value::Boolean(false))],
+	      vec![Constructor::Literal(Value::from(true))],
+	      vec![Constructor::Literal(Value::from(false))],
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -3179,16 +3225,16 @@ mod tests {
 
     #[test]
     fn and() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::And(
 	    vec![
-	      vec![Constructor::Literal(Value::Boolean(true))],
-	      vec![Constructor::Literal(Value::Boolean(false))],
+	      vec![Constructor::Literal(Value::from(true))],
+	      vec![Constructor::Literal(Value::from(false))],
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -3200,7 +3246,7 @@ mod tests {
 
     #[test]
     fn value_comparison_int_true() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
@@ -3210,7 +3256,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -3221,7 +3267,7 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_int_false() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
@@ -3231,7 +3277,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -3242,17 +3288,17 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_true() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
+	      vec![Constructor::Literal(Value::from("foo"))],
+	      vec![Constructor::Literal(Value::from("foo"))],
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -3263,17 +3309,17 @@ mod tests {
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_false() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::ValueComparison(
 	    Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![Constructor::Literal(Value::String("bar".to_string()))],
+	      vec![Constructor::Literal(Value::from("foo"))],
+	      vec![Constructor::Literal(Value::from("bar"))],
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
         .expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -3287,20 +3333,20 @@ mod tests {
 
     #[test]
     fn general_comparison_string_true() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::GeneralComparison(
             Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
+	      vec![Constructor::Literal(Value::from("foo"))],
 	      vec![
-	        Constructor::Literal(Value::String("bar".to_string())),
-	        Constructor::Literal(Value::String("foo".to_string())),
+	        Constructor::Literal(Value::from("bar")),
+	        Constructor::Literal(Value::from("foo")),
 	      ]
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), true)
@@ -3310,20 +3356,20 @@ mod tests {
     }
     #[test]
     fn general_comparison_string_false() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::GeneralComparison(
             Operator::Equal,
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
+	      vec![Constructor::Literal(Value::from("foo"))],
 	      vec![
-	        Constructor::Literal(Value::String("bar".to_string())),
-	        Constructor::Literal(Value::String("oof".to_string())),
+	        Constructor::Literal(Value::from("bar")),
+	        Constructor::Literal(Value::from("oof")),
 	      ]
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_bool(), false)
@@ -3335,19 +3381,19 @@ mod tests {
 
     #[test]
     fn concat() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::Concat(
 	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
+	      vec![Constructor::Literal(Value::from("foo"))],
 	      vec![
-	        Constructor::Literal(Value::String("bar".to_string())),
-	        Constructor::Literal(Value::String("oof".to_string())),
+	        Constructor::Literal(Value::from("bar")),
+	        Constructor::Literal(Value::from("oof")),
 	      ]
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s.to_string(), "foobaroof")
@@ -3358,7 +3404,7 @@ mod tests {
 
     #[test]
     fn range() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::Range(
 	    vec![
@@ -3367,7 +3413,7 @@ mod tests {
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 10 {
         assert_eq!(s.to_string(), "0123456789")
@@ -3379,22 +3425,22 @@ mod tests {
 
     #[test]
     fn arithmetic_double_add() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let cons = vec![
 	  Constructor::Arithmetic(
 	    vec![
 	      ArithmeticOperand{
 	        op: ArithmeticOperator::Noop,
-	        operand: vec![Constructor::Literal(Value::Double(1.0))]
+	        operand: vec![Constructor::Literal(Value::from(1.0))]
 	      },
 	      ArithmeticOperand{
 	        op: ArithmeticOperator::Add,
-	        operand: vec![Constructor::Literal(Value::Double(1.0))]
+	        operand: vec![Constructor::Literal(Value::from(1.0))]
 	      }
 	    ]
 	  )
 	];
-      let s = evaluate(&dc, None, None, &cons)
+      let s = e.evaluate(None, None, &cons)
 	.expect("evaluation failed");
       if s.len() == 1 {
         assert_eq!(s[0].to_double(), 2.0)
@@ -3408,38 +3454,38 @@ mod tests {
 
     #[test]
     fn function_call_position() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("position".to_string(), vec![], Some(func_position)),
 	vec![]
       );
       let s = vec![
-        Rc::new(Item::Value(Value::String("a".to_string()))),
-        Rc::new(Item::Value(Value::String("b".to_string()))),
+        Rc::new(Item::Value(Value::from("a"))),
+        Rc::new(Item::Value(Value::from("b"))),
       ];
       let vc = vec![c];
-      let r = evaluate(&dc, Some(s), Some(1), &vc).expect("evaluation failed");
+      let r = e.evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "2")
     }
     #[test]
     fn function_call_last() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("last".to_string(), vec![], Some(func_last)),
 	vec![]
       );
       let s = vec![
-        Rc::new(Item::Value(Value::String("a".to_string()))),
-        Rc::new(Item::Value(Value::String("b".to_string()))),
-        Rc::new(Item::Value(Value::String("c".to_string()))),
+        Rc::new(Item::Value(Value::from("a"))),
+        Rc::new(Item::Value(Value::from("b"))),
+        Rc::new(Item::Value(Value::from("c"))),
       ];
       let vc = vec![c];
-      let r = evaluate(&dc, Some(s), Some(1), &vc).expect("evaluation failed");
+      let r = e.evaluate(Some(s), Some(1), &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "3")
     }
     #[test]
     fn function_call_count() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new(
 	  "count".to_string(),
@@ -3448,243 +3494,243 @@ mod tests {
 	),
 	vec![
 	  vec![
-            Constructor::Literal(Value::String("a".to_string())),
-            Constructor::Literal(Value::String("b".to_string())),
-            Constructor::Literal(Value::String("c".to_string())),
+            Constructor::Literal(Value::from("a")),
+            Constructor::Literal(Value::from("b")),
+            Constructor::Literal(Value::from("c")),
 	  ]
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "3")
     }
     #[test]
     fn function_call_string_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("string".to_string(), vec![], Some(func_string)),
 	vec![
 	  vec![
-            Constructor::Literal(Value::String("a".to_string())),
-            Constructor::Literal(Value::String("b".to_string())),
-            Constructor::Literal(Value::String("c".to_string())),
+            Constructor::Literal(Value::from("a")),
+            Constructor::Literal(Value::from("b")),
+            Constructor::Literal(Value::from("c")),
 	  ]
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "abc")
     }
     #[test]
     fn function_call_concat_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("concat".to_string(), vec![], Some(func_concat)),
 	vec![
-	  vec![Constructor::Literal(Value::String("a".to_string()))],
-          vec![Constructor::Literal(Value::String("b".to_string()))],
-          vec![Constructor::Literal(Value::String("c".to_string()))],
+	  vec![Constructor::Literal(Value::from("a"))],
+          vec![Constructor::Literal(Value::from("b"))],
+          vec![Constructor::Literal(Value::from("c"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "abc")
     }
     #[test]
     fn function_call_startswith_pos() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("a".to_string()))],
+	  vec![Constructor::Literal(Value::from("abc"))],
+          vec![Constructor::Literal(Value::from("a"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_bool(), true)
     }
     #[test]
     fn function_call_startswith_neg() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("b".to_string()))],
+	  vec![Constructor::Literal(Value::from("abc"))],
+          vec![Constructor::Literal(Value::from("b"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_bool(), false)
     }
     #[test]
     fn function_call_contains_pos() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("contains".to_string(), vec![], Some(func_contains)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("b".to_string()))],
+	  vec![Constructor::Literal(Value::from("abc"))],
+          vec![Constructor::Literal(Value::from("b"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_bool(), true)
     }
     #[test]
     fn function_call_contains_neg() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("contains".to_string(), vec![], Some(func_contains)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("d".to_string()))],
+	  vec![Constructor::Literal(Value::from("abc"))],
+          vec![Constructor::Literal(Value::from("d"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_bool(), false)
     }
     #[test]
     fn function_call_substring_2() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring".to_string(), vec![], Some(func_substring)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
+	  vec![Constructor::Literal(Value::from("abc"))],
           vec![Constructor::Literal(Value::Integer(2))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "bc")
     }
     #[test]
     fn function_call_substring_3() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring".to_string(), vec![], Some(func_substring)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcde"))],
           vec![Constructor::Literal(Value::Integer(2))],
           vec![Constructor::Literal(Value::Integer(3))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "bcd")
     }
     #[test]
     fn function_call_substring_before_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("bc".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcde"))],
+          vec![Constructor::Literal(Value::from("bc"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "a")
     }
     #[test]
     fn function_call_substring_before_neg() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("fg".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcde"))],
+          vec![Constructor::Literal(Value::from("fg"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "")
     }
     #[test]
     fn function_call_substring_after_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("bc".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcde"))],
+          vec![Constructor::Literal(Value::from("bc"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "de")
     }
     #[test]
     fn function_call_substring_after_neg_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("fg".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcde"))],
+          vec![Constructor::Literal(Value::from("fg"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "")
     }
     #[test]
     fn function_call_substring_after_neg_2() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("de".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcde"))],
+          vec![Constructor::Literal(Value::from("de"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "")
     }
     #[test]
     fn function_call_normalizespace() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("normalize-space".to_string(), vec![], Some(func_normalizespace)),
 	vec![
-	  vec![Constructor::Literal(Value::String("	a b   c\nd e 	".to_string()))],
+	  vec![Constructor::Literal(Value::from("	a b   c\nd e 	"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "abcde")
     }
     #[test]
     fn function_call_translate() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("translate".to_string(), vec![], Some(func_translate)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcdeabcde".to_string()))],
-	  vec![Constructor::Literal(Value::String("ade".to_string()))],
-	  vec![Constructor::Literal(Value::String("XY".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcdeabcde"))],
+	  vec![Constructor::Literal(Value::from("ade"))],
+	  vec![Constructor::Literal(Value::from("XY"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.to_string(), "XbcYXbcY")
     }
     // TODO: test using non-ASCII characters
     #[test]
     fn function_call_boolean_true() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("boolean".to_string(), vec![], Some(func_boolean)),
 	vec![
-	  vec![Constructor::Literal(Value::String("abcdeabcde".to_string()))],
+	  vec![Constructor::Literal(Value::from("abcdeabcde"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
@@ -3693,7 +3739,7 @@ mod tests {
     }
     #[test]
     fn function_call_boolean_false() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("boolean".to_string(), vec![], Some(func_boolean)),
 	vec![
@@ -3701,7 +3747,7 @@ mod tests {
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
@@ -3710,15 +3756,15 @@ mod tests {
     }
     #[test]
     fn function_call_not_false() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("not".to_string(), vec![], Some(func_not)),
 	vec![
-	  vec![Constructor::Literal(Value::Boolean(true))],
+	  vec![Constructor::Literal(Value::from(true))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
@@ -3727,7 +3773,7 @@ mod tests {
     }
     #[test]
     fn function_call_not_true() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("not".to_string(), vec![], Some(func_not)),
 	vec![
@@ -3735,7 +3781,7 @@ mod tests {
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
@@ -3744,14 +3790,14 @@ mod tests {
     }
     #[test]
     fn function_call_true() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("true".to_string(), vec![], Some(func_true)),
 	vec![
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
@@ -3760,14 +3806,14 @@ mod tests {
     }
     #[test]
     fn function_call_false() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("false".to_string(), vec![], Some(func_false)),
 	vec![
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
@@ -3776,15 +3822,15 @@ mod tests {
     }
     #[test]
     fn function_call_number_int() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("number".to_string(), vec![], Some(func_number)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123".to_string()))]
+	  vec![Constructor::Literal(Value::from("123"))]
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
@@ -3793,15 +3839,15 @@ mod tests {
     }
     #[test]
     fn function_call_number_double() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("number".to_string(), vec![], Some(func_number)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))]
+	  vec![Constructor::Literal(Value::from("123.456"))]
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
@@ -3811,19 +3857,19 @@ mod tests {
     // TODO: test NaN result
     #[test]
     fn function_call_sum() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("sum".to_string(), vec![], Some(func_sum)),
 	vec![
-	    vec![Constructor::Literal(Value::String("123.456".to_string())),
-	         Constructor::Literal(Value::String("10".to_string())),
-	         Constructor::Literal(Value::String("-20".to_string())),
-	         Constructor::Literal(Value::String("0".to_string())),
+	    vec![Constructor::Literal(Value::from("123.456")),
+	         Constructor::Literal(Value::from("10")),
+	         Constructor::Literal(Value::from("-20")),
+	         Constructor::Literal(Value::from("0")),
 	    ],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 - 20.0),
@@ -3832,15 +3878,15 @@ mod tests {
     }
     #[test]
     fn function_call_floor() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("floor".to_string(), vec![], Some(func_floor)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
+	  vec![Constructor::Literal(Value::from("123.456"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
@@ -3849,15 +3895,15 @@ mod tests {
     }
     #[test]
     fn function_call_ceiling() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("ceiling".to_string(), vec![], Some(func_ceiling)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
+	  vec![Constructor::Literal(Value::from("123.456"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
@@ -3866,15 +3912,15 @@ mod tests {
     }
     #[test]
     fn function_call_round_down() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("round".to_string(), vec![], Some(func_round)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
+	  vec![Constructor::Literal(Value::from("123.456"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
@@ -3883,15 +3929,15 @@ mod tests {
     }
     #[test]
     fn function_call_round_up() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("round".to_string(), vec![], Some(func_round)),
 	vec![
-	  vec![Constructor::Literal(Value::String("123.654".to_string()))],
+	  vec![Constructor::Literal(Value::from("123.654"))],
         ]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match *r[0] {
         Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
@@ -3903,13 +3949,13 @@ mod tests {
 
     #[test]
     fn function_call_current_date() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("current-date".to_string(), vec![], Some(func_current_date)),
 	vec![]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match &*r[0] {
         Item::Value(Value::Date(d)) => {
@@ -3923,13 +3969,13 @@ mod tests {
 
     #[test]
     fn function_call_current_time() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("current-time".to_string(), vec![], Some(func_current_time)),
 	vec![]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match &*r[0] {
         Item::Value(Value::Time(t)) => {
@@ -3943,13 +3989,13 @@ mod tests {
 
     #[test]
     fn function_call_current_date_time() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("current-dateTime".to_string(), vec![], Some(func_current_date_time)),
 	vec![]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match &*r[0] {
         Item::Value(Value::DateTime(dt)) => {
@@ -3966,16 +4012,16 @@ mod tests {
 
     #[test]
     fn function_call_format_date() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("format-date".to_string(), vec![], Some(func_format_date)),
 	vec![
-	  vec![Constructor::Literal(Value::String("2022-01-03".to_string()))],
-	  vec![Constructor::Literal(Value::String("[D] [M] [Y]".to_string()))],
+	  vec![Constructor::Literal(Value::from("2022-01-03"))],
+	  vec![Constructor::Literal(Value::from("[D] [M] [Y]"))],
 	]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match &*r[0] {
         Item::Value(Value::String(d)) => assert_eq!(d, "03 01 2022"),
@@ -3985,16 +4031,16 @@ mod tests {
 
     #[test]
     fn function_call_format_date_time() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("format-dateTime".to_string(), vec![], Some(func_format_date_time)),
 	vec![
-	  vec![Constructor::Literal(Value::String("2022-01-03T04:05:06.789+10:00".to_string()))],
-	  vec![Constructor::Literal(Value::String("[H]:[m] [D]/[M]/[Y]".to_string()))],
+	  vec![Constructor::Literal(Value::from("2022-01-03T04:05:06.789+10:00"))],
+	  vec![Constructor::Literal(Value::from("[H]:[m] [D]/[M]/[Y]"))],
 	]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match &*r[0] {
         Item::Value(Value::String(d)) => assert_eq!(d, "04:05 03/01/2022"),
@@ -4004,16 +4050,16 @@ mod tests {
 
     #[test]
     fn function_call_format_time() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = Constructor::FunctionCall(
         Function::new("format-time".to_string(), vec![], Some(func_format_time)),
 	vec![
-	  vec![Constructor::Literal(Value::String("04:05:06.789".to_string()))],
-	  vec![Constructor::Literal(Value::String("[H]:[m]:[s]".to_string()))],
+	  vec![Constructor::Literal(Value::from("04:05:06.789"))],
+	  vec![Constructor::Literal(Value::from("[H]:[m]:[s]"))],
 	]
       );
       let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
+      let r = e.evaluate(None, None, &vc).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       match &*r[0] {
         Item::Value(Value::String(d)) => assert_eq!(d, "04:05:06"),
@@ -4024,34 +4070,34 @@ mod tests {
     // Variables
     #[test]
     fn var_ref() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = vec![
-        Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::String("my variable".to_string()))]),
+        Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::from("my variable"))]),
 	Constructor::VariableReference("foo".to_string()),
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
+      let r = e.evaluate(None, None, &c).expect("evaluation failed");
       assert_eq!(r.to_string(), "my variable")
     }
 
     // Loops
     #[test]
     fn loop_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       // This is "for $x in ('a', 'b', 'c') return $x"
       let c = vec![
         Constructor::Loop(
 	  vec![Constructor::VariableDeclaration(
 	    "x".to_string(),
 	    vec![
-	      Constructor::Literal(Value::String("a".to_string())),
-	      Constructor::Literal(Value::String("b".to_string())),
-	      Constructor::Literal(Value::String("c".to_string())),
+	      Constructor::Literal(Value::from("a")),
+	      Constructor::Literal(Value::from("b")),
+	      Constructor::Literal(Value::from("c")),
 	    ]
 	  )],
 	  vec![Constructor::VariableReference("x".to_string())]
 	)
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
+      let r = e.evaluate(None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 3);
       assert_eq!(r.to_string(), "abc")
     }
@@ -4059,7 +4105,7 @@ mod tests {
     // Switch
     #[test]
     fn switch_1() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       // implements "if (1) then 'one' else 'not one'"
       let c = vec![
         Constructor::Switch(
@@ -4068,19 +4114,19 @@ mod tests {
 	      Constructor::Literal(Value::Integer(1))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
+	      Constructor::Literal(Value::from("one"))
 	    ]
 	  ],
-	  vec![Constructor::Literal(Value::String("not one".to_string()))]
+	  vec![Constructor::Literal(Value::from("not one"))]
 	)
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
+      let r = e.evaluate(None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "one")
     }
     #[test]
     fn switch_2() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       // implements "if (0) then 'one' else 'not one'"
       let c = vec![
         Constructor::Switch(
@@ -4089,19 +4135,19 @@ mod tests {
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
+	      Constructor::Literal(Value::from("one"))
 	    ]
 	  ],
-	  vec![Constructor::Literal(Value::String("not one".to_string()))]
+	  vec![Constructor::Literal(Value::from("not one"))]
 	)
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
+      let r = e.evaluate(None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "not one")
     }    
     #[test]
     fn switch_3() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = vec![
         Constructor::Switch(
 	  vec![
@@ -4109,32 +4155,32 @@ mod tests {
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
+	      Constructor::Literal(Value::from("one"))
 	    ],
 	    vec![
 	      Constructor::Literal(Value::Integer(1))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("two".to_string()))
+	      Constructor::Literal(Value::from("two"))
 	    ],
 	    vec![
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("three".to_string()))
+	      Constructor::Literal(Value::from("three"))
 	    ],
 	  ],
-	  vec![Constructor::Literal(Value::String("not any".to_string()))]
+	  vec![Constructor::Literal(Value::from("not any"))]
 	)
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
+      let r = e.evaluate(None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "two")
     }
     // The first clause to pass should return the result
     #[test]
     fn switch_4() {
-      let dc = DynamicContext::new(None);
+      let e = Evaluator::new(None);
       let c = vec![
         Constructor::Switch(
 	  vec![
@@ -4142,25 +4188,25 @@ mod tests {
 	      Constructor::Literal(Value::Integer(0))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
+	      Constructor::Literal(Value::from("one"))
 	    ],
 	    vec![
 	      Constructor::Literal(Value::Integer(1))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("two".to_string()))
+	      Constructor::Literal(Value::from("two"))
 	    ],
 	    vec![
 	      Constructor::Literal(Value::Integer(1))
 	    ],
 	    vec![
-	      Constructor::Literal(Value::String("three".to_string()))
+	      Constructor::Literal(Value::from("three"))
 	    ],
 	  ],
-	  vec![Constructor::Literal(Value::String("not any".to_string()))]
+	  vec![Constructor::Literal(Value::from("not any"))]
 	)
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
+      let r = e.evaluate(None, None, &c).expect("evaluation failed");
       assert_eq!(r.len(), 1);
       assert_eq!(r.to_string(), "two")
     }    

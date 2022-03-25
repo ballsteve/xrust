@@ -67,7 +67,7 @@ pub mod xpath;
 pub use xpath::parse;
 
 pub mod evaluate;
-pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
+pub use evaluate::{StaticContext, Evaluator, Constructor};
 
 pub mod xslt;
 pub use xslt::from_document;
