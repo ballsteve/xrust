@@ -4,9 +4,8 @@
 //! XML 1.1, see https://www.w3.org/TR/xml11/
 //!
 //! This is a very simple, minimalist parser of XML. It excludes:
-//!	XML declaration
 //!	DTDs (and therefore entities)
-//!	CDATA sections
+
 
 extern crate nom;
 
@@ -41,6 +40,7 @@ pub struct XMLDocument {
   pub prologue: Vec<XMLNode>,
   pub content: Vec<XMLNode>,
   pub epilogue: Vec<XMLNode>,
+  pub xmldecl: Option<XMLdecl>
 }
 
 #[derive(Clone, PartialEq)]
@@ -52,6 +52,13 @@ pub enum XMLNode {
   Comment(Value), // Comment value is a string
 }
 
+#[derive(PartialEq)]
+pub struct XMLdecl {
+    version: String,
+    encoding: Option<String>,
+    standalone: Option<String>
+}
+
 // document ::= ( prolog element misc*)
 fn document(input: &str) -> IResult<&str, XMLDocument> {
   map (
@@ -61,10 +68,13 @@ fn document(input: &str) -> IResult<&str, XMLDocument> {
       opt(misc),
     )),
     |(p, e, m)| {
+      let pr = p.unwrap_or((None, vec![]));
+
       XMLDocument {
-        prologue: p.unwrap_or(vec![]),
-	content: vec![e],
-	epilogue: m.unwrap_or(vec![]),
+	    content: vec![e],
+	    epilogue: m.unwrap_or(vec![]),
+        xmldecl: pr.0,
+        prologue: pr.1
       }
     }
   )
@@ -72,16 +82,75 @@ fn document(input: &str) -> IResult<&str, XMLDocument> {
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
-fn prolog(input: &str) -> IResult<&str, Vec<XMLNode>> {
-  map(
-    tag("not yet implemented"),
-    |_| {
-      //vec![Node::new(NodeType::ProcessingInstruction).set_name("xml".to_string()).set_value("not yet implemented".to_string())]
-      vec![]
-    }
-  )
-  (input)
+fn prolog(input: &str) -> IResult<&str, (Option<XMLdecl>, Vec<XMLNode>)> {
+    map(
+        tuple((
+            opt(xmldecl),
+            opt(doctypedecl)
+            )),
+        |(x, dtd)| (x, vec![])
+    )(input)
 }
+
+fn xmldecl(input: &str) -> IResult<&str, XMLdecl> {
+    map(
+        tuple((
+            tag("<?xml"),
+            multispace0,
+            map(
+                tuple((
+                    tag("version"),
+                    multispace0,
+                    tag("="),
+                    multispace0,
+                    delimited_string
+                )), | (_,_,_,_,v) | v
+            ),
+            multispace0,
+            opt(
+                map(
+                tuple((
+                    tag("encoding"),
+                    multispace0,
+                    tag("="),
+                    multispace0,
+                    delimited_string
+                )), | (_,_,_,_,e) | e
+            )),
+            multispace0,
+            opt(
+                map(
+                tuple((
+                    tag("standalone"),
+                    multispace0,
+                    tag("="),
+                    multispace0,
+                    delimited_string
+                )), | (_,_,_,_,s) | s
+            )),
+            multispace0,
+            tag("?>")
+        )),
+        |(_,_, ver, _, enc,_,sta,_,_)| {
+            XMLdecl{
+                version: ver,
+                encoding: enc,
+                standalone: sta
+            }
+        }
+    )(input)
+}
+
+fn doctypedecl(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    map(
+        tag("not yet implemented"),
+        |_| {
+            vec![]
+        }
+    )
+        (input)
+}
+
 
 // Element ::= EmptyElemTag | STag content ETag
 fn element(input: &str) -> IResult<&str, XMLNode> {
@@ -600,6 +669,23 @@ mod tests {
             }
             _ => {
                 panic!("root is not an element node")
+            }
+        }
+    }
+
+    #[test]
+    fn xmldeclaration() {
+        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><doc/>"#;
+        let result = parse(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc/>\"");
+        assert_eq!(result.prologue.len(), 0);
+        assert_eq!(result.epilogue.len(), 0);
+        assert_eq!(result.content.len(), 1);
+        match result.xmldecl {
+            None => {panic!("XML Declaration not parsed")},
+            Some(XMLdecl { version, encoding, standalone  }) => {
+                assert_eq!(version, "1.0");
+                assert_eq!(encoding, Some("UTF-8".to_string()));
+                assert_eq!(standalone, None);
             }
         }
     }
