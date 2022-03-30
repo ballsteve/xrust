@@ -8,6 +8,8 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 
 use std::rc::Rc;
 use std::convert::TryFrom;
+use url::Url;
+//use reqwest::blocking::get;
 use crate::xdmerror::*;
 use crate::qname::*;
 use crate::item::*;
@@ -18,12 +20,20 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Document] into an Evaluator.
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
-pub fn from_document<'a>(
+pub fn from_document<'a, F1>(
   d: Rc<dyn Document>,
   resultdoc: &'a dyn Document,
-  sc: &mut StaticContext
-) -> Result<Evaluator<'a>, Error> {
+  sc: &mut StaticContext,
+  b: Option<Url>,
+  mut p: F1,		// A closure that parses a string to a dyn Document
+) -> Result<Evaluator<'a>, Error>
+where
+  F1: FnMut(String) -> Result<Rc<dyn Document>, Error>
+{
     let mut ev = Evaluator::new(Some(resultdoc));
+    if b.is_some() {
+      ev.set_baseurl(b.unwrap())
+    }
 
     // Check that this is a valid XSLT stylesheet
     let root = match d.get_root_element() {
@@ -128,8 +138,20 @@ pub fn from_document<'a>(
       		  c.to_name().get_nsuri_ref() == Some(XSLTNS) &&
 		  c.to_name().get_localname() == "include")
     {
-      if let Some(_h) = i.get_attribute(&QualifiedName::new(None, None, String::from("href"))) {
-        println!("do something here");
+      if let Some(h) = i.get_attribute(&QualifiedName::new(None, None, String::from("href"))) {
+        let url = match ev.baseurl().map_or_else(
+	  || Url::parse(h.to_string().as_str()),
+	  |base| base.join(h.to_string().as_str()),
+	) {
+	  Ok(u) => u,
+	  Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to parse href URL".to_string()}),
+	};
+	let xml = reqwest::blocking::get(url.to_string())
+	    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to fetch href URL".to_string()})?
+	    .text()
+	      .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?;
+	let _mod = p(xml)?;
+	println!("succesfully fetched included stylesheet module");
       } else {
 	  return Result::Err(Error{kind: ErrorKind::TypeError, message: "include does not have a href attribute".to_string()})
       }

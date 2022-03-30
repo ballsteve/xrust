@@ -18,7 +18,7 @@ use crate::qname::*;
 use crate::parsepicture::parse as picture_parse;
 use crate::xdmerror::*;
 use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator, OutputDefinition};
-use http::Uri;
+use url::Url;
 
 // The dynamic evaluation context.
 //
@@ -29,7 +29,7 @@ pub struct DynamicContext {
   depth: RefCell<usize>,
   current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
   current_group: RefCell<Vec<Option<Sequence>>>,
-  deps: RefCell<Vec<Uri>>,	// URIs for included/imported stylesheets
+  deps: RefCell<Vec<Url>>,	// URIs for included/imported stylesheets
 }
 
 impl DynamicContext {
@@ -44,11 +44,11 @@ impl DynamicContext {
   }
   /// Retrieve the dependencies for the stylesheet
   // TODO: make this an iterator
-  pub fn dependencies(&self) -> Vec<Uri> {
+  pub fn dependencies(&self) -> Vec<Url> {
     self.deps.borrow().clone()
   }
   /// Add a dependency
-  pub fn add_dependency(&self, u: Uri) {
+  pub fn add_dependency(&self, u: Url) {
     self.deps.borrow_mut().push(u);
   }
 
@@ -118,7 +118,7 @@ pub struct Evaluator<'a> {
   //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
   resultdoc: Option<&'a dyn Document>,
   od: OutputDefinition,	// Output definition for the final result tree
-  base: Option<Uri>,	// The base URI of the primary stylesheet
+  base: Option<Url>,	// The base URL of the primary stylesheet
 }
 
 impl<'a> Evaluator<'a> {
@@ -150,12 +150,12 @@ impl<'a> Evaluator<'a> {
   }
 
   /// Base URI
-  pub fn baseuri(self) -> Option<Uri> {
+  pub fn baseurl(&self) -> Option<Url> {
     self.base.clone()
   }
-  /// Set the Base URI
-  pub fn set_baseuri(&mut self, uri: Uri) {
-    self.base = Some(uri);
+  /// Set the Base URL
+  pub fn set_baseurl(&mut self, url: Url) {
+    self.base = Some(url);
   }
 
   /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.

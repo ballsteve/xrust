@@ -25,7 +25,8 @@ let istyle = Rc::new(style.get_doc());
 let mut sc = StaticContext::new_with_xslt_builtins();
 let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
 XDMTreeNode::new(rd.clone());
-let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+  .expect("failed to compile stylesheet");
 
 // Prime the stylesheet evaluation by finding the template for the document root
 // and making the document root the initial context
@@ -2462,7 +2463,14 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(
+        istyle,
+	&rd,
+	&mut sc,
+	None,
+	|s| Ok(Rc::new(from(s.as_str())?.get_doc())),
+      )
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2491,7 +2499,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+	.expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2521,7 +2530,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+	.expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2549,7 +2559,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2578,7 +2589,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2607,7 +2619,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2637,7 +2650,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2667,7 +2681,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2697,7 +2712,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2727,7 +2743,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2757,7 +2774,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2786,7 +2804,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2819,7 +2838,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2852,7 +2872,8 @@ mod tests {
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -2935,7 +2956,8 @@ Level1
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle, &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle, &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3003,7 +3025,8 @@ Level1
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3052,7 +3075,8 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3083,7 +3107,8 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3114,7 +3139,8 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3148,7 +3174,8 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3181,7 +3208,8 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
@@ -3215,7 +3243,8 @@ four
       // Setup dynamic context with result document
       let rd: XDMTree = Rc::new(RefCell::new(StableGraph::new()));
       XDMTreeNode::new(rd.clone());
-      let ev = from_document(istyle.clone(), &rd, &mut sc).expect("failed to compile stylesheet");
+      let ev = from_document(istyle.clone(), &rd, &mut sc, None, |s| Ok(Rc::new(from(s.as_str())?.get_doc())))
+        .expect("failed to compile stylesheet");
 
       // Prime the stylesheet evaluation by finding the template for the document root
       // and making the document root the initial context
