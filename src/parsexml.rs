@@ -88,7 +88,7 @@ fn prolog(input: &str) -> IResult<&str, (Option<XMLdecl>, Vec<XMLNode>)> {
             opt(xmldecl),
             opt(doctypedecl)
             )),
-        |(x, dtd)| (x, vec![])
+        |(x, _dtd)| (x, vec![])
     )(input)
 }
 

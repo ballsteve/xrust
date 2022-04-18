@@ -390,6 +390,16 @@ impl Node for XDMTreeNode {
     self.append_child_node(t)?;
     Ok(())
   }
+  fn insert_before(&self, c: &dyn Any) -> Result<(), Error> {
+    let e = match c.downcast_ref::<XDMTreeNode>() {
+      Some(d) => d,
+      None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "node must be a XDMTreeNode".to_string()}),
+    };
+    match e.node_type() {
+      NodeType::Attribute => Ok(self.add_attribute(e.clone())?),
+      _ => Ok(self.append_child_node(e.clone())?)
+    }
+  }
   fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error> {
     let e = match a.downcast_ref::<XDMTreeNode>() {
       Some(d) => d,

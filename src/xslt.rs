@@ -150,8 +150,8 @@ where
 	    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to fetch href URL".to_string()})?
 	    .text()
 	      .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?;
-	let _mod = p(xml)?;
-	println!("succesfully fetched included stylesheet module");
+	let _module = p(xml)?;
+	
       } else {
 	  return Result::Err(Error{kind: ErrorKind::TypeError, message: "include does not have a href attribute".to_string()})
       }

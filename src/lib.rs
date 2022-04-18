@@ -43,6 +43,10 @@ We need your help!
 
 */
 
+#![feature(test)]
+
+extern crate test;
+
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
@@ -56,6 +60,8 @@ pub mod xdmgraph;
 
 pub mod impls {
   pub mod graphitem;
+
+  pub mod ga;
 }
 
 mod parsecommon;

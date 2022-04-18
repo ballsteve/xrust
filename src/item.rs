@@ -469,14 +469,26 @@ pub trait Node: Any {
   }
 
   /// Insert a Node as a child. The node is appended to the list of children. NB. If the element supplied is of a different concrete type to the Node then this will likely result in an error.
-  fn append_child(&self, c: &dyn Any) -> Result<(), Error>;
+  fn append_child(&self, _c: &dyn Any) -> Result<(), Error> {
+    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+  }
   /// Add a text node as a child.
-  fn append_text_child(&self, t: Value) -> Result<(), Error>;
-  // TODO: insert_before, replace_child
-  fn add_attribute_node(&self, a: &dyn Any) -> Result<(), Error>;
+  fn append_text_child(&self, _t: Value) -> Result<(), Error> {
+    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+  }
+  /// Insert a Node as a peer before this Node
+  fn insert_before(&self, _c: &dyn Any) -> Result<(), Error> {
+    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+  }
+  // TODO: replace_child
+  fn add_attribute_node(&self, _a: &dyn Any) -> Result<(), Error> {
+    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+  }
 
   /// Remove a node from its parent
-  fn remove(&self) -> Result<(), Error>;
+  fn remove(&self) -> Result<(), Error> {
+    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+  }
   // TODO: remove_child
 }
 
@@ -552,7 +564,7 @@ impl Iterator for PrecedingSibling {
   }
 }
 
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum NodeType {
   Document,
   Element,
@@ -574,6 +586,12 @@ impl NodeType {
       NodeType::Comment => "Comment",
       NodeType::Unknown => "--None--",
     }
+  }
+}
+
+impl Default for NodeType {
+  fn default() -> Self {
+    NodeType::Unknown
   }
 }
 

@@ -147,6 +147,66 @@ impl XDMTreeNode {
     }
   }
 
+  pub fn insert_before_node(&self, child: XDMTreeNode) -> Result<(), Error> {
+    // First, child must not be an attribute
+    match child.g.borrow()[child.n] {
+      NodeType::Attribute(_, _) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "cannot append an attribute node".to_string()}),
+      _ => {}
+    }
+
+    // Are the two nodes in the same Graph?
+    // If not, make a deep-copy of the child
+    let nchild: XDMTreeNode;
+    if Rc::ptr_eq(&self.g, &child.g) {
+      nchild = child;
+    } else {
+      match child.g.borrow()[child.n] {
+        NodeType::Text(ref v) => {
+	  nchild = self.new_value_node(v.clone());
+	}
+	_ => {
+	  // TODO
+	  nchild = self.new_element_node(QualifiedName::new(None, None, "TODO".to_string()));
+	}
+      }
+    }
+      println!("unfinished {}", nchild.get_name().to_string());
+Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not finished".to_string()})
+    // Detach child from all other nodes
+
+    // There must be a parent
+//    let parent = self.ancestor_iter().nth(0).unwrap();
+//    nchild.add_edge(nchild.n, parent.n, EdgeType::Parent);
+
+    // Either this node is the first child of it's parent, or this node has a preceding sibling
+//    let h = self.node.g.borrow_mut();
+//    let v: Vec<Option<NodeIndex>> = h
+//      .edges_directed(self.node.n, Direction::Outgoing)
+//      .filter(|e| match e.weight() {
+//        EdgeType::PrecedingSibling => true,
+//	_ => false,
+//      })
+//      .map(|e| match h.edge_endpoints(e.id()) {
+//        Some((_, t)) => Some(t),
+//	_ => None,
+//      })
+//      .collect();
+//    if v.len() == 1 {
+      // Not the first child
+      // Repoint v[0]'s next sibling pointer to child
+      // Repoint self's preceding sibling pointer to child
+      // Set child's preceding and following pointers
+//      h.add_edge(v[0].n, nchild.n, EdgeType::NextSibling);
+//      h.add_edge(self.n, nchild.n, EdgeType::PrecedingSibling);
+//      h.add_edge(nchild.n, v[0].n, EdgeType::PrecedingSibling);
+//      h.add_edge(nchild.n, self.n, EdgeType::NextSibling);
+//    } else {
+      // self is the first child, so c becomes the new first child
+      // Repoint parent's first child to child
+      // Set self's preceding sibling to child
+      // Set child's next sibling to self
+//    }
+  }
   pub fn append_child_node(&self, child: XDMTreeNode) -> Result<(), Error> {
     // First, child must not be an attribute
     match child.g.borrow()[child.n] {
@@ -783,12 +843,11 @@ impl Iterator for PrecedingSiblings {
       })
       .collect();
     if v.len() == 1 {
-      match v[0] {
-        Some(m) => {
-	  self.node.n = m;
-	  Some(self.node.clone())
-	}
-	None => None,
+      if let Some(m) = v[0] {
+	self.node.n = m;
+	Some(self.node.clone())
+      } else {
+        None
       }
     } else {
       None
@@ -941,6 +1000,7 @@ fn parse_node(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test::Bencher;
 
     #[test]
     fn new_doc() {
@@ -1237,5 +1297,44 @@ mod tests {
       let c = r.get_first_child().unwrap().get_first_child().unwrap().child_iter().nth(1).unwrap();
       c.remove_node();
       assert_eq!(r.to_xml_int(None, 0), "<Test><a><p></p><c></c></a></Test>");
+    }
+
+    #[test]
+    fn bench_test() {
+        let t = Rc::new(RefCell::new(StableGraph::new()));
+	let d = XDMTreeNode::new(t.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	(1..3).for_each(|i| {
+      	  let e = d.new_element_node(QualifiedName::new(None, None, String::from("Level-1")));
+      	  r.append_child_node(e.clone()).expect("failed to append element child");
+      	  (1..3).for_each(|j| {
+            let f = d.new_element_node(QualifiedName::new(None, None, String::from("Level-2")));
+	    let g = d.new_value_node(Value::from(format!("node {}-{}", i, j)));
+	    e.append_child_node(f.clone()).expect("unable to add text node");
+	    f.append_child_node(g.clone()).expect("unable to add Level-2 element");
+      	  });
+    	});
+	assert_eq!(d.to_xml_int(None, 0), "<Test><Level-1><Level-2>node 1-1</Level-2><Level-2>node 1-2</Level-2></Level-1><Level-1><Level-2>node 2-1</Level-2><Level-2>node 2-2</Level-2></Level-1></Test>")
+    }
+    #[bench]
+    fn bench_xdmgraph(b: &mut Bencher) {
+      b.iter(|| {
+        let t = Rc::new(RefCell::new(StableGraph::new()));
+	let d = XDMTreeNode::new(t.clone());
+	let r = d.new_element_node(QualifiedName::new(None, None, "Test".to_string()));
+	d.append_child_node(r.clone()).expect("unable to append child node");
+	(1..3).for_each(|i| {
+      	  let e = d.new_element_node(QualifiedName::new(None, None, String::from("Level-1")));
+      	  r.append_child_node(e.clone()).expect("failed to append element child");
+      	  (1..3).for_each(|j| {
+            let f = d.new_element_node(QualifiedName::new(None, None, String::from("Level-2")));
+	    let g = d.new_value_node(Value::from(format!("node {}-{}", i, j)));
+	    e.append_child_node(f.clone()).expect("unable to add text node");
+	    f.append_child_node(g.clone()).expect("unable to add Level-2 element");
+      	  });
+    	});
+	t
+      })
     }
 }
