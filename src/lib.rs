@@ -44,6 +44,7 @@ We need your help!
 */
 
 #![feature(test)]
+#![feature(associated_type_defaults)]
 
 extern crate test;
 
@@ -56,10 +57,10 @@ mod parsepicture;
 pub mod item;
 pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
 
-pub mod xdmgraph;
+//pub mod xdmgraph;
 
 pub mod impls {
-  pub mod graphitem;
+//  pub mod graphitem;
 
   pub mod ga;
 }
@@ -69,11 +70,11 @@ mod parsecommon;
 pub mod parsexml;
 //pub use parsexml::parse;
 
-pub mod xpath;
-pub use xpath::parse;
+//pub mod xpath;
+//pub use xpath::parse;
 
-pub mod evaluate;
-pub use evaluate::{StaticContext, Evaluator, Constructor};
+//pub mod evaluate;
+//pub use evaluate::{StaticContext, Evaluator, Constructor};
 
-pub mod xslt;
-pub use xslt::from_document;
+//pub mod xslt;
+//pub use xslt::from_document;

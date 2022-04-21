@@ -9,11 +9,6 @@ use core::fmt;
 use std::any::Any;
 use std::cmp::Ordering;
 use std::rc::Rc;
-use std::convert::TryFrom;
-use rust_decimal::Decimal;
-#[cfg(test)]
-use rust_decimal_macros::dec;
-use chrono::{Date, DateTime, Local};
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -38,9 +33,9 @@ pub trait SequenceTrait {
   /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
   fn to_int(&self) -> Result<i64, Error>;
   /// Push a [Document] to the [Sequence]
-  fn new_document(&mut self, d: Rc<dyn Document>);
+  fn new_document(&mut self, d: Box<dyn Document>);
   /// Push a [Node] to the [Sequence]
-  fn new_node(&mut self, d: Rc<dyn Node>);
+  fn new_node(&mut self, d: Box<dyn Document>, n: Box<dyn Node>);
   /// Push a [Value] to the [Sequence]
   fn new_value(&mut self, v: Value);
   /// Push an [Item] to the [Sequence]
@@ -81,12 +76,12 @@ impl SequenceTrait for Sequence {
     r
   }
   /// Push a [Document] on to the [Sequence]
-  fn new_document(&mut self, d: Rc<dyn Document>) {
+  fn new_document(&mut self, d: Box<dyn Document>) {
     self.push(Rc::new(Item::Document(d)));
   }
-  /// Push a [Node] on to the [Sequence]
-  fn new_node(&mut self, n: Rc<dyn Node>) {
-    self.push(Rc::new(Item::Node(n)));
+  /// Push a [Document]'s [Node] on to the [Sequence]
+  fn new_node(&mut self, d: Box<dyn Document>, n: Box<dyn Node>) {
+    self.push(Rc::new(Item::Node(d, n)));
   }
   /// Push a [Value] on to the [Sequence]
   fn new_value(&mut self, v: Value) {
@@ -106,7 +101,7 @@ impl SequenceTrait for Sequence {
     } else {
       match *self[0] {
         Item::Document(_) |
-        Item::Node(_) => true,
+        Item::Node(..) => true,
 	_ => {
 	  if self.len() == 1 {
 	    (*self[0]).to_bool()
@@ -129,17 +124,16 @@ impl SequenceTrait for Sequence {
 }
 
 /// An Item in a [Sequence]. Can be a [Node], Function or [Value].
-/// A [Document] is a special [Node].
 ///
-/// Nodes are a trait.
+/// [Document]s and [Node]s are dynamic trait objects. [Node]s can only exist in the context of a [Document].
 ///
 /// Functions are not yet implemented.
-#[derive(Clone)]
+//#[derive(Clone)]
 pub enum Item {
     /// A [Document]
-    Document(Rc<dyn Document>),
+    Document(Box<dyn Document>),
     /// A [Node]
-    Node(Rc<dyn Node>),
+    Node(Box<dyn Document>, Box<dyn Node>),
 
     /// Functions are not yet supported
     Function,
@@ -148,42 +142,12 @@ pub enum Item {
     Value(Value),
 }
 
-// Comparison operators
-#[derive(Copy, Clone)]
-pub enum Operator {
-  Equal,
-  NotEqual,
-  LessThan,
-  LessThanEqual,
-  GreaterThan,
-  GreaterThanEqual,
-  Is,
-  Before,
-  After,
-}
-
-impl Operator {
-  pub fn to_string(&self) -> &str {
-    match self {
-      Operator::Equal => "=",
-      Operator::NotEqual => "!=",
-      Operator::LessThan => "<",
-      Operator::LessThanEqual => "<=",
-      Operator::GreaterThan => ">",
-      Operator::GreaterThanEqual => ">=",
-      Operator::Is => "is",
-      Operator::Before => "<<",
-      Operator::After => ">>",
-    }
-  }
-}
-
 impl Item {
   /// Gives the string value of an item. All items have a string value.
   pub fn to_string(&self) -> String {
     match self {
-      Item::Document(d) => d.to_string(),
-      Item::Node(n) => n.to_string(),
+      Item::Document(d) => d.to_string(None),
+      Item::Node(d, n) => d.to_string(Some(n)),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
     }
@@ -191,8 +155,8 @@ impl Item {
   /// Serialize as XML
   pub fn to_xml(&self) -> String {
     match self {
-      Item::Document(d) => d.to_xml(),
-      Item::Node(n) => n.to_xml(),
+      Item::Document(d) => d.to_xml(None),
+      Item::Node(d, n) => d.to_xml(Some(*n)),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
     }
@@ -200,8 +164,8 @@ impl Item {
   /// Serialize as XML, with options
   pub fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
     match self {
-      Item::Document(d) => d.to_xml_with_options(od),
-      Item::Node(n) => n.to_xml_with_options(od),
+      Item::Document(d) => d.to_xml_with_options(None, od),
+      Item::Node(d, n) => d.to_xml_with_options(Some(*n), od),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
     }
@@ -209,8 +173,8 @@ impl Item {
   /// Serialize as JSON
   pub fn to_json(&self) -> String {
     match self {
-      Item::Document(d) => d.to_json(),
-      Item::Node(n) => n.to_json(),
+      Item::Document(d) => d.to_json(None),
+      Item::Node(d, n) => d.to_json(Some(*n)),
       Item::Function => "".to_string(),
       Item::Value(v) => v.to_string(),
     }
@@ -221,7 +185,7 @@ impl Item {
   pub fn to_bool(&self) -> bool {
     match self {
       Item::Document(_) |
-      Item::Node(_) => true,
+      Item::Node(..) => true,
       Item::Function => false,
       Item::Value(v) => v.to_bool(),
     }
@@ -231,7 +195,7 @@ impl Item {
   pub fn to_int(&self) -> Result<i64, Error> {
     match self {
       Item::Document(_) |
-      Item::Node(_) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
+      Item::Node(..) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
       Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
       Item::Value(v) => {
         match v.to_int() {
@@ -250,7 +214,7 @@ impl Item {
   pub fn to_double(&self) -> f64 {
     match self {
       Item::Document(_) |
-      Item::Node(_) => f64::NAN,
+      Item::Node(..) => f64::NAN,
       Item::Function => f64::NAN,
       Item::Value(v) => v.to_double(),
     }
@@ -259,7 +223,7 @@ impl Item {
   /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
   pub fn to_name(&self) -> QualifiedName {
     match self {
-      Item::Node(i) => i.to_name(),
+      Item::Node(d, i) => d.to_name(Some(*i)),
       _ => QualifiedName::new(None, None, "".to_string())
     }
   }
@@ -273,7 +237,7 @@ impl Item {
       Item::Value(v) => {
         v.compare(other, op)
       }
-      Item::Node(_) => {
+      Item::Node(..) => {
         other.compare(&Item::Value(Value::String(self.to_string())), op)
       }
       _ => {
@@ -285,8 +249,8 @@ impl Item {
   /// Is this item an element-type node?
   pub fn is_element_node(&self) -> bool {
     match self {
-      Item::Node(n) => {
-        match n.node_type() {
+      Item::Node(d, n) => {
+        match d.node_type(*n) {
 	  NodeType::Element => true,
 	  _ => false,
 	}
@@ -295,13 +259,10 @@ impl Item {
     }
   }
   /// If the Item is a Document type, then returns the root element of the document, otherwise returns None
-  pub fn get_root_element(&self) -> Option<Rc<dyn Node>> {
+  pub fn get_root_element(&self) -> Option<Box<dyn Node>> {
     match self {
       Item::Document(d) => {
-        match d.get_root_element() {
-	  Some(n) => Some(n),
-	  _ => None,
-	}
+        d.get_root_element()
       }
       _ => None,
     }
@@ -311,7 +272,7 @@ impl Item {
   pub fn item_type(&self) -> &'static str {
     match self {
       Item::Document(_) => "Document",
-      Item::Node(_) => "Node",
+      Item::Node(..) => "Node",
       Item::Function => "Function",
       Item::Value(v) => v.value_type(),
     }
@@ -321,247 +282,160 @@ impl Item {
 /// Document tree.
 ///
 /// A Document contains [Node] objects.
-pub trait Document {
-  /// Return the string value of the Document
-  fn to_string(&self) -> String;
-  /// Serialize as XML
-  fn to_xml(&self) -> String;
-  /// Serialize as XML, with options
-  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
-  /// Serialize as JSON
-  fn to_json(&self) -> String;
-  /// Determine the effective boolean value. See XPath 2.4.3.
-  /// A (non-empty) Document always returns true.
-  fn to_bool(&self) -> bool {
-    true
-  }
-  /// Return the integer value. For a Document, this is a type error.
-  fn to_int(&self) -> Result<i64, Error> {
-    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: document")})
-  }
-  /// Return the double value. For a Document, this is a type error, i.e. NaN.
-  fn to_double(&self) -> f64 {
-    f64::NAN
-  }
-  /// Gives the name of the document. Documents do not have a name, so the default implementation returns an empty string.
-  fn to_name(&self) -> QualifiedName {
-    QualifiedName::new(None, None, String::new())
-  }
+///
+///Because [Node]s cannot exist outside of a Document, their methods are accessed via the Document trait.
+pub trait Document: Any {
+    /// Upcast to Any
+    fn as_any(&self) -> &dyn Any;
+    /// Upcast to Any, mutable
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+    /// Return the string value of the [Node], or the Document if None
+    fn to_string(&self, n: Option<Box<dyn Node>>) -> String;
+    /// Serialize the given [Node] as XML, or the Document if None
+    fn to_xml(&self, n: Option<Box<dyn Node>>) -> String;
+    /// Serialize as XML, with options
+    fn to_xml_with_options(&self, n: Option<Box<dyn Node>>, od: &OutputDefinition) -> String;
+    /// Serialize as JSON
+    fn to_json(&self, n: Option<Box<dyn Node>>) -> String;
+    /// Determine the effective boolean value. See XPath 2.4.3.
+    /// A Document or Node always returns true.
+    fn to_bool(&self, _n: Option<Box<dyn Node>>) -> bool {
+	true
+    }
+    /// Return the integer value. For a Document, this is a type error.
+    fn to_int(&self, n: Option<Box<dyn Node>>) -> Result<i64, Error>;
+    /// Return the double value. For a Document, this is a type error, i.e. NaN.
+    fn to_double(&self, n: Option<Box<dyn Node>>) -> f64;
+    /// Gives the name of the [Node]. Documents do not have a name, so the implementation must return an empty string.
+    fn to_name(&self, n: Option<Box<dyn Node>>) -> QualifiedName;
 
-  /// Callback for logging/debugging, particularly in a web_sys environment
-  fn log(&self, _m: &str) {
-    // Noop
-  }
+    /// Return the type of a Node
+    fn node_type(&self, n: Box<dyn Node>) -> NodeType;
 
-  /// Navigate to the parent of the Document. Documents don't have a parent, so the default implementation returns None.
-  fn parent(&self) -> Option<Rc<dyn Node>> {
-    None
-  }
-  /// Return the children of the Document. This may include the prologue, root element and epilogue. If the Document has no children then returns an empty vector.
-  fn children(&self) -> Vec<Rc<dyn Node>>;
-  /// Return the root node of the Document.
-  fn get_root_element(&self) -> Option<Rc<dyn Node>>;
+    /// Callback for logging/debugging, particularly in a web_sys environment
+    fn log(&self, _m: &str) {
+	// Noop
+    }
 
-  /// Create an element Node in the Document.
-  fn new_element(&self, name: QualifiedName) -> Result<Rc<dyn Node>, Error>;
-  /// Create a text Node in the Document.
-  fn new_text(&self, c: Value) -> Result<Rc<dyn Node>, Error>;
-  /// Create an attribute Node in the Document.
-  fn new_attribute(&self, name: QualifiedName, v: Value) -> Result<Rc<dyn Node>, Error>;
-  // TODO: new_comment, new_PI
-  /// Insert the root element in the Document. NB. If the element supplied is of a different concrete type to the Document then this will likely result in an error.
-  fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error>;
+    /// Return the root node of the Document.
+    fn get_root_element(&self) -> Option<Box<dyn Node>>;
+    /// Set the root element for the Document. If the Document already has a root element then it will be removed. The node must be an element. If the node supplied is of a different concrete type to the Document then an error is returned. If the element is from a different Document, then the function performs a deep copy.
+    fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error>;
+
+    /// An iterator over ancestors of a [Node].
+    fn ancestor_iter(&self, n: Box<dyn Node>) -> Box<dyn AncestorIterator<Item = Box<dyn Node>>>;
+    /// Navigate to the parent of a [Node]. Documents, and the root element, don't have a parent, so the default implementation returns None. This is a convenience function for ancestor_iter.
+    fn parent(&self, _n: Box<dyn Node>) -> Option<Box<dyn Node>> {
+	None
+    }
+    /// An iterator for the child nodes of a [Node]. Non-element type nodes will immediately return None.
+    fn child_iter(&self, n: Box<dyn Node>) -> Box<dyn ChildIterator<Item = Box<dyn Node>>>;
+    /// An iterator for the child nodes of the Document. This may include the prologue, root element, and epilogue.
+    fn doc_child_iter(&self) -> Box<dyn DocChildIterator<Item = Box<dyn Node>>>;
+    /// An iterator for descendants of a [Node]. Does not include the [Node] itself.
+    // fn descend_iter(&self, n: Box<dyn Node>) -> Box<dyn Iterator<Item = Box<dyn Node>>>;
+    /// An iterator for following siblings of a [Node]. Does not include the [Node] itself.
+    // fn following_sibling_iter(&self, n: Box<dyn Node>) -> Box<dyn Iterator<Item = Box<dyn Node>>>;
+    /// An iterator for preceding siblings of a [Node]. Does not include the [Node] itself.
+    // fn preceding_sibling_iter(&self, n: Box<dyn Node>) -> Box<dyn Iterator<Item = Box<dyn Node>>>;
+
+    /// Create an element [Node] in the Document.
+    fn new_element(&mut self, name: QualifiedName) -> Result<Box<dyn Node>, Error>;
+    /// Create a text [Node] in the Document.
+    fn new_text(&mut self, c: Value) -> Result<Box<dyn Node>, Error>;
+    /// Create an attribute [Node] in the Document.
+    fn new_attribute(&mut self, name: QualifiedName, v: Value) -> Result<Box<dyn Node>, Error>;
+    /// Create a comment [Node] in the Document.
+    fn new_comment(&mut self, v: Value) -> Result<Box<dyn Node>, Error>;
+    /// Create a processing instruction [Node] in the Document.
+    fn new_processing_instruction(&mut self, name: QualifiedName, v: Value) -> Result<Box<dyn Node>, Error>;
+
+    /// Append a [Node] to the children of a [Node]. If the [Node] to be appended is from a different Document then this function performs a deep copy.
+    fn append_child(&mut self, parent: Box<dyn Node>, child: Box<dyn Node>) -> Result<(), Error>;
+    /// Inserts a [Node] (insert) before another [Node] (child) in the children of it's parent element [Node]. If the [Node] to be inserted is from a different Document then this function performs a deep copy.
+    fn insert_before(&mut self, child: Box<dyn Node>, insert: Box<dyn Node>) -> Result<(), Error>;
+    // TODO: replace_child
+
+    /// Add an attribute [Node] to an element type [Node]. If the attribute [Node] is from a different Document then this function adds a copy of the attribute [Node].
+    fn add_attribute_node(&mut self, _parent: Box<dyn Node>, _a: &dyn Any) -> Result<(), Error> {
+	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+    }
+
+    /// Remove a node from its parent
+    fn remove(&mut self, _n: Box<dyn Node>) -> Result<(), Error> {
+	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+    }
+}
+
+/// An iterator over ancestor nodes
+pub trait AncestorIterator {
+    type Item = Box<dyn Node>;
+    fn next(&mut self, d: &dyn Document) -> Option<Self::Item>;
+}
+
+/// An iterator over child nodes
+pub trait ChildIterator {
+    type Item = Box<dyn Node>;
+    fn next(&mut self, d: &dyn Document) -> Option<Self::Item>;
+}
+
+/// An iterator over child nodes of a [Document]
+pub trait DocChildIterator {
+    type Item = Box<dyn Node>;
+    fn next(&mut self, d: &dyn Document) -> Option<Self::Item>;
 }
 
 /// Node in a tree.
 ///
 /// This trait defines how to navigate a tree-like structure.
 pub trait Node: Any {
-  /// Upcast to Any
-  fn as_any(&self) -> &dyn Any;
-  /// Upcast to Any, mutable
-  fn as_any_mut(&mut self) -> &mut dyn Any;
-  /// Return the string value of the Node
-  fn to_string(&self) -> String;
-  /// Serialize as XML
-  fn to_xml(&self) -> String;
-  /// Serialize as XML, with options
-  fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
-  /// Serialize as JSON
-  fn to_json(&self) -> String;
-  /// Determine the effective boolean value. See XPath 2.4.3.
-  /// A (non-empty) Node always returns true.
-  fn to_bool(&self) -> bool {
-    true
-  }
-  /// Return the integer value.
-  fn to_int(&self) -> Result<i64, Error>;
-  /// Return the double value.
-  fn to_double(&self) -> f64;
-  /// Gives the name of the node. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-  fn to_name(&self) -> QualifiedName;
-  /// Navigate to the [Document]. Not all implementations are able to do this, so if this is the case the option can be set to None.
-  fn owner_document(&self) -> Option<Rc<dyn Document>> {
-    None
-  }
-  /// Return the type of the Node
-  fn node_type(&self) -> NodeType;
-  /// Navigate to the parent of the node.
-  fn parent(&self) -> Option<Rc<dyn Node>>;
-  /// An iterator over ancestors of the Node.
-  // TODO: rust complains about borrowing data in an 'Rc' as mutable
-  //fn ancestor_iter(self) -> Rc<dyn Iterator<Item=Rc<dyn Node>>> where Self: Sized {
-    //Rc::new(Ancestor::new(Rc::new(self)))
-  //}
-  /// Return all of the ancestors of the Node.
-  // TODO: this gives the error "error[E0277]: the size for values of type `Self` cannot be known at compilation time"
-  fn ancestors(&self) -> Vec<Rc<dyn Node>>;
-  //{
-    //self.ancestor_iter().collect()
-  //}
-  /// Return the children of the node. If the node has no children then returns an empty vector.
-  fn children(&self) -> Vec<Rc<dyn Node>>;
-  /// Return descendants of the Node, but not including the Node itself.
-  fn descendants(&self) -> Vec<Rc<dyn Node>>;
-  /// Return the next following sibling.
-  fn get_following_sibling(&self) -> Option<Rc<dyn Node>>;
-  /// An iterator over following siblings.
-  // TODO: rust complains about borrowing data in an 'Rc' as mutable
-  //fn following_sibling_iter(self) -> Rc<dyn Iterator<Item=Rc<dyn Node>>> where Self: Sized {
-    //Rc::new(FollowingSibling::new(Rc::new(self)))
-  //}
-  /// Return all of the following siblings of the Node.
-  // TODO: see above
-  fn following_siblings(&self) -> Vec<Rc<dyn Node>>;
-  //{
-    //self.following_sibling_iter().collect()
-  //}
-  /// Return the next preceding sibling.
-  fn get_preceding_sibling(&self) -> Option<Rc<dyn Node>>;
-  /// An iterator over preceding siblings.
-  // TODO: rust complains about borrowing data in an 'Rc' as mutable
-  //fn preceding_sibling_iter(self) -> Rc<dyn Iterator<Item=Rc<dyn Node>>> where Self: Sized {
-    //Rc::new(PrecedingSibling::new(Rc::new(self)))
-  //}
-  /// Return all of the preceding siblings of the Node.
-  // TODO: see above
-  fn preceding_siblings(&self) -> Vec<Rc<dyn Node>>;
-  //{
-    //self.preceding_sibling_iter().collect()
-  //}
-
-  /// Return the value of an attribute. Returns None if the node is not an element, or the element has no such attribute.
-  fn get_attribute(&self, _name: &QualifiedName) -> Option<Value> {
-    None
-  }
-  /// Add an attribute to an element node. If the attribute already exists, it's value is overwritten. If the Node is not an element then this operation has no effect.
-  fn set_attribute(&self, name: QualifiedName, val: Value);
-  /// Iterator for attributes
-  //type AttributeIterator: Iterator<Item=dyn Node>;
-  //fn attribute_iter(&self) -> Self::AttributeIterator;
-  //fn attribute_iter(&self) -> Box<dyn Iterator<Item=dyn Node>>;
-  fn attributes(&self) -> Vec<Rc<dyn Node>>;
-  /// Set the value for nodes that have values (text, attribute, comment, PI). No effect on other nodes.
-  fn set_value(&self, v: Value);
-  /// Returns if the node is an element-type node
-  fn is_element(&self) -> bool {
-    false
-  }
-
-  /// Insert a Node as a child. The node is appended to the list of children. NB. If the element supplied is of a different concrete type to the Node then this will likely result in an error.
-  fn append_child(&self, _c: &dyn Any) -> Result<(), Error> {
-    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-  }
-  /// Add a text node as a child.
-  fn append_text_child(&self, _t: Value) -> Result<(), Error> {
-    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-  }
-  /// Insert a Node as a peer before this Node
-  fn insert_before(&self, _c: &dyn Any) -> Result<(), Error> {
-    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-  }
-  // TODO: replace_child
-  fn add_attribute_node(&self, _a: &dyn Any) -> Result<(), Error> {
-    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-  }
-
-  /// Remove a node from its parent
-  fn remove(&self) -> Result<(), Error> {
-    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-  }
-  // TODO: remove_child
-}
-
-pub struct Ancestor {
-  node: Rc<dyn Node>,
-}
-
-//impl Ancestor {
-//  fn new(n: Rc<dyn Node>) -> Ancestor {
-//    Ancestor{node: n}
-//  }
-//}
-impl Iterator for Ancestor {
-  type Item = Rc<dyn Node>;
-
-  fn next(&mut self) -> Option<Self::Item> {
-    match self.node.parent() {
-      Some(n) => {
-        // The dynamic trait object is not clonable, so make a second call to the method to get an object to store in the iterator
-	self.node = self.node.parent().unwrap();
-	Some(n)
-      }
-      None => None,
+    /// Upcast to Any
+    fn as_any(&self) -> &dyn Any;
+    /// Upcast to Any, mutable
+    fn as_any_mut(&mut self) -> &mut dyn Any;
+    /// Return the string value of the Node
+    fn to_string(&self) -> String;
+    /// Serialize as XML
+    fn to_xml(&self) -> String;
+    /// Serialize as XML, with options
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
+    /// Serialize as JSON
+    fn to_json(&self) -> String;
+    /// Determine the effective boolean value. See XPath 2.4.3.
+    /// A (non-empty) Node always returns true.
+    fn to_bool(&self) -> bool {
+	true
     }
-  }
-}
-
-struct FollowingSibling {
-  node: Rc<dyn Node>,
-}
-
-//impl FollowingSibling {
-//  fn new(n: Rc<dyn Node>) -> FollowingSibling {
-//    FollowingSibling{node: n}
-//  }
-//}
-impl Iterator for FollowingSibling {
-  type Item = Rc<dyn Node>;
-
-  fn next(&mut self) -> Option<Self::Item> {
-    match self.node.get_following_sibling() {
-      Some(n) => {
-        // The dynamic trait object is not clonable, so make a second call to the method to get an object to store in the iterator
-	self.node = self.node.get_following_sibling().unwrap();
-	Some(n)
-      }
-      None => None,
+    /// Return the integer value.
+    fn to_int(&self) -> Result<i64, Error>;
+    /// Return the double value.
+    fn to_double(&self) -> f64;
+    /// Gives the name of the node. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
+    fn to_name(&self) -> QualifiedName;
+    /// Navigate to the [Document]. Not all implementations are able to do this, so if this is the case the option can be set to None.
+    fn owner_document(&self) -> Option<Box<dyn Document>> {
+	None
     }
-  }
-}
+    /// Return the type of the Node
+    fn node_type(&self) -> NodeType;
 
-struct PrecedingSibling {
-  node: Rc<dyn Node>,
-}
-
-//impl PrecedingSibling {
-//  fn new(n: Rc<dyn Node>) -> PrecedingSibling {
-//    PrecedingSibling{node: n}
-//  }
-//}
-impl Iterator for PrecedingSibling {
-  type Item = Rc<dyn Node>;
-
-  fn next(&mut self) -> Option<Self::Item> {
-    match self.node.get_preceding_sibling() {
-      Some(n) => {
-        // The dynamic trait object is not clonable, so make a second call to the method to get an object to store in the iterator
-	self.node = self.node.get_preceding_sibling().unwrap();
-	Some(n)
-      }
-      None => None,
+    /// Return the value of an attribute. Returns None if the node is not an element, or the element has no such attribute.
+    fn get_attribute(&self, _name: &QualifiedName) -> Option<Value> {
+	None
     }
-  }
+    /// Add an attribute to an element node. If the attribute already exists, it's value is overwritten. If the Node is not an element then this operation has no effect.
+    fn set_attribute(&self, name: QualifiedName, val: Value);
+    /// Iterator for attributes
+    //type AttributeIterator: Iterator<Item=dyn Node>;
+    //fn attribute_iter(&self) -> Self::AttributeIterator;
+    //fn attribute_iter(&self) -> Box<dyn Iterator<Item=dyn Node>>;
+    fn attributes(&self) -> Vec<Box<dyn Node>>;
+    /// Set the value for nodes that have values (text, attribute, comment, PI). No effect on other nodes.
+    fn set_value(&self, v: Value);
+    /// Returns if the node is an element-type node
+    fn is_element(&self) -> bool {
+	false
+    }
 }
 
 #[derive(Copy, Clone, PartialEq, Debug)]
@@ -593,469 +467,6 @@ impl Default for NodeType {
   fn default() -> Self {
     NodeType::Unknown
   }
-}
-
-/// A concrete type that implements atomic values.
-/// These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
-#[derive(Clone)]
-pub enum Value {
-    /// node or simple type
-    AnyType,
-    /// a not-yet-validated anyType
-    Untyped,
-    /// base type of all simple types. i.e. not a node
-    AnySimpleType,
-    /// a list of IDREF
-    IDREFS,
-    /// a list of NMTOKEN
-    NMTOKENS,
-    /// a list of ENTITY
-    ENTITIES,
-    /// Any numeric type
-    Numeric,
-    /// all atomic values (no lists or unions)
-    AnyAtomicType,
-    /// untyped atomic value
-    UntypedAtomic,
-    Duration,
-    Time(DateTime<Local>),	// Ignore the date part. Perhaps use Instant instead?
-    Decimal(Decimal),
-    Float(f32),
-    Double(f64),
-    Integer(i64),
-    NonPositiveInteger(NonPositiveInteger),
-    NegativeInteger(NegativeInteger),
-    Long(i64),
-    Int(i32),
-    Short(i16),
-    Byte(i8),
-    NonNegativeInteger(NonNegativeInteger),
-    UnsignedLong(u64),
-    UnsignedInt(u32),
-    UnsignedShort(u16),
-    UnsignedByte(u8),
-    PositiveInteger(PositiveInteger),
-    DateTime(DateTime<Local>),
-    DateTimeStamp,
-    Date(Date<Local>),
-    String(String),
-    NormalizedString(NormalizedString),
-    /// Like normalizedString, but without leading, trailing and consecutive whitespace
-    Token,
-    /// language identifiers [a-zA-Z]{1,8}(-[a-zA-Z0-9]{1,8})*
-    Language,
-    /// NameChar+
-    NMTOKEN,
-    /// NameStartChar NameChar+
-    Name,
-    /// (Letter | '_') NCNameChar+ (i.e. a Name without the colon)
-    NCName,
-    /// Same format as NCName
-    ID,
-    /// Same format as NCName
-    IDREF,
-    /// Same format as NCName
-    ENTITY,
-    Boolean(bool),
-}
-
-impl Value {
-    /// Give the string value.
-    pub fn to_string(&self) -> String {
-	match self {
-	    Value::String(s) => s.to_string(),
-	    Value::NormalizedString(s) => s.0.to_string(),
-	    Value::Decimal(d) => d.to_string(),
-	    Value::Float(f) => f.to_string(),
-	    Value::Double(d) => d.to_string(),
-	    Value::Integer(i) => i.to_string(),
-	    Value::Long(l) => l.to_string(),
-	    Value::Short(s) => s.to_string(),
-	    Value::Int(i) => i.to_string(),
-	    Value::Byte(b) => b.to_string(),
-	    Value::UnsignedLong(l) => l.to_string(),
-	    Value::UnsignedShort(s) => s.to_string(),
-	    Value::UnsignedInt(i) => i.to_string(),
-	    Value::UnsignedByte(b) => b.to_string(),
-	    Value::NonPositiveInteger(i) => i.0.to_string(),
-	    Value::NonNegativeInteger(i) => i.0.to_string(),
-	    Value::PositiveInteger(i) => i.0.to_string(),
-	    Value::NegativeInteger(i) => i.0.to_string(),
-	    Value::Time(t) => t.format("%H:%M:%S.%f").to_string(),
-	    Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
-	    Value::Date(d) => d.format("%Y-%m-%d").to_string(),
- 	    _ => "".to_string(),
-	}
-    }
-
-    /// Give the effective boolean value.
-    pub fn to_bool(&self) -> bool {
-	match &self {
-            Value::Boolean(b) => *b == true,
-            Value::String(t) => {
-                //t.is_empty()
-	        t.len() != 0
-            },
-	    Value::NormalizedString(s) => s.0.len() != 0,
-            Value::Double(n) => *n != 0.0,
-            Value::Integer(i) => *i != 0,
-            Value::Int(i) => *i != 0,
-            _ => false
-	}
-    }
-
-    /// Convert the value to an integer, if possible.
-    pub fn to_int(&self) -> Result<i64, Error> {
-        match &self {
-	    Value::String(s) => {
-	      match s.parse::<i64>() {
-	        Ok(i) => Ok(i),
-		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
-	      }
-	    }
-            Value::Integer(i) => Ok(*i),
-            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
-	}
-    }
-    /// Convert the value to a double. If the value cannot be converted, returns Nan.
-    pub fn to_double(&self) -> f64 {
-        match &self {
-	    Value::String(s) => {
-	      match s.parse::<f64>() {
-	        Ok(i) => i,
-		Err(_) => f64::NAN,
-	      }
-	    }
-            Value::Integer(i) => (*i) as f64,
-            Value::Double(d) => *d,
-            _ => f64::NAN,
-	}
-    }
-
-    // TODO: type coersion
-    // TODO: will probably have to implement comparison in the item module (as a trait?)
-    /// Compare two items
-    pub fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
-      match &self {
-        Value::Boolean(b) => {
-	  let c = other.to_bool();
-      	  match op {
-                Operator::Equal => Ok(*b == c),
-    		Operator::NotEqual => Ok(*b != c),
-    		Operator::LessThan => Ok(*b < c),
-    		Operator::LessThanEqual => Ok(*b <= c),
-    		Operator::GreaterThan => Ok(*b > c),
-    		Operator::GreaterThanEqual => Ok(*b >= c),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-	  }
-	}
-        Value::Integer(i) => {
-	  match other.to_int() {
-	    Ok(j) => {
-      	      match op {
-                Operator::Equal => Ok(*i == j),
-    		Operator::NotEqual => Ok(*i != j),
-    		Operator::LessThan => Ok(*i < j),
-    		Operator::LessThanEqual => Ok(*i <= j),
-    		Operator::GreaterThan => Ok(*i > j),
-    		Operator::GreaterThanEqual => Ok(*i >= j),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-      	      }
-	    }
-	    Result::Err(e) => Result::Err(e)
-	  }
-	}
-        Value::Double(d) => {
-	  let e = other.to_double();
-      	      match op {
-                Operator::Equal => Ok(*d == e),
-    		Operator::NotEqual => Ok(*d != e),
-    		Operator::LessThan => Ok(*d < e),
-    		Operator::LessThanEqual => Ok(*d <= e),
-    		Operator::GreaterThan => Ok(*d > e),
-    		Operator::GreaterThanEqual => Ok(*d >= e),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-      	      }
-	}
-        Value::String(s) => {
-	  let t = other.to_string();
-      	  match op {
-                Operator::Equal => Ok(s.to_string() == t),
-    		Operator::NotEqual => Ok(s.to_string() != t),
-    		Operator::LessThan => Ok(s.to_string() < t),
-    		Operator::LessThanEqual => Ok(s.to_string() <= t),
-    		Operator::GreaterThan => Ok(s.to_string() > t),
-    		Operator::GreaterThanEqual => Ok(s.to_string() >= t),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-	  }
-	}
-	_ => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("comparing type \"{}\" is not yet implemented", self.value_type())})
-      }
-    }
-    pub fn value_type(&self) -> &'static str {
-      match &self {
-        Value::AnyType => "AnyType",
-        Value::Untyped => "Untyped",
-        Value::AnySimpleType => "AnySimpleType",
-        Value::IDREFS => "IDREFS",
-        Value::NMTOKENS => "NMTOKENS",
-        Value::ENTITIES => "ENTITIES",
-        Value::Numeric => "Numeric",
-        Value::AnyAtomicType => "AnyAtomicType",
-        Value::UntypedAtomic => "UntypedAtomic",
-        Value::Duration => "Duration",
-        Value::Time(_) => "Time",
-        Value::Decimal(_) => "Decimal",
-        Value::Float(_) => "Float",
-        Value::Double(_) => "Double",
-        Value::Integer(_) => "Integer",
-        Value::NonPositiveInteger(_) => "NonPositiveInteger",
-        Value::NegativeInteger(_) => "NegativeInteger",
-        Value::Long(_) => "Long",
-        Value::Int(_) => "Int",
-        Value::Short(_) => "Short",
-        Value::Byte(_) => "Byte",
-        Value::NonNegativeInteger(_) => "NonNegativeInteger",
-        Value::UnsignedLong(_) => "UnsignedLong",
-        Value::UnsignedInt(_) => "UnsignedInt",
-        Value::UnsignedShort(_) => "UnsignedShort",
-        Value::UnsignedByte(_) => "UnsignedByte",
-        Value::PositiveInteger(_) => "PositiveInteger",
-        Value::DateTime(_) => "DateTime",
-        Value::DateTimeStamp => "DateTimeStamp",
-        Value::Date(_) => "Date",
-        Value::String(_) => "String",
-        Value::NormalizedString(_) => "NormalizedString",
-        Value::Token => "Token",
-        Value::Language => "Language",
-        Value::NMTOKEN => "NMTOKEN",
-        Value::Name => "Name",
-        Value::NCName => "NCName",
-        Value::ID => "ID",
-        Value::IDREF => "IDREF",
-        Value::ENTITY => "ENTITY",
-	Value::Boolean(_) => "boolean",
-      }
-    }
-}
-
-impl PartialEq for Value {
-  fn eq(&self, other: &Value) -> bool {
-    match self {
-        Value::String(s) => s.eq(&other.to_string()),
-	Value::Boolean(b) => match other {
-	  Value::Boolean(c) => b == c,
-	  _ => false, // type error?
-	},
-	Value::Decimal(d) => match other {
-	  Value::Decimal(e) => d == e,
-	  _ => false, // type error?
-	},
-	Value::Integer(i) => match other {
-	  Value::Integer(j) => i == j,
-	  _ => false, // type error? coerce to integer?
-	},
-	Value::Double(d) => match other {
-	  Value::Double(e) => d == e,
-	  _ => false, // type error? coerce to integer?
-	},
-        _ => false, // not yet implemented
-    }
-  }
-}
-impl PartialOrd for Value {
-  fn partial_cmp(&self, other: &Value) -> Option<Ordering> {
-    match self {
-        Value::String(s) => {
-	  let o: String = other.to_string();
-	  s.partial_cmp(&o)
-	},
-	Value::Boolean(_) => None,
-	Value::Decimal(d) => match other {
-	  Value::Decimal(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
-	Value::Integer(d) => match other {
-	  Value::Integer(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
-	Value::Double(d) => match other {
-	  Value::Double(e) => d.partial_cmp(e),
-	  _ => None, // type error?
-	}
-	_ => None,
-    }
-  }
-}
-
-impl From<String> for Value {
-  fn from(s: String) -> Self {
-    Value::String(s)
-  }
-}
-impl From<&str> for Value {
-  fn from(s: &str) -> Self {
-    Value::String(String::from(s))
-  }
-}
-impl From<Decimal> for Value {
-  fn from(d: Decimal) -> Self {
-    Value::Decimal(d)
-  }
-}
-impl From<f32> for Value {
-  fn from(f: f32) -> Self {
-    Value::Float(f)
-  }
-}
-impl From<f64> for Value {
-  fn from(f: f64) -> Self {
-    Value::Double(f)
-  }
-}
-impl From<i64> for Value {
-  fn from(i: i64) -> Self {
-    Value::Integer(i)
-  }
-}
-impl From<i32> for Value {
-  fn from(i: i32) -> Self {
-    Value::Int(i)
-  }
-}
-impl From<i16> for Value {
-  fn from(i: i16) -> Self {
-    Value::Short(i)
-  }
-}
-impl From<i8> for Value {
-  fn from(i: i8) -> Self {
-    Value::Byte(i)
-  }
-}
-impl From<u64> for Value {
-  fn from(i: u64) -> Self {
-    Value::UnsignedLong(i)
-  }
-}
-impl From<u32> for Value {
-  fn from(i: u32) -> Self {
-    Value::UnsignedInt(i)
-  }
-}
-impl From<u16> for Value {
-  fn from(i: u16) -> Self {
-    Value::UnsignedShort(i)
-  }
-}
-impl From<u8> for Value {
-  fn from(i: u8) -> Self {
-    Value::UnsignedByte(i)
-  }
-}
-impl From<bool> for Value {
-  fn from(b: bool) -> Self {
-    Value::Boolean(b)
-  }
-}
-
-#[derive(Clone, Debug)]
-pub struct NonPositiveInteger(i64);
-impl TryFrom<i64> for NonPositiveInteger {
-  type Error = Error;
-  fn try_from(v: i64) -> Result<Self, Self::Error> {
-    if v > 0 {
-      Err(Error::new(ErrorKind::TypeError, String::from("NonPositiveInteger must be less than zero")))
-    } else {
-      Ok(NonPositiveInteger(v))
-    }
-  }
-}
-impl fmt::Display for NonPositiveInteger {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0.to_string())
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct PositiveInteger(i64);
-impl TryFrom<i64> for PositiveInteger {
-  type Error = Error;
-  fn try_from(v: i64) -> Result<Self, Self::Error> {
-    if v <= 0 {
-      Err(Error::new(ErrorKind::TypeError, String::from("PositiveInteger must be greater than zero")))
-    } else {
-      Ok(PositiveInteger(v))
-    }
-  }
-}
-impl fmt::Display for PositiveInteger {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0.to_string())
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct NonNegativeInteger(i64);
-impl TryFrom<i64> for NonNegativeInteger {
-  type Error = Error;
-  fn try_from(v: i64) -> Result<Self, Self::Error> {
-    if v < 0 {
-      Err(Error::new(ErrorKind::TypeError, String::from("NonNegativeInteger must be zero or greater")))
-    } else {
-      Ok(NonNegativeInteger(v))
-    }
-  }
-}
-impl fmt::Display for NonNegativeInteger {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0.to_string())
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct NegativeInteger(i64);
-impl TryFrom<i64> for NegativeInteger {
-  type Error = Error;
-  fn try_from(v: i64) -> Result<Self, Self::Error> {
-    if v >= 0 {
-      Err(Error::new(ErrorKind::TypeError, String::from("NegativeInteger must be less than zero")))
-    } else {
-      Ok(NegativeInteger(v))
-    }
-  }
-}
-impl fmt::Display for NegativeInteger {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0.to_string())
-    }
-}
-
-#[derive(Clone, Debug)]
-pub struct NormalizedString(String);
-impl TryFrom<&str> for NormalizedString {
-  type Error = Error;
-  fn try_from(v: &str) -> Result<Self, Self::Error> {
-    let n: &[_] = &['\n', '\r', '\t'];
-    if v.find(n).is_none() {
-      Ok(NormalizedString(v.to_string()))
-    } else {
-      Err(Error::new(ErrorKind::TypeError, String::from("value is not a normalized string")))
-    }
-  }
-}
-impl fmt::Display for NormalizedString {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str(&self.0.to_string())
-    }
 }
 
 /// An output definition. See XSLT v3.0 26 Serialization
@@ -1100,186 +511,6 @@ impl fmt::Display for OutputDefinition {
 mod tests {
     use super::*;
 
-    #[test]
-    fn from_string() {
-        assert_eq!(Value::from(String::from("foobar")).to_string(), "foobar");
-    }
-    #[test]
-    fn from_str() {
-        assert_eq!(Value::from("foobar").to_string(), "foobar");
-    }
-    #[test]
-    fn from_decimal() {
-        assert_eq!(Value::from(dec!(001.23)).to_string(), "1.23");
-    }
-
-    #[test]
-    fn normalizedstring_valid_empty() {
-        assert_eq!(NormalizedString::try_from("").expect("invalid NormalizedString").0, "");
-    }
-    #[test]
-    fn normalizedstring_valid() {
-        assert_eq!(NormalizedString::try_from("notinvalid").expect("invalid NormalizedString").0, "notinvalid");
-    }
-    #[test]
-    fn normalizedstring_valid_spaces() {
-        assert_eq!(NormalizedString::try_from("not an invalid string").expect("invalid NormalizedString").0, "not an invalid string");
-    }
-    #[test]
-    fn normalizedstring_invalid_tab() {
-        let r = NormalizedString::try_from("contains tab	character");
-	assert!(match r {
-	    Ok(_) => panic!("string contains tab character"),
-	    Err(_) => true,
-	})
-    }
-    #[test]
-    fn normalizedstring_invalid_newline() {
-        let r = NormalizedString::try_from("contains newline\ncharacter");
-	assert!(match r {
-	    Ok(_) => panic!("string contains newline character"),
-	    Err(_) => true,
-	})
-    }
-    #[test]
-    fn normalizedstring_invalid_cr() {
-        let r = NormalizedString::try_from("contains carriage return\rcharacter");
-	assert!(match r {
-	    Ok(_) => panic!("string contains cr character"),
-	    Err(_) => true,
-	})
-    }
-    #[test]
-    fn normalizedstring_invalid_all() {
-        let r = NormalizedString::try_from("contains	all\rforbidden\ncharacters");
-	assert!(match r {
-	    Ok(_) => panic!("string contains at least one forbidden character"),
-	    Err(_) => true,
-	})
-    }
-
-// Numeric is in the too hard basket for now
-//    #[test]
-//    fn numeric_float() {
-//        assert_eq!(Numeric::new(f32::0.123).value, 0.123);
-//    }
-//    #[test]
-//    fn numeric_double() {
-//        assert_eq!(Numeric::new(f64::0.456).value, 0.456);
-//    }
-//    #[test]
-//    fn numeric_decimal() {
-//        assert_eq!(Numeric::new(dec!(123.456)), 123.456);
-//    }
-
-    #[test]
-    fn nonpositiveinteger_valid() {
-        assert_eq!(NonPositiveInteger::try_from(-10).expect("invalid NonPositiveInteger").0, -10);
-    }
-    #[test]
-    fn nonpositiveinteger_valid_zero() {
-        assert_eq!(NonPositiveInteger::try_from(0).expect("invalid NonPositiveInteger").0, 0);
-    }
-    #[test]
-    fn nonpositiveinteger_invalid() {
-        let r = NonPositiveInteger::try_from(10);
-	assert!(match r {
-	    Ok(_) => panic!("10 is not a nonPositiveInteger"),
-	    Err(_) => true,
-	})
-    }
-
-    #[test]
-    fn positiveinteger_valid() {
-        assert_eq!(PositiveInteger::try_from(10).expect("invalid PositiveInteger").0, 10);
-    }
-    #[test]
-    fn positiveinteger_invalid_zero() {
-        let r = PositiveInteger::try_from(0);
-	assert!(match r {
-	    Ok(_) => panic!("0 is not a PositiveInteger"),
-	    Err(_) => true,
-	})
-    }
-    #[test]
-    fn positiveinteger_invalid() {
-        let r = PositiveInteger::try_from(-10);
-	assert!(match r {
-	    Ok(_) => panic!("-10 is not a PositiveInteger"),
-	    Err(_) => true,
-	})
-    }
-
-    #[test]
-    fn nonnegativeinteger_valid() {
-        assert_eq!(NonNegativeInteger::try_from(10).expect("invalid NonNegativeInteger").0, 10);
-    }
-    #[test]
-    fn nonnegativeinteger_valid_zero() {
-        assert_eq!(NonNegativeInteger::try_from(0).expect("invalid NonNegativeInteger").0, 0);
-    }
-    #[test]
-    fn nonnegativeinteger_invalid() {
-        let r = NonNegativeInteger::try_from(-10);
-	assert!(match r {
-	    Ok(_) => panic!("-10 is not a NonNegativeInteger"),
-	    Err(_) => true,
-	})
-    }
-
-    #[test]
-    fn negativeinteger_valid() {
-        assert_eq!(NegativeInteger::try_from(-10).expect("invalid NegativeInteger").0, -10);
-    }
-    #[test]
-    fn negativeinteger_invalid_zero() {
-        let r = NegativeInteger::try_from(0);
-	assert!(match r {
-	    Ok(_) => panic!("0 is not a NegativeInteger"),
-	    Err(_) => true,
-	})
-    }
-    #[test]
-    fn negativeinteger_invalid() {
-        let r = NegativeInteger::try_from(10);
-	assert!(match r {
-	    Ok(_) => panic!("10 is not a NegativeInteger"),
-	    Err(_) => true,
-	})
-    }
-
-    // String Values
-    #[test]
-    fn string_stringvalue() {
-        assert_eq!(Value::String("foobar".to_string()).to_string(), "foobar")
-    }
-    #[test]
-    fn decimal_stringvalue() {
-        assert_eq!(Value::Decimal(dec!(001.23)).to_string(), "1.23")
-    }
-    #[test]
-    fn float_stringvalue() {
-        assert_eq!(Value::Float(001.2300_f32).to_string(), "1.23")
-    }
-    #[test]
-    fn nonpositiveinteger_stringvalue() {
-        let npi = NonPositiveInteger::try_from(-00123).expect("invalid nonPositiveInteger");
-	let i = Value::NonPositiveInteger(npi);
-        assert_eq!(i.to_string(), "-123")
-    }
-    #[test]
-    fn nonnegativeinteger_stringvalue() {
-        let nni = NonNegativeInteger::try_from(00123).expect("invalid nonNegativeInteger");
-	let i = Value::NonNegativeInteger(nni);
-        assert_eq!(i.to_string(), "123")
-    }
-    #[test]
-    fn normalizedstring_stringvalue() {
-        let ns = NormalizedString::try_from("foobar").expect("invalid normalizedString");
-	let i = Value::NormalizedString(ns);
-        assert_eq!(i.to_string(), "foobar")
-    }
-
     // to_bool
 
     #[test]
@@ -1318,45 +549,6 @@ mod tests {
       assert_eq!(Item::Value(Value::from("2.0")).to_double(), 2.0)
     }
 
-    // value to_bool
-
-    #[test]
-    fn value_to_bool_string() {
-      assert_eq!(Value::from("2").to_bool(), true)
-    }
-
-    // value to_int
-
-    #[test]
-    fn value_to_int_string() {
-      assert_eq!(Value::from("2").to_int().expect("cannot convert to integer"), 2)
-    }
-
-    // value to_double
-
-    #[test]
-    fn value_to_double_string() {
-      assert_eq!(Value::from("3.0").to_double(), 3.0)
-    }
-
-    // value compare
-
-    #[test]
-    fn value_compare_eq() {
-      assert_eq!(Value::from("3").compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
-    }
-
-    #[test]
-    fn value_compare_ne() {
-      assert_eq!(Value::from("3").compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
-    }
-
-    //#[test]
-    //fn value_atomize() {
-	//let i = Value::Int(123);
-        //assert_eq!(i.atomize().stringvalue(), "123")
-    //}
-
     // Sequences
 
     #[test]
@@ -1371,43 +563,5 @@ mod tests {
 	let mut t = Sequence::new();
 	t.add(&s[0]);
 	assert!(Rc::ptr_eq(&s[0], &t[0]))
-    }
-
-    // Operators
-    #[test]
-    fn op_equal() {
-      assert_eq!(Operator::Equal.to_string(), "=")
-    }
-    #[test]
-    fn op_notequal() {
-      assert_eq!(Operator::NotEqual.to_string(), "!=")
-    }
-    #[test]
-    fn op_lt() {
-      assert_eq!(Operator::LessThan.to_string(), "<")
-    }
-    #[test]
-    fn op_ltequal() {
-      assert_eq!(Operator::LessThanEqual.to_string(), "<=")
-    }
-    #[test]
-    fn op_gt() {
-      assert_eq!(Operator::GreaterThan.to_string(), ">")
-    }
-    #[test]
-    fn op_gtequal() {
-      assert_eq!(Operator::GreaterThanEqual.to_string(), ">=")
-    }
-    #[test]
-    fn op_is() {
-      assert_eq!(Operator::Is.to_string(), "is")
-    }
-    #[test]
-    fn op_before() {
-      assert_eq!(Operator::Before.to_string(), "<<")
-    }
-    #[test]
-    fn op_after() {
-      assert_eq!(Operator::After.to_string(), ">>")
     }
 }

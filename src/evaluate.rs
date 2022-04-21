@@ -123,7 +123,7 @@ pub struct Evaluator<'a> {
 
 impl<'a> Evaluator<'a> {
   /// Create a dynamic context.
-  pub fn new(resultdoc: Option<&'a dyn Document>) -> Evaluator<'a> {
+  pub fn new(resultdoc: Option<&'a dyn Document>) -> Evaluator {
     Evaluator{
       dc: DynamicContext::new(),
       templates: Vec::new(),
@@ -137,7 +137,7 @@ impl<'a> Evaluator<'a> {
   pub fn from_dynamic_context(
     dc: DynamicContext,
     resultdoc: Option<&'a dyn Document>
-  ) -> Evaluator<'a> {
+  ) -> Evaluator {
     Evaluator{
       dc,
       templates: Vec::new(),
