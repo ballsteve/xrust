@@ -8,6 +8,7 @@ use crate::qname::QualifiedName;
 use crate::output::OutputDefinition;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::Value;
+use crate::parsexml::*;
 
 /// A Forest. Forests contain [Tree]s.
 //pub struct Forest {
@@ -108,6 +109,64 @@ impl Tree
     }
 }
 
+impl TryFrom<&str> for Tree {
+    type Error = Error;
+
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+	let d = parse(s)?;
+	if d.content.len() == 0 {
+	    Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to parse XML")))
+	} else {
+	    let mut ns: HashMap<String, String> = HashMap::new();
+	    let mut t = Tree::new();
+	    for c in d.content {
+		t.doc_push_node(make_node(c, &mut t, &mut ns)?)?;
+	    }
+	    Ok(t)
+	}
+    }
+}
+
+fn make_node(
+    n: XMLNode,
+    t: &mut Tree,
+    ns: &mut HashMap<String, String>,
+) -> Result<Node, Error> {
+    match n {
+	XMLNode::Element(m, a, c) -> {
+	    a.iter()
+		.filter(|b| {
+		    match b {
+			XMLNode::Attribute(qn, _) => {
+			    match qn.get_prefix() {
+				Some("xmlns") => true,
+				_ => false,
+			    }
+			}
+			_ => false,
+		    }
+		})
+		.for_each(|b| {
+		    if let XMLNode::Attribute(qn, v) = b {
+			// add map from prefix to uri in hashmap
+			ns.insert(qn.get_localname(), v.to_string()).map(|| {})
+		    }
+		});
+	    // Add element to the tree
+	    let newns = n.get_prefix()
+		.map(|p| ns.get(&p).clone());
+	    let new = t.new_element(
+		QualifiedName::new(
+		    newns,
+		    n.get_prefix(),
+		    n.get_localname(),
+		)
+	    )?;
+	    
+	}
+    }
+}
+
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum NodeType {
   Document,
@@ -140,7 +199,7 @@ impl Default for NodeType {
 }
 
 /// Node
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Node(Index);
 
 impl From<Index> for Node {
@@ -157,8 +216,22 @@ impl Node {
 	d.get_mut(self.0)
     }
 
-    pub fn to_string(&self, _d: &Tree) -> String {
-	String::from("not implemented yet (document)")
+    pub fn to_string(&self, d: &Tree) -> String {
+	match self.node_type(d) {
+	    NodeType::Element => {
+		// TODO: string value of all descendant text nodes
+		String::new()
+	    }
+	    NodeType::Text |
+	    NodeType::Attribute |
+	    NodeType::Comment => {
+		self.get(d).unwrap().value().as_ref().map_or(
+		    String::new(),
+		    |v| v.to_string()
+		)
+	    }
+	    _ => String::new(),
+	}
     }
     pub fn to_xml(&self, d: &Tree) -> String {
 	let nc = d.get(self.0).unwrap();	// TODO: Don't Panic
@@ -167,8 +240,21 @@ impl Node {
 		let mut result = String::from("<");
 		let name = nc.name().as_ref().unwrap();
 		result.push_str(name.to_string().as_str());
+		nc.attributes.iter().for_each(|(k, v)| {
+		    result.push(' ');
+		    result.push_str(k.to_string().as_str());
+		    result.push_str("='");
+		    result.push_str(v.to_string(d).as_str());
+		    result.push('\'');
+		});
 		result.push_str(">");
-		// TODO: iterate over children
+		let mut children = self.child_iter();
+		loop {
+		    match children.next(d) {
+			Some(c) => result.push_str(c.to_xml(d).as_str()),
+			None => break,
+		    }
+		};
 		result.push_str("</");
 		result.push_str(name.to_string().as_str());
 		result.push_str(">");
@@ -176,6 +262,20 @@ impl Node {
 	    }
 	    NodeType::Text => {
 		nc.value().as_ref().unwrap().to_string()
+	    }
+	    NodeType::Comment => {
+		let mut result = String::from("<!--");
+		result.push_str(nc.value().as_ref().unwrap().to_string().as_str());
+		result.push_str("-->");
+		result
+	    }
+	    NodeType::ProcessingInstruction => {
+		let mut result = String::from("<?");
+		result.push_str(nc.name().as_ref().unwrap().to_string().as_str());
+		result.push(' ');
+		result.push_str(nc.value().as_ref().unwrap().to_string().as_str());
+		result.push_str("?>");
+		result
 	    }
 	    _ => {
 		// TODO
@@ -238,7 +338,7 @@ impl Node {
             ));
         }
 
-	// TODO: detach c from wherever it currently is located
+	// TODO: detach c from wherever it is currently located
 
 	// self will now be c's parent
 	d.get_mut(c.0).unwrap().parent = Some(self.clone());
@@ -255,9 +355,87 @@ impl Node {
         ));
     }
 
-    pub fn parent(&self, _d: &mut Tree) -> Option<Node> {
-	None
-//	self.ancestor_iter(n).next(self).map(|p| p)
+    pub fn add_attribute(&self, d: &mut Tree, a: Node) -> Result<(), Error> {
+        if self.node_type(d) != NodeType::Element {
+            return Result::Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("must be an element"),
+            ));
+        }
+        if a.node_type(d) != NodeType::Attribute {
+            return Result::Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("argument must be an attribute"),
+            ));
+        }
+
+	// TODO: detach a from wherever it is currently located
+
+	// self will now be a's parent
+	d.get_mut(a.0).unwrap().parent = Some(self.clone());
+	// Add a to self's attribute hashmap
+	let qn = d.get(a.0).unwrap().name().as_ref().unwrap().clone();
+	d.get_mut(self.0).unwrap().attributes.insert(qn, a);
+	Ok(())
+    }
+
+    pub fn ancestor_iter(&self) -> Ancestors {
+	Ancestors::new(self.0)
+    }
+    pub fn parent(&self, d: &Tree) -> Option<Node> {
+	self.ancestor_iter().next(d).map(|p| p)
+    }
+    pub fn child_iter(&self) -> Children {
+	Children::new(self.0)
+    }
+}
+
+pub struct Ancestors {
+    cur: Index,
+}
+
+impl Ancestors {
+    fn new(cur: Index) -> Ancestors {
+	Ancestors{cur}
+    }
+    pub fn next(&mut self, d: &Tree) -> Option<Node> {
+	if let Some(c) = d.get(self.cur) {
+	    if let Some(p) = c.parent {
+		if p.node_type(d) == NodeType::Document {
+		    None
+		} else {
+		    self.cur = p.0;
+		    Some(p)
+		}
+	    } else {
+		None
+	    }
+	} else {
+	    None
+	}
+    }
+}
+
+pub struct Children {
+    parent: Index,
+    cur: usize,
+}
+
+impl Children {
+    fn new(parent: Index) -> Children {
+	Children{parent, cur: 0}
+    }
+    pub fn next(&mut self, d: &Tree) -> Option<Node> {
+	if let Some(n) = d.get(self.parent) {
+	    if n.children.len() > self.cur {
+		self.cur += 1;
+		Some(n.children[self.cur - 1])
+	    } else {
+		None
+	    }
+	} else {
+	    None
+	}
     }
 }
 
@@ -424,7 +602,7 @@ mod tests {
     fn root_element() {
 	let mut t = Tree::new();
 	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
-	t.push_doc_node(e);
+	t.push_doc_node(e).expect("unable to add node to doc");
 	assert_eq!(e.to_xml(&t), "<Test></Test>")
     }
 
@@ -432,9 +610,120 @@ mod tests {
     fn add_element() {
 	let mut t = Tree::new();
 	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
-	t.push_doc_node(e);
+	t.push_doc_node(e).expect("unable to add node to doc");
 	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
-	e.append_child(&mut t, l1);
+	e.append_child(&mut t, l1).expect("unable to append node");
 	assert_eq!(e.to_xml(&t), "<Test><Level-1></Level-1></Test>")
+    }
+
+    #[test]
+    fn add_text() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let txt = t.new_text(Value::from("this is a test")).expect("unable to create text node");
+	l1.append_child(&mut t, txt).expect("unable to append node");
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>this is a test</Level-1></Test>")
+    }
+
+    #[test]
+    fn add_attribute() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let txt = t.new_attribute(QualifiedName::new(None, None, String::from("data")), Value::from("this is a test")).expect("unable to create text node");
+	l1.add_attribute(&mut t, txt).expect("unable to add attribute");
+	assert_eq!(e.to_xml(&t), "<Test><Level-1 data='this is a test'></Level-1></Test>")
+    }
+
+    #[test]
+    fn add_comment() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let c = t.new_comment(Value::from("this is a comment")).expect("unable to create comment node");
+	l1.append_child(&mut t, c).expect("unable to append node");
+	assert_eq!(e.to_xml(&t), "<Test><Level-1><!--this is a comment--></Level-1></Test>")
+    }
+
+    #[test]
+    fn add_pi() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let pi = t.new_processing_instruction(QualifiedName::new(None, None, String::from("testPI")), Value::from("this is a PI")).expect("unable to create processing instruction node");
+	l1.append_child(&mut t, pi).expect("unable to append node");
+	assert_eq!(e.to_xml(&t), "<Test><Level-1><?testPI this is a PI?></Level-1></Test>")
+    }
+
+    #[test]
+    fn children() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+
+	let mut children = e.child_iter();
+	assert_eq!(children.next(&t), Some(l1));
+	assert_eq!(children.next(&t), Some(l2));
+	assert_eq!(children.next(&t), None)
+    }
+
+    #[test]
+    fn ancestors() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+
+	let mut ancestors = t2.ancestor_iter();
+	assert_eq!(ancestors.next(&t), Some(l2));
+	assert_eq!(ancestors.next(&t), Some(e));
+	assert_eq!(ancestors.next(&t), None)
+    }
+
+    #[test]
+    fn parent() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+
+	assert_eq!(t2.parent(&t), Some(l2));
     }
 }
