@@ -2,7 +2,9 @@
 //!
 //! An atomic value as an item in a sequence.
 
+use core::fmt;
 use std::convert::TryFrom;
+use std::cmp::Ordering;
 use rust_decimal::Decimal;
 #[cfg(test)]
 use rust_decimal_macros::dec;
@@ -175,75 +177,6 @@ impl Value {
             _ => f64::NAN,
 	}
     }
-
-    // TODO: type coersion
-    // TODO: will probably have to implement comparison in the item module (as a trait?)
-    /// Compare two items
-    pub fn compare(&self, other: &Item, op: Operator) -> Result<bool, Error> {
-      match &self {
-        Value::Boolean(b) => {
-	  let c = other.to_bool();
-      	  match op {
-                Operator::Equal => Ok(*b == c),
-    		Operator::NotEqual => Ok(*b != c),
-    		Operator::LessThan => Ok(*b < c),
-    		Operator::LessThanEqual => Ok(*b <= c),
-    		Operator::GreaterThan => Ok(*b > c),
-    		Operator::GreaterThanEqual => Ok(*b >= c),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-	  }
-	}
-        Value::Integer(i) => {
-	  match other.to_int() {
-	    Ok(j) => {
-      	      match op {
-                Operator::Equal => Ok(*i == j),
-    		Operator::NotEqual => Ok(*i != j),
-    		Operator::LessThan => Ok(*i < j),
-    		Operator::LessThanEqual => Ok(*i <= j),
-    		Operator::GreaterThan => Ok(*i > j),
-    		Operator::GreaterThanEqual => Ok(*i >= j),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-      	      }
-	    }
-	    Result::Err(e) => Result::Err(e)
-	  }
-	}
-        Value::Double(d) => {
-	  let e = other.to_double();
-      	      match op {
-                Operator::Equal => Ok(*d == e),
-    		Operator::NotEqual => Ok(*d != e),
-    		Operator::LessThan => Ok(*d < e),
-    		Operator::LessThanEqual => Ok(*d <= e),
-    		Operator::GreaterThan => Ok(*d > e),
-    		Operator::GreaterThanEqual => Ok(*d >= e),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-      	      }
-	}
-        Value::String(s) => {
-	  let t = other.to_string();
-      	  match op {
-                Operator::Equal => Ok(s.to_string() == t),
-    		Operator::NotEqual => Ok(s.to_string() != t),
-    		Operator::LessThan => Ok(s.to_string() < t),
-    		Operator::LessThanEqual => Ok(s.to_string() <= t),
-    		Operator::GreaterThan => Ok(s.to_string() > t),
-    		Operator::GreaterThanEqual => Ok(s.to_string() >= t),
-    		Operator::Is |
-    		Operator::Before |
-    		Operator::After => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error")})
-	  }
-	}
-	_ => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("comparing type \"{}\" is not yet implemented", self.value_type())})
-      }
-    }
     pub fn value_type(&self) -> &'static str {
       match &self {
         Value::AnyType => "AnyType",
@@ -288,6 +221,67 @@ impl Value {
         Value::ENTITY => "ENTITY",
 	Value::Boolean(_) => "boolean",
       }
+    }
+    pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
+	match &self {
+	    Value::Boolean(b) => {
+		let c = other.to_bool();
+		match op {
+		    Operator::Equal => Ok(*b == c),
+		    Operator::NotEqual => Ok(*b != c),
+		    Operator::LessThan => Ok(*b < c),
+		    Operator::LessThanEqual => Ok(*b <= c),
+		    Operator::GreaterThan => Ok(*b > c),
+		    Operator::GreaterThanEqual => Ok(*b >= c),
+		    Operator::Is |
+		    Operator::Before |
+		    Operator::After => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+		}
+	    }
+	    Value::Integer(i) => {
+		let c = other.to_int()?;
+		match op {
+		    Operator::Equal => Ok(*i == c),
+		    Operator::NotEqual => Ok(*i != c),
+		    Operator::LessThan => Ok(*i < c),
+		    Operator::LessThanEqual => Ok(*i <= c),
+		    Operator::GreaterThan => Ok(*i > c),
+		    Operator::GreaterThanEqual => Ok(*i >= c),
+		    Operator::Is |
+		    Operator::Before |
+		    Operator::After => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+		}
+	    }
+	    Value::Double(i) => {
+		let c = other.to_double();
+		match op {
+		    Operator::Equal => Ok(*i == c),
+		    Operator::NotEqual => Ok(*i != c),
+		    Operator::LessThan => Ok(*i < c),
+		    Operator::LessThanEqual => Ok(*i <= c),
+		    Operator::GreaterThan => Ok(*i > c),
+		    Operator::GreaterThanEqual => Ok(*i >= c),
+		    Operator::Is |
+		    Operator::Before |
+		    Operator::After => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+		}
+	    }
+	    Value::String(i) => {
+		let c = other.to_string();
+		match op {
+		    Operator::Equal => Ok(*i == c),
+		    Operator::NotEqual => Ok(*i != c),
+		    Operator::LessThan => Ok(*i < c),
+		    Operator::LessThanEqual => Ok(*i <= c),
+		    Operator::GreaterThan => Ok(*i > c),
+		    Operator::GreaterThanEqual => Ok(*i >= c),
+		    Operator::Is |
+		    Operator::Before |
+		    Operator::After => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+		}
+	    }
+	    _ => Result::Err(Error::new(ErrorKind::Unknown, format!("comparing type \"{}\" is not yet implemented", self.value_type())))
+	}
     }
 }
 
@@ -711,12 +705,12 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-      assert_eq!(Value::from("3").compare(&Item::Value(Value::Double(3.0)), Operator::Equal).expect("unable to compare"), true)
+      assert_eq!(Value::from("3").compare(&Value::Double(3.0), Operator::Equal).expect("unable to compare"), true)
     }
 
     #[test]
     fn value_compare_ne() {
-      assert_eq!(Value::from("3").compare(&Item::Value(Value::Double(3.0)), Operator::NotEqual).expect("unable to compare"), false)
+      assert_eq!(Value::from("3").compare(&Value::Double(3.0), Operator::NotEqual).expect("unable to compare"), false)
     }
 
     //#[test]

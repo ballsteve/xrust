@@ -6,7 +6,6 @@
 //! This is a very simple, minimalist parser of XML. It excludes:
 //!	DTDs (and therefore entities)
 
-
 extern crate nom;
 
 use std::collections::HashSet;
@@ -22,7 +21,7 @@ use nom:: {
   sequence::delimited,
 };
 use crate::qname::*;
-use crate::item::*;
+use crate::value::Value;
 use crate::parsecommon::*;
 use crate::xdmerror::*;
 

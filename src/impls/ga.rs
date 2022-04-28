@@ -1,4 +1,5 @@
 use std::any::Any;
+use crate::value::Value;
 use crate::item::{
     Document,
     Node,
@@ -6,7 +7,6 @@ use crate::item::{
     ChildIterator,
     DocChildIterator,
     NodeType,
-    Value,
     OutputDefinition,
 };
 use crate::qname::QualifiedName;
@@ -17,107 +17,107 @@ use std::collections::HashMap;
 /// A Tree, using an Arena Allocator.
 /// A node in the tree is a [Leaf], which is just an arena Index.
 /// Nodes can be detached, but not deleted
-#[derive(Clone, Default)]
-pub struct Tree {
+#[derive(Clone)]
+pub struct Tree<N: Node> {
     a: Arena<NodeContent>,
-    root: Option<Leaf>,
+    root: Option<N>,
     // TODO: prologue, epilogue, XML declaration, DTD
 }
 
-impl Tree {
+impl<N> Tree<N>
+where
+    N: Node
+{
     pub fn new() -> Self {
         Tree {
             a: Arena::new(),
-            ..Default::default()
+	    root: None,
         }
     }
-    pub fn from_document(d: &dyn Any) -> Result<&Self, Error> {
-	match d.downcast_ref::<Tree>() {
-	    Some(e) => {
-		Ok(e)
-	    }
-	    None => {
-		Result::Err(Error::new(ErrorKind::DynamicAbsent, String::from("not a Tree")))
-	    }
-	}
-    }
+}
+impl<N> Tree<N>
+where
+    N: Node
+{
     /// Return the [NodeContent] given a [Leaf]
-    fn get(&self, r: Leaf) -> Option<&NodeContent> {
-	self.a.get(r.0)
+    fn any_get(&self, r: &dyn Any) -> Option<&NodeContent> {
+	r.downcast_ref::<Leaf>()
+	    .and_then(|l| self.a.get(l.0))
+    }
+    fn get(&self, i: Leaf) -> Option<&NodeContent> {
+	self.a.get(i.0)
     }
     /// Return a mutable [NodeContent] given a [Leaf]
-    fn get_mut(&mut self, r: Leaf) -> Option<&mut NodeContent> {
-	self.a.get_mut(r.0)
+    fn any_get_mut(&mut self, r: &dyn Any) -> Option<&mut NodeContent> {
+	r.downcast_ref::<Leaf>()
+	    .and_then(|l| self.a.get_mut(l.0))
+    }
+    fn get_mut(&mut self, i: Leaf) -> Option<&mut NodeContent> {
+	self.a.get_mut(i.0)
     }
 }
 
-impl Document for Tree {
-    fn as_any(&self) -> &dyn Any {
-	self
-    }
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-	self
-    }
-    fn to_string(&self, _n: Option<Box<dyn Node>>) -> String {
+impl<N> Document<N> for Tree<N>
+where
+    N: Node
+{
+    type Node = Leaf;
+
+    fn to_string(&self, _n: Option<N>) -> String {
 	String::from("not implemented yet (document)")
     }
-    fn to_xml(&self, n: Option<Box<dyn Node>>) -> String {
+    fn to_xml(&self, n: Option<N>) -> String {
 	n.map_or(
 	    self.root.map_or(
 		String::from(""),
-		|r| self.to_xml(Some(r.to_node()))
+		|r| self.to_xml(Some(r))
 	    ),
 	    |m| {
-		match Leaf::from_node(m.as_any()) {
-		    Result::Err(_) => String::from(""),
-		    Ok(o) => {
-			let nc = self.get(o).unwrap();	// TODO: Don't Panic
-			match nc.node_type() {
-			    NodeType::Element => {
-				let mut result = String::from("<");
-				let name = nc.name().unwrap();
-				result.push_str(name.to_string().as_str());
-				result.push_str(">");
-				let children = self.child_iter(m);
-				loop {
-				    match children.next(self) {
-					Some(c) => {
-					    result.push_str(self.to_xml(Some(c)).as_str())
-					}
-					None => break,
-				    }
-				}
-				result.push_str("</");
-				result.push_str(name.to_string().as_str());
-				result.push_str(">");
-				result
-			    }
-			    NodeType::Text => {
-				nc.value().unwrap().to_string()
-			    }
-			    _ => {
-				// TODO
-				String::from("-- not implemented --")
-			    }
-			}
+		let nc = self.any_get(m.as_any()).unwrap();	// TODO: Don't Panic
+		match nc.node_type() {
+		    NodeType::Element => {
+			let mut result = String::from("<");
+			let name = nc.name().unwrap();
+			result.push_str(name.to_string().as_str());
+			result.push_str(">");
+//			let children = (*self).child_iter(m);
+//			loop {
+//			    match children.next(self) {
+//				Some(c) => {
+//				    result.push_str(self.to_xml(Some(c)).as_str())
+//				}
+//				None => break,
+//			    }
+//			}
+			result.push_str("</");
+			result.push_str(name.to_string().as_str());
+			result.push_str(">");
+			result
+		    }
+		    NodeType::Text => {
+			nc.value().unwrap().to_string()
+		    }
+		    _ => {
+			// TODO
+			String::from("-- not implemented --")
 		    }
 		}
 	    }
 	)
     }
-    fn to_xml_with_options(&self, _n: Option<Box<dyn Node>>, _od: &OutputDefinition) -> String {
+    fn to_xml_with_options(&self, _n: Option<N>, _od: &OutputDefinition) -> String {
 	String::from("not implemented yet")
     }
-    fn to_json(&self, _n: Option<Box<dyn Node>>) -> String {
+    fn to_json(&self, _n: Option<N>) -> String {
 	String::from("not implemented yet")
     }
 
-    fn to_int(&self, n: Option<Box<dyn Node>>) -> Result<i64, Error> {
+    fn to_int(&self, n: Option<N>) -> Result<i64, Error> {
 	// Convert to a string, then try parsing that as an integer
 	n.map_or(
 	    self.root.map_or(
 		Result::Err(Error::new(ErrorKind::Unknown, String::from("document has no root element"))),
-		|r| self.to_int(Some(r.to_node()))
+		|r| self.to_int(Some(r))
 	    ),
 	    |m| {
 		self.to_string(Some(m)).parse::<i64>()
@@ -125,12 +125,12 @@ impl Document for Tree {
 	    }
 	)
     }
-    fn to_double(&self, n: Option<Box<dyn Node>>) -> f64 {
+    fn to_double(&self, n: Option<N>) -> f64 {
 	// Convert to a string, then try parsing that as a double
 	n.map_or(
 	    self.root.map_or(
 		f64::NAN,
-		|r| self.to_double(Some(r.to_node()))
+		|r| self.to_double(Some(r))
 	    ),
 	    |m| {
 		match self.to_string(Some(m)).parse::<f64>() {
@@ -140,10 +140,10 @@ impl Document for Tree {
 	    }
 	)
     }
-    fn to_name(&self, n: Option<Box<dyn Node>>) -> QualifiedName {
+    fn to_name(&self, n: Option<N>) -> QualifiedName {
 	n.map_or(
 	    QualifiedName::new(None, None, String::from("")),
-	    |m| self.get(Leaf::from_node(m.as_any()).expect("unable to translate to Leaf"))
+	    |m| self.any_get(m.as_any())
 		.map_or(
 		    QualifiedName::new(None, None, String::from("")),
 		    |o| o.name().map_or(
@@ -154,27 +154,22 @@ impl Document for Tree {
 	)
     }
 
-    fn node_type(&self, n: Box<dyn Node>) -> NodeType {
-	self.get(Leaf::from_node(n.as_any()).expect("unable to translate to Leaf"))
+    fn node_type(&self, n: N) -> NodeType {
+	self.any_get(n.as_any())
 	    .map_or(
 		NodeType::Unknown,
 		|m| m.node_type(),
-		)
+	    )
     }
 
-    fn get_root_element(&self) -> Option<Box<dyn Node>> {
-	self.root.as_ref().map(|r| r.to_node())
+    fn get_root_element(&self) -> Option<N> {
+	self.root.as_ref().map(|r| r.clone())
     }
-    fn set_root_element(&mut self, r: &dyn Any) -> Result<(), Error> {
-	let n: &Leaf = match r.downcast_ref::<Leaf>() {
-	    Some(m) => m,
-	    None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "root element must be a node index".to_string()}),
-	};
-
-	if let Some(r) = self.get(*n) {
+    fn set_root_element(&mut self, n: N) -> Result<(), Error> {
+	if let Some(r) = self.any_get(n.as_any()) {
 	    if r.node_type() == NodeType::Element {
 		// TODO: check if the Tree already has a root element
-		self.root = Some(*n);
+		self.root = Some(n);
 		Ok(())
 	    } else {
 		Result::Err(Error::new(
@@ -190,23 +185,23 @@ impl Document for Tree {
 	}
     }
 
-    fn new_element(&mut self, name: QualifiedName) -> Result<Box<dyn Node>, Error> {
+    fn new_element(&mut self, name: QualifiedName) -> Result<N, Error> {
 	Ok(
 	    Leaf::from(
 		self.a
 		    .insert(NodeBuilder::new(NodeType::Element).name(name).build())
-	    ).to_node()
+	    )
 	)
     }
-    fn new_text(&mut self, c: Value) -> Result<Box<dyn Node>, Error> {
+    fn new_text(&mut self, c: Value) -> Result<N, Error> {
 	Ok(
 	    Leaf::from(
 		self.a
 		    .insert(NodeBuilder::new(NodeType::Text).value(c).build())
-	    ).to_node()
+	    )
 	)
     }
-    fn new_attribute(&mut self, name: QualifiedName, v: Value) -> Result<Box<dyn Node>, Error> {
+    fn new_attribute(&mut self, name: QualifiedName, v: Value) -> Result<N, Error> {
 	Ok(
 	    Leaf::from(
 		self.a.insert(
@@ -215,18 +210,18 @@ impl Document for Tree {
 			.value(v)
 			.build(),
 		)
-	    ).to_node()
+	    )
 	)
     }
-    fn new_comment(&mut self, v: Value) -> Result<Box<dyn Node>, Error> {
+    fn new_comment(&mut self, v: Value) -> Result<N, Error> {
         Ok(
 	    Leaf::from(
 		self.a
 		    .insert(NodeBuilder::new(NodeType::Comment).value(v).build())
-	    ).to_node()
+	    )
 	)
     }
-    fn new_processing_instruction(&mut self, name: QualifiedName, v: Value) -> Result<Box<dyn Node>, Error> {
+    fn new_processing_instruction(&mut self, name: QualifiedName, v: Value) -> Result<N, Error> {
         Ok(
 	    Leaf::from(
 		self.a.insert(
@@ -235,23 +230,22 @@ impl Document for Tree {
 			.value(v)
 			.build(),
 		)
-	    ).to_node()
+	    )
 	)
     }
 
-    fn append_child(&mut self, parent: Box<dyn Node>, child: Box<dyn Node>) -> Result<(), Error> {
+    fn append_child(&mut self, p: N, c: N) -> Result<(), Error> {
         // TODO: p and c must be Indexes for this Tree
-	let p = Leaf::from_node(parent.as_any())?;
-	let c = Leaf::from_node(child.as_any())?;
+	// TODO: Don't Panic
 
 	// Check that p is an element and that c is not an attribute
-        if self.a[p.0].node_type() != NodeType::Element {
+        if self.get(p).unwrap().node_type() != NodeType::Element {
             return Result::Err(Error::new(
                 ErrorKind::Unknown,
                 String::from("must be an element"),
             ));
         }
-        if self.a[c.0].node_type() == NodeType::Attribute {
+        if self.get(c).unwrap().node_type() == NodeType::Attribute {
             return Result::Err(Error::new(
                 ErrorKind::Unknown,
                 String::from("cannot append an attribute as a child"),
@@ -261,37 +255,38 @@ impl Document for Tree {
 	// TODO: detach c from wherever it currently is located
 
 	// p will now be c's parent
-	self.a[c.0].parent = Some(p.0);
+	self.get_mut(c).unwrap().parent = Some(p);
 
 	// Push c onto p's child list
-        let x = self.a[p.0].children.take();
-        self.a[p.0].children = Some(x.map_or(vec![c.0], |mut y| {
-            y.push(c.0);
+        let x = self.get_mut(p).children.take();
+        self.get_mut(p).children = Some(x.map_or(vec![c], |mut y| {
+            y.push(c);
             y
         }));
 
         Ok(())
     }
-    fn insert_before(&mut self, _child: Box<dyn Node>, _insert: Box<dyn Node>) -> Result<(), Error> {
+    fn insert_before(&mut self, _child: N, _insert: N) -> Result<(), Error> {
         return Result::Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not yet implemented"),
         ));
     }
 
-    fn ancestor_iter(&self, n: Box<dyn Node>) -> Box<dyn AncestorIterator<Item = Box<dyn Node>>> {
-	Box::new(Ancestors::new(Leaf::from_node(n.as_any()).expect("not a valid Node")))
+//    fn ancestor_iter<D: Document<N>>(&self, n: N) -> Box<dyn AncestorIterator<D, N, Item = N>> {
+//	Box::new(Ancestors::new(n))
+//    }
+    fn parent(&self, n: N) -> Option<N> {
+	None
+//	self.ancestor_iter(n).next(self).map(|p| p)
     }
-    fn parent(&self, n: Box<dyn Node>) -> Option<Box<dyn Node>> {
-	self.ancestor_iter(n).next(self).map(|p| p)
-    }
-    fn child_iter(&self, n: Box<dyn Node>) -> Box<dyn ChildIterator<Item = Box<dyn Node>>> {
-	Box::new(Children::new(Leaf::from_node(n.as_any()).expect("not a valid Node")))
-    }
-    fn doc_child_iter(&self) -> Box<dyn DocChildIterator<Item = Box<dyn Node>>> {
+//    fn child_iter<D: Document<N>>(&self, n: N) -> Box<dyn ChildIterator<D, N, Item = N>> {
+//	Box::new(Children::new(n))
+//    }
+//    fn doc_child_iter<D: Document<N>>(&self) -> Box<dyn DocChildIterator<D, N, Item = N>> {
 	// TODO: support prologue and epilogue
-	Box::new(DocChildren::new())
-    }
+//	Box::new(DocChildren::new())
+//    }
     //fn descend_iter(&self, i: NodeRef) -> Descendants {
 	//Descendants::new(self, i.1)
     //}
@@ -301,22 +296,6 @@ impl Document for Tree {
 #[derive(Copy, Clone)]
 struct Leaf(Index);
 
-impl Leaf {
-    pub fn from_node(i: &dyn Any) -> Result<Self, Error> {
-	match i.downcast_ref::<Leaf>() {
-	    Some(l) => {
-		Ok(*l)
-	    }
-	    None => {
-		Result::Err(Error::new(ErrorKind::DynamicAbsent, String::from("not a Leaf")))
-	    }
-	}
-    }
-    pub fn to_node(self) -> Box<dyn Node> {
-	Box::new(self)
-    }
-}
-
 impl From<Index> for Leaf {
     fn from(i: Index) -> Self {
 	Leaf(i)
@@ -324,56 +303,9 @@ impl From<Index> for Leaf {
 }
 
 impl Node for Leaf {
-    fn as_any(&self) -> &dyn Any {
-	self
-    }
-    fn as_any_mut(&mut self) -> &mut dyn Any {
-	self
-    }
-    fn to_string(&self) -> String {
-	String::new()
-    }
-    fn to_xml(&self) -> String {
-	String::from("not yet implemented (node)")
-    }
-    fn to_xml_with_options(&self, _od: &OutputDefinition) -> String {
-	String::from("not yet implemented")
-    }
-    fn to_json(&self) -> String {
-	String::from("not yet implemented")
-    }
-
-    fn to_int(&self) -> Result<i64, Error> {
-        return Result::Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not yet implemented"),
-        ));
-    }
-
-    fn to_double(&self) -> f64 {
-	f64::NAN
-    }
-    fn to_name(&self) -> QualifiedName {
-	// TODO
-	QualifiedName::new(None, None, String::from(""))
-    }
+    // Need the Tree to be able to find the NodeContent
     fn node_type(&self) -> NodeType {
 	NodeType::Unknown
-    }
-
-    fn get_attribute(&self, _name: &QualifiedName) -> Option<Value> {
-	// TODO
-	None
-    }
-    fn set_attribute(&self, _name: QualifiedName, _val: Value) {
-	// TODO
-    }
-    fn attributes(&self) -> Vec<Box<dyn Node>> {
-	// TODO
-	vec![]
-    }
-    fn set_value(&self, _v: Value) {
-	// TODO
     }
 }
 
@@ -436,14 +368,14 @@ impl Ancestors {
     }
 }
 
-impl AncestorIterator for Ancestors {
-    type Item = Box<dyn Node>;
+impl<D: Document<N>, N: Node> AncestorIterator<D, N> for Ancestors {
+    type Item = N;
 
-    fn next(&mut self, d: &dyn Document) -> Option<Self::Item> {
-	if let Some(c) = Tree::from_document(d.as_any()).expect("not a Document").a.get(self.cur.0) {
+    fn next(&mut self, d: D) -> Option<Self::Item> {
+	if let Some(c) = d.get(self.cur) {
 	    c.parent.map(|p| {
-		self.cur = Leaf::from(p);
-		Leaf::from(p).to_node()
+		self.cur = p;
+		p
 	    })
 	} else {
 	    // not a valid Index for the arena
@@ -454,26 +386,26 @@ impl AncestorIterator for Ancestors {
 
 // This iterator assumes that the child list doesn't change
 pub struct Children {
-    parent: Index,
+    parent: Leaf,
     cur: usize,
 }
 
 impl Children {
     fn new(parent: Leaf) -> Children {
-	Children{parent: parent.0, cur: 0}
+	Children{parent: parent, cur: 0}
     }
 }
 
-impl ChildIterator for Children {
-    type Item = Box<dyn Node>;
+impl<D: Document<N>, N: Node> ChildIterator<D, N> for Children {
+    type Item = N;
 
-    fn next(&mut self, d: &dyn Document) -> Option<Self::Item> {
-	if let Some(p) = Tree::from_document(d.as_any()).expect("not a Document").a.get(self.parent) {
+    fn next(&mut self, d: D) -> Option<Self::Item> {
+	if let Some(p) = d.get(self.parent) {
 	    if p.children.is_none() {
 		None
 	    } else if self.cur < p.children.as_ref().unwrap().len() {
 		self.cur += 1;
-		Some(Box::new(Leaf::from(p.children.as_ref().unwrap()[self.cur - 1])))
+		Some(p.children.as_ref().unwrap()[self.cur - 1])
 	    } else {
 		None
 	    }
@@ -495,12 +427,12 @@ impl DocChildren {
     }
 }
 
-impl DocChildIterator for DocChildren {
-    type Item = Box<dyn Node>;
+impl<D: Document<N>, N: Node> DocChildIterator<D, N> for DocChildren {
+    type Item = N;
 
     // TODO: support prologoue and epilogue
-    fn next(&mut self, d: &dyn Document) -> Option<Self::Item> {
-	Tree::from_document(d.as_any()).expect("not a Document").root.map(|r| r.to_node())
+    fn next(&mut self, d: D) -> Option<Self::Item> {
+	d.root.map(|r| r)
     }
 }
 
@@ -517,7 +449,7 @@ pub struct Descendants {
 }
 
 impl Descendants {
-    fn new(t: &Tree, parent: Index) -> Descendants {
+    fn new<N: Node>(t: &Tree<N>, parent: Index) -> Descendants {
 	Descendants{cur: gather_nodes(t, parent), idx: None}
     }
 }
@@ -532,7 +464,7 @@ impl Descendants {
 //    }
 //}
 
-fn gather_nodes(t: &Tree, p: Index) -> Vec<Index> {
+fn gather_nodes<N: Node>(t: &Tree<N>, p: Index) -> Vec<Index> {
     t.get(Leaf::from(p)).map_or(vec![], |n| {
 	n.children.as_ref().map_or(vec![], |m| {
 	    let mut result: Vec<Index> = vec![];
@@ -554,19 +486,17 @@ mod tests {
 
     #[test]
     fn noroot() {
-        let n = Tree::new();
+        let n = Tree::<Leaf>::new();
         assert_eq!(n.get_root_element().is_none(), true);
     }
     #[test]
     fn root() {
-        let mut n = Tree::new();
+        let mut n = Tree::<Leaf>::new();
         let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-        n.set_root_element(m.as_any());
+        n.set_root_element(m);
 
 	let rootnode = n.get(
-	    Leaf::from_node(
-		n.get_root_element().unwrap().as_any()
-	    ).expect("unable to translate to Leaf")
+	    n.get_root_element().unwrap()
 	).unwrap();
 	let qname = rootnode.name().clone().unwrap();
         assert_eq!(qname.get_localname(), "Test")
@@ -580,95 +510,95 @@ mod tests {
     }
     #[test]
     fn append_element_child() {
-        let mut n = Tree::new();
+        let mut n = Tree::<Leaf>::new();
         let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-        n.set_root_element(m.as_any());
+        n.set_root_element(m);
         let e = n.new_element(QualifiedName::new(None, None, String::from("Child"))).expect("unable to create element");
         assert!(n.append_child(m, e).is_ok());
         assert_eq!(n.to_xml(None), "<Test><Child></Child></Test>")
     }
     #[test]
     fn append_text_child() {
-        let mut n = Tree::new();
+        let mut n = Tree::<Leaf>::new();
         let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-        n.set_root_element(m.as_any());
+        n.set_root_element(m);
         let t = n.new_text(Value::from("this is text")).expect("unable to create text node");
         assert!(n.append_child(m, t).is_ok());
         assert_eq!(n.to_xml(None), "<Test>this is text</Test>")
     }
     #[test]
     fn append_multi() {
-        let mut n = Tree::new();
+        let mut n = Tree::<Leaf>::new();
         let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-	let mi = Leaf::from_node(m.as_any()).expect("unable to translate Leaf").clone();
-        n.set_root_element(m.as_any());
+	let mi = m.clone();
+        n.set_root_element(m);
         (1..3).for_each(|i| {
             let e = n.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element");
-	    let ei = Leaf::from_node(e.as_any()).expect("unable to translate Leaf").clone();
-            n.append_child(mi.to_node(), e)
+	    let ei = e.clone();
+            n.append_child(mi, e)
                 .expect("failed to append element child");
             (1..3).for_each(|j| {
                 let f = n.new_element(QualifiedName::new(None, None, String::from("Level-2"))).expect("unable to create element");
-		let fi = Leaf::from_node(f.as_any()).expect("unable to translate Leaf").clone();
+		let fi = f.clone();
                 let g = n.new_text(Value::from(format!("node {}-{}", i, j))).expect("unable to create text node");
-                n.append_child(fi.to_node(), g).expect("unable to add text node");
-                n.append_child(ei.to_node(), f).expect("unable to add Level-2 element");
+                n.append_child(fi, g).expect("unable to add text node");
+                n.append_child(ei, f).expect("unable to add Level-2 element");
             });
         });
 
         assert_eq!(n.to_xml(None), "<Test><Level-1><Level-2>node 1-1</Level-2><Level-2>node 1-2</Level-2></Level-1><Level-1><Level-2>node 2-1</Level-2><Level-2>node 2-2</Level-2></Level-1></Test>")
     }
-    #[test]
-    fn ancestors() {
-        let mut n = Tree::new();
-        let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-        n.set_root_element(m.as_any());
-        let e = n.new_element(QualifiedName::new(None, None, String::from("Child1"))).expect("unable to create element");
-	let ei = Leaf::from_node(e.as_any()).expect("unable to translate Leaf").clone();
-        assert!(n.append_child(m, ei.to_node()).is_ok());
-        let f = n.new_element(QualifiedName::new(None, None, String::from("Child2"))).expect("unable to create element");
-	let fi = Leaf::from_node(f.as_any()).expect("unable to translate Leaf").clone();
-        assert!(n.append_child(e, fi.to_node()).is_ok());
-        assert_eq!(n.to_xml(None), "<Test><Child1><Child2></Child2></Child1></Test>");
-	let mut pi = n.ancestor_iter(f);
-	let p = pi.next(&n).unwrap();
-	assert_eq!(n.get(
-	    Leaf::from_node(p.as_any()).expect("unable to translate to Leaf")
-	).unwrap().name().clone().unwrap().get_localname(), "Child1");
-	let q = pi.next(&n).unwrap();
-	assert_eq!(n.get(
-	    Leaf::from_node(q.as_any()).expect("unable to translate to Leaf")
-	).unwrap().name().clone().unwrap().get_localname(), "Test");
-	assert_eq!(pi.next(&n).is_none(), true)
-    }
-    #[test]
-    fn children() {
-        let mut n = Tree::new();
-        let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-	let mi = Leaf::from_node(m.as_any()).expect("unable to translate Leaf").clone();
-        n.set_root_element(m.as_any());
-        let e = n.new_element(QualifiedName::new(None, None, String::from("Child1"))).expect("unable to create element");
-        assert!(n.append_child(mi.to_node(), e).is_ok());
-        let f = n.new_element(QualifiedName::new(None, None, String::from("Child2"))).expect("unable to create element");
-        assert!(n.append_child(mi.to_node(), f).is_ok());
-        let g = n.new_element(QualifiedName::new(None, None, String::from("Child3"))).expect("unable to create element");
-        assert!(n.append_child(mi.to_node(), g).is_ok());
+//    #[test]
+//    fn ancestors() {
+//        let mut n = Tree::<Leaf>::new();
+//        let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
+//        n.set_root_element(m);
+//        let e = n.new_element(QualifiedName::new(None, None, String::from("Child1"))).expect("unable to create element");
+//	let ei = e.clone();
+//        assert!(n.append_child(m, ei).is_ok());
+//        let f = n.new_element(QualifiedName::new(None, None, String::from("Child2"))).expect("unable to create element");
+//	let fi = f.clone();
+//        assert!(n.append_child(e, fi.to_node()).is_ok());
+//        assert_eq!(n.to_xml(None), "<Test><Child1><Child2></Child2></Child1></Test>");
+//	let mut pi = n.ancestor_iter(f);
+//	let p = pi.next(&n).unwrap();
+//	assert_eq!(n.get(
+//	    Leaf::from_node(p.as_any()).expect("unable to translate to Leaf")
+//	).unwrap().name().clone().unwrap().get_localname(), "Child1");
+//	let q = pi.next(&n).unwrap();
+//	assert_eq!(n.get(
+//	    Leaf::from_node(q.as_any()).expect("unable to translate to Leaf")
+//	).unwrap().name().clone().unwrap().get_localname(), "Test");
+//	assert_eq!(pi.next(&n).is_none(), true)
+//    }
+//    #[test]
+//    fn children() {
+//        let mut n = Tree::<Leaf>::new();
+//        let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
+//	let mi = Leaf::from_node(m.as_any()).expect("unable to translate Leaf").clone();
+  //      n.set_root_element(m.as_any());
+//        let e = n.new_element(QualifiedName::new(None, None, String::from("Child1"))).expect("unable to create element");
+//        assert!(n.append_child(mi.to_node(), e).is_ok());
+//        let f = n.new_element(QualifiedName::new(None, None, String::from("Child2"))).expect("unable to create element");
+//        assert!(n.append_child(mi.to_node(), f).is_ok());
+//        let g = n.new_element(QualifiedName::new(None, None, String::from("Child3"))).expect("unable to create element");
+//        assert!(n.append_child(mi.to_node(), g).is_ok());
 
-	let mut it = n.child_iter(m);
-	let c1 = it.next(&n).unwrap();
-	assert_eq!(n.get(
-	    Leaf::from_node(c1.as_any()).expect("unable to translate to Leaf")
-	).unwrap().name().clone().unwrap().get_localname(), "Child1");
-	let c2 = it.next(&n).unwrap();
-	assert_eq!(n.get(
-	    Leaf::from_node(c2.as_any()).expect("unable to translate to Leaf")
-	).unwrap().name().clone().unwrap().get_localname(), "Child2");
-	let c3 = it.next(&n).unwrap();
-	assert_eq!(n.get(
-	    Leaf::from_node(c3.as_any()).expect("unable to translate to Leaf")
-	).unwrap().name().clone().unwrap().get_localname(), "Child3");
-	assert_eq!(it.next(&n).is_none(), true)
-    }
+//	let mut it = n.child_iter(m);
+//	let c1 = it.next(&n).unwrap();
+//	assert_eq!(n.get(
+//	    Leaf::from_node(c1.as_any()).expect("unable to translate to Leaf")
+//	).unwrap().name().clone().unwrap().get_localname(), "Child1");
+//	let c2 = it.next(&n).unwrap();
+//	assert_eq!(n.get(
+//	    Leaf::from_node(c2.as_any()).expect("unable to translate to Leaf")
+//	).unwrap().name().clone().unwrap().get_localname(), "Child2");
+//	let c3 = it.next(&n).unwrap();
+//	assert_eq!(n.get(
+//	    Leaf::from_node(c3.as_any()).expect("unable to translate to Leaf")
+//	).unwrap().name().clone().unwrap().get_localname(), "Child3");
+//	assert_eq!(it.next(&n).is_none(), true)
+//    }
 //    #[test]
 //    fn descendants_none() {
 //        let mut n = Tree::new();
@@ -714,22 +644,22 @@ mod tests {
     #[bench]
     fn bench_ga(b: &mut Bencher) {
         b.iter(|| {
-            let mut n = Tree::new();
+            let mut n = Tree::<Leaf>::new();
             let m = n.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element");
-	    let mi = Leaf::from_node(m.as_any()).expect("unable to translate Leaf").clone();
-            n.set_root_element(m.as_any());
+	    let mi = m.clone();
+            n.set_root_element(m);
             (1..3).for_each(|i| {
                 let e = n.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element");
-		let ei = Leaf::from_node(e.as_any()).expect("unable to translate Leaf").clone();
+		let ei = e.clone();
 
-                n.append_child(mi.to_node(), e)
+                n.append_child(mi, e)
                     .expect("failed to append element child");
                 (1..3).for_each(|j| {
                     let f = n.new_element(QualifiedName::new(None, None, String::from("Level-2"))).expect("unable to create element");
-		    let fi = Leaf::from_node(f.as_any()).expect("unable to translate Leaf").clone();
+		    let fi = f.clone();
                     let g = n.new_text(Value::from(format!("node {}-{}", i, j))).expect("unable to create text node");
-                    n.append_child(fi.to_node(), g).expect("unable to add text node");
-                    n.append_child(ei.to_node(), f).expect("unable to add Level-2 element");
+                    n.append_child(fi, g).expect("unable to add text node");
+                    n.append_child(ei, f).expect("unable to add Level-2 element");
                 });
             });
             n

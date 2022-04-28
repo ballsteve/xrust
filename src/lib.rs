@@ -53,22 +53,27 @@ pub use xdmerror::{Error, ErrorKind};
 
 pub mod qname;
 mod parsepicture;
+mod output;
 
+pub mod value;
+pub use value::Value;
+pub mod node;
+pub use node::Node;
 pub mod item;
-pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
+pub use item::{Sequence, SequenceTrait, Item};
 
 //pub mod xdmgraph;
 
 pub mod impls {
 //  pub mod graphitem;
 
-  pub mod ga;
+//  pub mod ga;
 }
 
 mod parsecommon;
 
 pub mod parsexml;
-//pub use parsexml::parse;
+pub use parsexml::parse;
 
 //pub mod xpath;
 //pub use xpath::parse;
