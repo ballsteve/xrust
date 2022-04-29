@@ -2,8 +2,9 @@
 //!
 //! A node in a document tree.
 
-use generational_arena::{Arena, Index};
 use std::collections::HashMap;
+use std::convert::TryFrom;
+use generational_arena::{Arena, Index};
 use crate::qname::QualifiedName;
 use crate::output::OutputDefinition;
 use crate::xdmerror::{Error, ErrorKind};
@@ -42,8 +43,8 @@ impl Tree
     fn get_mut(&mut self, i: Index) -> Option<&mut NodeContent> {
 	self.a.get_mut(i)
     }
-    fn get_doc_node(&self) -> Index {
-	self.d
+    fn get_doc_node(&self) -> Node {
+	Node::from(self.d)
     }
     fn push_doc_node(&mut self, n: Node) -> Result<(), Error> {
 	// Set the parent to the document node
@@ -57,9 +58,6 @@ impl Tree
 		    Ok(())
 		}
 	    )
-    }
-    fn insert(&mut self, nc: NodeContent) -> Index {
-	self.a.insert(nc)
     }
 
     pub fn new_element(&mut self, name: QualifiedName) -> Result<Node, Error> {
@@ -120,7 +118,8 @@ impl TryFrom<&str> for Tree {
 	    let mut ns: HashMap<String, String> = HashMap::new();
 	    let mut t = Tree::new();
 	    for c in d.content {
-		t.doc_push_node(make_node(c, &mut t, &mut ns)?)?;
+		let e = make_node(c, &mut t, &mut ns)?;
+		t.push_doc_node(e)?;
 	    }
 	    Ok(t)
 	}
@@ -133,13 +132,15 @@ fn make_node(
     ns: &mut HashMap<String, String>,
 ) -> Result<Node, Error> {
     match n {
-	XMLNode::Element(m, a, c) -> {
+	XMLNode::Element(m, a, c) => {
 	    a.iter()
 		.filter(|b| {
 		    match b {
 			XMLNode::Attribute(qn, _) => {
 			    match qn.get_prefix() {
-				Some("xmlns") => true,
+				Some(p) => {
+				    p == "xmlns"
+				}
 				_ => false,
 			    }
 			}
@@ -149,20 +150,87 @@ fn make_node(
 		.for_each(|b| {
 		    if let XMLNode::Attribute(qn, v) = b {
 			// add map from prefix to uri in hashmap
-			ns.insert(qn.get_localname(), v.to_string()).map(|| {})
+			ns.insert(qn.get_localname(), v.to_string()).map(|_| {});
 		    }
 		});
 	    // Add element to the tree
-	    let newns = n.get_prefix()
-		.map(|p| ns.get(&p).clone());
+	    let newns = match m.get_prefix() {
+		Some(p) => {
+		    match ns.get(&p) {
+			Some(q) => Some(q.clone()),
+			None => {
+			    return Result::Err(Error::new(ErrorKind::Unknown, String::from("namespace URI not found for prefix")))
+			}
+		    }
+		}
+		None => None,
+	    };
 	    let new = t.new_element(
 		QualifiedName::new(
 		    newns,
-		    n.get_prefix(),
-		    n.get_localname(),
+		    m.get_prefix(),
+		    m.get_localname(),
 		)
 	    )?;
-	    
+
+	    // Attributes
+	    a.iter()
+		.for_each(|b| {
+		    if let XMLNode::Attribute(qn, v) = b {
+			match qn.get_prefix() {
+			    Some(p) => {
+				if p != "xmlns" {
+				    let ans = ns.get(&p).unwrap_or(&"".to_string()).clone();
+				    match t.new_attribute(
+					QualifiedName::new(Some(ans), Some(p), qn.get_localname()),
+					v.clone()
+				    ) {
+        				Ok(c) => {
+					    new.add_attribute(t, c).expect("unable to add attribute"); // TODO: Don't Panic
+					}
+					Err(_) => {
+					    //return Result::Err(e);
+					}
+      				    };
+				}
+				// otherwise it is a namespace declaration, see above
+			    }
+			    _ => {
+				// Unqualified name
+				match t.new_attribute(qn.clone(), v.clone()) {
+        			    Ok(c) => {
+					new.add_attribute(t, c).expect("unable to add attribute"); // TODO: Don't Panic
+				    }
+				    Err(_) => {
+					//return Result::Err(e);
+				    }
+				}
+			    }
+			}
+		    }
+		}
+		);
+
+	    // Element content
+	    for f in c.iter().cloned() {
+		let g = make_node(f, t, ns)?;
+		new.append_child(t, g)?
+	    }
+
+	    Ok(new)
+	}
+	XMLNode::Attribute(_qn, _v) => {
+	    // Handled in element arm
+	    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+	}
+	XMLNode::Text(v) => {
+	    Ok(t.new_text(v)?)
+	}
+	XMLNode::Comment(v) => {
+	    Ok(t.new_comment(v)?)
+	}
+	XMLNode::PI(m, v) => {
+	    Ok(t.new_processing_instruction(QualifiedName::new(None, None, m), v)?)
 	}
     }
 }
@@ -591,6 +659,7 @@ pub trait DocChildIterator {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use test::Bencher;
 
     #[test]
     fn emptydoc() {
@@ -725,5 +794,37 @@ mod tests {
 	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
 
 	assert_eq!(t2.parent(&t), Some(l2));
+    }
+
+    #[test]
+    fn parse() {
+	let t = Tree::try_from("<Test><empty/>
+<data mode='mixed'>This contains <i>mixed</i> content.</data>
+<special>Some escaped chars &lt;&amp;&gt;</special>
+</Test>")
+	    .expect("unable to parse");
+	assert_eq!(t.get_doc_node().child_iter().next(&t).unwrap().to_xml(&t), "<Test><empty></empty>
+<data mode='mixed'>This contains <i>mixed</i> content.</data>
+<special>Some escaped chars <&></special>
+</Test>")
+    }
+
+    #[bench]
+    fn bench_tree(b: &mut Bencher) {
+	b.iter(|| {
+	    let mut t = Tree::new();
+	    let r = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	    t.push_doc_node(r).expect("unable to add doc node");
+	    (1..3).for_each(|i| {
+		let j = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+		r.append_child(&mut t, j).expect("unable to append node");
+		(1..3).for_each(|k| {
+		    let l = t.new_element(QualifiedName::new(None, None, String::from("Level-2"))).expect("unable to create element node");
+		    j.append_child(&mut t, l).expect("unable to append node");
+		    let m = t.new_text(Value::from(format!("node {}-{}", i, k))).expect("unable to create text node");
+		    l.append_child(&mut t, m).expect("unable to append node");
+		});
+	    });
+	})
     }
 }
