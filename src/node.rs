@@ -456,6 +456,12 @@ impl Node {
     pub fn child_iter(&self) -> Children {
 	Children::new(self.0)
     }
+    pub fn next_iter(&self, d: &Tree) -> Siblings {
+	Siblings::new(self.0, 1, d)
+    }
+    pub fn prev_iter(&self, d: &Tree) -> Siblings {
+	Siblings::new(self.0, -1, d)
+    }
 }
 
 pub struct Ancestors {
@@ -498,6 +504,44 @@ impl Children {
 	    if n.children.len() > self.cur {
 		self.cur += 1;
 		Some(n.children[self.cur - 1])
+	    } else {
+		None
+	    }
+	} else {
+	    None
+	}
+    }
+}
+
+pub struct Siblings {
+    parent: Index,
+    cur: usize,
+    dir: i16,
+}
+
+impl Siblings {
+    fn new(n: Index, dir: i16, t: &Tree) -> Siblings {
+	let nc = t.get(n).unwrap();
+	let pnc = t.get(nc.parent.unwrap().0).unwrap();
+	let cur = pnc.children.iter().enumerate()
+	    .skip_while(|(_, i)| i.0 != n)
+	    .nth(0)
+	    .map(|(e, _)| e)
+	    .unwrap();
+	Siblings{
+	    parent: nc.parent.unwrap().0,
+	    dir,
+	    cur: cur,
+	}
+    }
+    pub fn next(&mut self, d: &Tree) -> Option<Node> {
+	if let Some(n) = d.get(self.parent) {
+	    if self.dir > 0 && n.children.len() > self.cur + 1 {
+		self.cur += 1;
+		Some(n.children[self.cur])
+	    } else if self.dir < 0 && self.cur > 0 {
+		self.cur -= 1;
+		Some(n.children[self.cur])
 	    } else {
 		None
 	    }
@@ -794,6 +838,48 @@ mod tests {
 	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
 
 	assert_eq!(t2.parent(&t), Some(l2));
+    }
+
+    #[test]
+    fn following_sibling() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+
+	let mut follow = l1.next_iter(&t);
+	assert_eq!(follow.next(&t), Some(l2));
+	assert_eq!(follow.next(&t), None)
+    }
+
+    #[test]
+    fn preceding_sibling() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+
+	let mut pre = l2.prev_iter(&t);
+	assert_eq!(pre.next(&t), Some(l1));
+	assert_eq!(pre.next(&t), None)
     }
 
     #[test]
