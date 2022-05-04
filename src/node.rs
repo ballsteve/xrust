@@ -462,6 +462,9 @@ impl Node {
     pub fn prev_iter(&self, d: &Tree) -> Siblings {
 	Siblings::new(self.0, -1, d)
     }
+    pub fn descend_iter(&self, d: &Tree) -> Descendants {
+	Descendants::new(self.0, d)
+    }
 }
 
 pub struct Ancestors {
@@ -486,6 +489,84 @@ impl Ancestors {
 	    }
 	} else {
 	    None
+	}
+    }
+}
+
+pub struct Descendants {
+    start: Index,
+    cur: Index,
+    stack: Vec<(Index, usize)>,
+}
+
+impl Descendants {
+    fn new(cur: Index, d: &Tree) -> Descendants {
+	// Find cur in the parent's child list
+	let pi = d.get(cur).unwrap().parent.unwrap().0;
+	let p = d.get(pi).unwrap();
+	let q = p.children.iter().enumerate()
+	    .skip_while(|(_, i)| i.0 != cur)
+	    .nth(0)
+	    .map(|(e, _)| e)
+	    .unwrap();
+	Descendants{
+	    start: cur,
+	    cur: cur,
+	    stack: vec![(pi, q)],
+	}
+    }
+    pub fn next(&mut self, d: &Tree) -> Option<Node> {
+	if self.stack.is_empty() {
+	    None
+	} else {
+	    // Return the first child,
+	    // otherwise return the next sibling
+	    // otherwise return an ancestor's next sibling
+	    // (don't go past start)
+	    match Node::from(self.cur).child_iter().next(d) {
+		Some(n) => {
+		    self.stack.push((self.cur, 0));
+		    self.cur = n.0;
+		    Some(n)
+		}
+		None => {
+		    let (i, mut s) = self.stack.last_mut().unwrap();
+		    let pnc = d.get(*i).unwrap();
+		    if pnc.children.len() < s {
+			// have a next sibling
+			s += 1;
+			self.cur = pnc.children.get(s).unwrap().0;
+			Some(Node::from(self.cur))
+		    } else {
+			// ancestor next sibling
+			let result: Option<Node>;
+			loop {
+			    self.stack.pop();
+			    if self.stack.is_empty() {
+				result = None;
+				break
+			    } else {
+				let l = self.stack.last_mut().unwrap();
+				let (mut j, mut t) = l;
+				let qnc = d.get(j).unwrap();
+				if qnc.children.len() > t + 1 {
+				    t += 1;
+				    *l = (j, t);
+				    self.cur = qnc.children.get(t).unwrap().0;
+				    result = Some(Node::from(self.cur));
+				    break
+				} else {
+				    if j == self.start {
+					result = None;
+					break
+				    }
+				}
+			    }
+			}
+			result
+		    }
+		}
+	    }
 	}
     }
 }
@@ -880,6 +961,32 @@ mod tests {
 	let mut pre = l2.prev_iter(&t);
 	assert_eq!(pre.next(&t), Some(l1));
 	assert_eq!(pre.next(&t), None)
+    }
+
+    #[test]
+    fn descendants() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let f = t.new_element(QualifiedName::new(None, None, String::from("Another"))).expect("unable to create element node");
+	t.push_doc_node(f).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+
+	let mut desc = e.descend_iter(&t);
+	assert_eq!(desc.next(&t), Some(l1));
+	assert_eq!(desc.next(&t), Some(t1));
+	assert_eq!(desc.next(&t), Some(l2));
+	assert_eq!(desc.next(&t), Some(t2));
+	assert_eq!(desc.next(&t), None)
     }
 
     #[test]
