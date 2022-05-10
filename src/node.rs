@@ -424,6 +424,24 @@ impl Node {
         ));
     }
 
+    /// Detach the node from the tree
+    pub fn remove(&self, d: &mut Tree) -> Result<(), Error> {
+	// Remove from parent's child list
+	let mut cl = &mut d.get_mut(d.get(self.0).unwrap().parent.unwrap().0).unwrap().children;
+	let i = cl.iter()
+	    .enumerate()
+	    .skip_while(|(_, x)| x.0 != self.0)
+	    .nth(0)
+	    .map(|(e, _)| e)
+	    .unwrap();
+	cl.remove(i);
+
+	// This node now has no parent
+	d.get_mut(self.0).unwrap().parent = None;
+
+	Ok(())
+    }
+
     pub fn add_attribute(&self, d: &mut Tree, a: Node) -> Result<(), Error> {
         if self.node_type(d) != NodeType::Element {
             return Result::Err(Error::new(
@@ -469,6 +487,17 @@ impl Node {
 
     pub fn attribute_iter<'a>(&self, d: &'a Tree) -> Attributes<'a> {
 	Attributes::new(self.0, d)
+    }
+    pub fn get_attribute(&self, d: &Tree, qn: &QualifiedName) -> Option<Node> {
+	match d.get(self.0) {
+	    Some(nc) => {
+		match nc.attributes.get(qn) {
+		    Some(m) => Some(m.clone()),
+		    None => None,
+		}
+	    }
+	    None => None,
+	}
     }
 }
 
@@ -876,6 +905,25 @@ mod tests {
 	let pi = t.new_processing_instruction(QualifiedName::new(None, None, String::from("testPI")), Value::from("this is a PI")).expect("unable to create processing instruction node");
 	l1.append_child(&mut t, pi).expect("unable to append node");
 	assert_eq!(e.to_xml(&t), "<Test><Level-1><?testPI this is a PI?></Level-1></Test>")
+    }
+
+    #[test]
+    fn remove() {
+	let mut t = Tree::new();
+	let e = t.new_element(QualifiedName::new(None, None, String::from("Test"))).expect("unable to create element node");
+	t.push_doc_node(e).expect("unable to add node to doc");
+	let l1 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l1).expect("unable to append node");
+	let t1 = t.new_text(Value::from("one")).expect("unable to create text node");
+	l1.append_child(&mut t, t1).expect("unable to append node");
+	let l2 = t.new_element(QualifiedName::new(None, None, String::from("Level-1"))).expect("unable to create element node");
+	e.append_child(&mut t, l2).expect("unable to append node");
+	let t2 = t.new_text(Value::from("two")).expect("unable to create text node");
+	l2.append_child(&mut t, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+	l1.remove(&mut t).expect("unable to remove node");
+	assert_eq!(e.to_xml(&t), "<Test><Level-1>two</Level-1></Test>");
     }
 
     #[test]
