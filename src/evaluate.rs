@@ -4426,10 +4426,57 @@ mod tests {
     // Need a concrete type to test patterns
 
     // Literal result element
-    // Need a concrete type to test literal result elements
+    #[test]
+    fn literal_result() {
+	let e = Evaluator::new();
+	let mut t = Tree::new();
+	let c = vec![
+            Constructor::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		vec![]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut t).expect("evaluation failed");
+	assert_eq!(r.to_xml(Some(&t)), "<Test></Test>")
+    }
+    #[test]
+    fn literal_result_text() {
+	let e = Evaluator::new();
+	let mut t = Tree::new();
+	let c = vec![
+            Constructor::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		vec![
+		    Constructor::Literal(Value::from("data"))
+		]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut t).expect("evaluation failed");
+	assert_eq!(r.to_xml(Some(&t)), "<Test>data</Test>")
+    }
+    #[test]
+    fn literal_result_content() {
+	let e = Evaluator::new();
+	let mut t = Tree::new();
+	let c = vec![
+            Constructor::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		vec![
+		    Constructor::Literal(Value::from("data")),
+		    Constructor::LiteralElement(
+			QualifiedName::new(None, None, String::from("Level-1")),
+			vec![
+			    Constructor::Literal(Value::from("deeper"))
+			]
+		    )
+		]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut t).expect("evaluation failed");
+	assert_eq!(r.to_xml(Some(&t)), "<Test>data<Level-1>deeper</Level-1></Test>")
+    }
 
     // for-each, for-each-group
-    // See libxml-evaluate test
 
 }
 
