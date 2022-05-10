@@ -116,6 +116,22 @@ impl SequenceTrait for Sequence {
     }
 }
 
+impl From<Node> for Sequence {
+    fn from(n: Node) -> Self {
+	vec![Rc::new(Item::Node(n))]
+    }
+}
+impl From<Value> for Sequence {
+    fn from(v: Value) -> Self {
+	vec![Rc::new(Item::Value(v))]
+    }
+}
+impl From<Item> for Sequence {
+    fn from(i: Item) -> Self {
+	vec![Rc::new(i)]
+    }
+}
+
 /// An Item in a [Sequence]. Can be a [Node], Function or [Value].
 ///
 /// [Node]s are dynamic trait objects. [Node]s can only exist in the context of a [Document].

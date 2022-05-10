@@ -19,7 +19,7 @@ use nom::{
   error::{Error as NomError, ErrorKind as NomErrorKind},
   Err as NomErr,
 };
-use crate::item::*;
+use crate::value::*;
 use crate::xdmerror::*;
 use crate::parsecommon::*;
 use crate::evaluate::{
@@ -1639,21 +1639,24 @@ pub fn parse(e: &str) -> Result<Vec<Constructor>, crate::xdmerror::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::item::*;
+    use crate::node::Tree;
 
     // Parses to a singleton integer sequence constructor
     #[test]
     fn nomxpath_parse_int() {
         let e = parse("1").expect("failed to parse expression \"1\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e)
-	    .expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	    assert_eq!(s[0].to_int().unwrap(), 1)
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_int().unwrap(), 1)
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton double/decimal sequence constructor
@@ -1661,15 +1664,16 @@ mod tests {
     fn nomxpath_parse_decimal() {
         let e = parse("1.2").expect("failed to parse expression \"1.2\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e)
-	    .expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	    assert_eq!(s[0].to_double(), 1.2)
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_double(), 1.2)
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton double sequence constructor
@@ -1677,14 +1681,16 @@ mod tests {
     fn nomxpath_parse_double() {
         let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	     assert_eq!(s[0].to_double(), 120.0)
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_double(), 120.0)
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     //#[test]
@@ -1696,14 +1702,16 @@ mod tests {
     fn nomxpath_parse_string_apos() {
         let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	     assert_eq!(s[0].to_string(), "abc")
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_string(None), "abc")
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton string
@@ -1711,14 +1719,16 @@ mod tests {
     fn nomxpath_parse_string_apos_esc() {
         let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	     assert_eq!(s[0].to_string(), "abc'def")
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_string(None), "abc'def")
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton string
@@ -1726,14 +1736,16 @@ mod tests {
     fn nomxpath_parse_string_quot() {
         let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	     assert_eq!(s[0].to_string(), "abc")
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_string(None), "abc")
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     // Parses to a singleton string
@@ -1741,46 +1753,52 @@ mod tests {
     fn nomxpath_parse_string_quot_esc() {
         let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	     assert_eq!(s[0].to_string(), r#"abc"def"#)
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_string(None), r#"abc"def"#)
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
     #[test]
     fn nomxpath_parse_literal_sequence() {
         let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
 	if e.len() == 3 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 3 {
-	     assert_eq!(s[0].to_int().unwrap(), 1);
-	     assert_eq!(s[1].to_string(), r#"abc"#);
-	     assert_eq!(s[2].to_int().unwrap(), 2);
-	  } else {
-	    panic!("sequence does not have 3 items")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 3 {
+		assert_eq!(s[0].to_int().unwrap(), 1);
+		assert_eq!(s[1].to_string(None), r#"abc"#);
+		assert_eq!(s[2].to_int().unwrap(), 2);
+	    } else {
+		panic!("sequence does not have 3 items")
+	    }
 	} else {
-	  panic!("constructor does not have 3 items")
+	    panic!("constructor does not have 3 items")
 	}
     }
     #[test]
     fn nomxpath_parse_literal_seq_ws() {
         let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
 	if e.len() == 3 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 3 {
-	     assert_eq!(s[0].to_int().unwrap(), 1);
-	     assert_eq!(s[1].to_string(), r#"abc"#);
-	     assert_eq!(s[2].to_int().unwrap(), 2);
-	  } else {
-	    panic!("sequence does not have 3 items")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 3 {
+		assert_eq!(s[0].to_int().unwrap(), 1);
+		assert_eq!(s[1].to_string(None), r#"abc"#);
+		assert_eq!(s[2].to_int().unwrap(), 2);
+	    } else {
+		panic!("sequence does not have 3 items")
+	    }
 	} else {
-	  panic!("constructor does not have 3 items")
+	    panic!("constructor does not have 3 items")
 	}
     }
     #[test]
@@ -1815,16 +1833,18 @@ mod tests {
     fn nomxpath_parse_ws_comment_2() {
         let e = parse("1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2").expect("failed to parse \"1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2\"");
 	if e.len() == 3 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 3 {
-	     assert_eq!(s[0].to_int().unwrap(), 1);
-	     assert_eq!(s[1].to_string(), r#"abc"#);
-	     assert_eq!(s[2].to_int().unwrap(), 2);
-	  } else {
-	    panic!("sequence does not have 3 items")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 3 {
+		assert_eq!(s[0].to_int().unwrap(), 1);
+		assert_eq!(s[1].to_string(None), r#"abc"#);
+		assert_eq!(s[2].to_int().unwrap(), 2);
+	    } else {
+		panic!("sequence does not have 3 items")
+	    }
 	} else {
-	  panic!("constructor does not have 3 items")
+	    panic!("constructor does not have 3 items")
 	}
     }
 
@@ -1833,15 +1853,17 @@ mod tests {
     fn nomxpath_parse_context_item() {
         let e = parse(".").expect("failed to parse expression \".\"");
 	if e.len() == 1 {
-	  let ctxt = vec![Rc::new(Item::Value(Value::from("foobar")))];
-	  let s = Evaluator::new(None).evaluate(Some(ctxt), Some(0), &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	    assert_eq!(s[0].to_string(), "foobar")
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let ctxt = vec![Rc::new(Item::Value(Value::from("foobar")))];
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(Some(ctxt), Some(0), &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_string(None), "foobar")
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a singleton")
+	    panic!("constructor is not a singleton")
 	}
     }
 
@@ -1854,14 +1876,16 @@ mod tests {
     fn nomxpath_parse_singleton_paren() {
         let e = parse("(1)").expect("failed to parse expression \"(1)\"");
 	if e.len() == 1 {
-	  let s = Evaluator::new(None).evaluate(None, None, &e).expect("unable to evaluate sequence constructor");
-	  if s.len() == 1 {
-	     assert_eq!(s[0].to_int().unwrap(), 1)
-	  } else {
-	    panic!("sequence is not a singleton")
-	  }
+	    let mut t = Tree::new();
+	    let s = Evaluator::new().evaluate(None, None, &e, &mut t)
+		.expect("unable to evaluate sequence constructor");
+	    if s.len() == 1 {
+		assert_eq!(s[0].to_int().unwrap(), 1)
+	    } else {
+		panic!("sequence is not a singleton")
+	    }
 	} else {
-	  panic!("constructor is not a single item")
+	    panic!("constructor is not a single item")
 	}
     }
 
@@ -2013,297 +2037,329 @@ mod tests {
 
     #[test]
     fn parse_eval_fncall_string() {
-      let mut e = parse("string(('a', 'b', 'c'))").expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "abc")
+	let mut e = parse("string(('a', 'b', 'c'))").expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "abc")
     }
     #[test]
     fn parse_eval_fncall_concat() {
-      let mut e = parse("concat('a', 'b', 'c')").expect("failed to parse expression \"concat('a', 'b', 'c')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "abc")
+	let mut e = parse("concat('a', 'b', 'c')").expect("failed to parse expression \"concat('a', 'b', 'c')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "abc")
     }
     #[test]
     fn parse_eval_fncall_startswith_pos() {
-      let mut e = parse("starts-with('abc', 'a')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_bool(), true)
+	let mut e = parse("starts-with('abc', 'a')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_bool(), true)
     }
     #[test]
     fn parse_eval_fncall_startswith_neg() {
-      let mut e = parse("starts-with('abc', 'b')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_bool(), false)
+	let mut e = parse("starts-with('abc', 'b')").expect("failed to parse expression \"starts-with('abc', 'a')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_bool(), false)
     }
     #[test]
     fn parse_eval_fncall_contains_pos() {
-      let mut e = parse("contains('abc', 'b')").expect("failed to parse expression \"contains('abc', 'b')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_bool(), true)
+	let mut e = parse("contains('abc', 'b')").expect("failed to parse expression \"contains('abc', 'b')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_bool(), true)
     }
     #[test]
     fn parse_eval_fncall_contains_neg() {
-      let mut e = parse("contains('abc', 'd')").expect("failed to parse expression \"contains('abc', 'd')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_bool(), false)
+	let mut e = parse("contains('abc', 'd')").expect("failed to parse expression \"contains('abc', 'd')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_bool(), false)
     }
     #[test]
     fn parse_eval_fncall_substringbefore_pos() {
-      let mut e = parse("substring-before('abc', 'b')")
-        .expect("failed to parse expression \"substring-before('abc', 'b')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "a")
+	let mut e = parse("substring-before('abc', 'b')")
+            .expect("failed to parse expression \"substring-before('abc', 'b')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "a")
     }
     #[test]
     fn parse_eval_fncall_substringbefore_neg() {
-      let mut e = parse("substring-before('abc', 'd')")
-        .expect("failed to parse expression \"substring-before('abc', 'd')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "")
+	let mut e = parse("substring-before('abc', 'd')")
+            .expect("failed to parse expression \"substring-before('abc', 'd')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "")
     }
     #[test]
     fn parse_eval_fncall_substringafter_pos_1() {
-      let mut e = parse("substring-after('abc', 'b')")
-        .expect("failed to parse expression \"substring-after('abc', 'b')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "c")
+	let mut e = parse("substring-after('abc', 'b')")
+            .expect("failed to parse expression \"substring-after('abc', 'b')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "c")
     }
     #[test]
     fn parse_eval_fncall_substringafter_pos_2() {
-      let mut e = parse("substring-after('abc', 'c')")
-        .expect("failed to parse expression \"substring-after('abc', 'b')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "")
+	let mut e = parse("substring-after('abc', 'c')")
+            .expect("failed to parse expression \"substring-after('abc', 'b')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "")
     }
     #[test]
     fn parse_eval_fncall_substringafter_neg() {
-      let mut e = parse("substring-after('abc', 'd')")
-        .expect("failed to parse expression \"substring-after('abc', 'd')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "")
+	let mut e = parse("substring-after('abc', 'd')")
+            .expect("failed to parse expression \"substring-after('abc', 'd')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "")
     }
     #[test]
     fn parse_eval_fncall_normalizespace() {
-      let mut e = parse("normalize-space('	a  b\nc 	')")
-        .expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "abc")
+	let mut e = parse("normalize-space('	a  b\nc 	')")
+            .expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "abc")
     }
     #[test]
     fn parse_eval_fncall_translate() {
-      let mut e = parse("translate('abcdeabcde', 'ade', 'XY')")
-        .expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "XbcYXbcY")
+	let mut e = parse("translate('abcdeabcde', 'ade', 'XY')")
+            .expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "XbcYXbcY")
     }
     #[test]
     fn parse_eval_fncall_boolean_true() {
-      let mut e = parse("boolean('abcdeabcde')").expect("failed to parse expression \"boolean('abcdeabcde')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-	_ => panic!("not a singleton boolean true value")
-      }
+	let mut e = parse("boolean('abcdeabcde')").expect("failed to parse expression \"boolean('abcdeabcde')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	    _ => panic!("not a singleton boolean true value")
+	}
     }
     #[test]
     fn parse_eval_fncall_boolean_false() {
-      let mut e = parse("boolean('')").expect("failed to parse expression \"boolean('')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-	_ => panic!("not a singleton boolean false value")
-      }
+	let mut e = parse("boolean('')").expect("failed to parse expression \"boolean('')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	    _ => panic!("not a singleton boolean false value")
+	}
     }
     #[test]
     fn parse_eval_fncall_not_true() {
-      let mut e = parse("not('')").expect("failed to parse expression \"not('')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-	_ => panic!("not a singleton boolean true value")
-      }
+	let mut e = parse("not('')").expect("failed to parse expression \"not('')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	    _ => panic!("not a singleton boolean true value")
+	}
     }
     #[test]
     fn parse_eval_fncall_not_false() {
-      let mut e = parse("not('abc')").expect("failed to parse expression \"not('abc')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-	_ => panic!("not a singleton boolean false value")
-      }
+	let mut e = parse("not('abc')").expect("failed to parse expression \"not('abc')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	    _ => panic!("not a singleton boolean false value")
+	}
     }
     #[test]
     fn parse_eval_fncall_true() {
-      let mut e = parse("true()").expect("failed to parse expression \"true()\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-	_ => panic!("not a singleton boolean true value")
-      }
+	let mut e = parse("true()").expect("failed to parse expression \"true()\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	    _ => panic!("not a singleton boolean true value")
+	}
     }
     #[test]
     fn parse_eval_fncall_false() {
-      let mut e = parse("false()").expect("failed to parse expression \"false()\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-	_ => panic!("not a singleton boolean false value")
-      }
+	let mut e = parse("false()").expect("failed to parse expression \"false()\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	    _ => panic!("not a singleton boolean false value")
+	}
     }
     #[test]
     fn parse_eval_fncall_number_int() {
-      let mut e = parse("number('123')").expect("failed to parse expression \"number('123')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
-	_ => panic!("not a singleton integer value, got \"{}\"", s.to_string())
-      }
+	let mut e = parse("number('123')").expect("failed to parse expression \"number('123')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
+	    _ => panic!("not a singleton integer value, got \"{}\"", s.to_string(None))
+	}
     }
     #[test]
     fn parse_eval_fncall_number_double() {
-      let mut e = parse("number('123.456')").expect("failed to parse expression \"number('123.456')\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
-	_ => panic!("not a singleton double value")
-      }
+	let mut e = parse("number('123.456')").expect("failed to parse expression \"number('123.456')\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn parse_eval_fncall_sum() {
-      let mut e = parse("sum(('123.456', 10, 20, '0'))")
-        .expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 + 20.0),
-	_ => panic!("not a singleton double value")
-      }
+	let mut e = parse("sum(('123.456', 10, 20, '0'))")
+            .expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 + 20.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn parse_eval_fncall_floor() {
-      let mut e = parse("floor(123.456)").expect("failed to parse expression \"floor(123.456)\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
-	_ => panic!("not a singleton double value")
-      }
+	let mut e = parse("floor(123.456)").expect("failed to parse expression \"floor(123.456)\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn parse_eval_fncall_ceiling() {
-      let mut e = parse("ceiling(123.456)").expect("failed to parse expression \"ceiling(123.456)\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
-	_ => panic!("not a singleton double value")
-      }
+	let mut e = parse("ceiling(123.456)").expect("failed to parse expression \"ceiling(123.456)\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn parse_eval_fncall_round_down() {
-      let mut e = parse("round(123.456)").expect("failed to parse expression \"round(123.456)\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
-	_ => panic!("not a singleton double value")
-      }
+	let mut e = parse("round(123.456)").expect("failed to parse expression \"round(123.456)\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn parse_eval_fncall_round_up() {
-      let mut e = parse("round(123.654)").expect("failed to parse expression \"round(123.654)\"");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      match *s[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
-	_ => panic!("not a singleton double value")
-      }
+	let mut e = parse("round(123.654)").expect("failed to parse expression \"round(123.654)\"");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	match *s[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
 
     // Variables
     #[test]
     fn parse_eval_let_1() {
-      let mut e = parse("let $x := 'a' return ($x, $x)").expect("failed to parse let expression");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.to_string(), "aa")
+	let mut e = parse("let $x := 'a' return ($x, $x)").expect("failed to parse let expression");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.to_string(None), "aa")
     }
     #[test]
     fn parse_eval_let_2() {
-      let mut e = parse("let $x := 'a', $y := 'b' return ($x, $y)").expect("failed to parse let expression");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 2);
-      assert_eq!(s.to_string(), "ab")
+	let mut e = parse("let $x := 'a', $y := 'b' return ($x, $y)").expect("failed to parse let expression");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 2);
+	assert_eq!(s.to_string(None), "ab")
     }
 
     // Loops
     #[test]
     fn parse_eval_for_1() {
-      let mut e = parse("for $x in ('a', 'b', 'c') return ($x, $x)").expect("failed to parse let expression");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 6);
-      assert_eq!(s.to_string(), "aabbcc")
+	let mut e = parse("for $x in ('a', 'b', 'c') return ($x, $x)").expect("failed to parse let expression");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 6);
+	assert_eq!(s.to_string(None), "aabbcc")
     }
     #[test]
     fn parse_eval_for_2() {
-      let mut e = parse("for $x in (1, 2, 3) return $x * 2").expect("failed to parse let expression");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 3);
-      assert_eq!(s.to_string(), "246")
+	let mut e = parse("for $x in (1, 2, 3) return $x * 2").expect("failed to parse let expression");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 3);
+	assert_eq!(s.to_string(None), "246")
     }
 
     #[test]
     fn parse_eval_if_1() {
-      let mut e = parse("if (1) then 'one' else 'not one'").expect("failed to parse let expression");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      assert_eq!(s.to_string(), "one")
+	let mut e = parse("if (1) then 'one' else 'not one'").expect("failed to parse let expression");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	assert_eq!(s.to_string(None), "one")
     }
     #[test]
     fn parse_eval_if_2() {
-      let mut e = parse("if (0) then 'one' else 'not one'").expect("failed to parse let expression");
-      StaticContext::new_with_builtins().static_analysis(&mut e);
-      let s = Evaluator::new(None).evaluate(None, None, &e).expect("evaluation failed");
-      assert_eq!(s.len(), 1);
-      assert_eq!(s.to_string(), "not one")
+	let mut e = parse("if (0) then 'one' else 'not one'").expect("failed to parse let expression");
+	StaticContext::new_with_builtins().static_analysis(&mut e);
+	let mut t = Tree::new();
+	let s = Evaluator::new().evaluate(None, None, &e, &mut t).expect("evaluation failed");
+	assert_eq!(s.len(), 1);
+	assert_eq!(s.to_string(None), "not one")
     }
 }
 

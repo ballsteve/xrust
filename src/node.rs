@@ -3,6 +3,7 @@
 //! A node in a document tree.
 
 use std::collections::HashMap;
+use std::collections::hash_map::Iter;
 use std::convert::TryFrom;
 use generational_arena::{Arena, Index};
 use crate::qname::QualifiedName;
@@ -43,10 +44,10 @@ impl Tree
     fn get_mut(&mut self, i: Index) -> Option<&mut NodeContent> {
 	self.a.get_mut(i)
     }
-    fn get_doc_node(&self) -> Node {
+    pub fn get_doc_node(&self) -> Node {
 	Node::from(self.d)
     }
-    fn push_doc_node(&mut self, n: Node) -> Result<(), Error> {
+    pub fn push_doc_node(&mut self, n: Node) -> Result<(), Error> {
 	// Set the parent to the document node
 	self.get_mut(n.0).unwrap().parent = Some(Node::from(self.d));
 	// Push the node onto the doc node's children
@@ -465,6 +466,10 @@ impl Node {
     pub fn descend_iter(&self, d: &Tree) -> Descendants {
 	Descendants::new(self.0, d)
     }
+
+    pub fn attribute_iter<'a>(&self, d: &'a Tree) -> Attributes<'a> {
+	Attributes::new(self.0, d)
+    }
 }
 
 pub struct Ancestors {
@@ -547,16 +552,16 @@ impl Descendants {
 				break
 			    } else {
 				let l = self.stack.last_mut().unwrap();
-				let (mut j, mut t) = l;
-				let qnc = d.get(j).unwrap();
+				let (j, mut t) = l;
+				let qnc = d.get(*j).unwrap();
 				if qnc.children.len() > t + 1 {
 				    t += 1;
-				    *l = (j, t);
+				    *l = (*j, t);
 				    self.cur = qnc.children.get(t).unwrap().0;
 				    result = Some(Node::from(self.cur));
 				    break
 				} else {
-				    if j == self.start {
+				    if *j == self.start {
 					result = None;
 					break
 				    }
@@ -629,6 +634,21 @@ impl Siblings {
 	} else {
 	    None
 	}
+    }
+}
+
+pub struct Attributes<'a>{
+    it: Iter<'a, QualifiedName, Node>,
+}
+
+impl<'a> Attributes<'a> {
+    fn new(i: Index, d: &'a Tree) -> Attributes {
+	Attributes{
+	    it: d.get(i).unwrap().attributes.iter()
+	}
+    }
+    pub fn next(&mut self) -> Option<Node> {
+	self.it.next().map(|(_, n)| *n)
     }
 }
 
