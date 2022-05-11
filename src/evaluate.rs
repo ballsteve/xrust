@@ -161,6 +161,7 @@ impl<'s> Evaluator<'s> {
 			m: Option<String>,
 			pr: f64,
     ) {
+	eprintln!("add template");
 	self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
     }
     /// Add a template to the set of builtin templates in the dynamic context. See above for arguments.
@@ -170,23 +171,27 @@ impl<'s> Evaluator<'s> {
 				m: Option<String>,
 				pr: f64,
     ) {
+	eprintln!("add builtin template");
 	self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
     }
     /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
     /// If no template is found, returns None.
     pub fn find_match(&self, i: &Rc<Item>) -> Result<Vec<Constructor>, Error> {
+	eprintln!("find_match: {} templates to choose from", self.templates.len());
 	let mut r: Vec<&Template> = vec![];
 	let mut it = self.templates.iter();
 	loop {
 	    match it.next() {
 		Some(t) => {
 		    if self.item_matches(&t.pattern, i)? {
+			eprintln!("A match!");
 			r.push(t)
 		    }
 		}
 		None => break,
 	    }
 	}
+	eprintln!("find_match: choosing best match from {} templates", r.len());
 	let s: Option<&Template> = r.iter()
 	    .cloned()
 	    .reduce(|a, b| if a.priority < b.priority {b} else {a});
@@ -195,6 +200,7 @@ impl<'s> Evaluator<'s> {
 	    Ok(s.unwrap().body.clone())
 	} else {
 	    // Try builtin templates
+	    eprintln!("find_match: {} builtin templates to choose from", self.templates.len());
 	    let mut w: Vec<&Template> = vec![];
 	    let mut builtins = self.builtin_templates.iter();
 	    loop {
@@ -207,6 +213,7 @@ impl<'s> Evaluator<'s> {
 		    None => break,
 		}
 	    }
+	    eprintln!("find_match: choosing best match from {} builtin templates", r.len());
 	    let v = w.iter()
 		.reduce(|a, b| if a.priority < b.priority {b} else {a});
 
@@ -235,6 +242,16 @@ impl<'s> Evaluator<'s> {
 	self.templates.iter().for_each(
 	    |t| {
 		println!("Template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
+			 t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
+			 t.priority,
+			 format_constructor(&t.pattern, 4),
+			 format_constructor(&t.body, 4)
+		);
+	    }
+	);
+	self.builtin_templates.iter().for_each(
+	    |t| {
+		println!("Builtin template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
 			 t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
 			 t.priority,
 			 format_constructor(&t.pattern, 4),
@@ -292,7 +309,7 @@ impl<'s> Evaluator<'s> {
 	c: &Constructor,
 	mut rd: &mut Tree,
     ) -> Result<Sequence, Error> {
-
+	eprintln!("evaluate_one: c=={}", format_constructor(&vec![c.clone()], 0));
 	match c {
 	    Constructor::Literal(l) => {
 		let mut seq = Sequence::new();
@@ -576,6 +593,7 @@ impl<'s> Evaluator<'s> {
 			Item::Node(n) => {
 			    match nm.axis {
 				Axis::Selfaxis => {
+				    eprintln!("Constructor::Step - Axis::SelfAxis");
 				    if is_node_match(&nm.nodetest, &n, self.doc.unwrap()) {
 					let mut seq = Sequence::new();
 					seq.push_node(*n);
@@ -585,8 +603,7 @@ impl<'s> Evaluator<'s> {
 				    }
 				}
 	      			Axis::Child => {
-				    // Don't have fancy methods for TreeIterator (yet),
-				    // so have to do this the hard way :-(
+				    eprintln!("Constructor::Step - Axis::Child");
 				    let mut seq: Sequence = Sequence::new();
 				    let mut it = n.child_iter();
 				    loop {
@@ -607,7 +624,7 @@ impl<'s> Evaluator<'s> {
 				    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::Parent => {
-				    // TODO: Don't Panic
+				    eprintln!("Constructor::Step - Axis::Parent");
 				    match n.parent(self.doc.unwrap()) {
 					Some(p) => {
       					    Ok(Sequence::from(p))
@@ -622,6 +639,7 @@ impl<'s> Evaluator<'s> {
 				    // Only matches the Document.
 				    // If no parent then return the Document
 				    // NB. Document is a special kind of Node
+				    eprintln!("Constructor::Step - Axis::ParentDocument");
 				    match n.node_type(self.doc.unwrap()) {
 					NodeType::Document => {
 					    // The context is the document
@@ -631,6 +649,7 @@ impl<'s> Evaluator<'s> {
 				    }
 				}
 	      			Axis::Descendant => {
+				    eprintln!("Constructor::Step - Axis::Descendant");
 				    let mut seq = Sequence::new();
 				    let mut it = n.descend_iter(self.doc.unwrap());
 				    loop {
@@ -651,6 +670,7 @@ impl<'s> Evaluator<'s> {
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::DescendantOrSelf => {
+				    eprintln!("Constructor::Step - Axis::DescendantOrSelf");
 				    let mut seq = Sequence::new();
 				    if is_node_match(&nm.nodetest, &n, self.doc.unwrap()) {
 					seq.push_item(&Rc::new(Item::Node(*n)));
@@ -677,6 +697,7 @@ impl<'s> Evaluator<'s> {
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::Ancestor => {
+				    eprintln!("Constructor::Step - Axis::Ancestor");
 				    let mut seq = Sequence::new();
 				    let mut it = n.ancestor_iter();
 				    loop {
@@ -697,6 +718,7 @@ impl<'s> Evaluator<'s> {
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::AncestorOrSelf => {
+				    eprintln!("Constructor::Step - Axis::AncestorOrSelf");
 				    let mut seq = Sequence::new();
 				    let mut it = n.ancestor_iter();
 				    loop {
@@ -721,6 +743,7 @@ impl<'s> Evaluator<'s> {
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::FollowingSibling => {
+				    eprintln!("Constructor::Step - Axis::FollowingSibling");
 				    let mut seq = Sequence::new();
 				    let mut it = n.next_iter(self.doc.unwrap());
 				    loop {
@@ -741,6 +764,7 @@ impl<'s> Evaluator<'s> {
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::PrecedingSibling => {
+				    eprintln!("Constructor::Step - Axis::PrecedingSibling");
 				    let mut seq = Sequence::new();
 				    let mut it = n.prev_iter(self.doc.unwrap());
 				    loop {
@@ -763,6 +787,7 @@ impl<'s> Evaluator<'s> {
 	      			Axis::Following => {
 				    // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
 				    // iow, for each ancestor-or-self node, include every next sibling and its descendants
+				    eprintln!("Constructor::Step - Axis::Following");
 
 				    let mut d: Vec<Node> = Vec::new();
 
@@ -834,6 +859,7 @@ impl<'s> Evaluator<'s> {
 	      			Axis::Preceding => {
 				    // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
 				    // iow, for each ancestor-or-self node, include every previous sibling and its descendants
+				    eprintln!("Constructor::Step - Axis::Preceding");
 
 				    let mut d: Vec<Node> = Vec::new();
 
@@ -904,6 +930,7 @@ impl<'s> Evaluator<'s> {
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::Attribute => {
+				    eprintln!("Constructor::Step - Axis::Attribute");
 				    let mut atit = n.attribute_iter(self.doc.unwrap());
 				    let mut attrs = Sequence::new();
 				    loop {
@@ -918,7 +945,14 @@ impl<'s> Evaluator<'s> {
 				    }
 				    Ok(self.predicates(attrs, p, rd)?)
 				}
-	      			Axis::SelfDocument => Ok(vec![]),
+	      			Axis::SelfDocument => {
+				    eprintln!("Constructor::Step - Axis::SelfDocument");
+				    if n.node_type(self.doc.unwrap()) == NodeType::Document {
+					Ok(vec![Rc::clone(&ctxt.as_ref().unwrap()[posn.unwrap()])])
+				    } else {
+					Ok(vec![])
+				    }
+				}
 	      			_ => {
 				    // Not yet implemented
 				    Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
@@ -1389,7 +1423,9 @@ impl<'s> Evaluator<'s> {
 			i: &Rc<Item>
     ) -> Result<bool, Error> {
 	let mut t = Tree::new();
+	eprintln!("item_matches START");
 	let e = self.evaluate(Some(vec![i.clone()]), Some(0), pat, &mut t)?;
+	eprintln!("item_matches END");
 
 	// If anything is left in the context then the pattern matched
 	if e.len() != 0 {

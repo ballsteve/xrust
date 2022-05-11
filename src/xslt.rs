@@ -6,6 +6,7 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 
 */
 
+use std::rc::Rc;
 use std::convert::TryFrom;
 use url::Url;
 //use reqwest::blocking::get;
@@ -24,7 +25,6 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
 pub fn from_document<'a, F1>(
   styledoc: &'a mut Tree,
-  resultdoc: &'a mut Tree,
   sc: &'a mut StaticContext,
   b: Option<Url>,
   mut p: F1,		// A closure that parses a string to a dyn Document
@@ -40,19 +40,20 @@ where
     // Check that this is a valid XSLT stylesheet
     // There must be a single element as a child of the root node, and it must be named xsl:stylesheet or xsl:transform
     let r = styledoc.get_doc_node();
-    let mut rnit = r.child_iter(styledoc);
-    loop {
-	match rnit.next(styledoc) {
-	    Some(root) => {
-		if !(root.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
-		     (root.to_name(styledoc).get_localname() == "stylesheet" ||
-		      root.to_name(styledoc).get_localname() == "transform")) {
-		    return Result::Err(Error::new(ErrorKind::TypeError, "not an XSLT stylesheet".to_string()))
-		}
+    let mut rnit = r.child_iter();
+    let stylenode = match rnit.next(styledoc) {
+	Some(root) => {
+	    if !(root.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
+		 (root.to_name(styledoc).get_localname() == "stylesheet" ||
+		  root.to_name(styledoc).get_localname() == "transform")) {
+		return Result::Err(Error::new(ErrorKind::TypeError, "not an XSLT stylesheet".to_string()))
+	    } else {
+		root
 	    }
-	    None => return Result::Err(Error::new(ErrorKind::TypeError, String::from("document does not have document element")))
 	}
-    }
+	None => return Result::Err(Error::new(ErrorKind::TypeError, String::from("document does not have document element")))
+    };
+    // TODO: rnit.next(styledoc) should == None
 
     // TODO: check version attribute
 
@@ -117,11 +118,11 @@ where
     ev.add_builtin_template(bi3pat, bi3bod, None, -1.0);
 
     // Setup the serialization of the primary result document
-    let mut serit = r.child_iter();
+    let mut serit = stylenode.child_iter();
     loop {
 	match serit.next(styledoc) {
 	    Some(c) => {
-		if c.is_element() &&
+		if c.is_element(styledoc) &&
 		    c.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
 		    c.to_name(styledoc).get_localname() == "output" {
 			match c.get_attribute(styledoc, &QualifiedName::new(None, None, "indent".to_string())) {
@@ -150,18 +151,18 @@ where
     // * fetch document
     // * parse XML
     // * replace xsl:include element with content
-    let mut incit = r.child_iter();
+    let mut incit = stylenode.child_iter();
     loop {
 	match incit.next(styledoc) {
 	    Some(c) => {
-		if c.is_element() &&
+		if c.is_element(styledoc) &&
 		    c.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
 		    c.to_name(styledoc).get_localname() == "include" {
 			match c.get_attribute(styledoc, &QualifiedName::new(None, None, "href".to_string())) {
 			    Some(h) => {
 				let url = match ev.baseurl().map_or_else(
-				    || Url::parse(h.to_string().as_str()),
-				    |base| base.join(h.to_string().as_str()),
+				    || Url::parse(h.to_string(styledoc).as_str()),
+				    |base| base.join(h.to_string(styledoc).as_str()),
 				) {
 				    Ok(u) => u,
 				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to parse href URL".to_string()}),
@@ -187,16 +188,16 @@ where
     // * compile match pattern
     // * compile content into sequence constructor
     // * register template in dynamic context
-    let mut tempit = r.child_iter();
+    let mut tempit = stylenode.child_iter();
     loop {
 	match tempit.next(styledoc) {
 	    Some(c) => {
-		if c.is_element() &&
+		if c.is_element(styledoc) &&
 		    c.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
 		    c.to_name(styledoc).get_localname() == "template" {
-			match c.get_attribute(&QualifiedName::new(None, None, "match".to_string())) {
+			match c.get_attribute(styledoc, &QualifiedName::new(None, None, "match".to_string())) {
 			    Some(m) => {
-				let n = m.clone().to_string();
+				let n = m.clone().to_string(styledoc);
 				let a = parse(&n).expect("failed to parse match expression");
 				let mut pat = to_pattern(a).expect("failed to compile match pattern");
 				let mut body = vec![];
@@ -213,8 +214,8 @@ where
 				sc.static_analysis(&mut body);
 				// Determine the priority of the template
 				let prio;
-				match c.get_attribute(&QualifiedName::new(None, None, "priority".to_string())) {
-				    Some(pr) => prio = pr.to_string().parse::<f64>().unwrap(), // TODO: better error handling
+				match c.get_attribute(styledoc, &QualifiedName::new(None, None, "priority".to_string())) {
+				    Some(pr) => prio = pr.to_string(styledoc).parse::<f64>().unwrap(), // TODO: better error handling
 				    None => {
 					// Calculate the default priority
 					// TODO: more work to be done interpreting XSLT 6.5
@@ -279,10 +280,10 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		(Some(XSLTNS), "text") => {
 		    match n.get_attribute(d, &QualifiedName::new(None, None, "disable-output-escaping".to_string())){
 			Some(doe) => {
-			    match &doe.to_string()[..]  {
-				"yes" => Ok(Constructor::Literal(Value::String(n.to_string()))),
+			    match &doe.to_string(d)[..]  {
+				"yes" => Ok(Constructor::Literal(Value::String(n.to_string(d)))),
 				"no" => {
-				    let text = n.to_string()
+				    let text = n.to_string(d)
 					.replace("&","&amp;")
 					.replace(">", "&gt;")
 					.replace("<", "&lt;")
@@ -296,7 +297,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 			    }
 			}
 			None => {
-			    let text = n.to_string()
+			    let text = n.to_string(d)
 				.replace("&","&amp;")
 				.replace(">", "&gt;")
 				.replace("<", "&lt;")
@@ -310,7 +311,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(sel) => {
 			    Ok(Constructor::ApplyTemplates(
-				parse(&sel.to_string())?
+				parse(&sel.to_string(d))?
 			    ))
 			}
 			None => {
@@ -332,7 +333,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		(Some(XSLTNS), "sequence") => {
 		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(s) => {
-			    let cons = parse(&s.to_string())?;
+			    let cons = parse(&s.to_string(d))?;
 			    if cons.len() > 1 {
 				return Result::Err(Error{kind: ErrorKind::TypeError, message: "select attribute has more than one sequence constructor".to_string()})
 			    }
@@ -359,7 +360,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 			    Ok(
 				Constructor::Switch(
 				    vec![
-					parse(&t.to_string())?,
+					parse(&t.to_string(d))?,
 					body
 				    ],
 				    vec![],
@@ -400,7 +401,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 								}
 							    }
 							    when.push(
-		    						parse(&t.to_string())?
+		    						parse(&t.to_string(d))?
 							    );
 							    when.push(body);
 							}
@@ -443,19 +444,18 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 					status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string()});
 				    }
 				}
-
-				match status {
-				    Some(e) => Result::Err(e),
-				    None => Ok(
-					Constructor::Switch(
-					    when,
-					    otherwise,
-					)
-				    )
-				}
 			    }
 			    None => break,
 			}
+		    }
+		    match status {
+			Some(e) => Result::Err(e),
+			None => Ok(
+			    Constructor::Switch(
+				when,
+				otherwise,
+			    )
+			)
 		    }
 		}
 		(Some(XSLTNS), "for-each") => {
@@ -473,7 +473,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 			    }
 			    Ok(
 				Constructor::ForEach(
-				    parse(&s.to_string())?,
+				    parse(&s.to_string(d))?,
 				    body,
 				    None,
 				)
@@ -504,9 +504,9 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 				    }
 				    Ok(
 					Constructor::ForEach(
-					    parse(&s.to_string())?,
+					    parse(&s.to_string(d))?,
 					    body,
-					    Some(Grouping::By(parse(&by.to_string())?)),
+					    Some(Grouping::By(parse(&by.to_string(d))?)),
 					)
 	      			    )
 				}
@@ -523,9 +523,9 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 				    }
 				    Ok(
 					Constructor::ForEach(
-					    parse(&s.to_string())?,
+					    parse(&s.to_string(d))?,
 					    body,
-					    Some(Grouping::Adjacent(parse(&adj.to_string())?)),
+					    Some(Grouping::Adjacent(parse(&adj.to_string(d))?)),
 					)
 	      			    )
 				}
@@ -601,7 +601,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    let mut content = vec![];
 		    let mut ait = n.attribute_iter(d);
 		    loop {
-			match ait.next(d) {
+			match ait.next() {
 			    Some(e) => {
 				content.push(to_constructor(e, d)?)
 			    }
@@ -748,7 +748,7 @@ fn strip_whitespace_node(
 				    ss = -0.25;
 				}
 				(None, Some(WildcardOrName::Name(name))) => {
-				    match (n.to_name().get_nsuri(), n.to_name().get_localname()) {
+				    match (n.to_name(d).get_nsuri(), n.to_name(d).get_localname()) {
 					(Some(_), _) => {}
 					(None, ename) => {
 					    if *name == ename {
@@ -871,3 +871,45 @@ fn strip_whitespace_node(
     }
 }
 
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use test::Bencher;
+
+    #[test]
+    fn xslt_literal_text() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let src = Tree::try_from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+
+	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'>Found the document</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let mut ev = from_document(
+            &mut style,
+	    &mut sc,
+	    None,
+	    |s| Tree::try_from(s.as_str()),
+	)
+            .expect("failed to compile stylesheet");
+	ev.set_doc(&src);
+	eprintln!("Evaluator templates:");
+	ev.dump_templates();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	eprintln!("find match");
+	let t = ev.find_match(&isrc).expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let mut rd = Tree::new();
+	eprintln!("evaluate");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+
+	assert_eq!(seq.to_string(Some(&rd)), "Found the document")
+    }
+}

@@ -281,9 +281,9 @@ impl Node {
     fn get<'a>(&self, d: &'a Tree) -> Option<&'a NodeContent> {
 	d.get(self.0)
     }
-    fn get_mut<'a>(&self, d: &'a mut Tree) -> Option<&'a mut NodeContent> {
-	d.get_mut(self.0)
-    }
+//    fn get_mut<'a>(&self, d: &'a mut Tree) -> Option<&'a mut NodeContent> {
+//	d.get_mut(self.0)
+//    }
 
     pub fn to_string(&self, d: &Tree) -> String {
 	match self.node_type(d) {
@@ -427,7 +427,7 @@ impl Node {
     /// Detach the node from the tree
     pub fn remove(&self, d: &mut Tree) -> Result<(), Error> {
 	// Remove from parent's child list
-	let mut cl = &mut d.get_mut(d.get(self.0).unwrap().parent.unwrap().0).unwrap().children;
+	let cl = &mut d.get_mut(d.get(self.0).unwrap().parent.unwrap().0).unwrap().children;
 	let i = cl.iter()
 	    .enumerate()
 	    .skip_while(|(_, x)| x.0 != self.0)
@@ -497,6 +497,16 @@ impl Node {
 		}
 	    }
 	    None => None,
+	}
+    }
+
+    /// Convenience method that returns if this is an element type node
+    pub fn is_element(&self, d: &Tree) -> bool {
+	match d.get(self.0) {
+	    Some(nc) => {
+		nc.t == NodeType::Element
+	    }
+	    None => false,
 	}
     }
 }
