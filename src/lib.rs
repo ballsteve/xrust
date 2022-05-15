@@ -57,8 +57,8 @@ mod output;
 
 pub mod value;
 pub use value::Value;
-pub mod node;
-pub use node::Node;
+pub mod forest;
+pub use forest::Node;
 pub mod item;
 pub use item::{Sequence, SequenceTrait, Item};
 
@@ -75,11 +75,11 @@ mod parsecommon;
 pub mod parsexml;
 pub use parsexml::parse as parsexml;
 
-pub mod xpath;
-pub use xpath::parse;
+//pub mod xpath;
+//pub use xpath::parse;
 
-pub mod evaluate;
-pub use evaluate::{StaticContext, Evaluator, Constructor};
+//pub mod evaluate;
+//pub use evaluate::{StaticContext, Evaluator, Constructor};
 
-pub mod xslt;
-pub use xslt::from_document;
+//pub mod xslt;
+//pub use xslt::from_document;

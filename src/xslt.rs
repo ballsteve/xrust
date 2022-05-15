@@ -912,4 +912,119 @@ mod tests {
 
 	assert_eq!(seq.to_string(Some(&rd)), "Found the document")
     }
+
+    #[test]
+    fn xslt_literal_element() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let src = Tree::try_from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+
+	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><answer>Made an element</answer></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let mut ev = from_document(
+            &mut style,
+	    &mut sc,
+	    None,
+	    |s| Tree::try_from(s.as_str()),
+	)
+            .expect("failed to compile stylesheet");
+	ev.set_doc(&src);
+	eprintln!("Evaluator templates:");
+	ev.dump_templates();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	eprintln!("find match");
+	let t = ev.find_match(&isrc).expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let mut rd = Tree::new();
+	eprintln!("evaluate");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+
+	assert_eq!(seq.to_xml(Some(&rd)), "<answer>Made an element</answer>")
+    }
+
+    #[test]
+    fn xslt_apply_templates_1() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let src = Tree::try_from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+
+	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::text()'>found text</xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let mut ev = from_document(
+            &mut style,
+	    &mut sc,
+	    None,
+	    |s| Tree::try_from(s.as_str()),
+	)
+            .expect("failed to compile stylesheet");
+	ev.set_doc(&src);
+	eprintln!("Evaluator templates:");
+	ev.dump_templates();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	eprintln!("find match");
+	let t = ev.find_match(&isrc).expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let mut rd = Tree::new();
+	eprintln!("evaluate");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+
+	assert_eq!(seq.to_xml(Some(&rd)), "found textfound text")
+    }
+
+    #[test]
+    fn xslt_apply_templates_2() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let src = Tree::try_from("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+
+	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates select='child::text()'/></xsl:template>
+  <xsl:template match='child::Level1'>found Level1 element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let mut ev = from_document(
+            &mut style,
+	    &mut sc,
+	    None,
+	    |s| Tree::try_from(s.as_str()),
+	)
+            .expect("failed to compile stylesheet");
+	ev.set_doc(&src);
+	eprintln!("Evaluator templates:");
+	ev.dump_templates();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	eprintln!("find match");
+	let t = ev.find_match(&isrc).expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let mut rd = Tree::new();
+	eprintln!("evaluate");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+	eprintln!("seq==\"{}\"", seq.to_string(Some(&src)));
+
+	assert_eq!(seq.to_xml(Some(&rd)), "onetwothreefour")
+    }
 }

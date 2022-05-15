@@ -7,7 +7,7 @@
 
 use std::rc::Rc;
 use crate::value::{Value, Operator};
-use crate::node::{NodeType, Node, Tree};
+use crate::forest::{NodeType, Node, Forest};
 use crate::qname::QualifiedName;
 use crate::output::OutputDefinition;
 use crate::xdmerror::{Error, ErrorKind};
@@ -21,13 +21,13 @@ pub type Sequence = Vec<Rc<Item>>;
 
 pub trait SequenceTrait {
     /// Return the string value of the [Sequence].
-    fn to_string(&self, d: Option<&Tree>) -> String;
+    fn to_string(&self, d: Option<&Forest>) -> String;
     /// Return a XML formatted representation of the [Sequence].
-    fn to_xml(&self, d: Option<&Tree>) -> String;
+    fn to_xml(&self, d: Option<&Forest>) -> String;
     /// Return a XML formatted representation of the [Sequence], controlled by the supplied output definition.
-    fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Tree>) -> String;
+    fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String;
     /// Return a JSON formatted representation of the [Sequence].
-    fn to_json(&self, d: Option<&Tree>) -> String;
+    fn to_json(&self, d: Option<&Forest>) -> String;
     /// Return the Effective Boolean Value of the [Sequence].
     fn to_bool(&self) -> bool;
     /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
@@ -42,7 +42,7 @@ pub trait SequenceTrait {
 
 impl SequenceTrait for Sequence {
     /// Returns the string value of the Sequence.
-    fn to_string(&self, d: Option<&Tree>) -> String {
+    fn to_string(&self, d: Option<&Forest>) -> String {
 	let mut r = String::new();
 	for i in self {
 	    r.push_str(i.to_string(d).as_str())
@@ -50,7 +50,7 @@ impl SequenceTrait for Sequence {
 	r
     }
     /// Renders the Sequence as XML
-    fn to_xml(&self, d: Option<&Tree>) -> String {
+    fn to_xml(&self, d: Option<&Forest>) -> String {
 	let mut r = String::new();
 	for i in self {
 	    r.push_str(i.to_xml(d).as_str())
@@ -58,7 +58,7 @@ impl SequenceTrait for Sequence {
 	r
     }
     /// Renders the Sequence as XML
-    fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Tree>) -> String {
+    fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String {
 	let mut r = String::new();
 	for i in self {
 	    r.push_str(i.to_xml_with_options(od, d).as_str())
@@ -66,7 +66,7 @@ impl SequenceTrait for Sequence {
 	r
     }
     /// Renders the Sequence as JSON
-    fn to_json(&self, d: Option<&Tree>) -> String {
+    fn to_json(&self, d: Option<&Forest>) -> String {
 	let mut r = String::new();
 	for i in self {
 	    r.push_str(i.to_json(d).as_str())
@@ -151,7 +151,7 @@ pub enum Item {
 
 impl Item {
     /// Gives the string value of an item. All items have a string value.
-    pub fn to_string(&self, d: Option<&Tree>) -> String {
+    pub fn to_string(&self, d: Option<&Forest>) -> String {
 	match self {
 	    Item::Node(n) => d.map_or(
 		String::new(),
@@ -162,7 +162,7 @@ impl Item {
 	}
     }
     /// Serialize as XML
-    pub fn to_xml(&self, d: Option<&Tree>) -> String {
+    pub fn to_xml(&self, d: Option<&Forest>) -> String {
 	match self {
 	    Item::Node(n) => d.map_or(
 		String::new(),
@@ -173,7 +173,7 @@ impl Item {
 	}
     }
     /// Serialize as XML, with options
-    pub fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Tree>) -> String {
+    pub fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String {
 	match self {
 	    Item::Node(n) => d.map_or(
 		String::new(),
@@ -184,7 +184,7 @@ impl Item {
 	}
     }
     /// Serialize as JSON
-    pub fn to_json(&self, d: Option<&Tree>) -> String {
+    pub fn to_json(&self, d: Option<&Forest>) -> String {
 	match self {
 	    Item::Node(n) => d.map_or(
 		String::new(),
@@ -233,7 +233,7 @@ impl Item {
     }
 
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-    pub fn to_name(&self, d: Option<&Tree>) -> QualifiedName {
+    pub fn to_name(&self, d: Option<&Forest>) -> QualifiedName {
 	match self {
 	    Item::Node(n) => d.map_or(
 		QualifiedName::new(None, None, "".to_string()),
@@ -247,7 +247,7 @@ impl Item {
     // fn atomize(&self);
 
     /// Compare two items.
-    pub fn compare(&self, other: &Item, op: Operator, d: Option<&Tree>) -> Result<bool, Error> {
+    pub fn compare(&self, other: &Item, op: Operator, d: Option<&Forest>) -> Result<bool, Error> {
 	match self {
 	    Item::Value(v) => {
 		match other {
@@ -272,7 +272,7 @@ impl Item {
     }
 
     /// Is this item an element-type node?
-    pub fn is_element_node(&self, d: Option<&Tree>) -> bool {
+    pub fn is_element_node(&self, d: Option<&Forest>) -> bool {
 	match self {
 	    Item::Node(n) => {
 		d.map_or(
