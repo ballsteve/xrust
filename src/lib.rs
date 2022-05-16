@@ -75,11 +75,11 @@ mod parsecommon;
 pub mod parsexml;
 pub use parsexml::parse as parsexml;
 
-//pub mod xpath;
-//pub use xpath::parse;
+pub mod xpath;
+pub use xpath::parse;
 
-//pub mod evaluate;
-//pub use evaluate::{StaticContext, Evaluator, Constructor};
+pub mod evaluate;
+pub use evaluate::{StaticContext, Evaluator, Constructor};
 
 //pub mod xslt;
 //pub use xslt::from_document;
