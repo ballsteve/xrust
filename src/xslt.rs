@@ -6,7 +6,6 @@ Once the stylesheet has been compiled, it may then be evaluated by the evaluatio
 
 */
 
-use std::rc::Rc;
 use std::convert::TryFrom;
 use url::Url;
 //use reqwest::blocking::get;
@@ -14,8 +13,7 @@ use crate::xdmerror::*;
 use crate::output::*;
 use crate::qname::*;
 use crate::value::*;
-use crate::node::*;
-use crate::item::*;
+use crate::forest::*;
 use crate::evaluate::*;
 use crate::xpath::*;
 
@@ -23,14 +21,12 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Document] into an Evaluator.
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
-pub fn from_document<'a, F1>(
-  styledoc: &'a mut Tree,
-  sc: &'a mut StaticContext,
-  b: Option<Url>,
-  mut p: F1,		// A closure that parses a string to a dyn Document
-) -> Result<Evaluator<'a>, Error>
-where
-  F1: FnMut(String) -> Result<Tree, Error>
+pub fn from_document(
+    f: &mut Forest,
+    styledoc: TreeIndex,
+    sc: &mut StaticContext,
+    b: Option<Url>,
+) -> Result<Evaluator, Error>
 {
     let mut ev = Evaluator::new();
     if b.is_some() {
@@ -39,13 +35,15 @@ where
 
     // Check that this is a valid XSLT stylesheet
     // There must be a single element as a child of the root node, and it must be named xsl:stylesheet or xsl:transform
-    let r = styledoc.get_doc_node();
+    let r = f.get_ref(styledoc)
+	.ok_or(Error::new(ErrorKind::TypeError, String::from("stylesheet document not found")))?
+	.get_doc_node();
     let mut rnit = r.child_iter();
-    let stylenode = match rnit.next(styledoc) {
+    let stylenode = match rnit.next(f) {
 	Some(root) => {
-	    if !(root.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
-		 (root.to_name(styledoc).get_localname() == "stylesheet" ||
-		  root.to_name(styledoc).get_localname() == "transform")) {
+	    if !(root.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
+		 (root.to_name(f).get_localname() == "stylesheet" ||
+		  root.to_name(f).get_localname() == "transform")) {
 		return Result::Err(Error::new(ErrorKind::TypeError, "not an XSLT stylesheet".to_string()))
 	    } else {
 		root
@@ -53,12 +51,13 @@ where
 	}
 	None => return Result::Err(Error::new(ErrorKind::TypeError, String::from("document does not have document element")))
     };
-    // TODO: rnit.next(styledoc) should == None
+    // TODO: rnit.next(f) should == None
 
     // TODO: check version attribute
 
     // Strip whitespace from the stylesheet
     strip_whitespace(
+	f,
 	styledoc,
 	true,
 	vec![NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})],
@@ -120,14 +119,14 @@ where
     // Setup the serialization of the primary result document
     let mut serit = stylenode.child_iter();
     loop {
-	match serit.next(styledoc) {
+	match serit.next(f) {
 	    Some(c) => {
-		if c.is_element(styledoc) &&
-		    c.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
-		    c.to_name(styledoc).get_localname() == "output" {
-			match c.get_attribute(styledoc, &QualifiedName::new(None, None, "indent".to_string())) {
+		if c.is_element(f) &&
+		    c.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
+		    c.to_name(f).get_localname() == "output" {
+			match c.get_attribute(f, &QualifiedName::new(None, None, "indent".to_string())) {
 			    Some(i) => {
-				let b: bool = match i.to_string(styledoc).as_str() {
+				let b: bool = match i.to_string(f).as_str() {
 				    "yes" |
 				    "true" |
 				    "1" => true,
@@ -153,25 +152,25 @@ where
     // * replace xsl:include element with content
     let mut incit = stylenode.child_iter();
     loop {
-	match incit.next(styledoc) {
+	match incit.next(f) {
 	    Some(c) => {
-		if c.is_element(styledoc) &&
-		    c.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
-		    c.to_name(styledoc).get_localname() == "include" {
-			match c.get_attribute(styledoc, &QualifiedName::new(None, None, "href".to_string())) {
+		if c.is_element(f) &&
+		    c.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
+		    c.to_name(f).get_localname() == "include" {
+			match c.get_attribute(f, &QualifiedName::new(None, None, "href".to_string())) {
 			    Some(h) => {
 				let url = match ev.baseurl().map_or_else(
-				    || Url::parse(h.to_string(styledoc).as_str()),
-				    |base| base.join(h.to_string(styledoc).as_str()),
+				    || Url::parse(h.to_string(f).as_str()),
+				    |base| base.join(h.to_string(f).as_str()),
 				) {
 				    Ok(u) => u,
 				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to parse href URL".to_string()}),
 				};
-				let xml = reqwest::blocking::get(url.to_string())
+				let _xml = reqwest::blocking::get(url.to_string())
 				    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to fetch href URL".to_string()})?
 				    .text()
 				    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?;
-				let _module = p(xml)?;
+				//let _module = p(xml)?;
 	
 			    }
 			    None => {
@@ -190,22 +189,22 @@ where
     // * register template in dynamic context
     let mut tempit = stylenode.child_iter();
     loop {
-	match tempit.next(styledoc) {
+	match tempit.next(f) {
 	    Some(c) => {
-		if c.is_element(styledoc) &&
-		    c.to_name(styledoc).get_nsuri_ref() == Some(XSLTNS) &&
-		    c.to_name(styledoc).get_localname() == "template" {
-			match c.get_attribute(styledoc, &QualifiedName::new(None, None, "match".to_string())) {
+		if c.is_element(f) &&
+		    c.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
+		    c.to_name(f).get_localname() == "template" {
+			match c.get_attribute(f, &QualifiedName::new(None, None, "match".to_string())) {
 			    Some(m) => {
-				let n = m.clone().to_string(styledoc);
+				let n = m.clone().to_string(f);
 				let a = parse(&n).expect("failed to parse match expression");
 				let mut pat = to_pattern(a).expect("failed to compile match pattern");
 				let mut body = vec![];
 				let mut cit = c.child_iter();
 				loop {
-				    match cit.next(styledoc) {
+				    match cit.next(f) {
 					Some(d) => {
-					    body.push(to_constructor(d, styledoc)?)
+					    body.push(to_constructor(d, f)?)
 					}
 					None => break,
 				    }
@@ -214,8 +213,8 @@ where
 				sc.static_analysis(&mut body);
 				// Determine the priority of the template
 				let prio;
-				match c.get_attribute(styledoc, &QualifiedName::new(None, None, "priority".to_string())) {
-				    Some(pr) => prio = pr.to_string(styledoc).parse::<f64>().unwrap(), // TODO: better error handling
+				match c.get_attribute(f, &QualifiedName::new(None, None, "priority".to_string())) {
+				    Some(pr) => prio = pr.to_string(f).parse::<f64>().unwrap(), // TODO: better error handling
 				    None => {
 					// Calculate the default priority
 					// TODO: more work to be done interpreting XSLT 6.5
@@ -270,20 +269,20 @@ where
 }
 
 /// Compile a node in a template to a sequence constructor
-fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
-    match n.node_type(d) {
+fn to_constructor(n: Node, f: &Forest) -> Result<Constructor, Error> {
+    match n.node_type(f) {
 	NodeType::Text => {
-	    Ok(Constructor::Literal(Value::String(n.to_string(d))))
+	    Ok(Constructor::Literal(Value::String(n.to_string(f))))
 	}
 	NodeType::Element => {
-	    match (n.to_name(d).get_nsuri_ref(), n.to_name(d).get_localname().as_str()) {
+	    match (n.to_name(f).get_nsuri_ref(), n.to_name(f).get_localname().as_str()) {
 		(Some(XSLTNS), "text") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "disable-output-escaping".to_string())){
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "disable-output-escaping".to_string())){
 			Some(doe) => {
-			    match &doe.to_string(d)[..]  {
-				"yes" => Ok(Constructor::Literal(Value::String(n.to_string(d)))),
+			    match &doe.to_string(f)[..]  {
+				"yes" => Ok(Constructor::Literal(Value::String(n.to_string(f)))),
 				"no" => {
-				    let text = n.to_string(d)
+				    let text = n.to_string(f)
 					.replace("&","&amp;")
 					.replace(">", "&gt;")
 					.replace("<", "&lt;")
@@ -297,7 +296,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 			    }
 			}
 			None => {
-			    let text = n.to_string(d)
+			    let text = n.to_string(f)
 				.replace("&","&amp;")
 				.replace(">", "&gt;")
 				.replace("<", "&lt;")
@@ -308,10 +307,10 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "apply-templates") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(sel) => {
 			    Ok(Constructor::ApplyTemplates(
-				parse(&sel.to_string(d))?
+				parse(&sel.to_string(f))?
 			    ))
 			}
 			None => {
@@ -331,9 +330,9 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "sequence") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(s) => {
-			    let cons = parse(&s.to_string(d))?;
+			    let cons = parse(&s.to_string(f))?;
 			    if cons.len() > 1 {
 				return Result::Err(Error{kind: ErrorKind::TypeError, message: "select attribute has more than one sequence constructor".to_string()})
 			    }
@@ -345,14 +344,14 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "if") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "test".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "test".to_string())) {
 			Some(t) => {
 			    let mut cit = n.child_iter();
 			    let mut body = vec![];
 			    loop {
-				match cit.next(d) {
+				match cit.next(f) {
 				    Some(e) => {
-					body.push(to_constructor(e, d)?)
+					body.push(to_constructor(e, f)?)
 				    }
 				    None => break,
 				}
@@ -360,7 +359,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 			    Ok(
 				Constructor::Switch(
 				    vec![
-					parse(&t.to_string(d))?,
+					parse(&t.to_string(f))?,
 					body
 				    ],
 				    vec![],
@@ -378,30 +377,30 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    let mut status: Option<Error> = None;
 		    let mut cit = n.child_iter();
 		    loop {
-			match cit.next(d) {
+			match cit.next(f) {
 			    Some(m) => {
 				// look for when elements
 	      			// then find an otherwise
 	      			// fail on anything else (apart from whitespace, comments, PIs)
-				match m.node_type(d) {
+				match m.node_type(f) {
 				    NodeType::Element => {
-      					match (m.to_name(d).get_nsuri_ref(), m.to_name(d).get_localname().as_str()) {
+      					match (m.to_name(f).get_nsuri_ref(), m.to_name(f).get_localname().as_str()) {
         				    (Some(XSLTNS), "when") => {
 						if otherwise.len() == 0 {
-						    match m.get_attribute(d, &QualifiedName::new(None, None, "test".to_string())) {
+						    match m.get_attribute(f, &QualifiedName::new(None, None, "test".to_string())) {
 							Some(t) => {
 							    let mut wit = m.child_iter();
 							    let mut body = vec![];
 							    loop {
-								match wit.next(d) {
+								match wit.next(f) {
 								    Some(e) => {
-									body.push(to_constructor(e, d)?)
+									body.push(to_constructor(e, f)?)
 								    }
 								    None => break,
 								}
 							    }
 							    when.push(
-		    						parse(&t.to_string(d))?
+		    						parse(&t.to_string(f))?
 							    );
 							    when.push(body);
 							}
@@ -417,9 +416,9 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 						if when.len() != 0 {
 						    let mut oit = m.child_iter();
 						    loop {
-							match oit.next(d) {
+							match oit.next(f) {
 							    Some(e) => {
-								otherwise.push(to_constructor(e, d)?)
+								otherwise.push(to_constructor(e, f)?)
 							    }
 							    None => break,
 							}
@@ -434,7 +433,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 					}
 				    }
 				    NodeType::Text => {
-					if !n.to_string(d).trim().is_empty() {
+					if !n.to_string(f).trim().is_empty() {
 					    status.replace(Error{kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string()});
 					}
 				    }
@@ -459,21 +458,21 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "for-each") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(s) => {
 			    let mut cit = n.child_iter();
 			    let mut body = vec![];
 			    loop {
-				match cit.next(d) {
+				match cit.next(f) {
 				    Some(e) => {
-					body.push(to_constructor(e, d)?)
+					body.push(to_constructor(e, f)?)
 				    }
 				    None => break,
 				}
 			    }
 			    Ok(
 				Constructor::ForEach(
-				    parse(&s.to_string(d))?,
+				    parse(&s.to_string(f))?,
 				    body,
 				    None,
 				)
@@ -485,28 +484,28 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "for-each-group") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(s) => {
-			    match (n.get_attribute(d, &QualifiedName::new(None, None, "group-by".to_string())),
-				   n.get_attribute(d, &QualifiedName::new(None, None, "group-adjacent".to_string())),
-				   n.get_attribute(d, &QualifiedName::new(None, None, "group-starting-with".to_string())),
-				   n.get_attribute(d, &QualifiedName::new(None, None, "group-ending-with".to_string()))) {
+			    match (n.get_attribute(f, &QualifiedName::new(None, None, "group-by".to_string())),
+				   n.get_attribute(f, &QualifiedName::new(None, None, "group-adjacent".to_string())),
+				   n.get_attribute(f, &QualifiedName::new(None, None, "group-starting-with".to_string())),
+				   n.get_attribute(f, &QualifiedName::new(None, None, "group-ending-with".to_string()))) {
 				(Some(by), None, None, None) => {
 				    let mut cit = n.child_iter();
 				    let mut body = vec![];
 				    loop {
-					match cit.next(d) {
+					match cit.next(f) {
 					    Some(e) => {
-						body.push(to_constructor(e, d)?)
+						body.push(to_constructor(e, f)?)
 					    }
 					    None => break,
 					}
 				    }
 				    Ok(
 					Constructor::ForEach(
-					    parse(&s.to_string(d))?,
+					    parse(&s.to_string(f))?,
 					    body,
-					    Some(Grouping::By(parse(&by.to_string(d))?)),
+					    Some(Grouping::By(parse(&by.to_string(f))?)),
 					)
 	      			    )
 				}
@@ -514,18 +513,18 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 				    let mut cit = n.child_iter();
 				    let mut body = vec![];
 				    loop {
-					match cit.next(d) {
+					match cit.next(f) {
 					    Some(e) => {
-						body.push(to_constructor(e, d)?)
+						body.push(to_constructor(e, f)?)
 					    }
 					    None => break,
 					}
 				    }
 				    Ok(
 					Constructor::ForEach(
-					    parse(&s.to_string(d))?,
+					    parse(&s.to_string(f))?,
 					    body,
-					    Some(Grouping::Adjacent(parse(&adj.to_string(d))?)),
+					    Some(Grouping::Adjacent(parse(&adj.to_string(f))?)),
 					)
 	      			    )
 				}
@@ -545,9 +544,9 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    let mut cit = n.child_iter();
 		    let mut body = vec![];
 		    loop {
-			match cit.next(d) {
+			match cit.next(f) {
 			    Some(e) => {
-				body.push(to_constructor(e, d)?)
+				body.push(to_constructor(e, f)?)
 			    }
 			    None => break,
 			}
@@ -559,10 +558,10 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    ))
 		}
 		(Some(XSLTNS), "copy-of") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "select".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
 			Some(s) => {
 			    Ok(Constructor::DeepCopy(
-				parse(&s.to_string(d))?,
+				parse(&s.to_string(f))?,
 			    ))
 			}
 			None => {
@@ -571,20 +570,20 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "attribute") => {
-		    match n.get_attribute(d, &QualifiedName::new(None, None, "name".to_string())) {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "name".to_string())) {
 			Some(m) => {
 			    let mut cit = n.child_iter();
 			    let mut body = vec![];
 			    loop {
-				match cit.next(d) {
+				match cit.next(f) {
 				    Some(e) => {
-					body.push(to_constructor(e, d)?)
+					body.push(to_constructor(e, f)?)
 				    }
 				    None => break,
 				}
 			    }
 			    Ok(Constructor::LiteralAttribute(
-				QualifiedName::new(None, None, m.to_string(d)),
+				QualifiedName::new(None, None, m.to_string(f)),
 				body,
 			    ))
 			}
@@ -599,20 +598,20 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 		(_, a) => {
 		    // TODO: Handle qualified element name
 		    let mut content = vec![];
-		    let mut ait = n.attribute_iter(d);
+		    let mut ait = n.attribute_iter(f);
 		    loop {
 			match ait.next() {
 			    Some(e) => {
-				content.push(to_constructor(e, d)?)
+				content.push(to_constructor(e, f)?)
 			    }
 			    None => break,
 			}
 		    }
 		    let mut cit = n.child_iter();
 		    loop {
-			match cit.next(d) {
+			match cit.next(f) {
 			    Some(e) => {
-				content.push(to_constructor(e, d)?)
+				content.push(to_constructor(e, f)?)
 			    }
 			    None => break,
 			}
@@ -626,7 +625,7 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 	}
 	NodeType::Attribute => {
 	    // Get value as a Value
-	    Ok(Constructor::LiteralAttribute(n.to_name(d), vec![Constructor::Literal(Value::String(n.to_string(d)))]))
+	    Ok(Constructor::LiteralAttribute(n.to_name(f), vec![Constructor::Literal(Value::String(n.to_string(f)))]))
 	}
 	_ => {
 	    // TODO: literal elements, etc, pretty much everything in the XSLT spec
@@ -638,16 +637,17 @@ fn to_constructor(n: Node, d: &Tree) -> Result<Constructor, Error> {
 /// Strip whitespace nodes from a XDM [Document].
 /// See [XSLT 4.3](https://www.w3.org/TR/2017/REC-xslt-30-20170608/#stylesheet-stripping)
 pub fn strip_whitespace(
-  d: &mut Tree,
-  cpi: bool, // strip comments and PIs?
-  strip: Vec<NodeTest>,
-  preserve: Vec<NodeTest>,
+    f: &mut Forest,
+    t: TreeIndex,
+    cpi: bool, // strip comments and PIs?
+    strip: Vec<NodeTest>,
+    preserve: Vec<NodeTest>,
 ) {
-    let mut cit = d.get_doc_node().child_iter();
-    match cit.next(d) {
+    let mut cit = f.get_ref(t).unwrap().get_doc_node().child_iter();
+    match cit.next(f) {
 	Some(n) => strip_whitespace_node(
+	    f,
 	    n,
-	    d,
 	    cpi,
 	    strip,
 	    preserve,
@@ -660,27 +660,28 @@ pub fn strip_whitespace(
 /// Strip whitespace nodes from a XDM [Document].
 /// This function operates under the direction of the xsl:strip-space and xsl:preserve-space directives in a XSLT stylesheet.
 pub fn strip_source_document(
-  src: &mut Tree,
-  style: &Tree,
+    f: &mut Forest,
+    src: TreeIndex,
+    style: TreeIndex,
 ) {
     // Find strip-space element, if any, and use it to construct a vector of NodeTests.
     // Ditto for preserve-space.
     let mut ss: Vec<NodeTest> = vec![];
     let mut ps: Vec<NodeTest> = vec![];
-    let mut sit = style.get_doc_node().child_iter();
-    match sit.next(style) {
+    let mut sit = f.get_ref(style).unwrap().get_doc_node().child_iter();
+    match sit.next(f) {
 	Some(n) => {
 	    // this should be the xsl:stylesheet element
 	    let mut cit = n.child_iter();
 	    loop {
-		match cit.next(style) {
+		match cit.next(f) {
 		    Some(m) => {
-			match (m.node_type(style), m.to_name(style).get_nsuri_ref(), m.to_name(style).get_localname().as_str()) {
+			match (m.node_type(f), m.to_name(f).get_nsuri_ref(), m.to_name(f).get_localname().as_str()) {
 			    (NodeType::Element, Some(XSLTNS), "strip-space") => {
-				match m.get_attribute(style, &QualifiedName::new(None, None, "elements".to_string())) {
+				match m.get_attribute(f, &QualifiedName::new(None, None, "elements".to_string())) {
 				    Some(v) => {
 					// TODO: Don't Panic
-					v.to_string(style).split_whitespace()
+					v.to_string(f).split_whitespace()
 					    .for_each(|t| {
 						ss.push(NodeTest::try_from(t).expect("not a NodeTest"))
 					    })
@@ -689,10 +690,10 @@ pub fn strip_source_document(
 				}
 			    }
 			    (NodeType::Element, Some(XSLTNS), "preserve-space") => {
-				match m.get_attribute(style, &QualifiedName::new(None, None, "elements".to_string())) {
+				match m.get_attribute(f, &QualifiedName::new(None, None, "elements".to_string())) {
 				    Some(v) => {
 					// TODO: Don't Panic
-					v.to_string(style).split_whitespace()
+					v.to_string(f).split_whitespace()
 					    .for_each(|t| {
 						ps.push(NodeTest::try_from(t).expect("not a NodeTest"))
 					    })
@@ -710,24 +711,24 @@ pub fn strip_source_document(
 	None => {}
     }
 
-    strip_whitespace(src, false, ss, ps);
+    strip_whitespace(f, src, false, ss, ps);
 }
 
 // TODO: the rules for stripping/preserving are a lot more complex
 // TODO: Return Result so that errors can be propagated
 fn strip_whitespace_node(
+    f: &mut Forest,
     n: Node,
-    d: &mut Tree,
     cpi: bool, // strip comments and PIs?
     strip: Vec<NodeTest>,
     preserve: Vec<NodeTest>,
     keep: bool
 ) {
-    match n.node_type(d) {
+    match n.node_type(f) {
 	NodeType::Comment |
 	NodeType::ProcessingInstruction => {
 	    if cpi {
-		n.remove(d).expect("unable to remove text node");
+		n.remove(f).expect("unable to remove text node");
       		// TODO: Merge text nodes that are now adjacent
 	    }
 	}
@@ -748,7 +749,7 @@ fn strip_whitespace_node(
 				    ss = -0.25;
 				}
 				(None, Some(WildcardOrName::Name(name))) => {
-				    match (n.to_name(d).get_nsuri(), n.to_name(d).get_localname()) {
+				    match (n.to_name(f).get_nsuri(), n.to_name(f).get_localname()) {
 					(Some(_), _) => {}
 					(None, ename) => {
 					    if *name == ename {
@@ -758,7 +759,7 @@ fn strip_whitespace_node(
 				    }
 				}
 				(Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
-				    match (n.to_name(d).get_nsuri(), n.to_name(d).get_localname()) {
+				    match (n.to_name(f).get_nsuri(), n.to_name(f).get_localname()) {
 					(Some(ens), ename) => {
 					    if *ns == ens && *name == ename {
 						ss = 0.5;
@@ -794,7 +795,7 @@ fn strip_whitespace_node(
 			NodeTest::Name(nt) => {
 			    match (nt.ns.as_ref(), nt.name.as_ref()) {
 				(None, Some(WildcardOrName::Name(name))) => {
-				    match (n.to_name(d).get_nsuri(), n.to_name(d).get_localname()) {
+				    match (n.to_name(f).get_nsuri(), n.to_name(f).get_localname()) {
 					(Some(_), _) => {}
 					(None, ename) => {
 					    if *name == ename {
@@ -804,7 +805,7 @@ fn strip_whitespace_node(
 				    }
 				}
 				(Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
-				    match (n.to_name(d).get_nsuri(), n.to_name(d).get_localname()) {
+				    match (n.to_name(f).get_nsuri(), n.to_name(f).get_localname()) {
 					(Some(ens), ename) => {
 					    if *ns == ens && *name == ename {
 						ps = 0.5;
@@ -834,11 +835,11 @@ fn strip_whitespace_node(
 		});
 	    let mut cit = n.child_iter();
 	    loop {
-		match cit.next(d) {
+		match cit.next(f) {
 		    Some(m) => {
 			strip_whitespace_node(
+			    f,
 			    m,
-			    d,
 			    cpi,
 			    strip.clone(),  // TODO: borrow instead
 			    preserve.clone(), // TODO: borrow instead
@@ -863,8 +864,8 @@ fn strip_whitespace_node(
 	    }
 	}
 	NodeType::Text => {
-	    if n.to_string(d).trim().is_empty() && !keep {
-		n.remove(d).expect("unable to remove text node");
+	    if n.to_string(f).trim().is_empty() && !keep {
+		n.remove(f).expect("unable to remove text node");
 	    }
 	}
 	_ => {}
@@ -875,127 +876,131 @@ fn strip_whitespace_node(
 #[cfg(test)]
 mod tests {
     use super::*;
+    use std::rc::Rc;
+    use crate::item::*;
     use test::Bencher;
 
     #[test]
     fn xslt_literal_text() {
 	let mut sc = StaticContext::new_with_xslt_builtins();
 
-	let src = Tree::try_from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
-	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
 
-	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'>Found the document</xsl:template>
-</xsl:stylesheet>").expect("unable to parse XML");
+</xsl:stylesheet>")
+		.expect("unable to parse XML");
 
 	// Setup dynamic context with result document
-	let mut ev = from_document(
-            &mut style,
+	let ev = from_document(
+	    &mut f,
+            style,
 	    &mut sc,
 	    None,
-	    |s| Tree::try_from(s.as_str()),
 	)
             .expect("failed to compile stylesheet");
-	ev.set_doc(&src);
-	eprintln!("Evaluator templates:");
-	ev.dump_templates();
+
+	let rd = f.plant_tree();
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	eprintln!("find match");
-	let t = ev.find_match(&isrc).expect("unable to find match");
+	let t = ev.find_match(&isrc, &mut f, src, rd)
+	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
-	let mut rd = Tree::new();
-	eprintln!("evaluate");
-	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
 
-	assert_eq!(seq.to_string(Some(&rd)), "Found the document")
+	assert_eq!(seq.to_string(Some(&f)), "Found the document")
     }
 
     #[test]
     fn xslt_literal_element() {
 	let mut sc = StaticContext::new_with_xslt_builtins();
 
-	let src = Tree::try_from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
-	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
 
-	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><answer>Made an element</answer></xsl:template>
 </xsl:stylesheet>").expect("unable to parse XML");
 
 	// Setup dynamic context with result document
-	let mut ev = from_document(
-            &mut style,
+	let ev = from_document(
+	    &mut f,
+            style,
 	    &mut sc,
 	    None,
-	    |s| Tree::try_from(s.as_str()),
 	)
             .expect("failed to compile stylesheet");
-	ev.set_doc(&src);
-	eprintln!("Evaluator templates:");
-	ev.dump_templates();
+
+	let rd = f.plant_tree();
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	eprintln!("find match");
-	let t = ev.find_match(&isrc).expect("unable to find match");
+	let t = ev.find_match(&isrc, &mut f, src, rd)
+	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
-	let mut rd = Tree::new();
-	eprintln!("evaluate");
-	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
 
-	assert_eq!(seq.to_xml(Some(&rd)), "<answer>Made an element</answer>")
+	assert_eq!(seq.to_xml(Some(&f)), "<answer>Made an element</answer>")
     }
 
     #[test]
     fn xslt_apply_templates_1() {
 	let mut sc = StaticContext::new_with_xslt_builtins();
 
-	let src = Tree::try_from("<Test><Level1>one</Level1><Level1>two</Level1></Test>").expect("unable to parse XML");
-	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
 
-	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::*'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::text()'>found text</xsl:template>
 </xsl:stylesheet>").expect("unable to parse XML");
 
 	// Setup dynamic context with result document
-	let mut ev = from_document(
-            &mut style,
+	let ev = from_document(
+	    &mut f,
+            style,
 	    &mut sc,
 	    None,
-	    |s| Tree::try_from(s.as_str()),
 	)
             .expect("failed to compile stylesheet");
-	ev.set_doc(&src);
-	eprintln!("Evaluator templates:");
-	ev.dump_templates();
+
+	let rd = f.plant_tree();
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	eprintln!("find match");
-	let t = ev.find_match(&isrc).expect("unable to find match");
+	let t = ev.find_match(&isrc, &mut f, src, rd)
+	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
-	let mut rd = Tree::new();
-	eprintln!("evaluate");
-	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
 
-	assert_eq!(seq.to_xml(Some(&rd)), "found textfound text")
+	assert_eq!(seq.to_xml(Some(&f)), "found textfound text")
     }
 
     #[test]
     fn xslt_apply_templates_2() {
 	let mut sc = StaticContext::new_with_xslt_builtins();
 
-	let src = Tree::try_from("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 	    .expect("unable to parse XML");
-	let isrc = Rc::new(Item::Node(src.get_doc_node()));
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
 
-	let mut style = Tree::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Test'><xsl:apply-templates select='child::text()'/></xsl:template>
   <xsl:template match='child::Level1'>found Level1 element</xsl:template>
@@ -1003,28 +1008,25 @@ mod tests {
 </xsl:stylesheet>").expect("unable to parse XML");
 
 	// Setup dynamic context with result document
-	let mut ev = from_document(
-            &mut style,
+	let ev = from_document(
+	    &mut f,
+            style,
 	    &mut sc,
 	    None,
-	    |s| Tree::try_from(s.as_str()),
 	)
             .expect("failed to compile stylesheet");
-	ev.set_doc(&src);
-	eprintln!("Evaluator templates:");
-	ev.dump_templates();
+
+	let rd = f.plant_tree();
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	eprintln!("find match");
-	let t = ev.find_match(&isrc).expect("unable to find match");
+	let t = ev.find_match(&isrc, &mut f, src, rd)
+	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
-	let mut rd = Tree::new();
-	eprintln!("evaluate");
-	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut rd).expect("evaluation failed");
-	eprintln!("seq==\"{}\"", seq.to_string(Some(&src)));
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
 
-	assert_eq!(seq.to_xml(Some(&rd)), "onetwothreefour")
+	assert_eq!(seq.to_xml(Some(&f)), "onetwothreefour")
     }
 }

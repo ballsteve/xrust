@@ -81,5 +81,5 @@ pub use xpath::parse;
 pub mod evaluate;
 pub use evaluate::{StaticContext, Evaluator, Constructor};
 
-//pub mod xslt;
-//pub use xslt::from_document;
+pub mod xslt;
+pub use xslt::from_document;
