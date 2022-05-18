@@ -331,6 +331,16 @@ impl Node {
 	}
     }
     pub fn to_xml(&self, f: &Forest) -> String {
+	let mut ns: HashMap<String, Option<String>> = HashMap::new();
+	self.to_xml_int(f, &OutputDefinition::new(), 0, &mut ns)
+    }
+    fn to_xml_int(
+	&self,
+	f: &Forest,
+	od: &OutputDefinition,
+	indent: usize,
+	ns: &mut HashMap<String, Option<String>>
+    ) -> String {
 	let d = match f.get_ref(self.1) {
 	    Some(e) => e,
 	    None => return String::from(""),
@@ -342,9 +352,76 @@ impl Node {
 	match nc.node_type() {
 	    NodeType::Element => {
 		let mut result = String::from("<");
+
 		let name = nc.name().as_ref().unwrap();
+
+		// Check if any XML Namespaces need to be declared,
+		// Either for the element for any of its attributes.
+		let mut newns: Vec<(Option<String>, String)> = vec![];
+		if let Some(uri) = name.get_nsuri() {
+		    match name.get_prefix() {
+			Some(p) => {
+			    match ns.get(uri.as_str()) {
+				Some(op) => {
+				    // Already declared, but with the same prefix?
+				    match op {
+					Some(q) => {
+					    if p != *q {
+						ns.insert(uri.clone(), Some(p.clone()));
+						newns.push((Some(p), uri));
+					    } // else already declared
+					}
+					None => {
+					    // Was declared with default namespace, now has a prefix
+					    ns.insert(uri.clone(), Some(p.clone()));
+					    newns.push((Some(p), uri));
+					}
+				    }
+				}
+				None => {
+				    ns.insert(uri.clone(), Some(p.clone()));
+				    newns.push((Some(p), uri));
+				}
+			    }
+			}
+			None => {
+			    // Default namespace
+			    match ns.get(uri.as_str()) {
+				Some(_) => {
+				    ns.insert(uri.clone(), None);
+				    newns.push((None, uri));
+				}
+				None => {
+				    // Already declared
+				}
+			    }
+			}
+		    }
+		}
+
 		result.push_str(name.to_string().as_str());
+		newns.iter().for_each(|(p, u)| {
+		    result.push_str(" xmlns");
+		    if let Some(q) = p {
+			result.push(':');
+			result.push_str(q.as_str());
+		    }
+		    result.push_str("='");
+		    result.push_str(u);
+		    result.push('\'');
+		});
 		nc.attributes.iter().for_each(|(k, v)| {
+		    // Declare namespace for attribute, if not already declared
+		    if let Some(uri) = k.get_nsuri() {
+			if ns.get(uri.as_str()).is_none() {
+			    ns.insert(uri.clone(), k.get_prefix());
+			    result.push_str(" xmlns:");
+			    result.push_str(k.get_prefix().unwrap().as_str());
+			    result.push_str("='");
+			    result.push_str(uri.as_str());
+			    result.push('\'');
+			}
+		    }
 		    result.push(' ');
 		    result.push_str(k.to_string().as_str());
 		    result.push_str("='");
@@ -352,13 +429,44 @@ impl Node {
 		    result.push('\'');
 		});
 		result.push_str(">");
+
+		// Content of the element.
+		// If the indent option is enabled, then if no child is a text node then add spacing
+		let do_indent: bool = if od.get_indent() {
+		    let mut acc = true;
+		    let mut children = self.child_iter();
+		    loop {
+			match children.next(f) {
+			    Some(c) => {
+				if c.node_type(f) == NodeType::Text {
+				    acc = false
+				}
+			    }
+			    None => break,
+			}
+		    }
+		    acc
+		} else {
+		    false
+		};
 		let mut children = self.child_iter();
 		loop {
 		    match children.next(f) {
-			Some(c) => result.push_str(c.to_xml(f).as_str()),
+			Some(c) => {
+			    if do_indent {
+				result.push('\n');
+				(0..indent).for_each(|_| result.push(' '));
+			    };
+			    result.push_str(c.to_xml_int(f, od, indent, ns).as_str());
+			}
 			None => break,
 		    }
 		};
+		if do_indent {
+		    result.push('\n');
+		    (0..(indent - 2)).for_each(|_| result.push(' '));
+		};
+
 		result.push_str("</");
 		result.push_str(name.to_string().as_str());
 		result.push_str(">");
@@ -387,8 +495,9 @@ impl Node {
 	    }
 	}
     }
-    pub fn to_xml_with_options(&self, _f: &Forest, _od: &OutputDefinition) -> String {
-	String::from("not implemented yet")
+    pub fn to_xml_with_options(&self, f: &Forest, od: &OutputDefinition) -> String {
+	let mut ns: HashMap<String, Option<String>> = HashMap::new();
+	self.to_xml_int(f, od, 2, &mut ns)
     }
     pub fn to_json(&self, _f: &Forest) -> String {
 	String::from("not implemented yet")
@@ -1317,6 +1426,90 @@ mod tests {
 	assert_eq!(desc.next(&f), Some(l2));
 	assert_eq!(desc.next(&f), Some(t2));
 	assert_eq!(desc.next(&f), None)
+    }
+
+    #[test]
+    fn serialise_1() {
+	let mut f = Forest::new();
+	let ti = f.plant_tree();
+	let e = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(None, None, String::from("Test")))
+	    .expect("unable to create element node");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(e)
+	    .expect("unable to add node to doc");
+	let g = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(None, None, String::from("Another")))
+	    .expect("unable to create element node");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(g)
+	    .expect("unable to add node to doc");
+	let l1 = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(None, None, String::from("Level-1")))
+	    .expect("unable to create element node");
+	e.append_child(&mut f, l1).expect("unable to append node");
+	let t1 = f.get_ref_mut(ti).unwrap()
+	    .new_text(Value::from("one"))
+	    .expect("unable to create text node");
+	l1.append_child(&mut f, t1).expect("unable to append node");
+	let l2 = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(None, None, String::from("Level-1")))
+	    .expect("unable to create element node");
+	e.append_child(&mut f, l2).expect("unable to append node");
+	let t2 = f.get_ref_mut(ti).unwrap()
+	    .new_text(Value::from("two"))
+	    .expect("unable to create text node");
+	l2.append_child(&mut f, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&f), "<Test><Level-1>one</Level-1><Level-1>two</Level-1></Test>");
+	let mut od = OutputDefinition::new();
+	od.set_indent(true);
+	assert_eq!(e.to_xml_with_options(&f, &od), "<Test>
+  <Level-1>one</Level-1>
+  <Level-1>two</Level-1>
+</Test>");
+    }
+
+    #[test]
+    fn serialise_2() {
+	let mut f = Forest::new();
+	let ti = f.plant_tree();
+	let e = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(Some(String::from("http://testing.org/ns")), Some(String::from("tst")), String::from("Test")))
+	    .expect("unable to create element node");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(e)
+	    .expect("unable to add node to doc");
+	let g = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(Some(String::from("http://testing.org/ns")), Some(String::from("tst")), String::from("Another")))
+	    .expect("unable to create element node");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(g)
+	    .expect("unable to add node to doc");
+	let l1 = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(Some(String::from("http://testing.org/ns")), Some(String::from("tst")), String::from("Level-1")))
+	    .expect("unable to create element node");
+	e.append_child(&mut f, l1).expect("unable to append node");
+	let t1 = f.get_ref_mut(ti).unwrap()
+	    .new_text(Value::from("one"))
+	    .expect("unable to create text node");
+	l1.append_child(&mut f, t1).expect("unable to append node");
+	let l2 = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(Some(String::from("http://testing.org/ns")), Some(String::from("tst")), String::from("Level-1")))
+	    .expect("unable to create element node");
+	e.append_child(&mut f, l2).expect("unable to append node");
+	let t2 = f.get_ref_mut(ti).unwrap()
+	    .new_text(Value::from("two"))
+	    .expect("unable to create text node");
+	l2.append_child(&mut f, t2).expect("unable to append node");
+
+	assert_eq!(e.to_xml(&f), "<tst:Test xmlns:tst='http://testing.org/ns'><tst:Level-1>one</tst:Level-1><tst:Level-1>two</tst:Level-1></tst:Test>");
+	let mut od = OutputDefinition::new();
+	od.set_indent(true);
+	assert_eq!(e.to_xml_with_options(&f, &od), "<tst:Test xmlns:tst='http://testing.org/ns'>
+  <tst:Level-1>one</tst:Level-1>
+  <tst:Level-1>two</tst:Level-1>
+</tst:Test>");
     }
 
     #[test]

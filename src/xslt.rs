@@ -4,6 +4,60 @@ Compile an XSLT stylesheet into a [Sequence] [Constructor].
 
 Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
 
+```rust
+# use std::rc::Rc;
+use xrust::xdmerror::Error;
+use xrust::qname::QualifiedName;
+use xrust::forest::Forest;
+use xrust::item::{Sequence, SequenceTrait, Item};
+use xrust::evaluate::{Evaluator, StaticContext};
+use xrust::xslt::from_document;
+
+// First setup a static context for the evaluator
+let mut sc = StaticContext::new_with_builtins();
+
+// Now create a forest for all of the trees
+let mut f = Forest::new();
+
+// The source document (a tree)
+let src = f.grow_tree("<Example><Title>XSLT in Rust</Title><Paragraph>A simple document.</Paragraph></Example>")
+    .expect("unable to parse XML");
+
+// Make an item that contains the source document
+let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
+
+// The XSL stylesheet
+let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Example'><html><xsl:apply-templates/></html></xsl:template>
+  <xsl:template match='child::Title'><head><title><xsl:apply-templates/></title></head></xsl:template>
+  <xsl:template match='child::Paragraph'><body><p><xsl:apply-templates/></p></body></xsl:template>
+</xsl:stylesheet>")
+    .expect("unable to parse stylesheet");
+
+// Compile the stylesheet
+let ev = from_document(
+    &mut f,
+    style,
+    &mut sc,
+    None,
+)
+    .expect("failed to compile stylesheet");
+
+// Make a result document
+let rd = f.plant_tree();
+
+// Prime the stylesheet evaluation by finding the template for the document root
+// and making the document root the initial context
+let t = ev.find_match(&isrc, &mut f, src, rd)
+    .expect("unable to find match");
+
+// Let 'er rip!
+// Evaluate the sequence constructor with the source document as the initial context
+let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+    .expect("evaluation failed");
+
+// Serialise the sequence as XML
+assert_eq!(seq.to_xml(Some(&f)), "<html><head><title>XSLT in Rust</title></head><body><p>A simple document.</p></body></html>")
 */
 
 use std::convert::TryFrom;
@@ -968,7 +1022,7 @@ mod tests {
   <xsl:template match='child::text()'>found text</xsl:template>
 </xsl:stylesheet>").expect("unable to parse XML");
 
-	// Setup dynamic context with result document
+	// Setup dynamic context
 	let ev = from_document(
 	    &mut f,
             style,
@@ -1069,7 +1123,6 @@ mod tests {
 	    };
 	    let xmldata = xmldataraw.trim();
 
-	    eprintln!("Benching XML \"{}\"", x);
 	    b.iter(|| {
 		let mut sc = StaticContext::new_with_xslt_builtins();
 		let mut f = Forest::new();
