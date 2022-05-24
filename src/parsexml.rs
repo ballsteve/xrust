@@ -8,17 +8,19 @@
 
 extern crate nom;
 
+use std::convert::TryFrom;
 use std::collections::HashSet;
+use std::collections::HashMap;
 use std::str::FromStr;
 use nom:: {
-  IResult,
-  branch::alt,
-  character::complete::{char, multispace0, multispace1, none_of,},
-  sequence::tuple,
-  multi::{many0, many1},
-  combinator::{map, map_opt, opt, value,verify},
-  bytes::complete::{tag, take_until, take_while_m_n},
-  sequence::delimited,
+    IResult,
+    branch::alt,
+    character::complete::{char, multispace0, multispace1, none_of, digit1, hex_digit1,},
+    sequence::tuple,
+    multi::{many0, many1},
+    combinator::{map, map_opt, opt, value,verify},
+    bytes::complete::{tag, take_until, take_while_m_n},
+    sequence::delimited,
 };
 use crate::qname::*;
 use crate::value::Value;
@@ -36,19 +38,45 @@ use crate::xdmerror::*;
 // However, external general entities may have more than one element.
 #[derive(PartialEq)]
 pub struct XMLDocument {
-  pub prologue: Vec<XMLNode>,
-  pub content: Vec<XMLNode>,
-  pub epilogue: Vec<XMLNode>,
-  pub xmldecl: Option<XMLdecl>
+    pub prologue: Vec<XMLNode>,
+    pub content: Vec<XMLNode>,
+    pub epilogue: Vec<XMLNode>,
+    pub xmldecl: Option<XMLdecl>
+}
+
+impl TryFrom<&str> for XMLDocument {
+    type Error = Error;
+    fn try_from(e: &str) -> Result<Self, Self::Error> {
+	match document(e) {
+	    Ok((rest, value)) => {
+		if rest == "" {
+		    Result::Ok(value)
+		} else {
+		    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from(format!("extra characters after expression: \"{}\"", rest))})
+		}
+	    },
+	    Err(nom::Err::Error(c)) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("parser error: {:?}", c)}),
+	    Err(nom::Err::Incomplete(_)) => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("incomplete input")}),
+	    Err(nom::Err::Failure(_)) => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unrecoverable parser error")}),
+	}
+    }
+}
+impl TryFrom<String> for XMLDocument {
+    type Error = Error;
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+	XMLDocument::try_from(s.as_str())
+    }
 }
 
 #[derive(Clone, PartialEq)]
 pub enum XMLNode {
-  Element(QualifiedName, Vec<XMLNode>, Vec<XMLNode>), // Element name, attributes, content
-  Attribute(QualifiedName, Value),
-  Text(Value),
-  PI(String, Value),
-  Comment(Value), // Comment value is a string
+    Element(QualifiedName, Vec<XMLNode>, Vec<XMLNode>), // Element name, attributes, content
+    Attribute(QualifiedName, Value),
+    Text(Value),
+    PI(String, Value),
+    Comment(Value),	// Comment value is a string
+    DTD(DTDDecl),	// These only occur in the prologue
+    Reference(QualifiedName),	// General entity reference. These need to be resolved before presentation to the application
 }
 
 #[derive(PartialEq)]
@@ -58,26 +86,34 @@ pub struct XMLdecl {
     standalone: Option<String>
 }
 
+/// DTD declarations.
+/// Only general entities are supported, so far.
+/// TODO: element, attribute declarations
+#[derive(Clone, PartialEq)]
+pub enum DTDDecl {
+    GeneralEntity(String, Vec<XMLNode>),
+}
+
 // document ::= ( prolog element misc*)
 fn document(input: &str) -> IResult<&str, XMLDocument> {
-  map (
-    tuple((
-      opt(prolog),
-      element,
-      opt(misc),
-    )),
-    |(p, e, m)| {
-      let pr = p.unwrap_or((None, vec![]));
+    map (
+	tuple((
+	    opt(prolog),
+	    element,
+	    opt(misc),
+	)),
+	|(p, e, m)| {
+	    let pr = p.unwrap_or((None, vec![]));
 
-      XMLDocument {
-	    content: vec![e],
-	    epilogue: m.unwrap_or(vec![]),
-        xmldecl: pr.0,
-        prologue: pr.1
-      }
-    }
-  )
-  (input)
+	    XMLDocument {
+		content: vec![e],
+		epilogue: m.unwrap_or(vec![]),
+		xmldecl: pr.0,
+		prologue: pr.1
+	    }
+	}
+    )
+	(input)
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
@@ -87,7 +123,7 @@ fn prolog(input: &str) -> IResult<&str, (Option<XMLdecl>, Vec<XMLNode>)> {
             opt(xmldecl),
             opt(doctypedecl)
             )),
-        |(x, _dtd)| (x, vec![])
+        |(x, dtd)| (x, dtd.map_or(vec![], |d| d))
     )(input)
 }
 
@@ -142,14 +178,130 @@ fn xmldecl(input: &str) -> IResult<&str, XMLdecl> {
 
 fn doctypedecl(input: &str) -> IResult<&str, Vec<XMLNode>> {
     map(
-        tag("not yet implemented"),
-        |_| {
-            vec![]
+        tuple((
+	    tag("<!DOCTYPE"),
+	    multispace1,
+	    qualname,
+	    map(
+		opt(
+		    map(
+			tuple((
+			    multispace1,
+			    externalid,
+			)),
+			|e| e
+		    ),
+		), |e| e
+	    ),
+	    multispace0,
+	    opt(
+		map(
+		    tuple((
+			tag("["),
+			multispace0,
+			intsubset,
+			multispace0,
+			tag("]"),
+			multispace0,
+		    )),
+		    |(_, _, i, _, _, _)| i
+		)
+	    ),
+	    tag(">"),
+	)),
+        |(_, _, _n, _extid, _, intss, _)| {
+            // TODO: the name must match the document element
+	    intss.map_or(vec![], |i| i)
         }
     )
         (input)
 }
 
+// TODO: parameter entities
+// intSubset ::= (markupdecl | DeclSep)*
+// markupdecl ::= elementdecl | AttlistDecl | EntityDecl | NotationDecl | PI | Comment
+fn intsubset(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    many0(
+	alt((
+	    entitydecl,
+	    processing_instruction,
+	    comment,
+	))
+    )
+	(input)
+}
+
+// EntityDecl ::= GEDecl | PEDecl
+// TODO: support parameter entities
+fn entitydecl(input: &str) -> IResult<&str, XMLNode> {
+    // TODO: handle quotes properly
+    map(
+	tuple((
+	    tag("<!ENTITY"),
+	    multispace1,
+	    name,
+	    multispace1,
+	    entityvalue,
+	    multispace0,
+	    tag(">"),
+	)),
+	|(_, _, n, _, v, _, _)| {
+	    XMLNode::DTD(DTDDecl::GeneralEntity(String::from(n), v))
+	}
+    )
+	(input)
+}
+
+fn entityvalue(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    alt((
+	entityvalue_single,
+	entityvalue_double,
+    ))
+	(input)
+}
+// TODO: parameter entity references
+fn entityvalue_single(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    delimited(
+	char('\''),
+	many0(
+	    alt((
+		reference,
+		map(
+		    many1(none_of("'&")),
+		    |v| XMLNode::Text(Value::String(v.iter().collect::<String>()))
+		),
+	    )),
+	),
+	char('\''),
+    )
+	(input)
+}
+fn entityvalue_double(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    delimited(
+	char('"'),
+	many0(
+	    alt((
+		reference,
+		map(
+		    many1(none_of("\"&")),
+		    |v| XMLNode::Text(Value::String(v.iter().collect::<String>()))
+		),
+	    )),
+	),
+	char('"'),
+    )
+	(input)
+}
+
+fn externalid(input: &str) -> IResult<&str, Vec<XMLNode>> {
+    map(
+	tag("not yet implemented"),
+	|_| {
+	    vec![XMLNode::Text(Value::String("external ID not yet implemented".to_string()))]
+	}
+    )
+	(input)
+}
 
 // Element ::= EmptyElemTag | STag content ETag
 fn element(input: &str) -> IResult<&str, XMLNode> {
@@ -317,15 +469,81 @@ fn content(input: &str) -> IResult<&str, Vec<XMLNode>> {
 }
 
 // Reference ::= EntityRef | CharRef
-// TODO
 fn reference(input: &str) -> IResult<&str, XMLNode> {
+    alt((
+	entityref,
+	charref,
+    ))
+	(input)
+}
+fn entityref(input: &str) -> IResult<&str, XMLNode> {
   map(
-    tag("not yet implemented"),
-    |_| {
-      XMLNode::Text(Value::String("not yet implemented".to_string()))
+      tuple((
+	  char('&'),
+	  qualname,
+	  char(';'),
+      )),
+    |(_, n, _)| {
+      XMLNode::Reference(n)
     }
   )
   (input)
+}
+fn charref(input: &str) -> IResult<&str, XMLNode> {
+    alt((
+	charref_octal,
+	charref_hex,
+    ))
+	(input)
+}
+fn charref_octal(input: &str) -> IResult<&str, XMLNode> {
+    map(
+	tuple((
+	    char('&'),
+	    char('#'),
+	    digit1,
+	    char(';'),
+	)),
+	|(_, _, n, _)| {
+	    let u = match u32::from_str_radix(n, 8) {
+		Ok(c) => c,
+		Err(_) => 0,	// TODO: pass back error to nom
+	    };
+	    match std::char::from_u32(u) {
+		Some(c) => XMLNode::Text(Value::from(c.to_string())),
+		None => {
+		    //make_error(input, NomErrorKind::OctDigit)
+		    XMLNode::Text(Value::from(""))
+		}
+	    }
+	}
+    )
+	(input)
+}
+fn charref_hex(input: &str) -> IResult<&str, XMLNode> {
+    map(
+	tuple((
+	    char('&'),
+	    char('#'),
+	    char('x'),
+	    hex_digit1,
+	    char(';'),
+	)),
+	|(_, _, _, n, _)| {
+	    let u = match u32::from_str_radix(n, 16) {
+		Ok(c) => c,
+		Err(_) => 0,	// TODO: pass back error to nom
+	    };
+	    match std::char::from_u32(u) {
+		Some(c) => XMLNode::Text(Value::from(c.to_string())),
+		None => {
+		    //make_error(input, NomErrorKind::OctDigit)
+		    XMLNode::Text(Value::from(""))
+		}
+	    }
+	}
+    )
+	(input)
 }
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
@@ -490,28 +708,13 @@ fn prefixed_name(input: &str) -> IResult<&str, QualifiedName> {
   (input)
 }
 
-pub fn parse(e: &str) -> Result<XMLDocument, Error> {
-  match document(e) {
-    Ok((rest, value)) => {
-      if rest == "" {
-        Result::Ok(value)
-      } else {
-        Result::Err(Error{kind: ErrorKind::Unknown, message: String::from(format!("extra characters after expression: \"{}\"", rest))})
-      }
-    },
-    Err(nom::Err::Error(c)) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("parser error: {:?}", c)}),
-    Err(nom::Err::Incomplete(_)) => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("incomplete input")}),
-    Err(nom::Err::Failure(_)) => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("unrecoverable parser error")}),
-  }
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn empty() {
-        let doc = parse("<Test/>").expect("failed to parse XML \"<Test/>\"");
+        let doc = XMLDocument::try_from("<Test/>").expect("failed to parse XML \"<Test/>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
@@ -529,7 +732,7 @@ mod tests {
 
     #[test]
     fn root_element() {
-        let doc = parse("<Test></Test>").expect("failed to parse XML \"<Test></Test>\"");
+        let doc = XMLDocument::try_from("<Test></Test>").expect("failed to parse XML \"<Test></Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
@@ -547,7 +750,7 @@ mod tests {
 
     #[test]
     fn root_element_text() {
-        let doc = parse("<Test>Foobar</Test>").expect("failed to parse XML \"<Test>Foobar</Test>\"");
+        let doc = XMLDocument::try_from("<Test>Foobar</Test>").expect("failed to parse XML \"<Test>Foobar</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
@@ -571,7 +774,7 @@ mod tests {
 
     #[test]
     fn nested() {
-        let doc = parse("<Test><Foo>bar</Foo></Test>").expect("failed to parse XML \"<Test><Foo>bar</Foo></Test>\"");
+        let doc = XMLDocument::try_from("<Test><Foo>bar</Foo></Test>").expect("failed to parse XML \"<Test><Foo>bar</Foo></Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
@@ -602,8 +805,74 @@ mod tests {
     }
 
     #[test]
+    fn ref_pos() {
+        let doc = XMLDocument::try_from("<Test>&foo;</Test>").expect("failed to parse XML \"<Test>&foo;</Test>\"");
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+    }
+    #[test]
+    #[should_panic]
+    fn ref_neg_1() {
+	// Missing ;
+        let doc = XMLDocument::try_from("<Test>&foo</Test>").expect("failed to parse XML \"<Test>&foo</Test>\"");
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 0);
+    }
+    #[test]
+    fn ref_neg_2() {
+	// space
+        let doc = XMLDocument::try_from("<Test>& foo;</Test>");
+        assert!(doc.is_err());
+    }
+
+    #[test]
+    fn char_ref_oct() {
+        let doc = XMLDocument::try_from("<Test>&#65;</Test>").expect("failed to parse XML \"<Test>&#65;</Test>\"");
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+	match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 1);
+		match &c[0] {
+		    XMLNode::Text(t) => {
+			assert_eq!(t.to_string(), "A")
+		    }
+		    _ => panic!("document element content is not text")
+		}
+	    }
+	    _ => panic!("document element is not \"Test\"")
+	}
+    }
+    #[test]
+    fn char_ref_hex() {
+        let doc = XMLDocument::try_from("<Test>&#x03c7;</Test>").expect("failed to parse XML \"<Test>&#x03c7;</Test>\"");
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+	match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 1);
+		match &c[0] {
+		    XMLNode::Text(t) => {
+			assert_eq!(t.to_string(), "\u{03c7}")
+		    }
+		    _ => panic!("document element content is not text")
+		}
+	    }
+	    _ => panic!("document element is not \"Test\"")
+	}
+    }
+
+    #[test]
     fn mixed() {
-        let doc = parse("<Test>i1<Foo>bar</Foo>i2</Test>").expect("failed to parse XML \"<Test>i1<Foo>bar</Foo>i2</Test>\"");
+        let doc = XMLDocument::try_from("<Test>i1<Foo>bar</Foo>i2</Test>").expect("failed to parse XML \"<Test>i1<Foo>bar</Foo>i2</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
@@ -648,7 +917,7 @@ mod tests {
     #[test]
     fn cdata() {
         let doc = "<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>";
-        let result = parse(doc).expect("failed to parse XML \"<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>\"");
+        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>\"");
         assert_eq!(result.prologue.len(), 0);
         assert_eq!(result.epilogue.len(), 0);
         assert_eq!(result.content.len(), 1);
@@ -675,7 +944,7 @@ mod tests {
     #[test]
     fn xmldeclaration() {
         let doc = r#"<?xml version="1.0" encoding="UTF-8"?><doc/>"#;
-        let result = parse(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc/>\"");
+        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc/>\"");
         assert_eq!(result.prologue.len(), 0);
         assert_eq!(result.epilogue.len(), 0);
         assert_eq!(result.content.len(), 1);
@@ -687,5 +956,102 @@ mod tests {
                 assert_eq!(standalone, None);
             }
         }
+    }
+
+    #[test]
+    fn general_entity_1() {
+        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general 'entity'>]><doc>&general;</doc>"#;
+        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
+        assert_eq!(result.prologue.len(), 1);
+        assert_eq!(result.epilogue.len(), 0);
+        assert_eq!(result.content.len(), 1);
+        match result.xmldecl {
+            None => {panic!("XML Declaration not parsed")},
+            Some(XMLdecl { version, encoding, standalone  }) => {
+                assert_eq!(version, "1.0");
+                assert_eq!(encoding, Some("UTF-8".to_string()));
+                assert_eq!(standalone, None);
+            }
+        }
+	match &result.prologue[0] {
+	    XMLNode::DTD(DTDDecl::GeneralEntity(n, v)) => {
+		assert_eq!(n, "general");
+		assert_eq!(v.len(), 1);
+		match &v[0] {
+		    XMLNode::Text(u) => {
+			assert_eq!(u.to_string(), "entity")
+		    }
+		    _ => {
+			panic!("general entity value is not text")
+		    }
+		}
+	    }
+	    _ => {
+		panic!("prologue contains something other than a general entity declaration")
+	    }
+	}
+	match &result.content[0] {
+	    XMLNode::Element(n, a, c) => {
+		assert_eq!(n.get_localname(), "doc");
+		assert_eq!(a.len(), 0);
+		assert_eq!(c.len(), 1);
+		match &c[0] {
+		    XMLNode::Reference(e) => {
+			assert_eq!(e.to_string(), "general")
+		    }
+		    _ => {
+			panic!("failed to find text")
+		    }
+		}
+	    }
+	    _ => {
+		panic!("root is not an element node")
+	    }
+	}
+    }
+
+//    #[test]
+    fn general_entity_2() {
+        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general '<expansion>entity</expansion>'>]><doc>&general;</doc>"#;
+        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
+        assert_eq!(result.prologue.len(), 0);
+        assert_eq!(result.epilogue.len(), 0);
+        assert_eq!(result.content.len(), 1);
+        match result.xmldecl {
+            None => {panic!("XML Declaration not parsed")},
+            Some(XMLdecl { version, encoding, standalone  }) => {
+                assert_eq!(version, "1.0");
+                assert_eq!(encoding, Some("UTF-8".to_string()));
+                assert_eq!(standalone, None);
+            }
+        }
+	match &result.content[0] {
+	    XMLNode::Element(n, a, c) => {
+		assert_eq!(n.get_localname(), "doc");
+		assert_eq!(a.len(), 0);
+		assert_eq!(c.len(), 1);
+		match &c[0] {
+		    XMLNode::Element(m, b, d) => {
+			assert_eq!(m.get_localname(), "expansion");
+			assert_eq!(b.len(), 0);
+			assert_eq!(d.len(), 1);
+			match &d[0] {
+			    XMLNode::Text(e) => {
+				assert_eq!(e.to_string(), "entity")
+			    }
+			    _ => {
+				panic!("failed to find text")
+			    }
+			}
+		    }
+		    _ => {
+			panic!("failed to find \"expansion\" element")
+		    }
+		}
+	    }
+	    _ => {
+		panic!("root is not an element node")
+	    }
+	}
     }
 }

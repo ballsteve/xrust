@@ -62,7 +62,7 @@ pub use item::{Sequence, SequenceTrait, Item};
 mod parsecommon;
 
 pub mod parsexml;
-pub use parsexml::parse as parsexml;
+pub use parsexml::XMLDocument;
 
 pub mod xpath;
 pub use xpath::parse;

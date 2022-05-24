@@ -4,6 +4,7 @@
 //!
 //! Both [Forest]s and [Tree]s use an arena allocator, so the object itself is simply an index that may be copied and cloned. However, in order to dererence the [Tree] or [Node] the [Forest] must be passed as an argument. This also makes deallocating memory difficult; the objects will persist until the entire [Forest] is freed.
 
+use std::convert::TryFrom;
 use std::collections::HashMap;
 use std::collections::hash_map::Iter;
 use generational_arena::{Arena, Index};
@@ -11,7 +12,7 @@ use crate::qname::QualifiedName;
 use crate::output::OutputDefinition;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::Value;
-use crate::parsexml::*;
+use crate::parsexml::{XMLDocument, XMLNode};
 
 /// A Forest. Forests contain [Tree]s. Each [Tree] is identified by a copyable value, similar to a Node value, that can be easily stored and passed as a parameter.
 #[derive(Clone)]
@@ -38,7 +39,7 @@ impl Forest {
     }
 
     pub fn grow_tree(&mut self, s: &str) -> Result<TreeIndex, Error> {
-	let d = parse(s)?;
+	let d = XMLDocument::try_from(s)?;
 	if d.content.len() == 0 {
 	    Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to parse XML")))
 	} else {
@@ -261,6 +262,10 @@ fn make_node(
 	}
 	XMLNode::PI(m, v) => {
 	    Ok(f.get_ref_mut(ti).unwrap().new_processing_instruction(QualifiedName::new(None, None, m), v)?)
+	}
+	XMLNode::Reference(_) |
+	XMLNode::DTD(_) => {
+	    Result::Err(Error::new(ErrorKind::TypeError, String::from("not expected")))
 	}
     }
 }
