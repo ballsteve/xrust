@@ -18,7 +18,7 @@ use nom:: {
     character::complete::{char, multispace0, multispace1, none_of, digit1, hex_digit1,},
     sequence::tuple,
     multi::{many0, many1},
-    combinator::{map, map_opt, opt, value,verify},
+    combinator::{map, map_opt, opt, value, verify, recognize},
     bytes::complete::{tag, take_until, take_while_m_n},
     sequence::delimited,
 };
@@ -42,6 +42,73 @@ pub struct XMLDocument {
     pub content: Vec<XMLNode>,
     pub epilogue: Vec<XMLNode>,
     pub xmldecl: Option<XMLdecl>
+}
+
+impl XMLDocument {
+    /// Expand general entities in the document
+    pub fn expand(&mut self) -> Result<(), Error> {
+	let mut ent: HashMap<QualifiedName, Vec<XMLNode>> = HashMap::new();
+
+	// Process the entity declarations to get the definition of each entity
+	for p in &self.prologue {
+	    if let XMLNode::DTD(d) = p {
+		let DTDDecl::GeneralEntity(n, c) = d;
+		let (rest, e) = content(c.as_str()).map_err(|e| Error::new(ErrorKind::Unknown, e.to_string()))?;
+		if rest.len() != 0 {
+		    return Result::Err(Error::new(ErrorKind::Unknown, format!("unable to parse general entity \"{}\"", n.to_string())))
+		}
+		match ent.insert(n.clone(), e) {
+		    Some(_) => {
+			return Result::Err(Error::new(ErrorKind::Unknown, format!("general entity \"{}\" already defined", n.to_string())))
+		    }
+		    None => {}
+		}
+	    }
+	}
+
+	// Now search for references and replace them with their content
+	// This naieve implementation copies the entire document...
+	// TODO: a better implementation that mutates the current document
+	let mut new: Vec<XMLNode> = vec![];
+	for e in &self.content {
+	    let mut a = expand_node(e, &ent);
+	    new.append(&mut a);
+	}
+	self.content = new;
+
+	Ok(())
+    }
+}
+
+fn expand_node(n: &XMLNode, ent: &HashMap<QualifiedName, Vec<XMLNode>>) -> Vec<XMLNode> {
+    match n {
+	XMLNode::Reference(qn) => {
+	    ent.get(&qn).map_or(vec![], |x| x.clone())	// TODO: an undefined entity name is an error
+	}
+	XMLNode::Element(qn, attr, content) => {
+	    let mut attrs: Vec<XMLNode> = vec![];
+	    for a in attr {
+		let mut b = expand_node(a, ent);
+		attrs.append(&mut b);
+	    }
+	    let mut newcontent: Vec<XMLNode> = vec![];
+	    for c in content {
+		let mut d = expand_node(c, ent);
+		newcontent.append(&mut d);
+	    }
+	    vec![XMLNode::Element(qn.clone(), attrs, newcontent)]
+	}
+	XMLNode::Attribute(qn, v) => {
+	    // TODO: expand attribute value
+	    vec![XMLNode::Attribute(qn.clone(), v.clone())]
+	}
+	XMLNode::Text(t) => {
+	    vec![XMLNode::Text(t.clone())]
+	}
+	XMLNode::PI(_, _) |
+	XMLNode::Comment(_) |
+	XMLNode::DTD(_) => vec![]	// TODO
+    }
 }
 
 impl TryFrom<&str> for XMLDocument {
@@ -91,7 +158,7 @@ pub struct XMLdecl {
 /// TODO: element, attribute declarations
 #[derive(Clone, PartialEq)]
 pub enum DTDDecl {
-    GeneralEntity(String, Vec<XMLNode>),
+    GeneralEntity(QualifiedName, String),
 }
 
 // document ::= ( prolog element misc*)
@@ -239,20 +306,20 @@ fn entitydecl(input: &str) -> IResult<&str, XMLNode> {
 	tuple((
 	    tag("<!ENTITY"),
 	    multispace1,
-	    name,
+	    qualname,
 	    multispace1,
 	    entityvalue,
 	    multispace0,
 	    tag(">"),
 	)),
 	|(_, _, n, _, v, _, _)| {
-	    XMLNode::DTD(DTDDecl::GeneralEntity(String::from(n), v))
+	    XMLNode::DTD(DTDDecl::GeneralEntity(n, v))
 	}
     )
 	(input)
 }
 
-fn entityvalue(input: &str) -> IResult<&str, Vec<XMLNode>> {
+fn entityvalue(input: &str) -> IResult<&str, String> {
     alt((
 	entityvalue_single,
 	entityvalue_double,
@@ -260,35 +327,51 @@ fn entityvalue(input: &str) -> IResult<&str, Vec<XMLNode>> {
 	(input)
 }
 // TODO: parameter entity references
-fn entityvalue_single(input: &str) -> IResult<&str, Vec<XMLNode>> {
-    delimited(
-	char('\''),
-	many0(
-	    alt((
-		reference,
-		map(
-		    many1(none_of("'&")),
-		    |v| XMLNode::Text(Value::String(v.iter().collect::<String>()))
+fn entityvalue_single(input: &str) -> IResult<&str, String> {
+    map(
+	delimited(
+	    char('\''),
+	    recognize(
+		many0(
+		    alt((
+			map(
+			    recognize(reference),
+			    |r| String::from(r)
+			),
+			map(
+			    many1(none_of("'&")),
+			    |v| v.iter().collect::<String>()
+			),
+		    )),
 		),
-	    )),
+	    ),
+	    char('\''),
 	),
-	char('\''),
+	|e| String::from(e)
     )
 	(input)
 }
-fn entityvalue_double(input: &str) -> IResult<&str, Vec<XMLNode>> {
-    delimited(
-	char('"'),
-	many0(
-	    alt((
-		reference,
-		map(
-		    many1(none_of("\"&")),
-		    |v| XMLNode::Text(Value::String(v.iter().collect::<String>()))
+fn entityvalue_double(input: &str) -> IResult<&str, String> {
+    map(
+	delimited(
+	    char('"'),
+	    recognize(
+		many0(
+		    alt((
+			map(
+			    recognize(reference),
+			    |r| String::from(r)
+			),
+			map(
+			    many1(none_of("\"&")),
+			    |v| v.iter().collect::<String>()
+			),
+		    )),
 		),
-	    )),
+	    ),
+	    char('"'),
 	),
-	char('"'),
+	|e| String::from(e)
     )
 	(input)
 }
@@ -975,16 +1058,8 @@ mod tests {
         }
 	match &result.prologue[0] {
 	    XMLNode::DTD(DTDDecl::GeneralEntity(n, v)) => {
-		assert_eq!(n, "general");
-		assert_eq!(v.len(), 1);
-		match &v[0] {
-		    XMLNode::Text(u) => {
-			assert_eq!(u.to_string(), "entity")
-		    }
-		    _ => {
-			panic!("general entity value is not text")
-		    }
-		}
+		assert_eq!(n.to_string(), "general");
+		assert_eq!(v, "entity");
 	    }
 	    _ => {
 		panic!("prologue contains something other than a general entity declaration")
@@ -1010,11 +1085,12 @@ mod tests {
 	}
     }
 
-//    #[test]
+    #[test]
     fn general_entity_2() {
         let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general '<expansion>entity</expansion>'>]><doc>&general;</doc>"#;
-        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
-        assert_eq!(result.prologue.len(), 0);
+        let mut result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
+	result.expand().expect("unable to expand entities");
+        assert_eq!(result.prologue.len(), 1);
         assert_eq!(result.epilogue.len(), 0);
         assert_eq!(result.content.len(), 1);
         match result.xmldecl {
