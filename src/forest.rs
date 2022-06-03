@@ -812,6 +812,20 @@ impl Node {
 	    NodeType::Element => {
 		let nm = self.to_name(f);
 		let new = f.get_ref_mut(cptreeidx).unwrap().new_element(nm)?;
+		let mut attrs = vec![];
+		let mut ait = self.attribute_iter(f);
+		loop {
+		    match ait.next() {
+			Some(a) => {
+			    attrs.push(a)
+			}
+			None => break,
+		    }
+		}
+		attrs.iter().for_each(|a| {
+		    let cp = a.deep_copy(f, t).expect("unable to copy attribute");
+		    new.add_attribute(f, cp).expect("unable to add attribute");
+		});
 		let mut cit = self.child_iter();
 		loop {
 		    match cit.next(f) {

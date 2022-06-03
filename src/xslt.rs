@@ -61,6 +61,8 @@ assert_eq!(seq.to_xml(Some(&f)), "<html><head><title>XSLT in Rust</title></head>
 */
 
 use std::convert::TryFrom;
+use std::fs;
+use std::path::Path;
 use url::Url;
 //use reqwest::blocking::get;
 use crate::xdmerror::*;
@@ -218,13 +220,22 @@ pub fn from_document(
 				    |base| base.join(h.to_string(f).as_str()),
 				) {
 				    Ok(u) => u,
-				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to parse href URL".to_string()}),
+				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: format!("unable to parse href URL \"{}\" baseurl \"{}\"", h.to_string(f), ev.baseurl().map_or(String::from("--no base--"), |b| b.to_string()))}),
 				};
-				let xml = reqwest::blocking::get(url.to_string())
-				    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to fetch href URL".to_string()})?
-				    .text()
-				    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?;
-				let module = f.grow_tree(xml.as_str())?;
+				// TODO: make a function to resolve http: vs file: scheme
+				let xml = match url.scheme() {
+				    "http" => {
+					reqwest::blocking::get(url.to_string())
+					    .map_err(|_| Error{kind: ErrorKind::Unknown, message: format!("unable to fetch href URL \"{}\"", url.to_string())})?
+					    .text()
+					    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?
+				    }
+				    "file" => {
+					fs::read_to_string(Path::new(url.path())).map_err(|er| Error::new(ErrorKind::Unknown, er.to_string()))?
+				    }
+				    _ => return Result::Err(Error::new(ErrorKind::Unknown, format!("unable to fetch URL \"{}\"", url.to_string())))
+				};
+				let module = f.grow_tree(xml.as_str().trim())?;
 				// TODO: check that the module is a valid XSLT stylesheet, etc
 				// Copy each top-level element of the module to the main stylesheet,
 				// inserting before the xsl:include node
@@ -1097,6 +1108,47 @@ mod tests {
 	    .expect("evaluation failed");
 
 	assert_eq!(seq.to_xml(Some(&f)), "onetwothreefour")
+    }
+
+    #[test]
+    fn include() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
+
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:include href='included.xsl'/>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'>found Level1 element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let pwd = std::env::current_dir().expect("unable to get current directory");
+	let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
+	let ev = from_document(
+	    &mut f,
+            style,
+	    &mut sc,
+	    Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
+	)
+            .expect("failed to compile stylesheet");
+
+	let rd = f.plant_tree();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	let t = ev.find_match(&isrc, &mut f, src, rd)
+	    .expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
+
+	assert_eq!(seq.to_xml(Some(&f)), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
     }
 
     use std::fs::File;
