@@ -220,12 +220,27 @@ pub fn from_document(
 				    Ok(u) => u,
 				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to parse href URL".to_string()}),
 				};
-				let _xml = reqwest::blocking::get(url.to_string())
+				let xml = reqwest::blocking::get(url.to_string())
 				    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to fetch href URL".to_string()})?
 				    .text()
 				    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?;
-				//let _module = p(xml)?;
-	
+				let module = f.grow_tree(xml.as_str())?;
+				// TODO: check that the module is a valid XSLT stylesheet, etc
+				// Copy each top-level element of the module to the main stylesheet,
+				// inserting before the xsl:include node
+				// TODO: Don't Panic
+				let moddoc = f.get_ref(module).unwrap().get_doc_node().get_first_element(f).unwrap();
+				let mut modit = moddoc.child_iter();
+				loop {
+				    match modit.next(f) {
+					Some(mc) => {
+					    c.insert_before(f, mc)?;
+					}
+					None => break,
+				    }
+				}
+				// Remove the xsl:include element node
+				c.remove(f)?;
 			    }
 			    None => {
 				return Result::Err(Error{kind: ErrorKind::TypeError, message: "include does not have a href attribute".to_string()})

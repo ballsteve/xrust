@@ -534,6 +534,20 @@ impl Node {
 		    ),
 	    )
     }
+    pub fn to_value(&self, f: &Forest) -> Value {
+	f.get_ref(self.1)
+	    .map_or(
+		Value::from(""),
+		|d| d.get(self.0)
+		    .map_or(
+			Value::from(""),
+			|o| o.value().as_ref().map_or(
+			    Value::from(""),
+			    |p| p.clone()
+			)
+		    )
+	    )
+    }
 
     pub fn node_type(&self, f: &Forest) -> NodeType {
 	f.get_ref(self.1)
@@ -596,22 +610,74 @@ impl Node {
 
         Ok(())
     }
-    pub fn insert_before(&mut self, _f: &mut Forest, _insert: Node) -> Result<(), Error> {
-        return Result::Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not yet implemented"),
-        ));
+    /// Insert the given node before this node.
+    /// If the given node is in the same tree, then it is removed from the tree and then inserted so that it becomes the first preceding of this node.
+    /// If then given node is in a different tree, then it is deep copied. The copied node will then become the first preceding sibling of this node.
+    pub fn insert_before(&self, f: &mut Forest, insert: Node) -> Result<(), Error> {
+	let p = self.parent(f)
+	    .ok_or(Error::new(ErrorKind::Unknown, String::from("unable to insert before document node")))?;
+
+        if self.1 == insert.1 {
+	    // Given node is in the same tree. Detach from it's current position, and then insert before this node.
+	    insert.remove(f)?;
+	    let d = f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?;
+	    let cl = &mut d.get_mut(p.0).unwrap().children;
+	    let i = cl.iter()
+		.enumerate()
+		.skip_while(|(_, x)| x.0 != self.0)
+		.nth(0)
+		.map(|(e, _)| e)
+		.unwrap();
+	    cl.insert(i, insert);
+	    d.get_mut(insert.0).unwrap().parent = Some(p);
+	} else {
+	    // Given node is in a different tree. Deep copy the node.
+	    // First find where to insert the copied node
+	    let d = f.get_ref(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?;
+	    let i = d.get(p.0).unwrap().children.iter()
+		.enumerate()
+		.skip_while(|(_, x)| x.0 != self.0)
+		.nth(0)
+		.map(|(e, _)| e)
+		.unwrap();
+
+	    // Then do the copy and insert it
+	    let cp = insert.deep_copy(f, Some(self.1))?;
+	    let clm = &mut f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?
+		.get_mut(p.0).unwrap().children;
+	    clm.insert(i, cp);
+
+	    // Update the copied node with it's new parent
+	    f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?
+		.get_mut(cp.0).unwrap().parent = Some(p);
+	}
+
+	Ok(())
     }
 
     /// Detach the node from the tree
     pub fn remove(&self, f: &mut Forest) -> Result<(), Error> {
-	let d = match f.get_ref_mut(self.1) {
-	    Some(e) => e,
-	    None => return Result::Err(Error::new(
+	let d = f.get_ref_mut(self.1)
+	    .ok_or(Error::new(
                 ErrorKind::Unknown,
                 String::from("unable to find tree"),
-            ))
-	};
+            ))?;
 
 	// Remove from parent's child list
 	let cl = &mut d.get_mut(d.get(self.0).unwrap().parent.unwrap().0).unwrap().children;
@@ -670,6 +736,25 @@ impl Node {
     pub fn child_iter(&self) -> Children {
 	Children::new(self.0, self.1)
     }
+    pub fn get_first_element(&self, f: &Forest) -> Option<Node> {
+	let mut cit = self.child_iter();
+	let mut ret = None;
+	loop {
+	    match cit.next(f) {
+		Some(n) => {
+		    match n.node_type(f) {
+			NodeType::Element => {
+			    ret = Some(n);
+			    break
+			}
+			_ => {}
+		    }
+		}
+		None => break,
+	    }
+	}
+	ret
+    }
     pub fn next_iter(&self, f: &Forest) -> Siblings {
 	Siblings::new(self.0, self.1, 1, f)
     }
@@ -712,6 +797,52 @@ impl Node {
 		}
 	    }
 	    None => false,
+	}
+    }
+    /// Make a recursive copy of the node, i.e. a "deep" copy.
+    /// The new node will be created in a different tree if one is supplied.
+    pub fn deep_copy(&self, f: &mut Forest, t: Option<TreeIndex>) -> Result<Node, Error> {
+	let cptreeidx = t.map_or_else(
+	    || self.1,
+	    |u| u,
+	);
+	// TODO: check that this is a valid tree index
+
+	match self.node_type(f) {
+	    NodeType::Element => {
+		let nm = self.to_name(f);
+		let new = f.get_ref_mut(cptreeidx).unwrap().new_element(nm)?;
+		let mut cit = self.child_iter();
+		loop {
+		    match cit.next(f) {
+			Some(d) => {
+			    let cp = d.deep_copy(f, t)?;
+			    new.append_child(f, cp)?;
+			}
+			None => break,
+		    }
+		}
+		Ok(new)
+	    }
+	    NodeType::Attribute => {
+		let nm = self.to_name(f);
+		let v = self.to_value(f);
+		f.get_ref_mut(cptreeidx).unwrap().new_attribute(nm, v)
+	    }
+	    NodeType::Text => {
+		let v = self.to_value(f);
+		f.get_ref_mut(cptreeidx).unwrap().new_text(v)
+	    }
+	    NodeType::Comment => {
+		let v = self.to_value(f);
+		f.get_ref_mut(cptreeidx).unwrap().new_comment(v)
+	    }
+	    NodeType::ProcessingInstruction => {
+		let nm = self.to_name(f);
+		let v = self.to_value(f);
+		f.get_ref_mut(cptreeidx).unwrap().new_processing_instruction(nm, v)
+	    }
+	    _ => Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to copy node")))
 	}
     }
 }
@@ -963,88 +1094,6 @@ impl NodeBuilder {
     }
     pub fn build(self) -> NodeContent {
         self.0
-    }
-}
-
-/// Nodes
-///
-/// A document contains [Node] objects.
-pub trait NodeTrait {
-    /// Return the string value of the [Node]
-    fn to_string(&self) -> String;
-    /// Serialize the given [Node] as XML
-    fn to_xml(&self) -> String;
-    /// Serialize as XML, with options
-    fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
-    /// Serialize as JSON
-    fn to_json(&self) -> String;
-    /// Determine the effective boolean value. See XPath 2.4.3.
-    /// A Document or Node always returns true.
-    fn to_bool(&self) -> bool {
-	true
-    }
-    /// Return the integer value. For a Document, this is a type error.
-    fn to_int(&self) -> Result<i64, Error>;
-    /// Return the double value. For a Document, this is a type error, i.e. NaN.
-    fn to_double(&self) -> f64;
-    /// Gives the name of the [Node]. Documents do not have a name, so the implementation must return an empty string.
-    fn to_name(&self) -> QualifiedName;
-
-    /// Return the type of a Node
-    fn node_type(&self) -> NodeType;
-
-    /// Callback for logging/debugging, particularly in a web_sys environment
-    fn log(&self, _m: &str) {
-	// Noop
-    }
-
-    /// Return the root node of the Document.
-    //fn get_root_element(&self) -> Option<N>;
-    /// Set the root element for the Document. If the Document already has a root element then it will be removed. The node must be an element. If the node supplied is of a different concrete type to the Document then an error is returned. If the element is from a different Document, then the function performs a deep copy.
-    //fn set_root_element(&mut self, r: Self::Node) -> Result<(), Error>;
-
-    /// An iterator over ancestors of a [Node].
-    //fn ancestor_iter<D: Document<N>>(&self, n: N) -> Box<dyn AncestorIterator<D, N, Item = N>>;
-    /// Navigate to the parent of a [Node]. Documents, and the root element, don't have a parent, so the default implementation returns None. This is a convenience function for ancestor_iter.
-    fn parent(&self) -> Option<Node> {
-	None
-    }
-    /// An iterator for the child nodes of a [Node]. Non-element type nodes will immediately return None.
-    //fn child_iter<D: Document<N>>(&self, n: N) -> Box<dyn ChildIterator<D, N, Item = N>>;
-    /// An iterator for the child nodes of the Document. This may include the prologue, root element, and epilogue.
-    //fn doc_child_iter<D: Document<N>>(&self) -> Box<dyn DocChildIterator<D, N, Item = N>>;
-    /// An iterator for descendants of a [Node]. Does not include the [Node] itself.
-    // fn descend_iter(&self, n: Box<dyn Node>) -> Box<dyn Iterator<Item = Box<dyn Node>>>;
-    /// An iterator for following siblings of a [Node]. Does not include the [Node] itself.
-    // fn following_sibling_iter(&self, n: Box<dyn Node>) -> Box<dyn Iterator<Item = Box<dyn Node>>>;
-    /// An iterator for preceding siblings of a [Node]. Does not include the [Node] itself.
-    // fn preceding_sibling_iter(&self, n: Box<dyn Node>) -> Box<dyn Iterator<Item = Box<dyn Node>>>;
-
-    /// Create an element [Node] in the Document.
-    fn new_element(&mut self, name: QualifiedName) -> Result<Node, Error>;
-    /// Create a text [Node] in the Document.
-    fn new_text(&mut self, c: Value) -> Result<Node, Error>;
-    /// Create an attribute [Node] in the Document.
-    fn new_attribute(&mut self, name: QualifiedName, v: Value) -> Result<Node, Error>;
-    /// Create a comment [Node] in the Document.
-    fn new_comment(&mut self, v: Value) -> Result<Node, Error>;
-    /// Create a processing instruction [Node] in the Document.
-    fn new_processing_instruction(&mut self, name: QualifiedName, v: Value) -> Result<Node, Error>;
-
-    /// Append a [Node] to the children of a [Node]. If the [Node] to be appended is from a different Document then this function performs a deep copy.
-    fn append_child(&mut self, parent: Node, child: Node) -> Result<(), Error>;
-    /// Inserts a [Node] (insert) before another [Node] (child) in the children of it's parent element [Node]. If the [Node] to be inserted is from a different Document then this function performs a deep copy.
-    fn insert_before(&mut self, child: Node, insert: Node) -> Result<(), Error>;
-    // TODO: replace_child
-
-    /// Add an attribute [Node] to an element type [Node]. If the attribute [Node] is from a different Document then this function adds a copy of the attribute [Node].
-    fn add_attribute_node(&mut self, _parent: Node, _a: Node) -> Result<(), Error> {
-	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-    }
-
-    /// Remove a node from its parent
-    fn remove(&mut self, _n: Node) -> Result<(), Error> {
-	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
     }
 }
 
@@ -1434,6 +1483,31 @@ mod tests {
     }
 
     #[test]
+    fn get_first_element() {
+	let mut f = Forest::new();
+	let ti = f.plant_tree();
+	let cm = f.get_ref_mut(ti).unwrap()
+	    .new_comment(Value::from(" not an element "))
+	    .expect("unable to create comment");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(cm)
+	    .expect("unable to add comment node to doc");
+	let e = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(None, None, String::from("Test")))
+	    .expect("unable to create element node");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(e)
+	    .expect("unable to add node to doc");
+	let g = f.get_ref_mut(ti).unwrap()
+	    .new_element(QualifiedName::new(None, None, String::from("Another")))
+	    .expect("unable to create element node");
+	f.get_ref_mut(ti).unwrap()
+	    .push_doc_node(g)
+	    .expect("unable to add node to doc");
+	assert_eq!(f.get_ref(ti).unwrap().get_doc_node().get_first_element(&f).unwrap(), e)
+    }
+
+    #[test]
     fn serialise_1() {
 	let mut f = Forest::new();
 	let ti = f.plant_tree();
@@ -1529,6 +1603,39 @@ mod tests {
 <data mode='mixed'>This contains <i>mixed</i> content.</data>
 <special>Some escaped chars <&></special>
 </Test>")
+    }
+
+    #[test]
+    fn deep_copy_1() {
+	let mut f = Forest::new();
+	let t1 = f.grow_tree("<Test><one/><two/><three/></Test>")
+	    .expect("unable to parse document 1");
+	let t1root = f.get_ref(t1).unwrap().get_doc_node().child_iter().next(&f).unwrap();
+	let mut cit = t1root.child_iter();
+	let _t1one = cit.next(&f).unwrap();
+	let t1two = cit.next(&f).unwrap();
+	let t1three = cit.next(&f).unwrap();
+
+	t1two.insert_before(&mut f, t1three)
+	    .expect("unable to insert node");
+	assert_eq!(t1root.to_xml(&f), "<Test><one></one><three></three><two></two></Test>");
+    }
+
+    #[test]
+    fn deep_copy_2() {
+	let mut f = Forest::new();
+	let t1 = f.grow_tree("<Test><one/><two/><three/></Test>")
+	    .expect("unable to parse document 1");
+	let t2 = f.grow_tree("<Another><test>document</test></Another>")
+	    .expect("unable to parse document 1");
+	let t1root = f.get_ref(t1).unwrap().get_doc_node().child_iter().next(&f).unwrap();
+	let mut t1it = t1root.child_iter();
+	let _t1one = t1it.next(&f).unwrap();
+	let t1two = t1it.next(&f).unwrap();
+	let t2root = f.get_ref(t2).unwrap().get_doc_node().child_iter().next(&f).unwrap();
+	t1two.insert_before(&mut f, t2root)
+	    .expect("unable to insert node");
+	assert_eq!(t1root.to_xml(&f), "<Test><one></one><Another><test>document</test></Another><two></two><three></three></Test>");
     }
 
     #[bench]
