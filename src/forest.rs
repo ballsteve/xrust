@@ -314,6 +314,26 @@ impl Node {
 	f.get_ref(self.1).unwrap().get(self.0)
     }
 
+    /// Programmer view of the Node. This is needed since the std::fmt::Debug trait cannot be implemented (because the Forest is required to gather the necessary data).
+    pub fn fmt_debug(&self, f: &Forest) -> String {
+	let mut result = String::from(self.node_type(f).to_string());
+	result.push_str("-type node");
+	match self.node_type(f) {
+	    NodeType::Element => {
+		result.push_str(" \"");
+		result.push_str(self.to_name(f).to_string().as_str());
+		result.push_str("\"");
+	    }
+	    NodeType::Text => {
+		result.push_str(" \"");
+		result.push_str(self.to_value(f).to_string().as_str());	// TODO: limit to at most, say, 10 chars
+		result.push_str("\"");
+	    }
+	    _ => {}	// TODO: attribute, comment, PI, etc
+	}
+	result
+    }
+
     pub fn to_string(&self, f: &Forest) -> String {
 	match f.get_ref(self.1) {
 	    Some(e) => e,
@@ -576,36 +596,65 @@ impl Node {
             ));
         }
 
-	let d = match f.get_ref_mut(self.1) {
-	    Some(e) => e,
-	    None=> return Result::Err(Error::new(
-                ErrorKind::Unknown,
-                String::from("unable to find tree"),
-            )),
-	};
+	// Is c in a different Tree?
+	if self.1 == c.1 {
+	    // Detach from its current position, then append to self's child list
+	    c.remove(f)?;
 
-	// TODO: If c is in a different Tree, then deep copy
+	    // self will now be c's parent
+	    f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?
+		.get_mut(c.0)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find node"),
+		))?
+		.parent = Some(self.clone());
 
-	// TODO: detach c from wherever it is currently located
+	    // Push c onto self's child list
+	    f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?
+		.get_mut(self.0)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find node"),
+		))?
+		.children.push(c);
+	} else {
+	    // c is in a different Tree, so deep copy
+	    let cp = c.deep_copy(f, Some(self.1))?;
 
-	// self will now be c's parent
-	match d.get_mut(c.0) {
-	    Some(e) => {
-		e.parent = Some(self.clone())
-	    }
-	    None => return Result::Err(Error::new(
-                ErrorKind::Unknown,
-                String::from("unable to find node"),
-            ))
-	}
+	    // self will now be cp's parent
+	    f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?
+		.get_mut(cp.0)
+		.ok_or(Error::new(
+		    ErrorKind::Unknown,
+		    String::from("unable to find node"),
+		))?
+		.parent = Some(self.clone());
 
-	// Push c onto self's child list
-	match d.get_mut(self.0) {
-	    Some(e) => e.children.push(c),
-	    None => return Result::Err(Error::new(
-                ErrorKind::Unknown,
-                String::from("unable to find node"),
-            ))
+	    // Push cp onto self's child list
+	    f.get_ref_mut(self.1)
+		.ok_or(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("unable to find tree"),
+		))?
+		.get_mut(self.0)
+		.ok_or(Error::new(
+		    ErrorKind::Unknown,
+		    String::from("unable to find node"),
+		))?
+		.children.push(cp);
 	}
 
         Ok(())
@@ -679,8 +728,14 @@ impl Node {
                 String::from("unable to find tree"),
             ))?;
 
+	// Is this node in the tree? If not, then do nothing
+	let p = match d.get(self.0).unwrap().parent {
+	    Some(q) => q.0,
+	    None => return Ok(()),
+	};
+
 	// Remove from parent's child list
-	let cl = &mut d.get_mut(d.get(self.0).unwrap().parent.unwrap().0).unwrap().children;
+	let cl = &mut d.get_mut(p).unwrap().children;
 	let i = cl.iter()
 	    .enumerate()
 	    .skip_while(|(_, x)| x.0 != self.0)
@@ -1650,6 +1705,23 @@ mod tests {
 	t1two.insert_before(&mut f, t2root)
 	    .expect("unable to insert node");
 	assert_eq!(t1root.to_xml(&f), "<Test><one></one><Another><test>document</test></Another><two></two><three></three></Test>");
+    }
+
+    #[test]
+    fn deep_copy_3() {
+	let mut f = Forest::new();
+	let t1 = f.grow_tree("<Test><one/><two/><three/></Test>")
+	    .expect("unable to parse document 1");
+	let t2 = f.grow_tree("<Another><test>document</test></Another>")
+	    .expect("unable to parse document 1");
+	let t1root = f.get_ref(t1).unwrap().get_doc_node().child_iter().next(&f).unwrap();
+	let mut t1it = t1root.child_iter();
+	let _t1one = t1it.next(&f).unwrap();
+	let t1two = t1it.next(&f).unwrap();
+	let t2root = f.get_ref(t2).unwrap().get_doc_node().child_iter().next(&f).unwrap();
+	t1two.append_child(&mut f, t2root)
+	    .expect("unable to append node");
+	assert_eq!(t1root.to_xml(&f), "<Test><one></one><two><Another><test>document</test></Another></two><three></three></Test>");
     }
 
     #[bench]

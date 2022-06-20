@@ -6,6 +6,7 @@
 //! Nodes are implemented as a trait.
 
 use std::rc::Rc;
+use std::fmt;
 use crate::value::{Value, Operator};
 use crate::forest::{NodeType, Node, Forest};
 use crate::qname::QualifiedName;
@@ -293,6 +294,22 @@ impl Item {
 	    Item::Node(..) => "Node",
 	    Item::Function => "Function",
 	    Item::Value(v) => v.value_type(),
+	}
+    }
+}
+
+impl fmt::Debug for Item {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	match self {
+	    Item::Node(_) => {
+		write!(f, "node type item")
+	    }
+	    Item::Function => {
+		write!(f, "function type item")
+	    }
+	    Item::Value(v) => {
+		write!(f, "value type item ({})", v.to_string())
+	    }
 	}
     }
 }

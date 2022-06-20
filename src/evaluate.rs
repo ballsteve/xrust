@@ -8,6 +8,7 @@ use std::rc::Rc;
 use std::cell::{RefCell, RefMut};
 use std::convert::TryFrom;
 use std::collections::HashMap;
+use std::fmt;
 use unicode_segmentation::UnicodeSegmentation;
 #[allow(unused_imports)]
 use chrono::{DateTime, Local, Datelike, Timelike, FixedOffset};
@@ -151,14 +152,15 @@ impl Evaluator {
 	self.base = Some(url);
     }
 
-    /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.
+    /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority. The fifth argument is the import precedence.
     pub fn add_template(&mut self,
 			p: Vec<Constructor>,
 			b: Vec<Constructor>,
 			m: Option<String>,
 			pr: f64,
+			im: usize,
     ) {
-	self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
+	self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr, import: im});
     }
     /// Add a template to the set of builtin templates in the dynamic context. See above for arguments.
     pub fn add_builtin_template(&mut self,
@@ -166,10 +168,12 @@ impl Evaluator {
 				b: Vec<Constructor>,
 				m: Option<String>,
 				pr: f64,
+				im: usize,
     ) {
-	self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
+	self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr, import: im});
     }
     /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
+    /// If import precedence is None, then return the lowest import precedence. Otherwise return the matching template with the highest priority that has an imoprt precedence higher than the given value.
     /// If no template is found, returns None.
     pub fn find_match(
 	&self,
@@ -177,6 +181,7 @@ impl Evaluator {
 	f: &mut Forest,
 	sd: TreeIndex,
 	rd: TreeIndex,
+	im: Option<usize>,
     ) -> Result<Vec<Constructor>, Error> {
 	let mut r: Vec<&Template> = vec![];
 	let mut it = self.templates.iter();
@@ -192,6 +197,7 @@ impl Evaluator {
 	}
 	let s: Option<&Template> = r.iter()
 	    .cloned()
+	    .filter(|j| im.map_or(true, |k| j.import >= k))
 	    .reduce(|a, b| if a.priority < b.priority {b} else {a});
 
 	if s.is_some() {
@@ -233,9 +239,10 @@ impl Evaluator {
     pub fn dump_templates(&self) {
 	self.templates.iter().for_each(
 	    |t| {
-		println!("Template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
+		println!("Template (mode \"{}\" priority {} import precedence {}) matching pattern:\n{}\nBody:\n{}",
 			 t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
 			 t.priority,
+			 t.import,
 			 format_constructor(&t.pattern, 4),
 			 format_constructor(&t.body, 4)
 		);
@@ -243,9 +250,10 @@ impl Evaluator {
 	);
 	self.builtin_templates.iter().for_each(
 	    |t| {
-		println!("Builtin template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
+		println!("Builtin template (mode \"{}\" priority {} import precedence {}) matching pattern:\n{}\nBody:\n{}",
 			 t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
 			 t.priority,
+			 t.import,
 			 format_constructor(&t.pattern, 4),
 			 format_constructor(&t.body, 4)
 		);
@@ -951,6 +959,13 @@ impl Evaluator {
 					Ok(vec![])
 				    }
 				}
+	      			Axis::SelfAttribute => {
+				    if n.node_type(f) == NodeType::Attribute {
+					Ok(vec![Rc::clone(&ctxt.as_ref().unwrap()[posn.unwrap()])])
+				    } else {
+					Ok(vec![])
+				    }
+				}
 	      			_ => {
 				    // Not yet implemented
 				    Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
@@ -1061,38 +1076,59 @@ impl Evaluator {
 		// Evaluate 's' to find the nodes to apply templates to
       		// For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-      		// TODO: Don't Panic
       		let sel = self.evaluate(ctxt.clone(), posn, s, f, sd, rd)?;
+      		// TODO: Don't Panic
       		let result = sel.iter().fold(
 		    vec![],
 		    |mut acc, i| {
-			let matching_template: Vec<&Template> = self.templates.iter()
-			    .filter(|t| {
-				//item_matches(&t.pattern, i)
-				let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, f, sd, rd)
-				    .expect("failed to evaluate pattern");
-				if e.len() == 0 {false} else {true}
-			    })
-			    .scan(-2.0,
-				  |prio, t| {
-				      if *prio < t.priority {
-					  *prio = t.priority;
-					  Some(t)
-				      } else {
-					  None
-				      }
-				  }
-			    )
-			    .collect();
-			// there must be at most one matching template
-			if matching_template.len() > 1 {
-			    //return Result::Err(Error{kind: ErrorKind::TypeError, message: "too many matching templates".to_string()})
-			    panic!("too many matching templates")
+			let mut matching_template: Vec<&Template> = vec![];
+			for t in &self.templates {
+			    let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, f, sd, rd)
+				.expect("evaluating pattern failed");
+			    if e.len() != 0 {
+				matching_template.push(&t)
+			    }
 			}
-			// If no templates match then apply a built-in template
-			// See XSLT 6.7.
-			// TODO: use import precedence to implement this feature
-			if matching_template.len() == 0 {
+
+			if matching_template.len() != 0 {
+			    // find the template(s) with the lowest priority
+			    matching_template
+				.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+			    let l = matching_template[0].priority;
+			    let mut mt_lowest: Vec<&Template> = matching_template.into_iter()
+				.take_while(|t| t.priority == l)
+				.collect();
+
+			    // It's OK to have more than one matching template, if they all have different import precedence
+			    mt_lowest
+				.sort_unstable_by_key(|t| t.import);
+			    let mut p = mt_lowest[0].import;
+			    mt_lowest.iter().skip(1)
+				.for_each(|t| {
+				    if t.import == p {
+					panic!("too many matching templates")
+				    } else {
+					p = t.import;
+					()
+				    }
+				});
+
+			    // Use the template with the lowest import precedence
+			    // Unless we're inside an apply-imports
+			    let mut u = mt_lowest.iter().take(1)
+				.flat_map(|t| {
+				    self.dc.depth_incr();
+				    let rs = self.evaluate(Some(vec![i.clone()]), Some(0), &t.body, f, sd, rd)
+					.expect("failed to evaluate template body");
+	    			    self.dc.depth_decr();
+				    rs
+				})
+				.collect::<Sequence>();
+			    acc.append(&mut u);
+			} else {
+			    // If no templates match then apply a built-in template
+			    // See XSLT 6.7.
+			    // TODO: use import precedence to implement this feature
 			    let builtin_template: Vec<&Template> = self.builtin_templates.iter()
 				.filter(|t| {
 				    let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, f, sd, rd)
@@ -1123,22 +1159,14 @@ impl Evaluator {
 				})
 				.collect::<Sequence>();
 			    acc.append(&mut u);
-			} else {
-			    let mut u = matching_template.iter()
-				.flat_map(|t| {
-				    self.dc.depth_incr();
-				    let rs = self.evaluate(Some(vec![i.clone()]), Some(0), &t.body, f, sd, rd)
-					.expect("failed to evaluate template body");
-	    			    self.dc.depth_decr();
-				    rs
-				})
-				.collect::<Sequence>();
-			    acc.append(&mut u);
 			}
 			acc
 		    }
 		);
       		Ok(result)
+	    }
+	    Constructor::ApplyImports(_) => {
+		Result::Err(Error::new(ErrorKind::NotImplemented, String::from("apply-imports not yet implemented")))
 	    }
 	    Constructor::ForEach(s, t, g) => {
 		// Evaluate 's' to find the nodes to iterate over
@@ -1588,9 +1616,13 @@ pub enum Constructor {
   /// The first argument is pairs of (test,body) clauses.
   /// The second argument is the otherwise clause
   Switch(Vec<Vec<Constructor>>, Vec<Constructor>),
-  /// Find a matching template and evaluate its sequence constructor.
-  /// The argument is the select attribute.
-  ApplyTemplates(Vec<Constructor>),
+    /// Find a matching template and evaluate its sequence constructor.
+    /// The argument is the select attribute.
+    ApplyTemplates(Vec<Constructor>),
+    /// Find a matching template at the next import precedence
+    /// and evaluate its sequence constructor.
+    /// The argument is the select attribute.
+    ApplyImports(Vec<Constructor>),
   /// Evaluate a sequence constructor for each item, possibly grouped.
   /// First argument is the select expression, second argument is the template,
   /// third argument is the (optional) grouping spec.
@@ -1812,22 +1844,23 @@ pub enum WildcardOrName {
 
 #[derive(Copy, Clone)]
 pub enum Axis {
-  Child,
-  Descendant,
-  DescendantOrSelf,
-  Attribute,
-  Selfaxis,
-  SelfDocument, // a special axis, only for matching the Document in a pattern match
-  Following,
-  FollowingSibling,
-  Namespace,
-  Parent,
-  ParentDocument, // a special axis, only for matching in a pattern match. Matches the parent as well as the Document.
-  Ancestor,
-  AncestorOrSelf,
-  Preceding,
-  PrecedingSibling,
-  Unknown,
+    Child,
+    Descendant,
+    DescendantOrSelf,
+    Attribute,
+    SelfAttribute, // a special axis, only for matching an attribute in a a pattern match
+    Selfaxis,
+    SelfDocument, // a special axis, only for matching the Document in a pattern match
+    Following,
+    FollowingSibling,
+    Namespace,
+    Parent,
+    ParentDocument, // a special axis, only for matching in a pattern match. Matches the parent as well as the Document.
+    Ancestor,
+    AncestorOrSelf,
+    Preceding,
+    PrecedingSibling,
+    Unknown,
 }
 
 impl From<&str> for Axis {
@@ -1858,6 +1891,7 @@ impl Axis {
       Axis::Descendant => "descendant".to_string(),
       Axis::DescendantOrSelf => "descendant-or-self".to_string(),
       Axis::Attribute => "attribute".to_string(),
+      Axis::SelfAttribute => "self-attribute".to_string(),
       Axis::Selfaxis => "self".to_string(),
       Axis::SelfDocument => "self-document".to_string(),
       Axis::Following => "following".to_string(),
@@ -1878,7 +1912,7 @@ impl Axis {
       Axis::Child => Axis::Parent,
       Axis::Descendant => Axis::Ancestor,
       Axis::DescendantOrSelf => Axis::AncestorOrSelf,
-      Axis::Attribute => Axis::Parent,
+      Axis::Attribute => Axis::SelfAttribute,
       Axis::Selfaxis => Axis::Selfaxis,
       Axis::Following => Axis::Preceding,
       Axis::FollowingSibling => Axis::PrecedingSibling,
@@ -2057,10 +2091,21 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 /// A template associating a pattern to a sequence constructor
 #[derive(Clone)]
 pub struct Template {
-  pattern: Vec<Constructor>,
-  body: Vec<Constructor>,
-  priority: f64,
-  mode: Option<String>,
+    pattern: Vec<Constructor>,
+    body: Vec<Constructor>,
+    priority: f64,
+    mode: Option<String>,
+    import: usize,
+}
+
+impl fmt::Debug for Template {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	write!(f, "match {} prio {}, import {}",
+	       format_constructor(&self.pattern, 0),
+	       self.priority,
+	       self.import
+	)
+    }
 }
 
 /// # Static context
@@ -2493,7 +2538,8 @@ impl StaticContext {
 	    self.static_analysis(&mut i.operand)
 	  }
         }
-      	Constructor::ApplyTemplates(s) => {
+      	  Constructor::ApplyTemplates(s) |
+	  Constructor::ApplyImports(s) => {
 	  self.static_analysis(s)
         }
       	Constructor::ForEach(s, t, _g) => {
@@ -3520,6 +3566,9 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       }
       Constructor::ApplyTemplates(_) => {
         format!("{:in$} apply-templates constructor", "", in=i)
+      }
+      Constructor::ApplyImports(_) => {
+        format!("{:in$} apply-imports constructor", "", in=i)
       }
       Constructor::ForEach(_, _, _) => {
         format!("{:in$} for-each constructor", "", in=i)

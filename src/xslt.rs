@@ -48,7 +48,7 @@ let rd = f.plant_tree();
 
 // Prime the stylesheet evaluation by finding the template for the document root
 // and making the document root the initial context
-let t = ev.find_match(&isrc, &mut f, src, rd)
+let t = ev.find_match(&isrc, &mut f, src, rd, None)
     .expect("unable to find match");
 
 // Let 'er rip!
@@ -139,7 +139,7 @@ pub fn from_document(
 	    )],
 	),
       ];
-    ev.add_builtin_template(bi1pat, bi1bod, None, -1.0);
+    ev.add_builtin_template(bi1pat, bi1bod, None, -1.0, 0);
     // This matches "*" and applies templates to all children
     let bi2pat = to_pattern(
 	vec![Constructor::Path(
@@ -158,7 +158,7 @@ pub fn from_document(
 	    )],
 	),
     ];
-    ev.add_builtin_template(bi2pat, bi2bod, None, -1.0);
+    ev.add_builtin_template(bi2pat, bi2bod, None, -1.0, 0);
     // This matches "text()" and copies content
     let bi3pat = to_pattern(
 	vec![Constructor::Path(
@@ -170,7 +170,7 @@ pub fn from_document(
             ]
 	)])?;
     let bi3bod = vec![Constructor::ContextItem];
-    ev.add_builtin_template(bi3pat, bi3bod, None, -1.0);
+    ev.add_builtin_template(bi3pat, bi3bod, None, -1.0, 0);
 
     // Setup the serialization of the primary result document
     let mut serit = stylenode.child_iter();
@@ -263,6 +263,73 @@ pub fn from_document(
 	}
     }
 
+    // Iterate over children, looking for imports
+    // * resolve href
+    // * fetch document
+    // * parse XML
+    // * replace xsl:import element with content
+    let mut imcit = stylenode.child_iter();
+    loop {
+	match imcit.next(f) {
+	    Some(c) => {
+		if c.is_element(f) &&
+		    c.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
+		    c.to_name(f).get_localname() == "import" {
+			match c.get_attribute(f, &QualifiedName::new(None, None, "href".to_string())) {
+			    Some(h) => {
+				let url = match ev.baseurl().map_or_else(
+				    || Url::parse(h.to_string(f).as_str()),
+				    |base| base.join(h.to_string(f).as_str()),
+				) {
+				    Ok(u) => u,
+				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: format!("unable to parse href URL \"{}\" baseurl \"{}\"", h.to_string(f), ev.baseurl().map_or(String::from("--no base--"), |b| b.to_string()))}),
+				};
+				// TODO: make a function to resolve http: vs file: scheme
+				let xml = match url.scheme() {
+				    "http" => {
+					reqwest::blocking::get(url.to_string())
+					    .map_err(|_| Error{kind: ErrorKind::Unknown, message: format!("unable to fetch href URL \"{}\"", url.to_string())})?
+					    .text()
+					    .map_err(|_| Error{kind: ErrorKind::Unknown, message: "unable to extract module data".to_string()})?
+				    }
+				    "file" => {
+					fs::read_to_string(Path::new(url.path())).map_err(|er| Error::new(ErrorKind::Unknown, er.to_string()))?
+				    }
+				    _ => return Result::Err(Error::new(ErrorKind::Unknown, format!("unable to fetch URL \"{}\"", url.to_string())))
+				};
+				let module = f.grow_tree(xml.as_str().trim())?;
+				// TODO: check that the module is a valid XSLT stylesheet, etc
+				// Copy each top-level element of the module to the main stylesheet,
+				// inserting before the xsl:include node
+				// TODO: Don't Panic
+				let moddoc = f.get_ref(module).unwrap().get_doc_node().get_first_element(f).unwrap();
+				let mut modit = moddoc.child_iter();
+				loop {
+				    match modit.next(f) {
+					Some(mc) => {
+					    // Add the import precedence attribute
+					    let newnode = mc.deep_copy(f, Some(styledoc))?;
+					    let newat = f.get_ref_mut(styledoc).unwrap()
+						.new_attribute(QualifiedName::new(Some(String::from("http://github.com/ballsteve/xrust")), None, String::from("import")), Value::from(1))?;
+					    newnode.add_attribute(f, newat)?;
+					    c.insert_before(f, newnode)?;
+					}
+					None => break,
+				    }
+				}
+				// Remove the xsl:import element node
+				c.remove(f)?;
+			    }
+			    None => {
+				return Result::Err(Error{kind: ErrorKind::TypeError, message: "include does not have a href attribute".to_string()})
+			    }
+			}
+		    }
+	    }
+	    None => break,
+	}
+    }
+
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
@@ -333,7 +400,15 @@ pub fn from_document(
 					}
 				    }
 				}
-				ev.add_template(pat, body, None, prio);
+				// Set the import precedence
+				let mut import: usize = 0;
+				match c.get_attribute(f, &QualifiedName::new(Some(String::from("http://github.com/ballsteve/xrust")), None, String::from("import"))) {
+				    Some(im) => {
+					import = im.to_value(f).to_int()? as usize
+				    }
+				    None => {}
+				}
+				ev.add_template(pat, body, None, prio, import);
 			    }
 			    None => {
 				return Result::Err(Error{kind: ErrorKind::TypeError, message: "template does not have a match attribute".to_string()})
@@ -396,6 +471,29 @@ fn to_constructor(n: Node, f: &Forest) -> Result<Constructor, Error> {
 			None => {
 			    // If there is no select attribute, then default is "child::node()"
 			    Ok(Constructor::ApplyTemplates(
+				vec![
+	      			    Constructor::Step(
+					NodeMatch{
+	      				    axis: Axis::Child,
+	      				    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+	    				},
+	    				vec![]
+	      			    )
+	    			]
+			    ))
+			}
+		    }
+		}
+		(Some(XSLTNS), "apply-imports") => {
+		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
+			Some(sel) => {
+			    Ok(Constructor::ApplyImports(
+				parse(&sel.to_string(f))?
+			    ))
+			}
+			None => {
+			    // If there is no select attribute, then default is "child::node()"
+			    Ok(Constructor::ApplyImports(
 				vec![
 	      			    Constructor::Step(
 					NodeMatch{
@@ -987,7 +1085,7 @@ mod tests {
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	let t = ev.find_match(&isrc, &mut f, src, rd)
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
 	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
@@ -1023,7 +1121,7 @@ mod tests {
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	let t = ev.find_match(&isrc, &mut f, src, rd)
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
 	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
@@ -1061,7 +1159,7 @@ mod tests {
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	let t = ev.find_match(&isrc, &mut f, src, rd)
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
 	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
@@ -1100,7 +1198,7 @@ mod tests {
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	let t = ev.find_match(&isrc, &mut f, src, rd)
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
 	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
@@ -1141,7 +1239,7 @@ mod tests {
 
 	// Prime the stylesheet evaluation by finding the template for the document root
 	// and making the document root the initial context
-	let t = ev.find_match(&isrc, &mut f, src, rd)
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
 	    .expect("unable to find match");
 	assert!(t.len() >= 1);
 
@@ -1205,8 +1303,9 @@ mod tests {
 		    None,
 		)
 		    .expect("failed to compile stylesheet");
+		ev.dump_templates();
 		let rd = f.plant_tree();
-		let t = ev.find_match(&isrc, &mut f, src, rd)
+		let t = ev.find_match(&isrc, &mut f, src, rd, None)
 		    .expect("unable to find match");
 		ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
 		    .expect("evaluation failed");
