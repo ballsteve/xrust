@@ -153,14 +153,14 @@ impl Value {
     /// Convert the value to an integer, if possible.
     pub fn to_int(&self) -> Result<i64, Error> {
         match &self {
-	    Value::String(s) => {
-	      match s.parse::<i64>() {
+            Value::Int(i) => Ok(*i as i64),
+	    Value::Integer(i) => Ok(*i),
+	    _ => {
+	      match self.to_string().parse::<i64>() {
 	        Ok(i) => Ok(i),
 		Err(e) => Result::Err(Error{kind: ErrorKind::Unknown, message: format!("type conversion error: {}", e)}),
 	      }
 	    }
-            Value::Integer(i) => Ok(*i),
-            _ => Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("type error (conversion not implemented)")})
 	}
     }
     /// Convert the value to a double. If the value cannot be converted, returns Nan.

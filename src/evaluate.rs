@@ -1089,6 +1089,8 @@ impl Evaluator {
 				matching_template.push(&t)
 			    }
 			}
+			eprintln!("for item {:?} found {} templates", i, matching_template.len());
+			matching_template.iter().for_each(|t| eprintln!("{:?}", t));
 
 			if matching_template.len() != 0 {
 			    // find the template(s) with the lowest priority
@@ -1103,6 +1105,9 @@ impl Evaluator {
 			    mt_lowest
 				.sort_unstable_by_key(|t| t.import);
 			    let mut p = mt_lowest[0].import;
+			    eprintln!("lowest import is {}", p);
+			    mt_lowest.iter().skip(1)
+				.for_each(|t| eprintln!("also found template with import {}", t.import));
 			    mt_lowest.iter().skip(1)
 				.for_each(|t| {
 				    if t.import == p {

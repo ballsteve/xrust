@@ -268,13 +268,16 @@ pub fn from_document(
     // * fetch document
     // * parse XML
     // * replace xsl:import element with content
+    eprintln!("looking for imports");
     let mut imcit = stylenode.child_iter();
     loop {
 	match imcit.next(f) {
 	    Some(c) => {
+		eprintln!("considering {:?} {}", c.node_type(f), c.to_name(f).to_string());
 		if c.is_element(f) &&
 		    c.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
 		    c.to_name(f).get_localname() == "import" {
+			eprintln!("found xsl:import");
 			match c.get_attribute(f, &QualifiedName::new(None, None, "href".to_string())) {
 			    Some(h) => {
 				let url = match ev.baseurl().map_or_else(
@@ -284,6 +287,7 @@ pub fn from_document(
 				    Ok(u) => u,
 				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: format!("unable to parse href URL \"{}\" baseurl \"{}\"", h.to_string(f), ev.baseurl().map_or(String::from("--no base--"), |b| b.to_string()))}),
 				};
+				eprintln!("importing href \"{}\"", url.to_string());
 				// TODO: make a function to resolve http: vs file: scheme
 				let xml = match url.scheme() {
 				    "http" => {
@@ -303,16 +307,23 @@ pub fn from_document(
 				// inserting before the xsl:include node
 				// TODO: Don't Panic
 				let moddoc = f.get_ref(module).unwrap().get_doc_node().get_first_element(f).unwrap();
+				eprintln!("module {}: {}", moddoc.node_type(f).to_string(), moddoc.to_name(f).to_string());
 				let mut modit = moddoc.child_iter();
 				loop {
 				    match modit.next(f) {
 					Some(mc) => {
-					    // Add the import precedence attribute
-					    let newnode = mc.deep_copy(f, Some(styledoc))?;
-					    let newat = f.get_ref_mut(styledoc).unwrap()
-						.new_attribute(QualifiedName::new(Some(String::from("http://github.com/ballsteve/xrust")), None, String::from("import")), Value::from(1))?;
-					    newnode.add_attribute(f, newat)?;
-					    c.insert_before(f, newnode)?;
+					    eprintln!("processing imported {:?} {}", mc.node_type(f), mc.to_name(f).to_string());
+					    if mc.node_type(f) == NodeType::Element {
+						// Add the import precedence attribute
+						let newnode = mc.deep_copy(f, Some(styledoc))?;
+						let newat = f.get_ref_mut(styledoc).unwrap()
+						    .new_attribute(QualifiedName::new(Some(String::from("http://github.com/ballsteve/xrust")), None, String::from("import")), Value::from(1))?;
+						newnode.add_attribute(f, newat)?;
+						c.insert_before(f, newnode)?;
+					    } else {
+						let newnode = mc.deep_copy(f, Some(styledoc))?;
+						c.insert_before(f, newnode)?;
+					    }
 					}
 					None => break,
 				    }
@@ -329,6 +340,7 @@ pub fn from_document(
 	    None => break,
 	}
     }
+    eprintln!("done importing");
 
     // Iterate over children, looking for templates
     // * compile match pattern
@@ -343,6 +355,15 @@ pub fn from_document(
 		    c.to_name(f).get_localname() == "template" {
 			match c.get_attribute(f, &QualifiedName::new(None, None, "match".to_string())) {
 			    Some(m) => {
+				eprintln!("defining template, has attributes:");
+				let mut atit = c.attribute_iter(f);
+				loop {
+				    match atit.next() {
+					Some(at) => eprintln!("\"{}\" ({})", at.to_name(f).to_string(), at.to_value(f).to_string()),
+					None => break,
+				    }
+				}
+
 				let n = m.clone().to_string(f);
 				let a = parse(&n).expect("failed to parse match expression");
 				let mut pat = to_pattern(a).expect("failed to compile match pattern");
@@ -1247,6 +1268,88 @@ mod tests {
 	    .expect("evaluation failed");
 
 	assert_eq!(seq.to_xml(Some(&f)), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
+    }
+
+    #[test]
+    fn import_1() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test><Level1>one</Level1><Level2>two</Level2><Level3>three</Level3><Level4>four</Level4></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
+
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:import href='imported.xsl'/>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'>shallower import level</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let pwd = std::env::current_dir().expect("unable to get current directory");
+	let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
+	let ev = from_document(
+	    &mut f,
+            style,
+	    &mut sc,
+	    Some(Url::parse(format!("file://{}/tests/xsl/importing.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
+	)
+            .expect("failed to compile stylesheet");
+
+	let rd = f.plant_tree();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
+	    .expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
+
+	assert_eq!(seq.to_xml(Some(&f)), "shallower import leveltwothreefour")
+    }
+
+    #[test]
+    fn apply_import() {
+	let mut sc = StaticContext::new_with_xslt_builtins();
+
+	let mut f = Forest::new();
+	let src = f.grow_tree("<Test><Level1>one</Level1><Level2>two</Level2><Level3>three</Level3><Level4>four</Level4></Test>")
+	    .expect("unable to parse XML");
+	let isrc = Rc::new(Item::Node(f.get_ref(src).unwrap().get_doc_node()));
+
+	let style = f.grow_tree("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:import href='imported.xsl'/>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'>shallow1 <xsl:apply-imports/> shallow2</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse XML");
+
+	// Setup dynamic context with result document
+	let pwd = std::env::current_dir().expect("unable to get current directory");
+	let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
+	let ev = from_document(
+	    &mut f,
+            style,
+	    &mut sc,
+	    Some(Url::parse(format!("file://{}/tests/xsl/importing.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
+	)
+            .expect("failed to compile stylesheet");
+
+	let rd = f.plant_tree();
+
+	// Prime the stylesheet evaluation by finding the template for the document root
+	// and making the document root the initial context
+	let t = ev.find_match(&isrc, &mut f, src, rd, None)
+	    .expect("unable to find match");
+	assert!(t.len() >= 1);
+
+	let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, &mut f, src, rd)
+	    .expect("evaluation failed");
+
+	assert_eq!(seq.to_xml(Some(&f)), "shallow1 deeper import level shallow2twothreefour")
     }
 
     use std::fs::File;
