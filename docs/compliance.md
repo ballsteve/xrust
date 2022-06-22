@@ -181,7 +181,7 @@ xsl:analyze-string|no|
 xsl:analyze-string/@select|no|
 xsl:analyze-string/@regex|no|
 xsl:analyze-string/@flags|no|
-xsl:apply-imports|no|
+xsl:apply-imports|yes|
 xsl:apply-templates|yes|
 xsl:apply-templates/@select|yes|
 xsl:apply-templates/@mode|no|
