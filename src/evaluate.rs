@@ -28,84 +28,94 @@ use url::Url;
 // The dynamic context stores parts that can change as evaluation proceeds,
 // such as the value of declared variables.
 pub struct DynamicContext {
-  vars: RefCell<HashMap<String, Vec<Sequence>>>,
-  depth: RefCell<usize>,
-  current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
-  current_group: RefCell<Vec<Option<Sequence>>>,
-  deps: RefCell<Vec<Url>>,	// URIs for included/imported stylesheets
+    vars: RefCell<HashMap<String, Vec<Sequence>>>,
+    depth: RefCell<usize>,
+    current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
+    current_group: RefCell<Vec<Option<Sequence>>>,
+    current_import: RefCell<usize>,
+    deps: RefCell<Vec<Url>>,	// URIs for included/imported stylesheets
 }
 
 impl DynamicContext {
-  pub fn new() -> Self {
-    DynamicContext{
-      vars: RefCell::new(HashMap::new()),
-      depth: RefCell::new(0),
-      current_grouping_key: RefCell::new(vec![None]),
-      current_group: RefCell::new(vec![None]),
-      deps: RefCell::new(vec![]),
+    pub fn new() -> Self {
+	DynamicContext{
+	    vars: RefCell::new(HashMap::new()),
+	    depth: RefCell::new(0),
+	    current_grouping_key: RefCell::new(vec![None]),
+	    current_group: RefCell::new(vec![None]),
+	    current_import: RefCell::new(0),
+	    deps: RefCell::new(vec![]),
+	}
     }
-  }
-  /// Retrieve the dependencies for the stylesheet
-  // TODO: make this an iterator
-  pub fn dependencies(&self) -> Vec<Url> {
-    self.deps.borrow().clone()
-  }
-  /// Add a dependency
-  pub fn add_dependency(&self, u: Url) {
-    self.deps.borrow_mut().push(u);
-  }
-
-  fn push_current_grouping_key(&self, k: Item) {
-    self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
-  }
-  fn pop_current_grouping_key(&self) {
-    self.current_grouping_key.borrow_mut().pop();
-  }
-
-  fn push_current_group(&self, g: Sequence) {
-    self.current_group.borrow_mut().push(Some(g));
-  }
-  fn pop_current_group(&self) {
-    self.current_group.borrow_mut().pop();
-  }
-  fn depth_incr(&self) {
-    let mut d = self.depth.borrow_mut();
-    *d += 1;
-  }
-  fn depth_decr(&self) {
-    let mut d = self.depth.borrow_mut();
-    *d -= 1;
-  }
-
-  // Push a new scope for a variable
-  fn var_push(&self, v: &str, s: Sequence) {
-    let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-    let mut t: Option<&mut Vec<Sequence>>;
-
-    h = self.vars.borrow_mut();
-    t = h.get_mut(v);
-    match t.as_mut() {
-      Some(u) => {
-        // If the variable already has a value, then this is a new, inner scope
-      	u.push(s);
-      }
-      None => {
-        // Otherwise this is the first scope for the variable
-      	h.insert(v.to_string(), vec![s]);
-      }
+    /// Retrieve the dependencies for the stylesheet
+    // TODO: make this an iterator
+    pub fn dependencies(&self) -> Vec<Url> {
+	self.deps.borrow().clone()
     }
-  }
-  // Pop scope for a variable
-  // Prerequisite: scope must have already been pushed
-  fn var_pop(&self, v: &str) {
-    self.vars.borrow_mut().get_mut(v).map(|u| u.pop());
-  }
+    /// Add a dependency
+    pub fn add_dependency(&self, u: Url) {
+	self.deps.borrow_mut().push(u);
+    }
 
-  // Stylesheet parameters. Overrides the previous value if it is already set.
-  // TODO: namespaced name
-  pub fn set_parameter(&self, name: String, value: Sequence) {
-    self.vars.borrow_mut().insert(name, vec![value]);
-  }
+    fn push_current_grouping_key(&self, k: Item) {
+	self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
+    }
+    fn pop_current_grouping_key(&self) {
+	self.current_grouping_key.borrow_mut().pop();
+    }
+
+    fn push_current_group(&self, g: Sequence) {
+	self.current_group.borrow_mut().push(Some(g));
+    }
+    fn pop_current_group(&self) {
+	self.current_group.borrow_mut().pop();
+    }
+    fn depth_incr(&self) {
+	let mut d = self.depth.borrow_mut();
+	*d += 1;
+    }
+    fn depth_decr(&self) {
+	let mut d = self.depth.borrow_mut();
+	*d -= 1;
+    }
+    fn import_incr(&self) {
+	let mut d = self.current_import.borrow_mut();
+	*d += 1;
+    }
+    fn import_decr(&self) {
+	let mut d = self.current_import.borrow_mut();
+	*d -= 1;
+    }
+
+    // Push a new scope for a variable
+    fn var_push(&self, v: &str, s: Sequence) {
+	let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
+	let mut t: Option<&mut Vec<Sequence>>;
+
+	h = self.vars.borrow_mut();
+	t = h.get_mut(v);
+	match t.as_mut() {
+	    Some(u) => {
+		// If the variable already has a value, then this is a new, inner scope
+      		u.push(s);
+	    }
+	    None => {
+		// Otherwise this is the first scope for the variable
+      		h.insert(v.to_string(), vec![s]);
+	    }
+	}
+    }
+    // Pop scope for a variable
+    // Prerequisite: scope must have already been pushed
+    fn var_pop(&self, v: &str) {
+	self.vars.borrow_mut().get_mut(v).map(|u| u.pop());
+    }
+
+    // Stylesheet parameters. Overrides the previous value if it is already set.
+    // TODO: namespaced name
+    pub fn set_parameter(&self, name: String, value: Sequence) {
+	self.vars.borrow_mut().insert(name, vec![value]);
+    }
 }
 
 /// A sequence constructor evaluator.
@@ -1089,8 +1099,6 @@ impl Evaluator {
 				matching_template.push(&t)
 			    }
 			}
-			eprintln!("for item {:?} found {} templates", i, matching_template.len());
-			matching_template.iter().for_each(|t| eprintln!("{:?}", t));
 
 			if matching_template.len() != 0 {
 			    // find the template(s) with the lowest priority
@@ -1105,9 +1113,6 @@ impl Evaluator {
 			    mt_lowest
 				.sort_unstable_by_key(|t| t.import);
 			    let mut p = mt_lowest[0].import;
-			    eprintln!("lowest import is {}", p);
-			    mt_lowest.iter().skip(1)
-				.for_each(|t| eprintln!("also found template with import {}", t.import));
 			    mt_lowest.iter().skip(1)
 				.for_each(|t| {
 				    if t.import == p {
@@ -1170,8 +1175,88 @@ impl Evaluator {
 		);
       		Ok(result)
 	    }
-	    Constructor::ApplyImports(_) => {
-		Result::Err(Error::new(ErrorKind::NotImplemented, String::from("apply-imports not yet implemented")))
+	    Constructor::ApplyImports => {
+		// Evaluate templates with higher import precedence
+      		// Find a matching template with import precedence greater than the current precedence
+		// and evaluate its sequence constructor.
+		// The result of that becomes an item in the new sequence
+
+		let mut result = vec![];
+		let mut matching_template: Vec<&Template> = vec![];
+		for t in &self.templates {
+		    let e = self.evaluate(ctxt.clone(), posn.clone(), &t.pattern, f, sd, rd)
+			.expect("evaluating pattern failed");
+		    if e.len() != 0 {
+			matching_template.push(&t)
+		    }
+		}
+
+		if matching_template.len() != 0 {
+		    // find the template(s) with the lowest priority
+		    matching_template
+			.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+		    let l = matching_template[0].priority;
+		    let mut mt_lowest: Vec<&Template> = matching_template.into_iter()
+			.take_while(|t| t.priority == l)
+			.collect();
+
+		    // No need to check for multiple matches here,
+		    // since this was checked by the apply-templates
+		    mt_lowest
+			.sort_unstable_by_key(|t| t.import);
+
+		    // Find the template with the lowest import precedence
+		    // higher than the current precedence
+		    let mut u = mt_lowest.iter()
+			.skip_while(|t| t.import <= *self.dc.current_import.borrow())
+			.take(1)
+			.flat_map(|t| {
+			    self.dc.depth_incr();
+			    self.dc.import_incr();
+			    let rs = self.evaluate(ctxt.clone(), posn, &t.body, f, sd, rd)
+				.expect("failed to evaluate template body");
+	    		    self.dc.depth_decr();
+	    		    self.dc.import_decr();
+			    rs
+			})
+			.collect::<Sequence>();
+		    result.append(&mut u);
+		} else {
+		    // If no templates match then apply a built-in template
+		    // See XSLT 6.7.
+		    // TODO: use import precedence to implement this feature
+		    let builtin_template: Vec<&Template> = self.builtin_templates.iter()
+			.filter(|t| {
+			    let e = self.evaluate(ctxt.clone(), posn, &t.pattern, f, sd, rd)
+				.expect("failed to evaluate pattern");
+			    if e.len() == 0 {false} else {true}
+			})
+			.scan(-2.0,
+			      |prio, t| {
+				  if *prio < t.priority {
+				      *prio = t.priority;
+				      Some(t)
+				  } else {
+				      None
+				  }
+			      }
+			)
+			.collect();
+		    if builtin_template.len() > 1 {
+			panic!("too many matching builtin templates")
+		    }
+		    let mut u = builtin_template.iter()
+			.flat_map(|t| {
+			    self.dc.depth_incr();
+			    let rs = self.evaluate(ctxt.clone(), posn, &t.body, f, sd, rd)
+				.expect("failed to evaluate template body");
+	    		    self.dc.depth_decr();
+			    rs
+			})
+			.collect::<Sequence>();
+		    result.append(&mut u);
+		}
+      		Ok(result)
 	    }
 	    Constructor::ForEach(s, t, g) => {
 		// Evaluate 's' to find the nodes to iterate over
@@ -1626,17 +1711,16 @@ pub enum Constructor {
     ApplyTemplates(Vec<Constructor>),
     /// Find a matching template at the next import precedence
     /// and evaluate its sequence constructor.
-    /// The argument is the select attribute.
-    ApplyImports(Vec<Constructor>),
-  /// Evaluate a sequence constructor for each item, possibly grouped.
-  /// First argument is the select expression, second argument is the template,
-  /// third argument is the (optional) grouping spec.
-  ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
-  /// Set the value of an attribute. Context item must be an element node.
-  /// First argument is the name of the attribute, second attribute is the value to set
-  SetAttribute(QualifiedName, Vec<Constructor>),
-  /// Something that is not yet implemented
-  NotImplemented(String),
+    ApplyImports,
+    /// Evaluate a sequence constructor for each item, possibly grouped.
+    /// First argument is the select expression, second argument is the template,
+    /// third argument is the (optional) grouping spec.
+    ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
+    /// Set the value of an attribute. Context item must be an element node.
+    /// First argument is the name of the attribute, second attribute is the value to set
+    SetAttribute(QualifiedName, Vec<Constructor>),
+    /// Something that is not yet implemented
+    NotImplemented(String),
 }
 
 /// Determine how a collection is to be divided into groups.
@@ -2543,8 +2627,7 @@ impl StaticContext {
 	    self.static_analysis(&mut i.operand)
 	  }
         }
-      	  Constructor::ApplyTemplates(s) |
-	  Constructor::ApplyImports(s) => {
+      	  Constructor::ApplyTemplates(s)  => {
 	  self.static_analysis(s)
         }
       	Constructor::ForEach(s, t, _g) => {
@@ -2558,11 +2641,12 @@ impl StaticContext {
       	Constructor::DeepCopy(c) => {
 	  self.static_analysis(c);
         }
-      	Constructor::Literal(_) |
-      	Constructor::LiteralAttribute(_, _) |
-      	Constructor::ContextItem |
-      	Constructor::Root |
-      	Constructor::NotImplemented(_) => {}
+      	  Constructor::Literal(_) |
+      	  Constructor::LiteralAttribute(_, _) |
+      	  Constructor::ContextItem |
+      	  Constructor::Root |
+	  Constructor::ApplyImports |
+      	  Constructor::NotImplemented(_) => {}
       }
     }
   }
@@ -3572,7 +3656,7 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::ApplyTemplates(_) => {
         format!("{:in$} apply-templates constructor", "", in=i)
       }
-      Constructor::ApplyImports(_) => {
+      Constructor::ApplyImports => {
         format!("{:in$} apply-imports constructor", "", in=i)
       }
       Constructor::ForEach(_, _, _) => {

@@ -268,16 +268,13 @@ pub fn from_document(
     // * fetch document
     // * parse XML
     // * replace xsl:import element with content
-    eprintln!("looking for imports");
     let mut imcit = stylenode.child_iter();
     loop {
 	match imcit.next(f) {
 	    Some(c) => {
-		eprintln!("considering {:?} {}", c.node_type(f), c.to_name(f).to_string());
 		if c.is_element(f) &&
 		    c.to_name(f).get_nsuri_ref() == Some(XSLTNS) &&
 		    c.to_name(f).get_localname() == "import" {
-			eprintln!("found xsl:import");
 			match c.get_attribute(f, &QualifiedName::new(None, None, "href".to_string())) {
 			    Some(h) => {
 				let url = match ev.baseurl().map_or_else(
@@ -287,7 +284,6 @@ pub fn from_document(
 				    Ok(u) => u,
 				    Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: format!("unable to parse href URL \"{}\" baseurl \"{}\"", h.to_string(f), ev.baseurl().map_or(String::from("--no base--"), |b| b.to_string()))}),
 				};
-				eprintln!("importing href \"{}\"", url.to_string());
 				// TODO: make a function to resolve http: vs file: scheme
 				let xml = match url.scheme() {
 				    "http" => {
@@ -307,12 +303,10 @@ pub fn from_document(
 				// inserting before the xsl:include node
 				// TODO: Don't Panic
 				let moddoc = f.get_ref(module).unwrap().get_doc_node().get_first_element(f).unwrap();
-				eprintln!("module {}: {}", moddoc.node_type(f).to_string(), moddoc.to_name(f).to_string());
 				let mut modit = moddoc.child_iter();
 				loop {
 				    match modit.next(f) {
 					Some(mc) => {
-					    eprintln!("processing imported {:?} {}", mc.node_type(f), mc.to_name(f).to_string());
 					    if mc.node_type(f) == NodeType::Element {
 						// Add the import precedence attribute
 						let newnode = mc.deep_copy(f, Some(styledoc))?;
@@ -340,7 +334,6 @@ pub fn from_document(
 	    None => break,
 	}
     }
-    eprintln!("done importing");
 
     // Iterate over children, looking for templates
     // * compile match pattern
@@ -355,15 +348,6 @@ pub fn from_document(
 		    c.to_name(f).get_localname() == "template" {
 			match c.get_attribute(f, &QualifiedName::new(None, None, "match".to_string())) {
 			    Some(m) => {
-				eprintln!("defining template, has attributes:");
-				let mut atit = c.attribute_iter(f);
-				loop {
-				    match atit.next() {
-					Some(at) => eprintln!("\"{}\" ({})", at.to_name(f).to_string(), at.to_value(f).to_string()),
-					None => break,
-				    }
-				}
-
 				let n = m.clone().to_string(f);
 				let a = parse(&n).expect("failed to parse match expression");
 				let mut pat = to_pattern(a).expect("failed to compile match pattern");
@@ -506,27 +490,7 @@ fn to_constructor(n: Node, f: &Forest) -> Result<Constructor, Error> {
 		    }
 		}
 		(Some(XSLTNS), "apply-imports") => {
-		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
-			Some(sel) => {
-			    Ok(Constructor::ApplyImports(
-				parse(&sel.to_string(f))?
-			    ))
-			}
-			None => {
-			    // If there is no select attribute, then default is "child::node()"
-			    Ok(Constructor::ApplyImports(
-				vec![
-	      			    Constructor::Step(
-					NodeMatch{
-	      				    axis: Axis::Child,
-	      				    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-	    				},
-	    				vec![]
-	      			    )
-	    			]
-			    ))
-			}
-		    }
+		    Ok(Constructor::ApplyImports)
 		}
 		(Some(XSLTNS), "sequence") => {
 		    match n.get_attribute(f, &QualifiedName::new(None, None, "select".to_string())) {
