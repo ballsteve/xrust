@@ -3,9 +3,9 @@ A Rust implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.or
 
 The library separates parsing from evaluation. An expression is compiled to create a '[Sequence] [Constructor]'. This constructor is then applied to a source document to produce a [Sequence].
 
-A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a Rust Vector. An [Item] is a Node, Function or atomic [Value].
+A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a Rust Vector. An [Item] is a [Node], Function or atomic [Value].
 
-See the [xslt](xslt.html) module for an example of how to evaluate an XSL stylesheet.
+See the [xslt](xslt/index.html) module for an example of how to evaluate an XSL stylesheet.
 
 ## Status
 

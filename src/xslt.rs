@@ -1,6 +1,6 @@
 /*! ## An XSLT compiler
 
-Compile an XSLT stylesheet into a [Sequence] [Constructor].
+Compile an XSLT stylesheet into a Sequence [Constructor].
 
 Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
 
@@ -75,7 +75,7 @@ use crate::xpath::*;
 
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
-/// Compiles a [Document] into an Evaluator.
+/// Compiles a [Tree] into an Evaluator.
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
 pub fn from_document(
     f: &mut Forest,
@@ -797,7 +797,7 @@ fn to_constructor(n: Node, f: &Forest) -> Result<Constructor, Error> {
     }
 }
 
-/// Strip whitespace nodes from a XDM [Document].
+/// Strip whitespace nodes from a XDM [Tree].
 /// See [XSLT 4.3](https://www.w3.org/TR/2017/REC-xslt-30-20170608/#stylesheet-stripping)
 pub fn strip_whitespace(
     f: &mut Forest,
@@ -820,7 +820,7 @@ pub fn strip_whitespace(
     }
 }
 
-/// Strip whitespace nodes from a XDM [Document].
+/// Strip whitespace nodes from a XDM [Tree].
 /// This function operates under the direction of the xsl:strip-space and xsl:preserve-space directives in a XSLT stylesheet.
 pub fn strip_source_document(
     f: &mut Forest,

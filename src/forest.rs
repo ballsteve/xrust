@@ -1178,7 +1178,7 @@ pub trait ChildIterator {
     fn next(&mut self, t: Tree) -> Option<Self::Node>;
 }
 
-/// An iterator over child nodes of a [Document]
+/// An iterator over child nodes of a [Tree]
 pub trait DocChildIterator {
     type Node;
     fn next(&mut self, t: Tree) -> Option<Self::Node>;

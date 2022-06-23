@@ -1,7 +1,7 @@
 //! # xdm::parsexml
 //!
 //! A parser for XML, as a nom parser combinator.
-//! XML 1.1, see https://www.w3.org/TR/xml11/
+//! XML 1.1, see <https://www.w3.org/TR/xml11/>
 //!
 //! This is a very simple, minimalist parser of XML. It excludes:
 //!	DTDs (and therefore entities)

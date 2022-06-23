@@ -135,7 +135,7 @@ impl From<Item> for Sequence {
 
 /// An Item in a [Sequence]. Can be a [Node], Function or [Value].
 ///
-/// [Node]s are dynamic trait objects. [Node]s can only exist in the context of a [Document].
+/// [Node]s are dynamic trait objects. [Node]s can only exist in the context of a Tree.
 ///
 /// Functions are not yet implemented.
 //#[derive(Clone)]
