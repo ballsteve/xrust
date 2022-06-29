@@ -11,6 +11,11 @@ documentation = "https://docs.rs/xrust/"
 readme = "README.md"
 edition = "2018"
 
+[features]
+# The xslt feature enables XSLT support
+default = ["xslt"]
+xslt = []
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
