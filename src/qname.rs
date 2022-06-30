@@ -14,35 +14,38 @@ pub struct QualifiedName {
 
 // TODO: we may need methods that return a string slice, rather than a copy of the string
 impl QualifiedName {
-  pub fn new(nsuri: Option<String>, prefix: Option<String>, localname: String) -> QualifiedName {
-    QualifiedName{nsuri, prefix, localname}
-  }
-  pub fn get_nsuri(&self) -> Option<String> {
-    self.nsuri.clone()
-  }
-  pub fn get_nsuri_ref(&self) -> Option<&str> {
-    match self.nsuri {
-      Some(ref n) => {
-        Some(&n)
-      }
-      None => None,
+    pub fn new(nsuri: Option<String>, prefix: Option<String>, localname: String) -> QualifiedName {
+	QualifiedName{nsuri, prefix, localname}
     }
-  }
-  pub fn get_prefix(&self) -> Option<String> {
-    self.prefix.clone()
-  }
-  pub fn get_localname(&self) -> String {
-    self.localname.clone()
-  }
-  pub fn to_string(&self) -> String {
-    let mut result = String::new();
-    self.prefix.as_ref().map_or((), |p| {
-      result.push_str(p.as_str());
-      result.push(':');
-    });
-    result.push_str(self.localname.as_str());
-    result
-  }
+    pub fn as_ref(&self) -> &Self {
+	self
+    }
+    pub fn get_nsuri(&self) -> Option<String> {
+	self.nsuri.clone()
+    }
+    pub fn get_nsuri_ref(&self) -> Option<&str> {
+	match self.nsuri {
+	    Some(ref n) => {
+		Some(&n)
+	    }
+	    None => None,
+	}
+    }
+    pub fn get_prefix(&self) -> Option<String> {
+	self.prefix.clone()
+    }
+    pub fn get_localname(&self) -> String {
+	self.localname.clone()
+    }
+    pub fn to_string(&self) -> String {
+	let mut result = String::new();
+	self.prefix.as_ref().map_or((), |p| {
+	    result.push_str(p.as_str());
+	    result.push(':');
+	});
+	result.push_str(self.localname.as_str());
+	result
+    }
 }
 
 pub type QHash<T> = HashMap<QualifiedName, T>;
@@ -74,6 +77,7 @@ impl Hash for QualifiedName {
     self.localname.hash(state);
   }
 }
+
 #[cfg(test)]
 mod tests {
     use super::*;

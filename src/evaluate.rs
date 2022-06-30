@@ -5,1198 +5,1631 @@
 //! This library uses the traits defined in [Item], so it is independent of the tree implementation.
 
 use std::rc::Rc;
-use std::ops::ControlFlow;
+use std::cell::{RefCell, RefMut};
+use std::convert::TryFrom;
+use std::collections::HashMap;
+use std::fmt;
 use unicode_segmentation::UnicodeSegmentation;
 #[allow(unused_imports)]
 use chrono::{DateTime, Local, Datelike, Timelike, FixedOffset};
+#[cfg(test)]
+use rust_decimal_macros::dec;
 use crate::qname::*;
 use crate::parsepicture::parse as picture_parse;
 use crate::xdmerror::*;
-use crate::item::{Sequence, SequenceTrait, Item, Value, Document, Node, NodeType, Operator, OutputDefinition};
-//use decimal::d128;
-use std::collections::HashMap;
-use std::cell::{RefCell, RefMut};
+use crate::output::OutputDefinition;
+use crate::value::{Value, Operator};
+use crate::forest::{Forest, TreeIndex, Node, NodeType};
+use crate::item::{Sequence, SequenceTrait, Item};
+use url::Url;
 
-/// The dynamic evaluation context.
-///
-/// The dynamic context stores the value of declared variables.
-//#[derive(Clone)]
-pub struct DynamicContext<'a> {
-  vars: RefCell<HashMap<String, Vec<Sequence>>>,
-  templates: Vec<Template>,
-  builtin_templates: Vec<Template>,	// TODO: use import precedence for builtins
-  depth: RefCell<usize>,
-  current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
-  current_group: RefCell<Vec<Option<Sequence>>>,
-  doc: Option<Rc<dyn Document>>,
-  // TODO: accept a closure that is a 'Document factory'
-  //makedoc: Box<dyn Fn() -> Rc<dyn Document>>,
-  resultdoc: Option<&'a dyn Document>,
-  od: OutputDefinition,	// Output definition for the final result tree
+// The dynamic evaluation context.
+//
+// The dynamic context stores parts that can change as evaluation proceeds,
+// such as the value of declared variables.
+pub struct DynamicContext {
+    vars: RefCell<HashMap<String, Vec<Sequence>>>,
+    depth: RefCell<usize>,
+    current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
+    current_group: RefCell<Vec<Option<Sequence>>>,
+    current_import: RefCell<usize>,
+    deps: RefCell<Vec<Url>>,	// URIs for included/imported stylesheets
 }
 
-impl<'a> DynamicContext<'a> {
-  /// Create a dynamic context.
-  pub fn new(resultdoc: Option<&'a dyn Document>) -> DynamicContext<'a> {
-    DynamicContext{
-      vars: RefCell::new(HashMap::new()),
-      templates: Vec::new(),
-      builtin_templates: Vec::new(),
-      depth: RefCell::new(0),
-      current_grouping_key: RefCell::new(vec![None]),
-      current_group: RefCell::new(vec![None]),
-      doc: None,
-      resultdoc: resultdoc,
-      od: OutputDefinition::new(),
-    }
-  }
-
-  /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority.
-  pub fn add_template(&mut self,
-    p: Vec<Constructor>,
-    b: Vec<Constructor>,
-    m: Option<String>,
-    pr: f64,
-  ) {
-    self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
-  }
-  /// Add a template to the set of builtin templates in the dynamic context. See above for arguments.
-  pub fn add_builtin_template(&mut self,
-    p: Vec<Constructor>,
-    b: Vec<Constructor>,
-    m: Option<String>,
-    pr: f64,
-  ) {
-    self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr});
-  }
-  /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
-  /// If no template is found, returns None.
-  pub fn find_match(&self, i: &Rc<Item>) -> Vec<Constructor> {
-    let r: Option<&Template> = self.templates.iter()
-      .filter(|t| item_matches(self, &t.pattern, i))
-      .reduce(|a, b| if a.priority < b.priority {b} else {a});
-
-    if r.is_some() {
-      r.unwrap().body.clone()
-    } else {
-      // Try builtin templates
-      let s: Option<&Template> = self.builtin_templates.iter()
-        .filter(|t| item_matches(self, &t.pattern, i))
-	.reduce(|a, b| if a.priority < b.priority {b} else {a});
-
-      if s.is_some() {
-        s.unwrap().body.clone()
-      } else {
-        vec![]
-      }
-    }
-  }
-
-  pub fn push_current_grouping_key(&self, k: Item) {
-    self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
-  }
-  pub fn pop_current_grouping_key(&self) {
-    self.current_grouping_key.borrow_mut().pop();
-  }
-
-  pub fn push_current_group(&self, g: Sequence) {
-    self.current_group.borrow_mut().push(Some(g));
-  }
-  pub fn pop_current_group(&self) {
-    self.current_group.borrow_mut().pop();
-  }
-
-  pub fn set_doc(&mut self, d: Rc<dyn Document>) {
-    self.doc.replace(d);
-  }
-
-  pub fn incr_depth(&self) {
-    let cur = *self.depth.borrow();
-    self.depth.replace(cur + 1);
-  }
-  pub fn decr_depth(&self) {
-    let cur = *self.depth.borrow();
-    self.depth.replace(cur - 1);
-  }
-  // TODO: return borrowed/reference
-  pub fn get_output_definition(&self) -> OutputDefinition {
-    self.od.clone()
-  }
-  pub fn set_output_definition(&mut self, od: OutputDefinition) {
-    self.od = od;
-  }
-
-  // Stylesheet parameters. Overrides the previous value if it is already set.
-  // TODO: namespaced name
-  pub fn set_parameter(&mut self, name: String, value: Sequence) {
-    self.vars.borrow_mut().insert(name, vec![value]);
-  }
-
-  // Printout templates, for debugging.
-  pub fn dump_templates(&self) {
-    self.templates.iter().for_each(
-      |t| {
-        println!("Template (mode: {} priority {}) matching pattern:\n{}\nBody:\n{}",
-	  t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
-	  t.priority,
-	  format_constructor(&t.pattern, 4),
-	  format_constructor(&t.body, 4)
-	);
-      }
-    )
-  }
-}
-
-/// Evaluate a sequence constructor, given a dynamic context.
-///
-/// The dynamic context consists of the supplied context, as well as the context item. The context item, which is optional, consists of a [Sequence] and an index to an item. If the context sequence is supplied, then the index (posn) must also be supplied and be a valid index for the sequence.
-pub fn evaluate(
-    dc: &DynamicContext,
-    ctxt: Option<Sequence>,
-    posn: Option<usize>,
-    c: &Vec<Constructor>
-  ) -> Result<Sequence, Error> {
-
-  // Original panicky version
-  //let result: Sequence = c.iter().map(|a| evaluate_one(dc, ctxt.clone(), posn, a).expect("evaluation of item failed")).flatten().collect();
-  //Ok(result)
-
-  // Evaluate all sequence constructors. This will result in a sequence of sequences.
-  // If an error occurs, propagate the first error (TODO: return all errors)
-  // Otherwise, flatten the sequences into a single sequence
-
-  let (results, errors): (Vec<_>, Vec<_>) = c.iter()
-    .map(|a| evaluate_one(dc, ctxt.clone(), posn, a))
-    .partition(Result::is_ok);
-  if errors.len() != 0 {
-    Result::Err(
-      errors.iter()
-        .nth(0)
-	.map(|e| e.clone().err().unwrap())
-	.unwrap()
-    )
-  } else {
-    Ok(
-      results.iter()
-        .map(|a| {
-	  let b: Sequence = a.clone().ok().unwrap_or(vec![]);
-	  b
-	})
-	.flatten()
-	.collect::<Vec<Rc<Item>>>()
-    )
-  }
-}
-
-// Evaluate an item constructor, given a context
-// If a constructor returns a non-singleton sequence, then it is unpacked
-fn evaluate_one(
-    dc: &DynamicContext,
-    ctxt: Option<Sequence>,
-    posn: Option<usize>,
-    c: &Constructor
-  ) -> Result<Sequence, Error> {
-
-  match c {
-    Constructor::Literal(l) => {
-	let mut seq = Sequence::new();
-	seq.new_value(l.clone());
-	Ok(seq)
-    }
-    // This creates a Node in the current result document
-    Constructor::LiteralElement(n, c) => {
-      let l = match dc.resultdoc {
-        Some(doc) => {
-	  doc.new_element(n.clone())?
+impl DynamicContext {
+    pub fn new() -> Self {
+	DynamicContext{
+	    vars: RefCell::new(HashMap::new()),
+	    depth: RefCell::new(0),
+	    current_grouping_key: RefCell::new(vec![None]),
+	    current_group: RefCell::new(vec![None]),
+	    current_import: RefCell::new(0),
+	    deps: RefCell::new(vec![]),
 	}
-	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
-      };
-
-      // add content to newly created element
-      evaluate(dc, ctxt.clone(), posn, c)?.iter()
-        .try_for_each(
-	  |i| {
-	    // Item could be a Node or text
-	    match **i {
-	      Item::Node(ref t) => {
-		l.append_child(t.as_any())
-	      }
-	      _ => {
-	        // Values become a text node in the result tree
-		l.append_text_child(Value::String(i.to_string()))
-	      }
-	    }
-	  }
-	)?;
-
-      Ok(vec![Rc::new(Item::Node(l))])
     }
-    // This creates a Node in the current result document
-    Constructor::LiteralAttribute(n, v) => {
-      let w = evaluate(dc, ctxt.clone(), posn, v)?;
-      let l = match dc.resultdoc {
-        Some(doc) => {
-	  doc.new_attribute(n.clone(), Value::String(w.to_string()))?
-	}
-	None => return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
-      };
-
-      Ok(vec![Rc::new(Item::Node(l))])
+    /// Retrieve the dependencies for the stylesheet
+    // TODO: make this an iterator
+    pub fn dependencies(&self) -> Vec<Url> {
+	self.deps.borrow().clone()
     }
-    Constructor::Copy(i, c) => {
-      let orig = if i.is_empty() {
-        // Copy the context item
-	if ctxt.is_some() {
-	  vec![ctxt.as_ref().unwrap()[posn.unwrap()].clone()]
-	} else {
-	  evaluate(dc, ctxt.clone(), posn, i)?
-	}
-      } else {
-	evaluate(dc, ctxt.clone(), posn, i)?
-      };
-
-      // Original panicky version
-      //Ok(orig.iter().map(|i| item_copy(i.clone(), dc, c, ctxt.clone(), posn).expect("oops")).collect())
-
-      // Non-panicing version
-      let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
-        .map(|i| item_copy(i.clone(), dc, c, ctxt.clone(), posn))
-	.partition(Result::is_ok);
-      if errors.len() != 0 {
-        Result::Err(
-      	  errors.iter()
-            .nth(0)
-	    .map(|e| e.clone().err().unwrap())
-	    .unwrap()
-    	)
-      } else {
-        Ok(
-	  results.iter()
-	    .map(|r| r.clone().ok().unwrap())
-	    .collect::<Vec<Rc<Item>>>()
-	)
-      }
+    /// Add a dependency
+    pub fn add_dependency(&self, u: Url) {
+	self.deps.borrow_mut().push(u);
     }
-    // Does the same as identity stylesheet template
-    Constructor::DeepCopy(sel) => {
-      let orig = evaluate(dc, ctxt.clone(), posn, sel)?;
 
-      let (results, errors): (Vec<_>, Vec<_>) = orig.iter()
-        .map(|i| item_deep_copy((*i).clone(), dc, ctxt.clone(), posn))
-	.partition(Result::is_ok);
-      if errors.len() != 0 {
-        Result::Err(
-      	  errors.iter()
-            .nth(0)
-	    .map(|e| e.clone().err().unwrap())
-	    .unwrap()
-    	)
-      } else {
-        Ok(
-	  results.iter()
-	    .map(|r| r.clone().ok().unwrap())
-	    .collect::<Vec<Rc<Item>>>()
-	)
-      }
+    fn push_current_grouping_key(&self, k: Item) {
+	self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
     }
-    Constructor::ContextItem => {
-      if ctxt.is_some() {
-	let mut seq = Sequence::new();
-	seq.add(&ctxt.as_ref().unwrap()[posn.unwrap()]);
-	Ok(seq)
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
+    fn pop_current_grouping_key(&self) {
+	self.current_grouping_key.borrow_mut().pop();
     }
-    Constructor::SetAttribute(n, v) => {
-      // The context item must be an element node (TODO: use an expression to select the element)
-      // If the element does not have an attribute with the given name, create it
-      // Otherwise replace the attribute's value with the supplied value
-      if ctxt.is_some() {
-        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Node(nd) => {
-	    match nd.node_type() {
-	      NodeType::Element => {
-	        let attval = evaluate(dc, ctxt.clone(), posn, v)?;
-		if attval.len() == 1 {
-		  match &*attval[0] {
-		    Item::Value(av) => nd.set_attribute(n.clone(), av.clone()),
-		    _ => nd.set_attribute(n.clone(), Value::String(attval.to_string())),
-		  }
-		} else {
-		  nd.set_attribute(n.clone(), Value::String(attval.to_string()))
-		}
-		Ok(vec![])
-	      }
-	      _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item is not an element".to_string()})
-	    }
-	  }
-	  _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item must be an element node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
-    }
-    Constructor::Or(v) => {
-      // Evaluate each operand to a boolean result. Return true if any of the operands' result is true
-      // Optimisation: stop upon the first true result.
-      // Future: Evaluate every operand to check for dynamic errors
-      let mut b = false;
-      for i in v {
-	let k = evaluate(dc, ctxt.clone(), posn, i)?;
-	b = k.to_bool();
-	if b {break};
-      }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::Boolean(b));
-      Ok(seq)
-    }
-    Constructor::And(v) => {
-      // Evaluate each operand to a boolean result. Return false if any of the operands' result is false
-      // Optimisation: stop upon the first false result.
-      // Future: Evaluate every operand to check for dynamic errors
-      let mut b = true;
-      for i in v {
-	let k = evaluate(dc, ctxt.clone(), posn, i)?;
-	b = k.to_bool();
-	if !b {break};
-      }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::Boolean(b));
-      Ok(seq)
-    }
-    Constructor::GeneralComparison(o, v) => {
-      if v.len() == 2 {
-	let mut seq = Sequence::new();
-	seq.new_value(Value::Boolean(
-	  general_comparison(dc, ctxt, posn, *o, &v[0], &v[1])?
-	  ));
-      	Ok(seq)
-      } else {
-	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-      }
-    }
-    Constructor::ValueComparison(o, v) => {
-      if v.len() == 2 {
-	let mut seq = Sequence::new();
-	seq.new_value(Value::Boolean(
-	  value_comparison(dc, ctxt, posn, *o, &v[0], &v[1])?
-	));
-      	Ok(seq)
-      } else {
-	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-      }
-    }
-    Constructor::Concat(v) => {
-      let mut r = String::new();
-      for u in v {
-	let t = evaluate(dc, ctxt.clone(), posn, u)?;
-	r.push_str(t.to_string().as_str());
-      }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::String(r));
-      Ok(seq)
-    }
-    Constructor::Range(v) => {
-      if v.len() == 2 {
-        // Evaluate the two operands: they must both be literal integer items
-	let start = evaluate(dc, ctxt.clone(), posn, &v[0])?;
-	let end = evaluate(dc, ctxt.clone(), posn, &v[1])?;
-	if start.len() == 0 || end.len() == 0 {
-	  // empty sequence is the result
-	  Ok(vec![])
-	} else if start.len() == 1 {
-	  if end.len() == 1 {
-	    let i = start[0].to_int().unwrap();
-	    let j = end[0].to_int().unwrap();
-	    if i > j {
-	      // empty sequence result
-	      Ok(vec![])
-	    } else if i == j {
-	      let mut seq = Sequence::new();
-	      seq.new_value(Value::Integer(i));
-      	      Ok(seq)
-	    } else {
-	      let mut result = Sequence::new();
-	      for k in i..=j {
-	        result.new_value(Value::Integer(k))
-	      }
-	      Ok(result)
-	    }
-	  } else {
-	    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
-	  }
-	} else {
-	  Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
-      }
-    }
-    Constructor::Arithmetic(v) => {
-      // Type: the result will be a number, but integer or double?
-      // If all of the operands are integers, then the result is integer otherwise double
-      // TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
-      // In the meantime, let's assume the result will be double and convert any integers
 
-      let mut acc: f64 = 0.0;
-
-      for j in v {
-	let k = evaluate(dc, ctxt.clone(), posn, &j.operand)?;
-	let u: f64;
-	if k.len() != 1 {
-	  return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
-	} else {
-	  u = k[0].to_double();
-	  match j.op {
-	    ArithmeticOperator::Noop => acc = u,
-	    ArithmeticOperator::Add => acc += u,
-	    ArithmeticOperator::Subtract => acc -= u,
-	    ArithmeticOperator::Multiply => acc *= u,
-	    ArithmeticOperator::Divide => acc /= u,
-	    ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
-	    ArithmeticOperator::Modulo => acc = acc % u,
-	  }
-	}
-      }
-      let mut seq = Sequence::new();
-      seq.new_value(Value::Double(acc));
-      Ok(seq)
+    fn push_current_group(&self, g: Sequence) {
+	self.current_group.borrow_mut().push(Some(g));
     }
-    Constructor::Root => {
-      if ctxt.is_some() {
-        match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Document(_) => {
-	    Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
-	  }
-	  // Some implementations represent the document as a special kind of node
-	  Item::Node(n) => {
-	    match dc.doc {
-	      Some(ref d) => {
-	        Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
-	      }
-	      None => {
-	        // Try to navigate to the Document from the Node
-		match n.owner_document() {
-		  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
-		  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (root)")}),
-		}
-	      }
-	    }
-	  }
-	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
+    fn pop_current_group(&self) {
+	self.current_group.borrow_mut().pop();
     }
-    Constructor::Path(s) => {
-      // s is a vector of sequence constructors
-      // Each step creates a new context for the next step
-      // TODO: if initial context is None then error
-
-      let u: Sequence; // accumulator - each time around the loop this will be the new context
-
-      if ctxt.is_some() {
-        u = ctxt.unwrap().clone()
-      } else {
-        u = vec![]
-      }
-
-      // TODO: Don't Panic
-      Ok(s.iter().fold(
-	    u,
-	    |a, c| {
-	      // evaluate this step for each item in the context
-	      // Add the result of each evaluation to an accummulator sequence
-	      let mut b: Sequence = Vec::new();
-	      for i in 0..a.len() {
-	        let mut d = evaluate(dc, Some(a.clone()), Some(i), c).expect("failed to evaluate step");
-		b.append(&mut d);
-	      }
-	      b
-	    }
-      ))
+    fn depth_incr(&self) {
+	let mut d = self.depth.borrow_mut();
+	*d += 1;
     }
-    Constructor::Step(nm, p) => {
-      if ctxt.is_some() {
-	match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
-	  Item::Document(d) => {
-	    match nm.axis {
-	      Axis::Child => {
-	        match d.get_root_element() {
-		  Some(n) => {
-		    if is_node_match(&nm.nodetest, &n) {
-		      let seq = vec![Rc::new(Item::Node(n))];
-		      Ok(predicates(dc, seq, p))
-		    } else {
-		      Ok(vec![])
-		    }
-		  }
-		  None => {
-		    Ok(vec![])
-		  }
-		}
-	      }
-	      Axis::Descendant => {
-		match d.get_root_element() {
-		  Some(n) => {
-		    let seq = n.descendants().iter()
-		      .filter(|c| is_node_match(&nm.nodetest, &c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	    Ok(predicates(dc, seq, p))
-		  }
-		  None => Ok(vec![])
-		}
-	      }
-	      // Only used for pattern matching: matches "/"
-	      Axis::SelfDocument |
-	      Axis::ParentDocument => {
-	        Ok(vec![Rc::clone(&ctxt.unwrap()[posn.unwrap()])])
-	      }
-	      Axis::Parent |
-	      Axis::Selfaxis |
-	      Axis::Attribute => Ok(vec![]),
-	      _ => {
-	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("not yet implemented (document) ({})", nm.axis.to_string())})
-	      }
-	    }
-	  }
-	  Item::Node(n) => {
-	    match nm.axis {
-	      Axis::Selfaxis => {
-	        if is_node_match(&nm.nodetest, &n) {
-		  let mut seq = Sequence::new();
-		  seq.new_node(Rc::clone(n));
-	      	  Ok(predicates(dc, seq, p))
-		} else {
-	      	  Ok(Sequence::new())
-		}
-	      }
-	      Axis::Child => {
-		let seq = n.children().iter()
-		      .filter(|c| is_node_match(&nm.nodetest, &c))
-		      .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Parent => {
-	        match n.parent() {
-		  Some(p) => {
-		    let mut seq = Sequence::new();
-		    seq.new_node(Rc::clone(&p));
-      		    Ok(seq)
-		  }
-		  None => {
-	            // empty sequence is the result
-      		    Ok(vec![])
-		  }
-		}
-	      }
-	      Axis::ParentDocument => {
-	        // Only matches the Document.
-		// If no parent then return the Document
-	        match n.parent() {
-		  Some(_) => {
-      		    Ok(vec![])
-		  }
-		  None => {
-	    	    match dc.doc {
-	      	      Some(ref d) => {
-	                Ok(vec![Rc::new(Item::Document(Rc::clone(&d)))])
-	      	      }
-	      	      None => {
-		        match n.owner_document() {
-			  Some(d) => Ok(vec![Rc::new(Item::Document(d))]),
-			  None => Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current document (parent)")})
-			}
-		      }
-	    	    }
-		  }
-		}
-	      }
-	      Axis::Descendant => {
-		let seq = n.descendants().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::DescendantOrSelf => {
-		let mut seq = n.descendants().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		if is_node_match(&nm.nodetest, &n) {
-		  seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
-		}
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Ancestor => {
-		let seq = n.ancestors().iter()
-		  .filter(|p| is_node_match(&nm.nodetest, &p))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::AncestorOrSelf => {
-		let mut seq = n.ancestors().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		if is_node_match(&nm.nodetest, &n) {
-		  seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
-		}
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::FollowingSibling => {
-	        let seq = n.following_siblings().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::PrecedingSibling => {
-		let seq = n.preceding_siblings().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Following => {
-	        // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
-		// iow, for each ancestor-or-self node, include every next sibling and its descendants
-
-		let mut d: Vec<Rc<dyn Node>> = Vec::new();
-
-		// Start with following siblings of self
-		for a in n.following_siblings() {
-		  d.push(a.clone());
-		  let mut b = a.descendants();
-		  d.append(&mut b);
-		}
-
-		// Now traverse ancestors
-		let anc: Vec<Rc<dyn Node>> = n.ancestors();
-		for a in anc {
-		  let sibs: Vec<Rc<dyn Node>> = a.following_siblings();
-		  for b in sibs {
-		    d.push(b.clone());
-		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
-		    d.append(&mut sib_descs)
-		  }
-		}
-	        let seq = d.iter()
-		  .filter(|e| is_node_match(&nm.nodetest, &e))
-		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Preceding => {
-	        // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
-		// iow, for each ancestor-or-self node, include every previous sibling and its descendants
-
-		let mut d: Vec<Rc<dyn Node>> = Vec::new();
-
-		// Start with preceding siblings of self
-		for a in n.preceding_siblings() {
-		  d.push(a.clone());
-		  let mut b = a.descendants();
-		  d.append(&mut b);
-		}
-
-		// Now traverse ancestors
-		let anc: Vec<Rc<dyn Node>> = n.ancestors();
-		for a in anc {
-		  let sibs: Vec<Rc<dyn Node>> = a.preceding_siblings();
-		  for b in sibs {
-		    d.push(b.clone());
-		    let mut sib_descs: Vec<Rc<dyn Node>> = b.descendants();
-		    d.append(&mut sib_descs)
-		  }
-		}
-	        let seq = d.iter()
-		  .filter(|e| is_node_match(&nm.nodetest, &e))
-		  .fold(Sequence::new(), |mut f, g| {f.new_node(Rc::clone(g)); f});
-	      	Ok(predicates(dc, seq, p))
-	      }
-	      Axis::Attribute => {
-		let attrs = n.attributes().iter()
-		  .filter(|c| is_node_match(&nm.nodetest, &c))
-		  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-		Ok(predicates(dc, attrs, p))
-	      }
-	      Axis::SelfDocument => Ok(vec![]),
-	      _ => {
-	        // Not yet implemented
-		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
-	      }
-	    }
-	  }
-	  _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
-	}
-      } else {
-	Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
-      }
+    fn depth_decr(&self) {
+	let mut d = self.depth.borrow_mut();
+	*d -= 1;
     }
-    Constructor::FunctionCall(f, a) => {
-      match f.body {
-        Some(g) => {
-      	  // Evaluate the arguments
-      	  let mut b = Vec::new();
-      	  for c in a {
-            b.push(evaluate(dc, ctxt.clone(), posn, c)?)
-      	  }
-      	  // Invoke the function
-      	  g(dc, ctxt, posn, b)
-	}
-	None => {
-	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("call to undefined function \"{}\"", f.name)})
-	}
-      }
+    fn import_incr(&self) {
+	let mut d = self.current_import.borrow_mut();
+	*d += 1;
     }
-    Constructor::VariableDeclaration(v, a) => {
-      let s = evaluate(dc, ctxt, posn, a)?;
-      let mut t: Vec<Sequence>;
-      match dc.vars.borrow().get(v) {
-        Some(u) => {
-	  t = u.to_vec();
-	  t.push(s)
-	}
-	None => {
-	  t = vec![s]
-	}
-      }
-      dc.vars.borrow_mut().insert(v.to_string(), t);
-      Ok(Sequence::new())
+    fn import_decr(&self) {
+	let mut d = self.current_import.borrow_mut();
+	*d -= 1;
     }
-    Constructor::VariableReference(v) => {
-      match dc.vars.borrow().get(v) {
-        Some(s) => {
-	  match s.last() {
-	    Some(t) => Ok(t.clone()),
-	    None => Result::Err(Error{kind: ErrorKind::Unknown, message: "no value for variable".to_string()})
-	  }
-	}
-	None => {
-      	  Result::Err(Error{kind: ErrorKind::Unknown, message: format!("reference to undefined variable \"{}\"", v)})
-	}
-      }
-    }
-    Constructor::Loop(v, b) => {
-      // TODO: this supports only one variable binding - need to support more than one binding
-      // Evaluate the variable value
-      // Iterate over the items in the sequence
-      // Set the variable value to the item
-      // Evaluate the body, collecting the results
 
-      if v.is_empty() {
-      	Result::Err(Error{kind: ErrorKind::Unknown, message: "no variable bindings".to_string()})
-      } else {
-        let mut result: Sequence = vec![];
-        match &v[0] {
-          Constructor::VariableDeclaration(v, a) => {
+    // Push a new scope for a variable
+    fn var_push(&self, v: &str, s: Sequence) {
+	let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
+	let mut t: Option<&mut Vec<Sequence>>;
 
-	    let s: Sequence = evaluate(dc, ctxt.clone(), posn, &a)?;
-
-	    for i in s {
-	      // Push the new value for this variable
-	      var_push(dc, v, &i);
-	      let mut x = evaluate(dc, ctxt.clone(), posn, b)?;
-	      result.append(&mut x);
-	      // Pop the value for this variable
-	      var_pop(dc, v);
-	    }
-	  }
-	  _ => {
-	    // Error: no variable bindings
-	  }
-      	}
-	Ok(result)
-      }
-    }
-    Constructor::Switch(v, o) => {
-      // 'v' are pairs of test,body
-      // 'o' is the otherwise clause
-      // evaluate tests to a boolean until the first true result; evaluate it's body as the result
-      // of all tests fail then evaluate otherwise clause
-
-      // TODO: Don't Panic
-      Ok(
-        match v.chunks(2).try_fold(
-          evaluate(dc, ctxt.clone(), posn, o)?,
-	  |acc, t| {
-	    if evaluate(dc, ctxt.clone(), posn, &t[0]).expect("failed to evaluate clause test").to_bool() {
-	      ControlFlow::Break(evaluate(dc, ctxt.clone(), posn, &t[1]).expect("failed to evaluate clause body"))
-	    } else {
-	      ControlFlow::Continue(acc)
-	    }
-	  }
-        ) {
-	  ControlFlow::Continue(r) => r,
-	  ControlFlow::Break(r) => r,
-	}
-      )
-    }
-    Constructor::ApplyTemplates(s) => {
-      // Evaluate 's' to find the nodes to apply templates to
-      // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
-
-      // TODO: Don't Panic
-      let sel = evaluate(dc, ctxt.clone(), posn, s)?;
-      let result = sel.iter().fold(
-          vec![],
-          |mut acc, i| {
-	    let matching_template: Vec<&Template> = dc.templates.iter()
-	      .filter(|t| {
-	        //item_matches(dc, &t.pattern, i)
-		let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
-	        if e.len() == 0 {false} else {true}
-	      })
-	      .scan(-2.0,
-	        |prio, t| {
-		  if *prio < t.priority {
-		    *prio = t.priority;
-		    Some(t)
-		  } else {
-		    None
-		  }
-		}
-	      )
-	      .collect();
-	    // there must be at most one matching template
-	    if matching_template.len() > 1 {
-	      //return Result::Err(Error{kind: ErrorKind::TypeError, message: "too many matching templates".to_string()})
-	      panic!("too many matching templates")
-	    }
-	    // If no templates match then apply a built-in template
-	    // See XSLT 6.7.
-	    // TODO: use import precedence to implement this feature
-	    if matching_template.len() == 0 {
-	      let builtin_template: Vec<&Template> = dc.builtin_templates.iter()
-	        .filter(|t| {
-		  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.pattern).expect("failed to evaluate pattern");
-	          if e.len() == 0 {false} else {true}
-	        })
-	        .scan(-2.0,
-	          |prio, t| {
-		    if *prio < t.priority {
-		      *prio = t.priority;
-		      Some(t)
-		    } else {
-		      None
-		    }
-		  }
-	        )
-	        .collect();
-	      if builtin_template.len() > 1 {
-	        panic!("too many matching builtin templates")
-	      }
-	      let mut u = builtin_template.iter()
-	        .flat_map(|t| {
-		  dc.incr_depth();
-		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
-	    	  dc.decr_depth();
-		  rs
-	        })
-	        .collect::<Sequence>();
-	      acc.append(&mut u);
-	    } else {
-	      let mut u = matching_template.iter()
-	        .flat_map(|t| {
-		  dc.incr_depth();
-		  let rs = evaluate(dc, Some(vec![i.clone()]), Some(0), &t.body).expect("failed to evaluate template body");
-	    	  dc.decr_depth();
-		  rs
-	        })
-	        .collect::<Sequence>();
-	      acc.append(&mut u);
-	    }
-	    acc
-	  }
-        );
-      Ok(result)
-    }
-    Constructor::ForEach(s, t, g) => {
-      // Evaluate 's' to find the nodes to iterate over
-      // Use 'g' to group the nodes
-      // Evaluate 't' for each group
-      let sel = evaluate(dc, ctxt.clone(), posn, s)?;
-      // Divide sel into groups: each item in groups is an individual group
-      let mut groups = Vec::new();
-      match g {
-        Some(Grouping::By(h)) => {
-	  // 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
-	  // Items are placed in the group with a matching key
-	  let mut map = HashMap::new();
-	  for i in 0..sel.len() {
-	    let keys = evaluate(dc, Some(sel.clone()), Some(i), h)?;
-	    for j in keys {
-	      let e = map.entry(j.to_string()).or_insert(vec![]);
-	      e.push(sel[i].clone());
-	    }
-	  }
-	  // Now construct the groups and a pair-wise vector of keys
-	  for (k, v) in map.iter() {
-	    groups.push((Some(k.clone()), v.to_vec()));
-	  }
-	}
-        Some(Grouping::Adjacent(h)) => {
-	  // 'h' is an expression that is evaluated for every item in 'sel'.
-	  // It must evaluate to a single item.
-	  // The first item starts the first group.
-	  // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
-	  // then it is added to the current group. Otherwise it starts a new group.
-	  if sel.len() > 0 {
-	    let mut curgrp = vec![sel[0].clone()];
-	    let mut curkey = evaluate(dc, Some(sel.clone()), Some(1), h)?;
-	    if curkey.len() != 1 {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "group-adjacent attribute must evaluate to a single item".to_string()})
-	    }
-	    for i in 1..sel.len() {
-	      let thiskey = evaluate(dc, Some(sel.clone()), Some(i), h)?;
-	      if thiskey.len() == 1 {
-		if curkey[0].compare(&*thiskey[0], Operator::Equal)? {
-		  // Append to the current group
-		  curgrp.push(sel[i].clone());
-		} else {
-		  // Close previous group, start a new group with this item as its first member
-		  groups.push((Some(curkey.to_string()), curgrp.clone()));
-		  curgrp = vec![sel[i].clone()];
-		  curkey = thiskey;
-		}
-	      } else {
-      	        return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
-	      }
-	    }
-	    // Close the last group
-	    groups.push((Some(curkey.to_string()), curgrp));
-	  } // else result is empty sequence
-	}
-        Some(Grouping::StartingWith(_h)) => {
-	}
-        Some(Grouping::EndingWith(_h)) => {
-	}
-        None => {
-	  for i in sel {
-            groups.push((None, vec![i.clone()]));
-	  }
-	}
-      }
-
-      Ok(groups.iter().fold(
-        vec![],
-	|mut result, grp| {
-	  let (o, v) = grp;
-	  // set current-grouping-key, current-group
-	  match o {
+	h = self.vars.borrow_mut();
+	t = h.get_mut(v);
+	match t.as_mut() {
 	    Some(u) => {
-	      dc.push_current_grouping_key(Item::Value(Value::String(u.to_string())));
-	      dc.push_current_group(v.clone());
+		// If the variable already has a value, then this is a new, inner scope
+      		u.push(s);
 	    }
-	    None => {}
-	  }
-	  // TODO: Don't Panic
-	  let mut tmp = evaluate(dc, Some(v.to_vec()), Some(0), t).expect("failed to evaluate template");
-	  result.append(&mut tmp);
-	  // Restore current-grouping-key, current-group
-	  dc.pop_current_grouping_key();
-	  dc.pop_current_group();
-	  result
+	    None => {
+		// Otherwise this is the first scope for the variable
+      		h.insert(v.to_string(), vec![s]);
+	    }
 	}
-      ))
     }
-    Constructor::NotImplemented(m) => {
-      Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
+    // Pop scope for a variable
+    // Prerequisite: scope must have already been pushed
+    fn var_pop(&self, v: &str) {
+	self.vars.borrow_mut().get_mut(v).map(|u| u.pop());
     }
-  }
+
+    // Stylesheet parameters. Overrides the previous value if it is already set.
+    // TODO: namespaced name
+    pub fn set_parameter(&self, name: String, value: Sequence) {
+	self.vars.borrow_mut().insert(name, vec![value]);
+    }
 }
 
-// Deep copy an item
-fn item_deep_copy(
-  orig: Rc<Item>,
-  dc: &DynamicContext,
-  ctxt: Option<Sequence>,
-  posn: Option<usize>,
-) -> Result<Rc<Item>, Error> {
+/// A sequence constructor evaluator.
+/// This interprets the sequence constructor to produce a sequence.
+/// IDEA: make the evaluate method an iterator, emitting one sequence item at a time
+/// IDEA: Combine the sequence constructor and the evaluator. Perhaps a closure?
+pub struct Evaluator {
+    dc: DynamicContext,
+    templates: Vec<Template>,
+    builtin_templates: Vec<Template>,	// TODO: use import precedence for builtins
+    od: OutputDefinition,	// Output definition for the final result tree
+    base: Option<Url>,	// The base URL of the primary stylesheet
+}
 
-  let cp = item_copy(orig.clone(), dc, &vec![], ctxt.clone(), posn)?;
+impl Evaluator {
+    /// Create a dynamic context.
+    pub fn new() -> Evaluator {
+	Evaluator{
+	    dc: DynamicContext::new(),
+	    templates: Vec::new(),
+	    builtin_templates: Vec::new(),
+	    od: OutputDefinition::new(),
+	    base: None,
+	}
+    }
+    pub fn from_dynamic_context(
+	dc: DynamicContext,
+    ) -> Evaluator {
+	Evaluator{
+	    dc,
+	    templates: Vec::new(),
+	    builtin_templates: Vec::new(),
+	    od: OutputDefinition::new(),
+	    base: None,
+	}
+    }
 
-  // If this item is an element node, then copy all of its attributes and children
-  match *orig {
-    Item::Node(ref n) => {
-      match n.node_type() {
-        NodeType::Element => {
-	  let cur = match *cp {
-	    Item::Node(ref m) => m,
-	    _ => {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to copy element node".to_string()})
-	    }
-	  };
-	  n.attributes().iter()
-	    .for_each(|a| {
-	      cur.set_attribute(a.to_name(), Value::String(a.to_string()));
-	    });
-	  let child_list = n.children();
-	  // Don't Panic
-	  child_list.iter()
-	    .for_each(|c| {
-	      let cpc = item_deep_copy(Rc::new(Item::Node(c.clone())), dc, ctxt.clone(), posn)
-	        .expect("unable to copy item");
-	      match *cpc {
-	        Item::Node(ref cpcn) => {
-	      	  cur.append_child(cpcn.as_any()).expect("unable to append copied child");
+    /// Base URI
+    pub fn baseurl(&self) -> Option<Url> {
+	self.base.clone()
+    }
+    /// Set the Base URL
+    pub fn set_baseurl(&mut self, url: Url) {
+	self.base = Some(url);
+    }
+
+    /// Add a template to the dynamic context. The first argument is the pattern. The second argument is the body of the template. The third argument is the mode. The fourth argument is the priority. The fifth argument is the import precedence.
+    pub fn add_template(&mut self,
+			p: Vec<Constructor>,
+			b: Vec<Constructor>,
+			m: Option<String>,
+			pr: f64,
+			im: usize,
+    ) {
+	self.templates.push(Template{pattern: p, body: b, mode: m, priority: pr, import: im});
+    }
+    /// Add a template to the set of builtin templates in the dynamic context. See above for arguments.
+    pub fn add_builtin_template(&mut self,
+				p: Vec<Constructor>,
+				b: Vec<Constructor>,
+				m: Option<String>,
+				pr: f64,
+				im: usize,
+    ) {
+	self.builtin_templates.push(Template{pattern: p, body: b, mode: m, priority: pr, import: im});
+    }
+    /// Determine if an item matches a pattern and return the highest priority sequence constructor for that template.
+    /// If import precedence is None, then return the lowest import precedence. Otherwise return the matching template with the highest priority that has an imoprt precedence higher than the given value.
+    /// If no template is found, returns None.
+    pub fn find_match(
+	&self,
+	i: &Rc<Item>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+	im: Option<usize>,
+    ) -> Result<Vec<Constructor>, Error> {
+	let mut r: Vec<&Template> = vec![];
+	let mut it = self.templates.iter();
+	loop {
+	    match it.next() {
+		Some(t) => {
+		    if self.item_matches(&t.pattern, i, f, sd, rd)? {
+			r.push(t)
+		    }
 		}
-		_ => {} // this should never happen
-	      }
-	    });
+		None => break,
+	    }
 	}
-	_ => {}
-      }
-    }
-    _ => {}
-  }
+	let s: Option<&Template> = r.iter()
+	    .cloned()
+	    .filter(|j| im.map_or(true, |k| j.import >= k))
+	    .reduce(|a, b| if a.priority < b.priority {b} else {a});
 
-  Ok(cp)
-}
+	if s.is_some() {
+	    Ok(s.unwrap().body.clone())
+	} else {
+	    // Try builtin templates
+	    let mut w: Vec<&Template> = vec![];
+	    let mut builtins = self.builtin_templates.iter();
+	    loop {
+		match builtins.next() {
+		    Some(u) => {
+			if self.item_matches(&u.pattern, i, f, sd, rd)? {
+			    w.push(u)
+			}
+		    }
+		    None => break,
+		}
+	    }
+	    let v = w.iter()
+		.reduce(|a, b| if a.priority < b.priority {b} else {a});
 
-// Copy an item
-fn item_copy(
-  orig: Rc<Item>,
-  dc: &DynamicContext,
-  content: &Vec<Constructor>,
-  ctxt: Option<Sequence>,
-  posn: Option<usize>,
-) -> Result<Rc<Item>, Error> {
-  match *orig {
-    Item::Value(_) => {
-      Ok(orig.clone())
-    }
-    Item::Node(ref n) => {
-      let doc = match dc.resultdoc {
-        Some(d) => d,
-	None => {
-	  return Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no result document".to_string()})
+	    if v.is_some() {
+		Ok(v.unwrap().body.clone())
+	    } else {
+		Ok(vec![])
+	    }
 	}
-      };
+    }
 
-      match n.node_type() {
-        NodeType::Element => {
-	  match doc.new_element(n.to_name()) {
-	    Ok(e) => {
-	      // Add content to the new element
-	      // TODO: Don't Panic
-	      evaluate(dc, ctxt.clone(), posn, content)?
-		.iter()
-        	  .for_each(|i| {
-	    	    // Item could be a Node or text
-	    	    match **i {
-	      	      Item::Node(ref t) => {
-		        match t.node_type() {
-		          NodeType::Element |
-		          NodeType::Text => {
-		            e.append_child(t.as_any()).expect("unable to add child node");
-		          }
-		          NodeType::Attribute => {
-		            e.add_attribute_node(t.as_any()).expect("unable to add attribute node");
-		          }
-		          _ => {} // TODO: work out what to do with documents, etc
-		        }
-	      	      }
-	      	      _ => {
-	                // Values become a text node in the result tree
-		        e.append_text_child(Value::String(i.to_string()))
-		          .expect("unable to add text child node");
-	      	      }
-	    	    }
-	          });
-	      Ok(Rc::new(Item::Node(e)))
+    // TODO: return borrowed/reference
+    pub fn get_output_definition(&self) -> OutputDefinition {
+	self.od.clone()
+    }
+    pub fn set_output_definition(&mut self, od: OutputDefinition) {
+	self.od = od;
+    }
+
+    // Printout templates, for debugging.
+    pub fn dump_templates(&self) {
+	self.templates.iter().for_each(
+	    |t| {
+		println!("Template (mode \"{}\" priority {} import precedence {}) matching pattern:\n{}\nBody:\n{}",
+			 t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
+			 t.priority,
+			 t.import,
+			 format_constructor(&t.pattern, 4),
+			 format_constructor(&t.body, 4)
+		);
+	    }
+	);
+	self.builtin_templates.iter().for_each(
+	    |t| {
+		println!("Builtin template (mode \"{}\" priority {} import precedence {}) matching pattern:\n{}\nBody:\n{}",
+			 t.mode.as_ref().map_or("--no mode--", |u| u.as_str()),
+			 t.priority,
+			 t.import,
+			 format_constructor(&t.pattern, 4),
+			 format_constructor(&t.body, 4)
+		);
+	    }
+	)
+    }
+
+    /// Evaluate a sequence constructor, given a dynamic context.
+    ///
+    /// The dynamic context consists of the supplied context, as well as the context item. The context item, which is optional, consists of a [Sequence] and an index to an item. If the context sequence is supplied, then the index (posn) must also be supplied and be a valid index for the sequence.
+    ///
+    /// Any nodes created by the sequence constructor are created in the result Tree.
+    pub fn evaluate(
+	&self,
+	ctxt: Option<Sequence>,
+	posn: Option<usize>,
+	c: &Vec<Constructor>,
+	f: &mut Forest,
+	sd: TreeIndex,	// Source document
+	rd: TreeIndex,	// Result document
+    ) -> Result<Sequence, Error> {
+
+	// Evaluate all sequence constructors. This will result in a sequence of sequences.
+	// If an error occurs, propagate the first error (TODO: return all errors)
+	// Otherwise, flatten the sequences into a single sequence
+
+	let (results, errors): (Vec<_>, Vec<_>) = c.iter()
+	    .map(|a| self.evaluate_one(ctxt.clone(), posn, a, f, sd, rd))
+	    .partition(Result::is_ok);
+	if errors.len() != 0 {
+	    Result::Err(
+		errors.iter()
+		    .nth(0)
+		    .map(|e| e.clone().err().unwrap())
+		    .unwrap()
+	    )
+	} else {
+	    Ok(results.iter()
+	       .map(|a| {
+		   let b: Sequence = a.clone().ok().unwrap_or(vec![]);
+		   b
+	       })
+	       .flatten()
+	       .collect::<Vec<Rc<Item>>>()
+	    )
+	}
+    }
+
+    // Evaluate an item constructor, given a context
+    // If a constructor returns a non-singleton sequence, then it is unpacked
+    fn evaluate_one(
+	&self,
+	ctxt: Option<Sequence>,
+	posn: Option<usize>,
+	c: &Constructor,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<Sequence, Error> {
+	match c {
+	    Constructor::Literal(l) => {
+		let mut seq = Sequence::new();
+		seq.push_value(l.clone());
+		Ok(seq)
+	    }
+
+	    // This creates a Node in the current result document
+	    Constructor::LiteralElement(n, c) => {
+		let l = f.get_ref_mut(rd)
+		    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+		    .new_element(n.clone())?;
+
+      		// add content to newly created element
+		let seq = self.evaluate(ctxt.clone(), posn, c, f, sd, rd)?;
+		seq.iter()
+		    .try_for_each(
+			|i| {
+			    // Item could be a Node or text
+			    match **i {
+				Item::Node(t) => {
+				    l.append_child(f, t)
+				}
+	      			_ => {
+				    // Values become a text node in the result tree
+				    let v = Value::from(i.to_string(Some(f)));
+				    let t = f.get_ref_mut(rd)
+					.ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+					.new_text(v)?;
+				    l.append_child(f, t)
+				}
+			    }
+			}
+		    )?;
+
+		Ok(vec![Rc::new(Item::Node(l))])
+	    }
+	    // This creates a Node in the current result document
+	    Constructor::LiteralAttribute(n, v) => {
+		let w = self.evaluate(ctxt.clone(), posn, v, f, sd, rd)?;
+		let x = Value::from(w.to_string(Some(f)));
+      		let l = f.get_ref_mut(rd)
+		    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+		    .new_attribute(n.clone(), x)?;
+      		Ok(vec![Rc::new(Item::Node(l))])
+	    }
+	    Constructor::Copy(i, c) => {
+		let orig = if i.is_empty() {
+		    // Copy the context item
+		    if ctxt.is_some() {
+			vec![ctxt.as_ref().unwrap()[posn.unwrap()].clone()]
+		    } else {
+			self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?
+		    }
+		} else {
+		    self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?
+		};
+
+		let mut results = Sequence::new();
+		for j in orig {
+		    let m = self.item_copy(j.clone(), c, ctxt.clone(), posn, f, sd, rd)?;
+		    results.push(m);
+		}
+		Ok(results)
+	    }
+	    // Does the same as identity stylesheet template
+	    Constructor::DeepCopy(sel) => {
+		let orig = self.evaluate(ctxt.clone(), posn, sel, f, sd, rd)?;
+
+		let mut results = Sequence::new();
+		for j in orig {
+		    let m = self.item_deep_copy(j.clone(), ctxt.clone(), posn, f, sd, rd)?;
+		    results.push(m);
+		}
+		Ok(results)
+	    }
+	    Constructor::ContextItem => {
+		if ctxt.is_some() {
+		    let mut seq = Sequence::new();
+		    seq.push_item(&ctxt.as_ref().unwrap()[posn.unwrap()]);
+		    Ok(seq)
+		} else {
+		    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+		}
+	    }
+	    Constructor::SetAttribute(n, v) => {
+		// The context item must be an element node (TODO: use an expression to select the element)
+      		// If the element does not have an attribute with the given name, create it
+      		// Otherwise replace the attribute's value with the supplied value
+      		if ctxt.is_some() {
+		    match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+			Item::Node(nd) => {
+			    // TODO: Don't Panic
+			    match nd.node_type(f) {
+				NodeType::Element => {
+				    let attval = self.evaluate(ctxt.clone(), posn, v, f, sd, rd)?;
+				    if attval.len() == 1 {
+					match &*attval[0] {
+					    Item::Value(av) => {
+						let atnode = f.get_ref_mut(rd)
+						    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+						    .new_attribute(n.clone(), av.clone())?;
+						nd.add_attribute(f, atnode)?
+					    }
+					    _ => {
+						let w = Value::from(attval.to_string(Some(f)));
+						let atnode = f.get_ref_mut(rd)
+						    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+						    .new_attribute(n.clone(), w)?;
+						nd.add_attribute(f, atnode)?
+					    }
+					}
+				    } else {
+					let w = Value::from(attval.to_string(Some(f)));
+					let atnode = f.get_ref_mut(rd)
+						    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+						    .new_attribute(n.clone(), w)?;
+					nd.add_attribute(f, atnode)?
+				    }
+				    Ok(vec![])
+				}
+	      			_ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item is not an element".to_string()})
+			    }
+			}
+			_ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item must be an element node".to_string()})
+		    }
+		} else {
+		    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+		}
+	    }
+	    Constructor::Or(v) => {
+		// Evaluate each operand to a boolean result. Return true if any of the operands' result is true
+      		// Optimisation: stop upon the first true result.
+      		// Future: Evaluate every operand to check for dynamic errors
+		let mut b = false;
+      		for i in v {
+		    let k = self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?;
+		    b = k.to_bool();
+		    if b {break};
+		}
+      		let mut seq = Sequence::new();
+      		seq.push_value(Value::Boolean(b));
+      		Ok(seq)
+	    }
+	    Constructor::And(v) => {
+		// Evaluate each operand to a boolean result. Return false if any of the operands' result is false
+      		// Optimisation: stop upon the first false result.
+      		// Future: Evaluate every operand to check for dynamic errors
+		let mut b = true;
+		for i in v {
+		    let k = self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?;
+		    b = k.to_bool();
+		    if !b {break};
+		}
+      		let mut seq = Sequence::new();
+      		seq.push_value(Value::from(b));
+      		Ok(seq)
+	    }
+	    Constructor::GeneralComparison(o, v) => {
+		if v.len() == 2 {
+		    let mut seq = Sequence::new();
+		    let b = self.general_comparison(ctxt, posn, *o, &v[0], &v[1], f, sd, rd)?;
+		    seq.push_value(Value::from(b));
+      		    Ok(seq)
+		} else {
+		    Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+		}
+	    }
+	    Constructor::ValueComparison(o, v) => {
+		if v.len() == 2 {
+		    let mut seq = Sequence::new();
+		    let b = self.value_comparison(ctxt, posn, *o, &v[0], &v[1], f, sd, rd)?;
+		    seq.push_value(Value::from(b));
+      		    Ok(seq)
+		} else {
+		    Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+		}
+	    }
+	    Constructor::Concat(v) => {
+		let mut r = String::new();
+      		for u in v {
+		    let t = self.evaluate(ctxt.clone(), posn, u, f, sd, rd)?;
+		    r.push_str(t.to_string(Some(f)).as_str());
+		}
+      		let mut seq = Sequence::new();
+      		seq.push_value(Value::from(r));
+      		Ok(seq)
+	    }
+	    Constructor::Range(v) => {
+		if v.len() == 2 {
+		    // Evaluate the two operands: they must both be literal integer items
+		    let start = self.evaluate(ctxt.clone(), posn, &v[0], f, sd, rd)?;
+		    let end   = self.evaluate(ctxt.clone(), posn, &v[1], f, sd, rd)?;
+		    if start.len() == 0 || end.len() == 0 {
+			// empty sequence is the result
+			Ok(vec![])
+		    } else if start.len() == 1 {
+			if end.len() == 1 {
+			    let i = start[0].to_int().unwrap();
+			    let j = end[0].to_int().unwrap();
+			    if i > j {
+				// empty sequence result
+	      			Ok(vec![])
+			    } else if i == j {
+				let mut seq = Sequence::new();
+	      			seq.push_value(Value::Integer(i));
+      	      			Ok(seq)
+			    } else {
+				let mut result = Sequence::new();
+	      			for k in i..=j {
+				    result.push_value(Value::from(k))
+				}
+	      			Ok(result)
+			    }
+			} else {
+			    Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("end operand must be singleton")})
+			}
+		    } else {
+			Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("start operand must be singleton")})
+		    }
+		} else {
+		    Result::Err(Error{kind: ErrorKind::Unknown, message: "incorrect number of operands".to_string()})
+		}
+	    }
+	    Constructor::Arithmetic(v) => {
+		// Type: the result will be a number, but integer or double?
+      		// If all of the operands are integers, then the result is integer otherwise double
+      		// TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
+      		// In the meantime, let's assume the result will be double and convert any integers
+
+      		let mut acc: f64 = 0.0;
+
+      		for j in v {
+		    let k = self.evaluate(ctxt.clone(), posn, &j.operand, f, sd, rd)?;
+		    let u: f64;
+		    if k.len() != 1 {
+			return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
+		    } else {
+			u = k[0].to_double();
+			match j.op {
+			    ArithmeticOperator::Noop => acc = u,
+			    ArithmeticOperator::Add => acc += u,
+			    ArithmeticOperator::Subtract => acc -= u,
+			    ArithmeticOperator::Multiply => acc *= u,
+			    ArithmeticOperator::Divide => acc /= u,
+			    ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
+			    ArithmeticOperator::Modulo => acc = acc % u,
+			}
+		    }
+		}
+      		let mut seq = Sequence::new();
+      		seq.push_value(Value::from(acc));
+      		Ok(seq)
+	    }
+	    Constructor::Root => {
+		match f.get_ref(sd) {
+		    Some(d) => Ok(vec![Rc::new(Item::Node(d.get_doc_node()))]),
+		    _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "no document".to_string()}),
+		}
+	    }
+	    Constructor::Path(s) => {
+		// s is a vector of sequence constructors
+      		// Each step creates a new context for the next step
+      		// TODO: if initial context is None then error
+
+      		let u: Sequence; // accumulator - each time around the loop this will be the new context
+
+      		if ctxt.is_some() {
+		    u = ctxt.unwrap().clone()
+		} else {
+		    u = vec![]
+		}
+
+      		// TODO: Don't Panic
+      		let result = s.iter().fold(
+		    u,
+		    |a, c| {
+			// evaluate this step for each item in the context
+			// Add the result of each evaluation to an accummulator sequence
+			let mut b: Sequence = Vec::new();
+			for i in 0..a.len() {
+			    let mut d = self.evaluate(Some(a.clone()), Some(i), c, f, sd, rd)
+				.expect("failed to evaluate step");
+			    b.append(&mut d);
+			}
+			b
+		    }
+		);
+		Ok(result)
+	    }
+	    Constructor::Step(nm, p) => {
+		// For this step to be valid the source document must not be None
+		// Performing this check every time will be a performance drain.
+		// Perhaps there can be an 'unchecked' variant, or some kind of static analysis?
+
+		if ctxt.is_some() {
+		    match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+			Item::Node(n) => {
+			    match nm.axis {
+				Axis::Selfaxis => {
+				    if is_node_match(&nm.nodetest, &n, f) {
+					let mut seq = Sequence::new();
+					seq.push_node(*n);
+	      				Ok(self.predicates(seq, p, f, sd, rd)?)
+				    } else {
+	      				Ok(Sequence::new())
+				    }
+				}
+	      			Axis::Child => {
+				    let mut seq: Sequence = Sequence::new();
+				    let mut it = n.child_iter();
+				    loop {
+					match it.next(f) {
+					    Some(c) => {
+						if is_node_match(&nm.nodetest, &c, f) {
+						    seq.push_node(c)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//		      let seq = n.children().iter()
+//			  .filter(|c| is_node_match(&nm.nodetest, &c))
+//			  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+
+				    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::Parent => {
+				    match n.parent(f) {
+					Some(p) => {
+      					    Ok(Sequence::from(p))
+					}
+					None => {
+					    // empty sequence is the result
+      					    Ok(vec![])
+					}
+				    }
+				}
+	      			Axis::ParentDocument => {
+				    // Only matches the Document.
+				    // If no parent then return the Document
+				    // NB. Document is a special kind of Node
+				    match n.node_type(f) {
+					NodeType::Document => {
+					    // The context is the document
+					    Ok(vec![Rc::clone(&ctxt.as_ref().unwrap()[posn.unwrap()])])
+					}
+					_ => Ok(vec![]),
+				    }
+				}
+	      			Axis::Descendant => {
+				    let mut seq = Sequence::new();
+				    let mut it = n.descend_iter(f);
+				    loop {
+					match it.next(f) {
+					    Some(c) => {
+						if is_node_match(&nm.nodetest, &c, f) {
+						    seq.push_node(c)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//			      let seq = n.descendants().iter()
+//				  .filter(|c| is_node_match(&nm.nodetest, &c))
+//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::DescendantOrSelf => {
+				    let mut seq = Sequence::new();
+				    if is_node_match(&nm.nodetest, &n, f) {
+					seq.push_item(&Rc::new(Item::Node(*n)));
+				    }
+				    let mut it = n.descend_iter(f);
+				    loop {
+					match it.next(f) {
+					    Some(c) => {
+						if is_node_match(&nm.nodetest, &c, f) {
+						    seq.push_node(c)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//			      let mut seq = n.descendants().iter()
+//				  .filter(|c| is_node_match(&nm.nodetest, &c))
+//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+//			      if is_node_match(&nm.nodetest, &n) {
+//				  seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
+//			      }
+
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::Ancestor => {
+				    let mut seq = Sequence::new();
+				    let mut it = n.ancestor_iter();
+				    loop {
+					match it.next(f) {
+					    Some(a) => {
+						if is_node_match(&nm.nodetest, &a, f) {
+						    seq.push_node(a)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//			      let seq = n.ancestors().iter()
+//				  .filter(|p| is_node_match(&nm.nodetest, &p))
+//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::AncestorOrSelf => {
+				    let mut seq = Sequence::new();
+				    let mut it = n.ancestor_iter();
+				    loop {
+					match it.next(f) {
+					    Some(a) => {
+						if is_node_match(&nm.nodetest, &a, f) {
+						    seq.push_node(a)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//			      let mut seq = n.ancestors().iter()
+//				  .filter(|c| is_node_match(&nm.nodetest, &c))
+//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+
+				    if is_node_match(&nm.nodetest, &n, f) {
+					seq.push_item(&Rc::new(Item::Node(*n)));
+				    }
+
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::FollowingSibling => {
+				    let mut seq = Sequence::new();
+				    let mut it = n.next_iter(f);
+				    loop {
+					match it.next(f) {
+					    Some(g) => {
+						if is_node_match(&nm.nodetest, &g, f) {
+						    seq.push_node(g)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//			      let seq = n.following_siblings().iter()
+//				  .filter(|c| is_node_match(&nm.nodetest, &c))
+//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::PrecedingSibling => {
+				    let mut seq = Sequence::new();
+				    let mut it = n.prev_iter(f);
+				    loop {
+					match it.next(f) {
+					    Some(g) => {
+						if is_node_match(&nm.nodetest, &g, f) {
+						    seq.push_node(g)
+						}
+					    }
+					    None => break,
+					}
+				    }
+
+//			      let seq = n.preceding_siblings().iter()
+//				  .filter(|c| is_node_match(&nm.nodetest, &c))
+//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::Following => {
+				    // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
+				    // iow, for each ancestor-or-self node, include every next sibling and its descendants
+
+				    let mut d: Vec<Node> = Vec::new();
+
+				    // Start with following siblings of self
+				    let mut fit = n.next_iter(f);
+				    loop {
+					match fit.next(f) {
+					    Some(a) => {
+						d.push(a);
+						let mut dit = a.descend_iter(f);
+						loop {
+						    match dit.next(f) {
+							Some(c) => {
+							    d.push(c)
+							}
+							None => break,
+						    }
+						}
+					    }
+					    None => break,
+					}
+				    }
+//			      for a in n.following_siblings() {
+//				  d.push(a.clone());
+//				  let mut b = a.descendants();
+//				  d.append(&mut b);
+//			      }
+
+			      // Now traverse ancestors
+				    let mut ait = n.ancestor_iter();
+				    loop {
+					match ait.next(f) {
+					    Some(a) => {
+						let mut sit = a.next_iter(f);
+						loop {
+						    match sit.next(f) {
+							Some(b) => {
+							    d.push(b);
+							    let mut dit = b.descend_iter(f);
+							    loop {
+								match dit.next(f) {
+								    Some(e) => {
+									d.push(e)
+								    }
+								    None => break,
+								}
+							    }
+							}
+							None => break,
+						    }
+						}
+					    }
+					    None => break,
+					}
+				    }
+//			      for a in anc {
+//				  let sibs: Vec<Node> = a.following_siblings();
+//				  for b in sibs {
+//				      d.push(b.clone());
+//				      let mut sib_descs: Vec<Node> = b.descendants();
+//				      d.append(&mut sib_descs)
+//				  }
+//			      }
+				    let seq = d.iter()
+					.filter(|e| is_node_match(&nm.nodetest, &e, f))
+					.fold(Sequence::new(), |mut h, g| {h.push_node(*g); h});
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::Preceding => {
+				    // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
+				    // iow, for each ancestor-or-self node, include every previous sibling and its descendants
+
+				    let mut d: Vec<Node> = Vec::new();
+
+				    // Start with preceding siblings of self
+				    let mut pit = n.prev_iter(f);
+				    loop {
+					match pit.next(f) {
+					    Some(a) => {
+						d.push(a);
+						let mut dit = a.descend_iter(f);
+						loop {
+						    match dit.next(f) {
+							Some(b) => {
+							    d.push(b)
+							}
+							None => break,
+						    }
+						}
+					    }
+					    None => break,
+					}
+				    }
+//			      for a in n.preceding_siblings() {
+//				  d.push(a.clone());
+//				  let mut b = a.descendants();
+//				  d.append(&mut b);
+//			      }
+
+				    // Now traverse ancestors
+				    let mut ait = n.ancestor_iter();
+				    loop {
+					match ait.next(f) {
+					    Some(a) => {
+						let mut pit = a.prev_iter(f);
+						loop {
+						    match pit.next(f) {
+							Some(b) => {
+							    d.push(b);
+							    let mut dit = b.descend_iter(f);
+							    loop {
+								match dit.next(f) {
+								    Some(c) => {
+									d.push(c)
+								    }
+								    None => break,
+								}
+							    }
+							}
+							None => break,
+						    }
+						}
+					    }
+					    None => break,
+					}
+				    }
+//			      let anc: Vec<Node> = n.ancestors();
+//			      for a in anc {
+//				  let sibs: Vec<Node> = a.preceding_siblings();
+//				  for b in sibs {
+//				      d.push(b.clone());
+//				      let mut sib_descs: Vec<Node> = b.descendants();
+//				      d.append(&mut sib_descs)
+//				  }
+//			      }
+				    let seq = d.iter()
+					.filter(|e| is_node_match(&nm.nodetest, &e, f))
+					.fold(Sequence::new(), |mut h, g| {h.push_node(*g); h});
+	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+				}
+	      			Axis::Attribute => {
+				    let mut atit = n.attribute_iter(f);
+				    let mut attrs = Sequence::new();
+				    loop {
+					match atit.next() {
+					    Some(a) => {
+						if is_node_match(&nm.nodetest, &a, f) {
+						    attrs.push_node(a)
+						}
+					    }
+					    None => break,
+					}
+				    }
+				    Ok(self.predicates(attrs, p, f, sd, rd)?)
+				}
+	      			Axis::SelfDocument => {
+				    if n.node_type(f) == NodeType::Document {
+					Ok(vec![Rc::clone(&ctxt.as_ref().unwrap()[posn.unwrap()])])
+				    } else {
+					Ok(vec![])
+				    }
+				}
+	      			Axis::SelfAttribute => {
+				    if n.node_type(f) == NodeType::Attribute {
+					Ok(vec![Rc::clone(&ctxt.as_ref().unwrap()[posn.unwrap()])])
+				    } else {
+					Ok(vec![])
+				    }
+				}
+	      			_ => {
+				    // Not yet implemented
+				    Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not yet implemented (node)".to_string()})
+				}
+			    }
+			}
+			_ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "context item is not a node".to_string()})
+		    }
+		} else {
+		    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
+		}
+	    }
+	    Constructor::FunctionCall(h, a) => {
+		match h.body {
+		    Some(g) => {
+      			// Evaluate the arguments
+      			let mut b = Vec::new();
+      			for c in a {
+			    let r = self.evaluate(ctxt.clone(), posn, c, f, sd, rd)?;
+			    b.push(r)
+      			}
+      			// Invoke the function
+      			Ok(g(&self, ctxt, posn, b, f, sd, rd)?)
+		    }
+		    None => {
+			Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("call to undefined function \"{}\"", h.name)})
+		    }
+		}
+	    }
+	    Constructor::VariableDeclaration(v, a) => {
+		let s = self.evaluate(ctxt, posn, a, f, sd, rd)?;
+//     	let mut t: Vec<Sequence>;
+		self.dc.var_push(v, s);
+//      	match dc.vars.borrow().get(v) {
+//          Some(u) => {
+//	    t = u.to_vec();
+//	    t.push(s)
+//	  }
+//	  None => {
+//	    t = vec![s]
+//	  }
+//        }
+//      	dc.vars.insert(v.to_string(), t);
+      		Ok(Sequence::new())
+	    }
+	    Constructor::VariableReference(v) => {
+		match self.dc.vars.borrow().get(v) {
+		    Some(s) => {
+			match s.last() {
+			    Some(t) => Ok(t.clone()),
+			    None => Result::Err(Error{kind: ErrorKind::Unknown, message: "no value for variable".to_string()})
+			}
+		    }
+		    None => {
+      			Result::Err(Error{kind: ErrorKind::Unknown, message: format!("reference to undefined variable \"{}\"", v)})
+		    }
+		}
+	    }
+	    Constructor::Loop(v, b) => {
+		// TODO: this supports only one variable binding - need to support more than one binding
+      		// Evaluate the variable value
+      		// Iterate over the items in the sequence
+      		// Set the variable value to the item
+      		// Evaluate the body, collecting the results
+
+      		if v.is_empty() {
+      		    Result::Err(Error{kind: ErrorKind::Unknown, message: "no variable bindings".to_string()})
+		} else {
+		    let mut result: Sequence = vec![];
+		    match &v[0] {
+			Constructor::VariableDeclaration(v, a) => {
+
+			    let s = self.evaluate(ctxt.clone(), posn, &a, f, sd, rd)?;
+
+			    for i in s {
+				// Push the new value for this variable
+	      			self.dc.var_push(v, vec![i]);
+	      			let mut x = self.evaluate(ctxt.clone(), posn, b, f, sd, rd)?;
+	      			result.append(&mut x);
+	      			// Pop the value for this variable
+	      			self.dc.var_pop(v);
+			    }
+			}
+			_ => {
+			    // Error: no variable bindings
+			}
+      		    }
+		    Ok(result)
+		}
+	    }
+	    Constructor::Switch(v, o) => {
+		// 'v' are pairs of test,body
+      		// 'o' is the otherwise clause
+      		// evaluate tests to a boolean until the first true result; evaluate it's body as the result
+      		// of all tests fail then evaluate otherwise clause
+
+		let mut candidate = self.evaluate(ctxt.clone(), posn, o, f, sd, rd)?;
+		for t in v.chunks(2) {
+		    let x = self.evaluate(ctxt.clone(), posn, &t[0], f, sd, rd)?;
+		    if x.to_bool() {
+			candidate = self.evaluate(ctxt.clone(), posn, &t[1], f, sd, rd)?;
+			break
+		    }
+		};
+		Ok(candidate)
+	    }
+	    Constructor::ApplyTemplates(s) => {
+		// Evaluate 's' to find the nodes to apply templates to
+      		// For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
+
+      		let sel = self.evaluate(ctxt.clone(), posn, s, f, sd, rd)?;
+      		// TODO: Don't Panic
+      		let result = sel.iter().fold(
+		    vec![],
+		    |mut acc, i| {
+			let mut matching_template: Vec<&Template> = vec![];
+			for t in &self.templates {
+			    let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, f, sd, rd)
+				.expect("evaluating pattern failed");
+			    if e.len() != 0 {
+				matching_template.push(&t)
+			    }
+			}
+
+			if matching_template.len() != 0 {
+			    // find the template(s) with the lowest priority
+			    matching_template
+				.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+			    let l = matching_template[0].priority;
+			    let mut mt_lowest: Vec<&Template> = matching_template.into_iter()
+				.take_while(|t| t.priority == l)
+				.collect();
+
+			    // It's OK to have more than one matching template, if they all have different import precedence
+			    mt_lowest
+				.sort_unstable_by_key(|t| t.import);
+			    let mut p = mt_lowest[0].import;
+			    mt_lowest.iter().skip(1)
+				.for_each(|t| {
+				    if t.import == p {
+					panic!("too many matching templates")
+				    } else {
+					p = t.import;
+					()
+				    }
+				});
+
+			    // Use the template with the lowest import precedence
+			    // Unless we're inside an apply-imports
+			    let mut u = mt_lowest.iter().take(1)
+				.flat_map(|t| {
+				    self.dc.depth_incr();
+				    let rs = self.evaluate(Some(vec![i.clone()]), Some(0), &t.body, f, sd, rd)
+					.expect("failed to evaluate template body");
+	    			    self.dc.depth_decr();
+				    rs
+				})
+				.collect::<Sequence>();
+			    acc.append(&mut u);
+			} else {
+			    // If no templates match then apply a built-in template
+			    // See XSLT 6.7.
+			    // TODO: use import precedence to implement this feature
+			    let builtin_template: Vec<&Template> = self.builtin_templates.iter()
+				.filter(|t| {
+				    let e = self.evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, f, sd, rd)
+					.expect("failed to evaluate pattern");
+				    if e.len() == 0 {false} else {true}
+				})
+				.scan(-2.0,
+				      |prio, t| {
+					  if *prio < t.priority {
+					      *prio = t.priority;
+					      Some(t)
+					  } else {
+					      None
+					  }
+				      }
+				)
+				.collect();
+			    if builtin_template.len() > 1 {
+				panic!("too many matching builtin templates")
+			    }
+			    let mut u = builtin_template.iter()
+				.flat_map(|t| {
+				    self.dc.depth_incr();
+				    let rs = self.evaluate(Some(vec![i.clone()]), Some(0), &t.body, f, sd, rd)
+					.expect("failed to evaluate template body");
+	    			    self.dc.depth_decr();
+				    rs
+				})
+				.collect::<Sequence>();
+			    acc.append(&mut u);
+			}
+			acc
+		    }
+		);
+      		Ok(result)
+	    }
+	    Constructor::ApplyImports => {
+		// Evaluate templates with higher import precedence
+      		// Find a matching template with import precedence greater than the current precedence
+		// and evaluate its sequence constructor.
+		// The result of that becomes an item in the new sequence
+
+		let mut result = vec![];
+		let mut matching_template: Vec<&Template> = vec![];
+		for t in &self.templates {
+		    let e = self.evaluate(ctxt.clone(), posn.clone(), &t.pattern, f, sd, rd)
+			.expect("evaluating pattern failed");
+		    if e.len() != 0 {
+			matching_template.push(&t)
+		    }
+		}
+
+		if matching_template.len() != 0 {
+		    // find the template(s) with the lowest priority
+		    matching_template
+			.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+		    let l = matching_template[0].priority;
+		    let mut mt_lowest: Vec<&Template> = matching_template.into_iter()
+			.take_while(|t| t.priority == l)
+			.collect();
+
+		    // No need to check for multiple matches here,
+		    // since this was checked by the apply-templates
+		    mt_lowest
+			.sort_unstable_by_key(|t| t.import);
+
+		    // Find the template with the lowest import precedence
+		    // higher than the current precedence
+		    let mut u = mt_lowest.iter()
+			.skip_while(|t| t.import <= *self.dc.current_import.borrow())
+			.take(1)
+			.flat_map(|t| {
+			    self.dc.depth_incr();
+			    self.dc.import_incr();
+			    let rs = self.evaluate(ctxt.clone(), posn, &t.body, f, sd, rd)
+				.expect("failed to evaluate template body");
+	    		    self.dc.depth_decr();
+	    		    self.dc.import_decr();
+			    rs
+			})
+			.collect::<Sequence>();
+		    result.append(&mut u);
+		} else {
+		    // If no templates match then apply a built-in template
+		    // See XSLT 6.7.
+		    // TODO: use import precedence to implement this feature
+		    let builtin_template: Vec<&Template> = self.builtin_templates.iter()
+			.filter(|t| {
+			    let e = self.evaluate(ctxt.clone(), posn, &t.pattern, f, sd, rd)
+				.expect("failed to evaluate pattern");
+			    if e.len() == 0 {false} else {true}
+			})
+			.scan(-2.0,
+			      |prio, t| {
+				  if *prio < t.priority {
+				      *prio = t.priority;
+				      Some(t)
+				  } else {
+				      None
+				  }
+			      }
+			)
+			.collect();
+		    if builtin_template.len() > 1 {
+			panic!("too many matching builtin templates")
+		    }
+		    let mut u = builtin_template.iter()
+			.flat_map(|t| {
+			    self.dc.depth_incr();
+			    let rs = self.evaluate(ctxt.clone(), posn, &t.body, f, sd, rd)
+				.expect("failed to evaluate template body");
+	    		    self.dc.depth_decr();
+			    rs
+			})
+			.collect::<Sequence>();
+		    result.append(&mut u);
+		}
+      		Ok(result)
+	    }
+	    Constructor::ForEach(s, t, g) => {
+		// Evaluate 's' to find the nodes to iterate over
+      		// Use 'g' to group the nodes
+      		// Evaluate 't' for each group
+		let sel = self.evaluate(ctxt.clone(), posn, s, f, sd, rd)?;
+      		// Divide sel into groups: each item in groups is an individual group
+      		let mut groups = Vec::new();
+      		match g {
+		    Some(Grouping::By(h)) => {
+			// 'h' is an expression that when evaluated for an item results in zero or more grouping keys.
+			// Items are placed in the group with a matching key
+			let mut map = HashMap::new();
+			for i in 0..sel.len() {
+			    let keys = self.evaluate(Some(sel.clone()), Some(i), h, f, sd, rd)?;
+			    for j in keys {
+				let e = map.entry(j.to_string(Some(f))).or_insert(vec![]);
+	      			e.push(sel[i].clone());
+			    }
+			}
+			// Now construct the groups and a pair-wise vector of keys
+			for (k, v) in map.iter() {
+			    groups.push((Some(k.clone()), v.to_vec()));
+			}
+		    }
+		    Some(Grouping::Adjacent(h)) => {
+			// 'h' is an expression that is evaluated for every item in 'sel'.
+			// It must evaluate to a single item.
+			// The first item starts the first group.
+			// For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
+			// then it is added to the current group. Otherwise it starts a new group.
+			if sel.len() > 0 {
+			    let mut curgrp = vec![sel[0].clone()];
+			    let mut curkey = self.evaluate(Some(sel.clone()), Some(1), h, f, sd, rd)?;
+			    if curkey.len() != 1 {
+				return Result::Err(Error{kind: ErrorKind::Unknown, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+			    }
+			    for i in 1..sel.len() {
+				let thiskey = self.evaluate(Some(sel.clone()), Some(i), h, f, sd, rd)?;
+	      			if thiskey.len() == 1 {
+				    if curkey[0].compare(&*thiskey[0], Operator::Equal, Some(f))? {
+					// Append to the current group
+					curgrp.push(sel[i].clone());
+				    } else {
+					// Close previous group, start a new group with this item as its first member
+					groups.push((Some(curkey.to_string(Some(f))), curgrp.clone()));
+					curgrp = vec![sel[i].clone()];
+					curkey = thiskey;
+				    }
+				} else {
+      				    return Result::Err(Error{kind: ErrorKind::TypeError, message: "group-adjacent attribute must evaluate to a single item".to_string()})
+				}
+			    }
+			    // Close the last group
+			    groups.push((Some(curkey.to_string(Some(f))), curgrp));
+			} // else result is empty sequence
+		    }
+		    Some(Grouping::StartingWith(_h)) => {}
+		    Some(Grouping::EndingWith(_h)) => {}
+		    None => {
+			for i in sel {
+			    groups.push((None, vec![i.clone()]));
+			}
+		    }
+		}
+
+      		let result = groups.iter().fold(
+		    vec![],
+		    |mut result, grp| {
+			let (o, v) = grp;
+			// set current-grouping-key, current-group
+			match o {
+			    Some(u) => {
+				self.dc.push_current_grouping_key(Item::Value(Value::from(u.to_string())));
+				self.dc.push_current_group(v.clone());
+			    }
+			    None => {}
+			}
+			// TODO: Don't Panic
+			let mut tmp = self.evaluate(Some(v.to_vec()), Some(0), t, f, sd, rd)
+			    .expect("failed to evaluate template");
+			result.append(&mut tmp);
+			// Restore current-grouping-key, current-group
+			self.dc.pop_current_grouping_key();
+			self.dc.pop_current_group();
+			result
+		    }
+		);
+		Ok(result)
+	    }
+	    Constructor::NotImplemented(m) => {
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: format!("sequence constructor not implemented: {}", m)})
+	    }
+	}
+    }
+
+    // Deep copy an item
+    fn item_deep_copy(
+	&self,
+	orig: Rc<Item>,
+	ctxt: Option<Sequence>,
+	posn: Option<usize>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<Rc<Item>, Error> {
+
+	let cp = self.item_copy(orig.clone(), &vec![], ctxt.clone(), posn, f, sd, rd)?;
+
+	// If this item is an element node, then copy all of its attributes and children
+	match *orig {
+	    Item::Node(ref n) => {
+		match n.node_type(f) {
+		    NodeType::Element => {
+			let cur = match *cp {
+			    Item::Node(ref m) => m,
+			    _ => {
+				return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to copy element node".to_string()})
+			    }
+			};
+			// To handle borrowing correctly:
+			// Iterate over the attributes
+			// Work out what attributes need to be created
+			// Then create them
+			let mut new = Vec::new();
+			let mut atit = n.attribute_iter(f);
+			loop {
+			    match atit.next() {
+				Some(a) => new.push((a.to_name(f), Value::from(a.to_string(f)))),
+				None => break,
+			    }
+			}
+			// TODO: Don't Panic
+			new.iter().for_each(|(qn, v)| {
+			    let at = f.get_ref_mut(rd).unwrap()
+				.new_attribute(qn.clone(), v.clone())
+				.expect("unable to create attribute");
+			    cur.add_attribute(f, at)
+				.expect("unable to add attribute");
+			});
+			let mut child_list = n.child_iter();
+			// Don't Panic
+			loop {
+			    match child_list.next(f) {
+				Some(c) => {
+				    let cpc = self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, f, sd, rd)?;
+				    match *cpc {
+					Item::Node(cpcn) => {
+	      				    cur.append_child(f, cpcn)?;
+					}
+					_ => {} // this should never happen
+				    }
+				}
+				None => break,
+			    }
+			}
+		    }
+		    _ => {}
+		}
+	    }
+	    _ => {}
+	}
+
+	Ok(cp)
+    }
+
+    // Copy an item
+    fn item_copy(
+	&self,
+	orig: Rc<Item>,
+	content: &Vec<Constructor>,
+	ctxt: Option<Sequence>,
+	posn: Option<usize>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<Rc<Item>, Error> {
+	match *orig {
+	    Item::Value(_) => {
+		Ok(orig.clone())
+	    }
+	    Item::Node(n) => {
+		match n.node_type(f) {
+		    NodeType::Element => {
+			let qn = n.to_name(f);
+			match f.get_ref_mut(rd)
+			    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+			    .new_element(qn) {
+			    Ok(e) => {
+				// Add content to the new element
+	      			// TODO: Don't Panic
+	      			let r = self.evaluate(ctxt.clone(), posn, content, f, sd, rd)?;
+				r.iter()
+        			    .for_each(|i| {
+	    				// Item could be a Node or text
+	    				match **i {
+	      				    Item::Node(t) => {
+						match t.node_type(f) {
+						    NodeType::Element |
+						    NodeType::Text => {
+							e.append_child(f, t)
+							    .expect("unable to add child node");
+						    }
+						    NodeType::Attribute => {
+							e.add_attribute(f, t)
+							    .expect("unable to add attribute node");
+						    }
+						    _ => {} // TODO: work out what to do with documents, etc
+						}
+	      				    }
+	      	      			    _ => {
+						// Values become a text node in the result tree
+						let x = Value::from(i.to_string(Some(f)));
+						let h = f.get_ref_mut(rd)
+						    .unwrap()
+						    .new_text(x)
+						    .expect("unable to create text node");
+						e.append_child(f, h)
+						    .expect("unable to add child text node");
+	      				    }
+	    				}
+				    });
+				Ok(Rc::new(Item::Node(e)))
+			    }
+			    _ => {
+				return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create element node".to_string()})
+			    }
+			}
+		    }
+		    NodeType::Text => {
+			let x = Value::from(n.to_string(f));
+			match f.get_ref_mut(rd)
+			    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+			    .new_text(x) {
+			    Ok(m) => {
+				Ok(Rc::new(Item::Node(m)))
+			    }
+			    _ => {
+				return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create text node".to_string()})
+			    }
+			}
+		    }
+		    NodeType::Attribute => {
+			// TODO: add a 'to_value' method
+			let qn = n.to_name(f);
+			let x = Value::from(n.to_string(f));
+			match f.get_ref_mut(rd)
+			    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
+			    .new_attribute(qn, x) {
+			    Ok(a) => {
+				Ok(Rc::new(Item::Node(a)))
+			    }
+			    _ => {
+				Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create attribute node".to_string()})
+			    }
+			}
+		    }
+		    _ => {
+			Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
+		    }
+		}
 	    }
 	    _ => {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create element node".to_string()})
+		Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not implemented".to_string()})
 	    }
-	  }
 	}
-	NodeType::Text => {
-	  match doc.new_text(Value::String(n.to_string())) {
-	    Ok(m) => {
-	      Ok(Rc::new(Item::Node(m)))
-	    }
-	    _ => {
-	      return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create text node".to_string()})
-	    }
-	  }
-	}
-	NodeType::Attribute => {
-	  // TODO: add a 'to_value' method
-	  match doc.new_attribute(n.to_name(), Value::String(n.to_string())) {
-	    Ok(a) => {
-	      Ok(Rc::new(Item::Node(a)))
-	    }
-	    _ => {
-	      Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to create attribute node".to_string()})
-	    }
-	  }
-	}
-	_ => {
-	  Result::Err(Error{kind: ErrorKind::NotImplemented, message: "select expression not implemented".to_string()})
-	}
-      }
-    }
-    _ => {
-      Result::Err(Error{kind: ErrorKind::NotImplemented, message: "not implemented".to_string()})
-    }
-  }
-}
-
-// Push a new scope for a variable
-fn var_push(dc: &DynamicContext, v: &str, i: &Rc<Item>) {
-  let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-  let mut t: Option<&mut Vec<Sequence>>;
-
-  h = dc.vars.borrow_mut();
-  t = h.get_mut(v);
-  match t.as_mut() {
-    Some(u) => {
-      // If the variable already has a value, then this is a new, inner scope
-      u.push(vec![i.clone()]);
-    }
-    None => {
-      // Otherwise this is the first scope for the variable
-      h.insert(v.to_string(), vec![vec![i.clone()]]);
-    }
-  }
-}
-// Pop scope for a variable
-// Prerequisite: scope must have already been pushed
-fn var_pop(dc: &DynamicContext, v: &str) {
-  let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-  let t: Option<&mut Vec<Sequence>>;
-
-  h = dc.vars.borrow_mut();
-  t = h.get_mut(v);
-  t.map(|u| u.pop());
-}
-
-// Filter the sequence with each of the predicates
-// TODO: return a Result so that errors can propagate
-// TODO: Don't Panic
-fn predicates(dc: &DynamicContext, s: Sequence, p: &Vec<Vec<Constructor>>) -> Sequence {
-  if p.is_empty() {
-    s
-  } else {
-    let mut result = s.clone();
-
-    // iterate over the predicates
-    for q in p {
-      let mut new: Sequence = Vec::new();
-
-      // for each predicate, evaluate each item in s to a boolean
-      for i in 0..result.len() {
-        let b = evaluate(dc, Some(result.clone()), Some(i), q).expect("evaluating predicate failed");
-	if b.to_bool() == true {
-	  new.push(result[i].clone());
-	}
-      }
-      result.clear();
-      result.append(&mut new);
     }
 
-    result
-  }
+    // Filter the sequence with each of the predicates
+    fn predicates(
+	&self,
+	s: Sequence,
+	p: &Vec<Vec<Constructor>>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<Sequence, Error> {
+	if p.is_empty() {
+	    Ok(s)
+	} else {
+	    let mut result = s.clone();
+
+	    // iterate over the predicates
+	    for q in p {
+      		let mut new: Sequence = Vec::new();
+
+      		// for each predicate, evaluate each item in s to a boolean
+      		for i in 0..result.len() {
+		    let b = self.evaluate(Some(result.clone()), Some(i), q, f, sd, rd)?;
+		    if b.to_bool() == true {
+			new.push(result[i].clone());
+		    }
+		}
+      		result.clear();
+      		result.append(&mut new);
+	    }
+
+	    Ok(result)
+	}
+    }
+
+    /// Determine if an item matches a pattern.
+    /// The sequence constructor is a pattern: the steps of a path in reverse.
+    pub fn item_matches(
+	&self,
+	pat: &Vec<Constructor>,
+	i: &Rc<Item>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<bool, Error> {
+	let e = self.evaluate(Some(vec![i.clone()]), Some(0), pat, f, sd, rd)?;
+
+	// If anything is left in the context then the pattern matched
+	if e.len() != 0 {
+	    Ok(true)
+	} else {
+	    Ok(false)
+	}
+    }
+
+    fn general_comparison(
+	&self,
+	ctxt: Option<Sequence>,
+	posn: Option<usize>,
+	op: Operator,
+	left: &Vec<Constructor>,
+	right: &Vec<Constructor>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<bool, Error> {
+	let mut b = false;
+	let left_seq =  self.evaluate(ctxt.clone(), posn, left, f, sd, rd)?;
+	let right_seq = self.evaluate(ctxt.clone(), posn, right, f, sd, rd)?;
+	for l in left_seq {
+	    for r in &right_seq {
+		b = l.compare(&*r, op, Some(f)).unwrap();
+      		if b { break }
+	    }
+	    if b { break }
+	};
+	Ok(b)
+    }
+
+    // Operands must be singletons
+    fn value_comparison(
+	&self,
+	ctxt: Option<Sequence>,
+	posn: Option<usize>,
+	op: Operator,
+	left: &Vec<Constructor>,
+	right: &Vec<Constructor>,
+	f: &mut Forest,
+	sd: TreeIndex,
+	rd: TreeIndex,
+    ) -> Result<bool, Error> {
+	let left_seq = self.evaluate(ctxt.clone(), posn, left, f, sd, rd)?;
+	if left_seq.len() == 0 {
+	    return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is empty"),})
+	}
+	// TODO: Don't Panic
+	if left_seq.len() == 1 {
+	    let right_seq = self.evaluate(ctxt.clone(), posn, right, f, sd, rd)?;
+	    if right_seq.len() == 1 {
+		Ok(left_seq[0].compare(&*right_seq[0], op, Some(f)).unwrap())
+	    } else {
+		Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("right-hand sequence is not a singleton sequence"),})
+	    }
+	} else {
+	    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is not a singleton sequence"),})
+	}
+    }
 }
 
 /// Specifies how a sequence is to be constructed.
@@ -1273,18 +1706,21 @@ pub enum Constructor {
   /// The first argument is pairs of (test,body) clauses.
   /// The second argument is the otherwise clause
   Switch(Vec<Vec<Constructor>>, Vec<Constructor>),
-  /// Find a matching template and evaluate its sequence constructor.
-  /// The argument is the select attribute.
-  ApplyTemplates(Vec<Constructor>),
-  /// Evaluate a sequence constructor for each item, possibly grouped.
-  /// First argument is the select expression, second argument is the template,
-  /// third argument is the (optional) grouping spec.
-  ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
-  /// Set the value of an attribute. Context item must be an element node.
-  /// First argument is the name of the attribute, second attribute is the value to set
-  SetAttribute(QualifiedName, Vec<Constructor>),
-  /// Something that is not yet implemented
-  NotImplemented(String),
+    /// Find a matching template and evaluate its sequence constructor.
+    /// The argument is the select attribute.
+    ApplyTemplates(Vec<Constructor>),
+    /// Find a matching template at the next import precedence
+    /// and evaluate its sequence constructor.
+    ApplyImports,
+    /// Evaluate a sequence constructor for each item, possibly grouped.
+    /// First argument is the select expression, second argument is the template,
+    /// third argument is the (optional) grouping spec.
+    ForEach(Vec<Constructor>, Vec<Constructor>, Option<Grouping>),
+    /// Set the value of an attribute. Context item must be an element node.
+    /// First argument is the name of the attribute, second attribute is the value to set
+    SetAttribute(QualifiedName, Vec<Constructor>),
+    /// Something that is not yet implemented
+    NotImplemented(String),
 }
 
 /// Determine how a collection is to be divided into groups.
@@ -1297,27 +1733,12 @@ pub enum Grouping {
   Adjacent(Vec<Constructor>),
 }
 
-/// Determine if an item matches a pattern.
-/// The sequence constructor is a pattern: the steps of a path in reverse.
-pub fn item_matches(dc: &DynamicContext, pat: &Vec<Constructor>, i: &Rc<Item>) -> bool {
-  // TODO: Return a Result so errors can be propagated
-  // TODO: Don't Panic
-  let e = evaluate(dc, Some(vec![i.clone()]), Some(0), pat)
-    .expect("pattern evaluation failed");
-
-  // If anything is left in the context then the pattern matched
-  if e.len() != 0 {
-    true
-  } else {
-    false
-  }
-}
-
 // Apply the node test to a Node.
-fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
+// TODO: Make this a method of the Node trait?
+fn is_node_match(nt: &NodeTest, n: &Node, f: &Forest) -> bool {
   match nt {
     NodeTest::Name(t) => {
-      match n.node_type() {
+      match n.node_type(f) {
         NodeType::Element |
 	NodeType::Attribute => {
       	  // TODO: namespaces
@@ -1328,7 +1749,7 @@ fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
 	      	  true
 	    	}
 	    	WildcardOrName::Name(s) => {
-	      	  *s == n.to_name().get_localname()
+	      	  *s == n.to_name(f).get_localname()
 	    	}
 	      }
 	    }
@@ -1343,31 +1764,31 @@ fn is_node_match(nt: &NodeTest, n: &Rc<dyn Node>) -> bool {
     NodeTest::Kind(k) => {
       match k {
         KindTest::DocumentTest => {
-          match n.node_type() {
+          match n.node_type(f) {
 	    NodeType::Document => true,
 	    _ => false,
 	  }
         }
         KindTest::ElementTest => {
-          match n.node_type() {
+          match n.node_type(f) {
 	    NodeType::Element => true,
 	    _ => false,
 	  }
         }
         KindTest::PITest => {
-          match n.node_type() {
+          match n.node_type(f) {
 	    NodeType::ProcessingInstruction => true,
 	    _ => false,
 	  }
         }
         KindTest::CommentTest => {
-      	  match n.node_type() {
+      	  match n.node_type(f) {
 	    NodeType::Comment => true,
 	    _ => false,
 	  }
         }
         KindTest::TextTest => {
-      	  match n.node_type() {
+      	  match n.node_type(f) {
 	    NodeType::Text => true,
 	    _ => false,
 	  }
@@ -1400,8 +1821,10 @@ pub enum NodeTest {
   Name(NameTest),
 }
 
-impl NodeTest {
-  pub fn from(s: &str) -> Result<NodeTest, Error> {
+impl TryFrom<&str> for NodeTest {
+  type Error = Error;
+
+  fn try_from(s: &str) -> Result<Self, Self::Error> {
     // Import this from xpath.rs?
     let tok: Vec<&str> = s.split(':').collect();
     match tok.len() {
@@ -1432,6 +1855,9 @@ impl NodeTest {
       _ => Result::Err(Error{kind: ErrorKind::TypeError, message: "invalid NodeTest".to_string()})
     }
   }
+}
+
+impl NodeTest {
   pub fn to_string(&self) -> String {
       match self {
         NodeTest::Name(nt) => {
@@ -1507,26 +1933,27 @@ pub enum WildcardOrName {
 
 #[derive(Copy, Clone)]
 pub enum Axis {
-  Child,
-  Descendant,
-  DescendantOrSelf,
-  Attribute,
-  Selfaxis,
-  SelfDocument, // a special axis, only for matching the Document in a pattern match
-  Following,
-  FollowingSibling,
-  Namespace,
-  Parent,
-  ParentDocument, // a special axis, only for matching in a pattern match. Matches the parent as well as the Document.
-  Ancestor,
-  AncestorOrSelf,
-  Preceding,
-  PrecedingSibling,
-  Unknown,
+    Child,
+    Descendant,
+    DescendantOrSelf,
+    Attribute,
+    SelfAttribute, // a special axis, only for matching an attribute in a a pattern match
+    Selfaxis,
+    SelfDocument, // a special axis, only for matching the Document in a pattern match
+    Following,
+    FollowingSibling,
+    Namespace,
+    Parent,
+    ParentDocument, // a special axis, only for matching in a pattern match. Matches the parent as well as the Document.
+    Ancestor,
+    AncestorOrSelf,
+    Preceding,
+    PrecedingSibling,
+    Unknown,
 }
 
-impl Axis {
-  pub fn from(s: &str) -> Axis {
+impl From<&str> for Axis {
+  fn from(s: &str) -> Self {
     match s {
       "child" => Axis::Child,
       "descendant" => Axis::Descendant,
@@ -1544,12 +1971,16 @@ impl Axis {
       _ => Axis::Unknown,
     }
   }
+}
+
+impl Axis {
   pub fn to_string(&self) -> String {
     match self {
       Axis::Child => "child".to_string(),
       Axis::Descendant => "descendant".to_string(),
       Axis::DescendantOrSelf => "descendant-or-self".to_string(),
       Axis::Attribute => "attribute".to_string(),
+      Axis::SelfAttribute => "self-attribute".to_string(),
       Axis::Selfaxis => "self".to_string(),
       Axis::SelfDocument => "self-document".to_string(),
       Axis::Following => "following".to_string(),
@@ -1570,7 +2001,7 @@ impl Axis {
       Axis::Child => Axis::Parent,
       Axis::Descendant => Axis::Ancestor,
       Axis::DescendantOrSelf => Axis::AncestorOrSelf,
-      Axis::Attribute => Axis::Parent,
+      Axis::Attribute => Axis::SelfAttribute,
       Axis::Selfaxis => Axis::Selfaxis,
       Axis::Following => Axis::Preceding,
       Axis::FollowingSibling => Axis::PrecedingSibling,
@@ -1595,8 +2026,9 @@ pub enum ArithmeticOperator {
   Subtract,
   Modulo,
 }
-impl ArithmeticOperator {
-  pub fn from(a: &str) -> ArithmeticOperator {
+
+impl From<&str> for ArithmeticOperator {
+  fn from(a: &str) -> Self {
     match a {
       "+" => ArithmeticOperator::Add,
       "*" => ArithmeticOperator::Multiply,
@@ -1613,20 +2045,6 @@ impl ArithmeticOperator {
 pub struct ArithmeticOperand {
   pub op: ArithmeticOperator,
   pub operand: Vec<Constructor>,
-}
-
-fn general_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
-  let mut b = false;
-  let left_seq = evaluate(dc, ctxt.clone(), posn, left)?;
-  let right_seq = evaluate(dc, ctxt.clone(), posn, right)?;
-  for l in left_seq {
-    for r in &right_seq {
-      b = l.compare(&*r, op).unwrap();
-      if b { break }
-    }
-    if b { break }
-  };
-  Ok(b)
 }
 
 /// A pattern is basically a Sequence Constructor in reverse.
@@ -1762,10 +2180,21 @@ pub fn to_pattern(sc: Vec<Constructor>) -> Result<Vec<Constructor>, Error> {
 /// A template associating a pattern to a sequence constructor
 #[derive(Clone)]
 pub struct Template {
-  pattern: Vec<Constructor>,
-  body: Vec<Constructor>,
-  priority: f64,
-  mode: Option<String>,
+    pattern: Vec<Constructor>,
+    body: Vec<Constructor>,
+    priority: f64,
+    mode: Option<String>,
+    import: usize,
+}
+
+impl fmt::Debug for Template {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+	write!(f, "match {} prio {}, import {}",
+	       format_constructor(&self.pattern, 0),
+	       self.priority,
+	       self.import
+	)
+    }
 }
 
 /// # Static context
@@ -2129,92 +2558,96 @@ impl StaticContext {
   pub fn declare_variable(&self, n: String, _ns:String) {
     self.vars.borrow_mut().insert(n.clone(), vec![]);
   }
-}
 
-/// Perform static analysis of a sequence constructor.
-///
-/// This checks that functions and variables are declared. It also rewrites the constructors to provide the implementation of functions that are used in expressions.
-pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
-  for d in e {
-    match d {
-      Constructor::Switch(v, o) => {
-        for i in v {
-	  static_analysis(i, sc)
-	}
-	static_analysis(o, sc);
-      }
-      Constructor::Loop(v, a) => {
-	static_analysis(v, sc);
-	static_analysis(a, sc);
-      }
-      Constructor::SetAttribute(_, v) => {
-        static_analysis(v, sc);
-      }
-      Constructor::FunctionCall(f, a) => {
-	// Fill in function body
-	match sc.funcs.borrow().get(&f.name) {
-	  Some(g) => {
-	    f.body.replace(g.body.unwrap());
+  /// Perform static analysis of a sequence constructor.
+  ///
+  /// This checks that functions and variables are declared. It also rewrites the constructors to provide the implementation of functions that are used in expressions.
+  pub fn static_analysis(&mut self, e: &mut Vec<Constructor>) {
+    // TODO: return Result
+    // TODO: iterate through the tree structure instead of doing a recursive depth first search. This should mean that the method would not have to use interior mutability
+    for d in e {
+      match d {
+        Constructor::Switch(v, o) => {
+          for i in v {
+	    self.static_analysis(i)
 	  }
-	  None => {
-	    panic!("call to unknown function \"{}\"", f.name)
+	  self.static_analysis(o);
+	}
+      	Constructor::Loop(v, a) => {
+	  self.static_analysis(v);
+	  self.static_analysis(a);
+        }
+      	Constructor::SetAttribute(_, v) => {
+          self.static_analysis(v);
+        }
+      	Constructor::FunctionCall(f, a) => {
+	  // Fill in function body
+	  match self.funcs.borrow().get(&f.name) {
+	    Some(g) => {
+	      f.body.replace(g.body.unwrap());
+	    }
+	    None => {
+	      // TODO: Don't Panic
+	      panic!("call to unknown function \"{}\"", f.name)
+	    }
 	  }
-	}
-        for i in a {
-	  static_analysis(i, sc)
-	}
+          for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::VariableDeclaration(v, a) => {
+          self.declare_variable(v.to_string(), "".to_string());
+	  self.static_analysis(a)
+        }
+      	Constructor::VariableReference(_v) => {
+          // TODO: check that variable has been declared
+        }
+      	Constructor::Or(a) |
+      	Constructor::And(a) |
+      	Constructor::Path(a) |
+      	Constructor::Concat(a) |
+      	Constructor::Range(a) => {
+	  for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::Step(_, a) => {
+          for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::GeneralComparison(_, a) |
+      	Constructor::ValueComparison(_, a) => {
+          for i in a {
+	    self.static_analysis(i)
+	  }
+        }
+      	Constructor::Arithmetic(a) => {
+          for i in a {
+	    self.static_analysis(&mut i.operand)
+	  }
+        }
+      	  Constructor::ApplyTemplates(s)  => {
+	  self.static_analysis(s)
+        }
+      	Constructor::ForEach(s, t, _g) => {
+	  self.static_analysis(s);
+	  self.static_analysis(t);
+        }
+      	Constructor::Copy(_, c) |
+      	Constructor::LiteralElement(_, c) => {
+	  self.static_analysis(c)
+        }
+      	Constructor::DeepCopy(c) => {
+	  self.static_analysis(c);
+        }
+      	  Constructor::Literal(_) |
+      	  Constructor::LiteralAttribute(_, _) |
+      	  Constructor::ContextItem |
+      	  Constructor::Root |
+	  Constructor::ApplyImports |
+      	  Constructor::NotImplemented(_) => {}
       }
-      Constructor::VariableDeclaration(v, a) => {
-        sc.declare_variable(v.to_string(), "".to_string());
-	static_analysis(a, sc)
-      }
-      Constructor::VariableReference(_v) => {
-        // TODO: check that variable has been declared
-      }
-      Constructor::Or(a) |
-      Constructor::And(a) |
-      Constructor::Path(a) |
-      Constructor::Concat(a) |
-      Constructor::Range(a) => {
-        for i in a {
-	  static_analysis(i, sc)
-	}
-      }
-      Constructor::Step(_, a) => {
-        for i in a {
-	  static_analysis(i, sc)
-	}
-      }
-      Constructor::GeneralComparison(_, a) |
-      Constructor::ValueComparison(_, a) => {
-        for i in a {
-	  static_analysis(i, sc)
-	}
-      }
-      Constructor::Arithmetic(a) => {
-        for i in a {
-	  static_analysis(&mut i.operand, sc)
-	}
-      }
-      Constructor::ApplyTemplates(s) => {
-	static_analysis(s, sc)
-      }
-      Constructor::ForEach(s, t, _g) => {
-	static_analysis(s, sc);
-	static_analysis(t, sc);
-      }
-      Constructor::Copy(_, c) |
-      Constructor::LiteralElement(_, c) => {
-	static_analysis(c, sc)
-      }
-      Constructor::DeepCopy(c) => {
-	static_analysis(c, sc);
-      }
-      Constructor::Literal(_) |
-      Constructor::LiteralAttribute(_, _) |
-      Constructor::ContextItem |
-      Constructor::Root |
-      Constructor::NotImplemented(_) => {}
     }
   }
 }
@@ -2222,10 +2655,13 @@ pub fn static_analysis(e: &mut Vec<Constructor>, sc: &StaticContext) {
 // Functions
 
 pub type FunctionImpl = fn(
-    &DynamicContext,
+    &Evaluator,
     Option<Sequence>,		// Context
     Option<usize>,		// Context position
     Vec<Sequence>,		// Actual parameters
+    &mut Forest,
+    TreeIndex,
+    TreeIndex,
   ) -> Result<Sequence, Error>;
 
 #[derive(Clone)]
@@ -2278,7 +2714,15 @@ impl Param {
   }
 }
 
-fn func_position(_: &DynamicContext, _ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+fn func_position(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   match posn {
     Some(u) => {
       Ok(vec![Rc::new(Item::Value(Value::Integer(u as i64 + 1)))])
@@ -2287,7 +2731,15 @@ fn func_position(_: &DynamicContext, _ctxt: Option<Sequence>, posn: Option<usize
   }
 }
 
-fn func_last(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+fn func_last(
+    _: &Evaluator,
+    ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   match ctxt {
     Some(u) => {
       Ok(vec![Rc::new(Item::Value(Value::Integer(u.len() as i64)))])
@@ -2296,7 +2748,15 @@ fn func_last(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usize>, _
   }
 }
 
-pub fn func_count(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_count(
+    _: &Evaluator,
+    ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   match args.len() {
     0 => {
       // count the context items
@@ -2313,13 +2773,21 @@ pub fn func_count(_: &DynamicContext, ctxt: Option<Sequence>, _posn: Option<usiz
   }
 }
 
-pub fn func_localname(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_localname(
+    _: &Evaluator,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+    _args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
       match *u[posn.unwrap()] {
         Item::Node(ref n) => {
-      	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().get_localname())))])
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name(f).get_localname())))])
 	}
 	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
       }
@@ -2329,14 +2797,22 @@ pub fn func_localname(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<u
 }
 
 // TODO: handle qualified names
-pub fn func_name(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_name(
+    _e: &Evaluator,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+    _args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
       match *u[posn.unwrap()] {
         Item::Node(ref n) => {
       	  // TODO: handle QName prefixes
-	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().get_localname())))])
+	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name(f).get_localname())))])
 	}
 	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
       }
@@ -2346,55 +2822,95 @@ pub fn func_name(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>
 }
 
 // TODO: implement string value properly
-pub fn func_string(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_string(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   match args.len() {
     1 => {
       // return string value
-      Ok(vec![Rc::new(Item::Value(Value::String(args[0].to_string())))])
+      Ok(vec![Rc::new(Item::Value(Value::String(args[0].to_string(Some(f)))))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
-pub fn func_concat(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_concat(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   Ok(vec![Rc::new(Item::Value(Value::String(
     args.iter().fold(
       String::new(),
       |mut a, b| {
-        a.push_str(b.to_string().as_str());
+        a.push_str(b.to_string(Some(f)).as_str());
 	a
       }
     )
   )))])
 }
 
-pub fn func_startswith(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_startswith(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
      // arg[0] is the string to search
      // arg[1] is what to search for
      Ok(vec![Rc::new(Item::Value(Value::Boolean(
-       args[0].to_string().starts_with(args[1].to_string().as_str())
+       args[0].to_string(Some(f)).starts_with(args[1].to_string(Some(f)).as_str())
     )))])
   } else {
     Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
-pub fn func_contains(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_contains(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
      // arg[0] is the string to search
      // arg[1] is what to search for
      Ok(vec![Rc::new(Item::Value(Value::Boolean(
-       args[0].to_string().contains(args[1].to_string().as_str())
+       args[0].to_string(Some(f)).contains(args[1].to_string(Some(f)).as_str())
     )))])
   } else {
     Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
-pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_substring(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 2 or 3 arguments
   match args.len() {
     2 => {
@@ -2402,7 +2918,7 @@ pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
      // arg[1] is the index to start at
      // 2-argument version takes the rest of the string
      Ok(vec![Rc::new(Item::Value(Value::String(
-       args[0].to_string().graphemes(true).skip(args[1].to_int()? as usize - 1).collect()
+       args[0].to_string(Some(f)).graphemes(true).skip(args[1].to_int()? as usize - 1).collect()
      )))])
     }
     3 => {
@@ -2410,22 +2926,30 @@ pub fn func_substring(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
      // arg[1] is the index to start at
      // arg[2] is the length of the substring to extract
      Ok(vec![Rc::new(Item::Value(Value::String(
-       args[0].to_string().graphemes(true).skip(args[1].to_int()? as usize - 1).take(args[2].to_int()? as usize).collect()
+       args[0].to_string(Some(f)).graphemes(true).skip(args[1].to_int()? as usize - 1).take(args[2].to_int()? as usize).collect()
      )))])
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   }
 }
 
-pub fn func_substringbefore(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_substringbefore(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
      // arg[0] is the string to search
      // arg[1] is the string to find
-     match args[0].to_string().find(args[1].to_string().as_str()) {
+     match args[0].to_string(Some(f)).find(args[1].to_string(Some(f)).as_str()) {
        Some(i) => {
-         match args[0].to_string().get(0..i) {
+         match args[0].to_string(Some(f)).get(0..i) {
 	   Some(s) => {
      	     Ok(vec![Rc::new(Item::Value(Value::String(
 	       String::from(s)
@@ -2446,15 +2970,23 @@ pub fn func_substringbefore(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: 
   }
 }
 
-pub fn func_substringafter(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_substringafter(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 2 arguments
   match args.len() {
     2 => {
      // arg[0] is the string to search
      // arg[1] is the string to find
-     match args[0].to_string().find(args[1].to_string().as_str()) {
+     match args[0].to_string(Some(f)).find(args[1].to_string(Some(f)).as_str()) {
        Some(i) => {
-         match args[0].to_string().get(i + args[1].to_string().len()..args[0].to_string().len()) {
+         match args[0].to_string(Some(f)).get(i + args[1].to_string(Some(f)).len()..args[0].to_string(Some(f)).len()) {
 	   Some(s) => {
      	     Ok(vec![Rc::new(Item::Value(Value::String(
 	       String::from(s)
@@ -2475,20 +3007,28 @@ pub fn func_substringafter(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: O
   }
 }
 
-pub fn func_normalizespace(_: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_normalizespace(
+    _e: &Evaluator,
+    ctxt: Option<Sequence>,
+    posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 0 or 1 arguments
   let s: Result<Option<String>, Error> = match args.len() {
     0 => {
       // Use the current item
       match ctxt {
         Some(c) => {
-	  Ok(Some(c[posn.unwrap()].to_string()))
+	  Ok(Some(c[posn.unwrap()].to_string(Some(f))))
 	}
 	None => Ok(None)
       }
     }
     1 => {
-      Ok(Some(args[0].to_string()))
+      Ok(Some(args[0].to_string(Some(f))))
     }
     _ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("wrong number of arguments"),})
   };
@@ -2510,20 +3050,28 @@ pub fn func_normalizespace(_: &DynamicContext, ctxt: Option<Sequence>, posn: Opt
   }
 }
 
-pub fn func_translate(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_translate(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 3 arguments
   match args.len() {
     3 => {
       // arg[0] is the string to search
       // arg[1] is the map chars
       // arg[2] is the translate chars
-      let o = args[1].to_string();
+      let o = args[1].to_string(Some(f));
       let m: Vec<&str> = o.graphemes(true).collect();
-      let u = args[2].to_string();
+      let u = args[2].to_string(Some(f));
       let t: Vec<&str> = u.graphemes(true).collect();
       let mut result: String = String::new();
 
-      for c in args[0].to_string().graphemes(true) {
+      for c in args[0].to_string(Some(f)).graphemes(true) {
 	let mut a: Option<Option<usize>> = Some(None);
         for i in 0..m.len() {
 	  if c == m[i] {
@@ -2556,7 +3104,15 @@ pub fn func_translate(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option
   }
 }
 
-pub fn func_boolean(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_boolean(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 arguments
   match args.len() {
     1 => {
@@ -2566,7 +3122,15 @@ pub fn func_boolean(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<u
   }
 }
 
-pub fn func_not(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_not(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 arguments
   match args.len() {
     1 => {
@@ -2576,7 +3140,15 @@ pub fn func_not(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize
   }
 }
 
-pub fn func_true(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_true(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 0 arguments
   match args.len() {
     0 => {
@@ -2586,7 +3158,15 @@ pub fn func_true(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usiz
   }
 }
 
-pub fn func_false(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_false(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 0 arguments
   match args.len() {
     0 => {
@@ -2596,7 +3176,15 @@ pub fn func_false(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
   }
 }
 
-pub fn func_number(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_number(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 argument
   match args.len() {
     1 => {
@@ -2622,7 +3210,15 @@ pub fn func_number(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<us
   }
 }
 
-pub fn func_sum(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_sum(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 argument
   match args.len() {
     1 => {
@@ -2632,7 +3228,15 @@ pub fn func_sum(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize
   }
 }
 
-pub fn func_floor(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_floor(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
     1 => {
@@ -2647,7 +3251,15 @@ pub fn func_floor(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
   }
 }
 
-pub fn func_ceiling(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_ceiling(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
     1 => {
@@ -2662,7 +3274,15 @@ pub fn func_ceiling(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<u
   }
 }
 
-pub fn func_round(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_round(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 1 or 2 arguments
   match args.len() {
     1 => {
@@ -2686,7 +3306,15 @@ pub fn func_round(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usi
   }
 }
 
-pub fn func_current_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_current_date_time(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
   // TODO: do the check in static analysis phase
@@ -2694,7 +3322,15 @@ pub fn func_current_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn
   Ok(vec![Rc::new(Item::Value(Value::DateTime(Local::now())))])
 }
 
-pub fn func_current_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_current_date(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
   // TODO: do the check in static analysis phase
@@ -2702,7 +3338,15 @@ pub fn func_current_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opt
   Ok(vec![Rc::new(Item::Value(Value::Date(Local::today())))])
 }
 
-pub fn func_current_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_current_time(
+    _: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
   // TODO: do the check in static analysis phase
@@ -2710,7 +3354,15 @@ pub fn func_current_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opt
   Ok(vec![Rc::new(Item::Value(Value::Time(Local::now())))])
 }
 
-pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_format_date_time(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
 
@@ -2718,7 +3370,7 @@ pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn:
     2 => {
       // First argument is the dateTime value
       // Second argument is the picture
-      let pic = match picture_parse(&args[1].to_string()) {
+      let pic = match picture_parse(&args[1].to_string(Some(f))) {
         Ok(p) => p,
 	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("bad picture"),})
       };
@@ -2750,7 +3402,15 @@ pub fn func_format_date_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn:
   }
 }
 
-pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_format_date(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
 
@@ -2758,7 +3418,7 @@ pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
     2 => {
       // First argument is the date value
       // Second argument is the picture
-      let pic = match picture_parse(&args[1].to_string()) {
+      let pic = match picture_parse(&args[1].to_string(Some(f))) {
         Ok(p) => p,
 	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("bad picture"),})
       };
@@ -2790,7 +3450,15 @@ pub fn func_format_date(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
   }
 }
 
-pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, args: Vec<Sequence>) -> Result<Sequence, Error> {
+pub fn func_format_time(
+    _e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    args: Vec<Sequence>,
+    f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
 
@@ -2798,7 +3466,7 @@ pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
     2 => {
       // First argument is the time value
       // Second argument is the picture
-      let pic = match picture_parse(&args[1].to_string()) {
+      let pic = match picture_parse(&args[1].to_string(Some(f))) {
         Ok(p) => p,
 	Err(_) => return Result::Err(Error{kind: ErrorKind::Unknown, message: String::from("bad picture"),})
       };
@@ -2830,8 +3498,16 @@ pub fn func_format_time(_: &DynamicContext, _ctxt: Option<Sequence>, _posn: Opti
   }
 }
 
-pub fn func_current_grouping_key(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
-  match dc.current_grouping_key.borrow().last() {
+pub fn func_current_grouping_key(
+    e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
+  match e.dc.current_grouping_key.borrow().last() {
     Some(k) => {
       match k {
         Some(l) => Ok(vec![l.clone()]),
@@ -2844,8 +3520,16 @@ pub fn func_current_grouping_key(dc: &DynamicContext, _ctxt: Option<Sequence>, _
   }
 }
 
-pub fn func_current_group(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: Option<usize>, _args: Vec<Sequence>) -> Result<Sequence, Error> {
-  match dc.current_group.borrow().last() {
+pub fn func_current_group(
+    e: &Evaluator,
+    _ctxt: Option<Sequence>,
+    _posn: Option<usize>,
+    _args: Vec<Sequence>,
+    _f: &mut Forest,
+    _sd: TreeIndex,
+    _rd: TreeIndex,
+) -> Result<Sequence, Error> {
+  match e.dc.current_group.borrow().last() {
     Some(k) => {
       match k {
         Some(l) => Ok(l.clone()),
@@ -2855,24 +3539,6 @@ pub fn func_current_group(dc: &DynamicContext, _ctxt: Option<Sequence>, _posn: O
     None => {
       Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: String::from("no current group"),})
     }
-  }
-}
-
-// Operands must be singletons
-fn value_comparison(dc: &DynamicContext, ctxt: Option<Sequence>, posn: Option<usize>, op: Operator, left: &Vec<Constructor>, right: &Vec<Constructor>) -> Result<bool, Error> {
-  let left_seq = evaluate(dc, ctxt.clone(), posn, left)?;
-  if left_seq.len() == 0 {
-    return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is empty"),})
-  }
-  if left_seq.len() == 1 {
-    let right_seq = evaluate(dc, ctxt.clone(), posn, right)?;
-    if right_seq.len() == 1 {
-      Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
-    } else {
-      Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("right-hand sequence is not a singleton sequence"),})
-    }
-  } else {
-    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("left-hand sequence is not a singleton sequence"),})
   }
 }
 
@@ -2990,6 +3656,9 @@ pub fn format_constructor(c: &Vec<Constructor>, i: usize) -> String {
       Constructor::ApplyTemplates(_) => {
         format!("{:in$} apply-templates constructor", "", in=i)
       }
+      Constructor::ApplyImports => {
+        format!("{:in$} apply-imports constructor", "", in=i)
+      }
       Constructor::ForEach(_, _, _) => {
         format!("{:in$} for-each constructor", "", in=i)
       }
@@ -3008,255 +3677,300 @@ mod tests {
 
     #[test]
     fn literal_string() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::String("foobar".to_string()))];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_string(), "foobar")
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![Constructor::Literal(Value::from("foobar"))];
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_string(None), "foobar")
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
 
     #[test]
     fn literal_int() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::Integer(456))];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s[0].to_int().unwrap(), 456)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![Constructor::Literal(Value::Integer(456))];
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s[0].to_int().unwrap(), 456)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
 
-//    #[test]
-//    fn literal_decimal() {
-//      let dc = DynamicContext::new(None);
-//      let cons = vec![Constructor::Literal(Value::Decimal(d128!(34.56)))];
-//      let s = evaluate(&dc, None, None, &cons)
-//        .expect("evaluation failed");
-//      if s.len() == 1 {
-//        assert_eq!(s.to_string(), "34.56")
-//      } else {
-//        panic!("sequence is not a singleton")
-//      }
-//    }
+    #[test]
+    fn literal_decimal() {
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![Constructor::Literal(Value::Decimal(dec!(34.56)))];
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_string(None), "34.56")
+	} else {
+            panic!("sequence is not a singleton")
+	}
+    }
 
     #[test]
     fn literal_bool() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::Boolean(false))];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), false)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![Constructor::Literal(Value::from(false))];
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), false)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
 
     #[test]
     fn literal_double() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![Constructor::Literal(Value::Double(4.56))];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s[0].to_double(), 4.56)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![Constructor::Literal(Value::from(4.56))];
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s[0].to_double(), 4.56)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
 
     #[test]
     fn sequence_literal() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::Literal(Value::String("foo".to_string())),
-	  Constructor::Literal(Value::String("bar".to_string())),
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::Literal(Value::from("foo")),
+	    Constructor::Literal(Value::from("bar")),
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 2 {
-        assert_eq!(s.to_string(), "foobar")
-      } else {
-        panic!("sequence does not have two items")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 2 {
+            assert_eq!(s.to_string(None), "foobar")
+	} else {
+            panic!("sequence does not have two items")
+	}
     }
 
     #[test]
     fn sequence_literal_mixed() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::Literal(Value::String("foo".to_string())),
-	  Constructor::Literal(Value::Integer(123)),
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::Literal(Value::from("foo")),
+	    Constructor::Literal(Value::Integer(123)),
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 2 {
-        assert_eq!(s.to_string(), "foo123")
-      } else {
-        panic!("sequence does not have two items")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 2 {
+            assert_eq!(s.to_string(None), "foo123")
+	} else {
+            panic!("sequence does not have two items")
+	}
     }
 
     #[test]
     fn context_item() {
-      let dc = DynamicContext::new(None);
-      let s = vec![Rc::new(Item::Value(Value::String("foobar".to_string())))];
-      let cons = vec![Constructor::ContextItem];
-      let result = evaluate(&dc, Some(s), Some(0), &cons)
-        .expect("evaluation failed");
-      if result.len() == 1 {
-        assert_eq!(result[0].to_string(), "foobar")
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let s = vec![Rc::new(Item::Value(Value::from("foobar")))];
+	let cons = vec![Constructor::ContextItem];
+	let result = e.evaluate(Some(s), Some(0), &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if result.len() == 1 {
+            assert_eq!(result[0].to_string(None), "foobar")
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
 
     #[test]
     fn context_item_2() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::ContextItem,
-	  Constructor::ContextItem,
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::ContextItem,
+	    Constructor::ContextItem,
 	];
-      let result = evaluate(&dc, Some(vec![Rc::new(Item::Value(Value::String("foobar".to_string())))]), Some(0), &cons)
-        .expect("evaluation failed");
-      if result.len() == 2 {
-        assert_eq!(result.to_string(), "foobarfoobar")
-      } else {
-        panic!("sequence does not have two items")
-      }
+	let result = e.evaluate(Some(vec![Rc::new(Item::Value(Value::from("foobar")))]), Some(0), &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if result.len() == 2 {
+            assert_eq!(result.to_string(None), "foobarfoobar")
+	} else {
+            panic!("sequence does not have two items")
+	}
     }
 
     #[test]
     fn or() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::Or(
-	    vec![
-	      vec![Constructor::Literal(Value::Boolean(true))],
-	      vec![Constructor::Literal(Value::Boolean(false))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::Or(
+		vec![
+		    vec![Constructor::Literal(Value::from(true))],
+		    vec![Constructor::Literal(Value::from(false))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), true)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), true)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: test more than two operands
 
     #[test]
     fn and() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::And(
-	    vec![
-	      vec![Constructor::Literal(Value::Boolean(true))],
-	      vec![Constructor::Literal(Value::Boolean(false))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::And(
+		vec![
+		    vec![Constructor::Literal(Value::from(true))],
+		    vec![Constructor::Literal(Value::from(false))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), false)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), false)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: test more than two operands
 
     #[test]
     fn value_comparison_int_true() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::ValueComparison(
-	    Operator::Equal,
-	    vec![
-	      vec![Constructor::Literal(Value::Integer(1))],
-	      vec![Constructor::Literal(Value::Integer(1))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::ValueComparison(
+		Operator::Equal,
+		vec![
+		    vec![Constructor::Literal(Value::Integer(1))],
+		    vec![Constructor::Literal(Value::Integer(1))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), true)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), true)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_int_false() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::ValueComparison(
-	    Operator::Equal,
-	    vec![
-	      vec![Constructor::Literal(Value::Integer(1))],
-	      vec![Constructor::Literal(Value::Integer(2))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::ValueComparison(
+		Operator::Equal,
+		vec![
+		    vec![Constructor::Literal(Value::Integer(1))],
+		    vec![Constructor::Literal(Value::Integer(2))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), false)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), false)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_true() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::ValueComparison(
-	    Operator::Equal,
-	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::ValueComparison(
+		Operator::Equal,
+		vec![
+		    vec![Constructor::Literal(Value::from("foo"))],
+		    vec![Constructor::Literal(Value::from("foo"))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), true)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), true)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: negative test: more than two operands
     #[test]
     fn value_comparison_string_false() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::ValueComparison(
-	    Operator::Equal,
-	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![Constructor::Literal(Value::String("bar".to_string()))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::ValueComparison(
+		Operator::Equal,
+		vec![
+		    vec![Constructor::Literal(Value::from("foo"))],
+		    vec![Constructor::Literal(Value::from("bar"))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-        .expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), false)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+            .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), false)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: negative test: more than two operands
     // TODO: compare other data types, mixed data types
@@ -3264,120 +3978,135 @@ mod tests {
 
     #[test]
     fn general_comparison_string_true() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::GeneralComparison(
-            Operator::Equal,
-	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![
-	        Constructor::Literal(Value::String("bar".to_string())),
-	        Constructor::Literal(Value::String("foo".to_string())),
-	      ]
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::GeneralComparison(
+		Operator::Equal,
+		vec![
+		    vec![Constructor::Literal(Value::from("foo"))],
+		    vec![
+			Constructor::Literal(Value::from("bar")),
+			Constructor::Literal(Value::from("foo")),
+		    ]
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), true)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), true)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     #[test]
     fn general_comparison_string_false() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::GeneralComparison(
-            Operator::Equal,
-	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![
-	        Constructor::Literal(Value::String("bar".to_string())),
-	        Constructor::Literal(Value::String("oof".to_string())),
-	      ]
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::GeneralComparison(
+		Operator::Equal,
+		vec![
+		    vec![Constructor::Literal(Value::from("foo"))],
+		    vec![
+			Constructor::Literal(Value::from("bar")),
+			Constructor::Literal(Value::from("oof")),
+		    ]
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_bool(), false)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_bool(), false)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: test multi-item first sequence against multi-item second sequence; mixed types, etc
 
     #[test]
     fn concat() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::Concat(
-	    vec![
-	      vec![Constructor::Literal(Value::String("foo".to_string()))],
-	      vec![
-	        Constructor::Literal(Value::String("bar".to_string())),
-	        Constructor::Literal(Value::String("oof".to_string())),
-	      ]
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::Concat(
+		vec![
+		    vec![Constructor::Literal(Value::from("foo"))],
+		    vec![
+			Constructor::Literal(Value::from("bar")),
+			Constructor::Literal(Value::from("oof")),
+		    ]
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s.to_string(), "foobaroof")
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s.to_string(None), "foobaroof")
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
 
     #[test]
     fn range() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::Range(
-	    vec![
-	      vec![Constructor::Literal(Value::Integer(0))],
-	      vec![Constructor::Literal(Value::Integer(9))],
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::Range(
+		vec![
+		    vec![Constructor::Literal(Value::Integer(0))],
+		    vec![Constructor::Literal(Value::Integer(9))],
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 10 {
-        assert_eq!(s.to_string(), "0123456789")
-      } else {
-        panic!("sequence does not have 10 items")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 10 {
+            assert_eq!(s.to_string(None), "0123456789")
+	} else {
+            panic!("sequence does not have 10 items")
+	}
     }
     // TODO: ranges resulting in empty sequence, start = end, negative tests
 
     #[test]
     fn arithmetic_double_add() {
-      let dc = DynamicContext::new(None);
-      let cons = vec![
-	  Constructor::Arithmetic(
-	    vec![
-	      ArithmeticOperand{
-	        op: ArithmeticOperator::Noop,
-	        operand: vec![Constructor::Literal(Value::Double(1.0))]
-	      },
-	      ArithmeticOperand{
-	        op: ArithmeticOperator::Add,
-	        operand: vec![Constructor::Literal(Value::Double(1.0))]
-	      }
-	    ]
-	  )
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let cons = vec![
+	    Constructor::Arithmetic(
+		vec![
+		    ArithmeticOperand{
+			op: ArithmeticOperator::Noop,
+			operand: vec![Constructor::Literal(Value::from(1.0))]
+		    },
+		    ArithmeticOperand{
+			op: ArithmeticOperator::Add,
+			operand: vec![Constructor::Literal(Value::from(1.0))]
+		    }
+		]
+	    )
 	];
-      let s = evaluate(&dc, None, None, &cons)
-	.expect("evaluation failed");
-      if s.len() == 1 {
-        assert_eq!(s[0].to_double(), 2.0)
-      } else {
-        panic!("sequence is not a singleton")
-      }
+	let s = e.evaluate(None, None, &cons, &mut f, sd, rd)
+	    .expect("evaluation failed");
+	if s.len() == 1 {
+            assert_eq!(s[0].to_double(), 2.0)
+	} else {
+            panic!("sequence is not a singleton")
+	}
     }
     // TODO: ranges resulting in empty sequence, start = end, negative tests
 
@@ -3385,762 +4114,891 @@ mod tests {
 
     #[test]
     fn function_call_position() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("position".to_string(), vec![], Some(func_position)),
-	vec![]
-      );
-      let s = vec![
-        Rc::new(Item::Value(Value::String("a".to_string()))),
-        Rc::new(Item::Value(Value::String("b".to_string()))),
-      ];
-      let vc = vec![c];
-      let r = evaluate(&dc, Some(s), Some(1), &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "2")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("position".to_string(), vec![], Some(func_position)),
+	    vec![]
+	);
+	let s = vec![
+            Rc::new(Item::Value(Value::from("a"))),
+            Rc::new(Item::Value(Value::from("b"))),
+	];
+	let vc = vec![c];
+	let r = e.evaluate(Some(s), Some(1), &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "2")
     }
     #[test]
     fn function_call_last() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("last".to_string(), vec![], Some(func_last)),
-	vec![]
-      );
-      let s = vec![
-        Rc::new(Item::Value(Value::String("a".to_string()))),
-        Rc::new(Item::Value(Value::String("b".to_string()))),
-        Rc::new(Item::Value(Value::String("c".to_string()))),
-      ];
-      let vc = vec![c];
-      let r = evaluate(&dc, Some(s), Some(1), &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "3")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("last".to_string(), vec![], Some(func_last)),
+	    vec![]
+	);
+	let s = vec![
+            Rc::new(Item::Value(Value::from("a"))),
+            Rc::new(Item::Value(Value::from("b"))),
+            Rc::new(Item::Value(Value::from("c"))),
+	];
+	let vc = vec![c];
+	let r = e.evaluate(Some(s), Some(1), &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "3")
     }
     #[test]
     fn function_call_count() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new(
-	  "count".to_string(),
-	  vec![Param::new("i".to_string(), "t".to_string())],
-	  Some(func_count)
-	),
-	vec![
-	  vec![
-            Constructor::Literal(Value::String("a".to_string())),
-            Constructor::Literal(Value::String("b".to_string())),
-            Constructor::Literal(Value::String("c".to_string())),
-	  ]
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "3")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new(
+		"count".to_string(),
+		vec![Param::new("i".to_string(), "t".to_string())],
+		Some(func_count)
+	    ),
+	    vec![
+		vec![
+		    Constructor::Literal(Value::from("a")),
+		    Constructor::Literal(Value::from("b")),
+		    Constructor::Literal(Value::from("c")),
+		]
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "3")
     }
     #[test]
     fn function_call_string_1() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("string".to_string(), vec![], Some(func_string)),
-	vec![
-	  vec![
-            Constructor::Literal(Value::String("a".to_string())),
-            Constructor::Literal(Value::String("b".to_string())),
-            Constructor::Literal(Value::String("c".to_string())),
-	  ]
-        ]
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("string".to_string(), vec![], Some(func_string)),
+	    vec![
+		vec![
+		    Constructor::Literal(Value::from("a")),
+		    Constructor::Literal(Value::from("b")),
+		    Constructor::Literal(Value::from("c")),
+		]
+            ]
       );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "abc")
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "abc")
     }
     #[test]
     fn function_call_concat_1() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("concat".to_string(), vec![], Some(func_concat)),
-	vec![
-	  vec![Constructor::Literal(Value::String("a".to_string()))],
-          vec![Constructor::Literal(Value::String("b".to_string()))],
-          vec![Constructor::Literal(Value::String("c".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "abc")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("concat".to_string(), vec![], Some(func_concat)),
+	    vec![
+		vec![Constructor::Literal(Value::from("a"))],
+		vec![Constructor::Literal(Value::from("b"))],
+		vec![Constructor::Literal(Value::from("c"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "abc")
     }
     #[test]
     fn function_call_startswith_pos() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("a".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_bool(), true)
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abc"))],
+		vec![Constructor::Literal(Value::from("a"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_bool(), true)
     }
     #[test]
     fn function_call_startswith_neg() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("b".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_bool(), false)
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("starts-with".to_string(), vec![], Some(func_startswith)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abc"))],
+		vec![Constructor::Literal(Value::from("b"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_bool(), false)
     }
     #[test]
     fn function_call_contains_pos() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("contains".to_string(), vec![], Some(func_contains)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("b".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_bool(), true)
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("contains".to_string(), vec![], Some(func_contains)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abc"))],
+		vec![Constructor::Literal(Value::from("b"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_bool(), true)
     }
     #[test]
     fn function_call_contains_neg() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("contains".to_string(), vec![], Some(func_contains)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::String("d".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_bool(), false)
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("contains".to_string(), vec![], Some(func_contains)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abc"))],
+		vec![Constructor::Literal(Value::from("d"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_bool(), false)
     }
     #[test]
     fn function_call_substring_2() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring".to_string(), vec![], Some(func_substring)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abc".to_string()))],
-          vec![Constructor::Literal(Value::Integer(2))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "bc")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring".to_string(), vec![], Some(func_substring)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abc"))],
+		vec![Constructor::Literal(Value::Integer(2))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "bc")
     }
     #[test]
     fn function_call_substring_3() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring".to_string(), vec![], Some(func_substring)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::Integer(2))],
-          vec![Constructor::Literal(Value::Integer(3))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "bcd")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring".to_string(), vec![], Some(func_substring)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcde"))],
+		vec![Constructor::Literal(Value::Integer(2))],
+		vec![Constructor::Literal(Value::Integer(3))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "bcd")
     }
     #[test]
     fn function_call_substring_before_1() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("bc".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "a")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcde"))],
+		vec![Constructor::Literal(Value::from("bc"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "a")
     }
     #[test]
     fn function_call_substring_before_neg() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("fg".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring-before".to_string(), vec![], Some(func_substringbefore)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcde"))],
+		vec![Constructor::Literal(Value::from("fg"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "")
     }
     #[test]
     fn function_call_substring_after_1() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("bc".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "de")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcde"))],
+		vec![Constructor::Literal(Value::from("bc"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "de")
     }
     #[test]
     fn function_call_substring_after_neg_1() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("fg".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcde"))],
+		vec![Constructor::Literal(Value::from("fg"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "")
     }
     #[test]
     fn function_call_substring_after_neg_2() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcde".to_string()))],
-          vec![Constructor::Literal(Value::String("de".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("substring-after".to_string(), vec![], Some(func_substringafter)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcde"))],
+		vec![Constructor::Literal(Value::from("de"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "")
     }
     #[test]
     fn function_call_normalizespace() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("normalize-space".to_string(), vec![], Some(func_normalizespace)),
-	vec![
-	  vec![Constructor::Literal(Value::String("	a b   c\nd e 	".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "abcde")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("normalize-space".to_string(), vec![], Some(func_normalizespace)),
+	    vec![
+		vec![Constructor::Literal(Value::from("	a b   c\nd e 	"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "abcde")
     }
     #[test]
     fn function_call_translate() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("translate".to_string(), vec![], Some(func_translate)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcdeabcde".to_string()))],
-	  vec![Constructor::Literal(Value::String("ade".to_string()))],
-	  vec![Constructor::Literal(Value::String("XY".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.to_string(), "XbcYXbcY")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("translate".to_string(), vec![], Some(func_translate)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcdeabcde"))],
+		vec![Constructor::Literal(Value::from("ade"))],
+		vec![Constructor::Literal(Value::from("XY"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "XbcYXbcY")
     }
     // TODO: test using non-ASCII characters
     #[test]
     fn function_call_boolean_true() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("boolean".to_string(), vec![], Some(func_boolean)),
-	vec![
-	  vec![Constructor::Literal(Value::String("abcdeabcde".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-	_ => panic!("not a singleton boolean true value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("boolean".to_string(), vec![], Some(func_boolean)),
+	    vec![
+		vec![Constructor::Literal(Value::from("abcdeabcde"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	    _ => panic!("not a singleton boolean true value")
+	}
     }
     #[test]
     fn function_call_boolean_false() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("boolean".to_string(), vec![], Some(func_boolean)),
-	vec![
-	  vec![],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-	_ => panic!("not a singleton boolean false value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("boolean".to_string(), vec![], Some(func_boolean)),
+	    vec![
+		vec![],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	    _ => panic!("not a singleton boolean false value")
+	}
     }
     #[test]
     fn function_call_not_false() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("not".to_string(), vec![], Some(func_not)),
-	vec![
-	  vec![Constructor::Literal(Value::Boolean(true))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-	_ => panic!("not a singleton boolean false value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("not".to_string(), vec![], Some(func_not)),
+	    vec![
+		vec![Constructor::Literal(Value::from(true))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	    _ => panic!("not a singleton boolean false value")
+	}
     }
     #[test]
     fn function_call_not_true() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("not".to_string(), vec![], Some(func_not)),
-	vec![
-	  vec![],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-	_ => panic!("not a singleton boolean true value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("not".to_string(), vec![], Some(func_not)),
+	    vec![
+		vec![],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	    _ => panic!("not a singleton boolean true value")
+	}
     }
     #[test]
     fn function_call_true() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("true".to_string(), vec![], Some(func_true)),
-	vec![
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-	_ => panic!("not a singleton boolean true value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("true".to_string(), vec![], Some(func_true)),
+	    vec![
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
+	    _ => panic!("not a singleton boolean true value")
+	}
     }
     #[test]
     fn function_call_false() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("false".to_string(), vec![], Some(func_false)),
-	vec![
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-	_ => panic!("not a singleton boolean false value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("false".to_string(), vec![], Some(func_false)),
+	    vec![
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
+	    _ => panic!("not a singleton boolean false value")
+	}
     }
     #[test]
     fn function_call_number_int() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("number".to_string(), vec![], Some(func_number)),
-	vec![
-	  vec![Constructor::Literal(Value::String("123".to_string()))]
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
-	_ => panic!("not a singleton integer value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("number".to_string(), vec![], Some(func_number)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123"))]
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
+	    _ => panic!("not a singleton integer value")
+	}
     }
     #[test]
     fn function_call_number_double() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("number".to_string(), vec![], Some(func_number)),
-	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))]
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
-	_ => panic!("not a singleton double value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("number".to_string(), vec![], Some(func_number)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123.456"))]
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
+	    _ => panic!("not a singleton double value")
+	}
     }
     // TODO: test NaN result
     #[test]
     fn function_call_sum() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("sum".to_string(), vec![], Some(func_sum)),
-	vec![
-	    vec![Constructor::Literal(Value::String("123.456".to_string())),
-	         Constructor::Literal(Value::String("10".to_string())),
-	         Constructor::Literal(Value::String("-20".to_string())),
-	         Constructor::Literal(Value::String("0".to_string())),
-	    ],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 - 20.0),
-	_ => panic!("not a singleton double value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("sum".to_string(), vec![], Some(func_sum)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123.456")),
+	             Constructor::Literal(Value::from("10")),
+	             Constructor::Literal(Value::from("-20")),
+	             Constructor::Literal(Value::from("0")),
+		],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 - 20.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn function_call_floor() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("floor".to_string(), vec![], Some(func_floor)),
-	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
-	_ => panic!("not a singleton double value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("floor".to_string(), vec![], Some(func_floor)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123.456"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn function_call_ceiling() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("ceiling".to_string(), vec![], Some(func_ceiling)),
-	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
-	_ => panic!("not a singleton double value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("ceiling".to_string(), vec![], Some(func_ceiling)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123.456"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn function_call_round_down() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("round".to_string(), vec![], Some(func_round)),
-	vec![
-	  vec![Constructor::Literal(Value::String("123.456".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
-	_ => panic!("not a singleton double value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("round".to_string(), vec![], Some(func_round)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123.456"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
     #[test]
     fn function_call_round_up() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("round".to_string(), vec![], Some(func_round)),
-	vec![
-	  vec![Constructor::Literal(Value::String("123.654".to_string()))],
-        ]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match *r[0] {
-        Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
-	_ => panic!("not a singleton double value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("round".to_string(), vec![], Some(func_round)),
+	    vec![
+		vec![Constructor::Literal(Value::from("123.654"))],
+            ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match *r[0] {
+            Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	    _ => panic!("not a singleton double value")
+	}
     }
 
     // Date/time related functions
 
     #[test]
     fn function_call_current_date() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("current-date".to_string(), vec![], Some(func_current_date)),
-	vec![]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match &*r[0] {
-        Item::Value(Value::Date(d)) => {
-	  assert_eq!(d.year(), Local::today().year());
-	  assert_eq!(d.month(), Local::today().month());
-	  assert_eq!(d.day(), Local::today().day());
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("current-date".to_string(), vec![], Some(func_current_date)),
+	    vec![]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match &*r[0] {
+            Item::Value(Value::Date(d)) => {
+		assert_eq!(d.year(), Local::today().year());
+		assert_eq!(d.month(), Local::today().month());
+		assert_eq!(d.day(), Local::today().day());
+	    }
+	    _ => panic!("not a singleton date value")
 	}
-	_ => panic!("not a singleton date value")
-      }
     }
 
     #[test]
     fn function_call_current_time() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("current-time".to_string(), vec![], Some(func_current_time)),
-	vec![]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match &*r[0] {
-        Item::Value(Value::Time(t)) => {
-	  assert_eq!(t.hour(), Local::now().hour());
-	  assert_eq!(t.minute(), Local::now().minute());
-	  assert_eq!(t.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("current-time".to_string(), vec![], Some(func_current_time)),
+	    vec![]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match &*r[0] {
+            Item::Value(Value::Time(t)) => {
+		assert_eq!(t.hour(), Local::now().hour());
+		assert_eq!(t.minute(), Local::now().minute());
+		assert_eq!(t.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+	    }
+	    _ => panic!("not a singleton time value")
 	}
-	_ => panic!("not a singleton time value")
-      }
     }
 
     #[test]
     fn function_call_current_date_time() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("current-dateTime".to_string(), vec![], Some(func_current_date_time)),
-	vec![]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match &*r[0] {
-        Item::Value(Value::DateTime(dt)) => {
-	  assert_eq!(dt.year(), Local::today().year());
-	  assert_eq!(dt.month(), Local::today().month());
-	  assert_eq!(dt.day(), Local::today().day());
-	  assert_eq!(dt.hour(), Local::now().hour());
-	  assert_eq!(dt.minute(), Local::now().minute());
-	  assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("current-dateTime".to_string(), vec![], Some(func_current_date_time)),
+	    vec![]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match &*r[0] {
+            Item::Value(Value::DateTime(dt)) => {
+		assert_eq!(dt.year(), Local::today().year());
+		assert_eq!(dt.month(), Local::today().month());
+		assert_eq!(dt.day(), Local::today().day());
+		assert_eq!(dt.hour(), Local::now().hour());
+		assert_eq!(dt.minute(), Local::now().minute());
+		assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+	    }
+	    _ => panic!("not a singleton dateTime value")
 	}
-	_ => panic!("not a singleton dateTime value")
-      }
     }
 
     #[test]
     fn function_call_format_date() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("format-date".to_string(), vec![], Some(func_format_date)),
-	vec![
-	  vec![Constructor::Literal(Value::String("2022-01-03".to_string()))],
-	  vec![Constructor::Literal(Value::String("[D] [M] [Y]".to_string()))],
-	]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match &*r[0] {
-        Item::Value(Value::String(d)) => assert_eq!(d, "03 01 2022"),
-	_ => panic!("not a singleton string value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("format-date".to_string(), vec![], Some(func_format_date)),
+	    vec![
+		vec![Constructor::Literal(Value::from("2022-01-03"))],
+		vec![Constructor::Literal(Value::from("[D] [M] [Y]"))],
+	    ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match &*r[0] {
+            Item::Value(Value::String(d)) => assert_eq!(d, "03 01 2022"),
+	    _ => panic!("not a singleton string value")
+	}
     }
 
     #[test]
     fn function_call_format_date_time() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("format-dateTime".to_string(), vec![], Some(func_format_date_time)),
-	vec![
-	  vec![Constructor::Literal(Value::String("2022-01-03T04:05:06.789+10:00".to_string()))],
-	  vec![Constructor::Literal(Value::String("[H]:[m] [D]/[M]/[Y]".to_string()))],
-	]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match &*r[0] {
-        Item::Value(Value::String(d)) => assert_eq!(d, "04:05 03/01/2022"),
-	_ => panic!("not a singleton string value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("format-dateTime".to_string(), vec![], Some(func_format_date_time)),
+	    vec![
+		vec![Constructor::Literal(Value::from("2022-01-03T04:05:06.789+10:00"))],
+		vec![Constructor::Literal(Value::from("[H]:[m] [D]/[M]/[Y]"))],
+	    ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match &*r[0] {
+            Item::Value(Value::String(d)) => assert_eq!(d, "04:05 03/01/2022"),
+	    _ => panic!("not a singleton string value")
+	}
     }
 
     #[test]
     fn function_call_format_time() {
-      let dc = DynamicContext::new(None);
-      let c = Constructor::FunctionCall(
-        Function::new("format-time".to_string(), vec![], Some(func_format_time)),
-	vec![
-	  vec![Constructor::Literal(Value::String("04:05:06.789".to_string()))],
-	  vec![Constructor::Literal(Value::String("[H]:[m]:[s]".to_string()))],
-	]
-      );
-      let vc = vec![c];
-      let r = evaluate(&dc, None, None, &vc).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      match &*r[0] {
-        Item::Value(Value::String(d)) => assert_eq!(d, "04:05:06"),
-	_ => panic!("not a singleton string value")
-      }
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = Constructor::FunctionCall(
+            Function::new("format-time".to_string(), vec![], Some(func_format_time)),
+	    vec![
+		vec![Constructor::Literal(Value::from("04:05:06.789"))],
+		vec![Constructor::Literal(Value::from("[H]:[m]:[s]"))],
+	    ]
+	);
+	let vc = vec![c];
+	let r = e.evaluate(None, None, &vc, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	match &*r[0] {
+            Item::Value(Value::String(d)) => assert_eq!(d, "04:05:06"),
+	    _ => panic!("not a singleton string value")
+	}
     }
 
     // Variables
     #[test]
     fn var_ref() {
-      let dc = DynamicContext::new(None);
-      let c = vec![
-        Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::String("my variable".to_string()))]),
-	Constructor::VariableReference("foo".to_string()),
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = vec![
+            Constructor::VariableDeclaration("foo".to_string(), vec![Constructor::Literal(Value::from("my variable"))]),
+	    Constructor::VariableReference("foo".to_string()),
       ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
-      assert_eq!(r.to_string(), "my variable")
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_string(None), "my variable")
     }
 
     // Loops
     #[test]
     fn loop_1() {
-      let dc = DynamicContext::new(None);
-      // This is "for $x in ('a', 'b', 'c') return $x"
-      let c = vec![
-        Constructor::Loop(
-	  vec![Constructor::VariableDeclaration(
-	    "x".to_string(),
-	    vec![
-	      Constructor::Literal(Value::String("a".to_string())),
-	      Constructor::Literal(Value::String("b".to_string())),
-	      Constructor::Literal(Value::String("c".to_string())),
-	    ]
-	  )],
-	  vec![Constructor::VariableReference("x".to_string())]
-	)
-      ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
-      assert_eq!(r.len(), 3);
-      assert_eq!(r.to_string(), "abc")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	// This is "for $x in ('a', 'b', 'c') return $x"
+	let c = vec![
+            Constructor::Loop(
+		vec![Constructor::VariableDeclaration(
+		    "x".to_string(),
+		    vec![
+			Constructor::Literal(Value::from("a")),
+			Constructor::Literal(Value::from("b")),
+			Constructor::Literal(Value::from("c")),
+		    ]
+		)],
+		vec![Constructor::VariableReference("x".to_string())]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 3);
+	assert_eq!(r.to_string(None), "abc")
     }
 
     // Switch
     #[test]
     fn switch_1() {
-      let dc = DynamicContext::new(None);
-      // implements "if (1) then 'one' else 'not one'"
-      let c = vec![
-        Constructor::Switch(
-	  vec![
-	    vec![
-	      Constructor::Literal(Value::Integer(1))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
-	    ]
-	  ],
-	  vec![Constructor::Literal(Value::String("not one".to_string()))]
-	)
-      ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      assert_eq!(r.to_string(), "one")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	// implements "if (1) then 'one' else 'not one'"
+	let c = vec![
+            Constructor::Switch(
+		vec![
+		    vec![
+			Constructor::Literal(Value::Integer(1))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("one"))
+		    ]
+		],
+		vec![Constructor::Literal(Value::from("not one"))]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	assert_eq!(r.to_string(None), "one")
     }
     #[test]
     fn switch_2() {
-      let dc = DynamicContext::new(None);
-      // implements "if (0) then 'one' else 'not one'"
-      let c = vec![
-        Constructor::Switch(
-	  vec![
-	    vec![
-	      Constructor::Literal(Value::Integer(0))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
-	    ]
-	  ],
-	  vec![Constructor::Literal(Value::String("not one".to_string()))]
-	)
-      ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      assert_eq!(r.to_string(), "not one")
-    }    
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	// implements "if (0) then 'one' else 'not one'"
+	let c = vec![
+            Constructor::Switch(
+		vec![
+		    vec![
+			Constructor::Literal(Value::Integer(0))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("one"))
+		    ]
+		],
+		vec![Constructor::Literal(Value::from("not one"))]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	assert_eq!(r.to_string(None), "not one")
+    }
     #[test]
     fn switch_3() {
-      let dc = DynamicContext::new(None);
-      let c = vec![
-        Constructor::Switch(
-	  vec![
-	    vec![
-	      Constructor::Literal(Value::Integer(0))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::Integer(1))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("two".to_string()))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::Integer(0))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("three".to_string()))
-	    ],
-	  ],
-	  vec![Constructor::Literal(Value::String("not any".to_string()))]
-	)
-      ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      assert_eq!(r.to_string(), "two")
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = vec![
+            Constructor::Switch(
+		vec![
+		    vec![
+			Constructor::Literal(Value::Integer(0))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("one"))
+		    ],
+		    vec![
+			Constructor::Literal(Value::Integer(1))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("two"))
+		    ],
+		    vec![
+			Constructor::Literal(Value::Integer(0))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("three"))
+		    ],
+		],
+		vec![Constructor::Literal(Value::from("not any"))]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	assert_eq!(r.to_string(None), "two")
     }
     // The first clause to pass should return the result
     #[test]
     fn switch_4() {
-      let dc = DynamicContext::new(None);
-      let c = vec![
-        Constructor::Switch(
-	  vec![
-	    vec![
-	      Constructor::Literal(Value::Integer(0))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("one".to_string()))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::Integer(1))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("two".to_string()))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::Integer(1))
-	    ],
-	    vec![
-	      Constructor::Literal(Value::String("three".to_string()))
-	    ],
-	  ],
-	  vec![Constructor::Literal(Value::String("not any".to_string()))]
-	)
-      ];
-      let r = evaluate(&dc, None, None, &c).expect("evaluation failed");
-      assert_eq!(r.len(), 1);
-      assert_eq!(r.to_string(), "two")
-    }    
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = vec![
+            Constructor::Switch(
+		vec![
+		    vec![
+			Constructor::Literal(Value::Integer(0))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("one"))
+		    ],
+		    vec![
+			Constructor::Literal(Value::Integer(1))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("two"))
+		    ],
+		    vec![
+			Constructor::Literal(Value::Integer(1))
+		    ],
+		    vec![
+			Constructor::Literal(Value::from("three"))
+		    ],
+		],
+		vec![Constructor::Literal(Value::from("not any"))]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.len(), 1);
+	assert_eq!(r.to_string(None), "two")
+    }
 
     // Patterns
     // Need a concrete type to test patterns
@@ -4149,10 +5007,63 @@ mod tests {
     // Need a concrete type to test patterns
 
     // Literal result element
-    // Need a concrete type to test literal result elements
+    #[test]
+    fn literal_result() {
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = vec![
+            Constructor::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		vec![]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_xml(Some(&f)), "<Test></Test>")
+    }
+    #[test]
+    fn literal_result_text() {
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = vec![
+            Constructor::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		vec![
+		    Constructor::Literal(Value::from("data"))
+		]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_xml(Some(&f)), "<Test>data</Test>")
+    }
+    #[test]
+    fn literal_result_content() {
+	let e = Evaluator::new();
+	let mut f = Forest::new();
+	let sd = f.plant_tree();
+	let rd = f.plant_tree();
+	let c = vec![
+            Constructor::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		vec![
+		    Constructor::Literal(Value::from("data")),
+		    Constructor::LiteralElement(
+			QualifiedName::new(None, None, String::from("Level-1")),
+			vec![
+			    Constructor::Literal(Value::from("deeper"))
+			]
+		    )
+		]
+	    )
+	];
+	let r = e.evaluate(None, None, &c, &mut f, sd, rd).expect("evaluation failed");
+	assert_eq!(r.to_xml(Some(&f)), "<Test>data<Level-1>deeper</Level-1></Test>")
+    }
 
     // for-each, for-each-group
-    // See libxml-evaluate test
 
 }
 

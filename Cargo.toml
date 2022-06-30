@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "0.6.0"
+version = "0.7.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"
@@ -11,13 +11,22 @@ documentation = "https://docs.rs/xrust/"
 readme = "README.md"
 edition = "2018"
 
+[features]
+# The xslt feature enables XSLT support
+default = ["xslt"]
+xslt = []
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 rust_decimal = "1.20"
 rust_decimal_macros = "1.20"
 lexers = "0.1.2"
-nom = "6.2.0"
+nom = "7.1.1"
 unicode-segmentation = "1.7.1"
-petgraph = "0.6.0"
 chrono = "0.4"
+url = "2.2.2"
+reqwest = { version = "0.11", features = ["blocking"] }
+tokio = { version = "1", features = ["full"] }
+generational-arena = "0.2"
+

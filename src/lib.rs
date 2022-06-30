@@ -3,13 +3,11 @@ A Rust implementation of the [XQuery and XPath Data Model 3.1](https://www.w3.or
 
 The library separates parsing from evaluation. An expression is compiled to create a '[Sequence] [Constructor]'. This constructor is then applied to a source document to produce a [Sequence].
 
-A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a Rust Vector. An [Item] is a Node, Function or atomic [Value].
+A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a Rust Vector. An [Item] is a [Node], Function or atomic [Value].
 
-See the [graphitem](impls/graphitem/index.html) module for an example of how to evaluate an XSL stylesheet.
+See the [xslt](xslt/index.html) module for an example of how to evaluate an XSL stylesheet.
 
 ## Status
-
-The project, so far, is a proof-of-concept.
 
 For XPath it provides most of v1.0 functionality, with some v2.0 and v3.1 features.
 
@@ -27,7 +25,6 @@ NB, the library has not been extensively tested.
 ## Goals / Future Work
 
 - The library should always return errors, i.e. it should not panic
-- The library uses dynamic Trait objects for tree navigation and construction, but this imposes a runtime penalty. Use monomorphisation to use traits statically at compile-time.
 - Make the library more idiomatically Rust
 
 ## Contributions
@@ -48,26 +45,27 @@ pub use xdmerror::{Error, ErrorKind};
 
 pub mod qname;
 mod parsepicture;
+mod output;
 
+pub mod value;
+pub use value::Value;
+pub mod forest;
+pub use forest::Node;
 pub mod item;
-pub use item::{Sequence, SequenceTrait, Item, Value, Document, Node};
-
-pub mod xdmgraph;
-
-pub mod impls {
-  pub mod graphitem;
-}
+pub use item::{Sequence, SequenceTrait, Item};
 
 mod parsecommon;
 
 pub mod parsexml;
-//pub use parsexml::parse;
+pub use parsexml::XMLDocument;
 
 pub mod xpath;
 pub use xpath::parse;
 
 pub mod evaluate;
-pub use evaluate::{StaticContext, static_analysis, DynamicContext, evaluate, Constructor};
+pub use evaluate::{StaticContext, Evaluator, Constructor};
 
+#[cfg(feature = "xslt")]
 pub mod xslt;
+#[cfg(feature = "xslt")]
 pub use xslt::from_document;

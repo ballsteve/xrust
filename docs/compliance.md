@@ -181,7 +181,7 @@ xsl:analyze-string|no|
 xsl:analyze-string/@select|no|
 xsl:analyze-string/@regex|no|
 xsl:analyze-string/@flags|no|
-xsl:apply-imports|no|
+xsl:apply-imports|yes|
 xsl:apply-templates|yes|
 xsl:apply-templates/@select|yes|
 xsl:apply-templates/@mode|no|
@@ -290,13 +290,13 @@ xsl:global-context-item/@as|no|
 xsl:global-context-item/@use|no|
 xsl:if|yes|
 xsl:if/@test|yes|
-xsl:import|no|
-xsl:import/@href|no|
+xsl:import|yes|
+xsl:import/@href|yes|
 xsl:import-schema|no|
 xsl:import-schema/@namespace|no|
 xsl:import-schema/@schema-location|no|
-xsl:include|no|
-xsl:include/@href|no|
+xsl:include|yes|
+xsl:include/@href|yes|
 xsl:iterate|no|
 xsl:iterate/@select|no|
 xsl:key|no|
