@@ -11,7 +11,7 @@ See the [xslt](xslt/index.html) module for an example of how to evaluate an XSL 
 
 For XPath it provides most of v1.0 functionality, with some v2.0 and v3.1 features.
 
-The XSLT implementation is bare-bones. It supports basic templating, literal result elements, attributes, and text. Also conditionals (if, choose), repetition (for-each, for-each-group), and copying (copy, copy-of).
+The XSLT implementation is bare-bones. It supports basic templating, literal result elements, attributes, and text. Also conditionals (if, choose), repetition (for-each, for-each-group), copying (copy, copy-of), and inclusion/importing.
 
 NB, the library has not been extensively tested.
 

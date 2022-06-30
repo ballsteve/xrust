@@ -35,6 +35,10 @@ will result in the same internal format as:
 
 NB. We're picking the low-hanging fruit first. So major, fundamental features of the languages are being implemented to begin with. The fine detail will be added later. So although we're aiming for v1.0 functionality as a baseline, the eventual desire to implement all of v3.0 dictates that some more advanced features will be implemented sooner rather than later.
 
+## Documentation
+
+See the [XSLT module](https://docs.rs/xrust/0.7.0/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
+
 ## Compliance
 
 Status of [docs/compliance.md](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) with XDM, XPath, XQuery, and XSLT.

@@ -23,21 +23,32 @@ pub struct Forest {
 pub type TreeIndex = usize;
 
 impl Forest {
+    /// Create a new, empty forest.
     pub fn new() -> Forest {
 	Forest{a: vec![]}
     }
+    /// Start a [Tree] in the forest. The [Tree] will have a single node, which is a Document type [Node].
     pub fn plant_tree(&mut self) -> TreeIndex {
 	let i = self.a.len();
 	self.a.push(Tree::new(i));
 	i
     }
+
+    /// Borrow a [Tree], given a [TreeIndex]. Return None if no suh [Tree] exists.
     pub fn get_ref(&self, i: TreeIndex) -> Option<&Tree> {
 	self.a.get(i)
     }
+    /// Mutably borrow a [Tree], given a [TreeIndex]. Return None if no suh [Tree] exists.
     pub fn get_ref_mut(&mut self, i: TreeIndex) -> Option<&mut Tree> {
 	self.a.get_mut(i)
     }
 
+    /// Parse a string as XML to create a [Tree].
+    ///
+    ///```rust
+    ///let mut f = Forest::new();
+    ///let src = f.grow_tree("<Example>document</Example>")
+    ///    .expect("unable to parse XML");
     pub fn grow_tree(&mut self, s: &str) -> Result<TreeIndex, Error> {
 	let d = XMLDocument::try_from(s)?;
 	if d.content.len() == 0 {
@@ -65,6 +76,9 @@ pub struct Tree {
 
 impl Tree
 {
+    /// Create a tree with the given [TreeIndex].
+    ///
+    /// The newly created tree has a single [Node], of type Document.
     pub fn new(i: TreeIndex) -> Self {
         let mut a = Arena::new();
 	let d = a.insert(
@@ -83,9 +97,11 @@ impl Tree
     fn get_mut(&mut self, i: Index) -> Option<&mut NodeContent> {
 	self.a.get_mut(i)
     }
+    /// Return the Document-type [Node].
     pub fn get_doc_node(&self) -> Node {
 	Node::new(self.d, self.i)
     }
+    /// Append a [Node] as a child of the Document-type [Node].
     pub fn push_doc_node(&mut self, n: Node) -> Result<(), Error> {
 	// Set the parent to the document node
 	self.get_mut(n.0).unwrap().parent = Some(Node::new(self.d, self.i));
@@ -100,6 +116,7 @@ impl Tree
 	    )
     }
 
+    /// Create a new Element-type [Node] in this tree. The newly created [Node] is not attached to the tree, i.e. it has no parent.
     pub fn new_element(&mut self, name: QualifiedName) -> Result<Node, Error> {
 	Ok(
 	    Node::new(
@@ -109,6 +126,7 @@ impl Tree
 	    )
 	)
     }
+    /// Create a new Text-type [Node] in this tree. The newly created [Node] is not attached to the tree, i.e. it has no parent.
     pub fn new_text(&mut self, c: Value) -> Result<Node, Error> {
 	Ok(
 	    Node::new(
@@ -118,6 +136,7 @@ impl Tree
 	    )
 	)
     }
+    /// Create a new Attribute-type [Node] in this tree. The newly created [Node] is not attached to the tree, i.e. it has no parent.
     pub fn new_attribute(&mut self, name: QualifiedName, v: Value) -> Result<Node, Error> {
 	Ok(
 	    Node::new(
@@ -132,6 +151,7 @@ impl Tree
 	    )
 	)
     }
+    /// Create a new Comment-type [Node] in this tree. The newly created [Node] is not attached to the tree, i.e. it has no parent.
     pub fn new_comment(&mut self, v: Value) -> Result<Node, Error> {
         Ok(
 	    Node::new(
@@ -141,6 +161,7 @@ impl Tree
 	    ),
 	)
     }
+    /// Create a new ProcessingInstruction-type [Node] in this tree. The newly created [Node] is not attached to the tree, i.e. it has no parent.
     pub fn new_processing_instruction(&mut self, name: QualifiedName, v: Value) -> Result<Node, Error> {
         Ok(
 	    Node::new(self.a
@@ -270,6 +291,7 @@ fn make_node(
     }
 }
 
+/// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum NodeType {
   Document,
@@ -282,17 +304,18 @@ pub enum NodeType {
 }
 
 impl NodeType {
-  pub fn to_string(&self) -> &'static str {
-    match self {
-      NodeType::Document => "Document",
-      NodeType::Element => "Element",
-      NodeType::Attribute => "Attribute",
-      NodeType::Text => "Text",
-      NodeType::ProcessingInstruction => "Processing-Instruction",
-      NodeType::Comment => "Comment",
-      NodeType::Unknown => "--None--",
+    /// Return a string representation of the node type.
+    pub fn to_string(&self) -> &'static str {
+	match self {
+	    NodeType::Document => "Document",
+	    NodeType::Element => "Element",
+	    NodeType::Attribute => "Attribute",
+	    NodeType::Text => "Text",
+	    NodeType::ProcessingInstruction => "Processing-Instruction",
+	    NodeType::Comment => "Comment",
+	    NodeType::Unknown => "--None--",
+	}
     }
-  }
 }
 
 impl Default for NodeType {
@@ -301,11 +324,12 @@ impl Default for NodeType {
   }
 }
 
-/// Node
+/// A node in the [Tree]. Depending on the type of the node, it may have a name, value, content, or attributes.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Node(Index, TreeIndex);
 
 impl Node {
+    /// Wrap the given Arena Index and [TreeIndex] to create a new node. NB. this does not create a node in the [Tree] (i.e. [Forest] or arena allocator)
     fn new(i: Index, t: TreeIndex) -> Self {
 	Node(i, t)
     }
@@ -334,6 +358,7 @@ impl Node {
 	result
     }
 
+    /// Return the string representation of the node.
     pub fn to_string(&self, f: &Forest) -> String {
 	match f.get_ref(self.1) {
 	    Some(e) => e,
@@ -355,6 +380,7 @@ impl Node {
 	    _ => String::new(),
 	}
     }
+    /// Serialise the node as XML.
     pub fn to_xml(&self, f: &Forest) -> String {
 	let mut ns: HashMap<String, Option<String>> = HashMap::new();
 	self.to_xml_int(f, &OutputDefinition::new(), 0, &mut ns)
@@ -520,19 +546,23 @@ impl Node {
 	    }
 	}
     }
+    /// Serialise the node as XML, under the control of the given OutputDefinition. The usual use is to perform indenting, i.e. "pretty-printing".
     pub fn to_xml_with_options(&self, f: &Forest, od: &OutputDefinition) -> String {
 	let mut ns: HashMap<String, Option<String>> = HashMap::new();
 	self.to_xml_int(f, od, 2, &mut ns)
     }
+    /// Serialise the node as JSON.
     pub fn to_json(&self, _f: &Forest) -> String {
 	String::from("not implemented yet")
     }
 
+    /// A convenience method that converts the value to a string and then converts the string to an integer.
     pub fn to_int(&self, f: &Forest) -> Result<i64, Error> {
 	// Convert to a string, then try parsing that as an integer
 	self.to_string(f).parse::<i64>()
 	    .map_err(|e| Error::new(ErrorKind::Unknown, e.to_string()))
     }
+    /// A convenience method that converts the value to a string and then converts the string to a double.
     pub fn to_double(&self, f: &Forest) -> f64 {
 	// Convert to a string, then try parsing that as a double
 	match self.to_string(f).parse::<f64>() {
@@ -540,6 +570,7 @@ impl Node {
 	    Err(_) => f64::NAN,
 	}
     }
+    /// Get the name of the node. If the node is of a type that doesn't have a name, returns a name with an empty local name, URI, and prefix.
     pub fn to_name(&self, f: &Forest) -> QualifiedName {
 	f.get_ref(self.1)
 	    .map_or(
@@ -554,6 +585,7 @@ impl Node {
 		    ),
 	    )
     }
+    /// Get the value of the node. If the node is of a type that doesn't have a value, returns an empty string value.
     pub fn to_value(&self, f: &Forest) -> Value {
 	f.get_ref(self.1)
 	    .map_or(
@@ -569,6 +601,7 @@ impl Node {
 	    )
     }
 
+    /// Returns the node's type.
     pub fn node_type(&self, f: &Forest) -> NodeType {
 	f.get_ref(self.1)
 	    .map_or(
@@ -581,6 +614,9 @@ impl Node {
 	    )
     }
 
+    /// Append the given node to this node's child list. This node must be an element-type node. The node to be appended must not be an attribute-type node.
+    ///
+    /// If the given node is not in the same [Tree] as this node, makes a deep copy of the given node and appends that to this node's child list.
     pub fn append_child(&self, f: &mut Forest, c: Node) -> Result<(), Error> {
 	// Check that self is an element and that c is not an attribute
         if self.node_type(f) != NodeType::Element {
@@ -659,9 +695,9 @@ impl Node {
 
         Ok(())
     }
-    /// Insert the given node before this node.
+    /// Insert the given node before this node in the parent's child list. This node must be an element-type node. The given node must not be an attribute-type node.
     /// If the given node is in the same tree, then it is removed from the tree and then inserted so that it becomes the first preceding of this node.
-    /// If then given node is in a different tree, then it is deep copied. The copied node will then become the first preceding sibling of this node.
+    /// If the given node is in a different tree, then it is deep copied. The copied node will then become the first preceding sibling of this node.
     pub fn insert_before(&self, f: &mut Forest, insert: Node) -> Result<(), Error> {
 	let p = self.parent(f)
 	    .ok_or(Error::new(ErrorKind::Unknown, String::from("unable to insert before document node")))?;
@@ -750,6 +786,7 @@ impl Node {
 	Ok(())
     }
 
+    /// Add the given node as an attribute of this node. This node must be an element-type node. The given node must be an attribute-type node. The given node is detached from it's current parent and then attached as an attribute of this node. If the given node is in a different [Tree] to this node, then it is deep-copied and the given node remains untouched.
     pub fn add_attribute(&self, f: &mut Forest, a: Node) -> Result<(), Error> {
         if self.node_type(f) != NodeType::Element {
             return Result::Err(Error::new(
@@ -782,15 +819,21 @@ impl Node {
 	Ok(())
     }
 
+    /// Creates an interator for the ancestors of this node.
     pub fn ancestor_iter(&self) -> Ancestors {
 	Ancestors::new(self.0, self.1)
     }
+    /// Returns the parent node.
+    ///
+    /// The Document-type node of the [Tree] does not have a parent. If the node is not attached to the [Tree], it will not have a parent.
     pub fn parent(&self, f: &Forest) -> Option<Node> {
 	self.ancestor_iter().next(f).map(|p| p)
     }
+    /// Creates an iterator over the children of this node.
     pub fn child_iter(&self) -> Children {
 	Children::new(self.0, self.1)
     }
+    /// Returns the first child node of this node.
     pub fn get_first_element(&self, f: &Forest) -> Option<Node> {
 	let mut cit = self.child_iter();
 	let mut ret = None;
@@ -810,19 +853,23 @@ impl Node {
 	}
 	ret
     }
+    /// Creates an iterator over the following siblings of this node.
     pub fn next_iter(&self, f: &Forest) -> Siblings {
 	Siblings::new(self.0, self.1, 1, f)
     }
+    /// Creates an iterator over the preceding siblings of this node.
     pub fn prev_iter(&self, f: &Forest) -> Siblings {
 	Siblings::new(self.0, self.1, -1, f)
     }
+    /// Creates an iterator over the descendants of this node.
     pub fn descend_iter(&self, f: &Forest) -> Descendants {
 	Descendants::new(self.0, self.1, f)
     }
-
+    /// Creates an iterator over the attributes of this node.
     pub fn attribute_iter<'a>(&self, f: &'a Forest) -> Attributes<'a> {
 	Attributes::new(self.0, f.get_ref(self.1).unwrap())
     }
+    /// Returns an attribute.
     pub fn get_attribute(&self, f: &Forest, qn: &QualifiedName) -> Option<Node> {
 	match f.get_ref(self.1) {
 	    Some(d) => {
@@ -840,7 +887,7 @@ impl Node {
 	}
     }
 
-    /// Convenience method that returns if this is an element type node
+    /// Convenience method that returns if this node is an element-type node
     pub fn is_element(&self, f: &Forest) -> bool {
 	match f.get_ref(self.1) {
 	    Some(d) => {
@@ -855,6 +902,7 @@ impl Node {
 	}
     }
     /// Make a recursive copy of the node, i.e. a "deep" copy.
+    ///
     /// The new node will be created in a different tree if one is supplied.
     pub fn deep_copy(&self, f: &mut Forest, t: Option<TreeIndex>) -> Result<Node, Error> {
 	let cptreeidx = t.map_or_else(
@@ -916,6 +964,7 @@ impl Node {
     }
 }
 
+/// Navigate the ancestors of a [Node].
 pub struct Ancestors {
     t: TreeIndex,
     cur: Index,
@@ -947,6 +996,7 @@ impl Ancestors {
     }
 }
 
+/// Navigate the descendants of a [Node].
 pub struct Descendants {
     t: TreeIndex,
     start: Index,
@@ -1029,6 +1079,7 @@ impl Descendants {
     }
 }
 
+/// Navigate the children of a [Node].
 pub struct Children {
     t: TreeIndex,
     parent: Index,
@@ -1057,6 +1108,7 @@ impl Children {
     }
 }
 
+/// Navigate the siblings of a [Node]. Nodes may be navigated before (preceding) or after (following) the current [Node].
 pub struct Siblings {
     t: TreeIndex,
     parent: Index,
@@ -1102,6 +1154,7 @@ impl Siblings {
     }
 }
 
+/// Navigate the attributes of a [Node]. The order in which the attributes are visited is undefined.
 pub struct Attributes<'a>{
     it: Iter<'a, QualifiedName, Node>,
 }
@@ -1117,6 +1170,7 @@ impl<'a> Attributes<'a> {
     }
 }
 
+/// The content of a [Node].
 #[derive(Clone, Default)]
 pub struct NodeContent {
     t: NodeType,
@@ -1128,57 +1182,64 @@ pub struct NodeContent {
 }
 
 impl NodeContent {
+    /// Create a NodeContent of the given type
     pub fn new(t: NodeType) -> Self {
         NodeContent {
 	    t,
             ..Default::default()
         }
     }
+    /// Return the type of the node
     pub fn node_type(&self) -> NodeType {
 	self.t
     }
+    /// Return the name of the node, if it has a name
     pub fn name(&self) -> &Option<QualifiedName> {
         &self.name
     }
+    /// Return the value of the node, if it has a value
     pub fn value(&self) -> &Option<Value> {
 	&self.v
     }
 }
 
+/// A builder for a [Node].
 struct NodeBuilder(NodeContent);
 
 impl NodeBuilder {
+    /// Start building a [Node]
     pub fn new(t: NodeType) -> Self {
         NodeBuilder(NodeContent::new(t))
     }
+    /// Set the name of the [Node]
     pub fn name(mut self, qn: QualifiedName) -> Self {
         self.0.name = Some(qn);
         self
     }
-    // Q: what to do if the node already has a value?
-    // This implementation drops the previous value
+    /// Set the value of the [Node]. Replaces the previous value, if the node had one.
     pub fn value(mut self, v: Value) -> Self {
         self.0.v = Some(v);
         self
     }
+    /// Complete building the [Node]
     pub fn build(self) -> NodeContent {
         self.0
     }
 }
 
-/// An iterator over ancestor nodes
+/// An iterator over ancestor nodes (for future use)
 pub trait AncestorIterator {
     type Node;
     fn next(&mut self, t: Tree) -> Option<Self::Node>;
 }
 
-/// An iterator over child nodes
+/// An iterator over child nodes (for future use)
 pub trait ChildIterator {
     type Node;
     fn next(&mut self, t: Tree) -> Option<Self::Node>;
 }
 
-/// An iterator over child nodes of a [Tree]
+/// An iterator over child nodes of a [Tree] (for future use)
 pub trait DocChildIterator {
     type Node;
     fn next(&mut self, t: Tree) -> Option<Self::Node>;
