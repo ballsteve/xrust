@@ -291,39 +291,6 @@ fn make_node(
     }
 }
 
-/// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
-#[derive(Copy, Clone, PartialEq, Debug)]
-pub enum NodeType {
-  Document,
-  Element,
-  Text,
-  Attribute,
-  Comment,
-  ProcessingInstruction,
-  Unknown,
-}
-
-impl NodeType {
-    /// Return a string representation of the node type.
-    pub fn to_string(&self) -> &'static str {
-	match self {
-	    NodeType::Document => "Document",
-	    NodeType::Element => "Element",
-	    NodeType::Attribute => "Attribute",
-	    NodeType::Text => "Text",
-	    NodeType::ProcessingInstruction => "Processing-Instruction",
-	    NodeType::Comment => "Comment",
-	    NodeType::Unknown => "--None--",
-	}
-    }
-}
-
-impl Default for NodeType {
-  fn default() -> Self {
-    NodeType::Unknown
-  }
-}
-
 /// A node in the [Tree]. Depending on the type of the node, it may have a name, value, content, or attributes.
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub struct Node(Index, TreeIndex);

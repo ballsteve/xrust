@@ -44,28 +44,31 @@ pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
 pub mod qname;
-mod parsepicture;
+//mod parsepicture;
 mod output;
 
+pub mod rwdocument;
 pub mod value;
 pub use value::Value;
-pub mod forest;
-pub use forest::Node;
 pub mod item;
 pub use item::{Sequence, SequenceTrait, Item};
 
 mod parsecommon;
 
 pub mod parsexml;
-pub use parsexml::XMLDocument;
 
-pub mod xpath;
-pub use xpath::parse;
+//pub mod xpath;
+//pub use xpath::parse;
 
-pub mod evaluate;
-pub use evaluate::{StaticContext, Evaluator, Constructor};
+//pub mod evaluate;
+//pub use evaluate::{StaticContext, Evaluator, Constructor};
 
-#[cfg(feature = "xslt")]
-pub mod xslt;
-#[cfg(feature = "xslt")]
-pub use xslt::from_document;
+//#[cfg(feature = "xslt")]
+//pub mod xslt;
+//#[cfg(feature = "xslt")]
+//pub use xslt::from_document;
+
+//pub mod forest;
+//pub use forest::Node;
+pub mod rctree;
+pub use rctree::{ADoc, ANode, BDoc, BNode};

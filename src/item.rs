@@ -8,7 +8,6 @@
 use std::rc::Rc;
 use std::fmt;
 use crate::value::{Value, Operator};
-use crate::forest::{NodeType, Node, Forest};
 use crate::qname::QualifiedName;
 use crate::output::OutputDefinition;
 use crate::xdmerror::{Error, ErrorKind};
@@ -18,64 +17,64 @@ use crate::xdmerror::{Error, ErrorKind};
 /// The Rust impementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
-pub type Sequence = Vec<Rc<Item>>;
+pub type Sequence<N> = Vec<Rc<Item<N>>>;
 
-pub trait SequenceTrait {
+pub trait SequenceTrait<N: Node> {
     /// Return the string value of the [Sequence].
-    fn to_string(&self, d: Option<&Forest>) -> String;
+    fn to_string(&self) -> String;
     /// Return a XML formatted representation of the [Sequence].
-    fn to_xml(&self, d: Option<&Forest>) -> String;
+    fn to_xml(&self) -> String;
     /// Return a XML formatted representation of the [Sequence], controlled by the supplied output definition.
-    fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String;
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
     /// Return a JSON formatted representation of the [Sequence].
-    fn to_json(&self, d: Option<&Forest>) -> String;
+    fn to_json(&self) -> String;
     /// Return the Effective Boolean Value of the [Sequence].
     fn to_bool(&self) -> bool;
     /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
     fn to_int(&self) -> Result<i64, Error>;
     /// Push a [Node] to the [Sequence]
-    fn push_node(&mut self, n: Node);
+    fn push_node(&mut self, n: N);
     /// Push a [Value] to the [Sequence]
     fn push_value(&mut self, v: Value);
     /// Push an [Item] to the [Sequence]
-    fn push_item(&mut self, i: &Rc<Item>);
+    fn push_item(&mut self, i: &Rc<Item<N>>);
 }
 
-impl SequenceTrait for Sequence {
+impl<N: Node> SequenceTrait<N> for Sequence<N> {
     /// Returns the string value of the Sequence.
-    fn to_string(&self, d: Option<&Forest>) -> String {
+    fn to_string(&self) -> String {
 	let mut r = String::new();
 	for i in self {
-	    r.push_str(i.to_string(d).as_str())
+	    r.push_str(i.to_string().as_str())
 	}
 	r
     }
     /// Renders the Sequence as XML
-    fn to_xml(&self, d: Option<&Forest>) -> String {
+    fn to_xml(&self) -> String {
 	let mut r = String::new();
 	for i in self {
-	    r.push_str(i.to_xml(d).as_str())
+	    r.push_str(i.to_xml().as_str())
 	}
 	r
     }
     /// Renders the Sequence as XML
-    fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String {
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
 	let mut r = String::new();
 	for i in self {
-	    r.push_str(i.to_xml_with_options(od, d).as_str())
+	    r.push_str(i.to_xml_with_options(od).as_str())
 	}
 	r
     }
     /// Renders the Sequence as JSON
-    fn to_json(&self, d: Option<&Forest>) -> String {
+    fn to_json(&self) -> String {
 	let mut r = String::new();
 	for i in self {
-	    r.push_str(i.to_json(d).as_str())
+	    r.push_str(i.to_json().as_str())
 	}
 	r
     }
     /// Push a Document's [Node] on to the [Sequence]
-    fn push_node(&mut self, n: Node) {
+    fn push_node(&mut self, n: N) {
 	self.push(Rc::new(Item::Node(n)));
     }
     /// Push a [Value] on to the [Sequence]
@@ -85,7 +84,7 @@ impl SequenceTrait for Sequence {
   //fn new_function(&self, f: Function) -> Sequence {
   //}
     /// Push an [Item] on to the [Sequence]. This clones the Item.
-    fn push_item(&mut self, i: &Rc<Item>) {
+    fn push_item(&mut self, i: &Rc<Item<N>>) {
 	self.push(Rc::clone(i));
     }
 
@@ -117,20 +116,53 @@ impl SequenceTrait for Sequence {
     }
 }
 
-impl From<Node> for Sequence {
-    fn from(n: Node) -> Self {
-	vec![Rc::new(Item::Node(n))]
-    }
-}
-impl From<Value> for Sequence {
+//impl<N: Node> From<dyn Node> for Sequence<N> {
+//    fn from(n: N) -> Self {
+//	vec![Rc::new(Item::Node(n))]
+//    }
+//}
+impl<N: Node> From<Value> for Sequence<N> {
     fn from(v: Value) -> Self {
 	vec![Rc::new(Item::Value(v))]
     }
 }
-impl From<Item> for Sequence {
-    fn from(i: Item) -> Self {
+impl<N: Node> From<Item<N>> for Sequence<N> {
+    fn from(i: Item<N>) -> Self {
 	vec![Rc::new(i)]
     }
+}
+
+/// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
+#[derive(Copy, Clone, PartialEq, Debug)]
+pub enum NodeType {
+  Document,
+  Element,
+  Text,
+  Attribute,
+  Comment,
+  ProcessingInstruction,
+  Unknown,
+}
+
+impl NodeType {
+    /// Return a string representation of the node type.
+    pub fn to_string(&self) -> &'static str {
+	match self {
+	    NodeType::Document => "Document",
+	    NodeType::Element => "Element",
+	    NodeType::Attribute => "Attribute",
+	    NodeType::Text => "Text",
+	    NodeType::ProcessingInstruction => "Processing-Instruction",
+	    NodeType::Comment => "Comment",
+	    NodeType::Unknown => "--None--",
+	}
+    }
+}
+
+impl Default for NodeType {
+  fn default() -> Self {
+    NodeType::Unknown
+  }
 }
 
 /// An Item in a [Sequence]. Can be a [Node], Function or [Value].
@@ -139,9 +171,9 @@ impl From<Item> for Sequence {
 ///
 /// Functions are not yet implemented.
 //#[derive(Clone)]
-pub enum Item {
+pub enum Item<N: Node> {
     /// A [Node]
-    Node(Node),
+    Node(N),
 
     /// Functions are not yet supported
     Function,
@@ -150,47 +182,35 @@ pub enum Item {
     Value(Value),
 }
 
-impl Item {
+impl<N: Node> Item<N> {
     /// Gives the string value of an item. All items have a string value.
-    pub fn to_string(&self, d: Option<&Forest>) -> String {
+    pub fn to_string(&self) -> String {
 	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_string(e)
-	    ),
+	    Item::Node(n) => n.to_string(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
     }
     /// Serialize as XML
-    pub fn to_xml(&self, d: Option<&Forest>) -> String {
+    pub fn to_xml(&self) -> String {
 	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_xml(e)
-	    ),
+	    Item::Node(n) => n.to_xml(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
     }
     /// Serialize as XML, with options
-    pub fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String {
+    pub fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
 	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_xml_with_options(e, od)
-	    ),
+	    Item::Node(n) => n.to_xml_with_options(od),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
     }
     /// Serialize as JSON
-    pub fn to_json(&self, d: Option<&Forest>) -> String {
+    pub fn to_json(&self) -> String {
 	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_json(e)
-	    ),
+	    Item::Node(n) => n.to_json(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
@@ -234,12 +254,9 @@ impl Item {
     }
 
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-    pub fn to_name(&self, d: Option<&Forest>) -> QualifiedName {
+    pub fn name(&self) -> QualifiedName {
 	match self {
-	    Item::Node(n) => d.map_or(
-		QualifiedName::new(None, None, "".to_string()),
-		|e| n.to_name(e)
-	    ),
+	    Item::Node(n) => n.name(),
 	    _ => QualifiedName::new(None, None, "".to_string())
 	}
     }
@@ -248,7 +265,7 @@ impl Item {
     // fn atomize(&self);
 
     /// Compare two items.
-    pub fn compare(&self, other: &Item, op: Operator, d: Option<&Forest>) -> Result<bool, Error> {
+    pub fn compare(&self, other: &Item<N>, op: Operator) -> Result<bool, Error> {
 	match self {
 	    Item::Value(v) => {
 		match other {
@@ -256,7 +273,7 @@ impl Item {
 			v.compare(w, op)
 		    }
 		    Item::Node(..) => {
-			v.compare(&Value::String(other.to_string(d)), op)
+			v.compare(&Value::String(other.to_string()), op)
 		    }
 		    _ => {
 			Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
@@ -264,7 +281,7 @@ impl Item {
 		}
 	    }
 	    Item::Node(..) => {
-		other.compare(&Item::Value(Value::String(self.to_string(d))), op, d)
+		other.compare(&Item::Value(Value::String(self.to_string())), op)
 	    }
 	    _ => {
 		Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
@@ -273,16 +290,13 @@ impl Item {
     }
 
     /// Is this item an element-type node?
-    pub fn is_element_node(&self, d: Option<&Forest>) -> bool {
+    pub fn is_element_node(&self) -> bool {
 	match self {
 	    Item::Node(n) => {
-		d.map_or(
-		    false,
-		    |e| match n.node_type(e) {
-			NodeType::Element => true,
-			_ => false,
-		    }
-		)
+		match n.node_type() {
+		    NodeType::Element => true,
+		    _ => false,
+		}
 	    }
 	    _ => false,
 	}
@@ -298,7 +312,7 @@ impl Item {
     }
 }
 
-impl fmt::Debug for Item {
+impl<N: Node> fmt::Debug for Item<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 	match self {
 	    Item::Node(_) => {
@@ -314,61 +328,81 @@ impl fmt::Debug for Item {
     }
 }
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-    
-    // to_bool
+/// Documents contain [Node]s
+pub trait Document<N: Node> {
+    type Docitem: Node;
+    type NodeIterator: Iterator<Item=Self::Docitem>;
 
-    #[test]
-    fn bool_value_string_empty() {
-	assert_eq!(Item::Value(Value::from("")).to_bool(), false)
-    }
-    #[test]
-    fn bool_value_string_nonempty() {
-      assert_eq!(Item::Value(Value::from("false")).to_bool(), true)
-    }
-    #[test]
-    fn bool_value_int_zero() {
-      assert_eq!(Item::Value(Value::from(0)).to_bool(), false)
-    }
-    #[test]
-    fn bool_value_int_nonzero() {
-      assert_eq!(Item::Value(Value::from(42)).to_bool(), true)
+    /// String value of the document
+    fn to_string(&self) -> String {
+	let mut result = String::new();
+	self.child_iter()
+	    .for_each(|c| {
+		result.push_str(c.to_string().as_str())
+	    });
+	result
     }
 
-    // to_int
-
-    #[test]
-    fn int_value_string() {
-      match Item::Value(Value::from("1")).to_int() {
-        Ok(i) => assert_eq!(i, 1),
-	Err(_) => {
-	  panic!("to_int() failed")
-	}
-      }
+    /// XML serialisation of the document
+    fn to_xml(&self) -> String {
+	let mut result = String::new();
+	self.child_iter()
+	    .for_each(|c| {
+		result.push_str(c.to_xml().as_str())
+	    });
+	result
     }
 
-    // to_double
+    /// An iterator over the top-level nodes.
+    fn child_iter(&self) -> Self::NodeIterator;
 
-    #[test]
-    fn double_value_string() {
-      assert_eq!(Item::Value(Value::from("2.0")).to_double(), 2.0)
+    /// Returns the first element-type node. In a well-formed XML document, there must be exactly one.
+    fn root_element(&self) -> Option<Self::Docitem> {
+	self.child_iter()
+	    .filter(|n| n.node_type() == NodeType::Element)
+	    .nth(0)
     }
+}
 
-    // Sequences
+/// Nodes make up a [Document] tree. Nodes must be fully navigable, but also must be stable (and therefore read-only).
+///
+/// Some nodes have names, such as elements. Some nodes have values, such as text or comments.
+/// Element nodes have children and attributes.
+pub trait Node {
+    type NodeIterator: Iterator<Item=Self>;
 
-    #[test]
-    fn sequence() {
-        let _s = Sequence::new();
-        assert!(true)
+    /// Get the type of the node
+    fn node_type(&self) -> NodeType;
+    /// Get the name of the node. If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
+    fn name(&self) -> QualifiedName;
+    /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
+    fn value(&self) -> Value;
+    /// Get the string value of the node. See XPath ???
+    fn to_string(&self) -> String;
+    /// Serialise the node as XML
+    fn to_xml(&self) -> String;
+    /// Serialise the node as XML, with options such as indentation.
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
+    /// Serialise the node as JSON
+    fn to_json(&self) -> String {
+	String::new()
     }
-    #[test]
-    fn sequence_one() {
-        let mut s = Sequence::new();
-	s.push_value(Value::from("one"));
-	let mut t = Sequence::new();
-	t.push_item(&s[0]);
-	assert!(Rc::ptr_eq(&s[0], &t[0]))
+    /// An iterator over the children of the node
+    fn child_iter(&self) -> Self::NodeIterator;
+    /// Get the first child of the node, if there is one
+    fn first_child(&self) -> Option<Self> where Self: Sized {
+	self.child_iter().next()
     }
+    /// An iterator over the ancestors of the node
+    fn ancestor_iter(&self) -> Self::NodeIterator;
+    /// Get the parent of the node. Top-level nodes do not have parents, also nodes that have been detached from the tree.
+    fn parent(&self) -> Option<Self> where Self: Sized {
+	self.ancestor_iter().next()
+    }
+    /// An iterator over the descendants of the node
+    fn descend_iter(&self) -> Self::NodeIterator;
+    /// An iterator over the following siblings of the node
+    fn next_iter(&self) -> Self::NodeIterator;
+    /// An iterator over the preceding siblings of the node
+    fn prev_iter(&self) -> Self::NodeIterator;
 }
