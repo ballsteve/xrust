@@ -12,7 +12,7 @@
 use std::convert::TryFrom;
 use std::rc::{Rc, Weak};
 use std::collections::HashMap;
-use std::marker::PhantomData;
+//use std::marker::PhantomData;
 use crate::xdmerror::*;
 use crate::qname::*;
 use crate::output::OutputDefinition;
@@ -398,13 +398,15 @@ pub enum DTDDecl {
 }
 
 /// The phase 2 Document. Nodes in this type of document are fully navigable, but the tree cannot be mutated.
-pub struct BDoc<N: Node> {
+pub struct BDoc {
 //    baseuri: String,
     nodes: Vec<Rc<BNode>>,
-    ph: PhantomData<N>,
+//    ph: PhantomData<N>,
 }
 
-impl<N: Node> BDoc<N> {
+pub type RBDoc = Rc<BDoc>;
+
+impl BDoc {
     pub fn to_xml(&self) -> String {
 	self.nodes.iter()
 	    .fold(
@@ -414,7 +416,7 @@ impl<N: Node> BDoc<N> {
     }
 }
 
-impl<N: Node> Document<N> for Rc<BDoc<N>> {
+impl Document for RBDoc {
     type Docitem = Rc<BNode>;
     type NodeIterator = Box<dyn Iterator<Item = Self::Docitem>>;
 
@@ -428,7 +430,7 @@ pub struct DocChildren {
     i: usize,
 }
 impl DocChildren {
-    fn new<N: Node>(d: &Rc<BDoc<N>>) -> Self {
+    fn new(d: &Rc<BDoc>) -> Self {
 	DocChildren{v: d.nodes.clone(), i: 0}
     }
 }
@@ -450,7 +452,7 @@ impl Iterator for DocChildren {
 /// Convert an [ADoc], which is mutable but not navigable, to a [BDoc], which is not mutable but is navigable.
 ///
 /// Includes entity expansion.
-impl<N: Node> TryFrom<ADoc> for BDoc<N> {
+impl TryFrom<ADoc> for RBDoc {
     type Error = Error;
 
     fn try_from(a: ADoc) -> Result<Self, Self::Error> {
@@ -472,38 +474,42 @@ impl<N: Node> TryFrom<ADoc> for BDoc<N> {
 		}
 	    }
 	}
-	// Now descend the A tree, replacing references with their content.
-	// At the same time, convert ANodes to BNodes.
-	let mut new: Vec<Rc<BNode>> = vec![];
-	let mut prologue = a.prologue.into_iter()
-	    .map(|n| {
-		BNode::from_anode(n, None, &ent)
-	    })
-	    .collect();
-	new.append(&mut prologue);
-	let mut content = a.content.into_iter()
-	    .map(|n| {
-		BNode::from_anode(n, None, &ent)
-	    })
-	    .collect();
-	new.append(&mut content);
-	let mut epilogue = a.epilogue.into_iter()
-	    .map(|n| {
-		BNode::from_anode(n, None, &ent)
-	    })
-	    .collect();
-	new.append(&mut epilogue);
 
-	Ok(BDoc{
-//	    baseuri: String::from(""),
-	    nodes: new,
-	    ph: PhantomData,
-	})
+	Ok(Rc::new_cyclic(|weak_self| {
+	    // Descend the A tree, replacing references with their content.
+	    // At the same time, convert ANodes to BNodes.
+	    let mut new: Vec<Rc<BNode>> = vec![];
+	    let mut prologue = a.prologue.into_iter()
+		.map(|n| {
+		    BNode::from_anode(n, weak_self.clone(), None, &ent)
+		})
+		.collect();
+	    new.append(&mut prologue);
+	    let mut content = a.content.into_iter()
+		.map(|n| {
+		    BNode::from_anode(n, weak_self.clone(), None, &ent)
+		})
+		.collect();
+	    new.append(&mut content);
+	    let mut epilogue = a.epilogue.into_iter()
+		.map(|n| {
+		    BNode::from_anode(n, weak_self.clone(), None, &ent)
+		})
+		.collect();
+	    new.append(&mut epilogue);
+
+	    BDoc{
+		//	    baseuri: String::from(""),
+		nodes: new,
+//		ph: PhantomData,
+	    }
+	}))
     }
 }
 
 /// A node in a phase 2 document, [BDoc].
 pub struct BNode {
+    doc: Weak<BDoc>,
     node_type: NodeType,
     parent: Option<Weak<BNode>>,
     children: Vec<Rc<BNode>>,
@@ -515,6 +521,7 @@ pub struct BNode {
 impl BNode {
     fn from_anode(
 	n: Rc<ANode>,
+	doc: Weak<BDoc>,
 	parent: Option<Weak<BNode>>,
 	entities: &HashMap<QualifiedName, Vec<Rc<ANode>>>
     ) -> Rc<Self> {
@@ -524,10 +531,11 @@ impl BNode {
 		NodeType::Element => {
 		    let children: Vec<_> = n.child_iter()
 			.map(|child| {
-			    BNode::from_anode(child, Some(weak_self.clone()), entities)
+			    BNode::from_anode(child, doc.clone(), Some(weak_self.clone()), entities)
 			})
 			.collect();
 		    BNode{
+			doc,
 			node_type: NodeType::Element,
 			parent, children,
 //			attributes: HashMap::new(),
@@ -536,6 +544,7 @@ impl BNode {
 		}
 		NodeType::Attribute => {
 		    BNode{
+			doc,
 			node_type: NodeType::Attribute,
 			parent, children: vec![],
 //			attributes: HashMap::new(),
@@ -545,6 +554,7 @@ impl BNode {
 		}
 		NodeType::Text => {
 		    BNode{
+			doc,
 			node_type: NodeType::Text,
 			parent, children: vec![],
 //			attributes: HashMap::new(),
@@ -554,6 +564,7 @@ impl BNode {
 		}
 		NodeType::ProcessingInstruction => {
 		    BNode{
+			doc,
 			node_type: NodeType::ProcessingInstruction,
 			parent, children: vec![],
 //			attributes: HashMap::new(),
@@ -563,6 +574,7 @@ impl BNode {
 		}
 		NodeType::Comment => {
 		    BNode{
+			doc,
 			node_type: NodeType::Comment,
 			parent, children: vec![],
 //			attributes: HashMap::new(),
@@ -573,6 +585,7 @@ impl BNode {
 		// TODO
 		_ => {
 		    BNode{
+			doc,
 			node_type: NodeType::Unknown,
 			parent, children: vec![],
 //			attributes: HashMap::new(),
@@ -586,6 +599,12 @@ impl BNode {
 
 impl Node for Rc<BNode> {
     type NodeIterator = Box<dyn Iterator<Item = Rc<BNode>>>;
+    type D = Rc<BDoc>;
+
+    fn owner_document(&self) -> Result<Self::D, Error> {
+	Weak::upgrade(&self.doc)
+	    .ok_or(Error::new(ErrorKind::Unknown, String::from("unable to find owner document")))
+    }
 
     fn node_type(&self) -> NodeType {
 	self.node_type.clone()
@@ -810,8 +829,23 @@ mod tests {
 		)
 	    ])
 	    .build();
-	let bd = BDoc::<Rc<BNode>>::try_from(ad).expect("unable to convert ADoc to BDoc");
+	let bd = RBDoc::try_from(ad).expect("unable to convert ADoc to BDoc");
 	assert_eq!(bd.to_xml(), "<Test></Test>")
+    }
+    #[test]
+    fn owner_doc() {
+	let ad = ADocBuilder::new()
+	    .content(vec![
+		Rc::new(
+		    ANodeBuilder::new(NodeType::Element)
+			.name(QualifiedName::new(None, None, String::from("Test")))
+			.build()
+		)
+	    ])
+	    .build();
+	let bd = RBDoc::try_from(ad).expect("unable to convert ADoc to BDoc");
+	let root_doc = bd.child_iter().nth(0).unwrap().owner_document().expect("unable to get owner document");
+	assert!(Rc::ptr_eq(&bd, &root_doc))
     }
     #[test]
     fn b_descend() {
@@ -850,8 +884,8 @@ mod tests {
 	let ad = ADocBuilder::new()
 	    .content(vec![an1])
 	    .build();
-	let bd: Rc<BDoc<Rc<BNode>>>;
-	bd = Rc::new(BDoc::<Rc<BNode>>::try_from(ad).expect("unable to convert ADoc to BDoc"));
+	let bd: RBDoc;
+	bd = RBDoc::try_from(ad).expect("unable to convert ADoc to BDoc");
 	let root = bd.root_element().unwrap();
 	let dit = root.descend_iter();
 	assert_eq!(dit.count(), 4)

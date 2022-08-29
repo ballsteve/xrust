@@ -1,13 +1,13 @@
 use std::convert::TryFrom;
 use xrust::qname::QualifiedName;
 use xrust::rwdocument::{RWDocument, RWNode};
-use xrust::rctree::{ADoc, ADocBuilder, ANodeBuilder, BDoc, BNode};
+use xrust::rctree::{ADoc, ADocBuilder, ANodeBuilder, RBDoc, BNode};
 
 mod item_value;
 mod item_node;
 
 // Run the generic Item/Value tests
-item_value_tests!(Rc<BNode>);
+item_value_tests!(RBDoc, Rc<BNode>);
 
 // Now run tests for Item/Node
 //let ad = ADocBuilder::new()
@@ -20,7 +20,7 @@ item_value_tests!(Rc<BNode>);
 fn make_adoc() -> Rc<ADoc> {
     Rc::new(ADocBuilder::new().build())
 }
-fn make_bdoc(qn: QualifiedName, v: Value) -> Rc<BDoc<Rc<BNode>>> {
+fn make_bdoc(qn: QualifiedName, v: Value) -> RBDoc {
     let mut n1 = Rc::new(
 	ANodeBuilder::new(NodeType::Element)
 	    .name(qn)
@@ -33,15 +33,13 @@ fn make_bdoc(qn: QualifiedName, v: Value) -> Rc<BDoc<Rc<BNode>>> {
     );
     n1.push(n2)
 	.expect("unable to add node");
-    Rc::new(
-	BDoc::try_from(
-	    ADocBuilder::new()
-		.content(vec![n1])
-		.build()
-	).expect("unable to convert ADoc to BDoc")
-    )
+    RBDoc::try_from(
+	ADocBuilder::new()
+	    .content(vec![n1])
+	    .build()
+    ).expect("unable to convert ADoc to BDoc")
 }
 
 item_node_tests_a!(make_adoc);
-item_node_tests_b!(make_bdoc, Rc<BDoc<Rc<BNode>>>, Rc<BNode>);
+item_node_tests_b!(make_bdoc, RBDoc, Rc<BNode>);
 

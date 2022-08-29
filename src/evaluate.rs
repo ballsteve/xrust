@@ -19,24 +19,24 @@ use crate::parsepicture::parse as picture_parse;
 use crate::xdmerror::*;
 use crate::output::OutputDefinition;
 use crate::value::{Value, Operator};
-use crate::forest::{Forest, TreeIndex, Node, NodeType};
-use crate::item::{Sequence, SequenceTrait, Item};
+use crate::rwdocument::{RWDocument, RWNode};
+use crate::item::{Sequence, SequenceTrait, Item, Document, Node};
 use url::Url;
 
 // The dynamic evaluation context.
 //
 // The dynamic context stores parts that can change as evaluation proceeds,
 // such as the value of declared variables.
-pub struct DynamicContext {
-    vars: RefCell<HashMap<String, Vec<Sequence>>>,
+pub struct DynamicContext<N: Node> {
+    vars: RefCell<HashMap<String, Vec<Sequence<N>>>>,
     depth: RefCell<usize>,
-    current_grouping_key: RefCell<Vec<Option<Rc<Item>>>>,
-    current_group: RefCell<Vec<Option<Sequence>>>,
+    current_grouping_key: RefCell<Vec<Option<Rc<Item<N>>>>>,
+    current_group: RefCell<Vec<Option<Sequence<N>>>>,
     current_import: RefCell<usize>,
     deps: RefCell<Vec<Url>>,	// URIs for included/imported stylesheets
 }
 
-impl DynamicContext {
+impl<N: Node> DynamicContext<N> {
     pub fn new() -> Self {
 	DynamicContext{
 	    vars: RefCell::new(HashMap::new()),
@@ -57,14 +57,14 @@ impl DynamicContext {
 	self.deps.borrow_mut().push(u);
     }
 
-    fn push_current_grouping_key(&self, k: Item) {
+    fn push_current_grouping_key(&self, k: Item<N>) {
 	self.current_grouping_key.borrow_mut().push(Some(Rc::new(k)));
     }
     fn pop_current_grouping_key(&self) {
 	self.current_grouping_key.borrow_mut().pop();
     }
 
-    fn push_current_group(&self, g: Sequence) {
+    fn push_current_group(&self, g: Sequence<N>) {
 	self.current_group.borrow_mut().push(Some(g));
     }
     fn pop_current_group(&self) {
@@ -88,9 +88,9 @@ impl DynamicContext {
     }
 
     // Push a new scope for a variable
-    fn var_push(&self, v: &str, s: Sequence) {
-	let mut h: RefMut<HashMap<String, Vec<Sequence>>>;
-	let mut t: Option<&mut Vec<Sequence>>;
+    fn var_push(&self, v: &str, s: Sequence<N>) {
+	let mut h: RefMut<HashMap<String, Vec<Sequence<N>>>>;
+	let mut t: Option<&mut Vec<Sequence<N>>>;
 
 	h = self.vars.borrow_mut();
 	t = h.get_mut(v);
@@ -113,7 +113,7 @@ impl DynamicContext {
 
     // Stylesheet parameters. Overrides the previous value if it is already set.
     // TODO: namespaced name
-    pub fn set_parameter(&self, name: String, value: Sequence) {
+    pub fn set_parameter(&self, name: String, value: Sequence<N>) {
 	self.vars.borrow_mut().insert(name, vec![value]);
     }
 }
@@ -187,10 +187,7 @@ impl Evaluator {
     /// If no template is found, returns None.
     pub fn find_match(
 	&self,
-	i: &Rc<Item>,
-	f: &mut Forest,
-	sd: TreeIndex,
-	rd: TreeIndex,
+	i: &Rc<Item<N>>,
 	im: Option<usize>,
     ) -> Result<Vec<Constructor>, Error> {
 	let mut r: Vec<&Template> = vec![];
@@ -198,7 +195,7 @@ impl Evaluator {
 	loop {
 	    match it.next() {
 		Some(t) => {
-		    if self.item_matches(&t.pattern, i, f, sd, rd)? {
+		    if self.item_matches(&t.pattern, i)? {
 			r.push(t)
 		    }
 		}
@@ -219,7 +216,7 @@ impl Evaluator {
 	    loop {
 		match builtins.next() {
 		    Some(u) => {
-			if self.item_matches(&u.pattern, i, f, sd, rd)? {
+			if self.item_matches(&u.pattern, i)? {
 			    w.push(u)
 			}
 		    }
@@ -278,12 +275,10 @@ impl Evaluator {
     /// Any nodes created by the sequence constructor are created in the result Tree.
     pub fn evaluate(
 	&self,
-	ctxt: Option<Sequence>,
+	ctxt: Option<Sequence<N>>,
 	posn: Option<usize>,
 	c: &Vec<Constructor>,
-	f: &mut Forest,
-	sd: TreeIndex,	// Source document
-	rd: TreeIndex,	// Result document
+	rd: D,	// Result document
     ) -> Result<Sequence, Error> {
 
 	// Evaluate all sequence constructors. This will result in a sequence of sequences.
@@ -291,7 +286,7 @@ impl Evaluator {
 	// Otherwise, flatten the sequences into a single sequence
 
 	let (results, errors): (Vec<_>, Vec<_>) = c.iter()
-	    .map(|a| self.evaluate_one(ctxt.clone(), posn, a, f, sd, rd))
+	    .map(|a| self.evaluate_one(ctxt.clone(), posn, a, rd))
 	    .partition(Result::is_ok);
 	if errors.len() != 0 {
 	    Result::Err(
@@ -307,7 +302,7 @@ impl Evaluator {
 		   b
 	       })
 	       .flatten()
-	       .collect::<Vec<Rc<Item>>>()
+	       .collect::<Vec<Rc<Item<N>>>>()
 	    )
 	}
     }
@@ -316,12 +311,10 @@ impl Evaluator {
     // If a constructor returns a non-singleton sequence, then it is unpacked
     fn evaluate_one(
 	&self,
-	ctxt: Option<Sequence>,
+	ctxt: Option<Sequence<N>>,
 	posn: Option<usize>,
 	c: &Constructor,
-	f: &mut Forest,
-	sd: TreeIndex,
-	rd: TreeIndex,
+	rd: D,
     ) -> Result<Sequence, Error> {
 	match c {
 	    Constructor::Literal(l) => {
@@ -337,22 +330,20 @@ impl Evaluator {
 		    .new_element(n.clone())?;
 
       		// add content to newly created element
-		let seq = self.evaluate(ctxt.clone(), posn, c, f, sd, rd)?;
+		let seq = self.evaluate(ctxt.clone(), posn, c, rd)?;
 		seq.iter()
 		    .try_for_each(
 			|i| {
 			    // Item could be a Node or text
 			    match **i {
 				Item::Node(t) => {
-				    l.append_child(f, t)
+				    l.append_child(t)
 				}
 	      			_ => {
 				    // Values become a text node in the result tree
-				    let v = Value::from(i.to_string(Some(f)));
-				    let t = f.get_ref_mut(rd)
-					.ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
-					.new_text(v)?;
-				    l.append_child(f, t)
+				    let v = Value::from(i.to_string());
+				    let t = rd.new_text(v)?;
+				    l.append_child(t)
 				}
 			    }
 			}
@@ -362,11 +353,9 @@ impl Evaluator {
 	    }
 	    // This creates a Node in the current result document
 	    Constructor::LiteralAttribute(n, v) => {
-		let w = self.evaluate(ctxt.clone(), posn, v, f, sd, rd)?;
-		let x = Value::from(w.to_string(Some(f)));
-      		let l = f.get_ref_mut(rd)
-		    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
-		    .new_attribute(n.clone(), x)?;
+		let w = self.evaluate(ctxt.clone(), posn, v, rd)?;
+		let x = Value::from(w.to_string());
+      		let l = rd.new_attribute(n.clone(), x)?;
       		Ok(vec![Rc::new(Item::Node(l))])
 	    }
 	    Constructor::Copy(i, c) => {
@@ -375,26 +364,26 @@ impl Evaluator {
 		    if ctxt.is_some() {
 			vec![ctxt.as_ref().unwrap()[posn.unwrap()].clone()]
 		    } else {
-			self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?
+			self.evaluate(ctxt.clone(), posn, i, rd)?
 		    }
 		} else {
-		    self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?
+		    self.evaluate(ctxt.clone(), posn, i, rd)?
 		};
 
 		let mut results = Sequence::new();
 		for j in orig {
-		    let m = self.item_copy(j.clone(), c, ctxt.clone(), posn, f, sd, rd)?;
+		    let m = self.item_copy(j.clone(), c, ctxt.clone(), posn, rd)?;
 		    results.push(m);
 		}
 		Ok(results)
 	    }
 	    // Does the same as identity stylesheet template
 	    Constructor::DeepCopy(sel) => {
-		let orig = self.evaluate(ctxt.clone(), posn, sel, f, sd, rd)?;
+		let orig = self.evaluate(ctxt.clone(), posn, sel, rd)?;
 
 		let mut results = Sequence::new();
 		for j in orig {
-		    let m = self.item_deep_copy(j.clone(), ctxt.clone(), posn, f, sd, rd)?;
+		    let m = self.item_deep_copy(j.clone(), ctxt.clone(), posn, rd)?;
 		    results.push(m);
 		}
 		Ok(results)
@@ -416,31 +405,25 @@ impl Evaluator {
 		    match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
 			Item::Node(nd) => {
 			    // TODO: Don't Panic
-			    match nd.node_type(f) {
+			    match nd.node_type() {
 				NodeType::Element => {
-				    let attval = self.evaluate(ctxt.clone(), posn, v, f, sd, rd)?;
+				    let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
 				    if attval.len() == 1 {
 					match &*attval[0] {
 					    Item::Value(av) => {
-						let atnode = f.get_ref_mut(rd)
-						    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
-						    .new_attribute(n.clone(), av.clone())?;
-						nd.add_attribute(f, atnode)?
+						let atnode = rd.new_attribute(n.clone(), av.clone())?;
+						nd.add_attribute(atnode)?
 					    }
 					    _ => {
-						let w = Value::from(attval.to_string(Some(f)));
-						let atnode = f.get_ref_mut(rd)
-						    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
-						    .new_attribute(n.clone(), w)?;
-						nd.add_attribute(f, atnode)?
+						let w = Value::from(attval.to_string());
+						let atnode = rd.new_attribute(n.clone(), w)?;
+						nd.add_attribute(atnode)?
 					    }
 					}
 				    } else {
-					let w = Value::from(attval.to_string(Some(f)));
-					let atnode = f.get_ref_mut(rd)
-						    .ok_or(Error::new(ErrorKind::Unknown, String::from("no result document")))?
-						    .new_attribute(n.clone(), w)?;
-					nd.add_attribute(f, atnode)?
+					let w = Value::from(attval.to_string());
+					let atnode = rd.new_attribute(n.clone(), w)?;
+					nd.add_attribute(atnode)?
 				    }
 				    Ok(vec![])
 				}
@@ -459,7 +442,7 @@ impl Evaluator {
       		// Future: Evaluate every operand to check for dynamic errors
 		let mut b = false;
       		for i in v {
-		    let k = self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?;
+		    let k = self.evaluate(ctxt.clone(), posn, i, rd)?;
 		    b = k.to_bool();
 		    if b {break};
 		}
@@ -473,7 +456,7 @@ impl Evaluator {
       		// Future: Evaluate every operand to check for dynamic errors
 		let mut b = true;
 		for i in v {
-		    let k = self.evaluate(ctxt.clone(), posn, i, f, sd, rd)?;
+		    let k = self.evaluate(ctxt.clone(), posn, i, rd)?;
 		    b = k.to_bool();
 		    if !b {break};
 		}
@@ -484,7 +467,7 @@ impl Evaluator {
 	    Constructor::GeneralComparison(o, v) => {
 		if v.len() == 2 {
 		    let mut seq = Sequence::new();
-		    let b = self.general_comparison(ctxt, posn, *o, &v[0], &v[1], f, sd, rd)?;
+		    let b = self.general_comparison(ctxt, posn, *o, &v[0], &v[1], rd)?;
 		    seq.push_value(Value::from(b));
       		    Ok(seq)
 		} else {
@@ -494,7 +477,7 @@ impl Evaluator {
 	    Constructor::ValueComparison(o, v) => {
 		if v.len() == 2 {
 		    let mut seq = Sequence::new();
-		    let b = self.value_comparison(ctxt, posn, *o, &v[0], &v[1], f, sd, rd)?;
+		    let b = self.value_comparison(ctxt, posn, *o, &v[0], &v[1], rd)?;
 		    seq.push_value(Value::from(b));
       		    Ok(seq)
 		} else {
@@ -504,8 +487,8 @@ impl Evaluator {
 	    Constructor::Concat(v) => {
 		let mut r = String::new();
       		for u in v {
-		    let t = self.evaluate(ctxt.clone(), posn, u, f, sd, rd)?;
-		    r.push_str(t.to_string(Some(f)).as_str());
+		    let t = self.evaluate(ctxt.clone(), posn, u, rd)?;
+		    r.push_str(t.to_string().as_str());
 		}
       		let mut seq = Sequence::new();
       		seq.push_value(Value::from(r));
@@ -514,8 +497,8 @@ impl Evaluator {
 	    Constructor::Range(v) => {
 		if v.len() == 2 {
 		    // Evaluate the two operands: they must both be literal integer items
-		    let start = self.evaluate(ctxt.clone(), posn, &v[0], f, sd, rd)?;
-		    let end   = self.evaluate(ctxt.clone(), posn, &v[1], f, sd, rd)?;
+		    let start = self.evaluate(ctxt.clone(), posn, &v[0], rd)?;
+		    let end   = self.evaluate(ctxt.clone(), posn, &v[1], rd)?;
 		    if start.len() == 0 || end.len() == 0 {
 			// empty sequence is the result
 			Ok(vec![])
@@ -556,7 +539,7 @@ impl Evaluator {
       		let mut acc: f64 = 0.0;
 
       		for j in v {
-		    let k = self.evaluate(ctxt.clone(), posn, &j.operand, f, sd, rd)?;
+		    let k = self.evaluate(ctxt.clone(), posn, &j.operand, rd)?;
 		    let u: f64;
 		    if k.len() != 1 {
 			return Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error (not a singleton sequence)")});
@@ -578,7 +561,7 @@ impl Evaluator {
       		Ok(seq)
 	    }
 	    Constructor::Root => {
-		match f.get_ref(sd) {
+		match sd {
 		    Some(d) => Ok(vec![Rc::new(Item::Node(d.get_doc_node()))]),
 		    _ => Result::Err(Error{kind: ErrorKind::ContextNotNode, message: "no document".to_string()}),
 		}
@@ -588,7 +571,7 @@ impl Evaluator {
       		// Each step creates a new context for the next step
       		// TODO: if initial context is None then error
 
-      		let u: Sequence; // accumulator - each time around the loop this will be the new context
+      		let u: Sequence<N>; // accumulator - each time around the loop this will be the new context
 
       		if ctxt.is_some() {
 		    u = ctxt.unwrap().clone()
@@ -602,9 +585,9 @@ impl Evaluator {
 		    |a, c| {
 			// evaluate this step for each item in the context
 			// Add the result of each evaluation to an accummulator sequence
-			let mut b: Sequence = Vec::new();
+			let mut b: Sequence<N> = Vec::new();
 			for i in 0..a.len() {
-			    let mut d = self.evaluate(Some(a.clone()), Some(i), c, f, sd, rd)
+			    let mut d = self.evaluate(Some(a.clone()), Some(i), c, rd)
 				.expect("failed to evaluate step");
 			    b.append(&mut d);
 			}
@@ -623,36 +606,36 @@ impl Evaluator {
 			Item::Node(n) => {
 			    match nm.axis {
 				Axis::Selfaxis => {
-				    if is_node_match(&nm.nodetest, &n, f) {
+				    if is_node_match(&nm.nodetest, &n) {
 					let mut seq = Sequence::new();
 					seq.push_node(*n);
-	      				Ok(self.predicates(seq, p, f, sd, rd)?)
+	      				Ok(self.predicates(seq, p)?)
 				    } else {
 	      				Ok(Sequence::new())
 				    }
 				}
 	      			Axis::Child => {
-				    let mut seq: Sequence = Sequence::new();
-				    let mut it = n.child_iter();
-				    loop {
-					match it.next(f) {
-					    Some(c) => {
-						if is_node_match(&nm.nodetest, &c, f) {
-						    seq.push_node(c)
-						}
-					    }
-					    None => break,
-					}
-				    }
+//				    let mut seq: Sequence<N> = Sequence::new();
+//				    let mut it = n.child_iter();
+//				    loop {
+//					match it.next() {
+//					    Some(c) => {
+//						if is_node_match(&nm.nodetest, &c, f) {
+//						    seq.push_node(c)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
 
-//		      let seq = n.children().iter()
-//			  .filter(|c| is_node_match(&nm.nodetest, &c))
-//			  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+				    let seq = n.children().iter()
+					.filter(|c| is_node_match(&nm.nodetest, &c))
+					.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 
-				    Ok(self.predicates(seq, p, f, sd, rd)?)
+				    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::Parent => {
-				    match n.parent(f) {
+				    match n.parent() {
 					Some(p) => {
       					    Ok(Sequence::from(p))
 					}
@@ -666,7 +649,7 @@ impl Evaluator {
 				    // Only matches the Document.
 				    // If no parent then return the Document
 				    // NB. Document is a special kind of Node
-				    match n.node_type(f) {
+				    match n.node_type() {
 					NodeType::Document => {
 					    // The context is the document
 					    Ok(vec![Rc::clone(&ctxt.as_ref().unwrap()[posn.unwrap()])])
@@ -675,134 +658,134 @@ impl Evaluator {
 				    }
 				}
 	      			Axis::Descendant => {
-				    let mut seq = Sequence::new();
-				    let mut it = n.descend_iter(f);
-				    loop {
-					match it.next(f) {
-					    Some(c) => {
-						if is_node_match(&nm.nodetest, &c, f) {
-						    seq.push_node(c)
-						}
-					    }
-					    None => break,
-					}
-				    }
+//				    let mut seq = Sequence::new();
+//				    let mut it = n.descend_iter();
+//				    loop {
+//					match it.next(f) {
+//					    Some(c) => {
+//						if is_node_match(&nm.nodetest, &c) {
+//						    seq.push_node(c)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
 
-//			      let seq = n.descendants().iter()
-//				  .filter(|c| is_node_match(&nm.nodetest, &c))
-//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+			      let seq = n.descendants().iter()
+				  .filter(|c| is_node_match(&nm.nodetest, &c))
+				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::DescendantOrSelf => {
-				    let mut seq = Sequence::new();
-				    if is_node_match(&nm.nodetest, &n, f) {
-					seq.push_item(&Rc::new(Item::Node(*n)));
-				    }
-				    let mut it = n.descend_iter(f);
-				    loop {
-					match it.next(f) {
-					    Some(c) => {
-						if is_node_match(&nm.nodetest, &c, f) {
-						    seq.push_node(c)
-						}
-					    }
-					    None => break,
-					}
+//				    let mut seq = Sequence::new();
+//				    if is_node_match(&nm.nodetest, &n, f) {
+//					seq.push_item(&Rc::new(Item::Node(*n)));
+//				    }
+//				    let mut it = n.descend_iter(f);
+//				    loop {
+//					match it.next(f) {
+//					    Some(c) => {
+//						if is_node_match(&nm.nodetest, &c, f) {
+//						    seq.push_node(c)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
+
+				    let mut seq = n.descendants().iter()
+					.filter(|c| is_node_match(&nm.nodetest, &c))
+					.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+				    if is_node_match(&nm.nodetest, &n) {
+					seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
 				    }
 
-//			      let mut seq = n.descendants().iter()
-//				  .filter(|c| is_node_match(&nm.nodetest, &c))
-//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
-//			      if is_node_match(&nm.nodetest, &n) {
-//				  seq.insert(0, Rc::new(Item::Node(Rc::clone(n))));
-//			      }
-
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::Ancestor => {
-				    let mut seq = Sequence::new();
-				    let mut it = n.ancestor_iter();
-				    loop {
-					match it.next(f) {
-					    Some(a) => {
-						if is_node_match(&nm.nodetest, &a, f) {
-						    seq.push_node(a)
-						}
-					    }
-					    None => break,
-					}
-				    }
+//				    let mut seq = Sequence::new();
+//				    let mut it = n.ancestor_iter();
+//				    loop {
+//					match it.next(f) {
+//					    Some(a) => {
+//						if is_node_match(&nm.nodetest, &a, f) {
+//						    seq.push_node(a)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
 
-//			      let seq = n.ancestors().iter()
-//				  .filter(|p| is_node_match(&nm.nodetest, &p))
-//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+				    let seq = n.ancestors().iter()
+					.filter(|p| is_node_match(&nm.nodetest, &p))
+					.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::AncestorOrSelf => {
-				    let mut seq = Sequence::new();
-				    let mut it = n.ancestor_iter();
-				    loop {
-					match it.next(f) {
-					    Some(a) => {
-						if is_node_match(&nm.nodetest, &a, f) {
-						    seq.push_node(a)
-						}
-					    }
-					    None => break,
-					}
-				    }
+//				    let mut seq = Sequence::new();
+//				    let mut it = n.ancestor_iter();
+//				    loop {
+//					match it.next(f) {
+//					    Some(a) => {
+//						if is_node_match(&nm.nodetest, &a, f) {
+//						    seq.push_node(a)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
 
-//			      let mut seq = n.ancestors().iter()
-//				  .filter(|c| is_node_match(&nm.nodetest, &c))
-//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+				    let mut seq = n.ancestors().iter()
+					.filter(|c| is_node_match(&nm.nodetest, &c))
+					.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 
-				    if is_node_match(&nm.nodetest, &n, f) {
+				    if is_node_match(&nm.nodetest, &n) {
 					seq.push_item(&Rc::new(Item::Node(*n)));
 				    }
 
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::FollowingSibling => {
-				    let mut seq = Sequence::new();
-				    let mut it = n.next_iter(f);
-				    loop {
-					match it.next(f) {
-					    Some(g) => {
-						if is_node_match(&nm.nodetest, &g, f) {
-						    seq.push_node(g)
-						}
-					    }
-					    None => break,
-					}
-				    }
+//				    let mut seq = Sequence::new();
+//				    let mut it = n.next_iter(f);
+//				    loop {
+//					match it.next(f) {
+//					    Some(g) => {
+//						if is_node_match(&nm.nodetest, &g, f) {
+//						    seq.push_node(g)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
 
-//			      let seq = n.following_siblings().iter()
-//				  .filter(|c| is_node_match(&nm.nodetest, &c))
-//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+				    let seq = n.following_siblings().iter()
+					.filter(|c| is_node_match(&nm.nodetest, &c))
+					.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::PrecedingSibling => {
-				    let mut seq = Sequence::new();
-				    let mut it = n.prev_iter(f);
-				    loop {
-					match it.next(f) {
-					    Some(g) => {
-						if is_node_match(&nm.nodetest, &g, f) {
-						    seq.push_node(g)
-						}
-					    }
-					    None => break,
-					}
-				    }
+//				    let mut seq = Sequence::new();
+//				    let mut it = n.prev_iter(f);
+//				    loop {
+//					match it.next(f) {
+//					    Some(g) => {
+//						if is_node_match(&nm.nodetest, &g, f) {
+//						    seq.push_node(g)
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
 
-//			      let seq = n.preceding_siblings().iter()
-//				  .filter(|c| is_node_match(&nm.nodetest, &c))
-//				  .fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
+				    let seq = n.preceding_siblings().iter()
+					.filter(|c| is_node_match(&nm.nodetest, &c))
+					.fold(Sequence::new(), |mut c, a| {c.new_node(Rc::clone(a)); c});
 
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::Following => {
 				    // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
@@ -811,69 +794,69 @@ impl Evaluator {
 				    let mut d: Vec<Node> = Vec::new();
 
 				    // Start with following siblings of self
-				    let mut fit = n.next_iter(f);
-				    loop {
-					match fit.next(f) {
-					    Some(a) => {
-						d.push(a);
-						let mut dit = a.descend_iter(f);
-						loop {
-						    match dit.next(f) {
-							Some(c) => {
-							    d.push(c)
-							}
-							None => break,
-						    }
-						}
-					    }
-					    None => break,
-					}
+//				    let mut fit = n.next_iter(f);
+//				    loop {
+//					match fit.next(f) {
+//					    Some(a) => {
+//						d.push(a);
+//						let mut dit = a.descend_iter(f);
+//						loop {
+//						    match dit.next(f) {
+//							Some(c) => {
+//							    d.push(c)
+//							}
+//							None => break,
+//						    }
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
+				    for a in n.following_siblings() {
+					d.push(a.clone());
+					let mut b = a.descendants();
+					d.append(&mut b);
 				    }
-//			      for a in n.following_siblings() {
-//				  d.push(a.clone());
-//				  let mut b = a.descendants();
-//				  d.append(&mut b);
-//			      }
 
-			      // Now traverse ancestors
-				    let mut ait = n.ancestor_iter();
-				    loop {
-					match ait.next(f) {
-					    Some(a) => {
-						let mut sit = a.next_iter(f);
-						loop {
-						    match sit.next(f) {
-							Some(b) => {
-							    d.push(b);
-							    let mut dit = b.descend_iter(f);
-							    loop {
-								match dit.next(f) {
-								    Some(e) => {
-									d.push(e)
-								    }
-								    None => break,
-								}
-							    }
-							}
-							None => break,
-						    }
-						}
-					    }
-					    None => break,
+				    // Now traverse ancestors
+//				    let mut ait = n.ancestor_iter();
+//				    loop {
+//					match ait.next(f) {
+//					    Some(a) => {
+//						let mut sit = a.next_iter(f);
+//						loop {
+//						    match sit.next(f) {
+//							Some(b) => {
+//							    d.push(b);
+//							    let mut dit = b.descend_iter(f);
+//							    loop {
+//								match dit.next(f) {
+//								    Some(e) => {
+//									d.push(e)
+//								    }
+//								    None => break,
+//								}
+//							    }
+//							}
+//							None => break,
+//						    }
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
+				    for a in anc {
+					let sibs: Vec<Node> = a.following_siblings();
+					for b in sibs {
+					    d.push(b.clone());
+					    let mut sib_descs: Vec<Node> = b.descendants();
+					    d.append(&mut sib_descs)
 					}
 				    }
-//			      for a in anc {
-//				  let sibs: Vec<Node> = a.following_siblings();
-//				  for b in sibs {
-//				      d.push(b.clone());
-//				      let mut sib_descs: Vec<Node> = b.descendants();
-//				      d.append(&mut sib_descs)
-//				  }
-//			      }
 				    let seq = d.iter()
-					.filter(|e| is_node_match(&nm.nodetest, &e, f))
+					.filter(|e| is_node_match(&nm.nodetest, &e))
 					.fold(Sequence::new(), |mut h, g| {h.push_node(*g); h});
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::Preceding => {
 				    // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
@@ -882,70 +865,70 @@ impl Evaluator {
 				    let mut d: Vec<Node> = Vec::new();
 
 				    // Start with preceding siblings of self
-				    let mut pit = n.prev_iter(f);
-				    loop {
-					match pit.next(f) {
-					    Some(a) => {
-						d.push(a);
-						let mut dit = a.descend_iter(f);
-						loop {
-						    match dit.next(f) {
-							Some(b) => {
-							    d.push(b)
-							}
-							None => break,
-						    }
-						}
-					    }
-					    None => break,
-					}
+//				    let mut pit = n.prev_iter(f);
+//				    loop {
+//					match pit.next(f) {
+//					    Some(a) => {
+//						d.push(a);
+//						let mut dit = a.descend_iter(f);
+//						loop {
+//						    match dit.next(f) {
+//							Some(b) => {
+//							    d.push(b)
+//							}
+//							None => break,
+//						    }
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
+				    for a in n.preceding_siblings() {
+					d.push(a.clone());
+					let mut b = a.descendants();
+					d.append(&mut b);
 				    }
-//			      for a in n.preceding_siblings() {
-//				  d.push(a.clone());
-//				  let mut b = a.descendants();
-//				  d.append(&mut b);
-//			      }
 
 				    // Now traverse ancestors
-				    let mut ait = n.ancestor_iter();
-				    loop {
-					match ait.next(f) {
-					    Some(a) => {
-						let mut pit = a.prev_iter(f);
-						loop {
-						    match pit.next(f) {
-							Some(b) => {
-							    d.push(b);
-							    let mut dit = b.descend_iter(f);
-							    loop {
-								match dit.next(f) {
-								    Some(c) => {
-									d.push(c)
-								    }
-								    None => break,
-								}
-							    }
-							}
-							None => break,
-						    }
-						}
-					    }
-					    None => break,
+//				    let mut ait = n.ancestor_iter();
+//				    loop {
+//					match ait.next(f) {
+//					    Some(a) => {
+//						let mut pit = a.prev_iter(f);
+//						loop {
+//						    match pit.next(f) {
+//							Some(b) => {
+//							    d.push(b);
+//							    let mut dit = b.descend_iter(f);
+//							    loop {
+//								match dit.next(f) {
+//								    Some(c) => {
+//									d.push(c)
+//								    }
+//								    None => break,
+//								}
+//							    }
+//							}
+//							None => break,
+//						    }
+//						}
+//					    }
+//					    None => break,
+//					}
+//				    }
+				    let anc: Vec<Node> = n.ancestors();
+				    for a in anc {
+					let sibs: Vec<Node> = a.preceding_siblings();
+					for b in sibs {
+					    d.push(b.clone());
+					    let mut sib_descs: Vec<Node> = b.descendants();
+					    d.append(&mut sib_descs)
 					}
 				    }
-//			      let anc: Vec<Node> = n.ancestors();
-//			      for a in anc {
-//				  let sibs: Vec<Node> = a.preceding_siblings();
-//				  for b in sibs {
-//				      d.push(b.clone());
-//				      let mut sib_descs: Vec<Node> = b.descendants();
-//				      d.append(&mut sib_descs)
-//				  }
-//			      }
 				    let seq = d.iter()
-					.filter(|e| is_node_match(&nm.nodetest, &e, f))
+					.filter(|e| is_node_match(&nm.nodetest, &e))
 					.fold(Sequence::new(), |mut h, g| {h.push_node(*g); h});
-	      			    Ok(self.predicates(seq, p, f, sd, rd)?)
+	      			    Ok(self.predicates(seq, p)?)
 				}
 	      			Axis::Attribute => {
 				    let mut atit = n.attribute_iter(f);
