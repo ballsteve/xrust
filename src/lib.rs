@@ -71,4 +71,4 @@ pub mod parsexml;
 //pub mod forest;
 //pub use forest::Node;
 pub mod rctree;
-pub use rctree::{ADoc, ANode, BDoc, BNode};
+pub use rctree::{ADoc, ANode, RBNode};

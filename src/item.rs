@@ -17,9 +17,9 @@ use crate::xdmerror::{Error, ErrorKind};
 /// The Rust impementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
-pub type Sequence<D, N> = Vec<Rc<Item<D, N>>>;
+pub type Sequence<N> = Vec<Rc<Item<N>>>;
 
-pub trait SequenceTrait<D: Document, N: Node> {
+pub trait SequenceTrait<N: Node> {
     /// Return the string value of the [Sequence].
     fn to_string(&self) -> String;
     /// Return a XML formatted representation of the [Sequence].
@@ -32,17 +32,15 @@ pub trait SequenceTrait<D: Document, N: Node> {
     fn to_bool(&self) -> bool;
     /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
     fn to_int(&self) -> Result<i64, Error>;
-    /// Push a [Document] to the [Sequence]
-    fn push_document(&mut self, d: D);
     /// Push a [Node] to the [Sequence]
     fn push_node(&mut self, n: N);
     /// Push a [Value] to the [Sequence]
     fn push_value(&mut self, v: Value);
     /// Push an [Item] to the [Sequence]
-    fn push_item(&mut self, i: &Rc<Item<D, N>>);
+    fn push_item(&mut self, i: &Rc<Item<N>>);
 }
 
-impl<D: Document, N: Node> SequenceTrait<D, N> for Sequence<D, N> {
+impl<N: Node> SequenceTrait<N> for Sequence<N> {
     /// Returns the string value of the Sequence.
     fn to_string(&self) -> String {
 	let mut r = String::new();
@@ -75,10 +73,6 @@ impl<D: Document, N: Node> SequenceTrait<D, N> for Sequence<D, N> {
 	}
 	r
     }
-    /// Push a Document on to the [Sequence]
-    fn push_document(&mut self, d: D) {
-	self.push(Rc::new(Item::Document(d)));
-    }
     /// Push a Document's [Node] on to the [Sequence]
     fn push_node(&mut self, n: N) {
 	self.push(Rc::new(Item::Node(n)));
@@ -90,7 +84,7 @@ impl<D: Document, N: Node> SequenceTrait<D, N> for Sequence<D, N> {
   //fn new_function(&self, f: Function) -> Sequence {
   //}
     /// Push an [Item] on to the [Sequence]. This clones the Item.
-    fn push_item(&mut self, i: &Rc<Item<D, N>>) {
+    fn push_item(&mut self, i: &Rc<Item<N>>) {
 	self.push(Rc::clone(i));
     }
 
@@ -127,20 +121,20 @@ impl<D: Document, N: Node> SequenceTrait<D, N> for Sequence<D, N> {
 //	vec![Rc::new(Item::Node(n))]
 //    }
 //}
-impl<D: Document, N: Node> From<Value> for Sequence<D, N> {
+impl<N: Node> From<Value> for Sequence<N> {
     fn from(v: Value) -> Self {
 	vec![Rc::new(Item::Value(v))]
     }
 }
-impl<D: Document, N: Node> From<Item<D, N>> for Sequence<D, N> {
-    fn from(i: Item<D, N>) -> Self {
+impl<N: Node> From<Item<N>> for Sequence<N> {
+    fn from(i: Item<N>) -> Self {
 	vec![Rc::new(i)]
     }
 }
 
 /// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 ///
-/// Every [Document] must have a single node as it's toplevel node that is of type "Document". The alternative is to have a Weak reference from every node to the owning [Document], and having an [Item] that can be a document.
+/// Every document must have a single node as it's toplevel node that is of type "Document".
 #[derive(Copy, Clone, PartialEq, Debug)]
 pub enum NodeType {
   Document,
@@ -175,13 +169,9 @@ impl Default for NodeType {
 
 /// An Item in a [Sequence]. Can be a [Node], Function or [Value].
 ///
-/// [Node]s are components of a [Document], and can only exist in the context of a [Document]. There is a design choice between having a document as a value in the enum, separate to a node, or having every [Document] have a single toplevel [Node] that represents the document. This design is the latter.
-///
 /// Functions are not yet implemented.
 //#[derive(Clone)]
-pub enum Item<D: Document, N: Node> {
-    /// A [Document]. This is the root of a document tree.
-    Document(D),
+pub enum Item<N: Node> {
     /// A [Node] in a [Document] tree.
     Node(N),
 
@@ -192,11 +182,10 @@ pub enum Item<D: Document, N: Node> {
     Value(Value),
 }
 
-impl<D: Document, N: Node> Item<D, N> {
+impl<N: Node> Item<N> {
     /// Gives the string value of an item. All items have a string value.
     pub fn to_string(&self) -> String {
 	match self {
-	    Item::Document(d) => d.to_string(),
 	    Item::Node(n) => n.to_string(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
@@ -205,7 +194,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// Serialize as XML
     pub fn to_xml(&self) -> String {
 	match self {
-	    Item::Document(d) => d.to_xml(),
 	    Item::Node(n) => n.to_xml(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
@@ -214,7 +202,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// Serialize as XML, with options
     pub fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
 	match self {
-	    Item::Document(d) => d.to_xml_with_options(od),
 	    Item::Node(n) => n.to_xml_with_options(od),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
@@ -223,7 +210,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// Serialize as JSON
     pub fn to_json(&self) -> String {
 	match self {
-	    Item::Document(d) => d.to_json(),
 	    Item::Node(n) => n.to_json(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
@@ -234,7 +220,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// See XPath 2.4.3.
     pub fn to_bool(&self) -> bool {
 	match self {
-	    Item::Document(..) |
 	    Item::Node(..) => true,
 	    Item::Function => false,
 	    Item::Value(v) => v.to_bool(),
@@ -244,7 +229,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// Gives the integer value of the item, if possible.
     pub fn to_int(&self) -> Result<i64, Error> {
 	match self {
-	    Item::Document(..) |
 	    Item::Node(..) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
 	    Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
 	    Item::Value(v) => {
@@ -263,7 +247,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// Gives the double value of the item. Returns NaN if the value cannot be converted to a double.
     pub fn to_double(&self) -> f64 {
 	match self {
-	    Item::Document(..) |
 	    Item::Node(..) => f64::NAN,
 	    Item::Function => f64::NAN,
 	    Item::Value(v) => v.to_double(),
@@ -282,7 +265,7 @@ impl<D: Document, N: Node> Item<D, N> {
     // fn atomize(&self);
 
     /// Compare two items.
-    pub fn compare(&self, other: &Item<D, N>, op: Operator) -> Result<bool, Error> {
+    pub fn compare(&self, other: &Item<N>, op: Operator) -> Result<bool, Error> {
 	match self {
 	    Item::Value(v) => {
 		match other {
@@ -297,7 +280,6 @@ impl<D: Document, N: Node> Item<D, N> {
 		    }
 		}
 	    }
-	    Item::Document(..) |
 	    Item::Node(..) => {
 		other.compare(&Item::Value(Value::String(self.to_string())), op)
 	    }
@@ -323,7 +305,6 @@ impl<D: Document, N: Node> Item<D, N> {
     /// Gives the type of the item.
     pub fn item_type(&self) -> &'static str {
 	match self {
-	    Item::Document(..) => "Document",
 	    Item::Node(..) => "Node",
 	    Item::Function => "Function",
 	    Item::Value(v) => v.value_type(),
@@ -331,12 +312,9 @@ impl<D: Document, N: Node> Item<D, N> {
     }
 }
 
-impl<D: Document, N: Node> fmt::Debug for Item<D, N> {
+impl<N: Node> fmt::Debug for Item<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 	match self {
-	    Item::Document(_) => {
-		write!(f, "document type item")
-	    }
 	    Item::Node(_) => {
 		write!(f, "node type item")
 	    }
@@ -350,75 +328,13 @@ impl<D: Document, N: Node> fmt::Debug for Item<D, N> {
     }
 }
 
-/// Documents contain [Node]s.
-///
-/// A Document must have at least one [Node], of type "Document", that represents the document as a whole. All other nodes in the document are descendants of the document node.
-pub trait Document {
-    type Docitem: Node;
-    type NodeIterator: Iterator<Item=Self::Docitem>;
-
-    /// String value of the document
-    fn to_string(&self) -> String {
-	let mut result = String::new();
-	self.child_iter()
-	    .for_each(|c| {
-		result.push_str(c.to_string().as_str())
-	    });
-	result
-    }
-
-    /// XML serialisation of the document
-    fn to_xml(&self) -> String {
-	let mut result = String::new();
-	self.child_iter()
-	    .for_each(|c| {
-		result.push_str(c.to_xml().as_str())
-	    });
-	result
-    }
-
-    /// XML serialisation of the document
-    fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
-	let mut result = String::new();
-	self.child_iter()
-	    .for_each(|c| {
-		result.push_str(c.to_xml_with_options(od).as_str())
-	    });
-	result
-    }
-
-    /// JSON serialisation of the document
-    fn to_json(&self) -> String {
-	let mut result = String::new();
-	self.child_iter()
-	    .for_each(|c| {
-		result.push_str(c.to_json().as_str())
-	    });
-	result
-    }
-
-    /// An iterator over the top-level nodes.
-    fn child_iter(&self) -> Self::NodeIterator; // Don't need this if thrre is one and only one root node
-
-    /// Returns the element-type root node.
-    fn root_element(&self) -> Option<Self::Docitem> {
-	self.child_iter()
-	    .filter(|n| n.node_type() == NodeType::Element)
-	    .nth(0)
-    }
-}
-
-/// Nodes make up a [Document] tree. Nodes must be fully navigable, but also must be stable (and therefore read-only).
+/// Nodes make up a document tree. Nodes must be fully navigable, but also must be stable (and therefore read-only).
 ///
 /// Some nodes have names, such as elements. Some nodes have values, such as text or comments. Some have both a name and a value, such as attributes and processing instructions.
 ///
 /// Element nodes have children and attributes.
 pub trait Node {
     type NodeIterator: Iterator<Item=Self>;
-    type D: Document;
-
-    /// Return the [Document] that owns this node.
-    fn owner_document(&self) -> Result<Self::D, Error>;
 
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
