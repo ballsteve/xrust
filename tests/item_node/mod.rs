@@ -1,33 +1,34 @@
 #[macro_export]
-macro_rules! item_node_tests_a (
+macro_rules! item_node_mutable_tests (
     ( $x:expr ) => {
+	use xrust::item::MNode;
 
-	fn anode_push_content_generic<D: RWDocument>(mut d: D) {
+	fn mnode_push_content_generic<D: MNode>(mut d: D) {
 	    let n = d.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element node");
-	    d.push_content(n)
+	    d.push(n)
 		.expect("unable to add node");
 	    assert_eq!(d.to_xml(), "<Test></Test>")
 	}
 
 	#[test]
-	fn anode_push_content() {
-	    anode_push_content_generic($x())
+	fn mnode_push_content() {
+	    mnode_push_content_generic($x())
 	}
     }
 );
 
 #[macro_export]
-macro_rules! item_node_tests_b (
+macro_rules! item_node_immutable_tests (
     ( $x:expr , $y:ty ) => {
-	use xrust::item::{Node, NodeType};
+	use xrust::item::{INode, NodeType};
 
 	// This test expects the document to have a single toplevel element
 	// TODO: filter nodes to get elements and check there is only one
-	fn item_node_type_generic<N: Node>(d: N) {
+	fn item_inode_type_generic<I: INode>(d: I) {
 	    assert_eq!(d.node_type(), NodeType::Document)
 	}
-	fn item_node_name_generic<N: Node>(d: N) {
+	fn item_inode_name_generic<I: INode>(d: I) {
 	    match d.child_iter().nth(0) {
 		Some(c) => {
 		    assert_eq!(c.node_type(), NodeType::Element);
@@ -37,7 +38,7 @@ macro_rules! item_node_tests_b (
 	    }
 	}
 
-	fn item_node_value_generic<N: Node>(d: N) {
+	fn item_inode_value_generic<I: INode>(d: I) {
 	    match d.child_iter().nth(0) {
 		Some(c) => {
 		    assert_eq!(c.node_type(), NodeType::Element);
@@ -58,41 +59,36 @@ macro_rules! item_node_tests_b (
 		None => panic!("no toplevel element")
 	    }
 	}
-	fn item_node_to_string_doc_generic<N: Node>(d: N) {
+	fn item_inode_to_string_doc_generic<I: INode>(d: I) {
 	    assert_eq!(d.to_string(), "foobar")
 	}
-	fn item_node_to_xml_doc_generic<N: Node>(d: N) {
+	fn item_inode_to_xml_doc_generic<I: INode>(d: I) {
 	    assert_eq!(d.to_xml(), "<Test>foobar</Test>")
 	}
 
 	#[test]
-	fn item_node_type() {
-	    item_node_type_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
+	fn item_inode_type() {
+	    item_inode_type_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
 	}
 
 	#[test]
-	fn item_node_name() {
-	    item_node_name_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
+	fn item_inode_name() {
+	    item_inode_name_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
 	}
 
 	#[test]
-	fn item_node_value() {
-	    item_node_value_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
+	fn item_inode_value() {
+	    item_inode_value_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
 	}
 
 	#[test]
-	fn item_node_to_string_doc() {
-	    item_node_to_string_doc_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
+	fn item_inode_to_string_doc() {
+	    item_inode_to_string_doc_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
 	}
 
 	#[test]
-	fn item_node_to_xml_doc() {
-	    item_node_to_xml_doc_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
+	fn item_inode_to_xml_doc() {
+	    item_inode_to_xml_doc_generic::<$y>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
 	}
-
-//	#[test]
-//	fn item_node_child_iter() {
-//	    item_node_child_iter_generic::<$y, $z>($x(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar")))
-//	}
     }
 );

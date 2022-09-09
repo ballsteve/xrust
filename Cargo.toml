@@ -16,6 +16,14 @@ edition = "2018"
 default = ["xslt"]
 xslt = []
 
+[[bench]]
+name = "bench_anode"
+harness = false
+
+[[bench]]
+name = "bench_forest"
+harness = false
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
@@ -29,4 +37,7 @@ url = "2.2.2"
 reqwest = { version = "0.11", features = ["blocking"] }
 tokio = { version = "1", features = ["full"] }
 generational-arena = "0.2"
+
+[dev-dependencies]
+criterion = "0.3"
 

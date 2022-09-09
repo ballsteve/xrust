@@ -44,7 +44,7 @@ pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
 pub mod qname;
-//mod parsepicture;
+mod parsepicture;
 mod output;
 
 pub mod rwdocument;
@@ -60,8 +60,8 @@ pub mod parsexml;
 //pub mod xpath;
 //pub use xpath::parse;
 
-//pub mod evaluate;
-//pub use evaluate::{StaticContext, Evaluator, Constructor};
+pub mod evaluate;
+pub use evaluate::{StaticContext, Evaluator, Constructor};
 
 //#[cfg(feature = "xslt")]
 //pub mod xslt;

@@ -25,9 +25,8 @@ use nom:: {
     sequence::delimited,
 };
 use crate::qname::*;
-use crate::rwdocument::RWNode;
 use crate::value::Value;
-use crate::item::NodeType;
+use crate::item::{NodeType, MNode};
 use crate::parsecommon::*;
 use crate::xdmerror::*;
 use crate::rctree::{

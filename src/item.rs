@@ -17,9 +17,9 @@ use crate::xdmerror::{Error, ErrorKind};
 /// The Rust impementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
-pub type Sequence<N> = Vec<Rc<Item<N>>>;
+pub type Sequence<I, M> = Vec<Rc<Item<I, M>>>;
 
-pub trait SequenceTrait<N: Node> {
+pub trait SequenceTrait<I: INode, M: MNode> {
     /// Return the string value of the [Sequence].
     fn to_string(&self) -> String;
     /// Return a XML formatted representation of the [Sequence].
@@ -32,15 +32,17 @@ pub trait SequenceTrait<N: Node> {
     fn to_bool(&self) -> bool;
     /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
     fn to_int(&self) -> Result<i64, Error>;
-    /// Push a [Node] to the [Sequence]
-    fn push_node(&mut self, n: N);
+    /// Push an [INode] to the [Sequence]
+    fn push_inode(&mut self, n: I);
+    /// Push a [MNode] to the [Sequence]
+    fn push_mnode(&mut self, n: M);
     /// Push a [Value] to the [Sequence]
     fn push_value(&mut self, v: Value);
     /// Push an [Item] to the [Sequence]
-    fn push_item(&mut self, i: &Rc<Item<N>>);
+    fn push_item(&mut self, i: &Rc<Item<I, M>>);
 }
 
-impl<N: Node> SequenceTrait<N> for Sequence<N> {
+impl<I: INode, M: MNode> SequenceTrait<I, M> for Sequence<I, M> {
     /// Returns the string value of the Sequence.
     fn to_string(&self) -> String {
 	let mut r = String::new();
@@ -73,9 +75,13 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
 	}
 	r
     }
-    /// Push a Document's [Node] on to the [Sequence]
-    fn push_node(&mut self, n: N) {
-	self.push(Rc::new(Item::Node(n)));
+    /// Push a document's [INode] on to the [Sequence]
+    fn push_inode(&mut self, n: I) {
+	self.push(Rc::new(Item::INode(n)));
+    }
+    /// Push a document's [MNode] on to the [Sequence]
+    fn push_mnode(&mut self, n: M) {
+	self.push(Rc::new(Item::MNode(n)));
     }
     /// Push a [Value] on to the [Sequence]
     fn push_value(&mut self, v: Value) {
@@ -84,7 +90,7 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
   //fn new_function(&self, f: Function) -> Sequence {
   //}
     /// Push an [Item] on to the [Sequence]. This clones the Item.
-    fn push_item(&mut self, i: &Rc<Item<N>>) {
+    fn push_item(&mut self, i: &Rc<Item<I, M>>) {
 	self.push(Rc::clone(i));
     }
 
@@ -94,7 +100,8 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
 	    false
 	} else {
 	    match *self[0] {
-		Item::Node(..) => true,
+		Item::INode(..) |
+		Item::MNode(..) => true,
 		_ => {
 		    if self.len() == 1 {
 			(*self[0]).to_bool()
@@ -116,18 +123,13 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
     }
 }
 
-//impl<N: Node> From<dyn Node> for Sequence<N> {
-//    fn from(n: N) -> Self {
-//	vec![Rc::new(Item::Node(n))]
-//    }
-//}
-impl<N: Node> From<Value> for Sequence<N> {
+impl<I: INode, M: MNode> From<Value> for Sequence<I, M> {
     fn from(v: Value) -> Self {
 	vec![Rc::new(Item::Value(v))]
     }
 }
-impl<N: Node> From<Item<N>> for Sequence<N> {
-    fn from(i: Item<N>) -> Self {
+impl<I: INode, M: MNode> From<Item<I, M>> for Sequence<I, M> {
+    fn from(i: Item<I, M>) -> Self {
 	vec![Rc::new(i)]
     }
 }
@@ -167,13 +169,17 @@ impl Default for NodeType {
   }
 }
 
-/// An Item in a [Sequence]. Can be a [Node], Function or [Value].
+/// An Item in a [Sequence]. Can be a node, function or [Value].
+///
+/// Items may be from the source document (an immutable [INode]) or from the result document (a mutable [MNode]). These must be separated because [INode]s are immutable, but navigable, and [MNode]s are mutable, but not fully navigable.
 ///
 /// Functions are not yet implemented.
-//#[derive(Clone)]
-pub enum Item<N: Node> {
-    /// A [Node] in a [Document] tree.
-    Node(N),
+#[derive(Clone)]
+pub enum Item<I: INode, M: MNode> {
+    /// A [Node] in the source document.
+    INode(I),
+    /// A [RWNode] in the result document.
+    MNode(M),
 
     /// Functions are not yet supported
     Function,
@@ -182,11 +188,12 @@ pub enum Item<N: Node> {
     Value(Value),
 }
 
-impl<N: Node> Item<N> {
+impl<I: INode, M: MNode> Item<I, M> {
     /// Gives the string value of an item. All items have a string value.
     pub fn to_string(&self) -> String {
 	match self {
-	    Item::Node(n) => n.to_string(),
+	    Item::INode(n) => n.to_string(),
+	    Item::MNode(n) => n.to_string(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
@@ -194,7 +201,8 @@ impl<N: Node> Item<N> {
     /// Serialize as XML
     pub fn to_xml(&self) -> String {
 	match self {
-	    Item::Node(n) => n.to_xml(),
+	    Item::INode(n) => n.to_xml(),
+	    Item::MNode(n) => n.to_xml(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
@@ -202,7 +210,8 @@ impl<N: Node> Item<N> {
     /// Serialize as XML, with options
     pub fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
 	match self {
-	    Item::Node(n) => n.to_xml_with_options(od),
+	    Item::INode(n) => n.to_xml_with_options(od),
+	    Item::MNode(n) => n.to_xml_with_options(od),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
@@ -210,7 +219,8 @@ impl<N: Node> Item<N> {
     /// Serialize as JSON
     pub fn to_json(&self) -> String {
 	match self {
-	    Item::Node(n) => n.to_json(),
+	    Item::INode(n) => n.to_json(),
+	    Item::MNode(n) => n.to_json(),
 	    Item::Function => "".to_string(),
 	    Item::Value(v) => v.to_string(),
 	}
@@ -220,7 +230,8 @@ impl<N: Node> Item<N> {
     /// See XPath 2.4.3.
     pub fn to_bool(&self) -> bool {
 	match self {
-	    Item::Node(..) => true,
+	    Item::INode(..) |
+	    Item::MNode(..) => true,
 	    Item::Function => false,
 	    Item::Value(v) => v.to_bool(),
 	}
@@ -229,7 +240,8 @@ impl<N: Node> Item<N> {
     /// Gives the integer value of the item, if possible.
     pub fn to_int(&self) -> Result<i64, Error> {
 	match self {
-	    Item::Node(..) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
+	    Item::INode(..) |
+	    Item::MNode(..) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
 	    Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
 	    Item::Value(v) => {
 		match v.to_int() {
@@ -247,7 +259,8 @@ impl<N: Node> Item<N> {
     /// Gives the double value of the item. Returns NaN if the value cannot be converted to a double.
     pub fn to_double(&self) -> f64 {
 	match self {
-	    Item::Node(..) => f64::NAN,
+	    Item::INode(..) |
+	    Item::MNode(..) => f64::NAN,
 	    Item::Function => f64::NAN,
 	    Item::Value(v) => v.to_double(),
 	}
@@ -256,7 +269,8 @@ impl<N: Node> Item<N> {
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
     pub fn name(&self) -> QualifiedName {
 	match self {
-	    Item::Node(n) => n.name(),
+	    Item::INode(n) => n.name(),
+	    Item::MNode(n) => n.name(),
 	    _ => QualifiedName::new(None, None, "".to_string())
 	}
     }
@@ -265,14 +279,15 @@ impl<N: Node> Item<N> {
     // fn atomize(&self);
 
     /// Compare two items.
-    pub fn compare(&self, other: &Item<N>, op: Operator) -> Result<bool, Error> {
+    pub fn compare(&self, other: &Item<I, M>, op: Operator) -> Result<bool, Error> {
 	match self {
 	    Item::Value(v) => {
 		match other {
 		    Item::Value(w) => {
 			v.compare(w, op)
 		    }
-		    Item::Node(..) => {
+		    Item::INode(..) |
+		    Item::MNode(..) => {
 			v.compare(&Value::String(other.to_string()), op)
 		    }
 		    _ => {
@@ -280,7 +295,8 @@ impl<N: Node> Item<N> {
 		    }
 		}
 	    }
-	    Item::Node(..) => {
+	    Item::INode(..) |
+	    Item::MNode(..) => {
 		other.compare(&Item::Value(Value::String(self.to_string())), op)
 	    }
 	    _ => {
@@ -292,7 +308,13 @@ impl<N: Node> Item<N> {
     /// Is this item an element-type node?
     pub fn is_element_node(&self) -> bool {
 	match self {
-	    Item::Node(n) => {
+	    Item::INode(n) => {
+		match n.node_type() {
+		    NodeType::Element => true,
+		    _ => false,
+		}
+	    }
+	    Item::MNode(n) => {
 		match n.node_type() {
 		    NodeType::Element => true,
 		    _ => false,
@@ -305,18 +327,22 @@ impl<N: Node> Item<N> {
     /// Gives the type of the item.
     pub fn item_type(&self) -> &'static str {
 	match self {
-	    Item::Node(..) => "Node",
+	    Item::INode(..) => "INode",
+	    Item::MNode(..) => "MNode",
 	    Item::Function => "Function",
 	    Item::Value(v) => v.value_type(),
 	}
     }
 }
 
-impl<N: Node> fmt::Debug for Item<N> {
+impl<I: INode, M: MNode> fmt::Debug for Item<I, M> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
 	match self {
-	    Item::Node(_) => {
-		write!(f, "node type item")
+	    Item::INode(_) => {
+		write!(f, "immutable node type item")
+	    }
+	    Item::MNode(_) => {
+		write!(f, "mutable node type item")
 	    }
 	    Item::Function => {
 		write!(f, "function type item")
@@ -333,8 +359,9 @@ impl<N: Node> fmt::Debug for Item<N> {
 /// Some nodes have names, such as elements. Some nodes have values, such as text or comments. Some have both a name and a value, such as attributes and processing instructions.
 ///
 /// Element nodes have children and attributes.
-pub trait Node {
+pub trait INode: Clone {
     type NodeIterator: Iterator<Item=Self>;
+    type Mutable: MNode;
 
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
@@ -342,6 +369,9 @@ pub trait Node {
     fn name(&self) -> QualifiedName;
     /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
     fn value(&self) -> Value;
+
+    /// Convert this "B Phase" node to the equivalent "A Phase" node
+    fn to_mnode(&self) -> Self::Mutable;
 
     /// Get the string value of the node. See XPath ???
     fn to_string(&self) -> String;
@@ -371,4 +401,51 @@ pub trait Node {
     fn next_iter(&self) -> Self::NodeIterator;
     /// An iterator over the preceding siblings of the node
     fn prev_iter(&self) -> Self::NodeIterator;
+    /// An iterator over the attributes of an element
+    fn attribute_iter(&self) -> Self::NodeIterator;
+}
+
+/// Nodes make a document tree, but these trees are mutable. That is, they are constructed by the evaluation engine. This usually occurs when evaluating an XSL stylesheet and it is constructing a result document.
+pub trait MNode: Clone {
+    type NodeIterator: Iterator<Item=Self>;
+    type Immutable: INode;
+
+    /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
+    fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;
+    /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
+    fn new_text(&self, v: Value) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+
+    fn node_type(&self) -> NodeType;
+    /// Get the name of the node. If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
+    fn name(&self) -> QualifiedName;
+    /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
+    fn value(&self) -> Value;
+    /// Get the string value of the node. See XPath ???
+    fn to_string(&self) -> String;
+    /// Serialise the node as XML
+    fn to_xml(&self) -> String;
+    /// Serialise the node as XML, with identing
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
+    /// Serialise the node as JSON
+    fn to_json(&self) -> String {
+	String::new()
+    }
+
+    /// Convert this "A phase" node to a "B phase" node
+    //fn to_inode(&self) -> Self::Immutable;
+
+    /// An iterator over the children of the node
+    fn child_iter(&self) -> Self::NodeIterator;
+    /// Get the first child of the node, if there is one
+    fn first_child(&self) -> Option<Self> where Self: Sized {
+	self.child_iter().next()
+    }
+    /// An iterator over the descendants of the node
+    // TODO fn descend_iter(&self) -> Self::NodeIterator;
+
+    /// Append a node to the child list
+    fn push(&mut self, n: Self) -> Result<(), Error>;
+    /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
+    fn add_attribute(&mut self, att: Self) -> Result<(), Error>;
 }

@@ -12,7 +12,8 @@ use crate::qname::QualifiedName;
 use crate::output::OutputDefinition;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::Value;
-use crate::parsexml::{XMLDocument, XMLNode};
+use crate::item::NodeType;
+//use crate::parsexml::{XMLDocument, XMLNode};
 
 /// A Forest. Forests contain [Tree]s. Each [Tree] is identified by a copyable value, similar to a Node value, that can be easily stored and passed as a parameter.
 #[derive(Clone)]
@@ -50,19 +51,20 @@ impl Forest {
     ///let src = f.grow_tree("<Example>document</Example>")
     ///    .expect("unable to parse XML");
     pub fn grow_tree(&mut self, s: &str) -> Result<TreeIndex, Error> {
-	let d = XMLDocument::try_from(s)?;
-	if d.content.len() == 0 {
-	    Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to parse XML")))
-	} else {
-	    let mut ns: HashMap<String, String> = HashMap::new();
-	    let ti = self.plant_tree();
-	    for c in d.content {
-		let e = make_node(c, self, ti, &mut ns)?;
-		self.get_ref_mut(ti).unwrap().push_doc_node(e)?;
-	    }
-	    Ok(ti)
-	}
-    }
+	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented yet")))
+//	let d = XMLDocument::try_from(s)?;
+//	if d.content.len() == 0 {
+//	    Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to parse XML")))
+//	} else {
+//	    let mut ns: HashMap<String, String> = HashMap::new();
+//	    let ti = self.plant_tree();
+//	    for c in d.content {
+//		let e = make_node(c, self, ti, &mut ns)?;
+//		self.get_ref_mut(ti).unwrap().push_doc_node(e)?;
+//	    }
+//	    Ok(ti)
+//	}
+  }
 }
 
 /// A Tree, using an Arena Allocator.
@@ -177,119 +179,120 @@ impl Tree
     }
 }
 
-fn make_node(
-    n: XMLNode,
-    f: &mut Forest,
-    ti: TreeIndex,
-    ns: &mut HashMap<String, String>,
-) -> Result<Node, Error> {
-    match n {
-	XMLNode::Element(m, a, c) => {
-	    a.iter()
-		.filter(|b| {
-		    match b {
-			XMLNode::Attribute(qn, _) => {
-			    match qn.get_prefix() {
-				Some(p) => {
-				    p == "xmlns"
-				}
-				_ => false,
-			    }
-			}
-			_ => false,
-		    }
-		})
-		.for_each(|b| {
-		    if let XMLNode::Attribute(qn, v) = b {
-			// add map from prefix to uri in hashmap
-			ns.insert(qn.get_localname(), v.to_string()).map(|_| {});
-		    }
-		});
+// TODO: replace XMLNode with ANode
+//fn make_node(
+//    n: XMLNode,
+//    f: &mut Forest,
+//    ti: TreeIndex,
+//    ns: &mut HashMap<String, String>,
+//) -> Result<Node, Error> {
+//    match n {
+//	XMLNode::Element(m, a, c) => {
+//	    a.iter()
+//		.filter(|b| {
+//		    match b {
+//			XMLNode::Attribute(qn, _) => {
+//			    match qn.get_prefix() {
+//				Some(p) => {
+//				    p == "xmlns"
+//				}
+//				_ => false,
+//			    }
+//			}
+//			_ => false,
+//		    }
+//		})
+//		.for_each(|b| {
+//		    if let XMLNode::Attribute(qn, v) = b {
+//			// add map from prefix to uri in hashmap
+//			ns.insert(qn.get_localname(), v.to_string()).map(|_| {});
+//		    }
+//		});
 	    // Add element to the tree
-	    let newns = match m.get_prefix() {
-		Some(p) => {
-		    match ns.get(&p) {
-			Some(q) => Some(q.clone()),
-			None => {
-			    return Result::Err(Error::new(ErrorKind::Unknown, String::from("namespace URI not found for prefix")))
-			}
-		    }
-		}
-		None => None,
-	    };
-	    let new = f.get_ref_mut(ti).unwrap().new_element(
-		QualifiedName::new(
-		    newns,
-		    m.get_prefix(),
-		    m.get_localname(),
-		)
-	    )?;
+//	    let newns = match m.get_prefix() {
+//		Some(p) => {
+//		    match ns.get(&p) {
+//			Some(q) => Some(q.clone()),
+//			None => {
+//			    return Result::Err(Error::new(ErrorKind::Unknown, String::from("namespace URI not found for prefix")))
+//			}
+//		    }
+//		}
+//		None => None,
+//	    };
+//	    let new = f.get_ref_mut(ti).unwrap().new_element(
+//		QualifiedName::new(
+//		    newns,
+//		    m.get_prefix(),
+//		    m.get_localname(),
+//		)
+//	    )?;
 
 	    // Attributes
-	    a.iter()
-		.for_each(|b| {
-		    if let XMLNode::Attribute(qn, v) = b {
-			match qn.get_prefix() {
-			    Some(p) => {
-				if p != "xmlns" {
-				    let ans = ns.get(&p).unwrap_or(&"".to_string()).clone();
-				    match f.get_ref_mut(ti).unwrap().new_attribute(
-					QualifiedName::new(Some(ans), Some(p), qn.get_localname()),
-					v.clone()
-				    ) {
-        				Ok(c) => {
-					    new.add_attribute(f, c).expect("unable to add attribute"); // TODO: Don't Panic
-					}
-					Err(_) => {
+//	    a.iter()
+//		.for_each(|b| {
+//		    if let XMLNode::Attribute(qn, v) = b {
+//			match qn.get_prefix() {
+//			    Some(p) => {
+//				if p != "xmlns" {
+//				    let ans = ns.get(&p).unwrap_or(&"".to_string()).clone();
+//				    match f.get_ref_mut(ti).unwrap().new_attribute(
+//					QualifiedName::new(Some(ans), Some(p), qn.get_localname()),
+//					v.clone()
+//				    ) {
+  //      				Ok(c) => {
+//					    new.add_attribute(f, c).expect("unable to add attribute"); // TODO: Don't Panic
+//					}
+//					Err(_) => {
 					    //return Result::Err(e);
-					}
-      				    };
-				}
+//					}
+//      				    };
+//				}
 				// otherwise it is a namespace declaration, see above
-			    }
-			    _ => {
+//			    }
+//			    _ => {
 				// Unqualified name
-				match f.get_ref_mut(ti).unwrap().new_attribute(qn.clone(), v.clone()) {
-        			    Ok(c) => {
-					new.add_attribute(f, c).expect("unable to add attribute"); // TODO: Don't Panic
-				    }
-				    Err(_) => {
+//				match f.get_ref_mut(ti).unwrap().new_attribute(qn.clone(), v.clone()) {
+//        			    Ok(c) => {
+//					new.add_attribute(f, c).expect("unable to add attribute"); // TODO: Don't Panic
+//				    }
+//				    Err(_) => {
 					//return Result::Err(e);
-				    }
-				}
-			    }
-			}
-		    }
-		}
-		);
+//				    }
+//				}
+//			    }
+//			}
+//		    }
+//		}
+//		);
 
 	    // Element content
-	    for h in c.iter().cloned() {
-		let g = make_node(h, f, ti, ns)?;
-		new.append_child(f, g)?
-	    }
+//	    for h in c.iter().cloned() {
+//		let g = make_node(h, f, ti, ns)?;
+//		new.append_child(f, g)?
+//	    }
 
-	    Ok(new)
-	}
-	XMLNode::Attribute(_qn, _v) => {
+//	    Ok(new)
+//	}
+//	XMLNode::Attribute(_qn, _v) => {
 	    // Handled in element arm
-	    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
-	}
-	XMLNode::Text(v) => {
-	    Ok(f.get_ref_mut(ti).unwrap().new_text(v)?)
-	}
-	XMLNode::Comment(v) => {
-	    Ok(f.get_ref_mut(ti).unwrap().new_comment(v)?)
-	}
-	XMLNode::PI(m, v) => {
-	    Ok(f.get_ref_mut(ti).unwrap().new_processing_instruction(QualifiedName::new(None, None, m), v)?)
-	}
-	XMLNode::Reference(_) |
-	XMLNode::DTD(_) => {
-	    Result::Err(Error::new(ErrorKind::TypeError, String::from("not expected")))
-	}
-    }
-}
+//	    Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+//	}
+//	XMLNode::Text(v) => {
+//	    Ok(f.get_ref_mut(ti).unwrap().new_text(v)?)
+//	}
+//	XMLNode::Comment(v) => {
+//	    Ok(f.get_ref_mut(ti).unwrap().new_comment(v)?)
+//	}
+//	XMLNode::PI(m, v) => {
+//	    Ok(f.get_ref_mut(ti).unwrap().new_processing_instruction(QualifiedName::new(None, None, m), v)?)
+//	}
+//	XMLNode::Reference(_) |
+//	XMLNode::DTD(_) => {
+//	    Result::Err(Error::new(ErrorKind::TypeError, String::from("not expected")))
+//	}
+  //  }
+//}
 
 /// A node in the [Tree]. Depending on the type of the node, it may have a name, value, content, or attributes.
 #[derive(Copy, Clone, PartialEq, Debug)]

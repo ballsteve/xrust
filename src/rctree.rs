@@ -17,8 +17,7 @@ use crate::xdmerror::*;
 use crate::qname::*;
 use crate::output::OutputDefinition;
 use crate::value::Value;
-use crate::item::{NodeType, Node};
-use crate::rwdocument::{RWDocument, RWNode};
+use crate::item::{NodeType, INode, MNode};
 use crate::parsexml::content;
 
 /// Phase A document. These contain [ANode]s.
@@ -27,9 +26,9 @@ use crate::parsexml::content;
 #[derive(Clone, Default, PartialEq)]
 pub struct ADoc {
     pub xmldecl: Option<XMLDecl>,
-    pub prologue: Vec<Rc<ANode>>,
-    pub content: Vec<Rc<ANode>>,
-    pub epilogue: Vec<Rc<ANode>>,
+    pub prologue: Vec<RANode>,
+    pub content: Vec<RANode>,
+    pub epilogue: Vec<RANode>,
 }
 
 impl ADoc {
@@ -42,87 +41,25 @@ impl ADoc {
     pub fn get_xmldecl(&self) -> &Option<XMLDecl> {
 	&self.xmldecl
     }
-//    fn to_xml(&self) -> String {
-//	self.content.iter()
-//	    .fold(
-//		String::new(),
-//		|mut r, c| {
-//		    r.push_str(c.to_xml().as_str());
-//		    r
-//		}
-//	    )
-//  }
-}
 
-pub type RADoc = Rc<ADoc>;
-
-impl RWDocument for RADoc {
-    type Docitem = RANode;
-    type RWNodeIterator = Box<dyn Iterator<Item = Self::Docitem>>;
-
-    fn push_content(&mut self, n: Self::Docitem) -> Result<(), Error> {
-	match Rc::get_mut(self) {
-	    Some(d) => Ok(d.content.push(n)),
-	    None => return Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to mutate document")))
-	}
+    fn push_content(&mut self, n: RANode) {
+	self.content.push(n)
     }
-//    fn push_prologue(&mut self, n: ANode) {
+//    fn push_prologue(&mut self, n: RANode) {
 //	self.prologue.push(n)
 //    }
-//    fn push_epilogue(&mut self, n: ANode) {
+//    fn push_epilogue(&mut self, n: RANode) {
 //	self.epilogue.push(n)
-    //    }
-    fn content_iter(&self) -> Self::RWNodeIterator {
-	Box::new(ADocChildren::new(self))
-    }
-
-    fn new_element(&mut self, qn: QualifiedName) -> Result<Self::Docitem, Error> {
-	Ok(Rc::new(
-	    ANodeBuilder::new(NodeType::Element)
-		.name(qn)
-		.build()
-	))
-    }
-    fn new_text(&mut self, v: Value) -> Result<Self::Docitem, Error> {
-	Ok(Rc::new(
-	    ANodeBuilder::new(NodeType::Text)
-		.value(v)
-		.build()
-	))
-    }
+//    }
 
     fn to_xml(&self) -> String {
-	self.content_iter()
-	    .fold(
-		String::new(),
-		|mut r, c| {
-		    r.push_str(c.to_xml().as_str());
-		    r
-		}
-	    )
-    }
-}
-
-pub struct ADocChildren {
-    v: Vec<Rc<ANode>>,
-    i: usize,
-}
-impl ADocChildren {
-    fn new(d: &RADoc) -> Self {
-	ADocChildren{v: d.content.clone(), i: 0}
-    }
-}
-impl Iterator for ADocChildren {
-    type Item = Rc<ANode>;
-
-    fn next(&mut self) -> Option<Self::Item> {
-	match self.v.get(self.i) {
-	    Some(c) => {
-		self.i += 1;
-		Some(c.clone())
-	    }
-	    None => None,
-	}
+	// TODO: XML Decl, prologue, epilogue
+	let mut result = String::new();
+	self.content.iter()
+	    .for_each(|c| {
+		result.push_str(c.to_xml().as_str())
+	    });
+	result
     }
 }
 
@@ -153,12 +90,12 @@ impl ADocBuilder {
     }
 }
 
-/// A node in an [ADoc].
+/// A node in a mutable document.
 
 #[derive(Clone, Default, PartialEq)]
 pub struct ANode {
     node_type: NodeType,
-    children: Vec<Rc<ANode>>,
+    children: Vec<RANode>,
     attributes: HashMap<QualifiedName, Rc<ANode>>,
     name: Option<QualifiedName>,
     value: Option<Value>,
@@ -235,8 +172,36 @@ impl ANodeBuilder {
 
 pub type RANode = Rc<ANode>;
 
-impl RWNode for RANode {
-    type RWNodeIterator = Box<dyn Iterator<Item = Rc<ANode>>>;
+impl MNode for RANode {
+    type NodeIterator = Box<dyn Iterator<Item = RANode>>;
+    type Immutable = RBNode;
+
+    fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
+	Ok(Rc::new(
+	    ANodeBuilder::new(NodeType::Element)
+		.name(qn)
+		.build()
+	))
+    }
+    fn new_text(&self, v: Value) -> Result<Self, Error> {
+	Ok(Rc::new(
+	    ANodeBuilder::new(NodeType::Text)
+		.value(v)
+		.build()
+	))
+    }
+    fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+	Ok(Rc::new(
+	    ANodeBuilder::new(NodeType::Attribute)
+		.name(qn)
+		.value(v)
+		.build()
+	))
+    }
+
+    //fn to_inode(&self) -> Self::Immutable {
+//	RBNode::try_from(self).expect("unable to create INode")
+    //}
 
     fn node_type(&self) -> NodeType {
 	self.node_type.clone()
@@ -259,6 +224,16 @@ impl RWNode for RANode {
 
     fn to_xml(&self) -> String {
 	match self.node_type {
+	    NodeType::Document => {
+		self.children.iter()
+		    .fold(
+			String::new(),
+			|mut result, c| {
+			    result.push_str(c.to_xml().as_str());
+			    result
+			}
+		    )
+	    }
 	    NodeType::Element => {
 		let mut result = String::from("<");
 		result.push_str(self.name().as_ref().to_string().as_str());
@@ -276,8 +251,11 @@ impl RWNode for RANode {
 	    _ => String::new(),	// TODO
 	}
     }
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+	String::from("TODO")
+    }
 
-    fn child_iter(&self) -> Self::RWNodeIterator {
+    fn child_iter(&self) -> Self::NodeIterator {
 	Box::new(ANodeChildren::new(self))
     }
 
@@ -289,6 +267,9 @@ impl RWNode for RANode {
 	    }
 	    None => Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to mutate node")))
 	}
+    }
+    fn add_attribute(&mut self, att: Rc<ANode>) -> Result<(), Error> {
+	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
     }
 }
 
@@ -309,9 +290,9 @@ impl ANodeChildren {
     }
 }
 impl Iterator for ANodeChildren {
-    type Item = Rc<ANode>;
+    type Item = RANode;
 
-    fn next(&mut self) -> Option<Rc<ANode>> {
+    fn next(&mut self) -> Option<RANode> {
 	match self.v.get(self.i) {
 	    Some(c) => {
 		self.i += 1;
@@ -542,8 +523,9 @@ impl BNode {
     }
 }
 
-impl Node for RBNode {
+impl INode for RBNode {
     type NodeIterator = Box<dyn Iterator<Item = RBNode>>;
+    type Mutable = RANode;
 
     fn node_type(&self) -> NodeType {
 	self.node_type.clone()
@@ -560,6 +542,20 @@ impl Node for RBNode {
 	    |n| n.clone()
 	)
     }
+
+    fn to_mnode(&self) -> Self::Mutable {
+	Rc::new(ANode{
+	    node_type: self.node_type().clone(),
+	    name: Some(self.name()),
+	    value: Some(self.value()),
+	    children: vec![],
+	    attributes: HashMap::new(), // TODO
+	    pi_name: None,
+	    dtd: None,
+	    reference: None,
+	})
+    }
+
     // String value of the node
     fn to_string(&self) -> String {
 	let mut result = String::new();
@@ -623,22 +619,25 @@ impl Node for RBNode {
     fn prev_iter(&self) -> Self::NodeIterator {
 	Box::new(Siblings::new(self.clone(), -1))
     }
+    fn attribute_iter(&self) -> Self::NodeIterator {
+	Box::new(Attributes::new(self.clone()))
+    }
 }
 
 pub struct Children {
-    v: Vec<Rc<BNode>>,
+    v: Vec<RBNode>,
     i: usize,
 }
 impl Children {
-    fn new(n: Rc<BNode>) -> Self {
+    fn new(n: RBNode) -> Self {
 	Children{v: n.children.clone(), i: 0}
     }
 }
 impl Iterator for Children {
-    type Item = Rc<BNode>;
+    type Item = RBNode;
 
     // TODO
-    fn next(&mut self) -> Option<Rc<BNode>> {
+    fn next(&mut self) -> Option<RBNode> {
 	match self.v.get(self.i) {
 	    Some(c) => {
 		self.i += 1;
@@ -650,19 +649,19 @@ impl Iterator for Children {
 }
 
 pub struct Ancestors {
-    cur: Rc<BNode>,
+    cur: RBNode,
 }
 
 impl Ancestors {
-    fn new(n: Rc<BNode>) -> Self {
+    fn new(n: RBNode) -> Self {
 	Ancestors{cur: n.clone()}
     }
 }
 
 impl Iterator for Ancestors {
-    type Item = Rc<BNode>;
+    type Item = RBNode;
 
-    fn next(&mut self) -> Option<Rc<BNode>> {
+    fn next(&mut self) -> Option<RBNode> {
 	let p = self.cur.parent.as_ref();
 	match p {
 	    None => None,
@@ -684,11 +683,11 @@ impl Iterator for Ancestors {
 // to traverse.
 // An alternative would be to lazily traverse the descendants.
 pub struct Descendants{
-    v: Vec<Rc<BNode>>,
+    v: Vec<RBNode>,
     cur: usize,
 }
 impl Descendants {
-    fn new(n: Rc<BNode>) -> Self {
+    fn new(n: RBNode) -> Self {
 	Descendants{
 	    v: n.children.iter()
 		.fold(
@@ -703,7 +702,7 @@ impl Descendants {
 	}
     }
 }
-fn descendant_add(n: &Rc<BNode>) -> Vec<Rc<BNode>> {
+fn descendant_add(n: &RBNode) -> Vec<RBNode> {
     let mut result = vec![n.clone()];
     n.children.iter()
 	.for_each(|c| {
@@ -713,9 +712,9 @@ fn descendant_add(n: &Rc<BNode>) -> Vec<Rc<BNode>> {
     result
 }
 impl Iterator for Descendants {
-    type Item = Rc<BNode>;
+    type Item = RBNode;
 
-    fn next(&mut self) -> Option<Rc<BNode>> {
+    fn next(&mut self) -> Option<RBNode> {
 	match self.v.get(self.cur) {
 	    Some(n) => {
 		self.cur += 1;
@@ -726,17 +725,32 @@ impl Iterator for Descendants {
     }
 }
 
-pub struct Siblings(Rc<BNode>);
+pub struct Siblings(RBNode);
 impl Siblings {
-    fn new(n: Rc<BNode>, _dir: i32) -> Self {
+    fn new(n: RBNode, _dir: i32) -> Self {
 	Siblings(n.clone())
     }
 }
 impl Iterator for Siblings {
-    type Item = Rc<BNode>;
+    type Item = RBNode;
 
     // TODO
-    fn next(&mut self) -> Option<Rc<BNode>> {
+    fn next(&mut self) -> Option<RBNode> {
+	None
+    }
+}
+
+pub struct Attributes(RBNode);
+impl Attributes {
+    fn new(n: RBNode) -> Self {
+	Siblings(n.clone())
+    }
+}
+impl Iterator for Attributes {
+    type Item = RBNode;
+
+    // TODO
+    fn next(&mut self) -> Option<RBNode> {
 	None
     }
 }
@@ -747,19 +761,15 @@ mod tests {
 
     #[test]
     fn new_a() {
-	eprintln!("make ADoc");
-	let ad = Rc::new(
-	    ADocBuilder::new()
-		.content(vec![
-		    Rc::new(
-			ANodeBuilder::new(NodeType::Element)
-			    .name(QualifiedName::new(None, None, String::from("Test")))
-			    .build()
-		    )
-		])
-		.build()
-	);
-	eprintln!("check XML");
+	let ad = ADocBuilder::new()
+	    .content(vec![
+		Rc::new(
+		    ANodeBuilder::new(NodeType::Element)
+			.name(QualifiedName::new(None, None, String::from("Test")))
+			.build()
+		)
+	    ])
+	    .build();
 	assert_eq!(ad.to_xml(), "<Test></Test>")
     }
     #[test]
