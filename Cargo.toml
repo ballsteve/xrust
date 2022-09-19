@@ -24,6 +24,10 @@ harness = false
 name = "bench_forest"
 harness = false
 
+[[bench]]
+name = "bench_intmuttree"
+harness = false
+
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]

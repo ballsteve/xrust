@@ -47,7 +47,6 @@ pub mod qname;
 mod parsepicture;
 mod output;
 
-pub mod rwdocument;
 pub mod value;
 pub use value::Value;
 pub mod item;
@@ -68,7 +67,9 @@ pub use evaluate::{StaticContext, Evaluator, Constructor};
 //#[cfg(feature = "xslt")]
 //pub use xslt::from_document;
 
-//pub mod forest;
+pub mod forest;
 //pub use forest::Node;
 pub mod rctree;
 pub use rctree::{ADoc, ANode, RBNode};
+pub mod intmuttree;
+pub use intmuttree::Node;

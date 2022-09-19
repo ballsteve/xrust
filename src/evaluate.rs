@@ -188,14 +188,14 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	&self,
 	i: &Rc<Item<I, M>>,
 	im: Option<usize>,
-	rd: M,
+	rd: &M,
     ) -> Result<Vec<Constructor<I, M>>, Error> {
 	let mut r: Vec<&Template<I, M>> = vec![];
 	let mut it = self.templates.iter();
 	loop {
 	    match it.next() {
 		Some(t) => {
-		    if self.item_matches(&t.pattern, i, rd)? {
+		    if self.item_matches(&t.pattern, i, &rd)? {
 			r.push(t)
 		    }
 		}
@@ -216,7 +216,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	    loop {
 		match builtins.next() {
 		    Some(u) => {
-			if self.item_matches(&u.pattern, i, rd)? {
+			if self.item_matches(&u.pattern, i, &rd)? {
 			    w.push(u)
 			}
 		    }
@@ -278,7 +278,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	ctxt: Option<Sequence<I, M>>,
 	posn: Option<usize>,
 	c: &Vec<Constructor<I, M>>,
-	rd: M,	// Result document
+	rd: &M,	// Result document
     ) -> Result<Sequence<I, M>, Error> {
 
 	// Evaluate all sequence constructors. This will result in a sequence of sequences.
@@ -314,7 +314,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	ctxt: Option<Sequence<I, M>>,
 	posn: Option<usize>,
 	c: &Constructor<I, M>,
-	rd: M,
+	rd: &M,
     ) -> Result<Sequence<I, M>, Error> {
 	match c {
 	    Constructor::Literal(l) => {
@@ -325,7 +325,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 
 	    // This creates a Node in the current result document
 	    Constructor::LiteralElement(n, c) => {
-		let l = rd
+		let mut l = rd
 		    .new_element(n.clone())?;
 
       		// add content to newly created element
@@ -334,7 +334,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 		    .try_for_each(
 			|i| {
 			    // Item could be a Node or text
-			    match **i {
+			    match &**i {
 				Item::INode(t) => {
 				    l.push(t.to_mnode())
 				}
@@ -401,36 +401,38 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
       		// If the element does not have an attribute with the given name, create it
       		// Otherwise replace the attribute's value with the supplied value
       		if ctxt.is_some() {
-		    match &*(ctxt.as_ref().unwrap()[posn.unwrap()]) {
+		    // Work out if an attribute is required, then set it
+		    let mut atnode: Option<M> = None;
+		    match &*ctxt.as_ref().unwrap()[posn.unwrap()] {
 			Item::MNode(nd) => {
-			    // TODO: Don't Panic
 			    match nd.node_type() {
 				NodeType::Element => {
 				    let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
 				    if attval.len() == 1 {
 					match &*attval[0] {
 					    Item::Value(av) => {
-						let atnode = rd.new_attribute(n.clone(), av.clone())?;
-						nd.add_attribute(atnode)?
+						atnode = Some(rd.new_attribute(n.clone(), av.clone())?);
 					    }
 					    _ => {
 						let w = Value::from(attval.to_string());
-						let atnode = rd.new_attribute(n.clone(), w)?;
-						nd.add_attribute(atnode)?
+						atnode = Some(rd.new_attribute(n.clone(), w)?);
 					    }
 					}
 				    } else {
 					let w = Value::from(attval.to_string());
-					let atnode = rd.new_attribute(n.clone(), w)?;
-					nd.add_attribute(atnode)?
+					atnode = Some(rd.new_attribute(n.clone(), w)?);
 				    }
-				    Ok(vec![])
 				}
-	      			_ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item is not an element".to_string()})
+	      			_ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "context item is not an element".to_string()})
 			    }
 			}
-			_ => Result::Err(Error{kind: ErrorKind::TypeError, message: "context item must be a mutable element node".to_string()})
+			_ => return Result::Err(Error{kind: ErrorKind::TypeError, message: "context item must be a mutable element node".to_string()})
 		    }
+		    // TODO: get the current element and set the attr node
+//		    atnode.map(|a| {
+//			ctxt.unwrap()[posn.unwrap()].set_attribute(a);
+//		    });
+		    Ok(vec![])
 		} else {
 		    Result::Err(Error{kind: ErrorKind::DynamicAbsent, message: "no context item".to_string()})
 		}
@@ -561,7 +563,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	    }
 	    Constructor::Root => {
 		if ctxt.is_some() {
-		    match *ctxt.as_ref().unwrap()[posn.unwrap()] {
+		    match &*ctxt.as_ref().unwrap()[posn.unwrap()] {
 			Item::INode(n) => {
 			    n.ancestor_iter()
 				.last()
@@ -618,7 +620,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 				Axis::Selfaxis => {
 				    if is_node_match::<I, M>(&nm.nodetest, n) {
 					let mut seq = Sequence::new();
-					seq.push_inode(*n);
+					seq.push_inode(n.clone());
 	      				Ok(self.predicates(seq, p, rd)?)
 				    } else {
 	      				Ok(Sequence::new())
@@ -754,7 +756,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 					.fold(Sequence::new(), |mut c, a| {c.push_inode(a.clone()); c});
 
 				    if is_node_match::<I, M>(&nm.nodetest, n) {
-					seq.push_item(&Rc::new(Item::INode(*n)));
+					seq.push_item(&Rc::new(Item::INode(n.clone())));
 				    }
 
 	      			    Ok(self.predicates(seq, p, rd)?)
@@ -803,8 +805,6 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 				    // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
 				    // iow, for each ancestor-or-self node, include every next sibling and its descendants
 
-				    let mut d: Vec<I> = Vec::new();
-
 				    // Start with following siblings of self
 //				    let mut fit = n.next_iter(f);
 //				    loop {
@@ -829,10 +829,10 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 //					let mut b = a.descendants();
 //					d.append(&mut b);
 				    //				    }
-				    let d = n.next_iter()
+				    let mut d = n.next_iter()
 					.fold(
 					    Vec::new(),
-					    |acc, a| {
+					    |mut acc, a| {
 						acc.push(a.clone());
 						let mut b = a.descend_iter()
 						    .collect();
@@ -887,7 +887,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 					});
 				    let seq = d.iter()
 					.filter(|e| is_node_match::<I, M>(&nm.nodetest, *e))
-					.fold(Sequence::new(), |mut h, g| {h.push_inode(*g); h});
+					.fold(Sequence::new(), |mut h, g| {h.push_inode(g.clone()); h});
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::Preceding => {
@@ -962,7 +962,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 					});
 				    let seq = d.iter()
 					.filter(|e| is_node_match::<I, M>(&nm.nodetest, *e))
-					.fold(Sequence::new(), |mut h, g| {h.push_inode(*g); h});
+					.fold(Sequence::new(), |mut h, g| {h.push_inode(g.clone()); h});
 	      			    Ok(self.predicates(seq, p, rd)?)
 				}
 	      			Axis::Attribute => {
@@ -982,7 +982,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 					.filter(|a| is_node_match::<I, M>(&nm.nodetest, a))
 					.fold(
 					    Sequence::new(),
-					    |acc, i| {
+					    |mut acc, i| {
 						acc.push_inode(i);
 						acc
 					    }
@@ -1386,17 +1386,17 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	orig: Rc<Item<I, M>>,
 	ctxt: Option<Sequence<I, M>>,
 	posn: Option<usize>,
-	rd: M,
+	rd: &M,
     ) -> Result<Rc<Item<I, M>>, Error> {
 
 	let cp = self.item_copy(orig.clone(), &vec![], ctxt.clone(), posn, rd)?;
 
 	// If this item is an element node, then copy all of its attributes and children
-	match *orig {
+	match &*orig {
 	    Item::INode(n) => {
 		match n.node_type() {
 		    NodeType::Element => {
-			let cur = match *cp {
+			let mut cur = match *cp {
 			    Item::MNode(ref m) => m,
 			    _ => {
 				return Result::Err(Error{kind: ErrorKind::Unknown, message: "unable to copy element node".to_string()})
@@ -1410,10 +1410,11 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 			    .collect();
 			// TODO: Don't Panic
 			new.iter().for_each(|a| {
-			    let at = rd.new_attribute(a.name().clone(), a.value().clone())
+			    let _at = rd.new_attribute(a.name().clone(), a.value().clone())
 				.expect("unable to create attribute");
-			    cur.add_attribute(at)
-				.expect("unable to add attribute");
+			    // TODO: cannot borrow as mutable
+			    //cur.add_attribute(at)
+			//	.expect("unable to add attribute");
 			});
 // TODO
 //			n.child_iter()
@@ -1437,9 +1438,9 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	content: &Vec<Constructor<I, M>>,
 	ctxt: Option<Sequence<I, M>>,
 	posn: Option<usize>,
-	rd: M,
+	rd: &M,
     ) -> Result<Rc<Item<I, M>>, Error> {
-	match *orig {
+	match &*orig {
 	    Item::Value(_) => {
 		Ok(orig.clone())
 	    }
@@ -1455,17 +1456,19 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 				r.iter()
         			    .for_each(|i| {
 	    				// Item could be a Node or text
-	    				match **i {
+	    				match &**i {
 	      				    Item::INode(t) => {
 						match t.node_type() {
 						    NodeType::Element |
 						    NodeType::Text => {
-							e.push(t.to_mnode())
-							    .expect("unable to add child node");
+							// TODO: cannot borrow e as mutable
+							//e.push(t.to_mnode())
+							  //  .expect("unable to add child node");
 						    }
 						    NodeType::Attribute => {
-							e.add_attribute(t.to_mnode())
-							    .expect("unable to add attribute node");
+							// TODO: cannot borrow as mutable
+							//e.add_attribute(t.to_mnode())
+							  //  .expect("unable to add attribute node");
 						    }
 						    _ => {} // TODO: work out what to do with documents, etc
 						}
@@ -1475,8 +1478,9 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 						let x = Value::from(i.to_string());
 						let h = rd.new_text(x)
 						    .expect("unable to create text node");
-						e.push(h)
-						    .expect("unable to add child text node");
+						// TODO: cannot borrow as mutable
+						//e.push(h)
+						  //  .expect("unable to add child text node");
 	      				    }
 	    				}
 				    });
@@ -1527,7 +1531,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	&self,
 	s: Sequence<I, M>,
 	p: &Vec<Vec<Constructor<I, M>>>,
-	rd: M,
+	rd: &M,
     ) -> Result<Sequence<I, M>, Error> {
 	if p.is_empty() {
 	    Ok(s)
@@ -1536,7 +1540,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 
 	    // iterate over the predicates
 	    for q in p {
-      		let mut new: Sequence = Vec::new();
+      		let mut new: Sequence<I, M> = Vec::new();
 
       		// for each predicate, evaluate each item in s to a boolean
       		for i in 0..result.len() {
@@ -1559,7 +1563,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	&self,
 	pat: &Vec<Constructor<I, M>>,
 	i: &Rc<Item<I, M>>,
-	rd: M,
+	rd: &M,
     ) -> Result<bool, Error> {
 	let e = self.evaluate(Some(vec![i.clone()]), Some(0), pat, rd)?;
 
@@ -1578,7 +1582,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	op: Operator,
 	left: &Vec<Constructor<I, M>>,
 	right: &Vec<Constructor<I, M>>,
-	rd: M,
+	rd: &M,
     ) -> Result<bool, Error> {
 	let mut b = false;
 	let left_seq =  self.evaluate(ctxt.clone(), posn, left, rd)?;
@@ -1601,7 +1605,7 @@ impl<I: INode<Mutable = M>, M: MNode> Evaluator<I, M> {
 	op: Operator,
 	left: &Vec<Constructor<I, M>>,
 	right: &Vec<Constructor<I, M>>,
-	rd: M,
+	rd: &M,
     ) -> Result<bool, Error> {
 	let left_seq = self.evaluate(ctxt.clone(), posn, left, rd)?;
 	if left_seq.len() == 0 {
@@ -1738,7 +1742,7 @@ fn is_node_match<I: INode, M: MNode>(nt: &NodeTest, n: &I) -> bool {
 	      	  true
 	    	}
 	    	WildcardOrName::Name(s) => {
-	      	  *s == n.to_name().get_localname()
+	      	  *s == n.name().get_localname()
 	    	}
 	      }
 	    }
@@ -2058,7 +2062,7 @@ pub fn to_pattern<I: INode, M: MNode>(sc: Vec<Constructor<I, M>>) -> Result<Vec<
           if s.len() == 0 {
             return Result::Err(Error{kind: ErrorKind::TypeError, message: "sequence constructor must not be empty".to_string()})
 	  }
-	  let mut p: Vec<Vec<Constructor>> = Vec::new();
+	  let mut p: Vec<Vec<Constructor<I, M>>> = Vec::new();
 	  let mut it = s.iter().rev();
 	  let step0 = it.next().unwrap(); // We've already checked that there is at least one step
 	  let mut last_axis;
@@ -2643,12 +2647,12 @@ impl<I: INode, M: MNode> StaticContext<I, M> {
 
 // Functions
 
-pub type FunctionImpl<I: INode, M: MNode> = fn(
+pub type FunctionImpl<I, M> = fn(
     &Evaluator<I, M>,
     Option<Sequence<I, M>>,		// Context
     Option<usize>,			// Context position
     Vec<Sequence<I, M>>,		// Actual parameters
-    M,
+    &M,
   ) -> Result<Sequence<I, M>, Error>;
 
 #[derive(Clone)]
@@ -2706,7 +2710,7 @@ fn func_position<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match posn {
     Some(u) => {
@@ -2721,7 +2725,7 @@ fn func_last<I: INode, M: MNode>(
     ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match ctxt {
     Some(u) => {
@@ -2736,7 +2740,7 @@ pub fn func_count<I: INode, M: MNode>(
     ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match args.len() {
     0 => {
@@ -2759,14 +2763,17 @@ pub fn func_localname<I: INode, M: MNode>(
     ctxt: Option<Sequence<I, M>>,
     posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
       match *u[posn.unwrap()] {
-        Item::Node(ref n) => {
-      	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().get_localname())))])
+        Item::INode(ref n) => {
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.name().get_localname())))])
+	}
+        Item::MNode(ref n) => {
+      	  Ok(vec![Rc::new(Item::Value(Value::String(n.name().get_localname())))])
 	}
 	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
       }
@@ -2781,15 +2788,19 @@ pub fn func_name<I: INode, M: MNode>(
     ctxt: Option<Sequence<I, M>>,
     posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match ctxt {
     Some(u) => {
       // Current item must be a node
       match *u[posn.unwrap()] {
-        Item::Node(ref n) => {
+        Item::INode(ref n) => {
       	  // TODO: handle QName prefixes
-	  Ok(vec![Rc::new(Item::Value(Value::String(n.to_name().get_localname())))])
+	  Ok(vec![Rc::new(Item::Value(Value::String(n.name().get_localname())))])
+	}
+        Item::MNode(ref n) => {
+      	  // TODO: handle QName prefixes
+	  Ok(vec![Rc::new(Item::Value(Value::String(n.name().get_localname())))])
 	}
 	_ => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("not a node"),})
       }
@@ -2804,7 +2815,7 @@ pub fn func_string<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match args.len() {
     1 => {
@@ -2820,7 +2831,7 @@ pub fn func_concat<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   Ok(vec![Rc::new(Item::Value(Value::String(
     args.iter().fold(
@@ -2838,7 +2849,7 @@ pub fn func_startswith<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
@@ -2857,7 +2868,7 @@ pub fn func_contains<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have exactly 2 arguments
   if args.len() == 2 {
@@ -2876,7 +2887,7 @@ pub fn func_substring<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 2 or 3 arguments
   match args.len() {
@@ -2905,7 +2916,7 @@ pub fn func_substringbefore<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 2 arguments
   match args.len() {
@@ -2940,7 +2951,7 @@ pub fn func_substringafter<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 2 arguments
   match args.len() {
@@ -2975,7 +2986,7 @@ pub fn func_normalizespace<I: INode, M: MNode>(
     ctxt: Option<Sequence<I, M>>,
     posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 0 or 1 arguments
   let s: Result<Option<String>, Error> = match args.len() {
@@ -3016,7 +3027,7 @@ pub fn func_translate<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 3 arguments
   match args.len() {
@@ -3068,7 +3079,7 @@ pub fn func_boolean<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 arguments
   match args.len() {
@@ -3084,7 +3095,7 @@ pub fn func_not<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 arguments
   match args.len() {
@@ -3100,7 +3111,7 @@ pub fn func_true<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 0 arguments
   match args.len() {
@@ -3116,7 +3127,7 @@ pub fn func_false<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 0 arguments
   match args.len() {
@@ -3132,7 +3143,7 @@ pub fn func_number<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 argument
   match args.len() {
@@ -3164,7 +3175,7 @@ pub fn func_sum<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 argument
   match args.len() {
@@ -3180,7 +3191,7 @@ pub fn func_floor<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
@@ -3201,7 +3212,7 @@ pub fn func_ceiling<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 argument which is a singleton
   match args.len() {
@@ -3222,7 +3233,7 @@ pub fn func_round<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 1 or 2 arguments
   match args.len() {
@@ -3252,7 +3263,7 @@ pub fn func_current_date_time<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
@@ -3266,7 +3277,7 @@ pub fn func_current_date<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
@@ -3280,7 +3291,7 @@ pub fn func_current_time<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 0 arguments
   // TODO: check number of arguments
@@ -3294,7 +3305,7 @@ pub fn func_format_date_time<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
@@ -3340,7 +3351,7 @@ pub fn func_format_date<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
@@ -3386,7 +3397,7 @@ pub fn func_format_time<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   // must have 2 or 5 arguments
   // TODO: implement 5 argument version
@@ -3432,7 +3443,7 @@ pub fn func_current_grouping_key<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match e.dc.current_grouping_key.borrow().last() {
     Some(k) => {
@@ -3452,7 +3463,7 @@ pub fn func_current_group<I: INode, M: MNode>(
     _ctxt: Option<Sequence<I, M>>,
     _posn: Option<usize>,
     _args: Vec<Sequence<I, M>>,
-    _rd: M,
+    _rd: &M,
 ) -> Result<Sequence<I, M>, Error> {
   match e.dc.current_group.borrow().last() {
     Some(k) => {

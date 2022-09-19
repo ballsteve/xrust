@@ -12,7 +12,6 @@
 use std::convert::TryFrom;
 use std::rc::{Rc, Weak};
 use std::collections::HashMap;
-//use std::marker::PhantomData;
 use crate::xdmerror::*;
 use crate::qname::*;
 use crate::output::OutputDefinition;
@@ -251,7 +250,7 @@ impl MNode for RANode {
 	    _ => String::new(),	// TODO
 	}
     }
-    fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+    fn to_xml_with_options(&self, _od: &OutputDefinition) -> String {
 	String::from("TODO")
     }
 
@@ -268,7 +267,7 @@ impl MNode for RANode {
 	    None => Result::Err(Error::new(ErrorKind::Unknown, String::from("unable to mutate node")))
 	}
     }
-    fn add_attribute(&mut self, att: Rc<ANode>) -> Result<(), Error> {
+    fn add_attribute(&mut self, _att: Rc<ANode>) -> Result<(), Error> {
 	Result::Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
     }
 }
@@ -743,7 +742,7 @@ impl Iterator for Siblings {
 pub struct Attributes(RBNode);
 impl Attributes {
     fn new(n: RBNode) -> Self {
-	Siblings(n.clone())
+	Attributes(n.clone())
     }
 }
 impl Iterator for Attributes {
