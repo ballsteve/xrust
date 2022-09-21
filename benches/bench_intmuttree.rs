@@ -6,22 +6,22 @@ use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
 use xrust::item::{NodeType, MNode};
-use xrust::intmuttree::{NodeBuilder, RNode, NodeTrait};
+use xrust::intmuttree::{NodeBuilder, RNode};
 
 fn make_rnode(n: u64) -> RNode {
-    let a = NodeBuilder::new(NodeType::Document)
+    let mut a = NodeBuilder::new(NodeType::Document)
 	.build();
-    let b = NodeBuilder::new(NodeType::Element)
+    let mut b = NodeBuilder::new(NodeType::Element)
 	.name(QualifiedName::new(None, None, String::from("Test")))
 	.build();
     a.push(b.clone());
     (1..n).for_each(|i| {
-	let l1 = NodeBuilder::new(NodeType::Element)
+	let mut l1 = NodeBuilder::new(NodeType::Element)
 	    .name(QualifiedName::new(None, None, String::from("Level-1")))
 	    .build();
 	b.push(l1.clone());
 	(1..n).for_each(|k| {
-	    let l2 = NodeBuilder::new(NodeType::Element)
+	    let mut l2 = NodeBuilder::new(NodeType::Element)
 		.name(QualifiedName::new(None, None, String::from("Level-2")))
 		.build();
 	    l1.push(l2.clone());
@@ -37,7 +37,7 @@ fn make_rnode(n: u64) -> RNode {
 fn rnode(c: &mut Criterion) {
     c.bench_function(
 	"rnode 100",
-	|b| b.iter(|| make_rnode(black_box(100)))
+	|b| b.iter(|| make_rnode(black_box(1000)))
     );
 }
 
