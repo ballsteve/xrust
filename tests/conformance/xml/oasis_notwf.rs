@@ -8,7 +8,6 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::parsexml;
 
-
 #[test]
 fn op01fail1() {
     /*
@@ -18,12 +17,12 @@ fn op01fail1() {
         Description:S cannot occur before the prolog
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op01fail2() {
@@ -34,12 +33,12 @@ fn op01fail2() {
         Description:comments cannot occur before the prolog
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op01fail3() {
@@ -50,12 +49,12 @@ fn op01fail3() {
         Description:only one document element
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op01fail4() {
@@ -66,12 +65,12 @@ fn op01fail4() {
         Description:document element must be complete.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p01fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -83,12 +82,12 @@ fn op02fail1() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -100,12 +99,12 @@ fn op02fail10() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail10.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail10.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -117,12 +116,12 @@ fn op02fail11() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail11.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail11.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -134,12 +133,12 @@ fn op02fail12() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail12.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail12.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -151,12 +150,12 @@ fn op02fail13() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail13.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail13.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -168,12 +167,12 @@ fn op02fail14() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail14.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail14.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -185,12 +184,12 @@ fn op02fail15() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail15.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail15.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -202,12 +201,12 @@ fn op02fail16() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail16.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail16.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -219,12 +218,12 @@ fn op02fail17() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail17.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail17.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -236,12 +235,12 @@ fn op02fail18() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail18.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail18.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -253,12 +252,12 @@ fn op02fail19() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail19.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail19.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -270,12 +269,12 @@ fn op02fail2() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -287,12 +286,12 @@ fn op02fail20() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail20.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail20.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -304,12 +303,12 @@ fn op02fail21() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail21.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail21.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -321,12 +320,12 @@ fn op02fail22() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail22.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail22.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -338,12 +337,12 @@ fn op02fail23() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail23.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail23.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -355,12 +354,12 @@ fn op02fail24() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail24.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail24.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -372,12 +371,12 @@ fn op02fail25() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail25.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail25.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -389,12 +388,12 @@ fn op02fail26() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail26.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail26.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -406,12 +405,12 @@ fn op02fail27() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail27.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail27.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -423,12 +422,12 @@ fn op02fail28() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail28.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail28.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -440,12 +439,12 @@ fn op02fail29() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail29.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail29.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -457,12 +456,12 @@ fn op02fail3() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -474,12 +473,12 @@ fn op02fail30() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail30.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail30.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -491,12 +490,12 @@ fn op02fail31() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail31.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail31.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -508,12 +507,12 @@ fn op02fail4() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -525,12 +524,12 @@ fn op02fail5() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -542,12 +541,12 @@ fn op02fail6() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -559,12 +558,12 @@ fn op02fail7() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail7.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail7.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -576,12 +575,12 @@ fn op02fail8() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail8.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail8.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -593,12 +592,12 @@ fn op02fail9() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail9.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p02fail9.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail1() {
@@ -609,12 +608,12 @@ fn op03fail1() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail10() {
@@ -625,12 +624,12 @@ fn op03fail10() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail10.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail10.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail11() {
@@ -641,12 +640,12 @@ fn op03fail11() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail11.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail11.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail12() {
@@ -657,12 +656,12 @@ fn op03fail12() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail12.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail12.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail13() {
@@ -673,12 +672,12 @@ fn op03fail13() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail13.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail13.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail14() {
@@ -689,12 +688,12 @@ fn op03fail14() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail14.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail14.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail15() {
@@ -705,12 +704,12 @@ fn op03fail15() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail15.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail15.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail16() {
@@ -721,12 +720,12 @@ fn op03fail16() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail16.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail16.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail17() {
@@ -737,12 +736,12 @@ fn op03fail17() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail17.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail17.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail18() {
@@ -753,12 +752,12 @@ fn op03fail18() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail18.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail18.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail19() {
@@ -769,12 +768,12 @@ fn op03fail19() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail19.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail19.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail2() {
@@ -785,12 +784,12 @@ fn op03fail2() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail20() {
@@ -801,12 +800,12 @@ fn op03fail20() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail20.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail20.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail21() {
@@ -817,12 +816,12 @@ fn op03fail21() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail21.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail21.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail22() {
@@ -833,12 +832,12 @@ fn op03fail22() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail22.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail22.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail23() {
@@ -849,12 +848,12 @@ fn op03fail23() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail23.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail23.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail24() {
@@ -865,12 +864,12 @@ fn op03fail24() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail24.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail24.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail25() {
@@ -881,12 +880,12 @@ fn op03fail25() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail25.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail25.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail26() {
@@ -897,12 +896,12 @@ fn op03fail26() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail26.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail26.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail27() {
@@ -913,12 +912,12 @@ fn op03fail27() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail27.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail27.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail28() {
@@ -929,12 +928,12 @@ fn op03fail28() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail28.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail28.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail29() {
@@ -945,12 +944,12 @@ fn op03fail29() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail29.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail29.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail3() {
@@ -961,12 +960,12 @@ fn op03fail3() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail4() {
@@ -977,12 +976,12 @@ fn op03fail4() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail5() {
@@ -993,12 +992,12 @@ fn op03fail5() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail7() {
@@ -1009,12 +1008,12 @@ fn op03fail7() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail7.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail7.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail8() {
@@ -1025,12 +1024,12 @@ fn op03fail8() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail8.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail8.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op03fail9() {
@@ -1041,12 +1040,12 @@ fn op03fail9() {
         Description:Use of illegal character within XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail9.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p03fail9.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op04fail1() {
@@ -1057,12 +1056,12 @@ fn op04fail1() {
         Description:Name contains invalid character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op04fail2() {
@@ -1073,12 +1072,12 @@ fn op04fail2() {
         Description:Name contains invalid character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op04fail3() {
@@ -1089,12 +1088,12 @@ fn op04fail3() {
         Description:Name contains invalid character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p04fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op05fail1() {
@@ -1105,12 +1104,12 @@ fn op05fail1() {
         Description:a Name cannot start with a digit
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op05fail2() {
@@ -1121,12 +1120,12 @@ fn op05fail2() {
         Description:a Name cannot start with a '.'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op05fail3() {
@@ -1137,12 +1136,12 @@ fn op05fail3() {
         Description:a Name cannot start with a "-"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op05fail4() {
@@ -1153,12 +1152,12 @@ fn op05fail4() {
         Description:a Name cannot start with a CombiningChar
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op05fail5() {
@@ -1169,12 +1168,12 @@ fn op05fail5() {
         Description:a Name cannot start with an Extender
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p05fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op09fail1() {
@@ -1185,12 +1184,12 @@ fn op09fail1() {
         Description:EntityValue excludes '%'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op09fail2() {
@@ -1201,12 +1200,12 @@ fn op09fail2() {
         Description:EntityValue excludes '&'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op09fail3() {
@@ -1217,12 +1216,12 @@ fn op09fail3() {
         Description:incomplete character reference
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op09fail4() {
@@ -1233,12 +1232,12 @@ fn op09fail4() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op09fail5() {
@@ -1249,12 +1248,12 @@ fn op09fail5() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op10fail1() {
@@ -1265,12 +1264,12 @@ fn op10fail1() {
         Description:attribute values exclude '<'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op10fail2() {
@@ -1281,12 +1280,12 @@ fn op10fail2() {
         Description:attribute values exclude '&'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op10fail3() {
@@ -1297,12 +1296,12 @@ fn op10fail3() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p10fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op11fail1() {
@@ -1313,12 +1312,12 @@ fn op11fail1() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op11fail2() {
@@ -1329,12 +1328,12 @@ fn op11fail2() {
         Description:cannot contain delimiting quotes
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail1() {
@@ -1345,12 +1344,12 @@ fn op12fail1() {
         Description:'"' excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail2() {
@@ -1361,12 +1360,12 @@ fn op12fail2() {
         Description:'\' excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail3() {
@@ -1377,12 +1376,12 @@ fn op12fail3() {
         Description:entity references excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail4() {
@@ -1393,12 +1392,12 @@ fn op12fail4() {
         Description:'>' excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail5() {
@@ -1409,12 +1408,12 @@ fn op12fail5() {
         Description:'<' excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail6() {
@@ -1425,12 +1424,12 @@ fn op12fail6() {
         Description:built-in entity refs excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op12fail7() {
@@ -1441,12 +1440,12 @@ fn op12fail7() {
         Description:The public ID has a tab character, which is disallowed
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail7.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p12fail7.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op14fail1() {
@@ -1457,12 +1456,12 @@ fn op14fail1() {
         Description:'<' excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op14fail2() {
@@ -1473,12 +1472,12 @@ fn op14fail2() {
         Description:'&' excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op14fail3() {
@@ -1489,12 +1488,12 @@ fn op14fail3() {
         Description:"]]>" excluded
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p14fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op15fail1() {
@@ -1505,12 +1504,12 @@ fn op15fail1() {
         Description:comments can't end in '-'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op15fail2() {
@@ -1521,12 +1520,12 @@ fn op15fail2() {
         Description:one comment per comment (contrasted with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op15fail3() {
@@ -1537,12 +1536,12 @@ fn op15fail3() {
         Description:can't include 2 or more adjacent '-'s
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p15fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op16fail1() {
@@ -1553,12 +1552,12 @@ fn op16fail1() {
         Description:"xml" is an invalid PITarget
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op16fail2() {
@@ -1569,12 +1568,12 @@ fn op16fail2() {
         Description:a PITarget must be present
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op16fail3() {
@@ -1585,13 +1584,12 @@ fn op16fail3() {
         Description:S after PITarget is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p16fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
-
 
 #[test]
 fn op18fail1() {
@@ -1602,12 +1600,12 @@ fn op18fail1() {
         Description:no space before "CDATA"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op18fail2() {
@@ -1618,12 +1616,12 @@ fn op18fail2() {
         Description:no space after "CDATA"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op18fail3() {
@@ -1634,12 +1632,12 @@ fn op18fail3() {
         Description:CDSect's can't nest
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p18fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op22fail1() {
@@ -1650,12 +1648,12 @@ fn op22fail1() {
         Description:prolog must start with XML decl
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op22fail2() {
@@ -1666,12 +1664,12 @@ fn op22fail2() {
         Description:prolog must start with XML decl
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p22fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op23fail1() {
@@ -1682,12 +1680,12 @@ fn op23fail1() {
         Description:"xml" must be lower-case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op23fail2() {
@@ -1698,12 +1696,12 @@ fn op23fail2() {
         Description:VersionInfo must be supplied
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op23fail3() {
@@ -1714,12 +1712,12 @@ fn op23fail3() {
         Description:VersionInfo must come first
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op23fail4() {
@@ -1730,12 +1728,12 @@ fn op23fail4() {
         Description:SDDecl must come last
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op23fail5() {
@@ -1746,12 +1744,12 @@ fn op23fail5() {
         Description:no SGML-type PIs
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p23fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op24fail1() {
@@ -1762,12 +1760,12 @@ fn op24fail1() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op24fail2() {
@@ -1778,12 +1776,12 @@ fn op24fail2() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p24fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op25fail1() {
@@ -1794,12 +1792,12 @@ fn op25fail1() {
         Description:Comment is illegal in VersionInfo.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p25fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p25fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op26fail1() {
@@ -1810,12 +1808,12 @@ fn op26fail1() {
         Description:Illegal character in VersionNum.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op26fail2() {
@@ -1826,12 +1824,12 @@ fn op26fail2() {
         Description:Illegal character in VersionNum.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p26fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op27fail1() {
@@ -1842,12 +1840,12 @@ fn op27fail1() {
         Description:References aren't allowed in Misc, even if they would resolve to valid Misc.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p27fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op28fail1() {
@@ -1858,12 +1856,12 @@ fn op28fail1() {
         Description:only declarations in DTD.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p28fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op29fail1() {
@@ -1874,12 +1872,12 @@ fn op29fail1() {
         Description:A processor must not pass unknown declaration types.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p29fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p29fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op30fail1() {
@@ -1890,12 +1888,12 @@ fn op30fail1() {
         Description:An XML declaration is not the same as a TextDecl
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op31fail1() {
@@ -1906,12 +1904,12 @@ fn op31fail1() {
         Description:external subset excludes doctypedecl
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op32fail1() {
@@ -1922,12 +1920,12 @@ fn op32fail1() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op32fail2() {
@@ -1938,12 +1936,12 @@ fn op32fail2() {
         Description:quote types must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op32fail3() {
@@ -1954,12 +1952,12 @@ fn op32fail3() {
         Description:initial S is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op32fail4() {
@@ -1970,12 +1968,12 @@ fn op32fail4() {
         Description:quotes are required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op32fail5() {
@@ -1986,12 +1984,12 @@ fn op32fail5() {
         Description:yes or no must be lower case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p32fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op39fail1() {
@@ -2002,12 +2000,12 @@ fn op39fail1() {
         Description:start-tag requires end-tag
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op39fail2() {
@@ -2018,12 +2016,12 @@ fn op39fail2() {
         Description:end-tag requires start-tag
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op39fail3() {
@@ -2034,12 +2032,12 @@ fn op39fail3() {
         Description:XML documents contain one or more elements
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op39fail4() {
@@ -2050,12 +2048,12 @@ fn op39fail4() {
         Description:XML declarations must be correctly terminated
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op39fail5() {
@@ -2066,12 +2064,12 @@ fn op39fail5() {
         Description:XML declarations must be correctly terminated
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p39fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op40fail1() {
@@ -2082,12 +2080,12 @@ fn op40fail1() {
         Description:S is required between attributes
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op40fail2() {
@@ -2098,12 +2096,12 @@ fn op40fail2() {
         Description:tags start with names, not nmtokens
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op40fail3() {
@@ -2114,12 +2112,12 @@ fn op40fail3() {
         Description:tags start with names, not nmtokens
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op40fail4() {
@@ -2130,12 +2128,12 @@ fn op40fail4() {
         Description:no space before name
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p40fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op41fail1() {
@@ -2146,12 +2144,12 @@ fn op41fail1() {
         Description:quotes are required (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op41fail2() {
@@ -2162,12 +2160,12 @@ fn op41fail2() {
         Description:attribute name is required (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op41fail3() {
@@ -2178,12 +2176,12 @@ fn op41fail3() {
         Description:Eq required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p41fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op42fail1() {
@@ -2194,11 +2192,11 @@ fn op42fail1() {
         Description:no space before name
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail1.xml").unwrap(),
+    );
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op42fail2() {
@@ -2209,12 +2207,12 @@ fn op42fail2() {
         Description:cannot end with "/>"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op42fail3() {
@@ -2225,12 +2223,12 @@ fn op42fail3() {
         Description:no NET (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p42fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op43fail1() {
@@ -2241,12 +2239,12 @@ fn op43fail1() {
         Description:no non-comment declarations
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op43fail2() {
@@ -2257,12 +2255,12 @@ fn op43fail2() {
         Description:no conditional sections
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op43fail3() {
@@ -2273,12 +2271,12 @@ fn op43fail3() {
         Description:no conditional sections
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p43fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op44fail1() {
@@ -2289,12 +2287,12 @@ fn op44fail1() {
         Description:Illegal space before Empty element tag.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op44fail2() {
@@ -2305,12 +2303,12 @@ fn op44fail2() {
         Description:Illegal space after Empty element tag.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op44fail3() {
@@ -2321,12 +2319,12 @@ fn op44fail3() {
         Description:Illegal comment in Empty element tag.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op44fail4() {
@@ -2337,12 +2335,12 @@ fn op44fail4() {
         Description:Whitespace required between attributes.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op44fail5() {
@@ -2353,12 +2351,12 @@ fn op44fail5() {
         Description:Duplicate attribute name is illegal.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p44fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op45fail1() {
@@ -2369,12 +2367,12 @@ fn op45fail1() {
         Description:ELEMENT must be upper case.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op45fail2() {
@@ -2385,12 +2383,12 @@ fn op45fail2() {
         Description:S before contentspec is required.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op45fail3() {
@@ -2401,12 +2399,12 @@ fn op45fail3() {
         Description:only one content spec
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op45fail4() {
@@ -2417,12 +2415,12 @@ fn op45fail4() {
         Description:no comments in declarations (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p45fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op46fail1() {
@@ -2433,12 +2431,12 @@ fn op46fail1() {
         Description:no parens on declared content
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op46fail2() {
@@ -2449,12 +2447,12 @@ fn op46fail2() {
         Description:no inclusions (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op46fail3() {
@@ -2465,12 +2463,12 @@ fn op46fail3() {
         Description:no exclusions (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op46fail4() {
@@ -2481,12 +2479,12 @@ fn op46fail4() {
         Description:no space before occurrence
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op46fail5() {
@@ -2497,12 +2495,12 @@ fn op46fail5() {
         Description:single group
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op46fail6() {
@@ -2513,12 +2511,12 @@ fn op46fail6() {
         Description:can't be both declared and modeled
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p46fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op47fail1() {
@@ -2529,12 +2527,12 @@ fn op47fail1() {
         Description:Invalid operator '|' must match previous operator ','
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op47fail2() {
@@ -2545,12 +2543,12 @@ fn op47fail2() {
         Description:Illegal character '-' in Element-content model
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op47fail3() {
@@ -2561,12 +2559,12 @@ fn op47fail3() {
         Description:Optional character must follow a name or list
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op47fail4() {
@@ -2577,12 +2575,12 @@ fn op47fail4() {
         Description:Illegal space before optional character
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p47fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op48fail1() {
@@ -2593,12 +2591,12 @@ fn op48fail1() {
         Description:Illegal space before optional character
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op48fail2() {
@@ -2609,12 +2607,12 @@ fn op48fail2() {
         Description:Illegal space before optional character
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p48fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op49fail1() {
@@ -2625,12 +2623,12 @@ fn op49fail1() {
         Description:connectors must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p49fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p49fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op50fail1() {
@@ -2641,12 +2639,12 @@ fn op50fail1() {
         Description:connectors must match
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p50fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p50fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail1() {
@@ -2657,12 +2655,12 @@ fn op51fail1() {
         Description:occurrence on #PCDATA group must be *
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail2() {
@@ -2673,12 +2671,12 @@ fn op51fail2() {
         Description:occurrence on #PCDATA group must be *
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail3() {
@@ -2689,12 +2687,12 @@ fn op51fail3() {
         Description:#PCDATA must come first
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail4() {
@@ -2705,12 +2703,12 @@ fn op51fail4() {
         Description:occurrence on #PCDATA group must be *
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail5() {
@@ -2721,12 +2719,12 @@ fn op51fail5() {
         Description:only '|' connectors
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail6() {
@@ -2737,12 +2735,12 @@ fn op51fail6() {
         Description:Only '|' connectors and occurrence on #PCDATA group must be *
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op51fail7() {
@@ -2753,12 +2751,12 @@ fn op51fail7() {
         Description:no nested groups
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail7.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p51fail7.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op52fail1() {
@@ -2769,12 +2767,12 @@ fn op52fail1() {
         Description:A name is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op52fail2() {
@@ -2785,12 +2783,12 @@ fn op52fail2() {
         Description:A name is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p52fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op53fail1() {
@@ -2801,12 +2799,12 @@ fn op53fail1() {
         Description:S is required before default
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op53fail2() {
@@ -2817,12 +2815,12 @@ fn op53fail2() {
         Description:S is required before type
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op53fail3() {
@@ -2833,12 +2831,12 @@ fn op53fail3() {
         Description:type is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op53fail4() {
@@ -2849,12 +2847,12 @@ fn op53fail4() {
         Description:default is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op53fail5() {
@@ -2865,12 +2863,12 @@ fn op53fail5() {
         Description:name is requried
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p53fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op54fail1() {
@@ -2881,12 +2879,12 @@ fn op54fail1() {
         Description:don't pass unknown attribute types
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p54fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p54fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op55fail1() {
@@ -2897,12 +2895,12 @@ fn op55fail1() {
         Description:must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p55fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p55fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op56fail1() {
@@ -2913,12 +2911,12 @@ fn op56fail1() {
         Description:no IDS type
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op56fail2() {
@@ -2929,12 +2927,12 @@ fn op56fail2() {
         Description:no NUMBER type
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op56fail3() {
@@ -2945,12 +2943,12 @@ fn op56fail3() {
         Description:no NAME type
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op56fail4() {
@@ -2961,12 +2959,12 @@ fn op56fail4() {
         Description:no ENTITYS type- types must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op56fail5() {
@@ -2977,12 +2975,12 @@ fn op56fail5() {
         Description:types must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p56fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op57fail1() {
@@ -2993,12 +2991,12 @@ fn op57fail1() {
         Description:no keyword for NMTOKEN enumeration
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p57fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p57fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail1() {
@@ -3009,12 +3007,12 @@ fn op58fail1() {
         Description:at least one value required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail2() {
@@ -3025,12 +3023,12 @@ fn op58fail2() {
         Description:separator must be '|'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail3() {
@@ -3041,12 +3039,12 @@ fn op58fail3() {
         Description:notations are NAMEs, not NMTOKENs -- note: Leaving the invalid notation undeclared would cause a validating parser to fail without checking the name syntax, so the notation is declared with an invalid name. A parser that reports error positions should report an error at the AttlistDecl on line 6, before reaching the notation declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail4() {
@@ -3057,12 +3055,12 @@ fn op58fail4() {
         Description:NOTATION must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail5() {
@@ -3073,12 +3071,12 @@ fn op58fail5() {
         Description:S after keyword is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail6() {
@@ -3089,12 +3087,12 @@ fn op58fail6() {
         Description:parentheses are require
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail7() {
@@ -3105,12 +3103,12 @@ fn op58fail7() {
         Description:values are unquoted
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail7.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail7.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op58fail8() {
@@ -3121,12 +3119,12 @@ fn op58fail8() {
         Description:values are unquoted
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail8.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p58fail8.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op59fail1() {
@@ -3137,12 +3135,12 @@ fn op59fail1() {
         Description:at least one required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op59fail2() {
@@ -3153,12 +3151,12 @@ fn op59fail2() {
         Description:separator must be ","
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op59fail3() {
@@ -3169,12 +3167,12 @@ fn op59fail3() {
         Description:values are unquoted
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p59fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op60fail1() {
@@ -3185,12 +3183,12 @@ fn op60fail1() {
         Description:keywords must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op60fail2() {
@@ -3201,12 +3199,12 @@ fn op60fail2() {
         Description:S is required after #FIXED
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op60fail3() {
@@ -3217,12 +3215,12 @@ fn op60fail3() {
         Description:only #FIXED has both keyword and value
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op60fail4() {
@@ -3233,12 +3231,12 @@ fn op60fail4() {
         Description:#FIXED required value
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op60fail5() {
@@ -3249,12 +3247,12 @@ fn op60fail5() {
         Description:only one default type
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p60fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op61fail1() {
@@ -3265,12 +3263,12 @@ fn op61fail1() {
         Description:no other types, including TEMP, which is valid in SGML
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op62fail1() {
@@ -3281,12 +3279,12 @@ fn op62fail1() {
         Description:INCLUDE must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op62fail2() {
@@ -3297,12 +3295,12 @@ fn op62fail2() {
         Description:no spaces in terminating delimiter
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op63fail1() {
@@ -3313,12 +3311,12 @@ fn op63fail1() {
         Description:IGNORE must be upper case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op63fail2() {
@@ -3329,12 +3327,12 @@ fn op63fail2() {
         Description:delimiters must be balanced
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op64fail1() {
@@ -3345,12 +3343,12 @@ fn op64fail1() {
         Description:section delimiters must balance
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op64fail2() {
@@ -3361,12 +3359,12 @@ fn op64fail2() {
         Description:section delimiters must balance
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op66fail1() {
@@ -3377,12 +3375,12 @@ fn op66fail1() {
         Description:terminating ';' is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op66fail2() {
@@ -3393,12 +3391,12 @@ fn op66fail2() {
         Description:no S after '&#'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op66fail3() {
@@ -3409,12 +3407,12 @@ fn op66fail3() {
         Description:no hex digits in numeric reference
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op66fail4() {
@@ -3425,12 +3423,12 @@ fn op66fail4() {
         Description:only hex digits in hex references
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic(expected = "assertion failed")]
@@ -3442,12 +3440,12 @@ fn op66fail5() {
         Description:no references to non-characters
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 #[should_panic]
@@ -3459,12 +3457,12 @@ fn op66fail6() {
         Description:no references to non-characters
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p66fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op68fail1() {
@@ -3475,12 +3473,12 @@ fn op68fail1() {
         Description:terminating ';' is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op68fail2() {
@@ -3491,12 +3489,12 @@ fn op68fail2() {
         Description:no S after '&'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op68fail3() {
@@ -3507,12 +3505,12 @@ fn op68fail3() {
         Description:no S before ';'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p68fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op69fail1() {
@@ -3523,12 +3521,12 @@ fn op69fail1() {
         Description:terminating ';' is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op69fail2() {
@@ -3539,12 +3537,12 @@ fn op69fail2() {
         Description:no S after '%'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op69fail3() {
@@ -3555,12 +3553,12 @@ fn op69fail3() {
         Description:no S before ';'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p69fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op70fail1() {
@@ -3571,12 +3569,12 @@ fn op70fail1() {
         Description:This is neither
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p70fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p70fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op71fail1() {
@@ -3587,12 +3585,12 @@ fn op71fail1() {
         Description:S is required before EntityDef
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op71fail2() {
@@ -3603,12 +3601,12 @@ fn op71fail2() {
         Description:Entity name is a Name, not an NMToken
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op71fail3() {
@@ -3619,12 +3617,12 @@ fn op71fail3() {
         Description:no S after "<!"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op71fail4() {
@@ -3635,12 +3633,12 @@ fn op71fail4() {
         Description:S is required after "<!ENTITY"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p71fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op72fail1() {
@@ -3651,12 +3649,12 @@ fn op72fail1() {
         Description:S is required after "<!ENTITY"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op72fail2() {
@@ -3667,12 +3665,12 @@ fn op72fail2() {
         Description:S is required after '%'
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op72fail3() {
@@ -3683,12 +3681,12 @@ fn op72fail3() {
         Description:S is required after name
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op72fail4() {
@@ -3699,12 +3697,12 @@ fn op72fail4() {
         Description:Entity name is a name, not an NMToken
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p72fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op73fail1() {
@@ -3715,12 +3713,12 @@ fn op73fail1() {
         Description:No typed replacement text
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op73fail2() {
@@ -3731,12 +3729,12 @@ fn op73fail2() {
         Description:Only one replacement value
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op73fail3() {
@@ -3747,12 +3745,12 @@ fn op73fail3() {
         Description:No NDataDecl on replacement text
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op73fail4() {
@@ -3763,12 +3761,12 @@ fn op73fail4() {
         Description:Value is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op73fail5() {
@@ -3779,12 +3777,12 @@ fn op73fail5() {
         Description:No NDataDecl without value
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p73fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op74fail1() {
@@ -3795,12 +3793,12 @@ fn op74fail1() {
         Description:no NDataDecls on parameter entities
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op74fail2() {
@@ -3811,12 +3809,12 @@ fn op74fail2() {
         Description:value is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op74fail3() {
@@ -3827,12 +3825,12 @@ fn op74fail3() {
         Description:only one value
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p74fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op75fail1() {
@@ -3843,12 +3841,12 @@ fn op75fail1() {
         Description:S required after "PUBLIC"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op75fail2() {
@@ -3859,12 +3857,12 @@ fn op75fail2() {
         Description:S required after "SYSTEM"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op75fail3() {
@@ -3875,12 +3873,12 @@ fn op75fail3() {
         Description:S required between literals
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op75fail4() {
@@ -3891,12 +3889,12 @@ fn op75fail4() {
         Description:"SYSTEM" implies only one literal
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op75fail5() {
@@ -3907,12 +3905,12 @@ fn op75fail5() {
         Description:only one keyword
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail5.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail5.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op75fail6() {
@@ -3923,12 +3921,12 @@ fn op75fail6() {
         Description:"PUBLIC" requires two literals (contrast with SGML)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail6.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p75fail6.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op76fail1() {
@@ -3939,12 +3937,12 @@ fn op76fail1() {
         Description:S is required before "NDATA"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail1.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail1.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op76fail2() {
@@ -3955,12 +3953,12 @@ fn op76fail2() {
         Description:"NDATA" is upper-case
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail2.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail2.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op76fail3() {
@@ -3971,12 +3969,12 @@ fn op76fail3() {
         Description:notation name is required
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail3.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail3.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
-
 
 #[test]
 fn op76fail4() {
@@ -3987,8 +3985,9 @@ fn op76fail4() {
         Description:notation names are Names
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail4.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p76fail4.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }

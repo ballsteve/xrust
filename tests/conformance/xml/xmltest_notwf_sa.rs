@@ -11,7 +11,6 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::parsexml;
 
-
 #[test]
 fn notwfsa001() {
     /*
@@ -21,10 +20,11 @@ fn notwfsa001() {
         Description:Attribute values must start with attribute names, not "?".
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/001.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/001.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -36,10 +36,11 @@ fn notwfsa002() {
         Description:Names may not start with "."; it's not a Letter.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/002.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/002.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -51,10 +52,11 @@ fn notwfsa003() {
         Description:Processing Instruction target name is required.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/003.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/003.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -66,10 +68,11 @@ fn notwfsa004() {
         Description:SGML-ism: processing instructions end in '?>' not '>'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/004.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/004.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -81,10 +84,11 @@ fn notwfsa005() {
         Description:Processing instructions end in '?>' not '?'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/005.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/005.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -96,10 +100,11 @@ fn notwfsa006() {
         Description:XML comments may not contain "--"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/006.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/006.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -111,10 +116,11 @@ fn notwfsa007() {
         Description:General entity references have no whitespace after the entity name and before the semicolon.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/007.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/007.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -126,10 +132,11 @@ fn notwfsa008() {
         Description:Entity references must include names, which don't begin with '.' (it's not a Letter or other name start character).
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/008.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/008.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -141,10 +148,11 @@ fn notwfsa009() {
         Description:Character references may have only decimal or numeric strings.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/009.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/009.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -156,10 +164,11 @@ fn notwfsa010() {
         Description:Ampersand may only appear as part of a general entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/010.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/010.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -171,10 +180,11 @@ fn notwfsa011() {
         Description:SGML-ism: attribute values must be explicitly assigned a value, it can't act as a boolean toggle.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/011.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/011.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -186,10 +196,11 @@ fn notwfsa012() {
         Description:SGML-ism: attribute values must be quoted in all cases.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/012.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/012.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -201,10 +212,11 @@ fn notwfsa013() {
         Description:The quotes on both ends of an attribute value must match.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/013.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/013.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -216,10 +228,11 @@ fn notwfsa014() {
         Description:Attribute values may not contain literal '<' characters.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/014.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/014.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -231,10 +244,11 @@ fn notwfsa015() {
         Description:Attribute values need a value, not just an equals sign.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/015.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/015.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -246,10 +260,11 @@ fn notwfsa016() {
         Description:Attribute values need an associated name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/016.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/016.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -261,10 +276,11 @@ fn notwfsa017() {
         Description:CDATA sections need a terminating ']]>'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/017.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/017.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -276,10 +292,11 @@ fn notwfsa018() {
         Description:CDATA sections begin with a literal '<![CDATA[', no space.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/018.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/018.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -291,10 +308,11 @@ fn notwfsa019() {
         Description:End tags may not be abbreviated as '</>'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/019.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/019.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -306,10 +324,11 @@ fn notwfsa020() {
         Description:Attribute values may not contain literal '&' characters except as part of an entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/020.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/020.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -321,10 +340,11 @@ fn notwfsa021() {
         Description:Attribute values may not contain literal '&' characters except as part of an entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/021.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/021.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -336,10 +356,11 @@ fn notwfsa022() {
         Description:Character references end with semicolons, always!
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/022.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/022.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -351,10 +372,11 @@ fn notwfsa023() {
         Description:Digits are not valid name start characters.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/023.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/023.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -366,10 +388,11 @@ fn notwfsa024() {
         Description:Digits are not valid name start characters.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/024.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/024.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -381,10 +404,11 @@ fn notwfsa025() {
         Description:Text may not contain a literal ']]>' sequence.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/025.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/025.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -396,10 +420,11 @@ fn notwfsa026() {
         Description:Text may not contain a literal ']]>' sequence.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/026.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/026.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -411,10 +436,11 @@ fn notwfsa027() {
         Description:Comments must be terminated with "-->".
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/027.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/027.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -426,10 +452,11 @@ fn notwfsa028() {
         Description:Processing instructions must end with '?>'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/028.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/028.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -441,10 +468,11 @@ fn notwfsa029() {
         Description:Text may not contain a literal ']]>' sequence.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/029.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/029.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -456,10 +484,11 @@ fn notwfsa030() {
         Description:A form feed is not a legal XML character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/030.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/030.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -471,10 +500,11 @@ fn notwfsa031() {
         Description:A form feed is not a legal XML character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/031.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/031.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -486,10 +516,11 @@ fn notwfsa032() {
         Description:A form feed is not a legal XML character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/032.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/032.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -501,10 +532,11 @@ fn notwfsa033() {
         Description:An ESC (octal 033) is not a legal XML character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/033.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/033.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -516,10 +548,11 @@ fn notwfsa034() {
         Description:A form feed is not a legal XML character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/034.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/034.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -531,10 +564,11 @@ fn notwfsa035() {
         Description:The '<' character is a markup delimiter and must start an element, CDATA section, PI, or comment.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/035.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/035.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -546,10 +580,11 @@ fn notwfsa036() {
         Description:Text may not appear after the root element.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/036.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/036.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -561,10 +596,11 @@ fn notwfsa037() {
         Description:Character references may not appear after the root element.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/037.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/037.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -576,10 +612,11 @@ fn notwfsa038() {
         Description:Tests the "Unique Att Spec" WF constraint by providing multiple values for an attribute.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/038.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/038.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -591,10 +628,11 @@ fn notwfsa039() {
         Description:Tests the Element Type Match WFC - end tag name must match start tag name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/039.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/039.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -606,10 +644,11 @@ fn notwfsa040() {
         Description:Provides two document elements.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/040.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/040.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -621,10 +660,11 @@ fn notwfsa041() {
         Description:Provides two document elements.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/041.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/041.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -636,10 +676,11 @@ fn notwfsa042() {
         Description:Invalid End Tag
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/042.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/042.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -651,10 +692,11 @@ fn notwfsa043() {
         Description:Provides #PCDATA text after the document element.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/043.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/043.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -666,10 +708,11 @@ fn notwfsa044() {
         Description:Provides two document elements.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/044.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/044.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -681,10 +724,11 @@ fn notwfsa045() {
         Description:Invalid Empty Element Tag
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/045.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/045.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -696,10 +740,11 @@ fn notwfsa046() {
         Description:This start (or empty element) tag was not terminated correctly.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/046.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/046.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -711,10 +756,11 @@ fn notwfsa047() {
         Description:Invalid empty element tag invalid whitespace
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/047.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/047.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -726,10 +772,11 @@ fn notwfsa048() {
         Description:Provides a CDATA section after the root element.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/048.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/048.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -741,10 +788,11 @@ fn notwfsa049() {
         Description:Missing start tag
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/049.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/049.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -756,10 +804,11 @@ fn notwfsa050() {
         Description:Empty document, with no root element.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/050.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/050.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -771,10 +820,11 @@ fn notwfsa051() {
         Description:CDATA is invalid at top level of document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/051.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/051.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -786,10 +836,11 @@ fn notwfsa052() {
         Description:Invalid character reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/052.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/052.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -801,10 +852,11 @@ fn notwfsa053() {
         Description:End tag does not match start tag.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/053.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/053.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -816,10 +868,11 @@ fn notwfsa054() {
         Description:PUBLIC requires two literals.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/054.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/054.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -831,10 +884,11 @@ fn notwfsa055() {
         Description:Invalid Document Type Definition format.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/055.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/055.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -846,10 +900,11 @@ fn notwfsa056() {
         Description:Invalid Document Type Definition format - misplaced comment.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/056.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/056.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -861,10 +916,11 @@ fn notwfsa057() {
         Description:This isn't SGML; comments can't exist in declarations.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/057.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/057.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -876,10 +932,11 @@ fn notwfsa058() {
         Description:Invalid character , in ATTLIST enumeration
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/058.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/058.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -891,10 +948,11 @@ fn notwfsa059() {
         Description:String literal must be in quotes.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/059.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/059.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -906,10 +964,11 @@ fn notwfsa060() {
         Description:Invalid type NAME defined in ATTLIST.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/060.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/060.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -921,10 +980,11 @@ fn notwfsa061() {
         Description:External entity declarations require whitespace between public and system IDs.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/061.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/061.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -936,10 +996,11 @@ fn notwfsa062() {
         Description:Entity declarations need space after the entity name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/062.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/062.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -951,10 +1012,11 @@ fn notwfsa063() {
         Description:Conditional sections may only appear in the external DTD subset.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/063.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/063.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -966,10 +1028,11 @@ fn notwfsa064() {
         Description:Space is required between attribute type and default values in <!ATTLIST...> declarations.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/064.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/064.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -981,10 +1044,11 @@ fn notwfsa065() {
         Description:Space is required between attribute name and type in <!ATTLIST...> declarations.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/065.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/065.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -996,10 +1060,11 @@ fn notwfsa066() {
         Description:Required whitespace is missing.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/066.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/066.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1011,10 +1076,11 @@ fn notwfsa067() {
         Description:Space is required between attribute type and default values in <!ATTLIST...> declarations.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/067.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/067.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1026,10 +1092,11 @@ fn notwfsa068() {
         Description:Space is required between NOTATION keyword and list of enumerated choices in <!ATTLIST...> declarations.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/068.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/068.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1041,10 +1108,11 @@ fn notwfsa069() {
         Description:Space is required before an NDATA entity annotation.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/069.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/069.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1056,10 +1124,11 @@ fn notwfsa070() {
         Description:XML comments may not contain "--"
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/070.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/070.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1071,10 +1140,11 @@ fn notwfsa071() {
         Description:ENTITY can't reference itself directly or indirectly.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/071.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/071.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1086,10 +1156,11 @@ fn notwfsa072() {
         Description:Undefined ENTITY foo.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/072.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/072.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1101,10 +1172,11 @@ fn notwfsa073() {
         Description:Undefined ENTITY f.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/073.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/073.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1116,10 +1188,11 @@ fn notwfsa074() {
         Description:Internal general parsed entities are only well formed if they match the "content" production.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/074.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/074.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1131,10 +1204,11 @@ fn notwfsa075() {
         Description:ENTITY can't reference itself directly or indirectly.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/075.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/075.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1146,10 +1220,11 @@ fn notwfsa076() {
         Description:Undefined ENTITY foo.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/076.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/076.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1161,10 +1236,11 @@ fn notwfsa077() {
         Description:Undefined ENTITY bar.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/077.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/077.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1176,10 +1252,11 @@ fn notwfsa078() {
         Description:Undefined ENTITY foo.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/078.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/078.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1191,10 +1268,11 @@ fn notwfsa079() {
         Description:ENTITY can't reference itself directly or indirectly.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/079.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/079.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1206,10 +1284,11 @@ fn notwfsa080() {
         Description:ENTITY can't reference itself directly or indirectly.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/080.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/080.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1221,10 +1300,11 @@ fn notwfsa081() {
         Description:This tests the No External Entity References WFC, since the entity is referred to within an attribute.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/081.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/081.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1236,10 +1316,11 @@ fn notwfsa082() {
         Description:This tests the No External Entity References WFC, since the entity is referred to within an attribute.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/082.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/082.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1251,10 +1332,11 @@ fn notwfsa083() {
         Description:Undefined NOTATION n.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/083.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/083.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1266,10 +1348,11 @@ fn notwfsa084() {
         Description:Tests the Parsed Entity WFC by referring to an unparsed entity. (This precedes the error of not declaring that entity's notation, which may be detected any time before the DTD parsing is completed.)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/084.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/084.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1281,10 +1364,11 @@ fn notwfsa085() {
         Description:Public IDs may not contain "[".
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/085.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/085.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1296,10 +1380,11 @@ fn notwfsa086() {
         Description:Public IDs may not contain "[".
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/086.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/086.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1311,10 +1396,11 @@ fn notwfsa087() {
         Description:Public IDs may not contain "[".
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/087.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/087.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1326,10 +1412,11 @@ fn notwfsa088() {
         Description:Attribute values are terminated by literal quote characters, and any entity expansion is done afterwards.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/088.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/088.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1341,10 +1428,11 @@ fn notwfsa089() {
         Description:Parameter entities "are" always parsed; NDATA annotations are not permitted.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/089.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/089.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1356,10 +1444,11 @@ fn notwfsa090() {
         Description:Attributes may not contain a literal "<" character; this one has one because of reference expansion.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/090.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/090.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1371,10 +1460,11 @@ fn notwfsa091() {
         Description:Parameter entities "are" always parsed; NDATA annotations are not permitted.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/091.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/091.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1386,10 +1476,11 @@ fn notwfsa092() {
         Description:The replacement text of this entity has an illegal reference, because the character reference is expanded immediately.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/092.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/092.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1401,10 +1492,11 @@ fn notwfsa093() {
         Description:Hexadecimal character references may not use the uppercase 'X'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/093.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/093.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1416,10 +1508,11 @@ fn notwfsa094() {
         Description:Prolog VERSION must be lowercase.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/094.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/094.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1431,10 +1524,11 @@ fn notwfsa095() {
         Description:VersionInfo must come before EncodingDecl.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/095.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/095.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1446,10 +1540,11 @@ fn notwfsa096() {
         Description:Space is required before the standalone declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/096.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/096.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1461,10 +1556,11 @@ fn notwfsa097() {
         Description:Both quotes surrounding VersionNum must be the same.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/097.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/097.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1476,10 +1572,11 @@ fn notwfsa098() {
         Description:Only one "version=..." string may appear in an XML declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/098.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/098.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1491,10 +1588,11 @@ fn notwfsa099() {
         Description:Only three pseudo-attributes are in the XML declaration, and "valid=..." is not one of them.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/099.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/099.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1506,10 +1604,11 @@ fn notwfsa100() {
         Description:Only "yes" and "no" are permitted as values of "standalone".
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/100.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/100.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1521,10 +1620,11 @@ fn notwfsa101() {
         Description:Space is not permitted in an encoding name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/101.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/101.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1536,10 +1636,11 @@ fn notwfsa102() {
         Description:Provides an illegal XML version number; spaces are illegal.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/102.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/102.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1551,10 +1652,11 @@ fn notwfsa103() {
         Description:End-tag required for element foo.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/103.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/103.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1566,10 +1668,11 @@ fn notwfsa104() {
         Description:Internal general parsed entities are only well formed if they match the "content" production.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/104.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/104.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1581,10 +1684,11 @@ fn notwfsa105() {
         Description:Invalid placement of CDATA section.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/105.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/105.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1596,10 +1700,11 @@ fn notwfsa106() {
         Description:Invalid placement of entity declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/106.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/106.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1611,10 +1716,11 @@ fn notwfsa107() {
         Description:Invalid document type declaration. CDATA alone is invalid.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/107.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/107.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1626,10 +1732,11 @@ fn notwfsa108() {
         Description:No space in '<![CDATA['.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/108.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/108.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1641,10 +1748,11 @@ fn notwfsa109() {
         Description:Tags invalid within EntityDecl.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/109.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/109.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1656,10 +1764,11 @@ fn notwfsa110() {
         Description:Entity reference must be in content of element.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/110.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/110.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1671,10 +1780,11 @@ fn notwfsa111() {
         Description:Entiry reference must be in content of element not Start-tag.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/111.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/111.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1686,10 +1796,11 @@ fn notwfsa112() {
         Description:CDATA sections start '<![CDATA[', not '<!cdata['.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/112.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/112.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1701,10 +1812,11 @@ fn notwfsa113() {
         Description:Parameter entity values must use valid reference syntax; this reference is malformed.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/113.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/113.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1716,10 +1828,11 @@ fn notwfsa114() {
         Description:General entity values must use valid reference syntax; this reference is malformed.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/114.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/114.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1731,10 +1844,11 @@ fn notwfsa115() {
         Description:The replacement text of this entity is an illegal character reference, which must be rejected when it is parsed in the context of an attribute value.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/115.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/115.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1746,10 +1860,11 @@ fn notwfsa116() {
         Description:Internal general parsed entities are only well formed if they match the "content" production. This is a partial character reference, not a full one.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/116.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/116.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1761,10 +1876,11 @@ fn notwfsa117() {
         Description:Internal general parsed entities are only well formed if they match the "content" production. This is a partial character reference, not a full one.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/117.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/117.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1776,10 +1892,11 @@ fn notwfsa118() {
         Description:Entity reference expansion is not recursive.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/118.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/118.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1791,10 +1908,11 @@ fn notwfsa119() {
         Description:Internal general parsed entities are only well formed if they match the "content" production. This is a partial character reference, not a full one.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/119.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/119.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1806,10 +1924,11 @@ fn notwfsa120() {
         Description:Character references are expanded in the replacement text of an internal entity, which is then parsed as usual. Accordingly, & must be doubly quoted - encoded either as &amp; or as &#38;#38;.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/120.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/120.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1821,10 +1940,11 @@ fn notwfsa121() {
         Description:A name of an ENTITY was started with an invalid character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/121.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/121.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1836,10 +1956,11 @@ fn notwfsa122() {
         Description:Invalid syntax mixed connectors are used.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/122.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/122.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1851,10 +1972,11 @@ fn notwfsa123() {
         Description:Invalid syntax mismatched parenthesis.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/123.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/123.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1866,10 +1988,11 @@ fn notwfsa124() {
         Description:Invalid format of Mixed-content declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/124.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/124.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1881,10 +2004,11 @@ fn notwfsa125() {
         Description:Invalid syntax extra set of parenthesis not necessary.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/125.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/125.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1896,10 +2020,11 @@ fn notwfsa126() {
         Description:Invalid syntax Mixed-content must be defined as zero or more.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/126.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/126.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1911,10 +2036,11 @@ fn notwfsa127() {
         Description:Invalid syntax Mixed-content must be defined as zero or more.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/127.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/127.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1926,10 +2052,11 @@ fn notwfsa128() {
         Description:Invalid CDATA syntax.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/128.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/128.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1941,10 +2068,11 @@ fn notwfsa129() {
         Description:Invalid syntax for Element Type Declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/129.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/129.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1956,10 +2084,11 @@ fn notwfsa130() {
         Description:Invalid syntax for Element Type Declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/130.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/130.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1971,10 +2100,11 @@ fn notwfsa131() {
         Description:Invalid syntax for Element Type Declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/131.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/131.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -1986,10 +2116,11 @@ fn notwfsa132() {
         Description:Invalid syntax mixed connectors used.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/132.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/132.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2001,10 +2132,11 @@ fn notwfsa133() {
         Description:Illegal whitespace before optional character causes syntax error.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/133.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/133.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2016,10 +2148,11 @@ fn notwfsa134() {
         Description:Illegal whitespace before optional character causes syntax error.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/134.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/134.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2031,10 +2164,11 @@ fn notwfsa135() {
         Description:Invalid character used as connector.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/135.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/135.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2046,10 +2180,11 @@ fn notwfsa136() {
         Description:Tag omission is invalid in XML.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/136.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/136.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2061,10 +2196,11 @@ fn notwfsa137() {
         Description:Space is required before a content model.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/137.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/137.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2076,10 +2212,11 @@ fn notwfsa138() {
         Description:Invalid syntax for content particle.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/138.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/138.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2091,10 +2228,11 @@ fn notwfsa139() {
         Description:The element-content model should not be empty.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/139.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/139.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2106,10 +2244,11 @@ fn notwfsa140() {
         Description:Character '&#x309a;' is a CombiningChar, not a Letter, and so may not begin a name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/140.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/140.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2121,10 +2260,11 @@ fn notwfsa141() {
         Description:Character #x0E5C is not legal in XML names.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/141.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/141.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2136,10 +2276,11 @@ fn notwfsa142() {
         Description:Character #x0000 is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/142.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/142.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2151,10 +2292,11 @@ fn notwfsa143() {
         Description:Character #x001F is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/143.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/143.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2166,10 +2308,11 @@ fn notwfsa144() {
         Description:Character #xFFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/144.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/144.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2181,10 +2324,11 @@ fn notwfsa145() {
         Description:Character #xD800 is not legal anywhere in an XML document. (If it appeared in a UTF-16 surrogate pair, it'd represent half of a UCS-4 character and so wouldn't really be in the document.)
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/145.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/145.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2196,10 +2340,11 @@ fn notwfsa146() {
         Description:Character references must also refer to legal XML characters; #x00110000 is one more than the largest legal character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/146.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/146.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2211,10 +2356,11 @@ fn notwfsa147() {
         Description:XML Declaration may not be preceded by whitespace.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/147.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/147.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2226,10 +2372,11 @@ fn notwfsa148() {
         Description:XML Declaration may not be preceded by comments or whitespace.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/148.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/148.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2241,10 +2388,11 @@ fn notwfsa149() {
         Description:XML Declaration may not be within a DTD.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/149.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/149.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2256,10 +2404,11 @@ fn notwfsa150() {
         Description:XML declarations may not be within element content.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/150.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/150.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2271,10 +2420,11 @@ fn notwfsa151() {
         Description:XML declarations may not follow document content.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/151.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/151.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2286,10 +2436,11 @@ fn notwfsa152() {
         Description:XML declarations must include the "version=..." string.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/152.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/152.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2301,10 +2452,11 @@ fn notwfsa153() {
         Description:Text declarations may not begin internal parsed entities; they may only appear at the beginning of external parsed (parameter or general) entities.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/153.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/153.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2316,10 +2468,11 @@ fn notwfsa154() {
         Description:'<?XML ...?>' is neither an XML declaration nor a legal processing instruction target name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/154.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/154.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2331,10 +2484,11 @@ fn notwfsa155() {
         Description:'<?xmL ...?>' is neither an XML declaration nor a legal processing instruction target name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/155.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/155.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2346,10 +2500,11 @@ fn notwfsa156() {
         Description:'<?xMl ...?>' is neither an XML declaration nor a legal processing instruction target name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/156.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/156.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2361,10 +2516,11 @@ fn notwfsa157() {
         Description:'<?xmL ...?>' is not a legal processing instruction target name.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/157.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/157.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2376,10 +2532,11 @@ fn notwfsa158() {
         Description:SGML-ism: "#NOTATION gif" can't have attributes.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/158.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/158.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2391,10 +2548,11 @@ fn notwfsa159() {
         Description:Uses '&' unquoted in an entity declaration, which is illegal syntax for an entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/159.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/159.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2406,10 +2564,11 @@ fn notwfsa160() {
         Description:Violates the PEs in Internal Subset WFC by using a PE reference within a declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/160.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/160.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2421,10 +2580,11 @@ fn notwfsa161() {
         Description:Violates the PEs in Internal Subset WFC by using a PE reference within a declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/161.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/161.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2436,10 +2596,11 @@ fn notwfsa162() {
         Description:Violates the PEs in Internal Subset WFC by using a PE reference within a declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/162.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/162.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2451,10 +2612,11 @@ fn notwfsa163() {
         Description:Invalid placement of Parameter entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/163.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/163.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2466,10 +2628,11 @@ fn notwfsa164() {
         Description:Invalid placement of Parameter entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/164.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/164.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2481,10 +2644,11 @@ fn notwfsa165() {
         Description:Parameter entity declarations must have a space before the '%'.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/165.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/165.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2496,10 +2660,11 @@ fn notwfsa166() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/166.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/166.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2511,10 +2676,11 @@ fn notwfsa167() {
         Description:Character FFFE is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/167.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/167.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2527,7 +2693,9 @@ fn notwfsa168() {
         Description:An unpaired surrogate (D800) is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
 }
@@ -2542,7 +2710,9 @@ fn notwfsa169() {
         Description:An unpaired surrogate (DC00) is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
 }
@@ -2557,7 +2727,9 @@ fn notwfsa170() {
         Description:Four byte UTF-8 encodings can encode UCS-4 characters which are beyond the range of legal XML characters (and can't be expressed in Unicode surrogate pairs). This document holds such a character.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
 }
@@ -2571,10 +2743,11 @@ fn notwfsa171() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/171.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/171.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2586,10 +2759,11 @@ fn notwfsa172() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/172.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/172.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2601,10 +2775,11 @@ fn notwfsa173() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/173.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/173.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2616,10 +2791,11 @@ fn notwfsa174() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/174.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/174.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2631,10 +2807,11 @@ fn notwfsa175() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/175.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/175.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2646,10 +2823,11 @@ fn notwfsa176() {
         Description:Start tags must have matching end tags.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/176.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/176.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2661,10 +2839,11 @@ fn notwfsa177() {
         Description:Character FFFF is not legal anywhere in an XML document.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/177.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/177.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2676,10 +2855,11 @@ fn notwfsa178() {
         Description:Invalid syntax matching double quote is missing.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/178.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/178.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2691,10 +2871,11 @@ fn notwfsa179() {
         Description:Invalid syntax matching double quote is missing.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/179.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/179.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2706,10 +2887,11 @@ fn notwfsa180() {
         Description:The Entity Declared WFC requires entities to be declared before they are used in an attribute list declaration.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/180.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/180.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2721,10 +2903,11 @@ fn notwfsa181() {
         Description:Internal parsed entities must match the content production to be well formed.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/181.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/181.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2736,10 +2919,11 @@ fn notwfsa182() {
         Description:Internal parsed entities must match the content production to be well formed.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/182.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/182.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2751,10 +2935,11 @@ fn notwfsa183() {
         Description:Mixed content declarations may not include content particles.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/183.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/183.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2766,10 +2951,11 @@ fn notwfsa184() {
         Description:In mixed content models, element names must not be parenthesized.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/184.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/184.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2781,10 +2967,11 @@ fn notwfsa185() {
         Description:Tests the Entity Declared WFC. Note: a nonvalidating parser is permitted not to report this WFC violation, since it would need to read an external parameter entity to distinguish it from a violation of the Standalone Declaration VC.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/185.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/185.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
 
 #[test]
@@ -2796,8 +2983,9 @@ fn notwfsa186() {
         Description:Whitespace is required between attribute/value pairs.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/186.xml").unwrap());
+    let testxml = parsexml::XMLDocument::try_from(
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/186.xml").unwrap(),
+    );
 
     assert!(testxml.is_err());
-
 }
