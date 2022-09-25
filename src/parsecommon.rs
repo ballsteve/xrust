@@ -3,70 +3,55 @@
 //! Common definitions for XML and XPath parsers
 
 extern crate nom;
-use nom:: {
-  IResult,
-  sequence::{pair,},
-  combinator::recognize,
-  bytes::complete::{take_while, take_while1, take_while_m_n},
+use nom::{
+    bytes::complete::{take_while, take_while1, take_while_m_n},
+    combinator::recognize,
+    sequence::pair,
+    IResult,
 };
 // NCName ::= Name - (Char* ':' Char*)
 // Name ::= NameStartChar NameChar*
 // NameStartChar ::= ':' | [A-Z] | '_' | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 // NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
 pub fn ncname(input: &str) -> IResult<&str, &str> {
-  recognize (
-    pair (
-      ncnamestartchar,
-      take_while(is_ncnamechar),
-    )
-  )
-  (input)
+    recognize(pair(ncnamestartchar, take_while(is_ncnamechar)))(input)
 }
 pub fn name(input: &str) -> IResult<&str, &str> {
-  recognize (
-    pair (
-      namestartchar,
-      take_while1(is_namechar),
-    )
-  )
-  (input)
+    recognize(pair(namestartchar, take_while1(is_namechar)))(input)
 }
 fn is_namechar(ch: char) -> bool {
-  if is_namestartchar(ch) {
-    true
-  } else {
-    match ch {
-      '.' => true,
-      '-' => true,
-      '0'..='9' => true,
-      '\u{B7}' => true,
-      '\u{0300}'..='\u{036F}' => true,
-      '\u{203F}'..='\u{2040}' => true,
-      _ => false
+    if is_namestartchar(ch) {
+        true
+    } else {
+        match ch {
+            '.' => true,
+            '-' => true,
+            '0'..='9' => true,
+            '\u{B7}' => true,
+            '\u{0300}'..='\u{036F}' => true,
+            '\u{203F}'..='\u{2040}' => true,
+            _ => false,
+        }
     }
-  }
 }
 #[cfg(test)]
 fn ncnamechar(input: &str) -> IResult<&str, &str> {
-  take_while_m_n(1, 1, is_ncnamechar)
-  (input)
+    take_while_m_n(1, 1, is_ncnamechar)(input)
 }
 fn is_ncnamechar(ch: char) -> bool {
-  if is_ncnamestartchar(ch) {
-    true
-  } else {
-    match ch {
-      '.' |
-      '-' |
-      '0'..='9' |
-      '\u{B7}' |
-      '\u{0300}'..='\u{036F}' |
-      '\u{203F}'..='\u{2040}' => {
+    if is_ncnamestartchar(ch) {
         true
-      },
-      _ => false
+    } else {
+        match ch {
+            '.'
+            | '-'
+            | '0'..='9'
+            | '\u{B7}'
+            | '\u{0300}'..='\u{036F}'
+            | '\u{203F}'..='\u{2040}' => true,
+            _ => false,
+        }
     }
-  }
 }
 //fn namestartchar(input: &str) -> IResult<&str, char> {
 //  alt((
@@ -89,14 +74,13 @@ fn is_ncnamechar(ch: char) -> bool {
 //  (input)
 //}
 fn namestartchar(input: &str) -> IResult<&str, &str> {
-  take_while_m_n(1, 1, is_namestartchar)
-  (input)
+    take_while_m_n(1, 1, is_namestartchar)(input)
 }
 fn is_namestartchar(ch: char) -> bool {
-  match ch {
-    ':' => true,
-    _ => is_ncnamestartchar(ch)
-  }
+    match ch {
+        ':' => true,
+        _ => is_ncnamestartchar(ch),
+    }
 }
 // Same as above, but without the colon
 //fn ncnamestartchar(input: &str) -> IResult<&str, char> {
@@ -120,11 +104,10 @@ fn is_namestartchar(ch: char) -> bool {
 //  (input)
 //}
 fn ncnamestartchar(input: &str) -> IResult<&str, &str> {
-  take_while_m_n(1, 1, is_ncnamestartchar)
-  (input)
+    take_while_m_n(1, 1, is_ncnamestartchar)(input)
 }
 fn is_ncnamestartchar(ch: char) -> bool {
-  match ch {
+    match ch {
     '\u{0041}'..='\u{005A}' // A-Z
     | '\u{005F}' // _
     | '\u{0061}'..='\u{007A}' // a-z
@@ -149,7 +132,7 @@ fn is_ncnamestartchar(ch: char) -> bool {
 }
 
 pub fn is_char(ch: &char) -> bool {
-  match ch {
+    match ch {
     '\u{0009}' // #x9
     | '\u{000A}' // #xA
     | '\u{000D}' // #xD
@@ -164,18 +147,16 @@ pub fn is_char(ch: &char) -> bool {
   }
 }
 
-
 #[cfg(test)]
 mod tests {
-  use super::*;
+    use super::*;
 
-  #[test]
-  fn test_name() {
-    assert_eq!(name("Foo"), Ok(("", "Foo")))
-  }
-  #[test]
-  fn test_ncnamechar() {
-    assert_eq!(ncnamechar("F"), Ok(("", "F")))
-  }
+    #[test]
+    fn test_name() {
+        assert_eq!(name("Foo"), Ok(("", "Foo")))
+    }
+    #[test]
+    fn test_ncnamechar() {
+        assert_eq!(ncnamechar("F"), Ok(("", "F")))
+    }
 }
-

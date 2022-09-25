@@ -5,13 +5,13 @@
 //!
 //! Nodes are implemented as a trait.
 
-use std::rc::Rc;
-use std::fmt;
-use crate::value::{Value, Operator};
-use crate::forest::{NodeType, Node, Forest};
-use crate::qname::QualifiedName;
+use crate::forest::{Forest, Node, NodeType};
 use crate::output::OutputDefinition;
+use crate::qname::QualifiedName;
+use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
+use std::fmt;
+use std::rc::Rc;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -44,92 +44,95 @@ pub trait SequenceTrait {
 impl SequenceTrait for Sequence {
     /// Returns the string value of the Sequence.
     fn to_string(&self, d: Option<&Forest>) -> String {
-	let mut r = String::new();
-	for i in self {
-	    r.push_str(i.to_string(d).as_str())
-	}
-	r
+        let mut r = String::new();
+        for i in self {
+            r.push_str(i.to_string(d).as_str())
+        }
+        r
     }
     /// Renders the Sequence as XML
     fn to_xml(&self, d: Option<&Forest>) -> String {
-	let mut r = String::new();
-	for i in self {
-	    r.push_str(i.to_xml(d).as_str())
-	}
-	r
+        let mut r = String::new();
+        for i in self {
+            r.push_str(i.to_xml(d).as_str())
+        }
+        r
     }
     /// Renders the Sequence as XML
     fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String {
-	let mut r = String::new();
-	for i in self {
-	    r.push_str(i.to_xml_with_options(od, d).as_str())
-	}
-	r
+        let mut r = String::new();
+        for i in self {
+            r.push_str(i.to_xml_with_options(od, d).as_str())
+        }
+        r
     }
     /// Renders the Sequence as JSON
     fn to_json(&self, d: Option<&Forest>) -> String {
-	let mut r = String::new();
-	for i in self {
-	    r.push_str(i.to_json(d).as_str())
-	}
-	r
+        let mut r = String::new();
+        for i in self {
+            r.push_str(i.to_json(d).as_str())
+        }
+        r
     }
     /// Push a Document's [Node] on to the [Sequence]
     fn push_node(&mut self, n: Node) {
-	self.push(Rc::new(Item::Node(n)));
+        self.push(Rc::new(Item::Node(n)));
     }
     /// Push a [Value] on to the [Sequence]
     fn push_value(&mut self, v: Value) {
-	self.push(Rc::new(Item::Value(v)));
+        self.push(Rc::new(Item::Value(v)));
     }
-  //fn new_function(&self, f: Function) -> Sequence {
-  //}
+    //fn new_function(&self, f: Function) -> Sequence {
+    //}
     /// Push an [Item] on to the [Sequence]. This clones the Item.
     fn push_item(&mut self, i: &Rc<Item>) {
-	self.push(Rc::clone(i));
+        self.push(Rc::clone(i));
     }
 
     /// Calculate the effective boolean value of the Sequence
     fn to_bool(&self) -> bool {
-	if self.len() == 0 {
-	    false
-	} else {
-	    match *self[0] {
-		Item::Node(..) => true,
-		_ => {
-		    if self.len() == 1 {
-			(*self[0]).to_bool()
-		    } else {
-			false // should be a type error
-		    }
-		}
-	    }
-	}
+        if self.len() == 0 {
+            false
+        } else {
+            match *self[0] {
+                Item::Node(..) => true,
+                _ => {
+                    if self.len() == 1 {
+                        (*self[0]).to_bool()
+                    } else {
+                        false // should be a type error
+                    }
+                }
+            }
+        }
     }
 
     /// Convenience routine for integer value of the [Sequence]. The Sequence must be a singleton; i.e. be a single item.
     fn to_int(&self) -> Result<i64, Error> {
-	if self.len() == 1 {
-	    self[0].to_int()
-	} else {
-	    Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: sequence is not a singleton")})
-	}
+        if self.len() == 1 {
+            self[0].to_int()
+        } else {
+            Result::Err(Error {
+                kind: ErrorKind::TypeError,
+                message: String::from("type error: sequence is not a singleton"),
+            })
+        }
     }
 }
 
 impl From<Node> for Sequence {
     fn from(n: Node) -> Self {
-	vec![Rc::new(Item::Node(n))]
+        vec![Rc::new(Item::Node(n))]
     }
 }
 impl From<Value> for Sequence {
     fn from(v: Value) -> Self {
-	vec![Rc::new(Item::Value(v))]
+        vec![Rc::new(Item::Value(v))]
     }
 }
 impl From<Item> for Sequence {
     fn from(i: Item) -> Self {
-	vec![Rc::new(i)]
+        vec![Rc::new(i)]
     }
 }
 
@@ -153,95 +156,82 @@ pub enum Item {
 impl Item {
     /// Gives the string value of an item. All items have a string value.
     pub fn to_string(&self, d: Option<&Forest>) -> String {
-	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_string(e)
-	    ),
-	    Item::Function => "".to_string(),
-	    Item::Value(v) => v.to_string(),
-	}
+        match self {
+            Item::Node(n) => d.map_or(String::new(), |e| n.to_string(e)),
+            Item::Function => "".to_string(),
+            Item::Value(v) => v.to_string(),
+        }
     }
     /// Serialize as XML
     pub fn to_xml(&self, d: Option<&Forest>) -> String {
-	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_xml(e)
-	    ),
-	    Item::Function => "".to_string(),
-	    Item::Value(v) => v.to_string(),
-	}
+        match self {
+            Item::Node(n) => d.map_or(String::new(), |e| n.to_xml(e)),
+            Item::Function => "".to_string(),
+            Item::Value(v) => v.to_string(),
+        }
     }
     /// Serialize as XML, with options
     pub fn to_xml_with_options(&self, od: &OutputDefinition, d: Option<&Forest>) -> String {
-	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_xml_with_options(e, od)
-	    ),
-	    Item::Function => "".to_string(),
-	    Item::Value(v) => v.to_string(),
-	}
+        match self {
+            Item::Node(n) => d.map_or(String::new(), |e| n.to_xml_with_options(e, od)),
+            Item::Function => "".to_string(),
+            Item::Value(v) => v.to_string(),
+        }
     }
     /// Serialize as JSON
     pub fn to_json(&self, d: Option<&Forest>) -> String {
-	match self {
-	    Item::Node(n) => d.map_or(
-		String::new(),
-		|e| n.to_json(e)
-	    ),
-	    Item::Function => "".to_string(),
-	    Item::Value(v) => v.to_string(),
-	}
+        match self {
+            Item::Node(n) => d.map_or(String::new(), |e| n.to_json(e)),
+            Item::Function => "".to_string(),
+            Item::Value(v) => v.to_string(),
+        }
     }
 
     /// Determine the effective boolean value of the item.
     /// See XPath 2.4.3.
     pub fn to_bool(&self) -> bool {
-	match self {
-	    Item::Node(..) => true,
-	    Item::Function => false,
-	    Item::Value(v) => v.to_bool(),
-	}
+        match self {
+            Item::Node(..) => true,
+            Item::Function => false,
+            Item::Value(v) => v.to_bool(),
+        }
     }
 
     /// Gives the integer value of the item, if possible.
     pub fn to_int(&self) -> Result<i64, Error> {
-	match self {
-	    Item::Node(..) => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a node")}),
-	    Item::Function => Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error: item is a function")}),
-	    Item::Value(v) => {
-		match v.to_int() {
-		    Ok(i) => {
-			Ok(i)
-		    }
-		    Err(e) => {
-			Result::Err(e)
-		    }
-		}
-	    },
-	}
+        match self {
+            Item::Node(..) => Result::Err(Error {
+                kind: ErrorKind::TypeError,
+                message: String::from("type error: item is a node"),
+            }),
+            Item::Function => Result::Err(Error {
+                kind: ErrorKind::TypeError,
+                message: String::from("type error: item is a function"),
+            }),
+            Item::Value(v) => match v.to_int() {
+                Ok(i) => Ok(i),
+                Err(e) => Result::Err(e),
+            },
+        }
     }
 
     /// Gives the double value of the item. Returns NaN if the value cannot be converted to a double.
     pub fn to_double(&self) -> f64 {
-	match self {
-	    Item::Node(..) => f64::NAN,
-	    Item::Function => f64::NAN,
-	    Item::Value(v) => v.to_double(),
-	}
+        match self {
+            Item::Node(..) => f64::NAN,
+            Item::Function => f64::NAN,
+            Item::Value(v) => v.to_double(),
+        }
     }
 
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
     pub fn to_name(&self, d: Option<&Forest>) -> QualifiedName {
-	match self {
-	    Item::Node(n) => d.map_or(
-		QualifiedName::new(None, None, "".to_string()),
-		|e| n.to_name(e)
-	    ),
-	    _ => QualifiedName::new(None, None, "".to_string())
-	}
+        match self {
+            Item::Node(n) => d.map_or(QualifiedName::new(None, None, "".to_string()), |e| {
+                n.to_name(e)
+            }),
+            _ => QualifiedName::new(None, None, "".to_string()),
+        }
     }
 
     // TODO: atomization
@@ -249,111 +239,100 @@ impl Item {
 
     /// Compare two items.
     pub fn compare(&self, other: &Item, op: Operator, d: Option<&Forest>) -> Result<bool, Error> {
-	match self {
-	    Item::Value(v) => {
-		match other {
-		    Item::Value(w) => {
-			v.compare(w, op)
-		    }
-		    Item::Node(..) => {
-			v.compare(&Value::String(other.to_string(d)), op)
-		    }
-		    _ => {
-			Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
-		    }
-		}
-	    }
-	    Item::Node(..) => {
-		other.compare(&Item::Value(Value::String(self.to_string(d))), op, d)
-	    }
-	    _ => {
-		Result::Err(Error{kind: ErrorKind::TypeError, message: String::from("type error")})
-	    }
-	}
+        match self {
+            Item::Value(v) => match other {
+                Item::Value(w) => v.compare(w, op),
+                Item::Node(..) => v.compare(&Value::String(other.to_string(d)), op),
+                _ => Result::Err(Error {
+                    kind: ErrorKind::TypeError,
+                    message: String::from("type error"),
+                }),
+            },
+            Item::Node(..) => other.compare(&Item::Value(Value::String(self.to_string(d))), op, d),
+            _ => Result::Err(Error {
+                kind: ErrorKind::TypeError,
+                message: String::from("type error"),
+            }),
+        }
     }
 
     /// Is this item an element-type node?
     pub fn is_element_node(&self, d: Option<&Forest>) -> bool {
-	match self {
-	    Item::Node(n) => {
-		d.map_or(
-		    false,
-		    |e| match n.node_type(e) {
-			NodeType::Element => true,
-			_ => false,
-		    }
-		)
-	    }
-	    _ => false,
-	}
+        match self {
+            Item::Node(n) => d.map_or(false, |e| match n.node_type(e) {
+                NodeType::Element => true,
+                _ => false,
+            }),
+            _ => false,
+        }
     }
 
     /// Gives the type of the item.
     pub fn item_type(&self) -> &'static str {
-	match self {
-	    Item::Node(..) => "Node",
-	    Item::Function => "Function",
-	    Item::Value(v) => v.value_type(),
-	}
+        match self {
+            Item::Node(..) => "Node",
+            Item::Function => "Function",
+            Item::Value(v) => v.value_type(),
+        }
     }
 }
 
 impl fmt::Debug for Item {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-	match self {
-	    Item::Node(_) => {
-		write!(f, "node type item")
-	    }
-	    Item::Function => {
-		write!(f, "function type item")
-	    }
-	    Item::Value(v) => {
-		write!(f, "value type item ({})", v.to_string())
-	    }
-	}
+        match self {
+            Item::Node(_) => {
+                write!(f, "node type item")
+            }
+            Item::Function => {
+                write!(f, "function type item")
+            }
+            Item::Value(v) => {
+                write!(f, "value type item ({})", v.to_string())
+            }
+        }
     }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    
+
     // to_bool
 
     #[test]
     fn bool_value_string_empty() {
-	assert_eq!(Item::Value(Value::from("")).to_bool(), false)
+        assert_eq!(Item::Value(Value::from("")).to_bool(), false)
     }
     #[test]
     fn bool_value_string_nonempty() {
-      assert_eq!(Item::Value(Value::from("false")).to_bool(), true)
+        assert_eq!(Item::Value(Value::from("false")).to_bool(), true)
     }
     #[test]
     fn bool_value_int_zero() {
-      assert_eq!(Item::Value(Value::from(0)).to_bool(), false)
+        assert_eq!(Item::Value(Value::from(0)).to_bool(), false)
     }
     #[test]
     fn bool_value_int_nonzero() {
-      assert_eq!(Item::Value(Value::from(42)).to_bool(), true)
+        assert_eq!(Item::Value(Value::from(42)).to_bool(), true)
     }
 
     // to_int
 
     #[test]
     fn int_value_string() {
-      match Item::Value(Value::from("1")).to_int() {
-        Ok(i) => assert_eq!(i, 1),
-	Err(_) => {
-	  panic!("to_int() failed")
-	}
-      }
+        match Item::Value(Value::from("1")).to_int() {
+            Ok(i) => assert_eq!(i, 1),
+            Err(_) => {
+                panic!("to_int() failed")
+            }
+        }
     }
 
     // to_double
 
     #[test]
     fn double_value_string() {
-      assert_eq!(Item::Value(Value::from("2.0")).to_double(), 2.0)
+        assert_eq!(Item::Value(Value::from("2.0")).to_double(), 2.0)
     }
 
     // Sequences
@@ -366,9 +345,9 @@ mod tests {
     #[test]
     fn sequence_one() {
         let mut s = Sequence::new();
-	s.push_value(Value::from("one"));
-	let mut t = Sequence::new();
-	t.push_item(&s[0]);
-	assert!(Rc::ptr_eq(&s[0], &t[0]))
+        s.push_value(Value::from("one"));
+        let mut t = Sequence::new();
+        t.push_item(&s[0]);
+        assert!(Rc::ptr_eq(&s[0], &t[0]))
     }
 }
