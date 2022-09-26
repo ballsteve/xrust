@@ -9,7 +9,7 @@ license = "Apache-2.0"
 repository = "https://github.com/ballsteve/xrust"
 documentation = "https://docs.rs/xrust/"
 readme = "README.md"
-edition = "2018"
+edition = "2021"
 
 [features]
 # The xslt feature enables XSLT support
