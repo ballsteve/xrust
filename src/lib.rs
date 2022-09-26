@@ -43,14 +43,14 @@ We need your help!
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
-pub mod qname;
-mod parsepicture;
 mod output;
+mod parsepicture;
+pub mod qname;
 
 pub mod value;
 pub use value::Value;
 pub mod item;
-pub use item::{Sequence, SequenceTrait, Item};
+pub use item::{Item, Sequence, SequenceTrait};
 
 mod parsecommon;
 
@@ -60,16 +60,16 @@ pub mod parsexml;
 //pub use xpath::parse;
 
 pub mod evaluate;
-pub use evaluate::{StaticContext, Evaluator, Constructor};
+pub use evaluate::{Constructor, Evaluator, StaticContext};
 
 //#[cfg(feature = "xslt")]
 //pub mod xslt;
 //#[cfg(feature = "xslt")]
 //pub use xslt::from_document;
 
-pub mod forest;
+//pub mod forest;
 //pub use forest::Node;
-pub mod rctree;
-pub use rctree::{ADoc, ANode, RBNode};
+//pub mod rctree;
+//pub use rctree::{ADoc, ANode, RBNode};
 pub mod intmuttree;
 pub use intmuttree::Node;

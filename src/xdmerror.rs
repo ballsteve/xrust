@@ -7,17 +7,28 @@ use core::{fmt, str};
 /// Errors defined in XPath
 #[derive(Copy, Clone, Debug)]
 pub enum ErrorKind {
-    StaticAbsent, /// XPST0001
-    DynamicAbsent, /// XPDY0002
-    StaticSyntax, /// XPST0003
-    TypeError, /// XPTY0004
-    StaticData, /// XPST0005
-    StaticUndefined, /// XPST0008
-    StaticNamespace, /// XPST0010
-    StaticBadFunction, /// XPST0017
-    MixedTypes, /// XPTY0018
-    NotNodes, /// XPTY0019
-    ContextNotNode, /// XPTY0020
+    StaticAbsent,
+    /// XPST0001
+    DynamicAbsent,
+    /// XPDY0002
+    StaticSyntax,
+    /// XPST0003
+    TypeError,
+    /// XPTY0004
+    StaticData,
+    /// XPST0005
+    StaticUndefined,
+    /// XPST0008
+    StaticNamespace,
+    /// XPST0010
+    StaticBadFunction,
+    /// XPST0017
+    MixedTypes,
+    /// XPTY0018
+    NotNodes,
+    /// XPTY0019
+    ContextNotNode,
+    /// XPTY0020
     NotImplemented,
     Unknown,
 }
@@ -38,8 +49,8 @@ impl ErrorKind {
             ErrorKind::NotNodes => "path expression is not a sequence of nodes",
             ErrorKind::ContextNotNode => "context item is not a node for an axis step",
             ErrorKind::NotImplemented => "not implemented",
-	    ErrorKind::Unknown => "unknown",
-	}
+            ErrorKind::Unknown => "unknown",
+        }
     }
 }
 
@@ -53,12 +64,12 @@ pub struct Error {
 impl std::error::Error for Error {}
 
 impl Error {
-  pub fn new(kind: ErrorKind, message: String) -> Self {
-    Error{kind, message}
-  }
-  pub fn to_string(&self) -> String {
-    self.message.clone()
-  }
+    pub fn new(kind: ErrorKind, message: String) -> Self {
+        Error { kind, message }
+    }
+    pub fn to_string(&self) -> String {
+        self.message.clone()
+    }
 }
 
 impl fmt::Debug for Error {
