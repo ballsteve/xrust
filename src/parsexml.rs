@@ -119,7 +119,8 @@ fn expand_node(n: &XMLNode, ent: &HashMap<QualifiedName, Vec<XMLNode>>) -> Vec<X
 impl TryFrom<&str> for XMLDocument {
     type Error = Error;
     fn try_from(e: &str) -> Result<Self, Self::Error> {
-        match document(e) {
+        let e = trim_whitespace(e);
+        match document(&e) {
             Ok((rest, value)) => {
                 if rest == "" {
                     Result::Ok(value)
@@ -634,6 +635,15 @@ fn prefixed_name(input: &str) -> IResult<&str, QualifiedName> {
     )(input)
 }
 
+fn trim_whitespace(s: &str) -> String {
+    let s = s.replace("", "<!--  -->");
+    let s = s.replace("", "<!--  -->");
+    let re = regex::Regex::new(r"^[\s]+(.*?)[\s]*$").unwrap();
+    let result = re.replace_all(&s, "$1");
+
+    result.to_owned().to_string()
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -641,6 +651,25 @@ mod tests {
     #[test]
     fn empty() {
         let doc = XMLDocument::try_from("<Test/>").expect("failed to parse XML \"<Test/>\"");
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        match &doc.content[0] {
+            XMLNode::Element(n, a, c) => {
+                assert_eq!(n.get_localname(), "Test");
+                assert_eq!(a.len(), 0);
+                assert_eq!(c.len(), 0);
+            }
+            _ => {
+                panic!("root is not an element node")
+            }
+        }
+    }
+
+    #[test]
+    fn preceeding_and_trailing_whitespace() {
+        let doc =
+            XMLDocument::try_from("   <Test/> \n \r  ").expect("failed to parse XML \"<Test/>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);

@@ -46,7 +46,7 @@ impl Forest {
     /// Parse a string as XML to create a [Tree].
     ///
     ///```rust
-	///use xrust::forest::Forest;
+    ///use xrust::forest::Forest;
     ///let mut f = Forest::new();
     ///let src = f.grow_tree("<Example>document</Example>")
     ///    .expect("unable to parse XML");
