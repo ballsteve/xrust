@@ -294,6 +294,18 @@ impl<N: Node> Item<N> {
         }
     }
 
+    /// Convenience method to set an attribute for a Node-type item.
+    /// If the item is not an element-type node, then this method has no effect.
+    pub fn add_attribute(&self, a: N) -> Result<(), Error> {
+	match self {
+	    Item::Node(n) => match n.node_type() {
+		NodeType::Element => n.add_attribute(a),
+		_ => Ok(()),
+	    },
+	    _ => Ok(()),
+	}
+    }
+
     /// Gives the type of the item.
     pub fn item_type(&self) -> &'static str {
         match self {
@@ -385,5 +397,5 @@ pub trait Node: Clone {
     /// Insert a node in the child list before the given node.
     fn insert_before(&mut self, n: Self) -> Result<(), Error>;
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
-    fn add_attribute(&mut self, att: Self) -> Result<(), Error>;
+    fn add_attribute(&self, att: Self) -> Result<(), Error>;
 }

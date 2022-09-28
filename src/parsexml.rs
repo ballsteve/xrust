@@ -11,7 +11,7 @@
 extern crate nom;
 
 use crate::intmuttree::{
-    DTDDecl, Document, DocumentBuilder, Node, NodeBuilder, RNode, XMLDecl, XMLDeclBuilder,
+    DTDDecl, Document, DocumentBuilder, NodeBuilder, RNode, XMLDecl, XMLDeclBuilder,
 };
 use crate::item::{Node as ItemNode, NodeType};
 use crate::parsecommon::*;
@@ -30,7 +30,6 @@ use nom::{
 };
 use std::collections::HashSet;
 use std::convert::TryFrom;
-use std::rc::Rc;
 use std::str::FromStr;
 
 // For backward compatibility

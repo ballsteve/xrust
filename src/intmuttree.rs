@@ -8,8 +8,8 @@ use crate::parsexml::content;
 use crate::qname::*;
 use crate::value::Value;
 use crate::xdmerror::*;
-use std::borrow::BorrowMut;
 use std::cell::RefCell;
+use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 
@@ -35,11 +35,11 @@ impl Document {
         &self.xmldecl
     }
 
-    fn push_content(&mut self, n: RNode) {
+    pub fn push_content(&mut self, n: RNode) {
         self.content.push(n)
     }
 
-    fn to_xml(&self) -> String {
+    pub fn to_xml(&self) -> String {
         // TODO: XML Decl, prologue, epilogue
         let mut result = String::new();
         self.content
@@ -48,7 +48,7 @@ impl Document {
         result
     }
     /// Expand the general entities in the document content.
-    fn expand(&self) -> Result<(), Error> {
+    pub fn expand(&self) -> Result<(), Error> {
         let mut ent: HashMap<QualifiedName, Vec<RNode>> = HashMap::new();
 
         // Process general entity declarations and store the result in the HashMap.
@@ -91,7 +91,7 @@ impl PartialEq for Document {
                 .content
                 .iter()
                 .zip(other.content.iter())
-                .fold(true, |mut acc, (a, b)| acc && a == b)
+                .fold(true, |acc, (a, b)| acc && a == b)
     }
 }
 
@@ -106,7 +106,7 @@ impl PartialEq for Node {
                 .borrow()
                 .iter()
                 .zip(other.children.borrow().iter())
-                .fold(true, |mut acc, (a, b)| acc && a == b)
+                .fold(true, |acc, (a, b)| acc && a == b)
     }
 }
 
@@ -162,7 +162,7 @@ pub struct Node {
     node_type: NodeType,
     parent: RefCell<Option<Weak<Node>>>,
     children: RefCell<Vec<RNode>>,
-    // TODO: attributes
+    attributes: RefCell<HashMap<QualifiedName, RNode>>,
     name: Option<QualifiedName>,
     value: Option<Value>,
     pi_name: Option<String>,
@@ -177,6 +177,7 @@ impl Node {
             node_type: n,
             parent: RefCell::new(None),
             children: RefCell::new(vec![]),
+	    attributes: RefCell::new(HashMap::new()),
             ..Default::default()
         }
     }
@@ -241,6 +242,12 @@ impl ItemNode for RNode {
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
                 );
+		self.attributes.borrow().iter()
+		    .for_each(|(k, v)| result.push_str(
+			format!(" {}='{}'",
+				k.to_string(),
+				v.value().to_string()
+			).as_str()));
                 result.push_str(">");
                 self.children
                     .borrow()
@@ -332,14 +339,18 @@ impl ItemNode for RNode {
         }
     }
     /// Add an attribute to this element-type node
-    fn add_attribute(&mut self, att: Self) -> Result<(), Error> {
-        Result::Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not yet implemented"),
-        ))
+    fn add_attribute(&self, att: Self) -> Result<(), Error> {
+	if self.node_type() != NodeType::Element {
+	    return Result::Err(Error::new(ErrorKind::Unknown, String::from("must be an element node")))
+	}
+	if att.node_type() != NodeType::Attribute {
+	    return Result::Err(Error::new(ErrorKind::Unknown, String::from("must be an attribute node")))
+	}
+	self.attributes.borrow_mut().insert(att.name(), att.clone());
+	Ok(())
     }
     /// Remove this node from the tree.
-    fn insert_before(&mut self, n: Self) -> Result<(), Error> {
+    fn insert_before(&mut self, _n: Self) -> Result<(), Error> {
         Result::Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not yet implemented"),
@@ -408,6 +419,7 @@ impl Iterator for Ancestors {
 // This implementation eagerly constructs a list of nodes
 // to traverse.
 // An alternative would be to lazily traverse the descendants.
+// Also, rewrite this iterator in terms of child_iter.
 pub struct Descendants {
     v: Vec<RNode>,
     cur: usize,
@@ -446,33 +458,59 @@ impl Iterator for Descendants {
     }
 }
 
-pub struct Siblings(RNode);
+// Store the parent node and the index of the child node that we want the sibling of.
+// TODO: Don't Panic. If anything fails, then the iterator's next method should return None.
+pub struct Siblings(RNode, usize, i32);
 impl Siblings {
-    fn new(n: &RNode, _dir: i32) -> Self {
-        Siblings(n.clone())
+    fn new(n: &RNode, dir: i32) -> Self {
+	let p = n.parent().unwrap();
+	let (j, _) = p.children.borrow().iter()
+	    .enumerate()
+	    .find(|&(_, j)| Rc::ptr_eq(j, n))
+	    .unwrap();
+        Siblings(p.clone(), j, dir)
     }
 }
 impl Iterator for Siblings {
     type Item = RNode;
 
-    // TODO
     fn next(&mut self) -> Option<RNode> {
-        None
+	if self.1 == 0 && self.2 < 0 {
+	    None
+	} else {
+	    let newidx = if self.2 < 0 {
+		self.1 - self.2.wrapping_abs() as usize
+	    } else {
+		self.1 + self.2 as usize
+	    };
+            match self.0.children.borrow().get(newidx) {
+		Some(n) => {
+		    self.1 = newidx;
+		    Some(n.clone())
+		}
+		None => None,
+	    }
+	}
     }
 }
 
-pub struct Attributes(RNode);
+pub struct Attributes {
+    it: IntoIter<QualifiedName, RNode>,
+}
 impl Attributes {
     fn new(n: &RNode) -> Self {
-        Attributes(n.clone())
+	let b = n.attributes.borrow();
+	Attributes {
+	    it: b.clone().into_iter(),
+	}
     }
 }
 impl Iterator for Attributes {
     type Item = RNode;
 
-    // TODO
     fn next(&mut self) -> Option<RNode> {
-        None
+        self.it.next()
+	    .map(|(_, n)| n.clone())
     }
 }
 
@@ -602,7 +640,8 @@ mod tests {
         let child = NodeBuilder::new(NodeType::Element)
             .name(QualifiedName::new(None, None, String::from("Test")))
             .build();
-        root.push(child);
+        root.push(child)
+	    .expect("unable to append child");
         assert_eq!(root.to_xml(), "<Test></Test>")
     }
 
@@ -612,17 +651,19 @@ mod tests {
         let mut child = NodeBuilder::new(NodeType::Element)
             .name(QualifiedName::new(None, None, String::from("Test")))
             .build();
-        root.push(child.clone());
+        root.push(child.clone())
+	    .expect("unable to append child");
         (1..=5).for_each(|i| {
             let mut l1 = NodeBuilder::new(NodeType::Element)
                 .name(QualifiedName::new(None, None, String::from("Level1")))
                 .build();
-            child.push(l1.clone());
+            child.push(l1.clone())
+		.expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
                     .value(Value::from(i))
                     .build(),
-            );
+            ).expect("unable to append child");
         });
         assert_eq!(root.to_xml(), "<Test><Level1>1</Level1><Level1>2</Level1><Level1>3</Level1><Level1>4</Level1><Level1>5</Level1></Test>")
     }
@@ -633,17 +674,19 @@ mod tests {
         let mut child = NodeBuilder::new(NodeType::Element)
             .name(QualifiedName::new(None, None, String::from("Test")))
             .build();
-        root.push(child.clone());
+        root.push(child.clone())
+	    .expect("unable to append child");
         (1..=5).for_each(|i| {
             let mut l1 = NodeBuilder::new(NodeType::Element)
                 .name(QualifiedName::new(None, None, String::from("Level1")))
                 .build();
-            child.push(l1.clone());
+            child.push(l1.clone())
+		.expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
                     .value(Value::from(i))
                     .build(),
-            );
+            ).expect("unable to append child");
         });
         child
             .child_iter()

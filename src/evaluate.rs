@@ -12,8 +12,6 @@ use crate::value::{Operator, Value};
 use crate::xdmerror::*;
 #[allow(unused_imports)]
 use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
-#[cfg(test)]
-use rust_decimal_macros::dec;
 use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 use std::convert::TryFrom;
@@ -416,7 +414,7 @@ impl<N: Node> Evaluator<N> {
                 // Otherwise replace the attribute's value with the supplied value
                 if ctxt.is_some() {
                     // Work out if an attribute is required, then set it
-                    let mut atnode: Option<N> = None;
+                    let atnode: Option<N>;
                     match &*ctxt.as_ref().unwrap()[posn.unwrap()] {
                         Item::Node(nd) => match nd.node_type() {
                             NodeType::Element => {
@@ -450,10 +448,10 @@ impl<N: Node> Evaluator<N> {
                             })
                         }
                     }
-                    // TODO: get the current element and set the attr node
-                    //		    atnode.map(|a| {
-                    //			ctxt.unwrap()[posn.unwrap()].set_attribute(a);
-                    //		    });
+                    atnode.map(|a| {
+                    	ctxt.unwrap()[posn.unwrap()].add_attribute(a)
+			    .expect("unable to add attribute");
+                    });
                     Ok(vec![])
                 } else {
                     Result::Err(Error {
@@ -1499,7 +1497,7 @@ impl<N: Node> Evaluator<N> {
             Item::Node(n) => {
                 match n.node_type() {
                     NodeType::Element => {
-                        let mut cur = match *cp {
+                        let mut _cur = match *cp {
                             Item::Node(ref m) => m,
                             _ => {
                                 return Result::Err(Error {
@@ -1578,7 +1576,7 @@ impl<N: Node> Evaluator<N> {
                                         _ => {
                                             // Values become a text node in the result tree
                                             let x = Value::from(i.to_string());
-                                            let h =
+                                            let _h =
                                                 rd.new_text(x).expect("unable to create text node");
                                             // TODO: cannot borrow as mutable
                                             //e.push(h)
@@ -2975,9 +2973,6 @@ pub fn func_localname<N: Node>(
                 Item::Node(ref n) => Ok(vec![Rc::new(Item::Value(Value::String(
                     n.name().get_localname(),
                 )))]),
-                Item::Node(ref n) => Ok(vec![Rc::new(Item::Value(Value::String(
-                    n.name().get_localname(),
-                )))]),
                 _ => Result::Err(Error {
                     kind: ErrorKind::TypeError,
                     message: String::from("not a node"),
@@ -3003,12 +2998,6 @@ pub fn func_name<N: Node>(
         Some(u) => {
             // Current item must be a node
             match *u[posn.unwrap()] {
-                Item::Node(ref n) => {
-                    // TODO: handle QName prefixes
-                    Ok(vec![Rc::new(Item::Value(Value::String(
-                        n.name().get_localname(),
-                    )))])
-                }
                 Item::Node(ref n) => {
                     // TODO: handle QName prefixes
                     Ok(vec![Rc::new(Item::Value(Value::String(

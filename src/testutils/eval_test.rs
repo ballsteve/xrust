@@ -2,10 +2,8 @@
 macro_rules! evaluate_tests (
     ( $x:expr ) => {
 	use chrono::{Local, Datelike, Timelike};
-	#[cfg(test)]
 	use rust_decimal_macros::dec;
 	use xrust::value::{Operator};
-	use xrust::item::{NodeType};
 	use xrust::evaluate::{
 	    Constructor, Evaluator,
 	    Function, Param,
@@ -1293,6 +1291,8 @@ macro_rules! evaluate_tests (
 	    let r = e.evaluate(None, None, &c, &rd).expect("evaluation failed");
 	    assert_eq!(r.to_xml(), "<Test>data<Level-1>deeper</Level-1></Test>")
 	}
+
+	// Node navigation tests
 
 	// for-each, for-each-group
 
