@@ -297,13 +297,13 @@ impl<N: Node> Item<N> {
     /// Convenience method to set an attribute for a Node-type item.
     /// If the item is not an element-type node, then this method has no effect.
     pub fn add_attribute(&self, a: N) -> Result<(), Error> {
-	match self {
-	    Item::Node(n) => match n.node_type() {
-		NodeType::Element => n.add_attribute(a),
-		_ => Ok(()),
-	    },
-	    _ => Ok(()),
-	}
+        match self {
+            Item::Node(n) => match n.node_type() {
+                NodeType::Element => n.add_attribute(a),
+                _ => Ok(()),
+            },
+            _ => Ok(()),
+        }
     }
 
     /// Gives the type of the item.

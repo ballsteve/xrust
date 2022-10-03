@@ -177,7 +177,7 @@ impl Node {
             node_type: n,
             parent: RefCell::new(None),
             children: RefCell::new(vec![]),
-	    attributes: RefCell::new(HashMap::new()),
+            attributes: RefCell::new(HashMap::new()),
             ..Default::default()
         }
     }
@@ -242,12 +242,11 @@ impl ItemNode for RNode {
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
                 );
-		self.attributes.borrow().iter()
-		    .for_each(|(k, v)| result.push_str(
-			format!(" {}='{}'",
-				k.to_string(),
-				v.value().to_string()
-			).as_str()));
+                self.attributes.borrow().iter().for_each(|(k, v)| {
+                    result.push_str(
+                        format!(" {}='{}'", k.to_string(), v.value().to_string()).as_str(),
+                    )
+                });
                 result.push_str(">");
                 self.children
                     .borrow()
@@ -340,14 +339,20 @@ impl ItemNode for RNode {
     }
     /// Add an attribute to this element-type node
     fn add_attribute(&self, att: Self) -> Result<(), Error> {
-	if self.node_type() != NodeType::Element {
-	    return Result::Err(Error::new(ErrorKind::Unknown, String::from("must be an element node")))
-	}
-	if att.node_type() != NodeType::Attribute {
-	    return Result::Err(Error::new(ErrorKind::Unknown, String::from("must be an attribute node")))
-	}
-	self.attributes.borrow_mut().insert(att.name(), att.clone());
-	Ok(())
+        if self.node_type() != NodeType::Element {
+            return Result::Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("must be an element node"),
+            ));
+        }
+        if att.node_type() != NodeType::Attribute {
+            return Result::Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("must be an attribute node"),
+            ));
+        }
+        self.attributes.borrow_mut().insert(att.name(), att.clone());
+        Ok(())
     }
     /// Remove this node from the tree.
     fn insert_before(&mut self, _n: Self) -> Result<(), Error> {
@@ -463,11 +468,14 @@ impl Iterator for Descendants {
 pub struct Siblings(RNode, usize, i32);
 impl Siblings {
     fn new(n: &RNode, dir: i32) -> Self {
-	let p = n.parent().unwrap();
-	let (j, _) = p.children.borrow().iter()
-	    .enumerate()
-	    .find(|&(_, j)| Rc::ptr_eq(j, n))
-	    .unwrap();
+        let p = n.parent().unwrap();
+        let (j, _) = p
+            .children
+            .borrow()
+            .iter()
+            .enumerate()
+            .find(|&(_, j)| Rc::ptr_eq(j, n))
+            .unwrap();
         Siblings(p.clone(), j, dir)
     }
 }
@@ -475,22 +483,22 @@ impl Iterator for Siblings {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-	if self.1 == 0 && self.2 < 0 {
-	    None
-	} else {
-	    let newidx = if self.2 < 0 {
-		self.1 - self.2.wrapping_abs() as usize
-	    } else {
-		self.1 + self.2 as usize
-	    };
+        if self.1 == 0 && self.2 < 0 {
+            None
+        } else {
+            let newidx = if self.2 < 0 {
+                self.1 - self.2.wrapping_abs() as usize
+            } else {
+                self.1 + self.2 as usize
+            };
             match self.0.children.borrow().get(newidx) {
-		Some(n) => {
-		    self.1 = newidx;
-		    Some(n.clone())
-		}
-		None => None,
-	    }
-	}
+                Some(n) => {
+                    self.1 = newidx;
+                    Some(n.clone())
+                }
+                None => None,
+            }
+        }
     }
 }
 
@@ -499,18 +507,17 @@ pub struct Attributes {
 }
 impl Attributes {
     fn new(n: &RNode) -> Self {
-	let b = n.attributes.borrow();
-	Attributes {
-	    it: b.clone().into_iter(),
-	}
+        let b = n.attributes.borrow();
+        Attributes {
+            it: b.clone().into_iter(),
+        }
     }
 }
 impl Iterator for Attributes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        self.it.next()
-	    .map(|(_, n)| n.clone())
+        self.it.next().map(|(_, n)| n.clone())
     }
 }
 
@@ -640,8 +647,7 @@ mod tests {
         let child = NodeBuilder::new(NodeType::Element)
             .name(QualifiedName::new(None, None, String::from("Test")))
             .build();
-        root.push(child)
-	    .expect("unable to append child");
+        root.push(child).expect("unable to append child");
         assert_eq!(root.to_xml(), "<Test></Test>")
     }
 
@@ -651,19 +657,18 @@ mod tests {
         let mut child = NodeBuilder::new(NodeType::Element)
             .name(QualifiedName::new(None, None, String::from("Test")))
             .build();
-        root.push(child.clone())
-	    .expect("unable to append child");
+        root.push(child.clone()).expect("unable to append child");
         (1..=5).for_each(|i| {
             let mut l1 = NodeBuilder::new(NodeType::Element)
                 .name(QualifiedName::new(None, None, String::from("Level1")))
                 .build();
-            child.push(l1.clone())
-		.expect("unable to append child");
+            child.push(l1.clone()).expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
                     .value(Value::from(i))
                     .build(),
-            ).expect("unable to append child");
+            )
+            .expect("unable to append child");
         });
         assert_eq!(root.to_xml(), "<Test><Level1>1</Level1><Level1>2</Level1><Level1>3</Level1><Level1>4</Level1><Level1>5</Level1></Test>")
     }
@@ -674,19 +679,18 @@ mod tests {
         let mut child = NodeBuilder::new(NodeType::Element)
             .name(QualifiedName::new(None, None, String::from("Test")))
             .build();
-        root.push(child.clone())
-	    .expect("unable to append child");
+        root.push(child.clone()).expect("unable to append child");
         (1..=5).for_each(|i| {
             let mut l1 = NodeBuilder::new(NodeType::Element)
                 .name(QualifiedName::new(None, None, String::from("Level1")))
                 .build();
-            child.push(l1.clone())
-		.expect("unable to append child");
+            child.push(l1.clone()).expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
                     .value(Value::from(i))
                     .build(),
-            ).expect("unable to append child");
+            )
+            .expect("unable to append child");
         });
         child
             .child_iter()

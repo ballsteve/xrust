@@ -1294,6 +1294,92 @@ macro_rules! evaluate_tests (
 
 	// Node navigation tests
 
+	#[test]
+	fn node_context() {
+	    let e = Evaluator::new();
+	    let rd = $x();
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let c = vec![
+		Constructor::ContextItem
+	    ];
+	    let r = e.evaluate(Some(vec![Rc::new(Item::Node(t))]), Some(0), &c, &rd)
+		.expect("evaluation failed");
+	    assert_eq!(r.len(), 1);
+	    assert_eq!(r[0].item_type(), "Node");
+	    match &*r[0] {
+		Item::Node(n) => {
+		    assert_eq!(n.node_type(), NodeType::Element);
+		    assert_eq!(n.name().to_string(), "Test")
+		}
+		_ => panic!("item is not a node")
+	    }
+	}
+
+	// Node construction tests
+
+	#[test]
+	fn node_setattr() {
+	    let e = Evaluator::new();
+	    let rd = $x();
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let c = vec![
+		Constructor::SetAttribute(
+		    QualifiedName::new(None, None, String::from("set")),
+		    vec![Constructor::Literal(Value::from("test"))]
+		)
+	    ];
+	    let r = e.evaluate(Some(vec![Rc::new(Item::Node(t.clone()))]), Some(0), &c, &rd)
+		.expect("evaluation failed");
+	    // SetAttribute returns an empty sequence, so need to check the original node for the attribute
+	    match t.attribute_iter().next() {
+		Some(a) => {
+		    assert_eq!(a.name().to_string(), "set");
+		    assert_eq!(a.value().to_string(), "test")
+		}
+		None => panic!("no attribute")
+	    }
+	}
+
+	#[test]
+	fn node_root() {
+	    let e = Evaluator::new();
+	    let rd = $x();
+	    let mut sd = $x();
+	    let mut t1 = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t1.clone())
+		.expect("unable to append child");
+	    let mut t2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t1.push(t2.clone())
+		.expect("unable to append child");
+	    let t3 = sd.new_text(Value::from("leaf node"))
+		.expect("unable to create text");
+	    t2.push(t3.clone())
+		.expect("unable to append child");
+
+	    let c = vec![
+		Constructor::Root
+	    ];
+	    let r = e.evaluate(Some(vec![Rc::new(Item::Node(t3.clone()))]), Some(0), &c, &rd)
+		.expect("evaluation failed");
+	    assert_eq!(r.len(), 1);
+	    match &*r[0] {
+		Item::Node(n) => {
+		    assert_eq!(n.node_type(), NodeType::Document)
+		}
+		_ => panic!("sequence is not a node")
+	    }
+	}
+
 	// for-each, for-each-group
 
     }

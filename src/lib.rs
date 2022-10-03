@@ -56,8 +56,8 @@ mod parsecommon;
 
 pub mod parsexml;
 
-//pub mod xpath;
-//pub use xpath::parse;
+pub mod xpath;
+pub use xpath::parse;
 
 pub mod evaluate;
 pub use evaluate::{Constructor, Evaluator, StaticContext};

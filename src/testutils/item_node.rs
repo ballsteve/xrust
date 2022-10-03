@@ -1,7 +1,6 @@
 #[macro_export]
 macro_rules! item_node_tests (
     ( $x:expr, $y:expr ) => {
-	use xrust::item::Node;
 
 	#[test]
 	fn node_push_content() {
