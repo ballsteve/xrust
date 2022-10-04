@@ -24,14 +24,15 @@ fn make_doc(n: QualifiedName, v: Value) -> RNode {
 }
 
 fn make_sd() -> Rc<Item<RNode>> {
-    Rc::new(Item::Node(
-        Document::try_from(
-            "<a><b><a><b/><b/></a><a><b/><b/></a></b><b><a><b/><b/></a><a><b/><b/></a></b></a>",
-        )
-        .expect("failed to parse XML")
-        .content[0]
-            .clone(),
-    ))
+    let e = Document::try_from(
+        "<a><b><a><b/><b/></a><a><b/><b/></a></b><b><a><b/><b/></a><a><b/><b/></a></b></a>",
+    )
+    .expect("failed to parse XML")
+    .content[0]
+        .clone();
+    let mut d = NodeBuilder::new(NodeType::Document).build();
+    d.push(e).expect("unable to append node");
+    Rc::new(Item::Node(d))
 }
 
 item_node_tests!(make_empty_doc, make_doc);

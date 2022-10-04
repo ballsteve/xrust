@@ -289,7 +289,6 @@ macro_rules! xpath_tests (
 		_ => panic!("not a node")
 	    }
 	}
-/*
 	#[test]
 	fn xpath_root_step_2() {
 	    let x = parse::<RNode>("/child::a/child::b")
@@ -305,12 +304,14 @@ macro_rules! xpath_tests (
 		    assert_eq!(n.node_type(), NodeType::Element);
 		    assert_eq!(n.name().to_string(), "b")
 		}
+		_ => panic!("not a node")
 	    }
 	    match &*s[1] {
 		Item::Node(n) => {
 		    assert_eq!(n.node_type(), NodeType::Element);
 		    assert_eq!(n.name().to_string(), "b")
 		}
+		_ => panic!("not a node")
 	    }
 	}
 
@@ -318,18 +319,18 @@ macro_rules! xpath_tests (
 	fn xpath_root_desc_or_self_1() {
 	    let x = parse::<RNode>("//child::a")
 		.expect("failed to parse expression \"//child::a\"");
-	    assert_eq!(x.len(), 1);
 	    let rd = $x();
 	    let s = Evaluator::new()
 		.evaluate(Some(vec![$y()]), Some(0), &x, &rd)
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 5);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "a")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -337,18 +338,18 @@ macro_rules! xpath_tests (
 	fn xpath_root_desc_or_self_2() {
 	    let x = parse::<RNode>("//child::a/child::b")
 		.expect("failed to parse expression \"//child::a/child::b\"");
-	    assert_eq!(x.len(), 1);
 	    let rd = $x();
 	    let s = Evaluator::new()
 		.evaluate(Some(vec![$y()]), Some(0), &x, &rd)
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -356,18 +357,18 @@ macro_rules! xpath_tests (
 	fn xpath_root_desc_or_self_3() {
 	    let x = parse::<RNode>("//child::a//child::b")
 		.expect("failed to parse expression \"//child::a//child::b\"");
-	    assert_eq!(x.len(), 1);
 	    let rd = $x();
 	    let s = Evaluator::new()
 		.evaluate(Some(vec![$y()]), Some(0), &x, &rd)
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -382,11 +383,12 @@ macro_rules! xpath_tests (
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 2);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -401,11 +403,12 @@ macro_rules! xpath_tests (
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -420,11 +423,12 @@ macro_rules! xpath_tests (
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "a")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -450,11 +454,12 @@ macro_rules! xpath_tests (
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    for t in s {
-		match t {
+		match &*t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "a")
 		    }
+		    _ => panic!("not a node")
 		}
 	    }
 	}
@@ -841,6 +846,6 @@ macro_rules! xpath_tests (
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s.to_string(), "not one")
-	}*/
+	}
     }
 );

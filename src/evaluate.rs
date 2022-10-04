@@ -608,15 +608,12 @@ impl<N: Node> Evaluator<N> {
                 Ok(seq)
             }
             Constructor::Root => {
-                eprintln!("Constructor::Root");
                 if ctxt.is_some() {
-                    eprintln!("have context");
                     match &*ctxt.as_ref().unwrap()[posn.unwrap()] {
                         Item::Node(n) => match n.node_type() {
                             NodeType::Document => Ok(vec![Rc::new(Item::Node(n.clone()))]),
                             _ => n
                                 .ancestor_iter()
-                                .inspect(|m| eprintln!("found node {}", m.node_type().to_string()))
                                 .last()
                                 .map_or(Ok(vec![]), |m| Ok(vec![Rc::new(Item::Node(m))])),
                         },
@@ -646,21 +643,14 @@ impl<N: Node> Evaluator<N> {
                 }
 
                 // TODO: Don't Panic
-                eprintln!("Path: {} steps", s.len());
                 let result = s.iter().fold(u, |a, c| {
                     // evaluate this step for each item in the context
                     // Add the result of each evaluation to an accummulator sequence
-                    eprintln!(
-                        "eval step [{}] minicontext has {} items",
-                        format_constructor(&c, 0),
-                        a.len()
-                    );
                     let mut b: Sequence<N> = Vec::new();
                     for i in 0..a.len() {
                         let mut d = self
                             .evaluate(Some(a.clone()), Some(i), c, rd)
                             .expect("failed to evaluate step");
-                        eprintln!("add {} items to new context", d.len());
                         b.append(&mut d);
                     }
                     b
