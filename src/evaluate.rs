@@ -630,7 +630,8 @@ impl<N: Node> Evaluator<N> {
                 }
             }
             Constructor::Path(s) => {
-                // s is a vector of sequence constructors
+                // s is a vector of sequence constructors.
+                // Each item is a step in the path.
                 // Each step creates a new context for the next step
                 // TODO: if initial context is None then error
 
@@ -646,12 +647,31 @@ impl<N: Node> Evaluator<N> {
                 let result = s.iter().fold(u, |a, c| {
                     // evaluate this step for each item in the context
                     // Add the result of each evaluation to an accummulator sequence
+                    // Eliminate duplicates
                     let mut b: Sequence<N> = Vec::new();
                     for i in 0..a.len() {
-                        let mut d = self
+                        let d = self
                             .evaluate(Some(a.clone()), Some(i), c, rd)
                             .expect("failed to evaluate step");
-                        b.append(&mut d);
+                        // Instead of just appending the step result to the accumulator,
+                        // we need to check each item in the step result to see if it already
+                        // exists in the accumulator.
+                        // TODO: optimise this checking
+                        //b.append(&mut d);
+                        d.iter().for_each(|e| {
+                            if b.iter().fold(true, |acc, f| match (&**e, &**f) {
+                                (Item::Node(g), Item::Node(h)) => {
+                                    if g.is_same(&h) {
+                                        acc && false
+                                    } else {
+                                        acc && true
+                                    }
+                                }
+                                _ => acc && true,
+                            }) {
+                                b.push(e.clone())
+                            }
+                        });
                     }
                     b
                 });
@@ -777,6 +797,21 @@ impl<N: Node> Evaluator<N> {
                                     if is_node_match::<N>(&nm.nodetest, n) {
                                         seq.insert(0, Rc::new(Item::Node(n.clone())));
                                     }
+
+                                    Ok(self.predicates(seq, p, rd)?)
+                                }
+                                Axis::DescendantOrSelfOrRoot => {
+                                    let mut seq = n
+                                        .descend_iter()
+                                        .filter(|c| is_node_match::<N>(&nm.nodetest, c))
+                                        .fold(Sequence::new(), |mut c, a| {
+                                            c.push_node(a.clone());
+                                            c
+                                        });
+                                    if is_node_match::<N>(&nm.nodetest, n) {
+                                        seq.insert(0, Rc::new(Item::Node(n.clone())));
+                                    }
+                                    seq.insert(0, Rc::new(Item::Node(n.owner_document().clone())));
 
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
@@ -2059,6 +2094,7 @@ pub enum Axis {
     Child,
     Descendant,
     DescendantOrSelf,
+    DescendantOrSelfOrRoot,
     Attribute,
     SelfAttribute, // a special axis, only for matching an attribute in a a pattern match
     Selfaxis,
@@ -2102,6 +2138,7 @@ impl Axis {
             Axis::Child => "child".to_string(),
             Axis::Descendant => "descendant".to_string(),
             Axis::DescendantOrSelf => "descendant-or-self".to_string(),
+            Axis::DescendantOrSelfOrRoot => "descendant-or-self-or-root".to_string(),
             Axis::Attribute => "attribute".to_string(),
             Axis::SelfAttribute => "self-attribute".to_string(),
             Axis::Selfaxis => "self".to_string(),
@@ -2124,6 +2161,7 @@ impl Axis {
             Axis::Child => Axis::Parent,
             Axis::Descendant => Axis::Ancestor,
             Axis::DescendantOrSelf => Axis::AncestorOrSelf,
+            Axis::DescendantOrSelfOrRoot => Axis::AncestorOrSelf,
             Axis::Attribute => Axis::SelfAttribute,
             Axis::Selfaxis => Axis::Selfaxis,
             Axis::Following => Axis::Preceding,

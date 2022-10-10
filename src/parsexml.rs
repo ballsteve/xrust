@@ -269,9 +269,11 @@ fn taggedelem(input: &str) -> IResult<&str, RNode> {
             multispace0,
             tag(">"),
         )),
-        |(_, n, _a, _, _, c, _, _e, _, _)| {
+        |(_, n, av, _, _, c, _, _e, _, _)| {
             // TODO: check that the start tag name and end tag name match (n == e)
             let mut a = NodeBuilder::new(NodeType::Element).name(n).build();
+            av.iter()
+                .for_each(|b| a.add_attribute(b.clone()).expect("unable to add attribute"));
             c.iter().for_each(|d| {
                 a.push(d.clone()).expect("unable to add node");
             });
@@ -290,7 +292,12 @@ fn emptyelem(input: &str) -> IResult<&str, RNode> {
             multispace0,
             tag("/>"),
         )),
-        |(_, n, _a, _, _)| NodeBuilder::new(NodeType::Element).name(n).build(),
+        |(_, n, av, _, _)| {
+            let e = NodeBuilder::new(NodeType::Element).name(n).build();
+            av.iter()
+                .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
+            e
+        },
     )(input)
 }
 
@@ -770,6 +777,29 @@ mod tests {
             }
             _ => {
                 panic!("no text child node")
+            }
+        }
+    }
+
+    #[test]
+    fn attrs_1() {
+        let doc = "<doc mode='testing'></doc>";
+        let result =
+            Document::try_from(doc).expect("failed to parse XML \"<doc mode='testing'></doc>\"");
+        assert_eq!(result.prologue.len(), 0);
+        assert_eq!(result.epilogue.len(), 0);
+        assert_eq!(result.content.len(), 1);
+        assert_eq!(result.content[0].node_type(), NodeType::Element);
+        assert_eq!(result.content[0].name().get_localname(), "doc");
+        let mut it = result.content[0].attribute_iter();
+        match it.next() {
+            Some(a) => {
+                assert_eq!(a.node_type(), NodeType::Attribute);
+                assert_eq!(a.name().to_string(), "mode");
+                assert_eq!(a.value().to_string(), "testing");
+            }
+            _ => {
+                panic!("no attribute node")
             }
         }
     }

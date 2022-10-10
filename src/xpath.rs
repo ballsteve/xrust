@@ -764,12 +764,51 @@ fn absolute_path_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>
 }
 // ('//' RelativePathExpr)
 fn absolute_descendant_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
-    map(pair(tag("//"), relativepath_expr::<N>), |(_u, _v)| {
-        vec![
-            Constructor::Root,
-            Constructor::NotImplemented("absolute_descendant".to_string()),
-        ]
-        // TODO: process v to implement descendant-or-self
+    map(pair(tag("//"), relativepath_expr::<N>), |(_u, v)| {
+        // Unpack the relative path
+        if v.len() == 1 {
+            match &v[0] {
+                Constructor::Path(s) => {
+                    let mut t = s.clone();
+                    t.insert(
+                        0,
+                        vec![Constructor::Step(
+                            NodeMatch {
+                                axis: Axis::DescendantOrSelfOrRoot,
+                                nodetest: NodeTest::Name(NameTest {
+                                    ns: None,
+                                    prefix: None,
+                                    name: Some(WildcardOrName::Wildcard),
+                                }),
+                            },
+                            vec![],
+                        )],
+                    );
+                    t.insert(0, vec![Constructor::Root]);
+                    vec![Constructor::Path(t)]
+                }
+                _ => {
+                    let mut t = vec![
+                        vec![Constructor::Root],
+                        vec![Constructor::Step(
+                            NodeMatch {
+                                axis: Axis::DescendantOrSelfOrRoot,
+                                nodetest: NodeTest::Name(NameTest {
+                                    ns: None,
+                                    prefix: None,
+                                    name: Some(WildcardOrName::Wildcard),
+                                }),
+                            },
+                            vec![],
+                        )],
+                    ];
+                    t.push(v);
+                    vec![Constructor::Path(t)]
+                }
+            }
+        } else {
+            v
+        }
     })(input)
 }
 

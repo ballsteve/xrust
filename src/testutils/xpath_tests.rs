@@ -358,9 +358,22 @@ macro_rules! xpath_tests (
 	    let x = parse::<RNode>("//child::a//child::b")
 		.expect("failed to parse expression \"//child::a//child::b\"");
 	    let rd = $x();
+	    let sd = $y();
 	    let s = Evaluator::new()
-		.evaluate(Some(vec![$y()]), Some(0), &x, &rd)
+		.evaluate(Some(vec![sd]), Some(0), &x, &rd)
 		.expect("evaluation failed");
+	    eprintln!("{} items:", s.len());
+	    s.iter()
+		.for_each(|i| {
+		    match &**i {
+			Item::Node(n) => {
+			    eprintln!("node \"{}\"", n.name().to_string());
+			    n.attribute_iter()
+				.for_each(|a| eprintln!("id='{}'", a.value().to_string()))
+			}
+			_ => eprintln!("not a node")
+		    }
+		});
 	    assert_eq!(s.len(), 10);
 	    for t in s {
 		match &*t {

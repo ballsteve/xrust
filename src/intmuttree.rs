@@ -271,11 +271,22 @@ impl ItemNode for RNode {
         String::from("not implemented")
     }
 
+    fn is_same(&self, other: &Self) -> bool {
+        Rc::ptr_eq(self, other)
+    }
+
     fn child_iter(&self) -> Self::NodeIterator {
         Box::new(Children::new(self))
     }
     fn ancestor_iter(&self) -> Self::NodeIterator {
         Box::new(Ancestors::new(self))
+    }
+    fn owner_document(&self) -> Self {
+        if self.node_type() == NodeType::Document {
+            self.clone()
+        } else {
+            self.ancestor_iter().last().unwrap()
+        }
     }
     fn descend_iter(&self) -> Self::NodeIterator {
         Box::new(Descendants::new(self))

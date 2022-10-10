@@ -25,7 +25,7 @@ fn make_doc(n: QualifiedName, v: Value) -> RNode {
 
 fn make_sd() -> Rc<Item<RNode>> {
     let e = Document::try_from(
-        "<a><b><a><b/><b/></a><a><b/><b/></a></b><b><a><b/><b/></a><a><b/><b/></a></b></a>",
+        "<a id='a1'><b id='b1'><a id='a2'><b id='b2'/><b id='b3'/></a><a id='a3'><b id='b4'/><b id='b5'/></a></b><b id='b6'><a id='a4'><b id='b7'/><b id='b8'/></a><a id='a5'><b id='b9'/><b id='b10'/></a></b></a>",
     )
     .expect("failed to parse XML")
     .content[0]

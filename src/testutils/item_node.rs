@@ -117,6 +117,50 @@ macro_rules! item_node_tests (
 		_ => panic!("iterator should have no more items")
 	    }
 	}
+	#[test]
+	fn item_node_owner_doc() {
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut l1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1.clone())
+		.expect("unable to append child");
+	    let mut l2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-2")))
+		.expect("unable to create element");
+	    l1.push(l2.clone())
+		.expect("unable to append child");
+	    let leaf = sd.new_text(Value::from("leaf node"))
+		.expect("unable to create text node");
+	    l2.push(leaf.clone())
+		.expect("unable to append child");
+	    let od = leaf.owner_document();
+	    assert_eq!(od.node_type(), NodeType::Document);
+	}
+	#[test]
+	fn item_node_owner_doc_root() {
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut l1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1.clone())
+		.expect("unable to append child");
+	    let mut l2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-2")))
+		.expect("unable to create element");
+	    l1.push(l2.clone())
+		.expect("unable to append child");
+	    let leaf = sd.new_text(Value::from("leaf node"))
+		.expect("unable to create text node");
+	    l2.push(leaf.clone())
+		.expect("unable to append child");
+	    let od = sd.owner_document();
+	    assert_eq!(od.node_type(), NodeType::Document);
+	}
 
 	#[test]
 	fn item_node_children() {
@@ -316,10 +360,19 @@ macro_rules! item_node_tests (
 		.expect("unable to add attribute");
 
 	    // NB. attributes could be returned in a different order
-	    assert_eq!(sd.to_xml(), "<Test role='testing' phase='one'></Test>");
+	    assert!(
+		sd.to_xml() == "<Test role='testing' phase='one'></Test>" ||
+		    sd.to_xml() == "<Test phase='one' role='testing'></Test>"
+	    );
 	    let mut aiter = t.attribute_iter();
-	    assert_eq!(aiter.next().unwrap().name().to_string(), "role");
-	    assert_eq!(aiter.next().unwrap().name().to_string(), "phase");
+	    let v = aiter.next().unwrap().name().to_string();
+	    if v == "role" {
+		assert_eq!(aiter.next().unwrap().name().to_string(), "phase");
+	    } else if v == "phase" {
+		assert_eq!(aiter.next().unwrap().name().to_string(), "role");
+	    } else {
+		panic!("unexpected attribute value")
+	    }
 	    match aiter.next() {
 		None => {},
 		_ => panic!("iterator should have no more items")

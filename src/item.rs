@@ -357,6 +357,10 @@ pub trait Node: Clone {
     fn to_json(&self) -> String {
         String::new()
     }
+
+    /// Check if two Nodes are the same Node
+    fn is_same(&self, other: &Self) -> bool;
+
     /// An iterator over the children of the node
     fn child_iter(&self) -> Self::NodeIterator;
     /// Get the first child of the node, if there is one
@@ -375,6 +379,8 @@ pub trait Node: Clone {
     {
         self.ancestor_iter().next()
     }
+    /// Get the document node
+    fn owner_document(&self) -> Self;
     /// An iterator over the descendants of the node
     fn descend_iter(&self) -> Self::NodeIterator;
     /// An iterator over the following siblings of the node
