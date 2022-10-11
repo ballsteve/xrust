@@ -5,6 +5,7 @@ use xrust::item_node_tests;
 use xrust::item_value_tests;
 use xrust::qname::QualifiedName;
 use xrust::xpath_tests;
+//use xrust::xslt_tests;
 
 // Run the generic Item/Value tests
 item_value_tests!(RNode);
@@ -35,6 +36,14 @@ fn make_sd() -> Rc<Item<RNode>> {
     Rc::new(Item::Node(d))
 }
 
+fn make_from_str(s: &str) -> RNode {
+    let e = Document::try_from(s).expect("failed to parse XML").content[0].clone();
+    let mut d = NodeBuilder::new(NodeType::Document).build();
+    d.push(e).expect("unable to append node");
+    d
+}
+
 item_node_tests!(make_empty_doc, make_doc);
 evaluate_tests!(make_empty_doc);
 xpath_tests!(make_empty_doc, make_sd);
+//xslt_tests!(make_from_str, make_empty_doc);

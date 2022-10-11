@@ -300,6 +300,12 @@ impl ItemNode for RNode {
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(Attributes::new(self))
     }
+    fn get_attribute(&self, a: &QualifiedName) -> Value {
+        self.attributes
+            .borrow()
+            .get(a)
+            .map_or(Value::from(""), |v| v.value.as_ref().unwrap().clone())
+    }
 
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Element).name(qn).build())
@@ -660,6 +666,47 @@ mod tests {
             .build();
         root.push(child).expect("unable to append child");
         assert_eq!(root.to_xml(), "<Test></Test>")
+    }
+
+    #[test]
+    fn get_attr() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Test")))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        let at = root
+            .new_attribute(
+                QualifiedName::new(None, None, String::from("mode")),
+                Value::from("testing"),
+            )
+            .expect("unable to create attribute node");
+        child.add_attribute(at).expect("unable to add attribute");
+
+        assert_eq!(
+            child.get_attribute(&QualifiedName::new(None, None, String::from("mode"))),
+            Value::from("testing")
+        )
+    }
+    #[test]
+    fn get_attr_neg() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Test")))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        let at = root
+            .new_attribute(
+                QualifiedName::new(None, None, String::from("mode")),
+                Value::from("testing"),
+            )
+            .expect("unable to create attribute node");
+        child.add_attribute(at).expect("unable to add attribute");
+
+        assert_eq!(
+            child.get_attribute(&QualifiedName::new(None, None, String::from("foo"))),
+            Value::from("")
+        )
     }
 
     #[test]

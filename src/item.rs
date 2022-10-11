@@ -360,6 +360,10 @@ pub trait Node: Clone {
 
     /// Check if two Nodes are the same Node
     fn is_same(&self, other: &Self) -> bool;
+    /// Check if a node is an element-type
+    fn is_element(&self) -> bool {
+        self.node_type() == NodeType::Element
+    }
 
     /// An iterator over the children of the node
     fn child_iter(&self) -> Self::NodeIterator;
@@ -389,6 +393,8 @@ pub trait Node: Clone {
     fn prev_iter(&self) -> Self::NodeIterator;
     /// An iterator over the attributes of an element
     fn attribute_iter(&self) -> Self::NodeIterator;
+    /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
+    fn get_attribute(&self, a: &QualifiedName) -> Value;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;

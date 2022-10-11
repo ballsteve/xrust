@@ -50,7 +50,7 @@ pub mod qname;
 pub mod value;
 pub use value::Value;
 pub mod item;
-pub use item::{Item, Sequence, SequenceTrait};
+pub use item::{Item, Node, Sequence, SequenceTrait};
 
 mod parsecommon;
 
@@ -68,6 +68,5 @@ pub use evaluate::{Constructor, Evaluator, StaticContext};
 //pub use xslt::from_document;
 
 pub mod intmuttree;
-pub use intmuttree::Node;
 
 pub mod testutils;

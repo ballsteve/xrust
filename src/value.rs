@@ -43,7 +43,7 @@ impl Operator {
 
 /// A concrete type that implements atomic values.
 /// These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum Value {
     /// node or simple type
     AnyType,

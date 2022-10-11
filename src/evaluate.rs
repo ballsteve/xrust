@@ -696,19 +696,6 @@ impl<N: Node> Evaluator<N> {
                                     }
                                 }
                                 Axis::Child => {
-                                    //				    let mut seq: Sequence<N> = Sequence::new();
-                                    //				    let mut it = n.child_iter();
-                                    //				    loop {
-                                    //					match it.next() {
-                                    //					    Some(c) => {
-                                    //						if is_node_match(&nm.nodetest, &c, f) {
-                                    //						    seq.push_node(c)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let seq = n
                                         .child_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -747,19 +734,6 @@ impl<N: Node> Evaluator<N> {
                                     }
                                 }
                                 Axis::Descendant => {
-                                    //				    let mut seq = Sequence::new();
-                                    //				    let mut it = n.descend_iter();
-                                    //				    loop {
-                                    //					match it.next(f) {
-                                    //					    Some(c) => {
-                                    //						if is_node_match(&nm.nodetest, &c) {
-                                    //						    seq.push_node(c)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let seq = n
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -771,22 +745,6 @@ impl<N: Node> Evaluator<N> {
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
                                 Axis::DescendantOrSelf => {
-                                    //				    let mut seq = Sequence::new();
-                                    //				    if is_node_match(&nm.nodetest, &n, f) {
-                                    //					seq.push_item(&Rc::new(Item::Node(*n)));
-                                    //				    }
-                                    //				    let mut it = n.descend_iter(f);
-                                    //				    loop {
-                                    //					match it.next(f) {
-                                    //					    Some(c) => {
-                                    //						if is_node_match(&nm.nodetest, &c, f) {
-                                    //						    seq.push_node(c)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let mut seq = n
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -816,19 +774,6 @@ impl<N: Node> Evaluator<N> {
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
                                 Axis::Ancestor => {
-                                    //				    let mut seq = Sequence::new();
-                                    //				    let mut it = n.ancestor_iter();
-                                    //				    loop {
-                                    //					match it.next(f) {
-                                    //					    Some(a) => {
-                                    //						if is_node_match(&nm.nodetest, &a, f) {
-                                    //						    seq.push_node(a)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let seq = n
                                         .ancestor_iter()
                                         .filter(|p| is_node_match::<N>(&nm.nodetest, p))
@@ -840,19 +785,6 @@ impl<N: Node> Evaluator<N> {
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
                                 Axis::AncestorOrSelf => {
-                                    //				    let mut seq = Sequence::new();
-                                    //				    let mut it = n.ancestor_iter();
-                                    //				    loop {
-                                    //					match it.next(f) {
-                                    //					    Some(a) => {
-                                    //						if is_node_match(&nm.nodetest, &a, f) {
-                                    //						    seq.push_node(a)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let mut seq = n
                                         .ancestor_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -868,19 +800,6 @@ impl<N: Node> Evaluator<N> {
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
                                 Axis::FollowingSibling => {
-                                    //				    let mut seq = Sequence::new();
-                                    //				    let mut it = n.next_iter(f);
-                                    //				    loop {
-                                    //					match it.next(f) {
-                                    //					    Some(g) => {
-                                    //						if is_node_match(&nm.nodetest, &g, f) {
-                                    //						    seq.push_node(g)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let seq = n
                                         .next_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -892,19 +811,6 @@ impl<N: Node> Evaluator<N> {
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
                                 Axis::PrecedingSibling => {
-                                    //				    let mut seq = Sequence::new();
-                                    //				    let mut it = n.prev_iter(f);
-                                    //				    loop {
-                                    //					match it.next(f) {
-                                    //					    Some(g) => {
-                                    //						if is_node_match(&nm.nodetest, &g, f) {
-                                    //						    seq.push_node(g)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-
                                     let seq = n
                                         .prev_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -920,29 +826,6 @@ impl<N: Node> Evaluator<N> {
                                     // iow, for each ancestor-or-self node, include every next sibling and its descendants
 
                                     // Start with following siblings of self
-                                    //				    let mut fit = n.next_iter(f);
-                                    //				    loop {
-                                    //					match fit.next(f) {
-                                    //					    Some(a) => {
-                                    //						d.push(a);
-                                    //						let mut dit = a.descend_iter(f);
-                                    //						loop {
-                                    //						    match dit.next(f) {
-                                    //							Some(c) => {
-                                    //							    d.push(c)
-                                    //							}
-                                    //							None => break,
-                                    //						    }
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-                                    //				    for a in n.following_siblings() {
-                                    //					d.push(a.clone());
-                                    //					let mut b = a.descendants();
-                                    //					d.append(&mut b);
-                                    //				    }
                                     let mut d = n.next_iter().fold(Vec::new(), |mut acc, a| {
                                         acc.push(a.clone());
                                         let mut b = a.descend_iter().collect();
@@ -951,40 +834,6 @@ impl<N: Node> Evaluator<N> {
                                     });
 
                                     // Now traverse ancestors
-                                    //				    let mut ait = n.ancestor_iter();
-                                    //				    loop {
-                                    //					match ait.next(f) {
-                                    //					    Some(a) => {
-                                    //						let mut sit = a.next_iter(f);
-                                    //						loop {
-                                    //						    match sit.next(f) {
-                                    //							Some(b) => {
-                                    //							    d.push(b);
-                                    //							    let mut dit = b.descend_iter(f);
-                                    //							    loop {
-                                    //								match dit.next(f) {
-                                    //								    Some(e) => {
-                                    //									d.push(e)
-                                    //								    }
-                                    //								    None => break,
-                                    //								}
-                                    //							    }
-                                    //							}
-                                    //							None => break,
-                                    //						    }
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
-                                    //				    for a in anc {
-                                    //					let sibs: Vec<Node> = a.following_siblings();
-                                    //					for b in sibs {
-                                    //					    d.push(b.clone());
-                                    //					    let mut sib_descs: Vec<Node> = b.descendants();
-                                    //					    d.append(&mut sib_descs)
-                                    //					}
-                                    //				    }
                                     n.ancestor_iter().for_each(|a| {
                                         a.next_iter().for_each(|b| {
                                             d.push(b.clone());
@@ -1007,24 +856,6 @@ impl<N: Node> Evaluator<N> {
                                     let mut d: Vec<N> = Vec::new();
 
                                     // Start with preceding siblings of self
-                                    //				    let mut pit = n.prev_iter(f);
-                                    //				    loop {
-                                    //					match pit.next(f) {
-                                    //					    Some(a) => {
-                                    //						d.push(a);
-                                    //						let mut dit = a.descend_iter(f);
-                                    //						loop {
-                                    //						    match dit.next(f) {
-                                    //							Some(b) => {
-                                    //							    d.push(b)
-                                    //							}
-                                    //							None => break,
-                                    //						    }
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
                                     n.prev_iter().for_each(|a| {
                                         d.push(a.clone());
                                         let mut b = a.descend_iter().collect();
@@ -1032,32 +863,6 @@ impl<N: Node> Evaluator<N> {
                                     });
 
                                     // Now traverse ancestors
-                                    //				    let mut ait = n.ancestor_iter();
-                                    //				    loop {
-                                    //					match ait.next(f) {
-                                    //					    Some(a) => {
-                                    //						let mut pit = a.prev_iter(f);
-                                    //						loop {
-                                    //						    match pit.next(f) {
-                                    //							Some(b) => {
-                                    //							    d.push(b);
-                                    //							    let mut dit = b.descend_iter(f);
-                                    //							    loop {
-                                    //								match dit.next(f) {
-                                    //								    Some(c) => {
-                                    //									d.push(c)
-                                    //								    }
-                                    //								    None => break,
-                                    //								}
-                                    //							    }
-                                    //							}
-                                    //							None => break,
-                                    //						    }
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
                                     n.ancestor_iter().for_each(|a| {
                                         a.prev_iter().for_each(|b| {
                                             d.push(b.clone());
@@ -1075,18 +880,6 @@ impl<N: Node> Evaluator<N> {
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
                                 Axis::Attribute => {
-                                    //				    let mut atit = n.attribute_iter();
-                                    //				    let mut attrs = Sequence::new();
-                                    //				    loop {
-                                    //					match atit.next() {
-                                    //					    Some(a) => {
-                                    //						if is_node_match(&nm.nodetest, &a) {
-                                    //						    attrs.push_node(a)
-                                    //						}
-                                    //					    }
-                                    //					    None => break,
-                                    //					}
-                                    //				    }
                                     let attrs = n
                                         .attribute_iter()
                                         .filter(|a| is_node_match::<N>(&nm.nodetest, a))
