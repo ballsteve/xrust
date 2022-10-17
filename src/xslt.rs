@@ -90,6 +90,13 @@ pub fn from_document<N: Node>(
     let mut rnit = styledoc.child_iter();
     let stylenode = match rnit.next() {
         Some(root) => {
+	    let p = root.name().get_prefix();
+	    eprintln!("stylenode is a {} with local name {}, prefix \"{}\", name ns uri \"{}\"",
+		      root.node_type().to_string(),
+		      root.name().get_localname(),
+		      p.map_or("--no prefix--".to_string(), |u| u),
+		      root.name().get_nsuri_ref().map_or("--no ns uri--", |u| u),
+	    );
             if !(root.name().get_nsuri_ref() == Some(XSLTNS)
                 && (root.name().get_localname() == "stylesheet"
                     || root.name().get_localname() == "transform"))
