@@ -410,4 +410,7 @@ pub trait Node: Clone {
     fn insert_before(&mut self, n: Self) -> Result<(), Error>;
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
+
+    /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
+    fn deep_copy(&self) -> Result<Self, Error>;
 }

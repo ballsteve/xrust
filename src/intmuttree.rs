@@ -378,6 +378,26 @@ impl ItemNode for RNode {
             String::from("not yet implemented"),
         ))
     }
+
+    /// Deep copy the node. Returned node is unattached.
+    fn deep_copy(&self) -> Result<Self, Error> {
+        let mut result = NodeBuilder::new(self.node_type())
+            .name(self.name())
+            .value(self.value())
+            .build();
+
+        self.attribute_iter().try_for_each(|a| {
+            result.add_attribute(a.deep_copy()?)?;
+            Ok::<(), Error>(())
+        })?;
+
+        self.child_iter().try_for_each(|c| {
+            result.push(c.deep_copy()?)?;
+            Ok::<(), Error>(())
+        })?;
+
+        Ok(result)
+    }
 }
 
 pub struct Children {
@@ -759,6 +779,35 @@ mod tests {
         assert_eq!(
             root.to_xml(),
             "<Test><Level1>1</Level1><Level1>2</Level1><Level1>4</Level1><Level1>5</Level1></Test>"
+        )
+    }
+
+    #[test]
+    fn deep_copy() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let mut child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Test")))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        child
+            .add_attribute(
+                NodeBuilder::new(NodeType::Attribute)
+                    .name(QualifiedName::new(None, None, String::from("id")))
+                    .value(Value::from("foo"))
+                    .build(),
+            )
+            .expect("unable to add attribute");
+        child
+            .push(
+                NodeBuilder::new(NodeType::Text)
+                    .value(Value::from("1234"))
+                    .build(),
+            )
+            .expect("unable to add text node");
+
+        assert_eq!(
+            root.deep_copy().expect("unable to copy").to_xml(),
+            "<Test id='foo'>1234</Test>"
         )
     }
 }

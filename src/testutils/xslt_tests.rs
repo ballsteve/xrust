@@ -1,24 +1,29 @@
 #[macro_export]
 macro_rules! xslt_tests (
     ( $x:expr , $y:expr ) => {
-	use xrust::xpath::parse;
-	use xrust::evaluate::StaticContext;
+	//use xrust::xpath::parse;
+	//use xrust::evaluate::StaticContext;
+	use xrust::xslt::from_document;
 
 	#[test]
 	fn xslt_literal_text() {
 	    let mut sc = StaticContext::new_with_xslt_builtins();
 
-	    let src = Rc::new(Item::Node($x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")));
+	    let src = Rc::new(Item::Node(
+		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+		    .expect("unable to parse source document")
+	    ));
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'>Found the document</xsl:template>
-</xsl:stylesheet>");
+</xsl:stylesheet>").expect("unable to parse stylesheet");
 
 	    // Setup dynamic context with result document
 	    let ev = from_document(
 		style,
 		&mut sc,
 		None,
+		$x,
 	    )
 		.expect("failed to compile stylesheet");
 
@@ -26,11 +31,11 @@ macro_rules! xslt_tests (
 
 	    // Prime the stylesheet evaluation by finding the template for the document root
 	    // and making the document root the initial context
-	    let t = ev.find_match(&src, rd, None)
+	    let t = ev.find_match(&src, None, &rd)
 		.expect("unable to find match");
 	    assert!(t.len() >= 1);
 
-	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, rd)
+	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
 		.expect("evaluation failed");
 
 	    assert_eq!(seq.to_string(), "Found the document")
