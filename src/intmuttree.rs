@@ -163,7 +163,9 @@ pub struct Node {
     parent: RefCell<Option<Weak<Node>>>,
     children: RefCell<Vec<RNode>>,
     attributes: RefCell<HashMap<QualifiedName, RNode>>,
-    name: Option<QualifiedName>,
+    // name is mutable only so that the namespace URI can be set once the document is parsed.
+    // If we can build a better parser then the RefCell can be removed.
+    name: RefCell<Option<QualifiedName>>,
     value: Option<Value>,
     pi_name: Option<String>,
     dtd: Option<DTDDecl>,
@@ -187,6 +189,17 @@ impl Node {
     pub fn reference(&self) -> Option<QualifiedName> {
         self.reference.clone()
     }
+    pub fn set_nsuri(&self, uri: String) {
+        let new = match &*self.name.borrow() {
+            Some(old) => QualifiedName::new(
+                Some(uri),
+                old.get_prefix().clone(),
+                old.get_localname().clone(),
+            ),
+            None => panic!("no node name"),
+        };
+        let _ = self.name.borrow_mut().insert(new);
+    }
 }
 
 pub type RNode = Rc<Node>;
@@ -199,6 +212,7 @@ impl ItemNode for RNode {
     }
     fn name(&self) -> QualifiedName {
         self.name
+            .borrow()
             .as_ref()
             .map_or(QualifiedName::new(None, None, String::new()), |n| n.clone())
     }
@@ -238,6 +252,7 @@ impl ItemNode for RNode {
                 let mut result = String::from("<");
                 result.push_str(
                     self.name
+                        .borrow()
                         .as_ref()
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
@@ -255,6 +270,7 @@ impl ItemNode for RNode {
                 result.push_str("</");
                 result.push_str(
                     self.name
+                        .borrow()
                         .as_ref()
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
@@ -564,8 +580,8 @@ impl NodeBuilder {
     pub fn new(n: NodeType) -> Self {
         NodeBuilder(Node::new(n))
     }
-    pub fn name(mut self, qn: QualifiedName) -> Self {
-        self.0.name = Some(qn);
+    pub fn name(self, qn: QualifiedName) -> Self {
+        *self.0.name.borrow_mut() = Some(qn);
         self
     }
     pub fn value(mut self, v: Value) -> Self {

@@ -28,6 +28,7 @@ use nom::{
     sequence::tuple,
     IResult,
 };
+use std::collections::HashMap;
 use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::str::FromStr;
@@ -82,6 +83,10 @@ fn document(input: &str) -> IResult<&str, Document> {
     map(tuple((opt(prolog), element, opt(misc))), |(p, e, m)| {
         let pr = p.unwrap_or((None, vec![]));
 
+        // TODO: resolve XML Namespace declarations during the parsing phase. To do that, the parser needs to be able to build state and carry that forward through the parsing process
+        let mut ns: HashMap<String, String> = HashMap::new();
+        resolve_namespaces(e.clone(), &mut ns).expect("unable to resolve namespaces");
+
         let mut a = DocumentBuilder::new()
             .prologue(pr.1)
             .content(vec![e])
@@ -90,6 +95,29 @@ fn document(input: &str) -> IResult<&str, Document> {
         pr.0.map(|x| a.set_xmldecl(x));
         a
     })(input)
+}
+
+// Resolve XML Namespace declarations and qualified names
+fn resolve_namespaces(e: RNode, ns: &mut HashMap<String, String>) -> Result<(), Error> {
+    e.attribute_iter()
+        .filter(|b| b.name().get_prefix().map_or(false, |p| p == "xmlns"))
+        .for_each(|b| {
+            ns.insert(b.name().get_localname(), b.value().to_string());
+        });
+    if e.node_type() == NodeType::Element {
+        if let Some(p) = e.name().get_prefix() {
+            match ns.get(&p) {
+                Some(u) => e.set_nsuri(u.clone()),
+                None => {
+                    return Result::Err(Error::new(
+                        ErrorKind::Unknown,
+                        format!("XML Namespace URI not found for prefix \"{}\"", p),
+                    ))
+                }
+            }
+        }
+    }
+    Ok(())
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
