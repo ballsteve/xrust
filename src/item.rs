@@ -319,8 +319,13 @@ impl<N: Node> Item<N> {
 impl<N: Node> fmt::Debug for Item<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            Item::Node(_) => {
-                write!(f, "node type item")
+            Item::Node(n) => {
+                write!(
+		    f,
+		    "node type item (node type {}, name \"{}\")",
+		    n.node_type().to_string(),
+		    n.name().to_string()
+		)
             }
             Item::Function => {
                 write!(f, "function type item")

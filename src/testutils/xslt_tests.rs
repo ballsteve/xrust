@@ -35,6 +35,7 @@ macro_rules! xslt_tests (
 		.expect("unable to find match");
 	    assert!(t.len() >= 1);
 
+	    eprintln!("Evaluating:\n{}", format_constructor(&t, 0));
 	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
 		.expect("evaluation failed");
 

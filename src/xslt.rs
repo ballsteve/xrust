@@ -90,14 +90,6 @@ pub fn from_document<N: Node>(
     let mut rnit = styledoc.child_iter();
     let stylenode = match rnit.next() {
         Some(root) => {
-            let p = root.name().get_prefix();
-            eprintln!(
-                "stylenode is a {} with local name {}, prefix \"{}\", name ns uri \"{}\"",
-                root.node_type().to_string(),
-                root.name().get_localname(),
-                p.map_or("--no prefix--".to_string(), |u| u),
-                root.name().get_nsuri_ref().map_or("--no ns uri--", |u| u),
-            );
             if !(root.name().get_nsuri_ref() == Some(XSLTNS)
                 && (root.name().get_localname() == "stylesheet"
                     || root.name().get_localname() == "transform"))
@@ -360,14 +352,21 @@ pub fn from_document<N: Node>(
     // * compile match pattern
     // * compile content into sequence constructor
     // * register template in dynamic context
+    eprintln!("defining templates");
     stylenode
         .child_iter()
+	.inspect(|c| eprintln!("checking {} node \"{}\"^\"{}\"",
+			       c.node_type().to_string(),
+			       c.name().get_nsuri().map_or("--no nsuri--".to_string(), |u| u),
+			       c.name().get_localname()
+	))
         .filter(|c| {
             c.is_element()
                 && c.name().get_nsuri_ref() == Some(XSLTNS)
                 && c.name().get_localname() == "template"
         })
         .try_for_each(|c| {
+	    eprintln!("found one");
             let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
             let n = m.clone().to_string();
             let a = parse(&n).expect("failed to parse match expression");

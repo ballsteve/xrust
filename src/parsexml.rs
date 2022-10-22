@@ -117,6 +117,11 @@ fn resolve_namespaces(e: RNode, ns: &mut HashMap<String, String>) -> Result<(), 
             }
         }
     }
+    e.child_iter()
+	.try_for_each(|c| {
+	    resolve_namespaces(c, ns)?;
+	    Ok::<(), Error>(())
+	})?;
     Ok(())
 }
 
@@ -673,6 +678,41 @@ mod tests {
             Some(c) => {
                 assert_eq!(c.node_type(), NodeType::Element);
                 assert_eq!(c.name().get_localname(), "Foo");
+                let mut it2 = c.child_iter();
+                match it2.next() {
+                    Some(d) => {
+                        assert_eq!(d.node_type(), NodeType::Text);
+                        assert_eq!(d.value().to_string(), "bar");
+                    }
+                    None => {
+                        panic!("no element grandchild")
+                    }
+                }
+            }
+            _ => {
+                panic!("no element child")
+            }
+        }
+    }
+
+    #[test]
+    fn ns_1() {
+        let doc = Document::try_from("<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>")
+            .expect("failed to parse XML \"<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>\"");
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        assert_eq!(doc.content[0].name().get_prefix(), Some(String::from("a")));
+        assert_eq!(doc.content[0].name().get_nsuri(), Some(String::from("urn:test")));
+        let mut it1 = doc.content[0].child_iter();
+        match it1.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Element);
+                assert_eq!(c.name().get_localname(), "Foo");
+                assert_eq!(c.name().get_prefix(), Some(String::from("a")));
+                assert_eq!(c.name().get_nsuri(), Some(String::from("urn:test")));
                 let mut it2 = c.child_iter();
                 match it2.next() {
                     Some(d) => {
