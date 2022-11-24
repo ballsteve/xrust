@@ -202,9 +202,9 @@ impl<N: Node> Evaluator<N> {
         im: Option<usize>,
         rd: &N,
     ) -> Result<Vec<Constructor<N>>, Error> {
-	eprintln!("find_match for {:?}", i);
+        eprintln!("find_match for {:?}", i);
         let mut r: Vec<&Template<N>> = vec![];
-	eprintln!("searching {} templates", self.templates.len());
+        eprintln!("searching {} templates", self.templates.len());
         let mut it = self.templates.iter();
         loop {
             match it.next() {
@@ -223,11 +223,11 @@ impl<N: Node> Evaluator<N> {
             .reduce(|a, b| if a.priority < b.priority { b } else { a });
 
         if s.is_some() {
-	    eprintln!("found template");
+            eprintln!("found template");
             Ok(s.unwrap().body.clone())
         } else {
             // Try builtin templates
-	    eprintln!("trying built-in templates");
+            eprintln!("trying built-in templates");
             let mut w: Vec<&Template<N>> = vec![];
             let mut builtins = self.builtin_templates.iter();
             loop {

@@ -321,11 +321,11 @@ impl<N: Node> fmt::Debug for Item<N> {
         match self {
             Item::Node(n) => {
                 write!(
-		    f,
-		    "node type item (node type {}, name \"{}\")",
-		    n.node_type().to_string(),
-		    n.name().to_string()
-		)
+                    f,
+                    "node type item (node type {}, name \"{}\")",
+                    n.node_type().to_string(),
+                    n.name().to_string()
+                )
             }
             Item::Function => {
                 write!(f, "function type item")

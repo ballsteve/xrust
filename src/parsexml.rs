@@ -117,11 +117,10 @@ fn resolve_namespaces(e: RNode, ns: &mut HashMap<String, String>) -> Result<(), 
             }
         }
     }
-    e.child_iter()
-	.try_for_each(|c| {
-	    resolve_namespaces(c, ns)?;
-	    Ok::<(), Error>(())
-	})?;
+    e.child_iter().try_for_each(|c| {
+        resolve_namespaces(c, ns)?;
+        Ok::<(), Error>(())
+    })?;
     Ok(())
 }
 
@@ -698,14 +697,19 @@ mod tests {
     #[test]
     fn ns_1() {
         let doc = Document::try_from("<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>")
-            .expect("failed to parse XML \"<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>\"");
+            .expect(
+                "failed to parse XML \"<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>\"",
+            );
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
         assert_eq!(doc.content[0].node_type(), NodeType::Element);
         assert_eq!(doc.content[0].name().get_localname(), "Test");
         assert_eq!(doc.content[0].name().get_prefix(), Some(String::from("a")));
-        assert_eq!(doc.content[0].name().get_nsuri(), Some(String::from("urn:test")));
+        assert_eq!(
+            doc.content[0].name().get_nsuri(),
+            Some(String::from("urn:test"))
+        );
         let mut it1 = doc.content[0].child_iter();
         match it1.next() {
             Some(c) => {

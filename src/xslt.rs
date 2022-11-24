@@ -67,8 +67,6 @@ let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
 assert_eq!(seq.to_xml(), "<html><head><title>XSLT in Rust</title></head><body><p>A simple document.</p></body></html>")
 */
 
-use std::convert::TryFrom;
-use url::Url;
 use crate::evaluate::*;
 use crate::item::{Node, NodeType};
 use crate::output::*;
@@ -76,6 +74,8 @@ use crate::qname::*;
 use crate::value::*;
 use crate::xdmerror::*;
 use crate::xpath::*;
+use std::convert::TryFrom;
+use url::Url;
 
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
@@ -87,7 +87,7 @@ pub fn from_document<N: Node>(
     sc: &mut StaticContext<N>,
     b: Option<Url>,
     f: fn(&str) -> Result<N, Error>,
-    g: fn(&Url) -> Result<String, Error>
+    g: fn(&Url) -> Result<String, Error>,
 ) -> Result<Evaluator<N>, Error> {
     let mut ev = Evaluator::new();
     if b.is_some() {
@@ -238,7 +238,7 @@ pub fn from_document<N: Node>(
                     })
                 }
             };
-	    let xml = g(&url)?;
+            let xml = g(&url)?;
             let module = f(xml.as_str().trim())?;
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
@@ -285,7 +285,7 @@ pub fn from_document<N: Node>(
                     })
                 }
             };
-	    let xml = g(&url)?;
+            let xml = g(&url)?;
             let module = f(xml.as_str().trim())?;
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
