@@ -1,8 +1,7 @@
 #[macro_export]
 macro_rules! xslt_tests (
     ( $x:expr , $y:expr ) => {
-	//use xrust::xpath::parse;
-	//use xrust::evaluate::StaticContext;
+	use url::Url;
 	use xrust::xslt::from_document;
 
 	#[test]
@@ -24,6 +23,7 @@ macro_rules! xslt_tests (
 		&mut sc,
 		None,
 		$x,
+		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
 
@@ -60,6 +60,7 @@ macro_rules! xslt_tests (
 		&mut sc,
 		None,
 		$x,
+		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
 
@@ -98,6 +99,7 @@ macro_rules! xslt_tests (
 		&mut sc,
 		None,
 		$x,
+		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
 
@@ -137,6 +139,7 @@ macro_rules! xslt_tests (
 		&mut sc,
 		None,
 		$x,
+		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
 
@@ -153,9 +156,10 @@ macro_rules! xslt_tests (
 
 	    assert_eq!(seq.to_xml(), "onetwothreefour")
 	}
-/*
+
 	#[test]
-	fn include() {
+	#[should_panic]
+	fn xslt_include() {
 	    let mut sc = StaticContext::new_with_xslt_builtins();
 
 	    let src = Rc::new(Item::Node(
@@ -178,6 +182,7 @@ macro_rules! xslt_tests (
 		&mut sc,
 		Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
 		$x,
+		|_| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
 
@@ -194,7 +199,7 @@ macro_rules! xslt_tests (
 
 	    assert_eq!(seq.to_xml(), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
 	}
-
+/*
 	#[test]
 	fn import_1() {
 	    let mut sc = StaticContext::new_with_xslt_builtins();

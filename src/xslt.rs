@@ -4,27 +4,36 @@ Compile an XSLT stylesheet into a Sequence [Constructor].
 
 Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
 
+NB. This module, by default, does not resolve include or import statements. See the xrust-net crate for a helper module to do that.
+
 ```rust
-# use std::rc::Rc;
+use std::rc::Rc;
 use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
-use xrust::item::{Sequence, SequenceTrait, Item};
+use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::evaluate::{Evaluator, StaticContext};
 use xrust::xslt::from_document;
-use xrust::intmuttree::Document;
+use xrust::intmuttree::{Document, RNode, NodeBuilder};
+
+// A little helper function that wraps the toplevel node in a Document
+fn make_from_str(s: &str) -> Result<RNode, Error> {
+    let e = Document::try_from(s).expect("failed to parse XML").content[0].clone();
+    let mut d = NodeBuilder::new(NodeType::Document).build();
+    d.push(e).expect("unable to append node");
+    Ok(d)
+}
 
 // First setup a static context for the evaluator
 let mut sc = StaticContext::new_with_builtins();
 
 // The source document (a tree)
-let src = Document::try_from("<Example><Title>XSLT in Rust</Title><Paragraph>A simple document.</Paragraph></Example>")
-    .expect("unable to parse XML");
-
-// Make an item that contains the source document
-let isrc = Rc::new(Item::Node(src.content[0].clone()));
+let src = Rc::new(Item::Node(
+    make_from_str("<Example><Title>XSLT in Rust</Title><Paragraph>A simple document.</Paragraph></Example>")
+    .expect("unable to parse XML")
+));
 
 // The XSL stylesheet
-let style = Document::try_from("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Example'><html><xsl:apply-templates/></html></xsl:template>
   <xsl:template match='child::Title'><head><title><xsl:apply-templates/></title></head></xsl:template>
   <xsl:template match='child::Paragraph'><body><p><xsl:apply-templates/></p></body></xsl:template>
@@ -36,6 +45,8 @@ let ev = from_document(
     style,
     &mut sc,
     None,
+    make_from_str,
+    |_| Ok(String::new())
 )
     .expect("failed to compile stylesheet");
 
@@ -44,12 +55,12 @@ let rd = NodeBuilder::new(NodeType::Document).build();
 
 // Prime the stylesheet evaluation by finding the template for the document root
 // and making the document root the initial context
-let t = ev.find_match(&isrc, rd, None)
+let t = ev.find_match(&src, None, &rd)
     .expect("unable to find match");
 
 // Let 'er rip!
 // Evaluate the sequence constructor with the source document as the initial context
-let seq = ev.evaluate(Some(vec![Rc::clone(&isrc)]), Some(0), &t, rd)
+let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
     .expect("evaluation failed");
 
 // Serialise the sequence as XML
@@ -57,10 +68,7 @@ assert_eq!(seq.to_xml(), "<html><head><title>XSLT in Rust</title></head><body><p
 */
 
 use std::convert::TryFrom;
-use std::fs;
-use std::path::Path;
 use url::Url;
-//use reqwest::blocking::get;
 use crate::evaluate::*;
 use crate::item::{Node, NodeType};
 use crate::output::*;
@@ -73,12 +81,13 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Node] into an [Evaluator].
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
-/// The argument f is a function that parses a string to a [Node]. This is used for include and import modules.
+/// The argument f is a function that parses a string to a [Node]. The argument g is a function that resolves a URL to a string. These are used for include and import modules.
 pub fn from_document<N: Node>(
     styledoc: N,
     sc: &mut StaticContext<N>,
     b: Option<Url>,
     f: fn(&str) -> Result<N, Error>,
+    g: fn(&Url) -> Result<String, Error>
 ) -> Result<Evaluator<N>, Error> {
     let mut ev = Evaluator::new();
     if b.is_some() {
@@ -229,27 +238,7 @@ pub fn from_document<N: Node>(
                     })
                 }
             };
-            // TODO: make a function to resolve http: vs file: scheme
-            let xml = match url.scheme() {
-                "http" => reqwest::blocking::get(url.to_string())
-                    .map_err(|_| Error {
-                        kind: ErrorKind::Unknown,
-                        message: format!("unable to fetch href URL \"{}\"", url.to_string()),
-                    })?
-                    .text()
-                    .map_err(|_| Error {
-                        kind: ErrorKind::Unknown,
-                        message: "unable to extract module data".to_string(),
-                    })?,
-                "file" => fs::read_to_string(Path::new(url.path()))
-                    .map_err(|er| Error::new(ErrorKind::Unknown, er.to_string()))?,
-                _ => {
-                    return Result::Err(Error::new(
-                        ErrorKind::Unknown,
-                        format!("unable to fetch URL \"{}\"", url.to_string()),
-                    ))
-                }
-            };
+	    let xml = g(&url)?;
             let module = f(xml.as_str().trim())?;
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
@@ -296,27 +285,7 @@ pub fn from_document<N: Node>(
                     })
                 }
             };
-            // TODO: make a function to resolve http: vs file: scheme
-            let xml = match url.scheme() {
-                "http" => reqwest::blocking::get(url.to_string())
-                    .map_err(|_| Error {
-                        kind: ErrorKind::Unknown,
-                        message: format!("unable to fetch href URL \"{}\"", url.to_string()),
-                    })?
-                    .text()
-                    .map_err(|_| Error {
-                        kind: ErrorKind::Unknown,
-                        message: "unable to extract module data".to_string(),
-                    })?,
-                "file" => fs::read_to_string(Path::new(url.path()))
-                    .map_err(|er| Error::new(ErrorKind::Unknown, er.to_string()))?,
-                _ => {
-                    return Result::Err(Error::new(
-                        ErrorKind::Unknown,
-                        format!("unable to fetch URL \"{}\"", url.to_string()),
-                    ))
-                }
-            };
+	    let xml = g(&url)?;
             let module = f(xml.as_str().trim())?;
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
@@ -352,21 +321,14 @@ pub fn from_document<N: Node>(
     // * compile match pattern
     // * compile content into sequence constructor
     // * register template in dynamic context
-    eprintln!("defining templates");
     stylenode
         .child_iter()
-	.inspect(|c| eprintln!("checking {} node \"{}\"^\"{}\"",
-			       c.node_type().to_string(),
-			       c.name().get_nsuri().map_or("--no nsuri--".to_string(), |u| u),
-			       c.name().get_localname()
-	))
         .filter(|c| {
             c.is_element()
                 && c.name().get_nsuri_ref() == Some(XSLTNS)
                 && c.name().get_localname() == "template"
         })
         .try_for_each(|c| {
-	    eprintln!("found one");
             let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
             let n = m.clone().to_string();
             let a = parse(&n).expect("failed to parse match expression");

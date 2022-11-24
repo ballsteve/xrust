@@ -30,9 +30,9 @@ nom = "7.1.1"
 unicode-segmentation = "1.7.1"
 chrono = "0.4"
 url = "2.2.2"
-reqwest = { version = "0.11", features = ["blocking"] }
-tokio = { version = "1", features = ["full"] }
 generational-arena = "0.2"
+#reqwest = { version = "0.11", features = ["blocking"] }
+#tokio = { version = "1", features = ["full"] }
 
 [dev-dependencies]
 criterion = "0.3"
