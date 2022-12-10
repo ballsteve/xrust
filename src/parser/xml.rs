@@ -9,15 +9,12 @@
 
 //extern crate nom;
 
-use std::borrow::Borrow;
 use crate::parser::common::{
     is_char, is_namechar, is_pubid_char, is_pubid_charwithapos, name, ncname,
 };
 use crate::qname::*;
-use std::collections::{HashMap, HashSet};
-use std::rc::Rc;
+use std::collections::HashSet;
 use std::str::FromStr;
-//use crate::parsecommon::*;
 use crate::xdmerror::*;
 
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt6, alt7};
@@ -26,7 +23,6 @@ use crate::parser::combinators::expander::{genentityexpander, paramentityexpande
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::many::many1;
 use crate::parser::combinators::map::map;
-use crate::parser::combinators::none_of::none_of;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_while, take_while_m_n};
@@ -636,11 +632,11 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
         //Check if the xml:space attribute is present and if so, does it have
         //"Preserved" or "Default" as its value
         for a in attrs.clone() {
-            if a.name().get_prefix() == Some("xml".to_string()) && a.name().get_localname() == "space".to_string(){
-                if !(a.to_string() == "Default" || a.to_string() == "Preserve") {
+            if a.name().get_prefix() == Some("xml".to_string()) &&
+                a.name().get_localname() == *"space" &&
+                !(a.to_string() == "Default" || a.to_string() == "Preserve") {
                     return false
                 }
-            }
             /*
             match a.name(){
                 QualifiedName {nsuri, prefix, localname } => {
@@ -740,7 +736,7 @@ fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                         .build(),
                 );
             }
-            if v.len() != 0 {
+            if !v.is_empty() {
                 for (w, d) in v {
                     new.push(w);
                     if d.is_some() {
@@ -781,14 +777,14 @@ fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
             |(_, n, vt, _, _)| match vt {
                 None => {
                     NodeBuilder::new(NodeType::ProcessingInstruction)
-                        .pi_name(String::from(n))
+                        .pi_name(n)
                         .value(Value::String("".to_string()))
                         .build()
                 },
                 Some((_, v)) => {
                     NodeBuilder::new(NodeType::ProcessingInstruction)
-                        .pi_name(String::from(n))
-                        .value(Value::String(v.to_string()))
+                        .pi_name(n)
+                        .value(Value::String(v))
                         .build()
                 }
             },
@@ -798,7 +794,7 @@ fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                 if v.to_string().contains(|c: char| !is_char(&c)){
                     false
                 } else {
-                    v.name().get_localname() != "xml".to_string()
+                    v.name().get_localname() != *"xml"
                     /*
                     match v.name(){
                         QualifiedName {nsuri, prefix, localname} => {
@@ -903,26 +899,4 @@ fn parse_decimal() -> impl Fn(ParseInput) -> ParseResult<u32> {
 
 fn chardata_literal() -> impl Fn(ParseInput) -> ParseResult<String> {
     validate(take_while(|c| c != '<' && c != '&'), |s| !s.contains("]]>"))
-    /*
-    map(
-        validate(many1(none_of("<&")), |v: &Vec<char>| {
-            // chardata cannot contain ]]>
-            let mut w = v.clone();
-
-            let cd_end = &[']', ']', '>'][..];
-
-            while !w.is_empty() {
-                if w.ends_with(cd_end) {
-                    return false;
-                }
-                if !is_char(w.last().unwrap()) {
-                    return false;
-                }
-                w.pop();
-            }
-            true
-        }),
-        |c| c.into_iter().collect::<String>(),
-    )
-     */
 }

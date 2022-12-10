@@ -1,5 +1,3 @@
-use crate::parser::Parserinput;
-
 pub(crate) mod alt;
 pub(crate) mod delimited;
 pub(crate) mod many;

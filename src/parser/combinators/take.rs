@@ -1,5 +1,4 @@
 use crate::parser::{ParseInput, ParseResult};
-use crate::parser::Parserinput;
 
 pub(crate) fn take_until(s: &'static str) -> impl Fn(ParseInput) -> ParseResult<String> {
     move |(input, index)| {
