@@ -389,7 +389,7 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |input| match tuple9(
+    move |input| match validate(tuple9(
         tag("<!ENTITY"),
         whitespace1(),
         tag("%"),
@@ -402,7 +402,7 @@ fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         ),
         whitespace0(),
         tag(">"),
-    )(input)
+    ),|(_,_,_,_,_,_,s,_,_)| !s.contains(|c:char| !is_char(&c)))(input)
     {
         Ok((mut d, i, (_, _, _, _, n, _, s, _, _))) => {
             d.dtd
@@ -415,7 +415,7 @@ fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 }
 
 fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |input| match tuple7(
+    move |input| match validate(tuple7(
         tag("<!ENTITY"),
         whitespace1(),
         qualname(),
@@ -426,7 +426,7 @@ fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         ),
         whitespace0(),
         tag(">"),
-    )(input)
+    ),|(_,_,_,_,s,_,_)| !s.contains(|c:char| !is_char(&c)))(input)
     {
         Ok((mut d, i, (_, _, n, _, s, _, _))) => {
             d.dtd
@@ -845,14 +845,14 @@ fn misc() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
 
 // CharData ::= [^<&]* - (']]>')
 fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
-    map(
+    validate(map(
         many1(alt3(
             chardata_cdata(),
             chardata_escapes(),
             chardata_literal(),
         )),
         |v| v.concat(),
-    )
+    ),|s|!s.contains(|c:char| !is_char(&c)))
 }
 
 fn chardata_cdata() -> impl Fn(ParseInput) -> ParseResult<String> {
@@ -898,5 +898,7 @@ fn parse_decimal() -> impl Fn(ParseInput) -> ParseResult<u32> {
 }
 
 fn chardata_literal() -> impl Fn(ParseInput) -> ParseResult<String> {
-    validate(take_while(|c| c != '<' && c != '&'), |s| !s.contains("]]>"))
+    validate(take_while(|c| c != '<' && c != '&'),
+             |s| !s.contains("]]>") && !s.contains(|c:char| !is_char(&c))
+    )
 }

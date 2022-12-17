@@ -50,7 +50,7 @@ impl Parserinput<'_> {
 
 impl<'a> Iterator for Parserinput<'a> {
     type Item = char;
-    fn next(&mut self) -> Option<char> {
+    fn next(&mut self) -> Option<Self::Item> {
         match &self.entityfeed.pop() {
             Some(c) => Some(*c),
             None => {

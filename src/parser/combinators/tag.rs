@@ -12,7 +12,7 @@ pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_
                         cnt += 1
                     } else {
                         return Err(index);
-                    }
+                }
                 }
             }
         }
