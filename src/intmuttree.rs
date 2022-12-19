@@ -4,7 +4,7 @@
 
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
-use crate::parsexml::content;
+//use crate::parsexml::content;
 use crate::qname::*;
 use crate::value::Value;
 use crate::xdmerror::*;
@@ -12,6 +12,7 @@ use std::cell::RefCell;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
+use crate::parser;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -47,6 +48,7 @@ impl Document {
             .for_each(|c| result.push_str(c.to_xml().as_str()));
         result
     }
+    /*
     /// Expand the general entities in the document content.
     pub fn expand(&self) -> Result<(), Error> {
         let mut ent: HashMap<QualifiedName, Vec<RNode>> = HashMap::new();
@@ -82,7 +84,23 @@ impl Document {
 
         Ok(())
     }
+
+     */
 }
+
+impl TryFrom<&str> for Document {
+    type Error = Error;
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Document::try_from(s.to_string())
+    }
+}
+impl TryFrom<String> for Document {
+    type Error = Error;
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        parser::xml::parse(s)
+    }
+}
+
 
 impl PartialEq for Document {
     fn eq(&self, other: &Document) -> bool {
@@ -168,7 +186,7 @@ pub struct Node {
     name: RefCell<Option<QualifiedName>>,
     value: Option<Value>,
     pi_name: Option<String>,
-    dtd: Option<DTDDecl>,
+    dtd: Option<DTD>,
     reference: Option<QualifiedName>,
 }
 
@@ -592,7 +610,7 @@ impl NodeBuilder {
         self.0.pi_name = Some(pi);
         self
     }
-    pub fn dtd(mut self, d: DTDDecl) -> Self {
+    pub fn dtd(mut self, d: DTD) -> Self {
         self.0.dtd = Some(d);
         self
     }
@@ -607,9 +625,9 @@ impl NodeBuilder {
 
 #[derive(Clone, PartialEq)]
 pub struct XMLDecl {
-    version: String,
-    encoding: Option<String>,
-    standalone: Option<String>,
+    pub(crate) version: String,
+    pub(crate) encoding: Option<String>,
+    pub(crate) standalone: Option<String>,
 }
 
 impl XMLDecl {
@@ -685,9 +703,48 @@ impl XMLDeclBuilder {
 /// DTD declarations.
 /// Only general entities are supported, so far.
 /// TODO: element, attribute declarations
-#[derive(Clone, PartialEq)]
+
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DTD {
+    pub(crate) elements: HashMap<String, DTDDecl>,
+    pub(crate) attlists: HashMap<String, DTDDecl>,
+    pub(crate) notations: HashMap<String, DTDDecl>,
+    pub(crate) generalentities: HashMap<String, DTDDecl>,
+    pub(crate) paramentities: HashMap<String, DTDDecl>,
+    publicid: Option<String>,
+    systemid: Option<String>,
+    name: Option<String>,
+}
+
+impl DTD {
+    pub fn new() -> DTD {
+        DTD {
+            elements: Default::default(),
+            attlists: Default::default(),
+            notations: Default::default(),
+            generalentities: Default::default(),
+            paramentities: Default::default(),
+            publicid: None,
+            systemid: None,
+            name: None,
+        }
+    }
+}
+
+impl Default for DTD {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DTDDecl {
+    Element(QualifiedName, String),
+    Attlist(QualifiedName, String),
+    Notation(QualifiedName, String),
     GeneralEntity(QualifiedName, String),
+    ParamEntity(QualifiedName, String),
 }
 
 #[cfg(test)]

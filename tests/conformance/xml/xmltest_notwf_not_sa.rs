@@ -9,7 +9,7 @@ James Clark XMLTEST cases - Standalone
 
 use std::convert::TryFrom;
 use std::fs;
-use xrust::parsexml;
+use xrust::Document;
 
 #[test]
 fn notwfnotsa001() {
@@ -20,7 +20,7 @@ fn notwfnotsa001() {
         Description:Conditional sections must be properly terminated ("]>" used instead of "]]>").
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/001.xml").unwrap(),
     );
 
@@ -36,7 +36,7 @@ fn notwfnotsa002() {
         Description:Processing instruction target names may not be "XML" in any combination of cases.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/002.xml").unwrap(),
     );
 
@@ -52,7 +52,7 @@ fn notwfnotsa003() {
         Description:Conditional sections must be properly terminated ("]]>" omitted).
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/003.xml").unwrap(),
     );
 
@@ -68,7 +68,7 @@ fn notwfnotsa004() {
         Description:Conditional sections must be properly terminated ("]]>" omitted).
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/004.xml").unwrap(),
     );
 
@@ -84,7 +84,7 @@ fn notwfnotsa005() {
         Description:Tests the Entity Declared VC by referring to an undefined parameter entity within an external entity.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/005.xml").unwrap(),
     );
 
@@ -100,7 +100,7 @@ fn notwfnotsa006() {
         Description:Conditional sections need a '[' after the INCLUDE or IGNORE.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/006.xml").unwrap(),
     );
 
@@ -116,7 +116,7 @@ fn notwfnotsa007() {
         Description:A <!DOCTYPE ...> declaration may not begin any external entity; it's only found once, in the document entity.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/007.xml").unwrap(),
     );
 
@@ -132,7 +132,7 @@ fn notwfnotsa008() {
         Description:In DTDs, the '%' character must be part of a parameter entity reference.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/008.xml").unwrap(),
     );
 
@@ -148,7 +148,7 @@ fn notwfnotsa009() {
         Description:This test violates WFC:PE Between Declarations in Production 28a. The last character of a markup declaration is not contained in the same parameter-entity text replacement.
     */
 
-    let testxml = parsexml::XMLDocument::try_from(
+    let testxml = Document::try_from(
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/009.xml").unwrap(),
     );
 

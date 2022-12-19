@@ -54,7 +54,7 @@ pub use item::{Item, Node, Sequence, SequenceTrait};
 
 mod parsecommon;
 
-pub mod parsexml;
+//pub mod parsexml;
 
 pub mod xpath;
 pub use xpath::parse;
@@ -68,5 +68,7 @@ pub mod xslt;
 //pub use xslt::from_document;
 
 pub mod intmuttree;
+pub use intmuttree::Document;
 
 pub mod testutils;
+mod parser;
