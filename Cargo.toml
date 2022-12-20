@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "0.7.0"
+version = "0.8.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"
@@ -31,8 +31,6 @@ unicode-segmentation = "1.7.1"
 chrono = "0.4"
 url = "2.2.2"
 generational-arena = "0.2"
-#reqwest = { version = "0.11", features = ["blocking"] }
-#tokio = { version = "1", features = ["full"] }
 
 [dev-dependencies]
 criterion = "0.3"

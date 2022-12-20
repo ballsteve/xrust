@@ -411,7 +411,7 @@ pub trait Node: Clone {
     fn push(&mut self, n: Self) -> Result<(), Error>;
     /// Remove a node from the tree
     fn pop(&mut self) -> Result<(), Error>;
-    /// Insert a node in the child list before the given node.
+    /// Insert a node in the child list before the given node. The node will be detached from it's current position prior to insertion.
     fn insert_before(&mut self, n: Self) -> Result<(), Error>;
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;

@@ -207,6 +207,7 @@ pub fn from_document<N: Node>(
             ev.set_output_definition(od);
         });
 
+    eprintln!("doing includes");
     // Iterate over children, looking for includes
     // * resolve href
     // * fetch document
@@ -238,12 +239,14 @@ pub fn from_document<N: Node>(
                     })
                 }
             };
+            eprintln!("got URL, about to fetch data");
             let xml = g(&url)?;
+            eprintln!("got data, about to parse");
             let module = f(xml.as_str().trim())?;
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
             // inserting before the xsl:include node
-            // TODO: Don't Panic
+            eprintln!("inserting elements");
             let moddoc = module.first_child().unwrap();
             moddoc.child_iter().try_for_each(|mc| {
                 c.insert_before(mc)?;
@@ -251,9 +254,11 @@ pub fn from_document<N: Node>(
             })?;
             // Remove the xsl:include element node
             c.pop()?;
+            eprintln!("done");
             Ok(())
         })?;
 
+    eprintln!("doing imports");
     // Iterate over children, looking for imports
     // * resolve href
     // * fetch document
@@ -317,6 +322,7 @@ pub fn from_document<N: Node>(
             Ok::<(), Error>(())
         })?;
 
+    eprintln!("doing templates");
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
@@ -403,6 +409,7 @@ pub fn from_document<N: Node>(
             Ok::<(), Error>(())
         })?;
 
+    eprintln!("done");
     Ok(ev)
 }
 
@@ -727,6 +734,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
         }
         _ => {
             // TODO: literal elements, etc, pretty much everything in the XSLT spec
+            println!("found a strange element");
             Ok(Constructor::NotImplemented(
                 "other template content".to_string(),
             ))

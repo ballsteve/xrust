@@ -345,30 +345,13 @@ impl ItemNode for RNode {
     /// Remove a node from the tree. If the node is unattached (i.e. does not have a parent), then this has no effect.
     fn pop(&mut self) -> Result<(), Error> {
         // Find this node in the parent's node list
-        match &*self.parent.borrow() {
-            None => Ok(()),
-            Some(p) => {
-                match Weak::upgrade(&p) {
-                    None => Ok(()),
-                    Some(q) => {
-                        let idx =
-                            q.children
-                                .borrow()
-                                .iter()
-                                .enumerate()
-                                .fold(None, |mut acc, (i, v)| {
-                                    if Rc::ptr_eq(self, v) {
-                                        acc = Some(i);
-                                        // TODO: stop here
-                                    }
-                                    acc
-                                });
-                        q.children.borrow_mut().remove(idx.unwrap());
-                        Ok(())
-                    }
-                }
-            }
-        }
+        let parent = self.parent().ok_or(Error::new(
+            ErrorKind::Unknown,
+            String::from("unable to insert before: node is an orphan"),
+        ))?;
+        let idx = find_index(&parent, self)?;
+        parent.children.borrow_mut().remove(idx);
+        Ok(())
     }
     /// Add an attribute to this element-type node
     fn add_attribute(&self, att: Self) -> Result<(), Error> {
@@ -387,12 +370,21 @@ impl ItemNode for RNode {
         self.attributes.borrow_mut().insert(att.name(), att.clone());
         Ok(())
     }
-    /// Remove this node from the tree.
-    fn insert_before(&mut self, _n: Self) -> Result<(), Error> {
-        Result::Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not yet implemented"),
-        ))
+    /// Insert a node into the child list immediately before this node.
+    fn insert_before(&mut self, mut insert: Self) -> Result<(), Error> {
+        // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
+        _ = insert.pop();
+        // Get the parent of this node. It is an error if there is no parent.
+        let parent = self.parent().ok_or(Error::new(
+            ErrorKind::Unknown,
+            String::from("unable to insert before: node is an orphan"),
+        ))?;
+        // Find the child node's index in the parent's child list
+        let idx = find_index(&parent, self)?;
+        // Insert the node at position of self, shifting insert right
+        parent.children.borrow_mut().insert(idx, insert);
+        // All done
+        Ok(())
     }
 
     /// Deep copy the node. Returned node is unattached.
@@ -414,6 +406,29 @@ impl ItemNode for RNode {
 
         Ok(result)
     }
+}
+
+// Find the position of this node in the parent's child list.
+fn find_index(p: &RNode, c: &RNode) -> Result<usize, Error> {
+    let idx = p
+        .children
+        .borrow()
+        .iter()
+        .enumerate()
+        .fold(None, |mut acc, (i, v)| {
+            if Rc::ptr_eq(c, v) {
+                acc = Some(i);
+                // TODO: stop here
+            }
+            acc
+        });
+    idx.map_or(
+        Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("unable to find child"),
+        )),
+        |i| Ok(i),
+    )
 }
 
 pub struct Children {
