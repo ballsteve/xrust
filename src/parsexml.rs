@@ -57,7 +57,7 @@ impl TryFrom<&str> for Document {
                 }
             }
             Err(nom::Err::Error(c)) => Result::Err(Error {
-                kind: ErrorKind::Unknown,
+                kind: ErrorXMLNodeKind::Unknown,
                 message: format!("parser error: {:?}", c),
             }),
             Err(nom::Err::Incomplete(_)) => Result::Err(Error {
@@ -314,7 +314,7 @@ fn taggedelem(input: &str) -> IResult<&str, RNode> {
     )(input)
 }
 
-// EmptyElemTag ::= '<' Name (Attribute)* '/>'
+// EmptyElemTag ::= '<' Name (Attrprologibute)* '/>'
 fn emptyelem(input: &str) -> IResult<&str, RNode> {
     map(
         tuple((
@@ -333,24 +333,6 @@ fn emptyelem(input: &str) -> IResult<&str, RNode> {
     )(input)
 }
 
-fn attributes(input: &str) -> IResult<&str, Vec<RNode>> {
-    //this is just a wrapper around the attribute function, that checks for duplicates.
-    verify(many0(attribute), |v: &[RNode]| {
-        let attrs = v.clone();
-        let uniqueattrs: HashSet<_> = attrs
-            .iter()
-            .map(|xmlnode| match xmlnode.node_type() {
-                NodeType::Attribute => xmlnode.name().to_string(),
-                _ => "".to_string(),
-            })
-            .collect();
-        if &v.len() == &uniqueattrs.len() {
-            true
-        } else {
-            false
-        }
-    })(input)
-}
 
 // Attribute ::= Name '=' AttValue
 fn attribute(input: &str) -> IResult<&str, RNode> {
@@ -488,34 +470,7 @@ fn charref_hex(input: &str) -> IResult<&str, RNode> {
     )(input)
 }
 
-// PI ::= '<?' PITarget (char* - '?>') '?>'
-fn processing_instruction(input: &str) -> IResult<&str, RNode> {
-    map(
-        delimited(
-            tag("<?"),
-            tuple((multispace0, name, multispace0, take_until("?>"))),
-            tag("?>"),
-        ),
-        |(_, n, _, v)| {
-            NodeBuilder::new(NodeType::ProcessingInstruction)
-                .pi_name(String::from(n))
-                .value(Value::String(v.to_string()))
-                .build()
-        },
-    )(input)
-}
 
-// Comment ::= '<!--' (char* - '--') '-->'
-fn comment(input: &str) -> IResult<&str, RNode> {
-    map(
-        delimited(tag("<!--"), take_until("--"), tag("-->")),
-        |v: &str| {
-            NodeBuilder::new(NodeType::Comment)
-                .value(Value::String(v.to_string()))
-                .build()
-        },
-    )(input)
-}
 
 // Misc ::= Comment | PI | S
 fn misc(input: &str) -> IResult<&str, Vec<RNode>> {
