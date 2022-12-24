@@ -38,8 +38,7 @@ use crate::parser::combinators::tuple::tuple9;
 use crate::parser::combinators::validate::validate;
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::Parserinput;
+use crate::parser::{ParseInput, ParseError, ParseResult};
 
 use crate::intmuttree::{
     DTDDecl, Document, DocumentBuilder, NodeBuilder, RNode, XMLDecl, XMLDeclBuilder,
@@ -58,17 +57,17 @@ use crate::value::Value;
 pub type XMLDocument = Document;
 
 pub fn parse(e: String) -> Result<XMLDocument, Error> {
-    let input = Parserinput::new(e.as_str());
+    let input = ParseInput::new(e.as_str());
     match document(input) {
-        Ok((_, _, xmldoc)) => Result::Ok(xmldoc),
-        Err(u) => Result::Err(Error {
-            kind: ErrorKind::Unknown,
-            message: format!("unrecoverable parser error at {}", u),
+        Ok((_, xmldoc)) => Result::Ok(xmldoc),
+        Err(err) => Result::Err(Error {
+            kind: ErrorKind::ParseError,
+            message: "Unrecoverable parser error.".to_string(),
         }),
     }
 }
 
-fn document(input: Parserinput) -> ParseResult<XMLDocument> {
+fn document(input: ParseInput) -> ParseResult<XMLDocument> {
     //TODO ADD CONFIG AND DTD
     map(tuple3(opt(prolog()), element(), opt(misc())),
         |(p, e, m)| {
@@ -81,7 +80,7 @@ fn document(input: Parserinput) -> ParseResult<XMLDocument> {
             .build();
         pr.0.map(|x| a.set_xmldecl(x));
         a
-    })((input,0))
+    })(input)
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
@@ -156,7 +155,7 @@ fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     )(input)
     {
-        Ok((d, i, (_, _, _n, _, _e, _, _inss, _))) => Ok((d, i, ())),
+        Ok((d, (_, _, _n, _, _e, _, _inss, _))) => Ok((d, ())),
         Err(err) => Err(err),
     }
 }
@@ -220,9 +219,9 @@ fn elementdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     )(input)
     {
-        Ok((mut d, i, (_, _, n, _, s, _, _))) => {
+        Ok((mut d, (_, _, n, _, s, _, _))) => {
             d.dtd.elements.insert(n.to_string(), DTDDecl::Element(n, s));
-            Ok((d, i, ()))
+            Ok((d, ()))
         }
         Err(err) => Err(err),
     }
@@ -247,11 +246,11 @@ fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     )(input)
     {
-        Ok((mut d, i, (_, _, n, _, _, _))) => {
+        Ok((mut d,(_, _, n, _, _, _))) => {
             d.dtd
                 .attlists
                 .insert(n.to_string(), DTDDecl::Attlist(n, "".to_string()));
-            Ok((d, i, ()))
+            Ok((d, ()))
         }
         Err(err) => Err(err),
     }
@@ -404,11 +403,11 @@ fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     ),|(_,_,_,_,_,_,s,_,_)| !s.contains(|c:char| !is_char(&c)))(input)
     {
-        Ok((mut d, i, (_, _, _, _, n, _, s, _, _))) => {
+        Ok((mut d, (_, _, _, _, n, _, s, _, _))) => {
             d.dtd
                 .paramentities
                 .insert(n.to_string(), DTDDecl::ParamEntity(n, s));
-            Ok((d, i, ()))
+            Ok((d, ()))
         }
         Err(err) => Err(err),
     }
@@ -428,11 +427,11 @@ fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     ),|(_,_,_,_,s,_,_)| !s.contains(|c:char| !is_char(&c)))(input)
     {
-        Ok((mut d, i, (_, _, n, _, s, _, _))) => {
+        Ok((mut d, (_, _, n, _, s, _, _))) => {
             d.dtd
                 .generalentities
                 .insert(n.to_string(), DTDDecl::GeneralEntity(n, s));
-            Ok((d, i, ()))
+            Ok((d, ()))
         }
         Err(err) => Err(err),
     }
@@ -448,11 +447,11 @@ fn ndatadecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     )(input)
     {
-        Ok((mut d, i, (_, _, n, _, s, _, _))) => {
+        Ok((mut d, (_, _, n, _, s, _, _))) => {
             d.dtd
                 .notations
                 .insert(n.to_string(), DTDDecl::Notation(n, s));
-            Ok((d, i, ()))
+            Ok((d, ()))
         }
         Err(err) => Err(err),
     }
@@ -860,15 +859,15 @@ fn chardata_cdata() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 fn chardata_escapes() -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |(input, index)| match chardata_unicode_codepoint()((input.clone(), index)) {
-        Ok((inp, ind, s)) => Ok((inp, ind, s)),
-        Err(e) => match delimited(tag("&"), take_until(";"), tag(";"))((input, index)) {
-            Ok((inp, ind, rstr)) => match rstr.as_str() {
-                "gt" => Ok((inp, ind, ">".to_string())),
-                "lt" => Ok((inp, ind, "<".to_string())),
-                "amp" => Ok((inp, ind, "&".to_string())),
-                "quot" => Ok((inp, ind, "\"".to_string())),
-                "apos" => Ok((inp, ind, "\'".to_string())),
+    move |input| match chardata_unicode_codepoint()(input.clone()) {
+        Ok((inp, s)) => Ok((inp, s)),
+        Err(e) => match delimited(tag("&"), take_until(";"), tag(";"))(input) {
+            Ok((inp, rstr)) => match rstr.as_str() {
+                "gt" => Ok((inp, ">".to_string())),
+                "lt" => Ok((inp, "<".to_string())),
+                "amp" => Ok((inp, "&".to_string())),
+                "quot" => Ok((inp, "\"".to_string())),
+                "apos" => Ok((inp, "\'".to_string())),
                 _ => Err(e),
             },
             Err(e) => Err(e),

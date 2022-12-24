@@ -1,16 +1,16 @@
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseError, ParseResult};
 
 pub(crate) fn validate<P, F, A>(parser: P, validate_fn: F) -> impl Fn(ParseInput) -> ParseResult<A>
 where
     P: Fn(ParseInput) -> ParseResult<A>,
     F: Fn(&A) -> bool,
 {
-    move |(input, index)| match parser((input, index)) {
-        Ok((input2, next_index, result)) => {
+    move |input| match parser(input) {
+        Ok((input2, result)) => {
             if validate_fn(&result) {
-                Ok((input2, next_index, result))
+                Ok((input2, result))
             } else {
-                Err(index)
+                Err(ParseError::Validation{col: input2.currentcol, row: input2.currentrow})
             }
         }
         Err(err) => Err(err),

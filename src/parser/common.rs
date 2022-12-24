@@ -9,7 +9,6 @@ use crate::parser::{ParseInput, ParseResult};
 // NameStartChar ::= ':' | [A-Z] | '_' | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 // NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
 pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
-    //move |input, index|
     map(
         tuple2(
             take_while_m_n(1, 1, |c| is_ncnamestartchar(&c)),
@@ -17,11 +16,9 @@ pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
         ),
         |(a, b)| [a, b.unwrap_or_default()].concat(),
     )
-    //(input, index)
 }
 
 pub(crate) fn name() -> impl Fn(ParseInput) -> ParseResult<String> {
-    //move |input, index|
     map(
         tuple2(
             take_while_m_n(1, 1, |c| is_namestartchar(&c)),
@@ -32,7 +29,6 @@ pub(crate) fn name() -> impl Fn(ParseInput) -> ParseResult<String> {
             Some(nc) => [nsc, nc].concat(),
         },
     )
-    //(input, index)
 }
 
 pub(crate) fn is_namechar(ch: &char) -> bool {

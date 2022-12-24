@@ -1,14 +1,14 @@
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseError, ParseResult};
 
 pub(crate) fn none_of(chars: &str) -> impl Fn(ParseInput) -> ParseResult<char> + '_ {
-    move |(mut input, index)| match input.next() {
+    move |mut input| match input.next() {
         Some(next) => {
             if chars.contains(next) {
-                Err(index)
+                Err(ParseError::Combinator)
             } else {
-                Ok((input, index + 1, next))
+                Ok((input,  next))
             }
         }
-        _ => Err(index),
+        None => Err(ParseError::Combinator),
     }
 }
