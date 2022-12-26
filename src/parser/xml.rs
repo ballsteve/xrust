@@ -636,19 +636,15 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 !(a.to_string() == "Default" || a.to_string() == "Preserve") {
                     return false
                 }
-            /*
-            match a.name(){
-                QualifiedName {nsuri, prefix, localname } => {
-                    if prefix == Some("xml".to_string()) && localname == "space".to_string() {
-                        if !(a.to_string() == "Default" || a.to_string() == "Preserve") {
-                            return false
-                        }
-                    }
-                }
-            }
-             */
         }
-
+        //filter namespace declarations
+        let attrsnons: Vec<RNode> = v.clone()
+            .into_iter()
+            .filter(|a|
+                a.name().get_prefix()!=Some("xmlns".to_string())
+                &&
+                a.name().get_localname()!="xmlns".to_string()
+            ).collect();
         //Check if duplicates
         let uniqueattrs: HashSet<_> = attrs
             .iter()
@@ -657,7 +653,7 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 _ => "".to_string(),
             })
             .collect();
-        v.len() == uniqueattrs.len()
+        attrsnons.len() == uniqueattrs.len()
     })
 }
 // Attribute ::= Name '=' AttValue
