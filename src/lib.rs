@@ -70,3 +70,5 @@ pub mod xslt;
 pub mod intmuttree;
 
 pub mod testutils;
+
+pub mod transcomb;
