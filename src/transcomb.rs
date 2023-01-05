@@ -47,16 +47,19 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
     }
 }
 
+/// Creates a singleton sequence with the given value
 pub(crate) fn literal<N: Node>(val: Rc<Item<N>>) -> impl Fn(Context<N>) -> TransResult<N>
 {
     move |ctxt| Ok((ctxt, vec![val.clone()]))
 }
 
+/// Creates a singleton sequence with the context item as its value
 pub(crate) fn context<N: Node>() -> impl Fn(Context<N>) -> TransResult<N>
 {
     move |ctxt| Ok((ctxt.clone(), vec![ctxt.seq[ctxt.i].clone()]))
 }
 
+/// Creates a sequence. Each function in the supplied vector creates an item in the sequence. The original context is passed to each function.
 pub(crate) fn sequence<F, N: Node>(items: Vec<F>) -> impl Fn(Context<N>) -> TransResult<N>
 where
     F: Fn(Context<N>) -> TransResult<N>
@@ -67,9 +70,35 @@ where
 		vec![],
 		|mut acc, f| {
 		    match f(ctxt.clone()) {
-			Ok((ctxt1, mut s)) => {
+			Ok((_, mut s)) => {
 			    acc.append(&mut s);
 			    Ok(acc)
+			}
+			Err(err) => Err(err),
+		    }
+		}
+	    ) {
+		Ok(r) => Ok((ctxt.clone(), r)),
+		Err(err) => Err(err)
+	    }
+    }
+}
+
+/// Each function in the supplied vector is evaluated. The sequence returned by a function is used as the context for the next function.
+pub(crate) fn compose<F, N: Node>(steps: Vec<F>) -> impl Fn(Context<N>) -> TransResult<N>
+where
+    F: Fn(Context<N>) -> TransResult<N>
+{
+    move |ctxt| {
+	let mut new_context = ctxt.clone();
+	match steps.iter()
+	    .try_fold(
+		vec![],
+		|_, f| {
+		    match f(new_context.clone()) {
+			Ok((_, s)) => {
+			    new_context = Context::from(s.clone());
+			    Ok(s)
 			}
 			Err(err) => Err(err),
 		    }
@@ -88,7 +117,7 @@ mod tests {
     #[test]
     fn singleton_literal() {
 	let ev = literal(Rc::new(Item::<RNode>::Value(Value::from("this is a test"))));
-	let (d, seq) = ev(Context::new()).expect("evaluation failed");
+	let (_, seq) = ev(Context::new()).expect("evaluation failed");
 	assert_eq!(seq.to_string(), "this is a test")
     }
 
@@ -101,7 +130,7 @@ mod tests {
 		literal(Rc::new(Item::<RNode>::Value(Value::from("end of test")))),
 	    ]
 	);
-	let (d, seq) = ev(Context::new()).expect("evaluation failed");
+	let (_, seq) = ev(Context::new()).expect("evaluation failed");
 	assert_eq!(seq.len(), 3);
 	assert_eq!(seq.to_string(), "this is a test1end of test")
     }
@@ -124,7 +153,7 @@ mod tests {
 		),
 	    ]
 	);
-	let (d, seq) = ev(Context::new()).expect("evaluation failed");
+	let (_, seq) = ev(Context::new()).expect("evaluation failed");
 	assert_eq!(seq.len(), 4);
 	assert_eq!(seq.to_string(), "first sequence1second sequence2")
     }
@@ -133,7 +162,7 @@ mod tests {
     fn context_item() {
 	let ev = context();
 	let c = Context::from(vec![Rc::new(Item::<RNode>::Value(Value::from("the context item")))]);
-	let (d, seq) = ev(c).expect("evaluation failed");
+	let (_, seq) = ev(c).expect("evaluation failed");
 	assert_eq!(seq.len(), 1);
 	assert_eq!(seq.to_string(), "the context item")
     }
@@ -144,8 +173,21 @@ mod tests {
 	    vec![context(), context()]
 	);
 	let c = Context::from(vec![Rc::new(Item::<RNode>::Value(Value::from("the context item")))]);
-	let (d, seq) = ev(c).expect("evaluation failed");
+	let (_, seq) = ev(c).expect("evaluation failed");
 	assert_eq!(seq.len(), 2);
 	assert_eq!(seq.to_string(), "the context itemthe context item")
+    }
+
+    #[test]
+    fn path_of_lits() {
+	let ev = compose(
+	    vec![
+		literal(Rc::new(Item::<RNode>::Value(Value::from("step 1")))),
+		literal(Rc::new(Item::<RNode>::Value(Value::from("step 2"))))
+	    ]
+	);
+	let (_, seq) = ev(Context::new()).expect("evaluation failed");
+	assert_eq!(seq.len(), 1);
+	assert_eq!(seq.to_string(), "step 2")
     }
 }
