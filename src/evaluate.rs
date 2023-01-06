@@ -1686,7 +1686,7 @@ pub enum Grouping<N: Node> {
 
 // Apply the node test to a Node.
 // TODO: Make this a method of the Node trait?
-fn is_node_match<N: Node>(nt: &NodeTest, n: &N) -> bool {
+pub(crate) fn is_node_match<N: Node>(nt: &NodeTest, n: &N) -> bool {
     match nt {
         NodeTest::Name(t) => {
             match n.node_type() {
