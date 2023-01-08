@@ -754,7 +754,7 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                     if (node.name().get_prefix() == Some("xmlns".to_string()))
                         ||
                         (node.name().get_localname() == "xmlns".to_string()) {
-                        namespaces.insert(node.name().get_prefix().unwrap_or("xmlns".to_string()),
+                        namespaces.insert(node.name().get_localname(),
                                           node.to_string());
                     };
 
