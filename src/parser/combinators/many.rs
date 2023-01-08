@@ -4,6 +4,7 @@ pub(crate) fn many0<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R
 where
     P: Fn(ParseInput) -> ParseResult<R>,
 {
+    //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
     move |mut input| {
         let mut result = Vec::new();
 
@@ -20,6 +21,7 @@ pub(crate) fn many1<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R
 where
     P: Fn(ParseInput) -> ParseResult<R>,
 {
+    //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
     move |mut input| {
         let mut result = Vec::new();
 

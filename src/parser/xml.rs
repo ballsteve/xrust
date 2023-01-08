@@ -13,8 +13,9 @@ use crate::parser::common::{
     is_char, is_namechar, is_pubid_char, is_pubid_charwithapos, name, ncname,
 };
 use crate::qname::*;
-use std::collections::HashSet;
+use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
+//use crate::ErrorKind::ParseError ;
 use crate::xdmerror::*;
 
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt6, alt7};
@@ -60,10 +61,64 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
     let input = ParseInput::new(e.as_str());
     match document(input) {
         Ok((_, xmldoc)) => Result::Ok(xmldoc),
-        Err(err) => Result::Err(Error {
-            kind: ErrorKind::ParseError,
-            message: "Unrecoverable parser error.".to_string(),
-        }),
+        Err(err) => {
+            match err {
+                ParseError::Combinator => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Unrecoverable parser error.".to_string(),
+                    })
+                }
+                ParseError::InvalidChar { row, col } => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Invalid character in document.".to_string(),
+                    })
+                }
+                ParseError::MissingGenEntity { .. } => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Missing Gen Entity.".to_string(),
+                    })
+                }
+                ParseError::MissingParamEntity { .. } => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Missing Param Entity.".to_string(),
+                    })
+                }
+                ParseError::EntityDepth { .. } => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Entity depth limit exceeded".to_string(),
+                    })
+                }
+                ParseError::Validation { .. } => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Validation error.".to_string(),
+                    })
+                }
+                ParseError::Unknown { .. } => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Unknown error.".to_string(),
+                    })
+                }
+                ParseError::MissingNameSpace => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Missing namespace declaration.".to_string(),
+                    })
+                }
+                ParseError::Notimplemented => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "Unimplemented featureUnrecoverable parser erro.".to_string(),
+                    })
+                }
+            }
+        }
     }
 }
 
@@ -557,29 +612,49 @@ fn element() -> impl Fn(ParseInput) -> ParseResult<RNode> {
 
 // EmptyElemTag ::= '<' Name (Attribute)* '/>'
 fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
-    map(
-        tuple5(
+    move |input| {
+        match tuple5(
             tag("<"),
             qualname(),
             attributes(), //many0(attribute),
             whitespace0(),
             tag("/>"),
-        ),
-        |(_, n, av, _, _)| {
-            let e = NodeBuilder::new(NodeType::Element).name(n).build();
-            av.iter()
-                .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
-            e
-        },
-    )
+        )(input) {
+            Ok((mut input1, (_, n, av, _, _))) => {
+                let e = NodeBuilder::new(NodeType::Element).name(n.clone()).build();
+                match input1.namespace.pop() {
+                    None => {
+                        //No namespace to assign.
+                    },
+                    Some(ns) => {
+                        let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
+                        match ns.get(&*ns_to_check) {
+                            None => {
+                                if ns_to_check != "xmlns".to_string() {
+                                    return Err(ParseError::MissingNameSpace)
+                                }
+                            }
+                            Some(nsuri) => {
+                                e.set_nsuri(nsuri.clone())
+                            }
+                        }
+                    }
+                };
+                av.iter()
+                    .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
+                Ok((input1, e))
+            },
+            Err(err) => Err(err)
+        }
+    }
 }
 
 // STag ::= '<' Name (Attribute)* '>'
 // ETag ::= '</' Name '>'
 // NB. Names must match
 fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
-    map(
-        validate(
+    move |input| {
+        match validate(
             tuple10(
                 tag("<"),
                 qualname(),
@@ -592,8 +667,51 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                 whitespace0(),
                 tag(">"),
             ),
-            |(_, n, _a, _, _, _c, _, e, _, _)| n.to_string() == e.to_string(),
-        ),
+            |(_, n, _a, _, _, _c, _, e, _, _)|
+                {
+                    //println!("NTS-{:?}", n.clone().to_string());
+                    //println!("NTS2-{:?}", e.clone().to_string());
+                    //println!("NTS3-{:?}", n.clone().to_string() == e.clone().to_string());
+                    n.to_string() == e.to_string()
+                }
+        )(input) {
+            Ok((mut input1, (_, n, av, _, _, c, _, _, _, _))) => {
+                let mut e = NodeBuilder::new(NodeType::Element).name(n.clone()).build();
+                //println!("here");
+                match input1.namespace.pop() {
+                    None => {
+                        //println!("NS-NONS");
+                        //No namespace to assign.
+                    },
+                    Some(ns) => {
+                        //println!("here2");
+                        //println!("{:?}",ns);
+                        let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
+                        match ns.get(&*ns_to_check) {
+                            None => {
+                                if ns_to_check != "xmlns".to_string() {
+                                    return Err(ParseError::MissingNameSpace)
+                                }
+                            }
+                            Some(nsuri) => {
+                                //println!("NS-{:?}", nsuri.clone());
+                                e.set_nsuri(nsuri.clone())
+                            }
+                        }
+                    }
+                };
+                av.iter()
+                    .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
+                c.iter().for_each(|d| {
+                    e.push(d.clone()).expect("unable to add node");
+                });
+                Ok((input1, e))
+            },
+            Err(err) => {
+                Err(err)
+            }
+        }
+        /*
     |(_, n, av, _, _, c, _, _e, _, _)| {
             // TODO: check that the start tag name and end tag name match (n == e)
             let mut a = NodeBuilder::new(NodeType::Element).name(n).build();
@@ -605,10 +723,11 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
             a
         },
     )
+    */
+    }
 }
 
 // QualifiedName
-
 fn qualname() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
     alt2(prefixed_name(), unprefixed_name())
 }
@@ -625,18 +744,63 @@ fn prefixed_name() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
 }
 
 fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
+
+    move |input|
+        match many0(attribute())(input){
+            Ok((mut input1, nodes)) => {
+                let mut n: HashMap<String, String> = HashMap::new();
+                let mut namespaces = input1.namespace.last().unwrap_or(&n).clone();
+                for node in nodes.clone() {
+                    if (node.name().get_prefix() == Some("xmlns".to_string()))
+                        ||
+                        (node.name().get_localname() == "xmlns".to_string()) {
+                        namespaces.insert(node.name().get_prefix().unwrap_or("xmlns".to_string()),
+                                          node.to_string());
+                    };
+
+                    //Check if the xml:space attribute is present and if so, does it have
+                    //"Preserved" or "Default" as its value. We'll actually handle in a future release.
+                    if node.name().get_prefix() == Some("xml".to_string()) &&
+                        node.name().get_localname() == *"space" &&
+                        !(node.to_string() == "Default" || node.to_string() == "Preserve") {
+                        return Err(ParseError::Validation{row: input1.currentrow, col: input1.currentcol})
+                    }
+
+                };
+                input1.namespace.push(namespaces.clone());
+                //Why loop through the nodes a second time? XML attributes are no in any order, so the
+                //namespace declaration can happen after the attribute if it has a namespace prefix.
+                let mut resnodes = vec![];
+                for node in nodes {
+                    if node.name().get_prefix()!=Some("xmlns".to_string())
+                        &&
+                        node.name().get_localname()!="xmlns".to_string(){
+                        match node.name().get_prefix(){
+                            Some(ns) => {
+                                match namespaces.get(&*ns){
+                                    None => { return Err(ParseError::MissingNameSpace)}
+                                    Some(nsuri) => {
+                                        node.set_nsuri(nsuri.clone())
+                                    }
+                                }
+                            }
+                            None => {
+                                //node.set_nsuri(namespaces.get("xmlns").unwrap_or(&("".to_string())).clone())
+                            }
+                        }
+                        resnodes.push(node);
+                    }
+                }
+                Ok((input1, resnodes))
+            },
+            Err(err) => Err(err)
+        }
     //this is just a wrapper around the attribute function, that checks for duplicates.
+    /*
     validate(many0(attribute()), |v: &Vec<RNode>| {
         let attrs = v.clone();
-        //Check if the xml:space attribute is present and if so, does it have
-        //"Preserved" or "Default" as its value
-        for a in attrs.clone() {
-            if a.name().get_prefix() == Some("xml".to_string()) &&
-                a.name().get_localname() == *"space" &&
-                !(a.to_string() == "Default" || a.to_string() == "Preserve") {
-                    return false
-                }
-        }
+
+
         //filter namespace declarations
         let attrsnons: Vec<RNode> = v.clone()
             .into_iter()
@@ -655,6 +819,7 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
             .collect();
         attrsnons.len() == uniqueattrs.len()
     })
+     */
 }
 // Attribute ::= Name '=' AttValue
 fn attribute() -> impl Fn(ParseInput) -> ParseResult<RNode> {

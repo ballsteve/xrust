@@ -22,6 +22,7 @@ pub(crate) enum ParseError{
     EntityDepth{row: usize, col:usize },
     Validation{row: usize, col:usize },
     Unknown{row:usize, col:usize},
+    MissingNameSpace,
     Notimplemented
 }
 
@@ -36,7 +37,7 @@ pub(crate) struct ParseInput<'a> {
     NOTE: the "xmlns" vector in this hashmap is NOT the real xml namespace prefix, it is used to
     track the namespace when no alias is declared with the namespace.
      */
-    namespace: HashMap<String, Vec<String>>,
+    namespace: Vec<HashMap<String, String>>,
     /*
     The below will track Entity Expansion, ensuring that there are no recursive entities and
     some protections from zip bombs
@@ -56,9 +57,7 @@ impl ParseInput<'_> {
             /*
             The below hashmap
              */
-            namespace: HashMap::from([
-                                         ("xmlns".to_string(), vec![])
-                                     ]),
+            namespace: vec![],
             maxentitydepth: 4,
             currententitydepth: 0,
             currentcol: 1,
