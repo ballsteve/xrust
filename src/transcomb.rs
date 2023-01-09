@@ -49,23 +49,23 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
 }
 
 /// Creates a singleton sequence with the given value
-pub(crate) fn literal<N: Node>(val: Rc<Item<N>>) -> impl Fn(Context<N>) -> TransResult<N>
+pub(crate) fn literal<N: Node + 'static>(val: Rc<Item<N>>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 {
-    move |ctxt| Ok((ctxt, vec![val.clone()]))
+    Box::new(move |ctxt| Ok((ctxt, vec![val.clone()])))
 }
 
 /// Creates a singleton sequence with the context item as its value
-pub(crate) fn context<N: Node>() -> impl Fn(Context<N>) -> TransResult<N>
+pub(crate) fn context<N: Node>() -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 {
-    move |ctxt| Ok((ctxt.clone(), vec![ctxt.seq[ctxt.i].clone()]))
+    Box::new(move |ctxt| Ok((ctxt.clone(), vec![ctxt.seq[ctxt.i].clone()])))
 }
 
 /// Creates a sequence. Each function in the supplied vector creates an item in the sequence. The original context is passed to each function.
-pub(crate) fn sequence<F, N: Node>(items: Vec<F>) -> impl Fn(Context<N>) -> TransResult<N>
+pub(crate) fn sequence<F, N: Node>(items: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 where
-    F: Fn(Context<N>) -> TransResult<N>
+    F: Fn(Context<N>) -> TransResult<N> + 'static
 {
-    move |ctxt| {
+    Box::new(move |ctxt| {
 	match items.iter()
 	    .try_fold(
 		vec![],
@@ -82,15 +82,15 @@ where
 		Ok(r) => Ok((ctxt.clone(), r)),
 		Err(err) => Err(err)
 	    }
-    }
+    })
 }
 
 /// Each function in the supplied vector is evaluated. The sequence returned by a function is used as the context for the next function.
-pub(crate) fn compose<F, N: Node>(steps: Vec<F>) -> impl Fn(Context<N>) -> TransResult<N>
+pub(crate) fn compose<F, N: Node>(steps: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 where
-    F: Fn(Context<N>) -> TransResult<N>
+    F: Fn(Context<N>) -> TransResult<N> + 'static
 {
-    move |ctxt| {
+    Box::new(move |ctxt| {
 	let mut new_context = ctxt.clone();
 	match steps.iter()
 	    .try_fold(
@@ -108,13 +108,12 @@ where
 		Ok(r) => Ok((ctxt.clone(), r)),
 		Err(err) => Err(err)
 	    }
-    }
+    })
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
-/// TODO: predicates
-pub(crate) fn step<N: Node>(nm: NodeMatch) -> impl Fn(Context<N>) -> TransResult<N> {
-    move |ctxt| {
+pub(crate) fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(Context<N>) -> TransResult<N>> {
+    Box::new(move |ctxt| {
 	match ctxt.seq.iter()
 	    .try_fold(
 		vec![],
@@ -146,7 +145,33 @@ pub(crate) fn step<N: Node>(nm: NodeMatch) -> impl Fn(Context<N>) -> TransResult
 		Ok(r) => Ok((ctxt.clone(), r)),
 		Err(err) => Err(err)
 	    }
-    }
+    })
+}
+
+/// Remove items that don't match the predicate.
+pub(crate) fn filter<F, N: Node>(predicate: F) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+where
+    F: Fn(Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	match ctxt.seq.iter()
+	    .try_fold(
+		vec![],
+		|mut acc, i| {
+		    let s = match predicate(Context::from(vec![i.clone()])) {
+			Ok((_, t)) => t,
+			Err(err) => return Err(err),
+		    };
+		    if s.to_bool() == true {
+			acc.push(i.clone())
+		    }
+		    Ok(acc)
+		}
+	    ) {
+		Ok(r) => Ok((Context::from(r.clone()), r)),
+		Err(err) => Err(err)
+	    }
+    })
 }
 
 #[cfg(test)]
@@ -353,5 +378,56 @@ mod tests {
 	)).expect("evaluation failed");
 	assert_eq!(seq.len(), 2);
 	assert_eq!(seq.to_xml(), "firstsecond");
+    }
+
+    #[test]
+    fn predicate() {
+	// XPath == child::node()[child::node()]
+	let ev = compose(
+	    vec![
+		step(
+		    NodeMatch {
+			axis: Axis::Child,
+			nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+		    }
+		),
+		filter(
+		    step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    )
+		),
+	    ]
+	);
+
+	// Setup a source document
+	let mut sd = NodeBuilder::new(NodeType::Document).build();
+	let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+	    .expect("unable to create element");
+	sd.push(t.clone())
+	    .expect("unable to append child");
+	let mut l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+	    .expect("unable to create element");
+	t.push(l1_1.clone())
+	    .expect("unable to append child");
+	let t1 = sd.new_text(Value::from("first"))
+	    .expect("unable to create text node");
+	l1_1.push(t1)
+	    .expect("unable to append text node");
+	let l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-2")))
+	    .expect("unable to create element");
+	t.push(l1_2.clone())
+	    .expect("unable to append child");
+
+	// Now evaluate the combinator with the Test element as the context item
+	let (_, seq) = ev(Context::from(
+	    vec![
+		Rc::new(Item::Node(t)),
+	    ]
+	)).expect("evaluation failed");
+	assert_eq!(seq.len(), 1);
+	assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
     }
 }
