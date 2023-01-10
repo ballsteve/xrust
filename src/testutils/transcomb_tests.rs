@@ -5,7 +5,10 @@ macro_rules! transcomb_tests (
 	//use xrust::value::Value;
 	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
-	use xrust::transcomb::{Context, literal, context, tc_sequence, compose, step, filter};
+	use xrust::transcomb::{Context,
+			       literal, context, tc_sequence, compose, step, filter,
+			       function_concat,
+	};
 
 	#[test]
 	fn singleton_literal() {
@@ -255,6 +258,22 @@ macro_rules! transcomb_tests (
 	    )).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
+	}
+
+	#[test]
+	fn tc_func_concat() {
+	    // XPath == concat("abc", 1, "foo")
+	    let ev = function_concat(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
+		]
+	    );
+	    let (_, seq) = ev(Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "abc1foo")
 	}
     }
 );

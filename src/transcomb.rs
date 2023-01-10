@@ -173,3 +173,27 @@ where
 	    }
     })
 }
+
+pub fn function_concat<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+where
+    F: Fn(Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	match arguments.iter()
+	    .try_fold(
+		String::new(),
+		|mut acc, a| {
+		    match a(ctxt.clone()) {
+			Ok(b) => {
+			    acc.push_str(b.1.to_string().as_str());
+			    Ok(acc)
+			}
+			Err(err) => Err(err)
+		    }
+		}
+	    ) {
+		Ok(r) => Ok((ctxt.clone(), vec![Rc::new(Item::Value(Value::from(r)))])),
+		Err(err) => Err(err)
+	    }
+    })
+}
