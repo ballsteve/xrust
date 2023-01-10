@@ -49,19 +49,19 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
 }
 
 /// Creates a singleton sequence with the given value
-pub(crate) fn literal<N: Node + 'static>(val: Rc<Item<N>>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+pub fn literal<N: Node + 'static>(val: Rc<Item<N>>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 {
     Box::new(move |ctxt| Ok((ctxt, vec![val.clone()])))
 }
 
 /// Creates a singleton sequence with the context item as its value
-pub(crate) fn context<N: Node>() -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+pub fn context<N: Node>() -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 {
     Box::new(move |ctxt| Ok((ctxt.clone(), vec![ctxt.seq[ctxt.i].clone()])))
 }
 
 /// Creates a sequence. Each function in the supplied vector creates an item in the sequence. The original context is passed to each function.
-pub(crate) fn sequence<F, N: Node>(items: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+pub fn tc_sequence<F, N: Node>(items: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 where
     F: Fn(Context<N>) -> TransResult<N> + 'static
 {
@@ -86,7 +86,7 @@ where
 }
 
 /// Each function in the supplied vector is evaluated. The sequence returned by a function is used as the context for the next function.
-pub(crate) fn compose<F, N: Node>(steps: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+pub fn compose<F, N: Node>(steps: Vec<F>) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 where
     F: Fn(Context<N>) -> TransResult<N> + 'static
 {
@@ -112,7 +112,7 @@ where
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
-pub(crate) fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(Context<N>) -> TransResult<N>> {
+pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(Context<N>) -> TransResult<N>> {
     Box::new(move |ctxt| {
 	match ctxt.seq.iter()
 	    .try_fold(
@@ -149,7 +149,7 @@ pub(crate) fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(Context<N>) -> TransRes
 }
 
 /// Remove items that don't match the predicate.
-pub(crate) fn filter<F, N: Node>(predicate: F) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
+pub fn filter<F, N: Node>(predicate: F) -> Box<dyn Fn(Context<N>) -> TransResult<N>>
 where
     F: Fn(Context<N>) -> TransResult<N> + 'static
 {
@@ -172,262 +172,4 @@ where
 		Err(err) => Err(err)
 	    }
     })
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn singleton_literal() {
-	let ev = literal(Rc::new(Item::<RNode>::Value(Value::from("this is a test"))));
-	let (_, seq) = ev(Context::new()).expect("evaluation failed");
-	assert_eq!(seq.to_string(), "this is a test")
-    }
-
-    #[test]
-    fn seq_of_literals() {
-	let ev = sequence(
-	    vec![
-		literal(Rc::new(Item::<RNode>::Value(Value::from("this is a test")))),
-		literal(Rc::new(Item::<RNode>::Value(Value::from(1)))),
-		literal(Rc::new(Item::<RNode>::Value(Value::from("end of test")))),
-	    ]
-	);
-	let (_, seq) = ev(Context::new()).expect("evaluation failed");
-	assert_eq!(seq.len(), 3);
-	assert_eq!(seq.to_string(), "this is a test1end of test")
-    }
-
-    #[test]
-    fn seq_of_seqs() {
-	let ev = sequence(
-	    vec![
-		sequence(
-		    vec![
-			literal(Rc::new(Item::<RNode>::Value(Value::from("first sequence")))),
-			literal(Rc::new(Item::<RNode>::Value(Value::from(1)))),
-		    ]
-		),
-		sequence(
-		    vec![
-			literal(Rc::new(Item::<RNode>::Value(Value::from("second sequence")))),
-			literal(Rc::new(Item::<RNode>::Value(Value::from(2)))),
-		    ]
-		),
-	    ]
-	);
-	let (_, seq) = ev(Context::new()).expect("evaluation failed");
-	assert_eq!(seq.len(), 4);
-	assert_eq!(seq.to_string(), "first sequence1second sequence2")
-    }
-
-    #[test]
-    fn context_item() {
-	let ev = context();
-	let c = Context::from(vec![Rc::new(Item::<RNode>::Value(Value::from("the context item")))]);
-	let (_, seq) = ev(c).expect("evaluation failed");
-	assert_eq!(seq.len(), 1);
-	assert_eq!(seq.to_string(), "the context item")
-    }
-
-    #[test]
-    fn context_item_seq() {
-	let ev = sequence(
-	    vec![context(), context()]
-	);
-	let c = Context::from(vec![Rc::new(Item::<RNode>::Value(Value::from("the context item")))]);
-	let (_, seq) = ev(c).expect("evaluation failed");
-	assert_eq!(seq.len(), 2);
-	assert_eq!(seq.to_string(), "the context itemthe context item")
-    }
-
-    #[test]
-    fn path_of_lits() {
-	let ev = compose(
-	    vec![
-		literal(Rc::new(Item::<RNode>::Value(Value::from("step 1")))),
-		literal(Rc::new(Item::<RNode>::Value(Value::from("step 2"))))
-	    ]
-	);
-	let (_, seq) = ev(Context::new()).expect("evaluation failed");
-	assert_eq!(seq.len(), 1);
-	assert_eq!(seq.to_string(), "step 2")
-    }
-
-    #[test]
-    fn step_child_1() {
-	// XPath == child::node()
-	let ev = step(
-	    NodeMatch {
-		axis: Axis::Child,
-		nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-	    }
-	);
-
-	// Setup a source document
-	let mut sd = NodeBuilder::new(NodeType::Document).build();
-	let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
-	    .expect("unable to create element");
-	sd.push(t.clone())
-	    .expect("unable to append child");
-	let l1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
-	    .expect("unable to create element");
-	t.push(l1.clone())
-	    .expect("unable to append child");
-
-	// Now evaluate the combinator with <Test> as the context item
-	let (_, seq) = ev(Context::from(vec![Rc::new(Item::Node(t))]))
-	    .expect("evaluation failed");
-	assert_eq!(seq.len(), 1);
-	assert_eq!(seq.to_xml(), "<Level-1></Level-1>");
-    }
-
-    #[test]
-    fn step_child_many() {
-	// XPath == child::node()
-	let ev = step(
-	    NodeMatch {
-		axis: Axis::Child,
-		nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-	    }
-	);
-
-	// Setup a source document
-	let mut sd = NodeBuilder::new(NodeType::Document).build();
-	let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
-	    .expect("unable to create element");
-	sd.push(t.clone())
-	    .expect("unable to append child");
-	let mut l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
-	    .expect("unable to create element");
-	t.push(l1_1.clone())
-	    .expect("unable to append child");
-	let t1 = sd.new_text(Value::from("first"))
-	    .expect("unable to create text node");
-	l1_1.push(t1)
-	    .expect("unable to append text node");
-	let mut l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
-	    .expect("unable to create element");
-	t.push(l1_2.clone())
-	    .expect("unable to append child");
-	let t2 = sd.new_text(Value::from("second"))
-	    .expect("unable to create text node");
-	l1_2.push(t2)
-	    .expect("unable to append text node");
-
-	// Now evaluate the combinator with both <Level-1>s as the context items
-	let (_, seq) = ev(Context::from(
-	    vec![
-		Rc::new(Item::Node(l1_1)),
-		Rc::new(Item::Node(l1_2)),
-	    ]
-	)).expect("evaluation failed");
-	assert_eq!(seq.len(), 2);
-	assert_eq!(seq.to_xml(), "firstsecond");
-    }
-
-    #[test]
-    fn path_step_child() {
-	// XPath == child::node()/child::node()
-	let ev = compose(
-	    vec![
-		step(
-		    NodeMatch {
-			axis: Axis::Child,
-			nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-		    }
-		),
-		step(
-		    NodeMatch {
-			axis: Axis::Child,
-			nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-		    }
-		),
-	    ]
-	);
-
-	// Setup a source document
-	let mut sd = NodeBuilder::new(NodeType::Document).build();
-	let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
-	    .expect("unable to create element");
-	sd.push(t.clone())
-	    .expect("unable to append child");
-	let mut l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
-	    .expect("unable to create element");
-	t.push(l1_1.clone())
-	    .expect("unable to append child");
-	let t1 = sd.new_text(Value::from("first"))
-	    .expect("unable to create text node");
-	l1_1.push(t1)
-	    .expect("unable to append text node");
-	let mut l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
-	    .expect("unable to create element");
-	t.push(l1_2.clone())
-	    .expect("unable to append child");
-	let t2 = sd.new_text(Value::from("second"))
-	    .expect("unable to create text node");
-	l1_2.push(t2)
-	    .expect("unable to append text node");
-
-	// Now evaluate the combinator with the Test element as the context item
-	let (_, seq) = ev(Context::from(
-	    vec![
-		Rc::new(Item::Node(t)),
-	    ]
-	)).expect("evaluation failed");
-	assert_eq!(seq.len(), 2);
-	assert_eq!(seq.to_xml(), "firstsecond");
-    }
-
-    #[test]
-    fn predicate() {
-	// XPath == child::node()[child::node()]
-	let ev = compose(
-	    vec![
-		step(
-		    NodeMatch {
-			axis: Axis::Child,
-			nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-		    }
-		),
-		filter(
-		    step(
-			NodeMatch {
-			    axis: Axis::Child,
-			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
-			}
-		    )
-		),
-	    ]
-	);
-
-	// Setup a source document
-	let mut sd = NodeBuilder::new(NodeType::Document).build();
-	let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
-	    .expect("unable to create element");
-	sd.push(t.clone())
-	    .expect("unable to append child");
-	let mut l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
-	    .expect("unable to create element");
-	t.push(l1_1.clone())
-	    .expect("unable to append child");
-	let t1 = sd.new_text(Value::from("first"))
-	    .expect("unable to create text node");
-	l1_1.push(t1)
-	    .expect("unable to append text node");
-	let l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-2")))
-	    .expect("unable to create element");
-	t.push(l1_2.clone())
-	    .expect("unable to append child");
-
-	// Now evaluate the combinator with the Test element as the context item
-	let (_, seq) = ev(Context::from(
-	    vec![
-		Rc::new(Item::Node(t)),
-	    ]
-	)).expect("evaluation failed");
-	assert_eq!(seq.len(), 1);
-	assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
-    }
 }

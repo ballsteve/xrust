@@ -7,9 +7,11 @@ use xrust::qname::QualifiedName;
 use xrust::xdmerror::Error;
 use xrust::xpath_tests;
 use xrust::xslt_tests;
+use xrust::transcomb_tests;
 
 // Run the generic Item/Value tests
 item_value_tests!(RNode);
+transcomb_tests!(RNode);
 
 fn make_empty_doc() -> RNode {
     NodeBuilder::new(NodeType::Document).build()

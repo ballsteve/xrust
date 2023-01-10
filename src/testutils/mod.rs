@@ -3,3 +3,4 @@ pub mod item_node;
 pub mod item_value;
 pub mod xpath_tests;
 pub mod xslt_tests;
+pub mod transcomb_tests;
