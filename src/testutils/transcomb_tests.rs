@@ -7,6 +7,7 @@ macro_rules! transcomb_tests (
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
 	use xrust::transcomb::{Context,
 			       literal, context, tc_sequence, compose, step, filter,
+			       declare_variable, descope_variable, reference_variable,
 			       function_concat,
 	};
 
@@ -258,6 +259,24 @@ macro_rules! transcomb_tests (
 	    )).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
+	}
+
+	#[test]
+	fn tc_var_declare() {
+	    let ev = tc_sequence(
+		vec![
+		    declare_variable(
+			"foo".to_string(),
+			literal(Rc::new(Item::<$x>::Value(Value::from("foo"))))
+		    ),
+		    reference_variable("foo".to_string()),
+		    descope_variable("foo".to_string()),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "foo")
 	}
 
 	#[test]

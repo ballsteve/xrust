@@ -23,7 +23,7 @@ pub struct Context<N: Node> {
     // templates
     // built-in templates
     // variables
-    vars: HashMap<String, Sequence<N>>,
+    vars: HashMap<String, Vec<Sequence<N>>>,
     // grouping
     // import level
     // output defn
@@ -38,6 +38,22 @@ impl<N: Node> Context<N> {
 	    depth: 0,
 	    vars: HashMap::new(),
 	}
+    }
+
+    fn var_push(&mut self, name: String, value: Sequence<N>) {
+	match self.vars.get_mut(name.as_str()) {
+	    Some(u) => {
+                // If the variable already has a value, then this is a new, inner scope
+		u.push(value);
+	    }
+	    None => {
+                // Otherwise this is the first scope for the variable
+		self.vars.insert(name, vec![value]);
+	    }
+	}
+    }
+    fn var_pop(&mut self, name: String) {
+	self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
 }
 
@@ -71,7 +87,7 @@ impl<N: Node> ContextBuilder<N> {
 	self.0.depth = d;
 	self
     }
-    pub fn variables(mut self, v: HashMap<String, Sequence<N>>) -> Self {
+    pub fn variables(mut self, v: HashMap<String, Vec<Sequence<N>>>) -> Self {
 	self.0.vars = v;
 	self
     }
@@ -202,6 +218,43 @@ where
 		Ok(r) => Ok(r),
 		Err(err) => Err(err)
 	    }
+    })
+}
+
+/// Declare a variable. NB. how is scope managed?
+pub fn declare_variable<F, N: Node>(name: String, value: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	match value(ctxt) {
+	    Ok(s) => {
+		ctxt.var_push(name.clone(), s);
+		Ok(vec![])
+	    }
+	    Err(err) => Err(err)
+	}
+    })
+}
+pub fn descope_variable<N: Node>(name: String) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+{
+    Box::new(move |ctxt| {
+	ctxt.var_pop(name.clone());
+	Ok(vec![])
+    })
+}
+pub fn reference_variable<N: Node>(name: String) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+{
+    Box::new(move |ctxt| {
+	match ctxt.vars.get(name.as_str()) {
+	    Some(u) => {
+		match u.last() {
+		    Some(t) => Ok(t.clone()),
+		    None => Err(Error::new(ErrorKind::Unknown, format!("variable \"{}\" is no longer in scope", name)))
+		}
+	    }
+	    None => Err(Error::new(ErrorKind::Unknown, format!("unknown variable \"{}\"", name)))
+	}
     })
 }
 
