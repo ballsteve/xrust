@@ -11,13 +11,13 @@ macro_rules! transcomb_tests (
 	};
 
 	#[test]
-	fn singleton_literal() {
+	fn tc_singleton_literal() {
 	    let ev = literal(Rc::new(Item::<$x>::Value(Value::from("this is a test"))));
-	    let (_, seq) = ev(Context::new()).expect("evaluation failed");
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "this is a test")
 	}
 	#[test]
-	fn seq_of_literals() {
+	fn tc_seq_of_literals() {
 	    let ev = tc_sequence(
 		vec![
 		    literal(Rc::new(Item::<$x>::Value(Value::from("this is a test")))),
@@ -25,12 +25,12 @@ macro_rules! transcomb_tests (
 		    literal(Rc::new(Item::<$x>::Value(Value::from("end of test")))),
 		]
 	    );
-	    let (_, seq) = ev(Context::new()).expect("evaluation failed");
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	    assert_eq!(seq.to_string(), "this is a test1end of test")
 	}
 	#[test]
-	fn seq_of_seqs() {
+	fn tc_seq_of_seqs() {
 	    let ev = tc_sequence(
 		vec![
 		    tc_sequence(
@@ -47,45 +47,45 @@ macro_rules! transcomb_tests (
 		    ),
 		]
 	    );
-	    let (_, seq) = ev(Context::new()).expect("evaluation failed");
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	    assert_eq!(seq.to_string(), "first sequence1second sequence2")
 	}
 	#[test]
 	fn tc_context_item() {
 	    let ev = context();
-	    let c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
-	    let (_, seq) = ev(c).expect("evaluation failed");
+	    let mut c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
+	    let seq = ev(&mut c).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "the context item")
 	}
 
 	#[test]
-	fn context_item_seq() {
+	fn tc_context_item_seq() {
 	    let ev = tc_sequence(
 		vec![context(), context()]
 	    );
-	    let c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
-	    let (_, seq) = ev(c).expect("evaluation failed");
+	    let mut c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
+	    let seq = ev(&mut c).expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "the context itemthe context item")
 	}
 
 	#[test]
-	fn path_of_lits() {
+	fn tc_path_of_lits() {
 	    let ev = compose(
 		vec![
 		    literal(Rc::new(Item::<$x>::Value(Value::from("step 1")))),
 		    literal(Rc::new(Item::<$x>::Value(Value::from("step 2"))))
 		]
 	    );
-	    let (_, seq) = ev(Context::new()).expect("evaluation failed");
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "step 2")
 	}
 
 	#[test]
-	fn step_child_1() {
+	fn tc_step_child_1() {
 	    // XPath == child::node()
 	    let ev = step(
 		NodeMatch {
@@ -106,14 +106,14 @@ macro_rules! transcomb_tests (
 		.expect("unable to append child");
 
 	    // Now evaluate the combinator with <Test> as the context item
-	    let (_, seq) = ev(Context::from(vec![Rc::new(Item::Node(t))]))
+	    let seq = ev(&mut Context::from(vec![Rc::new(Item::Node(t))]))
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Level-1></Level-1>");
 	}
 
 	#[test]
-	fn step_child_many() {
+	fn tc_step_child_many() {
 	    // XPath == child::node()
 	    let ev = step(
 		NodeMatch {
@@ -146,7 +146,7 @@ macro_rules! transcomb_tests (
 		.expect("unable to append text node");
 
 	    // Now evaluate the combinator with both <Level-1>s as the context items
-	    let (_, seq) = ev(Context::from(
+	    let seq = ev(&mut Context::from(
 		vec![
 		    Rc::new(Item::Node(l1_1)),
 		    Rc::new(Item::Node(l1_2)),
@@ -157,7 +157,7 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
-	fn path_step_child() {
+	fn tc_path_step_child() {
 	    // XPath == child::node()/child::node()
 	    let ev = compose(
 		vec![
@@ -200,7 +200,7 @@ macro_rules! transcomb_tests (
 		.expect("unable to append text node");
 
 	    // Now evaluate the combinator with the Test element as the context item
-	    let (_, seq) = ev(Context::from(
+	    let seq = ev(&mut Context::from(
 		vec![
 		    Rc::new(Item::Node(t)),
 		]
@@ -210,7 +210,7 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
-	fn predicate() {
+	fn tc_predicate() {
 	    // XPath == child::node()[child::node()]
 	    let ev = compose(
 		vec![
@@ -251,7 +251,7 @@ macro_rules! transcomb_tests (
 		.expect("unable to append child");
 
 	    // Now evaluate the combinator with the Test element as the context item
-	    let (_, seq) = ev(Context::from(
+	    let seq = ev(&mut Context::from(
 		vec![
 		    Rc::new(Item::Node(t)),
 		]
@@ -270,7 +270,7 @@ macro_rules! transcomb_tests (
 		    literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
 		]
 	    );
-	    let (_, seq) = ev(Context::new())
+	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "abc1foo")
