@@ -277,12 +277,25 @@ where
     })
 }
 
-/// A user defined function. Each argument is declared as a variable in a new [Context]. The body of the function is then evaluated and it's result is returned.
-pub fn function_user_defined<F, N: Node>(_body: F, _arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+/// A user defined function. Each argument is declared as a variable in the [Context]. The body of the function is then evaluated and it's result is returned.
+pub fn function_user_defined<F, N: Node>(body: F, arguments: Vec<(String, F)>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static
 {
-    Box::new(move |_ctxt| {
-	Err(Error::new(ErrorKind::NotImplemented, String::from("not yet implemented")))
+    Box::new(move |ctxt| {
+	arguments.iter()
+	    .try_for_each(|(n, a)| {
+		match a(ctxt) {
+		    Ok(b) => {
+			ctxt.var_push(n.clone(), b);
+			Ok(())
+		    }
+		    Err(err) => Err(err),
+		}
+	    })?;
+	let result = body(ctxt);
+	arguments.iter()
+	    .for_each(|(n, _)| ctxt.var_pop(n.clone()));
+	result
     })
 }

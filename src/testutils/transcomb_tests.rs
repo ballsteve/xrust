@@ -9,6 +9,7 @@ macro_rules! transcomb_tests (
 			       literal, context, tc_sequence, compose, step, filter,
 			       declare_variable, reference_variable,
 			       function_concat,
+			       function_user_defined,
 	};
 
 	#[test]
@@ -292,6 +293,26 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "abc1foo")
+	}
+
+	#[test]
+	fn tc_func_user_defined() {
+	    // foo(bar='a test'; ('this is ', $bar))
+	    let ev = function_user_defined(
+		tc_sequence(
+		    vec![
+			literal(Rc::new(Item::<$x>::Value(Value::from("this is ")))),
+			reference_variable("bar".to_string()),
+		    ]
+		),
+		vec![
+		    ("bar".to_string(), literal(Rc::new(Item::<$x>::Value(Value::from("a test")))))
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 2);
+	    assert_eq!(seq.to_string(), "this is a test")
 	}
     }
 );
