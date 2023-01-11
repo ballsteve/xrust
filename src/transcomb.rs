@@ -126,11 +126,10 @@ where
 	match steps.iter()
 	    .try_fold(
 		ctxt.seq.clone(),
-		|acc, f| {
-		    let mut new_context = ctxt.clone();
-		    new_context.seq = acc;
-		    match f(&mut new_context) {
+		|_, f| {
+		    match f(ctxt) {
 			Ok(s) => {
+			    ctxt.seq = s.clone();
 			    Ok(s)
 			}
 			Err(err) => Err(err),
