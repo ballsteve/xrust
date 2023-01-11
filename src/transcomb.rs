@@ -3,12 +3,11 @@
 use std::rc::Rc;
 use std::collections::HashMap;
 
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
-use crate::qname::*;
-use crate::value::{Operator, Value};
-use crate::evaluate::{Axis, NodeMatch, NodeTest, KindTest, is_node_match};
+use crate::item::{Item, Node, Sequence, SequenceTrait};
+//use crate::qname::*;
+use crate::value::Value;
+use crate::evaluate::{Axis, NodeMatch, is_node_match};
 use crate::xdmerror::*;
-use crate::intmuttree::{RNode, NodeBuilder};
 
 pub(crate) type TransResult<N> = Result<Sequence<N>, Error>;
 
@@ -99,7 +98,7 @@ impl<N: Node> ContextBuilder<N> {
 /// Creates a singleton sequence with the given value
 pub fn literal<N: Node + 'static>(val: Rc<Item<N>>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 {
-    Box::new(move |ctxt| Ok(vec![val.clone()]))
+    Box::new(move |_ctxt| Ok(vec![val.clone()]))
 }
 
 /// Creates a singleton sequence with the context item as its value
@@ -221,8 +220,8 @@ where
     })
 }
 
-/// Declare a variable. NB. how is scope managed?
-pub fn declare_variable<F, N: Node>(name: String, value: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+/// Declare a variable in scope for a function. Returns the result of the function.
+pub fn declare_variable<F, N: Node>(name: String, value: F, f: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static
 {
@@ -230,17 +229,12 @@ where
 	match value(ctxt) {
 	    Ok(s) => {
 		ctxt.var_push(name.clone(), s);
-		Ok(vec![])
+		let r = f(ctxt);
+		ctxt.var_pop(name.clone());
+		r
 	    }
 	    Err(err) => Err(err)
 	}
-    })
-}
-pub fn descope_variable<N: Node>(name: String) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
-{
-    Box::new(move |ctxt| {
-	ctxt.var_pop(name.clone());
-	Ok(vec![])
     })
 }
 pub fn reference_variable<N: Node>(name: String) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
@@ -284,11 +278,11 @@ where
 }
 
 /// A user defined function. Each argument is declared as a variable in a new [Context]. The body of the function is then evaluated and it's result is returned.
-pub fn function_user_defined<F, N: Node>(body: F, arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn function_user_defined<F, N: Node>(_body: F, _arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static
 {
-    Box::new(move |ctxt| {
+    Box::new(move |_ctxt| {
 	Err(Error::new(ErrorKind::NotImplemented, String::from("not yet implemented")))
     })
 }

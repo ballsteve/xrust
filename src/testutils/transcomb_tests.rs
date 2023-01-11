@@ -7,7 +7,7 @@ macro_rules! transcomb_tests (
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
 	use xrust::transcomb::{Context,
 			       literal, context, tc_sequence, compose, step, filter,
-			       declare_variable, descope_variable, reference_variable,
+			       declare_variable, reference_variable,
 			       function_concat,
 	};
 
@@ -267,10 +267,9 @@ macro_rules! transcomb_tests (
 		vec![
 		    declare_variable(
 			"foo".to_string(),
-			literal(Rc::new(Item::<$x>::Value(Value::from("foo"))))
+			literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
+			reference_variable("foo".to_string()),
 		    ),
-		    reference_variable("foo".to_string()),
-		    descope_variable("foo".to_string()),
 		]
 	    );
 	    let seq = ev(&mut Context::new())
