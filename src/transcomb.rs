@@ -3,7 +3,7 @@
 use std::rc::Rc;
 use std::collections::HashMap;
 
-use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::evaluate::{Axis, NodeMatch, is_node_match};
@@ -127,7 +127,10 @@ where
 	    .try_for_each(|i| {
 		// Item could be a Node or text
 		match &**i {
-		    Item::Node(t) => e.push(t.clone()),
+		    Item::Node(t) => match t.node_type() {
+			NodeType::Attribute => e.add_attribute(t.clone()),
+			_ => e.push(t.clone()),
+		    }
 		    _ => {
 			// Add the Value as a text node
 			let n = r.new_text(Value::from(i.to_string()))?;
@@ -136,6 +139,25 @@ where
 		}
 	    })?;
 	Ok(vec![Rc::new(Item::Node(e))])
+    })
+}
+
+/// Creates a singleton sequence with a new attribute node. The function is evaluated to create the value of the attribute.
+/// TODO: AVT for attribute name
+pub fn literal_attribute<F, N: Node + 'static>(qn: QualifiedName, v: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	if ctxt.rd.is_none() {
+	    return Err(Error::new(ErrorKind::Unknown, String::from("context has no result document")))
+	}
+	let a = ctxt.rd.clone().unwrap()
+	    .new_attribute(
+		qn.clone(),
+		Value::from(v(ctxt)?.to_string())
+	    )?;
+	Ok(vec![Rc::new(Item::Node(a))])
     })
 }
 

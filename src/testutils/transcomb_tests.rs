@@ -6,7 +6,7 @@ macro_rules! transcomb_tests (
 	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
 	use xrust::transcomb::{Context, ContextBuilder,
-			       literal, literal_element,
+			       literal, literal_element, literal_attribute,
 			       context, tc_sequence, compose, step, filter,
 			       declare_variable, reference_variable,
 			       function_concat,
@@ -47,6 +47,25 @@ macro_rules! transcomb_tests (
 		.build();
 	    let seq = ev(&mut ctxt).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test><Level-1>content</Level-1></Test>")
+	}
+	#[test]
+	fn tc_literal_attribute() {
+	    let ev = literal_element(
+		QualifiedName::new(None, None, String::from("Test")),
+		tc_sequence(vec![
+		    literal_attribute(
+			QualifiedName::new(None, None, String::from("foo")),
+			literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		])
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+		.result_document(mydoc)
+		.build();
+	    let seq = ev(&mut ctxt).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test foo='bar'>content</Test>")
 	}
 	#[test]
 	fn tc_seq_of_literals() {
