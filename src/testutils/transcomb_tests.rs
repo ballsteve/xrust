@@ -8,6 +8,7 @@ macro_rules! transcomb_tests (
 	use xrust::transcomb::{Context, ContextBuilder,
 			       literal, literal_element, literal_attribute,
 			       context, tc_sequence, compose, step, filter,
+			       tc_or,
 			       declare_variable, reference_variable,
 			       function_concat,
 			       function_user_defined,
@@ -309,6 +310,28 @@ macro_rules! transcomb_tests (
 	    )).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
+	}
+
+	#[test]
+	fn tc_or_true() {
+	    let ev = tc_or(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+	#[test]
+	fn tc_or_false() {
+	    let ev = tc_or(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
 	}
 
 	#[test]

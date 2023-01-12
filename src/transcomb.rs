@@ -280,6 +280,31 @@ where
     })
 }
 
+/// Return the disjunction of all of the given functions.
+pub fn tc_or<F, N: Node>(v: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	// Future: Evaluate every operand to check for dynamic errors
+	let mut b = false;
+	let mut i = 0;
+	loop {
+	    match v.get(i) {
+		Some(a) => {
+		    if a(ctxt)?.to_bool() {
+			b = true;
+			break
+		    }
+		    i += 1;
+		}
+		None => break,
+	    }
+	}
+	Ok(vec![Rc::new(Item::Value(Value::from(b)))])
+    })
+}
+
 /// Declare a variable in scope for a function. Returns the result of the function.
 pub fn declare_variable<F, N: Node>(name: String, value: F, f: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
