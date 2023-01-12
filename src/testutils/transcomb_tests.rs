@@ -1,12 +1,13 @@
 #[macro_export]
 macro_rules! transcomb_tests (
-    ( $x:ty ) => {
+    ( $x:ty, $y:expr ) => {
 	//use std::rc::Rc;
 	//use xrust::value::Value;
 	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
-	use xrust::transcomb::{Context,
-			       literal, context, tc_sequence, compose, step, filter,
+	use xrust::transcomb::{Context, ContextBuilder,
+			       literal, literal_element,
+			       context, tc_sequence, compose, step, filter,
 			       declare_variable, reference_variable,
 			       function_concat,
 			       function_user_defined,
@@ -17,6 +18,35 @@ macro_rules! transcomb_tests (
 	    let ev = literal(Rc::new(Item::<$x>::Value(Value::from("this is a test"))));
 	    let seq = ev(&mut Context::new()).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "this is a test")
+	}
+	#[test]
+	fn tc_literal_element() {
+	    let ev = literal_element(
+		QualifiedName::new(None, None, String::from("Test")),
+		literal(Rc::new(Item::<$x>::Value(Value::from("content"))))
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+		.result_document(mydoc)
+		.build();
+	    let seq = ev(&mut ctxt).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test>content</Test>")
+	}
+	#[test]
+	fn tc_literal_element_nested() {
+	    let ev = literal_element(
+		QualifiedName::new(None, None, String::from("Test")),
+		literal_element(
+		    QualifiedName::new(None, None, String::from("Level-1")),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("content"))))
+		)
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+		.result_document(mydoc)
+		.build();
+	    let seq = ev(&mut ctxt).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test><Level-1>content</Level-1></Test>")
 	}
 	#[test]
 	fn tc_seq_of_literals() {

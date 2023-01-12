@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::collections::HashMap;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-//use crate::qname::*;
+use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::evaluate::{Axis, NodeMatch, is_node_match};
 use crate::xdmerror::*;
@@ -19,6 +19,7 @@ pub struct Context<N: Node> {
     seq: Sequence<N>,	// The current context
     i: usize,		// Which item in the sequence is the current context
     depth: usize,	// Depth of evaluation
+    rd: Option<N>,	// Result document
     // templates
     // built-in templates
     // variables
@@ -36,6 +37,7 @@ impl<N: Node> Context<N> {
 	    i: 0,
 	    depth: 0,
 	    vars: HashMap::new(),
+	    rd: None,
 	}
     }
 
@@ -54,6 +56,9 @@ impl<N: Node> Context<N> {
     fn var_pop(&mut self, name: String) {
 	self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
+    fn set_result_document(&mut self, rd: N) {
+	self.rd = Some(rd);
+    }
 }
 
 impl<N: Node> From<Sequence<N>> for Context<N> {
@@ -63,6 +68,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
 	    i: 0,
 	    depth: 0,
 	    vars: HashMap::new(),
+	    rd: None,
 	}
     }
 }
@@ -90,6 +96,10 @@ impl<N: Node> ContextBuilder<N> {
 	self.0.vars = v;
 	self
     }
+    pub fn result_document(mut self, rd: N) -> Self {
+	self.0.rd = Some(rd);
+	self
+    }
     pub fn build(self) -> Context<N> {
 	self.0
     }
@@ -99,6 +109,34 @@ impl<N: Node> ContextBuilder<N> {
 pub fn literal<N: Node + 'static>(val: Rc<Item<N>>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 {
     Box::new(move |_ctxt| Ok(vec![val.clone()]))
+}
+
+/// Creates a singleton sequence with a new element node. The function is evaluated to create the content of the element.
+pub fn literal_element<F, N: Node + 'static>(qn: QualifiedName, c: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	if ctxt.rd.is_none() {
+	    return Err(Error::new(ErrorKind::Unknown, String::from("context has no result document")))
+	}
+	let r = ctxt.rd.clone().unwrap();
+
+	let mut e = r.new_element(qn.clone())?;
+	c(ctxt)?.iter()
+	    .try_for_each(|i| {
+		// Item could be a Node or text
+		match &**i {
+		    Item::Node(t) => e.push(t.clone()),
+		    _ => {
+			// Add the Value as a text node
+			let n = r.new_text(Value::from(i.to_string()))?;
+			e.push(n)
+		    }
+		}
+	    })?;
+	Ok(vec![Rc::new(Item::Node(e))])
+    })
 }
 
 /// Creates a singleton sequence with the context item as its value
