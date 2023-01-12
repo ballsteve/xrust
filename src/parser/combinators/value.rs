@@ -5,7 +5,7 @@ where
     P1: Fn(ParseInput) -> ParseResult<R1>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, _)) => Ok((input1, index1, val.clone())),
+        Ok((input1, _)) => Ok((input1, val.clone())),
         Err(err) => Err(err),
     }
 }

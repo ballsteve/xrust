@@ -1,4 +1,4 @@
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseError, ParseResult};
 
 pub(crate) fn alt2<P1, P2, A>(parser1: P1, parser2: P2) -> impl Fn(ParseInput) -> ParseResult<A>
 where
@@ -7,10 +7,11 @@ where
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
-        Err(_) => match parser2(input) {
+        Err(ParseError::Combinator) => match parser2(input) {
             Ok(parse_result2) => Ok(parse_result2),
             Err(err) => Err(err),
         },
+        Err(err) => Err(err),
     }
 }
 
@@ -26,13 +27,15 @@ where
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
-        Err(_) => match parser2(input.clone()) {
+        Err(ParseError::Combinator) => match parser2(input.clone()) {
             Ok(parse_result2) => Ok(parse_result2),
-            Err(_) => match parser3(input) {
+            Err(ParseError::Combinator) => match parser3(input) {
                 Ok(parse_result3) => Ok(parse_result3),
                 Err(err) => Err(err),
             },
+            Err(err) => Err(err),
         },
+        Err(err) => Err(err),
     }
 }
 
@@ -50,16 +53,19 @@ where
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
-        Err(_) => match parser2(input.clone()) {
+        Err(ParseError::Combinator) => match parser2(input.clone()) {
             Ok(parse_result2) => Ok(parse_result2),
-            Err(_) => match parser3(input.clone()) {
+            Err(ParseError::Combinator) => match parser3(input.clone()) {
                 Ok(parse_result3) => Ok(parse_result3),
-                Err(_) => match parser4(input) {
+                Err(ParseError::Combinator) => match parser4(input) {
                     Ok(parse_result4) => Ok(parse_result4),
                     Err(err) => Err(err),
                 },
+                Err(err) => Err(err),
             },
+            Err(err) => Err(err),
         },
+        Err(err) => Err(err),
     }
 }
 
@@ -79,19 +85,23 @@ where
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
-        Err(_) => match parser2(input.clone()) {
+        Err(ParseError::Combinator) => match parser2(input.clone()) {
             Ok(parse_result2) => Ok(parse_result2),
-            Err(_) => match parser3(input.clone()) {
+            Err(ParseError::Combinator) => match parser3(input.clone()) {
                 Ok(parse_result3) => Ok(parse_result3),
-                Err(_) => match parser4(input.clone()) {
+                Err(ParseError::Combinator) => match parser4(input.clone()) {
                     Ok(parse_result4) => Ok(parse_result4),
-                    Err(_) => match parser5(input) {
+                    Err(ParseError::Combinator) => match parser5(input) {
                         Ok(parse_result5) => Ok(parse_result5),
                         Err(err) => Err(err),
                     },
+                    Err(err) => Err(err),
                 },
+                Err(err) => Err(err),
             },
+            Err(err) => Err(err),
         },
+        Err(err) => Err(err),
     }
 }
 
@@ -113,22 +123,27 @@ where
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
-        Err(_) => match parser2(input.clone()) {
+        Err(ParseError::Combinator) => match parser2(input.clone()) {
             Ok(parse_result2) => Ok(parse_result2),
-            Err(_) => match parser3(input.clone()) {
+            Err(ParseError::Combinator) => match parser3(input.clone()) {
                 Ok(parse_result3) => Ok(parse_result3),
-                Err(_) => match parser4(input.clone()) {
+                Err(ParseError::Combinator) => match parser4(input.clone()) {
                     Ok(parse_result4) => Ok(parse_result4),
-                    Err(_) => match parser5(input.clone()) {
+                    Err(ParseError::Combinator) => match parser5(input.clone()) {
                         Ok(parse_result5) => Ok(parse_result5),
-                        Err(_) => match parser6(input.clone()) {
+                        Err(ParseError::Combinator) => match parser6(input.clone()) {
                             Ok(parse_result6) => Ok(parse_result6),
                             Err(err) => Err(err),
                         },
+                        Err(err) => Err(err),
                     },
+                    Err(err) => Err(err),
                 },
+                Err(err) => Err(err),
             },
+            Err(err) => Err(err),
         },
+        Err(err) => Err(err),
     }
 }
 
@@ -152,24 +167,30 @@ where
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
-        Err(_) => match parser2(input.clone()) {
+        Err(ParseError::Combinator) => match parser2(input.clone()) {
             Ok(parse_result2) => Ok(parse_result2),
-            Err(_) => match parser3(input.clone()) {
+            Err(ParseError::Combinator) => match parser3(input.clone()) {
                 Ok(parse_result3) => Ok(parse_result3),
-                Err(_) => match parser4(input.clone()) {
+                Err(ParseError::Combinator) => match parser4(input.clone()) {
                     Ok(parse_result4) => Ok(parse_result4),
-                    Err(_) => match parser5(input.clone()) {
+                    Err(ParseError::Combinator) => match parser5(input.clone()) {
                         Ok(parse_result5) => Ok(parse_result5),
-                        Err(_) => match parser6(input.clone()) {
+                        Err(ParseError::Combinator) => match parser6(input.clone()) {
                             Ok(parse_result6) => Ok(parse_result6),
-                            Err(_) => match parser7(input) {
+                            Err(ParseError::Combinator) => match parser7(input) {
                                 Ok(parse_result7) => Ok(parse_result7),
                                 Err(err) => Err(err),
                             },
+                            Err(err) => Err(err),
                         },
+                        Err(err) => Err(err),
                     },
+                    Err(err) => Err(err),
                 },
+                Err(err) => Err(err),
             },
+            Err(err) => Err(err),
         },
+        Err(err) => Err(err),
     }
 }

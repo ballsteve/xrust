@@ -1,30 +1,31 @@
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseError, ParseResult};
 use crate::intmuttree::DTDDecl;
 
 pub(crate) fn genentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> + 'static {
-    move |(input, index)| {
-        let e = delimited(tag("&"), take_until(";"), tag(";"))((input, index));
+    move |input| {
+        let e = delimited(tag("&"), take_until(";"), tag(";"))(input);
 
         match e {
             Err(usize) => Err(usize),
-            Ok((mut input1, _, entitykey)) => {
+            Ok((mut input1, entitykey)) => {
                 match input1.dtd.generalentities.get(&entitykey as &str) {
                     Some(DTDDecl::GeneralEntity(_, v)) => {
                         if input1.currententitydepth >= input1.maxentitydepth {
                             //attempting to exceed expansion depth
-                            Err(index)
+                            Err(ParseError::EntityDepth {col:input1.currentcol, row:input1.currentrow})
                         } else {
                             for ch in v.chars().rev() {
                                 input1.entityfeed.push(ch);
                             }
                             input1.currententitydepth += 1;
-                            Ok((input1, index, "".to_string()))
+                            Ok((input1, "".to_string()))
                         }
-                    }
-                    _ => Err(index),
+                    },
+                    None => Err(ParseError::MissingGenEntity{col:input1.currentcol, row:input1.currentrow}),
+                    _ => Err(ParseError::Unknown{col:input1.currentcol, row:input1.currentrow}),
                 }
             }
         }
@@ -32,26 +33,27 @@ pub(crate) fn genentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> 
 }
 
 pub(crate) fn paramentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> + 'static {
-    move |(input, index)| {
-        let e = delimited(tag("%"), take_until(";"), tag(";"))((input, index));
+    move |input| {
+        let e = delimited(tag("%"), take_until(";"), tag(";"))(input);
 
         match e {
-            Err(usize) => Err(usize),
-            Ok((mut input1, _, entitykey)) => {
+            Err(err) => Err(err),
+            Ok((mut input1, entitykey)) => {
                 match input1.dtd.paramentities.get(&entitykey as &str) {
                     Some(DTDDecl::ParamEntity(_, v)) => {
                         if input1.currententitydepth >= input1.maxentitydepth {
                             //attempting to exceed expansion depth
-                            Err(index)
+                                Err(ParseError::EntityDepth{col:input1.currentcol, row:input1.currentrow})
                         } else {
                             for ch in v.chars().rev() {
                                 input1.entityfeed.push(ch);
                             }
                             input1.currententitydepth += 1;
-                            Ok((input1, index, "".to_string()))
+                            Ok((input1, "".to_string()))
                         }
-                    }
-                    _ => Err(index),
+                    },
+                    None => Err(ParseError::MissingParamEntity{col:input1.currentcol, row:input1.currentrow}),
+                    _ => Err(ParseError::Unknown{col:input1.currentcol, row:input1.currentrow}),
                 }
             }
         }

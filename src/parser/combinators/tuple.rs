@@ -9,8 +9,8 @@ where
     P2: Fn(ParseInput) -> ParseResult<R2>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => Ok((input2, index2, (result1, result2))),
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => Ok((input2, (result1, result2))),
             Err(err) => Err(err),
         },
         Err(err) => Err(err),
@@ -28,9 +28,9 @@ where
     P3: Fn(ParseInput) -> ParseResult<R3>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => Ok((input3, index3, (result1, result2, result3))),
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => Ok((input3, (result1, result2, result3))),
                 Err(err) => Err(err),
             },
             Err(err) => Err(err),
@@ -52,11 +52,11 @@ where
     P4: Fn(ParseInput) -> ParseResult<R4>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => {
-                        Ok((input4, index4, (result1, result2, result3, result4)))
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => {
+                        Ok((input4, (result1, result2, result3, result4)))
                     }
                     Err(err) => Err(err),
                 },
@@ -83,13 +83,12 @@ where
     P5: Fn(ParseInput) -> ParseResult<R5>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => match parser5((input4, index4)) {
-                        Ok((input5, index5, result5)) => Ok((
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => Ok((
                             input5,
-                            index5,
                             (result1, result2, result3, result4, result5),
                         )),
                         Err(err) => Err(err),
@@ -121,14 +120,13 @@ where
     P6: Fn(ParseInput) -> ParseResult<R6>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => match parser5((input4, index4)) {
-                        Ok((input5, index5, result5)) => match parser6((input5, index5)) {
-                            Ok((input6, index6, result6)) => Ok((
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => match parser6(input5) {
+                            Ok((input6, result6)) => Ok((
                                 input6,
-                                index6,
                                 (result1, result2, result3, result4, result5, result6),
                             )),
                             Err(err) => Err(err),
@@ -164,15 +162,14 @@ where
     P7: Fn(ParseInput) -> ParseResult<R7>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => match parser5((input4, index4)) {
-                        Ok((input5, index5, result5)) => match parser6((input5, index5)) {
-                            Ok((input6, index6, result6)) => match parser7((input6, index6)) {
-                                Ok((input7, index7, result7)) => Ok((
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => match parser6(input5) {
+                            Ok((input6, result6)) => match parser7(input6) {
+                                Ok((input7, result7)) => Ok((
                                     input7,
-                                    index7,
                                     (
                                         result1, result2, result3, result4, result5, result6,
                                         result7,
@@ -215,16 +212,15 @@ where
     P8: Fn(ParseInput) -> ParseResult<R8>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => match parser5((input4, index4)) {
-                        Ok((input5, index5, result5)) => match parser6((input5, index5)) {
-                            Ok((input6, index6, result6)) => match parser7((input6, index6)) {
-                                Ok((input7, index7, result7)) => match parser8((input7, index7)) {
-                                    Ok((input8, index8, result8)) => Ok((
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => match parser6(input5) {
+                            Ok((input6, result6)) => match parser7(input6) {
+                                Ok((input7, result7)) => match parser8(input7) {
+                                    Ok((input8, result8)) => Ok((
                                         input8,
-                                        index8,
                                         (
                                             result1, result2, result3, result4, result5, result6,
                                             result7, result8,
@@ -271,26 +267,23 @@ where
     P9: Fn(ParseInput) -> ParseResult<R9>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => match parser5((input4, index4)) {
-                        Ok((input5, index5, result5)) => match parser6((input5, index5)) {
-                            Ok((input6, index6, result6)) => match parser7((input6, index6)) {
-                                Ok((input7, index7, result7)) => match parser8((input7, index7)) {
-                                    Ok((input8, index8, result8)) => {
-                                        match parser9((input8, index8)) {
-                                            Ok((input9, index9, result9)) => Ok((
-                                                input9,
-                                                index9,
-                                                (
-                                                    result1, result2, result3, result4, result5,
-                                                    result6, result7, result8, result9,
-                                                ),
-                                            )),
-                                            Err(err) => Err(err),
-                                        }
-                                    }
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => match parser6(input5) {
+                            Ok((input6, result6)) => match parser7(input6) {
+                                Ok((input7, result7)) => match parser8(input7) {
+                                    Ok((input8, result8)) => match parser9(input8) {
+                                        Ok((input9, result9)) => Ok((
+                                            input9,
+                                            (
+                                                result1, result2, result3, result4, result5,
+                                                result6, result7, result8, result9,
+                                            ),
+                                        )),
+                                        Err(err) => Err(err),
+                                    },
                                     Err(err) => Err(err),
                                 },
                                 Err(err) => Err(err),
@@ -310,26 +303,8 @@ where
 }
 
 pub(crate) fn tuple10<
-    P1,
-    P2,
-    P3,
-    P4,
-    P5,
-    P6,
-    P7,
-    P8,
-    P9,
-    P10,
-    R1,
-    R2,
-    R3,
-    R4,
-    R5,
-    R6,
-    R7,
-    R8,
-    R9,
-    R10,
+P1, P2, P3, P4, P5, P6, P7, P8, P9, P10,
+R1, R2, R3, R4, R5, R6, R7, R8, R9, R10,
 >(
     parser1: P1,
     parser2: P2,
@@ -355,31 +330,26 @@ where
     P10: Fn(ParseInput) -> ParseResult<R10>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, result1)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, result3)) => match parser4((input3, index3)) {
-                    Ok((input4, index4, result4)) => match parser5((input4, index4)) {
-                        Ok((input5, index5, result5)) => match parser6((input5, index5)) {
-                            Ok((input6, index6, result6)) => match parser7((input6, index6)) {
-                                Ok((input7, index7, result7)) => match parser8((input7, index7)) {
-                                    Ok((input8, index8, result8)) => {
-                                        match parser9((input8, index8)) {
-                                            Ok((input9, index9, result9)) => {
-                                                match parser10((input9, index9)) {
-                                                    Ok((input10, index100, result10)) => Ok((
-                                                        input10,
-                                                        index100,
-                                                        (
-                                                            result1, result2, result3, result4,
-                                                            result5, result6, result7, result8,
-                                                            result9, result10,
-                                                        ),
-                                                    )),
-                                                    Err(err) => Err(err),
-                                                }
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => match parser6(input5) {
+                            Ok((input6, result6)) => match parser7(input6) {
+                                Ok((input7, result7)) => match parser8(input7) {
+                                    Ok((input8, result8)) => match parser9(input8) {
+                                        Ok((input9, result9)) => match parser10(input9) {
+                                                Ok((input10, result10)) => Ok((
+                                                    input10,
+                                                    (
+                                                        result1, result2, result3, result4,
+                                                        result5, result6, result7, result8,
+                                                        result9, result10,
+                                                    ),
+                                                )),
+                                                Err(err) => Err(err),
                                             }
-                                            Err(err) => Err(err),
-                                        }
+                                        Err(err) => Err(err),
                                     }
                                     Err(err) => Err(err),
                                 },
@@ -403,15 +373,15 @@ where
 mod tests {
     use crate::parser::combinators::tag::tag;
     use crate::parser::combinators::tuple::tuple3;
-    use crate::parser::Parserinput;
+    use crate::parser::ParseInput;
 
     #[test]
     fn parser_delimited_test1() {
-        let testdoc = Parserinput::new("<doc>");
+        let testdoc = ParseInput::new("<doc>");
         let parse_doc = tuple3(tag("<"), tag("doc"), tag(">"));
         assert_eq!(
-            Ok((Parserinput::new("<doc>"), 5, ((), (), ()))),
-            parse_doc((testdoc, 0))
+            Ok((ParseInput::new("<doc>"), ((), (), ()))),
+            parse_doc(testdoc)
         );
     }
 }

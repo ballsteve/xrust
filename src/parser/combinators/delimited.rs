@@ -11,9 +11,9 @@ where
     P3: Fn(ParseInput) -> ParseResult<R3>,
 {
     move |input| match parser1(input) {
-        Ok((input1, index1, _)) => match parser2((input1, index1)) {
-            Ok((input2, index2, result2)) => match parser3((input2, index2)) {
-                Ok((input3, index3, _)) => Ok((input3, index3, result2)),
+        Ok((input1, _)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, _)) => Ok((input3, result2)),
                 Err(err) => Err(err),
             },
             Err(err) => Err(err),
@@ -26,15 +26,15 @@ where
 mod tests {
     use crate::parser::combinators::delimited::delimited;
     use crate::parser::combinators::tag::tag;
-    use crate::parser::Parserinput;
+    use crate::parser::ParseInput;
 
     #[test]
     fn parser_delimited_test1() {
-        let testdoc = Parserinput::new("<doc>");
+        let testdoc = ParseInput::new("<doc>");
         let parse_doc = delimited(tag("<"), tag("doc"), tag(">"));
         assert_eq!(
-            Ok((Parserinput::new("<doc>"), 5, ())),
-            parse_doc((testdoc, 0))
+            Ok((ParseInput::new("<doc>"), ())),
+            parse_doc(testdoc)
         );
     }
 }

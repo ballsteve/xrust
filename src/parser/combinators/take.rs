@@ -1,44 +1,49 @@
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseError, ParseResult};
 
 pub(crate) fn take_until(s: &'static str) -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |(input, index)| {
+    move |input| {
         let mut chars = s.chars();
         match chars.clone().count() {
-            1 => take_until1(chars.next().unwrap())((input, index)),
-            2 => take_until2(chars.next().unwrap(), chars.next().unwrap())((input, index)),
+            1 => take_until1(
+                chars.next().unwrap()
+            )(input),
+            2 => take_until2(
+                chars.next().unwrap(),
+                chars.next().unwrap()
+            )(input),
             3 => take_until3(
                 chars.next().unwrap(),
                 chars.next().unwrap(),
                 chars.next().unwrap(),
-            )((input, index)),
-            _ => Err(index),
+            )(input),
+            _ => Err(ParseError::Notimplemented),
         }
     }
 }
 
 fn take_until1(ch: char) -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |(mut input, index)| match input.clone().position(|c| c == ch) {
-        None => Err(index),
+    move |mut input | match input.clone().position(|c| c == ch) {
+        None => Err(ParseError::Combinator),
         Some(pos) => {
             let res = (&mut input).take(pos).collect::<String>();
-            Ok((input, index + pos, res))
+            Ok((input, res))
         }
     }
 }
 
 fn take_until2(ch1: char, ch2: char) -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |(mut input, index)| {
+    move |mut input| {
         let mut i = input.clone().peekable();
         let mut search = 0;
         loop {
             let nextchar = i.next();
             search += 1;
             match nextchar {
-                None => return Err(index),
+                None => return Err(ParseError::Combinator),
                 Some(c) => {
                     if c == ch1 {
                         match i.peek() {
-                            None => return Err(index),
+                            None => return Err(ParseError::Combinator),
                             Some(p) => {
                                 if p == &ch2 {
                                     //search += 1;
@@ -51,16 +56,16 @@ fn take_until2(ch1: char, ch2: char) -> impl Fn(ParseInput) -> ParseResult<Strin
             }
         }
         let res = (&mut input).take(search - 1).collect::<String>();
-        Ok((input, index + search - 1, res))
+        Ok((input, res))
     }
 }
 
 fn take_until3(ch1: char, ch2: char, ch3: char) -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |(mut input, index)| {
+    move |mut input| {
         let mut i = input.clone().peekable();
         let mut search = 0;
         match i.next() {
-            None => return Err(index),
+            None => return Err(ParseError::Combinator),
             Some(c) => {
                 let mut prevchar = c;
                 search += 1;
@@ -68,11 +73,11 @@ fn take_until3(ch1: char, ch2: char, ch3: char) -> impl Fn(ParseInput) -> ParseR
                     let nextchar = i.next();
                     search += 1;
                     match nextchar {
-                        None => return Err(index),
+                        None => return Err(ParseError::Combinator),
                         Some(c) => {
                             if (prevchar == ch1) && (c == ch2) {
                                 match i.peek() {
-                                    None => return Err(index),
+                                    None => return Err(ParseError::Combinator),
                                     Some(p) => {
                                         if p == &ch3 {
                                             //search += 2;
@@ -89,7 +94,7 @@ fn take_until3(ch1: char, ch2: char, ch3: char) -> impl Fn(ParseInput) -> ParseR
             }
         }
         let res = (&mut input).take(search - 2).collect();
-        Ok((input, index + search - 2, res))
+        Ok((input, res))
     }
 }
 
@@ -98,25 +103,14 @@ pub(crate) fn take_while<F>(condition: F) -> impl Fn(ParseInput) -> ParseResult<
 where
     F: Fn(char) -> bool,
 {
-    move |(mut input, index)| match input.clone().position(|c| !condition(c)) {
-        None => Err(index),
-        Some(0) => Err(index),
+    move |mut input| match input.clone().position(|c| !condition(c)) {
+        None => Err(ParseError::Combinator),
+        Some(0) => Err(ParseError::Combinator),
         Some(pos) => {
             let res = (&mut input).take(pos).collect::<String>();
-            Ok((input, index + pos, res))
+            Ok((input, res))
         }
     }
-    /*
-    move |(mut input, index)| {
-        let mut res = (&mut input).take_while(|c| condition(*c)).collect::<String>();
-        if !res.is_empty() {
-            Ok((input, index + (&mut res).chars().count(), res))
-        } else{
-            Err(index)
-        }
-    }
-
-     */
 }
 
 pub(crate) fn take_while_m_n<F>(
@@ -127,19 +121,19 @@ pub(crate) fn take_while_m_n<F>(
 where
     F: Fn(char) -> bool,
 {
-    move |(mut input, index)| match input.clone().position(|c| !condition(c)) {
-        None => Err(index),
+    move |mut input| match input.clone().position(|c| !condition(c)) {
+        None => Err(ParseError::Combinator),
         Some(pos) => {
             if pos >= min {
                 if pos > max {
                     let res = (&mut input).take(max).collect::<String>();
-                    Ok((input, index + max, res))
+                    Ok((input, res))
                 } else {
                     let res = (&mut input).take(pos).collect::<String>();
-                    Ok((input, index + pos, res))
+                    Ok((input, res))
                 }
             } else {
-                Err(index)
+                Err(ParseError::Combinator)
             }
         }
     }
@@ -148,35 +142,35 @@ where
 #[cfg(test)]
 mod tests {
     use crate::parser::combinators::take::take_until;
-    use crate::parser::Parserinput;
+    use crate::parser::ParseInput;
 
     #[test]
     fn parser_take_until1_test1() {
-        let testdoc = Parserinput::new("<doc>");
+        let testdoc = ParseInput::new("<doc>");
         let parse_doc = take_until(">");
         assert_eq!(
-            Ok((Parserinput::new("<doc>"), 4, "<doc".to_string())),
-            parse_doc((testdoc, 0))
+            Ok((ParseInput::new("<doc>"), "<doc".to_string())),
+            parse_doc(testdoc)
         );
     }
 
     #[test]
     fn parser_take_until2_test1() {
-        let testdoc = Parserinput::new("<doc>");
+        let testdoc = ParseInput::new("<doc>");
         let parse_doc = take_until("oc");
         assert_eq!(
-            Ok((Parserinput::new("<doc>"), 2, "<d".to_string())),
-            parse_doc((testdoc, 0))
+            Ok((ParseInput::new("<doc>"), "<d".to_string())),
+            parse_doc(testdoc)
         );
     }
 
     #[test]
     fn parser_take_until3_test1() {
-        let testdoc = Parserinput::new("<doc>");
+        let testdoc = ParseInput::new("<doc>");
         let parse_doc = take_until("doc");
         assert_eq!(
-            Ok((Parserinput::new("<doc>"), 1, "<".to_string())),
-            parse_doc((testdoc, 0))
+            Ok((ParseInput::new("<doc>"), "<".to_string())),
+            parse_doc(testdoc)
         );
     }
 }
