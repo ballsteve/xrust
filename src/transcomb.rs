@@ -356,6 +356,27 @@ where
     })
 }
 
+/// Value comparison of two singelton sequences.
+pub fn value_comparison<F, N: Node>(o: Operator, l: F, r: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	let left = l(ctxt)?;
+	if left.len() != 1 {
+	    return Err(Error::new(ErrorKind::TypeError, String::from("left-hand sequence is not a singleton sequence")))
+	}
+	let right = r(ctxt)?;
+	if right.len() != 1 {
+	    return Err(Error::new(ErrorKind::TypeError, String::from("right-hand sequence is not a singleton sequence")))
+	}
+
+	Ok(vec![Rc::new(Item::Value(Value::from(
+	    left[0].compare(&*right[0], o)?
+	)))])
+    })
+}
+
 /// Declare a variable in scope for a function. Returns the result of the function.
 pub fn declare_variable<F, N: Node>(name: String, value: F, f: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
