@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
-use crate::value::Value;
+use crate::value::{Operator, Value};
 use crate::evaluate::{Axis, NodeMatch, is_node_match};
 use crate::xdmerror::*;
 
@@ -326,6 +326,32 @@ where
 		None => break,
 	    }
 	}
+	Ok(vec![Rc::new(Item::Value(Value::from(b)))])
+    })
+}
+
+/// General comparison of two sequences.
+pub fn general_comparison<F, N: Node>(o: Operator, l: F, r: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	let left = l(ctxt)?;
+	let right = r(ctxt)?;
+
+	let mut b = false;
+	for i in left {
+	    for j in &right {
+		b = i.compare(&*j, o).unwrap();
+		if b {
+		    break;
+		}
+	    }
+	    if b {
+		break;
+	    }
+	}
+
 	Ok(vec![Rc::new(Item::Value(Value::from(b)))])
     })
 }
