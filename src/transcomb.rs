@@ -105,10 +105,16 @@ impl<N: Node> ContextBuilder<N> {
     }
 }
 
+/// Creates an empty sequence
+pub fn empty<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+{
+    Box::new(move |_| Ok(Sequence::new()))
+}
+
 /// Creates a singleton sequence with the given value
 pub fn literal<N: Node + 'static>(val: Rc<Item<N>>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 {
-    Box::new(move |_ctxt| Ok(vec![val.clone()]))
+    Box::new(move |_| Ok(vec![val.clone()]))
 }
 
 /// Creates a singleton sequence with a new element node. The function is evaluated to create the content of the element.
@@ -374,6 +380,40 @@ where
 	Ok(vec![Rc::new(Item::Value(Value::from(
 	    left[0].compare(&*right[0], o)?
 	)))])
+    })
+}
+
+/// Generate a sequence with a range of integers.
+pub fn tc_range<F, N: Node>(start: F, end: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	let s = start(ctxt)?;
+	let e = end(ctxt)?;
+	if s.len() == 0 || e.len() == 0 {
+	    // Empty sequence is the result
+	    return Ok(vec![])
+	}
+	if s.len() != 1 || e.len() != 1 {
+	    return Err(Error::new(ErrorKind::TypeError, String::from("operands must be singleton sequence")))
+	}
+	let i = s[0].to_int()?;
+	let j = e[0].to_int()?;
+        if i > j {
+            // empty sequence result
+            Ok(vec![])
+        } else if i == j {
+            let mut seq = Sequence::new();
+            seq.push_value(Value::Integer(i));
+            Ok(seq)
+        } else {
+            let mut result = Sequence::new();
+            for k in i..=j {
+                result.push_value(Value::from(k))
+            }
+            Ok(result)
+        }
     })
 }
 

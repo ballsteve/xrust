@@ -6,15 +6,23 @@ macro_rules! transcomb_tests (
 	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
 	use xrust::transcomb::{Context, ContextBuilder,
+			       empty,
 			       literal, literal_element, literal_attribute,
 			       context, tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
 			       general_comparison, value_comparison,
+			       tc_range,
 			       declare_variable, reference_variable,
 			       function_concat,
 			       function_user_defined,
 	};
 
+	#[test]
+	fn tc_empty() {
+	    let ev = empty::<$x>();
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
+	    assert_eq!(seq.len(), 0)
+	}
 	#[test]
 	fn tc_singleton_literal() {
 	    let ev = literal(Rc::new(Item::<$x>::Value(Value::from("this is a test"))));
@@ -418,6 +426,39 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
+	}
+
+	#[test]
+	fn tc_range_empty() {
+	    let ev = tc_range(
+		empty(),
+		literal(Rc::new(Item::<$x>::Value(Value::from(10)))),
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 0);
+	}
+	#[test]
+	fn tc_range_many() {
+	    let ev = tc_range(
+		literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+		literal(Rc::new(Item::<$x>::Value(Value::from(10)))),
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 10);
+	    assert_eq!(seq.to_string(), "12345678910");
+	}
+	#[test]
+	fn tc_range_one() {
+	    let ev = tc_range(
+		literal(Rc::new(Item::<$x>::Value(Value::from(5)))),
+		literal(Rc::new(Item::<$x>::Value(Value::from(5)))),
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "5");
 	}
 
 	#[test]
