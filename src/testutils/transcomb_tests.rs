@@ -11,7 +11,7 @@ macro_rules! transcomb_tests (
 			       context, tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
 			       general_comparison, value_comparison,
-			       tc_range,
+			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
 			       function_concat,
 			       function_user_defined,
@@ -459,6 +459,18 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "5");
+	}
+
+	#[test]
+	fn tc_arithmetic_add() {
+	    let ev = arithmetic(vec![
+		(ArithmeticOperator::Noop, literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
+		(ArithmeticOperator::Add, literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "10");
 	}
 
 	#[test]

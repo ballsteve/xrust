@@ -6,7 +6,7 @@ use std::collections::HashMap;
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
-use crate::evaluate::{Axis, NodeMatch, is_node_match};
+use crate::evaluate::{Axis, NodeMatch, is_node_match, ArithmeticOperator};
 use crate::xdmerror::*;
 
 pub(crate) type TransResult<N> = Result<Sequence<N>, Error>;
@@ -414,6 +414,44 @@ where
             }
             Ok(result)
         }
+    })
+}
+
+/// Perform an arithmetic operation.
+pub fn arithmetic<F, N: Node>(ops: Vec<(ArithmeticOperator, F)>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    // Type: the result will be a number, but integer or double?
+    // If all of the operands are integers, then the result is integer otherwise double
+    // TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
+    // In the meantime, let's assume the result will be double and convert any integers
+    Box::new(move |ctxt| {
+	let mut acc = 0.0;
+	for (op, i) in &ops {
+	    let j = match i(ctxt) {
+		Ok(s) => s,
+		Err(_) => {
+		    acc = f64::NAN;
+		    break
+		}
+	    };
+	    if j.len() != 1 {
+		acc = f64::NAN;
+		break
+	    }
+	    let u = j[0].to_double();
+            match op {
+                ArithmeticOperator::Noop => acc = u,
+                ArithmeticOperator::Add => acc += u,
+                ArithmeticOperator::Subtract => acc -= u,
+                ArithmeticOperator::Multiply => acc *= u,
+                ArithmeticOperator::Divide => acc /= u,
+                ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
+                ArithmeticOperator::Modulo => acc = acc % u,
+            }
+	}
+	Ok(vec![Rc::new(Item::Value(Value::from(acc)))])
     })
 }
 

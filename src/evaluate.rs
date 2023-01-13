@@ -1985,6 +1985,20 @@ pub enum ArithmeticOperator {
     Modulo,
 }
 
+impl fmt::Display for ArithmeticOperator {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        match self {
+            ArithmeticOperator::Add => f.write_str("+"),
+            ArithmeticOperator::Multiply => f.write_str("*"),
+            ArithmeticOperator::Divide => f.write_str("div"),
+            ArithmeticOperator::IntegerDivide => f.write_str("idiv"),
+            ArithmeticOperator::Subtract => f.write_str("-"),
+            ArithmeticOperator::Modulo => f.write_str("mod"),
+            ArithmeticOperator::Noop => f.write_str("noop"),
+        }
+    }
+}
+
 impl From<&str> for ArithmeticOperator {
     fn from(a: &str) -> Self {
         match a {
