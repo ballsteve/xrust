@@ -4,7 +4,7 @@ macro_rules! transcomb_tests (
 	//use std::rc::Rc;
 	//use xrust::value::Value;
 	//use xrust::item::{Sequence, SequenceTrait, Item};
-	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest};
+	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName,};
 	use xrust::transcomb::{Context, ContextBuilder,
 			       empty,
 			       literal, literal_element, literal_attribute,
@@ -238,6 +238,57 @@ macro_rules! transcomb_tests (
 	    )).expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_xml(), "firstsecond");
+	}
+
+	#[test]
+	fn tc_step_self() {
+	    // XPath == child::node()
+	    let ev = step(
+		NodeMatch {
+		    axis: Axis::Selfaxis,
+		    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from("Level-1")))})
+		}
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_1.clone())
+		.expect("unable to append child");
+	    let t1 = sd.new_text(Value::from("first"))
+		.expect("unable to create text node");
+	    t.push(t1.clone())
+		.expect("unable to append text node");
+	    let l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_2.clone())
+		.expect("unable to append child");
+	    let t2 = sd.new_text(Value::from("second"))
+		.expect("unable to create text node");
+	    t.push(t2.clone())
+		.expect("unable to append text node");
+	    let et = sd.new_element(QualifiedName::new(None, None, String::from("extra")))
+		.expect("unable to create element");
+	    t.push(et.clone())
+		.expect("unable to append child");
+
+	    // Now evaluate the combinator with Test's children as the context items
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(l1_1)),
+		    Rc::new(Item::Node(t1)),
+		    Rc::new(Item::Node(l1_2)),
+		    Rc::new(Item::Node(t2)),
+		    Rc::new(Item::Node(et)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 2);
+	    assert_eq!(seq.to_xml(), "<Level-1></Level-1><Level-1></Level-1>");
 	}
 
 	#[test]

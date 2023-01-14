@@ -267,9 +267,16 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 						c
 					    }
 					);
-				    // TODO: predicates
 				    acc.append(&mut s);
 				    Ok(acc)
+				}
+				Axis::Selfaxis => {
+				    if is_node_match::<N>(&nm.nodetest, n) {
+					acc.push(i.clone());
+					Ok(acc)
+				    } else {
+					Ok(acc)
+				    }
 				}
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))
 			    }
