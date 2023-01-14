@@ -173,6 +173,30 @@ pub fn context<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
     Box::new(move |ctxt| Ok(vec![ctxt.seq[ctxt.i].clone()]))
 }
 
+/// Returns a sequence with the source document's root node as it's item
+pub fn root<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+{
+    Box::new(move |ctxt| {
+	if ctxt.seq.len() != 0 {
+	    // TODO: check all of the context. If any item is not a Node then error
+	    match &*ctxt.seq[0] {
+		Item::Node(n) => {
+		    match n.node_type() {
+			NodeType::Document => Ok(vec![Rc::new(Item::Node(n.clone()))]),
+			_ => n
+                            .ancestor_iter()
+                            .last()
+                            .map_or(Ok(vec![]), |m| Ok(vec![Rc::new(Item::Node(m))])),
+		    }
+		}
+		_ => Err(Error::new(ErrorKind::ContextNotNode, String::from("context item is not a node")))
+	    }
+	} else {
+	    Err(Error::new(ErrorKind::ContextNotNode, String::from("no context")))
+	}
+    })
+}
+
 /// Creates a sequence. Each function in the supplied vector creates an item in the sequence. The original context is passed to each function.
 pub fn tc_sequence<F, N: Node>(items: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where

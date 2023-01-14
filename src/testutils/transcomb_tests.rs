@@ -8,7 +8,8 @@ macro_rules! transcomb_tests (
 	use xrust::transcomb::{Context, ContextBuilder,
 			       empty,
 			       literal, literal_element, literal_attribute,
-			       context, tc_sequence, compose, step, filter,
+			       context, root,
+			       tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
 			       general_comparison, value_comparison,
 			       tc_range, arithmetic,
@@ -130,6 +131,28 @@ macro_rules! transcomb_tests (
 	    let seq = ev(&mut c).expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "the context itemthe context item")
+	}
+
+	#[test]
+	fn tc_root() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1.clone())
+		.expect("unable to append child");
+
+	    let ev = root();
+
+	    // Now evaluate the combinator with <Level-1> as the context item
+	    let seq = ev(&mut Context::from(vec![Rc::new(Item::Node(l1))]))
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_xml(), "<Test><Level-1></Level-1></Test>");
 	}
 
 	#[test]
