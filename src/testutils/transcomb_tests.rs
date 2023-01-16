@@ -406,8 +406,8 @@ macro_rules! transcomb_tests (
 	    )).expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);
 	}
-	#[test]
 
+	#[test]
 	fn tc_step_descendant() {
 	    let ev = step(
 		NodeMatch {
@@ -446,6 +446,47 @@ macro_rules! transcomb_tests (
 		]
 	    )).expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
+	}
+
+	#[test]
+	fn tc_step_descendant_or_self() {
+	    let ev = step(
+		NodeMatch {
+		    axis: Axis::DescendantOrSelf,
+		    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+		}
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_1.clone())
+		.expect("unable to append child");
+	    let t1 = sd.new_text(Value::from("first"))
+		.expect("unable to create text node");
+	    t.push(t1.clone())
+		.expect("unable to append text node");
+	    let mut l2_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-2")))
+		.expect("unable to create element");
+	    l1_1.push(l2_1.clone())
+		.expect("unable to append child");
+	    let t2 = sd.new_text(Value::from("second"))
+		.expect("unable to create text node");
+	    l2_1.push(t2.clone())
+		.expect("unable to append text node");
+
+	    // Now evaluate the combinator with the document element as the context items
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(t)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 5);
 	}
 
 	#[test]
