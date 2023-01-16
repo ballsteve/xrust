@@ -257,6 +257,14 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 		    match &**i {
 			Item::Node(n) => {
 			    match nm.axis {
+				Axis::Selfaxis => {
+				    if is_node_match::<N>(&nm.nodetest, n) {
+					acc.push(i.clone());
+					Ok(acc)
+				    } else {
+					Ok(acc)
+				    }
+				}
 				Axis::Child => {
 				    let mut s = n.child_iter()
 					.filter(|c| is_node_match::<N>(&nm.nodetest, c))
@@ -270,12 +278,13 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 				    acc.append(&mut s);
 				    Ok(acc)
 				}
-				Axis::Selfaxis => {
-				    if is_node_match::<N>(&nm.nodetest, n) {
-					acc.push(i.clone());
-					Ok(acc)
-				    } else {
-					Ok(acc)
+				Axis::Parent => {
+				    match n.parent() {
+					Some(p) => {
+					    acc.push_node(p.clone());
+					    Ok(acc)
+					}
+					None => Ok(acc)
 				    }
 				}
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))
@@ -285,10 +294,31 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 		    }
 		}
 	    ) {
-		Ok(r) => Ok(r),
+		Ok(mut r) => {
+		    // Eliminate duplicates
+		    r.dedup_by(|a, b| {
+			get_node(a).map_or(
+			    false,
+			    |aa| {
+				get_node(b).map_or(
+				    false,
+				    |bb| aa.is_same(bb)
+				)
+			    }
+			)
+		    });
+		    Ok(r)
+		}
 		Err(err) => Err(err)
 	    }
     })
+}
+
+fn get_node<N: Node>(i: &mut Rc<Item<N>>) -> Result<&N, Error> {
+    match &**i {
+	Item::Node(n) => Ok(n),
+	_ => Err(Error::new(ErrorKind::Unknown, String::from("not a node")))
+    }
 }
 
 /// Remove items that don't match the predicate.

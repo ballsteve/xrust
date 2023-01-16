@@ -292,6 +292,57 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
+	fn tc_step_parent() {
+	    // XPath == parent::*
+	    let ev = step(
+		NodeMatch {
+		    axis: Axis::Parent,
+		    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+		}
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_1.clone())
+		.expect("unable to append child");
+	    let t1 = sd.new_text(Value::from("first"))
+		.expect("unable to create text node");
+	    t.push(t1.clone())
+		.expect("unable to append text node");
+	    let l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_2.clone())
+		.expect("unable to append child");
+	    let t2 = sd.new_text(Value::from("second"))
+		.expect("unable to create text node");
+	    t.push(t2.clone())
+		.expect("unable to append text node");
+	    let et = sd.new_element(QualifiedName::new(None, None, String::from("extra")))
+		.expect("unable to create element");
+	    t.push(et.clone())
+		.expect("unable to append child");
+
+	    // Now evaluate the combinator with Test's children as the context items
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(l1_1)),
+		    Rc::new(Item::Node(t1)),
+		    Rc::new(Item::Node(l1_2)),
+		    Rc::new(Item::Node(t2)),
+		    Rc::new(Item::Node(et)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq[0].name().to_string(), "Test");
+	}
+
+	#[test]
 	fn tc_path_step_child() {
 	    // XPath == child::node()/child::node()
 	    let ev = compose(
