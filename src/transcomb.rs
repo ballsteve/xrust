@@ -300,6 +300,13 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
                                         _ => Ok(acc),
                                     }
 				}
+                                Axis::Descendant => {
+                                    n.descend_iter()
+                                        .filter(|c| is_node_match::<N>(&nm.nodetest, c))
+                                        .for_each(|c| acc.push_node(c.clone()));
+
+                                    Ok(acc)
+                                }
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))
 			    }
 			}
