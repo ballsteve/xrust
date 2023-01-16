@@ -287,6 +287,19 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 					None => Ok(acc)
 				    }
 				}
+				Axis::ParentDocument => {
+                                    // Only matches the Document.
+                                    // If no parent then return the Document
+                                    // NB. Document is a special kind of Node
+                                    match n.node_type() {
+                                        NodeType::Document => {
+                                            // The context is the document
+					    acc.push(i.clone());
+					    Ok(acc)
+                                        }
+                                        _ => Ok(acc),
+                                    }
+				}
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))
 			    }
 			}

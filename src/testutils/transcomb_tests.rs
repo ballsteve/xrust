@@ -343,6 +343,71 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
+	fn tc_step_parentdoc_pos() {
+	    let ev = step(
+		NodeMatch {
+		    axis: Axis::ParentDocument,
+		    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+		}
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_1.clone())
+		.expect("unable to append child");
+	    let t1 = sd.new_text(Value::from("first"))
+		.expect("unable to create text node");
+	    t.push(t1.clone())
+		.expect("unable to append text node");
+
+	    // Now evaluate the combinator with the root node as the context items
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(sd)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	}
+	#[test]
+	fn tc_step_parentdoc_neg() {
+	    let ev = step(
+		NodeMatch {
+		    axis: Axis::ParentDocument,
+		    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+		}
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_1.clone())
+		.expect("unable to append child");
+	    let t1 = sd.new_text(Value::from("first"))
+		.expect("unable to create text node");
+	    t.push(t1.clone())
+		.expect("unable to append text node");
+
+	    // Now evaluate the combinator with the document element as the context items
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(t)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 0);
+	}
+
+	#[test]
 	fn tc_path_step_child() {
 	    // XPath == child::node()/child::node()
 	    let ev = compose(
