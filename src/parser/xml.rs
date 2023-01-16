@@ -15,7 +15,6 @@ use crate::parser::common::{
 use crate::qname::*;
 use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
-//use crate::ErrorKind::ParseError ;
 use crate::xdmerror::*;
 
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt6, alt7};
@@ -111,10 +110,16 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
                         message: "Missing namespace declaration.".to_string(),
                     })
                 }
+                ParseError::NotWellFormed => {
+                    Result::Err(Error {
+                        kind: ErrorKind::ParseError,
+                        message: "XML document not well formed.".to_string(),
+                    })
+                }
                 ParseError::Notimplemented => {
                     Result::Err(Error {
                         kind: ErrorKind::ParseError,
-                        message: "Unimplemented featureUnrecoverable parser erro.".to_string(),
+                        message: "Unimplemented feature.".to_string(),
                     })
                 }
             }
@@ -123,19 +128,26 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
 }
 
 fn document(input: ParseInput) -> ParseResult<XMLDocument> {
-    //TODO ADD CONFIG AND DTD
-    map(tuple3(opt(prolog()), element(), opt(misc())),
-        |(p, e, m)| {
-        let pr = p.unwrap_or((None, vec![]));
+    match tuple3(opt(prolog()), element(), opt(misc()))(input){
+        Err(err) => Err(err),
+        Ok((mut input1, (p, e, m))) => {
+            //Check nothing remaining in iterator, nothing after the end of the root node.
+            match input1.next(){
+                Some(_) => Err(ParseError::NotWellFormed),
+                None => {
+                    let pr = p.unwrap_or((None, vec![]));
 
-        let mut a = DocumentBuilder::new()
-            .prologue(pr.1)
-            .content(vec![e])
-            .epilogue(m.unwrap_or(vec![]))
-            .build();
-        pr.0.map(|x| a.set_xmldecl(x));
-        a
-    })(input)
+                    let mut a = DocumentBuilder::new()
+                        .prologue(pr.1)
+                        .content(vec![e])
+                        .epilogue(m.unwrap_or(vec![]))
+                        .build();
+                    pr.0.map(|x| a.set_xmldecl(x));
+                    Ok((input1,a))
+                }
+            }
+        }
+    }
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?

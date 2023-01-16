@@ -23,6 +23,7 @@ pub(crate) enum ParseError{
     Validation{row: usize, col:usize },
     Unknown{row:usize, col:usize},
     MissingNameSpace,
+    NotWellFormed,
     Notimplemented
 }
 
