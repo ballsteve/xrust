@@ -186,6 +186,11 @@ fn validsa011() {
     assert!(testxml.is_ok());
 }
 
+/*
+
+This test is deliberately ignored. Although these are valid XML documents, XML without namespaces
+is not something we wish to handle.
+
 #[test]
 #[ignore]
 fn validsa012() {
@@ -202,6 +207,7 @@ fn validsa012() {
 
     assert!(testxml.is_ok());
 }
+ */
 
 #[test]
 fn validsa013() {

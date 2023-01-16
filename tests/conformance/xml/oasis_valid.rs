@@ -9,7 +9,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn op01pass2() {
     /*
         Test ID:o-p01pass2
@@ -42,7 +41,6 @@ fn op06pass1() {
 }
 
 #[test]
-#[ignore]
 fn op07pass1() {
     /*
         Test ID:o-p07pass1
@@ -93,7 +91,6 @@ fn op09pass1() {
 }
 
 #[test]
-#[ignore]
 fn op12pass1() {
     /*
         Test ID:o-p12pass1
@@ -110,7 +107,6 @@ fn op12pass1() {
 }
 
 #[test]
-#[ignore]
 fn op22pass4() {
     /*
         Test ID:o-p22pass4
@@ -127,7 +123,6 @@ fn op22pass4() {
 }
 
 #[test]
-#[ignore]
 fn op22pass5() {
     /*
         Test ID:o-p22pass5
@@ -144,7 +139,6 @@ fn op22pass5() {
 }
 
 #[test]
-#[ignore]
 fn op22pass6() {
     /*
         Test ID:o-p22pass6
@@ -161,7 +155,6 @@ fn op22pass6() {
 }
 
 #[test]
-#[ignore]
 fn op28pass1() {
     /*
         Test ID:o-p28pass1
@@ -314,7 +307,6 @@ fn op31pass2() {
 }
 
 #[test]
-#[ignore]
 fn op43pass1() {
     /*
         Test ID:o-p43pass1
@@ -331,7 +323,6 @@ fn op43pass1() {
 }
 
 #[test]
-#[ignore]
 fn op45pass1() {
     /*
         Test ID:o-p45pass1
@@ -348,7 +339,6 @@ fn op45pass1() {
 }
 
 #[test]
-#[ignore]
 fn op46pass1() {
     /*
         Test ID:o-p46pass1
@@ -365,7 +355,6 @@ fn op46pass1() {
 }
 
 #[test]
-#[ignore]
 fn op47pass1() {
     /*
         Test ID:o-p47pass1
@@ -382,7 +371,6 @@ fn op47pass1() {
 }
 
 #[test]
-#[ignore]
 fn op48pass1() {
     /*
         Test ID:o-p48pass1
@@ -433,7 +421,6 @@ fn op50pass1() {
 }
 
 #[test]
-#[ignore]
 fn op51pass1() {
     /*
         Test ID:o-p51pass1
@@ -450,7 +437,6 @@ fn op51pass1() {
 }
 
 #[test]
-#[ignore]
 fn op52pass1() {
     /*
         Test ID:o-p52pass1
@@ -467,7 +453,6 @@ fn op52pass1() {
 }
 
 #[test]
-#[ignore]
 fn op53pass1() {
     /*
         Test ID:o-p53pass1
@@ -501,7 +486,6 @@ fn op54pass1() {
 }
 
 #[test]
-#[ignore]
 fn op55pass1() {
     /*
         Test ID:o-p55pass1
@@ -535,7 +519,6 @@ fn op56pass1() {
 }
 
 #[test]
-#[ignore]
 fn op57pass1() {
     /*
         Test ID:o-p57pass1
@@ -552,7 +535,6 @@ fn op57pass1() {
 }
 
 #[test]
-#[ignore]
 fn op58pass1() {
     /*
         Test ID:o-p58pass1
@@ -569,13 +551,12 @@ fn op58pass1() {
 }
 
 #[test]
-#[ignore]
 fn op59pass1() {
     /*
         Test ID:o-p59pass1
         Test URI:p59pass1.xml
         Spec Sections:3.3.1 [59]
-        Description:NMTOKEN enumerations haveon or more items
+        Description:NMTOKEN enumerations have one or more items
     */
 
     let testxml = Document::try_from(
@@ -586,7 +567,6 @@ fn op59pass1() {
 }
 
 #[test]
-#[ignore]
 fn op60pass1() {
     /*
         Test ID:o-p60pass1
@@ -671,7 +651,6 @@ fn op64pass1() {
 }
 
 #[test]
-#[ignore]
 fn op68pass1() {
     /*
         Test ID:o-p68pass1
@@ -705,7 +684,6 @@ fn op69pass1() {
 }
 
 #[test]
-#[ignore]
 fn op70pass1() {
     /*
         Test ID:o-p70pass1
@@ -722,7 +700,6 @@ fn op70pass1() {
 }
 
 #[test]
-#[ignore]
 fn op71pass1() {
     /*
         Test ID:o-p71pass1
@@ -739,7 +716,6 @@ fn op71pass1() {
 }
 
 #[test]
-#[ignore]
 fn op72pass1() {
     /*
         Test ID:o-p72pass1
