@@ -316,6 +316,16 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
                                         .for_each(|c| acc.push_node(c.clone()));
                                     Ok(acc)
                                 }
+                                Axis::DescendantOrSelfOrRoot => {
+				    acc.push_node(n.owner_document().clone());
+				    if is_node_match::<N>(&nm.nodetest, n) {
+					acc.push(i.clone())
+				    }
+                                    n.descend_iter()
+                                        .filter(|c| is_node_match::<N>(&nm.nodetest, c))
+                                        .for_each(|c| acc.push_node(c.clone()));
+                                    Ok(acc)
+                                }
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))
 			    }
 			}
