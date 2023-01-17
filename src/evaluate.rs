@@ -1725,7 +1725,10 @@ pub(crate) fn is_node_match<N: Node>(nt: &NodeTest, n: &N) -> bool {
                     NodeType::Text => true,
                     _ => false,
                 },
-                KindTest::AnyKindTest => true,
+                KindTest::AnyKindTest => match n.node_type() {
+		    NodeType::Document => false,
+		    _ => true,
+		}
                 KindTest::AttributeTest
                 | KindTest::SchemaElementTest
                 | KindTest::SchemaAttributeTest
