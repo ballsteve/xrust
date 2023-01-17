@@ -223,7 +223,6 @@ fn validsa010() {
 }
 
 #[test]
-#[ignore]
 fn validsa011() {
     /*
         Test ID:valid-sa-011
@@ -288,7 +287,6 @@ fn validsa013() {
 }
 
 #[test]
-#[ignore]
 fn validsa014() {
     /*
         Test ID:valid-sa-014
@@ -1476,7 +1474,6 @@ fn validsa068() {
 }
 
 #[test]
-#[ignore]
 fn validsa069() {
     /*
         Test ID:valid-sa-069
@@ -1520,7 +1517,6 @@ fn validsa070() {
 }
 
 #[test]
-#[ignore]
 fn validsa071() {
     /*
         Test ID:valid-sa-071
@@ -1586,7 +1582,6 @@ fn validsa073() {
 }
 
 #[test]
-#[ignore]
 fn validsa074() {
     /*
         Test ID:valid-sa-074
@@ -1608,7 +1603,6 @@ fn validsa074() {
 }
 
 #[test]
-#[ignore]
 fn validsa075() {
     /*
         Test ID:valid-sa-075
@@ -1630,7 +1624,6 @@ fn validsa075() {
 }
 
 #[test]
-#[ignore]
 fn validsa076() {
     /*
         Test ID:valid-sa-076
@@ -1652,7 +1645,6 @@ fn validsa076() {
 }
 
 #[test]
-#[ignore]
 fn validsa077() {
     /*
         Test ID:valid-sa-077
@@ -1674,7 +1666,6 @@ fn validsa077() {
 }
 
 #[test]
-#[ignore]
 fn validsa078() {
     /*
         Test ID:valid-sa-078
@@ -1696,7 +1687,6 @@ fn validsa078() {
 }
 
 #[test]
-#[ignore]
 fn validsa079() {
     /*
         Test ID:valid-sa-079
@@ -1718,7 +1708,6 @@ fn validsa079() {
 }
 
 #[test]
-#[ignore]
 fn validsa080() {
     /*
         Test ID:valid-sa-080
@@ -1740,7 +1729,6 @@ fn validsa080() {
 }
 
 #[test]
-#[ignore]
 fn validsa081() {
     /*
         Test ID:valid-sa-081
@@ -1806,7 +1794,6 @@ fn validsa083() {
 }
 
 #[test]
-#[ignore]
 fn validsa084() {
     /*
         Test ID:valid-sa-084
@@ -1828,7 +1815,6 @@ fn validsa084() {
 }
 
 #[test]
-#[ignore]
 fn validsa085() {
     /*
         Test ID:valid-sa-085
@@ -1938,7 +1924,6 @@ fn validsa089() {
 }
 
 #[test]
-#[ignore]
 fn validsa090() {
     /*
         Test ID:valid-sa-090
@@ -1982,7 +1967,6 @@ fn validsa091() {
 }
 
 #[test]
-#[ignore]
 fn validsa092() {
     /*
         Test ID:valid-sa-092
@@ -2004,7 +1988,6 @@ fn validsa092() {
 }
 
 #[test]
-#[ignore]
 fn validsa093() {
     /*
         Test ID:valid-sa-093
@@ -2026,7 +2009,6 @@ fn validsa093() {
 }
 
 #[test]
-#[ignore]
 fn validsa094() {
     /*
         Test ID:valid-sa-094
@@ -2114,7 +2096,6 @@ fn validsa097() {
 }
 
 #[test]
-#[ignore]
 fn validsa098() {
     /*
         Test ID:valid-sa-098
@@ -2136,7 +2117,6 @@ fn validsa098() {
 }
 
 #[test]
-#[ignore]
 fn validsa099() {
     /*
         Test ID:valid-sa-099
@@ -2180,7 +2160,6 @@ fn validsa100() {
 }
 
 #[test]
-#[ignore]
 fn validsa101() {
     /*
         Test ID:valid-sa-101
@@ -2202,7 +2181,6 @@ fn validsa101() {
 }
 
 #[test]
-#[ignore]
 fn validsa102() {
     /*
         Test ID:valid-sa-102
@@ -2224,7 +2202,6 @@ fn validsa102() {
 }
 
 #[test]
-#[ignore]
 fn validsa103() {
     /*
         Test ID:valid-sa-103
@@ -2246,7 +2223,6 @@ fn validsa103() {
 }
 
 #[test]
-#[ignore]
 fn validsa104() {
     /*
         Test ID:valid-sa-104
@@ -2268,7 +2244,6 @@ fn validsa104() {
 }
 
 #[test]
-#[ignore]
 fn validsa105() {
     /*
         Test ID:valid-sa-105
@@ -2290,7 +2265,6 @@ fn validsa105() {
 }
 
 #[test]
-#[ignore]
 fn validsa106() {
     /*
         Test ID:valid-sa-106
@@ -2312,7 +2286,6 @@ fn validsa106() {
 }
 
 #[test]
-#[ignore]
 fn validsa107() {
     /*
         Test ID:valid-sa-107
@@ -2356,7 +2329,6 @@ fn validsa108() {
 }
 
 #[test]
-#[ignore]
 fn validsa109() {
     /*
         Test ID:valid-sa-109
@@ -2422,7 +2394,6 @@ fn validsa111() {
 }
 
 #[test]
-#[ignore]
 fn validsa112() {
     /*
         Test ID:valid-sa-112
@@ -2444,7 +2415,6 @@ fn validsa112() {
 }
 
 #[test]
-#[ignore]
 fn validsa113() {
     /*
         Test ID:valid-sa-113
@@ -2510,7 +2480,6 @@ fn validsa115() {
 }
 
 #[test]
-#[ignore]
 fn validsa116() {
     /*
         Test ID:valid-sa-116
@@ -2576,7 +2545,6 @@ fn validsa118() {
 }
 
 #[test]
-#[ignore]
 fn validsa119() {
     /*
         Test ID:valid-sa-119
