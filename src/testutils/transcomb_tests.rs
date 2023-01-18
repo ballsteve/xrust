@@ -882,6 +882,67 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
+	fn tc_step_attribute() {
+	    // XPath == child::node()/attribute::*
+	    let ev = compose(
+		vec![
+		    step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    ),
+		    step(
+			NodeMatch {
+			    axis: Axis::Attribute,
+			    nodetest: NodeTest::Name(NameTest{name: Some(WildcardOrName::Wildcard), ns: None, prefix: None})
+			}
+		    ),
+		]
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut l1_1 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_1.clone())
+		.expect("unable to append child");
+	    let t1 = sd.new_text(Value::from("one"))
+		.expect("unable to create text node");
+	    l1_1.push(t1)
+		.expect("unable to append text node");
+	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("first"))
+		.expect("unable to create attribute node");
+	    l1_1.add_attribute(a1)
+		.expect("unable to add attribute node");
+	    let mut l1_2 = sd.new_element(QualifiedName::new(None, None, String::from("Level-1")))
+		.expect("unable to create element");
+	    t.push(l1_2.clone())
+		.expect("unable to append child");
+	    let t2 = sd.new_text(Value::from("two"))
+		.expect("unable to create text node");
+	    l1_2.push(t2)
+		.expect("unable to append text node");
+	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("second"))
+		.expect("unable to create attribute node");
+	    l1_2.add_attribute(a2)
+		.expect("unable to add attribute node");
+
+	    // Now evaluate the combinator with the Test element as the context item
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(t)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 2);
+	    assert_eq!(seq.to_string(), "firstsecond");
+	}
+
+	#[test]
 	fn tc_predicate() {
 	    // XPath == child::node()[child::node()]
 	    let ev = compose(

@@ -422,6 +422,12 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
                                         });
                                     Ok(acc)
                                 }
+				Axis::Attribute => {
+				    n.attribute_iter()
+					.filter(|a| is_node_match::<N>(&nm.nodetest, a))
+					.for_each(|a| acc.push_node(a.clone()));
+				    Ok(acc)
+				}
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))
 			    }
 			}
