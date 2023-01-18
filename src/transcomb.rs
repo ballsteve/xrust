@@ -56,9 +56,9 @@ impl<N: Node> Context<N> {
     fn var_pop(&mut self, name: String) {
 	self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
-    fn set_result_document(&mut self, rd: N) {
-	self.rd = Some(rd);
-    }
+//    fn set_result_document(&mut self, rd: N) {
+//	self.rd = Some(rd);
+//    }
 }
 
 impl<N: Node> From<Sequence<N>> for Context<N> {
@@ -354,6 +354,38 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .for_each(|c| acc.push_node(c.clone()));
 
+                                    Ok(acc)
+                                }
+                                Axis::Following => {
+                                    // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
+                                    // iow, for each ancestor-or-self node, include every next sibling and its descendants
+
+                                    // Start with following siblings of self
+                                    let mut bcc = vec![];
+				    n.next_iter()
+					.for_each(|a| {
+                                            bcc.push(a.clone());
+                                            a.descend_iter()
+						.for_each(|b| {
+						    bcc.push(b.clone())}
+						);
+					});
+
+                                    // Now traverse ancestors
+                                    n.ancestor_iter()
+					.for_each(|a| {
+                                            a.next_iter()
+						.for_each(|b| {
+						    bcc.push(b.clone());
+						    b.descend_iter()
+							.for_each(|c| bcc.push(c.clone()));
+						})
+					});
+                                    bcc.iter()
+                                        .filter(|e| is_node_match::<N>(&nm.nodetest, *e))
+                                        .for_each(|g| {
+                                            acc.push_node(g.clone());
+                                        });
                                     Ok(acc)
                                 }
 				_ => Err(Error::new(ErrorKind::NotImplemented, String::from("coming soon")))

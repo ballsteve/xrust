@@ -167,6 +167,12 @@ impl Default for NodeType {
     }
 }
 
+impl fmt::Display for NodeType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.to_string())
+    }
+}
+
 /// An Item in a [Sequence]. Can be a node, function or [Value].
 ///
 /// Functions are not yet implemented.

@@ -711,6 +711,65 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
+	fn tc_step_following() {
+	    // XPath == following::node()
+	    let ev = step(
+		NodeMatch {
+		    axis: Axis::Following,
+		    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+		}
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut one = sd.new_element(QualifiedName::new(None, None, String::from("Left-1")))
+		.expect("unable to create element");
+	    t.push(one.clone())
+		.expect("unable to append child");
+	    let mut two = sd.new_element(QualifiedName::new(None, None, String::from("Right-1")))
+		.expect("unable to create element");
+	    t.push(two.clone())
+		.expect("unable to append child");
+	    let three = sd.new_element(QualifiedName::new(None, None, String::from("Left-2")))
+		.expect("unable to create element");
+	    one.push(three.clone())
+		.expect("unable to append child");
+	    let mut four = sd.new_element(QualifiedName::new(None, None, String::from("Right-2")))
+		.expect("unable to create element");
+	    one.push(four.clone())
+		.expect("unable to append child");
+	    let five = sd.new_element(QualifiedName::new(None, None, String::from("Left-2")))
+		.expect("unable to create element");
+	    two.push(five.clone())
+		.expect("unable to append child");
+	    let six = sd.new_element(QualifiedName::new(None, None, String::from("Right-2")))
+		.expect("unable to create element");
+	    two.push(six.clone())
+		.expect("unable to append child");
+
+	    let seven = sd.new_element(QualifiedName::new(None, None, String::from("Left-3")))
+		.expect("unable to create element");
+	    four.push(seven.clone())
+		.expect("unable to append child");
+	    let eight = sd.new_element(QualifiedName::new(None, None, String::from("Right-3")))
+		.expect("unable to create element");
+	    four.push(eight.clone())
+		.expect("unable to append child");
+
+	    // Now evaluate the combinator with lowest left node as the context items
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(seven)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 4);
+	}
+
+	#[test]
 	fn tc_path_step_child() {
 	    // XPath == child::node()/child::node()
 	    let ev = compose(
