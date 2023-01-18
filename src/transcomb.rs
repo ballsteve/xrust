@@ -265,6 +265,14 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 					Ok(acc)
 				    }
 				}
+				Axis::SelfDocument => {
+				    if n.node_type() == NodeType::Document {
+					acc.push(i.clone());
+					Ok(acc)
+				    } else {
+					Ok(acc)
+				    }
+				}
 				Axis::Child => {
 				    let mut s = n.child_iter()
 					.filter(|c| is_node_match::<N>(&nm.nodetest, c))
