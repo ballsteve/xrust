@@ -360,15 +360,16 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
                                     // XPath 3.3.2.1: the following axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not descendants of the context node, and occur after the context node in document order.
                                     // iow, for each ancestor-or-self node, include every next sibling and its descendants
 
-                                    // Start with following siblings of self
                                     let mut bcc = vec![];
+
+                                    // Start with following siblings of self
 				    n.next_iter()
 					.for_each(|a| {
                                             bcc.push(a.clone());
                                             a.descend_iter()
 						.for_each(|b| {
-						    bcc.push(b.clone())}
-						);
+						    bcc.push(b.clone())
+						});
 					});
 
                                     // Now traverse ancestors
@@ -381,6 +382,39 @@ pub fn step<N: Node>(nm: NodeMatch) -> Box<dyn Fn(&mut Context<N>) -> TransResul
 							.for_each(|c| bcc.push(c.clone()));
 						})
 					});
+                                    bcc.iter()
+                                        .filter(|e| is_node_match::<N>(&nm.nodetest, *e))
+                                        .for_each(|g| {
+                                            acc.push_node(g.clone());
+                                        });
+                                    Ok(acc)
+                                }
+                                Axis::Preceding => {
+                                    // XPath 3.3.2.1: the preceding axis contains all nodes that are descendants of the root of the tree in which the context node is found, are not ancestors of the context node, and occur before the context node in document order.
+                                    // iow, for each ancestor-or-self node, include every previous sibling and its descendants
+
+                                    let mut bcc = vec![];
+
+                                    // Start with preceding siblings of self
+                                    n.prev_iter()
+					.for_each(|a| {
+                                            bcc.push(a.clone());
+                                            a.descend_iter()
+						.for_each(|b| {
+						    bcc.push(b.clone())
+						});
+					});
+
+                                    // Now traverse ancestors
+                                    n.ancestor_iter().for_each(|a| {
+                                        a.prev_iter().for_each(|b| {
+                                            bcc.push(b.clone());
+                                            b.descend_iter()
+						.for_each(|c| {
+						    bcc.push(c.clone())
+						});
+                                        })
+                                    });
                                     bcc.iter()
                                         .filter(|e| is_node_match::<N>(&nm.nodetest, *e))
                                         .for_each(|g| {
