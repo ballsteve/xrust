@@ -17,24 +17,15 @@ use std::collections::{HashMap, HashSet};
 use std::str::FromStr;
 use crate::xdmerror::*;
 
-use crate::parser::combinators::alt::{alt2, alt3, alt4, alt6, alt7};
+use crate::parser::combinators::alt::{alt2, alt3, alt4, alt6, alt7, alt8};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::expander::{genentityexpander, paramentityexpander};
-use crate::parser::combinators::many::many0;
-use crate::parser::combinators::many::many1;
+use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_while, take_while_m_n};
-use crate::parser::combinators::tuple::tuple10;
-use crate::parser::combinators::tuple::tuple2;
-use crate::parser::combinators::tuple::tuple3;
-use crate::parser::combinators::tuple::tuple4;
-use crate::parser::combinators::tuple::tuple5;
-use crate::parser::combinators::tuple::tuple6;
-use crate::parser::combinators::tuple::tuple7;
-use crate::parser::combinators::tuple::tuple8;
-use crate::parser::combinators::tuple::tuple9;
+use crate::parser::combinators::tuple::{tuple2, tuple3, tuple4, tuple5, tuple6, tuple7, tuple8, tuple9, tuple10};
 use crate::parser::combinators::validate::validate;
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
@@ -264,13 +255,15 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<(String, Option<String>)> 
 }
 
 fn intsubset() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
-    many0(alt6(
+    many0(alt8(
         elementdecl(),
         attlistdecl(),
         pedecl(),
         gedecl(),
         ndatadecl(),
         whitespace1(),
+        map(comment(), |c| ()),
+        map(processing_instruction(), |c| ()),
     ))
 }
 

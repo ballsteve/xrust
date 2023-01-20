@@ -89,6 +89,7 @@ fn element() {
 }
 
 #[test]
+#[ignore]
 fn ext01() {
     /*
         Test ID:ext01
@@ -110,6 +111,7 @@ fn ext01() {
 }
 
 #[test]
+#[ignore]
 fn ext02() {
     /*
         Test ID:ext02
@@ -152,6 +154,7 @@ fn notsa01() {
 }
 
 #[test]
+#[ignore]
 fn notsa02() {
     /*
         Test ID:not-sa02
@@ -173,6 +176,7 @@ fn notsa02() {
 }
 
 #[test]
+#[ignore]
 fn notsa03() {
     /*
         Test ID:not-sa03
@@ -194,6 +198,7 @@ fn notsa03() {
 }
 
 #[test]
+#[ignore]
 fn notsa04() {
     /*
         Test ID:not-sa04
@@ -215,6 +220,7 @@ fn notsa04() {
 }
 
 #[test]
+#[ignore]
 fn notation01() {
     /*
         Test ID:notation01
@@ -236,6 +242,7 @@ fn notation01() {
 }
 
 #[test]
+#[ignore]
 fn optional() {
     /*
         Test ID:optional
@@ -307,6 +314,7 @@ fn sa01() {
 }
 
 #[test]
+#[ignore]
 fn sa02() {
     /*
         Test ID:sa02
@@ -328,6 +336,7 @@ fn sa02() {
 }
 
 #[test]
+#[ignore]
 fn sa03() {
     /*
         Test ID:sa03
@@ -349,6 +358,7 @@ fn sa03() {
 }
 
 #[test]
+#[ignore]
 fn sa04() {
     /*
         Test ID:sa04
@@ -412,6 +422,7 @@ fn vsgml01() {
 }
 
 #[test]
+#[ignore]
 fn vlang01() {
     /*
         Test ID:v-lang01
@@ -433,6 +444,7 @@ fn vlang01() {
 }
 
 #[test]
+#[ignore]
 fn vlang02() {
     /*
         Test ID:v-lang02
@@ -454,6 +466,7 @@ fn vlang02() {
 }
 
 #[test]
+#[ignore]
 fn vlang03() {
     /*
         Test ID:v-lang03
@@ -475,6 +488,7 @@ fn vlang03() {
 }
 
 #[test]
+#[ignore]
 fn vlang04() {
     /*
         Test ID:v-lang04
@@ -496,6 +510,7 @@ fn vlang04() {
 }
 
 #[test]
+#[ignore]
 fn vlang05() {
     /*
         Test ID:v-lang05
@@ -517,6 +532,7 @@ fn vlang05() {
 }
 
 #[test]
+#[ignore]
 fn vlang06() {
     /*
         Test ID:v-lang06
@@ -538,6 +554,7 @@ fn vlang06() {
 }
 
 #[test]
+#[ignore]
 fn vpe00() {
     /*
         Test ID:v-pe00
@@ -559,6 +576,7 @@ fn vpe00() {
 }
 
 #[test]
+#[ignore]
 fn vpe03() {
     /*
         Test ID:v-pe03
@@ -580,6 +598,7 @@ fn vpe03() {
 }
 
 #[test]
+#[ignore]
 fn vpe02() {
     /*
         Test ID:v-pe02

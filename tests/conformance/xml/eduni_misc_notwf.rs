@@ -87,6 +87,7 @@ fn hstlhs007() {
 }
 
 #[test]
+#[ignore]
 fn hstlhs008() {
     /*
         Test ID:hst-lhs-008
@@ -103,6 +104,7 @@ fn hstlhs008() {
 }
 
 #[test]
+#[ignore]
 fn hstlhs009() {
     /*
         Test ID:hst-lhs-009

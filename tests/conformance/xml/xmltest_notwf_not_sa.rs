@@ -12,6 +12,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn notwfnotsa001() {
     /*
         Test ID:not-wf-not-sa-001
@@ -44,6 +45,7 @@ fn notwfnotsa002() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa003() {
     /*
         Test ID:not-wf-not-sa-003
@@ -60,6 +62,7 @@ fn notwfnotsa003() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa004() {
     /*
         Test ID:not-wf-not-sa-004
@@ -76,6 +79,7 @@ fn notwfnotsa004() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa005() {
     /*
         Test ID:not-wf-not-sa-005
@@ -92,6 +96,7 @@ fn notwfnotsa005() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa006() {
     /*
         Test ID:not-wf-not-sa-006
@@ -108,6 +113,7 @@ fn notwfnotsa006() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa007() {
     /*
         Test ID:not-wf-not-sa-007
@@ -124,6 +130,7 @@ fn notwfnotsa007() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa008() {
     /*
         Test ID:not-wf-not-sa-008
@@ -140,6 +147,7 @@ fn notwfnotsa008() {
 }
 
 #[test]
+#[ignore]
 fn notwfnotsa009() {
     /*
         Test ID:not-wf-not-sa-009

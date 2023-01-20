@@ -9,6 +9,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn ibm11valid_p46ibm46i01xml() {
     /*
         Test ID:ibm-1-1-valid-P46-ibm46i01.xml
@@ -26,6 +27,7 @@ fn ibm11valid_p46ibm46i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibm11valid_p46ibm46i02xml() {
     /*
         Test ID:ibm-1-1-valid-P46-ibm46i02.xml

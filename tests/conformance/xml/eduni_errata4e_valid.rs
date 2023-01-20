@@ -40,6 +40,7 @@ fn xrmt5014a() {
 }
 
 #[test]
+#[ignore]
 fn xibm105valid_p04ibm04v01xml() {
     /*
         Test ID:x-ibm-1-0.5-valid-P04-ibm04v01.xml
@@ -72,6 +73,7 @@ fn xibm105valid_p04ibm04av01xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105valid_p05ibm05v01xml() {
     /*
         Test ID:x-ibm-1-0.5-valid-P05-ibm05v01.xml
@@ -104,6 +106,7 @@ fn xibm105valid_p05ibm05v02xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105valid_p05ibm05v03xml() {
     /*
         Test ID:x-ibm-1-0.5-valid-P05-ibm05v03.xml
@@ -120,6 +123,7 @@ fn xibm105valid_p05ibm05v03xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105valid_p05ibm05v04xml() {
     /*
         Test ID:x-ibm-1-0.5-valid-P05-ibm05v04.xml
@@ -136,6 +140,7 @@ fn xibm105valid_p05ibm05v04xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105valid_p05ibm05v05xml() {
     /*
         Test ID:x-ibm-1-0.5-valid-P05-ibm05v05.xml

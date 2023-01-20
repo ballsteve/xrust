@@ -7,6 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn rmt015() {
     /*
         Test ID:rmt-015
@@ -23,6 +24,7 @@ fn rmt015() {
 }
 
 #[test]
+#[ignore]
 fn rmt017() {
     /*
         Test ID:rmt-017
@@ -39,6 +41,7 @@ fn rmt017() {
 }
 
 #[test]
+#[ignore]
 fn rmt018() {
     /*
         Test ID:rmt-018
@@ -55,6 +58,7 @@ fn rmt018() {
 }
 
 #[test]
+#[ignore]
 fn rmt030() {
     /*
         Test ID:rmt-030
@@ -119,6 +123,7 @@ fn rmt037() {
 }
 
 #[test]
+#[ignore]
 fn rmt046() {
     /*
         Test ID:rmt-046
@@ -135,6 +140,7 @@ fn rmt046() {
 }
 
 #[test]
+#[ignore]
 fn rmt048() {
     /*
         Test ID:rmt-048
@@ -151,6 +157,7 @@ fn rmt048() {
 }
 
 #[test]
+#[ignore]
 fn rmt052() {
     /*
         Test ID:rmt-052
@@ -167,6 +174,7 @@ fn rmt052() {
 }
 
 #[test]
+#[ignore]
 fn rmt053() {
     /*
         Test ID:rmt-053

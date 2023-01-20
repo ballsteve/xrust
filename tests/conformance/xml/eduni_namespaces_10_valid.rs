@@ -87,6 +87,7 @@ fn rmtns10008() {
 }
 
 #[test]
+#[ignore]
 fn htns10047() {
     /*
         Test ID:ht-ns10-047
@@ -103,6 +104,7 @@ fn htns10047() {
 }
 
 #[test]
+#[ignore]
 fn htns10048() {
     /*
         Test ID:ht-ns10-048

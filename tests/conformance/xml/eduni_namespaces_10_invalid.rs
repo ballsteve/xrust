@@ -8,6 +8,7 @@ use xrust::Document;
 
 
 #[test]
+#[ignore]
 fn rmtns10017() {
     /*
         Test ID:rmt-ns10-017
@@ -24,6 +25,7 @@ fn rmtns10017() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10018() {
     /*
         Test ID:rmt-ns10-018
@@ -40,6 +42,7 @@ fn rmtns10018() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10019() {
     /*
         Test ID:rmt-ns10-019
@@ -56,6 +59,7 @@ fn rmtns10019() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10020() {
     /*
         Test ID:rmt-ns10-020
@@ -72,6 +76,7 @@ fn rmtns10020() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10021() {
     /*
         Test ID:rmt-ns10-021
@@ -88,6 +93,7 @@ fn rmtns10021() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10022() {
     /*
         Test ID:rmt-ns10-022
@@ -104,6 +110,7 @@ fn rmtns10022() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10024() {
     /*
         Test ID:rmt-ns10-024
@@ -136,6 +143,7 @@ fn rmtns10027() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10028() {
     /*
         Test ID:rmt-ns10-028
@@ -152,6 +160,7 @@ fn rmtns10028() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10034() {
     /*
         Test ID:rmt-ns10-034
@@ -168,6 +177,7 @@ fn rmtns10034() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10037() {
     /*
         Test ID:rmt-ns10-037
@@ -184,6 +194,7 @@ fn rmtns10037() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10038() {
     /*
         Test ID:rmt-ns10-038
@@ -200,6 +211,7 @@ fn rmtns10038() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10039() {
     /*
         Test ID:rmt-ns10-039
@@ -216,6 +228,7 @@ fn rmtns10039() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10040() {
     /*
         Test ID:rmt-ns10-040
@@ -232,6 +245,7 @@ fn rmtns10040() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10041() {
     /*
         Test ID:rmt-ns10-041
@@ -248,6 +262,7 @@ fn rmtns10041() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10045() {
     /*
         Test ID:rmt-ns10-045

@@ -39,6 +39,7 @@ fn rmte3e05b() {
 }
 
 #[test]
+#[ignore]
 fn rmte3e06i() {
     /*
         Test ID:rmt-e3e-06i

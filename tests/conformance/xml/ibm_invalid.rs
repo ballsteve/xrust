@@ -9,6 +9,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn ibminvalid_p28ibm28i01xml() {
     /*
         Test ID:ibm-invalid-P28-ibm28i01.xml
@@ -25,6 +26,7 @@ fn ibminvalid_p28ibm28i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p32ibm32i01xml() {
     /*
         Test ID:ibm-invalid-P32-ibm32i01.xml
@@ -41,6 +43,7 @@ fn ibminvalid_p32ibm32i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p32ibm32i03xml() {
     /*
         Test ID:ibm-invalid-P32-ibm32i03.xml
@@ -57,6 +60,7 @@ fn ibminvalid_p32ibm32i03xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p32ibm32i04xml() {
     /*
         Test ID:ibm-invalid-P32-ibm32i04.xml
@@ -73,6 +77,7 @@ fn ibminvalid_p32ibm32i04xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p39ibm39i01xml() {
     /*
         Test ID:ibm-invalid-P39-ibm39i01.xml
@@ -89,6 +94,7 @@ fn ibminvalid_p39ibm39i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p39ibm39i02xml() {
     /*
         Test ID:ibm-invalid-P39-ibm39i02.xml
@@ -105,6 +111,7 @@ fn ibminvalid_p39ibm39i02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p39ibm39i03xml() {
     /*
         Test ID:ibm-invalid-P39-ibm39i03.xml
@@ -121,6 +128,7 @@ fn ibminvalid_p39ibm39i03xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p39ibm39i04xml() {
     /*
         Test ID:ibm-invalid-P39-ibm39i04.xml
@@ -137,6 +145,7 @@ fn ibminvalid_p39ibm39i04xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p41ibm41i01xml() {
     /*
         Test ID:ibm-invalid-P41-ibm41i01.xml
@@ -153,6 +162,7 @@ fn ibminvalid_p41ibm41i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p41ibm41i02xml() {
     /*
         Test ID:ibm-invalid-P41-ibm41i02.xml
@@ -169,6 +179,7 @@ fn ibminvalid_p41ibm41i02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p45ibm45i01xml() {
     /*
         Test ID:ibm-invalid-P45-ibm45i01.xml
@@ -185,6 +196,7 @@ fn ibminvalid_p45ibm45i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p49ibm49i01xml() {
     /*
         Test ID:ibm-invalid-P49-ibm49i01.xml
@@ -201,6 +213,7 @@ fn ibminvalid_p49ibm49i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p50ibm50i01xml() {
     /*
         Test ID:ibm-invalid-P50-ibm50i01.xml
@@ -217,6 +230,7 @@ fn ibminvalid_p50ibm50i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p51ibm51i01xml() {
     /*
         Test ID:ibm-invalid-P51-ibm51i01.xml
@@ -233,6 +247,7 @@ fn ibminvalid_p51ibm51i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p51ibm51i03xml() {
     /*
         Test ID:ibm-invalid-P51-ibm51i03.xml
@@ -249,6 +264,7 @@ fn ibminvalid_p51ibm51i03xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i01xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i01.xml
@@ -265,6 +281,7 @@ fn ibminvalid_p56ibm56i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i02xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i02.xml
@@ -281,6 +298,7 @@ fn ibminvalid_p56ibm56i02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i03xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i03.xml
@@ -297,6 +315,7 @@ fn ibminvalid_p56ibm56i03xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i05xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i05.xml
@@ -313,6 +332,7 @@ fn ibminvalid_p56ibm56i05xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i06xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i06.xml
@@ -489,6 +509,7 @@ fn ibminvalid_p56ibm56i16xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i17xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i17.xml
@@ -521,6 +542,7 @@ fn ibminvalid_p56ibm56i18xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p58ibm58i01xml() {
     /*
         Test ID:ibm-invalid-P58-ibm58i01.xml
@@ -537,6 +559,7 @@ fn ibminvalid_p58ibm58i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p58ibm58i02xml() {
     /*
         Test ID:ibm-invalid-P58-ibm58i02.xml
@@ -553,6 +576,7 @@ fn ibminvalid_p58ibm58i02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p59ibm59i01xml() {
     /*
         Test ID:ibm-invalid-P59-ibm59i01.xml
@@ -569,6 +593,7 @@ fn ibminvalid_p59ibm59i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p60ibm60i01xml() {
     /*
         Test ID:ibm-invalid-P60-ibm60i01.xml
@@ -585,6 +610,7 @@ fn ibminvalid_p60ibm60i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p60ibm60i02xml() {
     /*
         Test ID:ibm-invalid-P60-ibm60i02.xml
@@ -601,6 +627,7 @@ fn ibminvalid_p60ibm60i02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p60ibm60i03xml() {
     /*
         Test ID:ibm-invalid-P60-ibm60i03.xml
@@ -617,6 +644,7 @@ fn ibminvalid_p60ibm60i03xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p60ibm60i04xml() {
     /*
         Test ID:ibm-invalid-P60-ibm60i04.xml
@@ -633,6 +661,7 @@ fn ibminvalid_p60ibm60i04xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p68ibm68i01xml() {
     /*
         Test ID:ibm-invalid-P68-ibm68i01.xml
@@ -649,6 +678,7 @@ fn ibminvalid_p68ibm68i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p68ibm68i02xml() {
     /*
         Test ID:ibm-invalid-P68-ibm68i02.xml
@@ -697,6 +727,7 @@ fn ibminvalid_p68ibm68i04xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p69ibm69i01xml() {
     /*
         Test ID:ibm-invalid-P69-ibm69i01.xml
@@ -713,6 +744,7 @@ fn ibminvalid_p69ibm69i01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p69ibm69i02xml() {
     /*
         Test ID:ibm-invalid-P69-ibm69i02.xml

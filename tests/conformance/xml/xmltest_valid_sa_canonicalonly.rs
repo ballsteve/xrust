@@ -187,13 +187,13 @@ fn validsa011() {
 }
 
 /*
-
-This test is deliberately ignored. Although these are valid XML documents, XML without namespaces
-is not something we wish to handle.
-
 #[test]
 #[ignore]
 fn validsa012() {
+
+    /* This test is deliberately ignored. Although these are valid XML documents,
+    XML without namespaces is not something we wish to handle. */
+
     /*
         Test ID:valid-sa-012
         Test URI:valid/sa/012.xml
