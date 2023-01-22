@@ -11,6 +11,7 @@ macro_rules! transcomb_tests (
 			       context, root,
 			       tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
+			       tc_loop,
 			       general_comparison, value_comparison,
 			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
@@ -113,6 +114,26 @@ macro_rules! transcomb_tests (
 	    assert_eq!(seq.len(), 4);
 	    assert_eq!(seq.to_string(), "first sequence1second sequence2")
 	}
+
+	#[test]
+	fn tc_loop_lit() {
+	    let ev = tc_loop(
+		(String::from("x"), tc_sequence(
+		    vec![
+			literal(Rc::new(Item::<$x>::Value(Value::from("one")))),
+			literal(Rc::new(Item::<$x>::Value(Value::from("two")))),
+			literal(Rc::new(Item::<$x>::Value(Value::from("three")))),
+		    ]
+		)),
+		function_concat(vec![
+		    reference_variable(String::from("x")),
+		    reference_variable(String::from("x")),
+		])
+	    );
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
+	    assert_eq!(seq.to_string(), "oneonetwotwothreethree")
+	}
+
 	#[test]
 	fn tc_context_item() {
 	    let ev = context();

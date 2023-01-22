@@ -476,6 +476,32 @@ fn get_node<N: Node>(i: &mut Rc<Item<N>>) -> Result<&N, Error> {
     }
 }
 
+/// Iterate over the items in a sequence.
+// TODO: Allow multiple variables
+pub fn tc_loop<F, N: Node>(v: (String, F), b: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	let mut result = vec![];
+	let s = v.1(ctxt)?;
+	match s.iter()
+	    .try_for_each(|i| {
+		ctxt.var_push(v.0.clone(), vec![i.clone()]);
+		let mut r = match b(ctxt) {
+		    Ok(t) => t,
+		    Err(err) => return Err(err),
+		};
+		ctxt.var_pop(v.0.clone());
+		result.append(&mut r);
+		Ok(())
+	    }) {
+		Ok(()) => Ok(result),
+		Err(err) => Err(err),
+	    }
+    })
+}
+
 /// Remove items that don't match the predicate.
 pub fn filter<F, N: Node>(predicate: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
