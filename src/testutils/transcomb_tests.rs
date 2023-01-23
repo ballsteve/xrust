@@ -11,7 +11,7 @@ macro_rules! transcomb_tests (
 			       context, root,
 			       tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
-			       tc_loop,
+			       tc_loop, switch,
 			       general_comparison, value_comparison,
 			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
@@ -113,6 +113,63 @@ macro_rules! transcomb_tests (
 	    let seq = ev(&mut Context::new()).expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	    assert_eq!(seq.to_string(), "first sequence1second sequence2")
+	}
+
+	#[test]
+	fn tc_switch_when() {
+	    let ev = switch(
+		vec![
+		    (value_comparison(
+			Operator::Equal,
+			literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			literal(Rc::new(Item::<$x>::Value(Value::from(2.0)))),
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+		    (value_comparison(
+			Operator::Equal,
+			literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			literal(Rc::new(Item::<$x>::Value(Value::from(1.0)))),
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("comparison succeeded"))))),
+		    (value_comparison(
+			Operator::Equal,
+			literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			literal(Rc::new(Item::<$x>::Value(Value::from(3.0)))),
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+		],
+		literal(Rc::new(Item::<$x>::Value(Value::from("otherwise clause"))))
+	    );
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
+	    assert_eq!(seq.to_string(), "comparison succeeded")
+	}
+	#[test]
+	fn tc_switch_otherwise() {
+	    let ev = switch(
+		vec![
+		    (value_comparison(
+			Operator::Equal,
+			literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			literal(Rc::new(Item::<$x>::Value(Value::from(2.0)))),
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+		    (value_comparison(
+			Operator::Equal,
+			literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			literal(Rc::new(Item::<$x>::Value(Value::from(11.0)))),
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+		    (value_comparison(
+			Operator::Equal,
+			literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			literal(Rc::new(Item::<$x>::Value(Value::from(3.0)))),
+		    ),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+		],
+		literal(Rc::new(Item::<$x>::Value(Value::from("otherwise clause"))))
+	    );
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
+	    assert_eq!(seq.to_string(), "otherwise clause")
 	}
 
 	#[test]

@@ -502,6 +502,24 @@ where
     })
 }
 
+/// Choose a sequence to return.
+pub fn switch<F, N: Node>(v: Vec<(F, F)>, o: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	let mut candidate = o(ctxt)?;
+	for (t, w) in &v {
+	    let r = t(ctxt)?;
+	    if r.to_bool() {
+		candidate = w(ctxt)?;
+		break
+	    }
+	};
+	Ok(candidate)
+    })
+}
+
 /// Remove items that don't match the predicate.
 pub fn filter<F, N: Node>(predicate: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where

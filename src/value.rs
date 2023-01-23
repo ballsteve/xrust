@@ -252,6 +252,20 @@ impl Value {
                     }
                 }
             }
+            Value::Int(i) => {
+                let c = other.to_int()? as i32;
+                match op {
+                    Operator::Equal => Ok(*i == c),
+                    Operator::NotEqual => Ok(*i != c),
+                    Operator::LessThan => Ok(*i < c),
+                    Operator::LessThanEqual => Ok(*i <= c),
+                    Operator::GreaterThan => Ok(*i > c),
+                    Operator::GreaterThanEqual => Ok(*i >= c),
+                    Operator::Is | Operator::Before | Operator::After => {
+                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                    }
+                }
+            }
             Value::Double(i) => {
                 let c = other.to_double();
                 match op {
