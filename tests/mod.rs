@@ -21,7 +21,6 @@ fn bigfile() {
 #[test]
 #[ignore]
 fn testfile() {
-    /* A million elements, each with an arrtribue and value */
 
     let testxml = Document::try_from(
         fs::read_to_string("tests/xml/test.xml").unwrap()

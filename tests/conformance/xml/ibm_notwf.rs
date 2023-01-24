@@ -8,7 +8,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn ibmnotwf_p01ibm01n01xml() {
     /*
         Test ID:ibm-not-wf-P01-ibm01n01.xml
@@ -25,7 +24,6 @@ fn ibmnotwf_p01ibm01n01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p01ibm01n02xml() {
     /*
         Test ID:ibm-not-wf-P01-ibm01n02.xml
@@ -42,7 +40,6 @@ fn ibmnotwf_p01ibm01n02xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p01ibm01n03xml() {
     /*
         Test ID:ibm-not-wf-P01-ibm01n03.xml
@@ -59,7 +56,6 @@ fn ibmnotwf_p01ibm01n03xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p02ibm02n01xml() {
     /*
         Test ID:ibm-not-wf-P02-ibm02n01.xml
@@ -76,7 +72,6 @@ fn ibmnotwf_p02ibm02n01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p02ibm02n02xml() {
     /*
         Test ID:ibm-not-wf-P02-ibm02n02.xml

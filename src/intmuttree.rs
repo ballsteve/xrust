@@ -2,6 +2,7 @@
 //!
 //! Uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
+use std::any::Any;
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
 //use crate::parsexml::content;
@@ -13,6 +14,7 @@ use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
 use crate::parser;
+use crate::parser::xml::XMLDocument;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -46,6 +48,52 @@ impl Document {
         self.content
             .iter()
             .for_each(|c| result.push_str(c.to_xml().as_str()));
+        result
+    }
+    pub fn canonical(self) -> Document{
+        let d = match self.xmldecl{
+            None => {
+                XMLDecl{
+                    version: "1.0".to_string(),
+                    encoding: Some("UTF-8".to_string()),
+                    standalone: None,
+                }
+            }
+            Some(x) => {
+                XMLDecl{
+                    version: x.version,
+                    encoding: Some("UTF-8".to_string()),
+                    standalone: None,
+                }
+            }
+        };
+        let mut p = vec![];
+        for pn in self.prologue {
+            match pn.get_canonical() {
+                Ok(pcn) => p.push(pcn),
+                Err(_) => {}
+            }
+        }
+        let mut c = vec![];
+        for cn in self.content {
+            match cn.get_canonical() {
+                Ok(ccn) => c.push(ccn),
+                Err(_) => {}
+            }
+        }
+        let mut e = vec![];
+        for en in self.epilogue {
+            match en.get_canonical() {
+                Ok(ecn) => e.push(ecn),
+                Err(_) => {}
+            }
+        }
+        let result = XMLDocument{
+            xmldecl: Some(d),
+            prologue: p,
+            content: c,
+            epilogue: e,
+        };
         result
     }
     /*
@@ -423,6 +471,43 @@ impl ItemNode for RNode {
         })?;
 
         Ok(result)
+    }
+
+    fn get_canonical(&self) -> Result<Self, Error>{
+        match self.node_type(){
+            NodeType::Comment => {return Err(Error { kind: ErrorKind::TypeError, message: "".to_string() }) }
+            NodeType::Text => {
+                let v = match self.value(){
+                    Value::String(s) => {
+                        Value::String(s.replace("\r\n", "\n").replace("\n\n","\n"))
+                    }
+                    e => e
+                };
+                let mut result = NodeBuilder::new(self.node_type())
+                    .name(self.name())
+                    .value(v)
+                    .build();
+                    Ok(result)
+            }
+            other => {
+                let mut result = NodeBuilder::new(self.node_type())
+                    .name(self.name())
+                    .value(self.value())
+                    .build();
+
+                self.attribute_iter().try_for_each(|a| {
+                    result.add_attribute(a.deep_copy()?)?;
+                    Ok::<(), Error>(())
+                })?;
+
+                self.child_iter().try_for_each(|c| {
+                    result.push(c.get_canonical()?)?;
+                    Ok::<(), Error>(())
+                })?;
+
+                Ok(result)
+            }
+        }
     }
 }
 

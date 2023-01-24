@@ -222,7 +222,6 @@ fn op28pass5() {
 }
 
 #[test]
-#[ignore]
 fn op29pass1() {
     /*
         Test ID:o-p29pass1
@@ -387,7 +386,6 @@ fn op48pass1() {
 }
 
 #[test]
-#[ignore]
 fn op49pass1() {
     /*
         Test ID:o-p49pass1
@@ -404,7 +402,6 @@ fn op49pass1() {
 }
 
 #[test]
-#[ignore]
 fn op50pass1() {
     /*
         Test ID:o-p50pass1

@@ -11,6 +11,7 @@ use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 use std::fmt;
 use std::rc::Rc;
+use crate::intmuttree::NodeBuilder;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -418,4 +419,6 @@ pub trait Node: Clone {
 
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
+    /// Canonical XML representation of the node
+    fn get_canonical(&self) -> Result<Self, Error>;
 }

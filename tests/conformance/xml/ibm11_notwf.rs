@@ -26,7 +26,6 @@ fn ibm11notwf_p02ibm02n01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11notwf_p02ibm02n02xml() {
     /*
         Test ID:ibm-1-1-not-wf-P02-ibm02n02.xml
@@ -78,7 +77,6 @@ fn ibm11notwf_p02ibm02n04xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11notwf_p02ibm02n05xml() {
     /*
         Test ID:ibm-1-1-not-wf-P02-ibm02n05.xml
@@ -96,7 +94,6 @@ fn ibm11notwf_p02ibm02n05xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11notwf_p02ibm02n06xml() {
     /*
         Test ID:ibm-1-1-not-wf-P02-ibm02n06.xml
