@@ -56,7 +56,6 @@ fn rmt055() {
 }
 
 #[test]
-#[ignore]
 fn rmt056() {
     /*
         Test ID:rmt-056
@@ -73,7 +72,6 @@ fn rmt056() {
 }
 
 #[test]
-#[ignore]
 fn rmt057() {
     /*
         Test ID:rmt-057

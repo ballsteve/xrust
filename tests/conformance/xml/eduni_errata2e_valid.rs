@@ -187,7 +187,6 @@ fn rmte2e24() {
 }
 
 #[test]
-#[ignore]
 fn rmte2e29() {
     /*
         Test ID:rmt-e2e-29
@@ -221,7 +220,6 @@ fn rmte2e36() {
 }
 
 #[test]
-#[ignore]
 fn rmte2e41() {
     /*
         Test ID:rmt-e2e-41

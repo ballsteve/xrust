@@ -163,7 +163,7 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
         Ok((input1,(_, _, _, _, v))) => {
             if v == "1.1".to_string(){
                 Ok((input1, v))
-            } else if v.starts_with("1"){
+            } else if v.starts_with("1."){
                 Ok((input1, "1.0".to_string()))
             } else {
                 Err(ParseError::Notimplemented)
@@ -173,43 +173,56 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 
-fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
-    map(
-        tuple10(
-            tag("<?xml"),
-            whitespace1(),
-            xmldeclversion(),
-            whitespace1(),
-            opt(map(
-                tuple5(
-                    tag("encoding"),
-                    whitespace0(),
-                    tag("="),
-                    whitespace0(),
-                    delimited_string(),
-                ),
-                |(_, _, _, _, e)| e,
-            )),
-            whitespace1(),
-            opt(map(
-                tuple5(
+fn xmldeclstandalone() -> impl Fn(ParseInput) -> ParseResult<String> {
+        map(
+            validate(
+                tuple6(
+                    whitespace1(),
                     tag("standalone"),
                     whitespace0(),
                     tag("="),
                     whitespace0(),
                     delimited_string(),
-                ),
-                |(_, _, _, _, s)| s,
-            )),
+                ),|(_, _, _, _, _, s)|{
+                    vec!["yes".to_string(),
+                         "no".to_string()].contains(s)
+                }
+            )
+        ,
+        |(_, _, _, _, _, s)| s,
+    )
+}
+
+fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
+    map(
+        tuple8(
+            tag("<?xml"),
+            whitespace1(),
+            xmldeclversion(),
+            opt(
+                map(
+                    tuple6(
+                        whitespace1(),
+                        tag("encoding"),
+                        whitespace0(),
+                        tag("="),
+                        whitespace0(),
+                        delimited_string(),
+                    ),|(_,_,_,_,_,e)| e
+                )
+            ),
+            opt(xmldeclstandalone()),
             whitespace0(),
             tag("?>"),
             whitespace0(),
         ),
-        |(_, _, ver, _, enc, _, sta, _, _, _)| XMLDecl {
-            version: ver,
-            encoding: enc,
-            standalone: sta,
-        },
+        |(_, _, ver, enc, sta, _, _, _)| {
+            XMLDecl {
+                version: ver,
+                encoding: enc,
+                standalone: sta,
+            }
+        }
     )
 }
 
@@ -975,7 +988,7 @@ fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                 if v.to_string().contains(|c: char| !is_char(&c)){
                     false
                 } else {
-                    v.name().get_localname() != *"xml"
+                    v.pi_name() != Some("xml".to_string())
                     /*
                     match v.name(){
                         QualifiedName {nsuri, prefix, localname} => {

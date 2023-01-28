@@ -7,9 +7,13 @@ use std::fs;
 use xrust::Document;
 
 
+/*
 #[test]
 #[ignore]
 fn rmtns10017() {
+
+    /* This test is deliberately ignored. I have no idea what its trying to test. */
+
     /*
         Test ID:rmt-ns10-017
         Test URI:017.xml
@@ -23,6 +27,7 @@ fn rmtns10017() {
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 #[ignore]
