@@ -422,7 +422,6 @@ fn vsgml01() {
 }
 
 #[test]
-#[ignore]
 fn vlang01() {
     /*
         Test ID:v-lang01
@@ -444,7 +443,6 @@ fn vlang01() {
 }
 
 #[test]
-#[ignore]
 fn vlang02() {
     /*
         Test ID:v-lang02
@@ -466,7 +464,6 @@ fn vlang02() {
 }
 
 #[test]
-#[ignore]
 fn vlang03() {
     /*
         Test ID:v-lang03
@@ -488,7 +485,6 @@ fn vlang03() {
 }
 
 #[test]
-#[ignore]
 fn vlang04() {
     /*
         Test ID:v-lang04
@@ -510,7 +506,6 @@ fn vlang04() {
 }
 
 #[test]
-#[ignore]
 fn vlang05() {
     /*
         Test ID:v-lang05
@@ -532,7 +527,6 @@ fn vlang05() {
 }
 
 #[test]
-#[ignore]
 fn vlang06() {
     /*
         Test ID:v-lang06

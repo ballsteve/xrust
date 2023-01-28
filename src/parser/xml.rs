@@ -152,21 +152,33 @@ fn prolog() -> impl Fn(ParseInput) -> ParseResult<(Option<XMLDecl>, Vec<RNode>)>
     )
 }
 
+fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
+    move |input| match tuple5(
+        tag("version"),
+        whitespace0(),
+        tag("="),
+        whitespace0(),
+        delimited_string(),
+    )(input){
+        Ok((input1,(_, _, _, _, v))) => {
+            if v == "1.1".to_string(){
+                Ok((input1, v))
+            } else if v.starts_with("1"){
+                Ok((input1, "1.0".to_string()))
+            } else {
+                Err(ParseError::Notimplemented)
+            }
+        }
+        Err(err) => Err(err)
+    }
+}
+
 fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
     map(
         tuple10(
             tag("<?xml"),
             whitespace1(),
-            map(
-                tuple5(
-                    tag("version"),
-                    whitespace0(),
-                    tag("="),
-                    whitespace0(),
-                    delimited_string(),
-                ),
-                |(_, _, _, _, v)| v,
-            ),
+            xmldeclversion(),
             whitespace1(),
             opt(map(
                 tuple5(
@@ -782,10 +794,14 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                         node.name().get_localname()!="xmlns".to_string(){
                         match node.name().get_prefix(){
                             Some(ns) => {
-                                match namespaces.get(&*ns){
-                                    None => { return Err(ParseError::MissingNameSpace)}
-                                    Some(nsuri) => {
-                                        node.set_nsuri(nsuri.clone())
+                                if ns == "xml".to_string(){
+                                    node.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
+                                } else {
+                                    match namespaces.get(&*ns) {
+                                        None => { return Err(ParseError::MissingNameSpace) }
+                                        Some(nsuri) => {
+                                            node.set_nsuri(nsuri.clone())
+                                        }
                                     }
                                 }
                             }

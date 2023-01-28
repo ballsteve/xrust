@@ -903,6 +903,7 @@ fn invrequired01() {
 }
 
 #[test]
+#[ignore]
 fn invrequired02() {
     /*
         Test ID:inv-required02

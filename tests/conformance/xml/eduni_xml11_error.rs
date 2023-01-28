@@ -7,7 +7,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn rmt008() {
     /*
         Test ID:rmt-008
