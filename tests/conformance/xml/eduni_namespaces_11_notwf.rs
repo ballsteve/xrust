@@ -24,7 +24,6 @@ fn rmtns11005() {
 }
 
 #[test]
-#[ignore]
 fn htbhns11007() {
     /*
         Test ID:ht-bh-ns11-007
@@ -41,7 +40,6 @@ fn htbhns11007() {
 }
 
 #[test]
-#[ignore]
 fn htbhns11008() {
     /*
         Test ID:ht-bh-ns11-008

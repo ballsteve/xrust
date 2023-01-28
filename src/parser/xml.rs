@@ -658,14 +658,18 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                     },
                     Some(ns) => {
                         let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
-                        match ns.get(&*ns_to_check) {
-                            None => {
-                                if ns_to_check != "xmlns".to_string() {
-                                    return Err(ParseError::MissingNameSpace)
+                        if ns_to_check == "xml".to_string(){
+                            e.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
+                        } else {
+                            match ns.get(&*ns_to_check) {
+                                None => {
+                                    if ns_to_check != "xmlns".to_string() {
+                                        return Err(ParseError::MissingNameSpace)
+                                    }
                                 }
-                            }
-                            Some(nsuri) => {
-                                e.set_nsuri(nsuri.clone())
+                                Some(nsuri) => {
+                                    e.set_nsuri(nsuri.clone())
+                                }
                             }
                         }
                     }
@@ -717,15 +721,18 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                         //println!("here2");
                         //println!("{:?}",ns);
                         let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
-                        match ns.get(&*ns_to_check) {
-                            None => {
-                                if ns_to_check != "xmlns".to_string() {
-                                    return Err(ParseError::MissingNameSpace)
+                        if ns_to_check == "xml".to_string(){
+                            e.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
+                        } else {
+                            match ns.get(&*ns_to_check) {
+                                None => {
+                                    if ns_to_check != "xmlns".to_string() {
+                                        return Err(ParseError::MissingNameSpace)
+                                    }
                                 }
-                            }
-                            Some(nsuri) => {
-                                //println!("NS-{:?}", nsuri.clone());
-                                e.set_nsuri(nsuri.clone())
+                                Some(nsuri) => {
+                                    e.set_nsuri(nsuri.clone())
+                                }
                             }
                         }
                     }
@@ -781,6 +788,22 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 let mut n: HashMap<String, String> = HashMap::new();
                 let mut namespaces = input1.namespace.last().unwrap_or(&n).clone();
                 for node in nodes.clone() {
+                    //Return error if someone attempts to redefine namespaces.
+                    if (node.name().get_prefix() == Some("xmlns".to_string()))
+                        &&
+                        (node.name().get_localname() == "xmlns".to_string()){
+                        return Err(ParseError::NotWellFormed)
+                    }
+                    //xml prefix must always be set to http://www.w3.org/XML/1998/namespace
+                    if (node.name().get_prefix() == Some("xmlns".to_string()))
+                        &&
+                        (node.name().get_localname() == "xml".to_string())
+                        &&
+                        (node.to_string() != "http://www.w3.org/XML/1998/namespace".to_string())
+                    {
+                        return Err(ParseError::NotWellFormed)
+                    }
+
                     if (node.name().get_prefix() == Some("xmlns".to_string()))
                         ||
                         (node.name().get_localname() == "xmlns".to_string()) {
