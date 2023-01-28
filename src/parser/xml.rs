@@ -1011,7 +1011,7 @@ fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                 if v.to_string().contains(|c: char| !is_char(&c)){
                     false
                 } else {
-                    v.pi_name() != Some("xml".to_string())
+                    v.pi_name().unwrap().to_lowercase() != "xml".to_string()
                     /*
                     match v.name(){
                         QualifiedName {nsuri, prefix, localname} => {
