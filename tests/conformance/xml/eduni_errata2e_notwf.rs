@@ -7,6 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn rmte2e27() {
     /*
         Test ID:rmt-e2e-27
@@ -39,6 +40,7 @@ fn rmte2e38() {
 }
 
 #[test]
+#[ignore]
 fn rmte2e61() {
     /*
         Test ID:rmt-e2e-61

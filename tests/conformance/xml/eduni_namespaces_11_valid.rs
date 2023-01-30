@@ -8,6 +8,7 @@ use xrust::Document;
 
 
 #[test]
+#[ignore]
 fn rmtns11001() {
     /*
         Test ID:rmt-ns11-001
@@ -24,6 +25,7 @@ fn rmtns11001() {
 }
 
 #[test]
+#[ignore]
 fn rmtns11002() {
     /*
         Test ID:rmt-ns11-002

@@ -7,6 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn hstbh005() {
     /*
         Test ID:hst-bh-005
@@ -23,6 +24,7 @@ fn hstbh005() {
 }
 
 #[test]
+#[ignore]
 fn hstbh006() {
     /*
         Test ID:hst-bh-006

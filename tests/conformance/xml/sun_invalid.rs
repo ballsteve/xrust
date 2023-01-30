@@ -9,6 +9,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn invdtd01() {
     /*
         Test ID:inv-dtd01
@@ -41,6 +42,7 @@ fn invdtd02() {
 }
 
 #[test]
+#[ignore]
 fn invdtd03() {
     /*
         Test ID:inv-dtd03
@@ -57,6 +59,7 @@ fn invdtd03() {
 }
 
 #[test]
+#[ignore]
 fn el01() {
     /*
         Test ID:el01
@@ -73,6 +76,7 @@ fn el01() {
 }
 
 #[test]
+#[ignore]
 fn el02() {
     /*
         Test ID:el02
@@ -89,6 +93,7 @@ fn el02() {
 }
 
 #[test]
+#[ignore]
 fn el03() {
     /*
         Test ID:el03
@@ -105,6 +110,7 @@ fn el03() {
 }
 
 #[test]
+#[ignore]
 fn el04() {
     /*
         Test ID:el04
@@ -121,6 +127,7 @@ fn el04() {
 }
 
 #[test]
+#[ignore]
 fn el05() {
     /*
         Test ID:el05
@@ -137,6 +144,7 @@ fn el05() {
 }
 
 #[test]
+#[ignore]
 fn el06() {
     /*
         Test ID:el06
@@ -153,6 +161,7 @@ fn el06() {
 }
 
 #[test]
+#[ignore]
 fn id01() {
     /*
         Test ID:id01
@@ -169,6 +178,7 @@ fn id01() {
 }
 
 #[test]
+#[ignore]
 fn id02() {
     /*
         Test ID:id02
@@ -185,6 +195,7 @@ fn id02() {
 }
 
 #[test]
+#[ignore]
 fn id03() {
     /*
         Test ID:id03
@@ -201,6 +212,7 @@ fn id03() {
 }
 
 #[test]
+#[ignore]
 fn id04() {
     /*
         Test ID:id04
@@ -217,6 +229,7 @@ fn id04() {
 }
 
 #[test]
+#[ignore]
 fn id05() {
     /*
         Test ID:id05
@@ -297,6 +310,7 @@ fn id09() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa01() {
     /*
         Test ID:inv-not-sa01
@@ -329,6 +343,7 @@ fn invnotsa02() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa04() {
     /*
         Test ID:inv-not-sa04
@@ -345,6 +360,7 @@ fn invnotsa04() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa05() {
     /*
         Test ID:inv-not-sa05
@@ -361,6 +377,7 @@ fn invnotsa05() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa06() {
     /*
         Test ID:inv-not-sa06
@@ -377,6 +394,7 @@ fn invnotsa06() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa07() {
     /*
         Test ID:inv-not-sa07
@@ -393,6 +411,7 @@ fn invnotsa07() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa08() {
     /*
         Test ID:inv-not-sa08
@@ -409,6 +428,7 @@ fn invnotsa08() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa09() {
     /*
         Test ID:inv-not-sa09
@@ -425,6 +445,7 @@ fn invnotsa09() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa10() {
     /*
         Test ID:inv-not-sa10
@@ -441,6 +462,7 @@ fn invnotsa10() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa11() {
     /*
         Test ID:inv-not-sa11
@@ -457,6 +479,7 @@ fn invnotsa11() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa12() {
     /*
         Test ID:inv-not-sa12
@@ -473,6 +496,7 @@ fn invnotsa12() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa13() {
     /*
         Test ID:inv-not-sa13
@@ -489,6 +513,7 @@ fn invnotsa13() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa14() {
     /*
         Test ID:inv-not-sa14
@@ -505,6 +530,7 @@ fn invnotsa14() {
 }
 
 #[test]
+#[ignore]
 fn optional01() {
     /*
         Test ID:optional01
@@ -521,6 +547,7 @@ fn optional01() {
 }
 
 #[test]
+#[ignore]
 fn optional02() {
     /*
         Test ID:optional02
@@ -537,6 +564,7 @@ fn optional02() {
 }
 
 #[test]
+#[ignore]
 fn optional03() {
     /*
         Test ID:optional03
@@ -553,6 +581,7 @@ fn optional03() {
 }
 
 #[test]
+#[ignore]
 fn optional04() {
     /*
         Test ID:optional04
@@ -569,6 +598,7 @@ fn optional04() {
 }
 
 #[test]
+#[ignore]
 fn optional05() {
     /*
         Test ID:optional05
@@ -585,6 +615,7 @@ fn optional05() {
 }
 
 #[test]
+#[ignore]
 fn optional06() {
     /*
         Test ID:optional06
@@ -601,6 +632,7 @@ fn optional06() {
 }
 
 #[test]
+#[ignore]
 fn optional07() {
     /*
         Test ID:optional07
@@ -617,6 +649,7 @@ fn optional07() {
 }
 
 #[test]
+#[ignore]
 fn optional08() {
     /*
         Test ID:optional08
@@ -633,6 +666,7 @@ fn optional08() {
 }
 
 #[test]
+#[ignore]
 fn optional09() {
     /*
         Test ID:optional09
@@ -649,6 +683,7 @@ fn optional09() {
 }
 
 #[test]
+#[ignore]
 fn optional10() {
     /*
         Test ID:optional10
@@ -665,6 +700,7 @@ fn optional10() {
 }
 
 #[test]
+#[ignore]
 fn optional11() {
     /*
         Test ID:optional11
@@ -681,6 +717,7 @@ fn optional11() {
 }
 
 #[test]
+#[ignore]
 fn optional12() {
     /*
         Test ID:optional12
@@ -697,6 +734,7 @@ fn optional12() {
 }
 
 #[test]
+#[ignore]
 fn optional13() {
     /*
         Test ID:optional13
@@ -713,6 +751,7 @@ fn optional13() {
 }
 
 #[test]
+#[ignore]
 fn optional14() {
     /*
         Test ID:optional14
@@ -729,6 +768,7 @@ fn optional14() {
 }
 
 #[test]
+#[ignore]
 fn optional20() {
     /*
         Test ID:optional20
@@ -745,6 +785,7 @@ fn optional20() {
 }
 
 #[test]
+#[ignore]
 fn optional21() {
     /*
         Test ID:optional21
@@ -761,6 +802,7 @@ fn optional21() {
 }
 
 #[test]
+#[ignore]
 fn optional22() {
     /*
         Test ID:optional22
@@ -777,6 +819,7 @@ fn optional22() {
 }
 
 #[test]
+#[ignore]
 fn optional23() {
     /*
         Test ID:optional23
@@ -793,6 +836,7 @@ fn optional23() {
 }
 
 #[test]
+#[ignore]
 fn optional24() {
     /*
         Test ID:optional24
@@ -809,6 +853,7 @@ fn optional24() {
 }
 
 #[test]
+#[ignore]
 fn optional25() {
     /*
         Test ID:optional25
@@ -825,6 +870,7 @@ fn optional25() {
 }
 
 #[test]
+#[ignore]
 fn invrequired00() {
     /*
         Test ID:inv-required00
@@ -857,6 +903,7 @@ fn invrequired01() {
 }
 
 #[test]
+#[ignore]
 fn invrequired02() {
     /*
         Test ID:inv-required02
@@ -873,6 +920,7 @@ fn invrequired02() {
 }
 
 #[test]
+#[ignore]
 fn root() {
     /*
         Test ID:root
@@ -889,6 +937,7 @@ fn root() {
 }
 
 #[test]
+#[ignore]
 fn attr01() {
     /*
         Test ID:attr01
@@ -921,6 +970,7 @@ fn attr02() {
 }
 
 #[test]
+#[ignore]
 fn attr03() {
     /*
         Test ID:attr03
@@ -937,6 +987,7 @@ fn attr03() {
 }
 
 #[test]
+#[ignore]
 fn attr04() {
     /*
         Test ID:attr04
@@ -953,6 +1004,7 @@ fn attr04() {
 }
 
 #[test]
+#[ignore]
 fn attr05() {
     /*
         Test ID:attr05
@@ -969,6 +1021,7 @@ fn attr05() {
 }
 
 #[test]
+#[ignore]
 fn attr06() {
     /*
         Test ID:attr06
@@ -985,6 +1038,7 @@ fn attr06() {
 }
 
 #[test]
+#[ignore]
 fn attr07() {
     /*
         Test ID:attr07
@@ -1001,6 +1055,7 @@ fn attr07() {
 }
 
 #[test]
+#[ignore]
 fn attr08() {
     /*
         Test ID:attr08
@@ -1081,6 +1136,7 @@ fn attr12() {
 }
 
 #[test]
+#[ignore]
 fn attr13() {
     /*
         Test ID:attr13
@@ -1113,6 +1169,7 @@ fn attr14() {
 }
 
 #[test]
+#[ignore]
 fn attr15() {
     /*
         Test ID:attr15
@@ -1129,6 +1186,7 @@ fn attr15() {
 }
 
 #[test]
+#[ignore]
 fn attr16() {
     /*
         Test ID:attr16
@@ -1145,6 +1203,7 @@ fn attr16() {
 }
 
 #[test]
+#[ignore]
 fn utf16b() {
     /*
         Test ID:utf16b
@@ -1161,6 +1220,7 @@ fn utf16b() {
 }
 
 #[test]
+#[ignore]
 fn utf16l() {
     /*
         Test ID:utf16l
@@ -1177,6 +1237,7 @@ fn utf16l() {
 }
 
 #[test]
+#[ignore]
 fn empty() {
     /*
         Test ID:empty

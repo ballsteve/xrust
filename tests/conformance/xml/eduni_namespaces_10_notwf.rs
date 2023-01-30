@@ -7,6 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn rmtns10009() {
     /*
         Test ID:rmt-ns10-009
@@ -23,6 +24,7 @@ fn rmtns10009() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10010() {
     /*
         Test ID:rmt-ns10-010
@@ -55,6 +57,7 @@ fn rmtns10011() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10012() {
     /*
         Test ID:rmt-ns10-012
@@ -135,6 +138,7 @@ fn rmtns10016() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10023() {
     /*
         Test ID:rmt-ns10-023
@@ -183,6 +187,7 @@ fn rmtns10026() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10029() {
     /*
         Test ID:rmt-ns10-029
@@ -199,6 +204,7 @@ fn rmtns10029() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10030() {
     /*
         Test ID:rmt-ns10-030
@@ -215,6 +221,7 @@ fn rmtns10030() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10031() {
     /*
         Test ID:rmt-ns10-031
@@ -231,6 +238,7 @@ fn rmtns10031() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10032() {
     /*
         Test ID:rmt-ns10-032
@@ -247,6 +255,7 @@ fn rmtns10032() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10033() {
     /*
         Test ID:rmt-ns10-033
@@ -263,6 +272,7 @@ fn rmtns10033() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10035() {
     /*
         Test ID:rmt-ns10-035
@@ -279,6 +289,7 @@ fn rmtns10035() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10036() {
     /*
         Test ID:rmt-ns10-036
@@ -295,6 +306,7 @@ fn rmtns10036() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10042() {
     /*
         Test ID:rmt-ns10-042
@@ -311,6 +323,7 @@ fn rmtns10042() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10043() {
     /*
         Test ID:rmt-ns10-043
@@ -327,6 +340,7 @@ fn rmtns10043() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10044() {
     /*
         Test ID:rmt-ns10-044

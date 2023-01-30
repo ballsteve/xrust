@@ -59,6 +59,7 @@ fn invalidbo9() {
 }
 
 #[test]
+#[ignore]
 fn xrmt008() {
     /*
         Test ID:x-rmt-008

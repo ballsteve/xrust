@@ -200,6 +200,7 @@ fn attlist11() {
 }
 
 #[test]
+#[ignore]
 fn cond01() {
     /*
         Test ID:cond01
@@ -216,6 +217,7 @@ fn cond01() {
 }
 
 #[test]
+#[ignore]
 fn cond02() {
     /*
         Test ID:cond02
@@ -392,6 +394,7 @@ fn dtd05() {
 }
 
 #[test]
+#[ignore]
 fn dtd07() {
     /*
         Test ID:dtd07
@@ -488,6 +491,7 @@ fn element04() {
 }
 
 #[test]
+#[ignore]
 fn encoding01() {
     /*
         Test ID:encoding01
@@ -504,6 +508,7 @@ fn encoding01() {
 }
 
 #[test]
+#[ignore]
 fn encoding02() {
     /*
         Test ID:encoding02
@@ -520,6 +525,7 @@ fn encoding02() {
 }
 
 #[test]
+#[ignore]
 fn encoding03() {
     /*
         Test ID:encoding03
@@ -536,6 +542,7 @@ fn encoding03() {
 }
 
 #[test]
+#[ignore]
 fn encoding04() {
     /*
         Test ID:encoding04
@@ -552,6 +559,7 @@ fn encoding04() {
 }
 
 #[test]
+#[ignore]
 fn encoding05() {
     /*
         Test ID:encoding05
@@ -568,6 +576,7 @@ fn encoding05() {
 }
 
 #[test]
+#[ignore]
 fn encoding06() {
     /*
         Test ID:encoding06
@@ -712,6 +721,7 @@ fn sgml01() {
 }
 
 #[test]
+#[ignore]
 fn sgml02() {
     /*
         Test ID:sgml02

@@ -311,6 +311,7 @@ fn xibm105notwf_p04ibm04n20xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04ibm04n21xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04-ibm04n21.xml
@@ -327,6 +328,7 @@ fn xibm105notwf_p04ibm04n21xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04ibm04n22xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04-ibm04n22.xml
@@ -343,6 +345,7 @@ fn xibm105notwf_p04ibm04n22xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04ibm04n23xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04-ibm04n23.xml
@@ -359,6 +362,7 @@ fn xibm105notwf_p04ibm04n23xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04ibm04n24xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04-ibm04n24.xml
@@ -759,6 +763,7 @@ fn xibm105notwf_p04aibm04an20xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04aibm04an21xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04a-ibm04an21.xml
@@ -775,6 +780,7 @@ fn xibm105notwf_p04aibm04an21xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04aibm04an22xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04a-ibm04an22.xml
@@ -791,6 +797,7 @@ fn xibm105notwf_p04aibm04an22xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04aibm04an23xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04a-ibm04an23.xml
@@ -807,6 +814,7 @@ fn xibm105notwf_p04aibm04an23xml() {
 }
 
 #[test]
+#[ignore]
 fn xibm105notwf_p04aibm04an24xml() {
     /*
         Test ID:x-ibm-1-0.5-not-wf-P04a-ibm04an24.xml

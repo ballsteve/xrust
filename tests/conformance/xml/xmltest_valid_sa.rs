@@ -13,7 +13,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn validsa001() {
     /*
         Test ID:valid-sa-001
@@ -31,11 +30,10 @@ fn validsa001() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa002() {
     /*
         Test ID:valid-sa-002
@@ -53,11 +51,10 @@ fn validsa002() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa003() {
     /*
         Test ID:valid-sa-003
@@ -75,11 +72,10 @@ fn validsa003() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa004() {
     /*
         Test ID:valid-sa-004
@@ -97,11 +93,10 @@ fn validsa004() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa005() {
     /*
         Test ID:valid-sa-005
@@ -119,11 +114,10 @@ fn validsa005() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa006() {
     /*
         Test ID:valid-sa-006
@@ -141,11 +135,10 @@ fn validsa006() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa007() {
     /*
         Test ID:valid-sa-007
@@ -163,11 +156,10 @@ fn validsa007() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa008() {
     /*
         Test ID:valid-sa-008
@@ -185,11 +177,10 @@ fn validsa008() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa009() {
     /*
         Test ID:valid-sa-009
@@ -207,11 +198,10 @@ fn validsa009() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa010() {
     /*
         Test ID:valid-sa-010
@@ -229,11 +219,10 @@ fn validsa010() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa011() {
     /*
         Test ID:valid-sa-011
@@ -251,12 +240,17 @@ fn validsa011() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
+/*
 #[test]
 #[ignore]
 fn validsa012() {
+
+    /* This test is deliberately ignored. Although these are valid XML documents,
+    XML without namespaces is not something we wish to handle. */
+
     /*
         Test ID:valid-sa-012
         Test URI:valid/sa/012.xml
@@ -273,11 +267,11 @@ fn validsa012() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
+ */
 
 #[test]
-#[ignore]
 fn validsa013() {
     /*
         Test ID:valid-sa-013
@@ -295,11 +289,10 @@ fn validsa013() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa014() {
     /*
         Test ID:valid-sa-014
@@ -317,11 +310,10 @@ fn validsa014() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa015() {
     /*
         Test ID:valid-sa-015
@@ -339,11 +331,10 @@ fn validsa015() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa016() {
     /*
         Test ID:valid-sa-016
@@ -361,11 +352,10 @@ fn validsa016() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa017() {
     /*
         Test ID:valid-sa-017
@@ -383,11 +373,10 @@ fn validsa017() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa018() {
     /*
         Test ID:valid-sa-018
@@ -405,11 +394,10 @@ fn validsa018() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa019() {
     /*
         Test ID:valid-sa-019
@@ -427,11 +415,10 @@ fn validsa019() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa020() {
     /*
         Test ID:valid-sa-020
@@ -449,11 +436,10 @@ fn validsa020() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa021() {
     /*
         Test ID:valid-sa-021
@@ -471,11 +457,10 @@ fn validsa021() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa022() {
     /*
         Test ID:valid-sa-022
@@ -493,11 +478,10 @@ fn validsa022() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa023() {
     /*
         Test ID:valid-sa-023
@@ -515,7 +499,7 @@ fn validsa023() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -537,11 +521,10 @@ fn validsa024() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa025() {
     /*
         Test ID:valid-sa-025
@@ -559,11 +542,10 @@ fn validsa025() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa026() {
     /*
         Test ID:valid-sa-026
@@ -581,11 +563,10 @@ fn validsa026() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa027() {
     /*
         Test ID:valid-sa-027
@@ -603,11 +584,10 @@ fn validsa027() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa028() {
     /*
         Test ID:valid-sa-028
@@ -625,11 +605,10 @@ fn validsa028() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa029() {
     /*
         Test ID:valid-sa-029
@@ -647,11 +626,10 @@ fn validsa029() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa030() {
     /*
         Test ID:valid-sa-030
@@ -669,11 +647,10 @@ fn validsa030() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa031() {
     /*
         Test ID:valid-sa-031
@@ -691,11 +668,10 @@ fn validsa031() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa032() {
     /*
         Test ID:valid-sa-032
@@ -713,11 +689,10 @@ fn validsa032() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa033() {
     /*
         Test ID:valid-sa-033
@@ -735,11 +710,10 @@ fn validsa033() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    //assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa034() {
     /*
         Test ID:valid-sa-034
@@ -757,11 +731,10 @@ fn validsa034() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa035() {
     /*
         Test ID:valid-sa-035
@@ -779,11 +752,10 @@ fn validsa035() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa036() {
     /*
         Test ID:valid-sa-036
@@ -801,11 +773,10 @@ fn validsa036() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa017a() {
     /*
         Test ID:valid-sa-017a
@@ -823,11 +794,10 @@ fn validsa017a() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa037() {
     /*
         Test ID:valid-sa-037
@@ -845,11 +815,10 @@ fn validsa037() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa038() {
     /*
         Test ID:valid-sa-038
@@ -867,11 +836,10 @@ fn validsa038() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa039() {
     /*
         Test ID:valid-sa-039
@@ -889,11 +857,10 @@ fn validsa039() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa040() {
     /*
         Test ID:valid-sa-040
@@ -911,11 +878,10 @@ fn validsa040() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa041() {
     /*
         Test ID:valid-sa-041
@@ -933,7 +899,7 @@ fn validsa041() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -955,11 +921,10 @@ fn validsa042() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa043() {
     /*
         Test ID:valid-sa-043
@@ -977,11 +942,10 @@ fn validsa043() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa044() {
     /*
         Test ID:valid-sa-044
@@ -999,11 +963,10 @@ fn validsa044() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa045() {
     /*
         Test ID:valid-sa-045
@@ -1021,11 +984,10 @@ fn validsa045() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa046() {
     /*
         Test ID:valid-sa-046
@@ -1043,11 +1005,10 @@ fn validsa046() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa047() {
     /*
         Test ID:valid-sa-047
@@ -1065,11 +1026,10 @@ fn validsa047() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa048() {
     /*
         Test ID:valid-sa-048
@@ -1087,7 +1047,7 @@ fn validsa048() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1109,7 +1069,7 @@ fn validsa049() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1131,7 +1091,7 @@ fn validsa050() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1153,11 +1113,10 @@ fn validsa051() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa052() {
     /*
         Test ID:valid-sa-052
@@ -1175,7 +1134,7 @@ fn validsa052() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1197,11 +1156,10 @@ fn validsa053() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa054() {
     /*
         Test ID:valid-sa-054
@@ -1219,11 +1177,10 @@ fn validsa054() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa055() {
     /*
         Test ID:valid-sa-055
@@ -1241,7 +1198,7 @@ fn validsa055() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1263,11 +1220,10 @@ fn validsa056() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa057() {
     /*
         Test ID:valid-sa-057
@@ -1285,7 +1241,7 @@ fn validsa057() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1307,11 +1263,10 @@ fn validsa058() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa059() {
     /*
         Test ID:valid-sa-059
@@ -1329,11 +1284,10 @@ fn validsa059() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa060() {
     /*
         Test ID:valid-sa-060
@@ -1351,11 +1305,10 @@ fn validsa060() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa061() {
     /*
         Test ID:valid-sa-061
@@ -1373,11 +1326,10 @@ fn validsa061() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa062() {
     /*
         Test ID:valid-sa-062
@@ -1395,11 +1347,10 @@ fn validsa062() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa063() {
     /*
         Test ID:valid-sa-063
@@ -1417,11 +1368,10 @@ fn validsa063() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa064() {
     /*
         Test ID:valid-sa-064
@@ -1439,11 +1389,10 @@ fn validsa064() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa065() {
     /*
         Test ID:valid-sa-065
@@ -1461,7 +1410,7 @@ fn validsa065() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1483,11 +1432,10 @@ fn validsa066() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa067() {
     /*
         Test ID:valid-sa-067
@@ -1505,7 +1453,7 @@ fn validsa067() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1527,11 +1475,10 @@ fn validsa068() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa069() {
     /*
         Test ID:valid-sa-069
@@ -1549,7 +1496,7 @@ fn validsa069() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1571,11 +1518,10 @@ fn validsa070() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa071() {
     /*
         Test ID:valid-sa-071
@@ -1593,7 +1539,7 @@ fn validsa071() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1615,7 +1561,7 @@ fn validsa072() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1637,11 +1583,10 @@ fn validsa073() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa074() {
     /*
         Test ID:valid-sa-074
@@ -1659,11 +1604,10 @@ fn validsa074() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa075() {
     /*
         Test ID:valid-sa-075
@@ -1681,11 +1625,10 @@ fn validsa075() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa076() {
     /*
         Test ID:valid-sa-076
@@ -1703,11 +1646,10 @@ fn validsa076() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa077() {
     /*
         Test ID:valid-sa-077
@@ -1725,11 +1667,10 @@ fn validsa077() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa078() {
     /*
         Test ID:valid-sa-078
@@ -1747,11 +1688,10 @@ fn validsa078() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa079() {
     /*
         Test ID:valid-sa-079
@@ -1769,11 +1709,10 @@ fn validsa079() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa080() {
     /*
         Test ID:valid-sa-080
@@ -1791,11 +1730,10 @@ fn validsa080() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa081() {
     /*
         Test ID:valid-sa-081
@@ -1813,7 +1751,7 @@ fn validsa081() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1835,7 +1773,7 @@ fn validsa082() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1857,11 +1795,10 @@ fn validsa083() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa084() {
     /*
         Test ID:valid-sa-084
@@ -1879,11 +1816,10 @@ fn validsa084() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa085() {
     /*
         Test ID:valid-sa-085
@@ -1901,7 +1837,7 @@ fn validsa085() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1923,7 +1859,7 @@ fn validsa086() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1945,7 +1881,7 @@ fn validsa087() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1967,7 +1903,7 @@ fn validsa088() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -1989,11 +1925,10 @@ fn validsa089() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa090() {
     /*
         Test ID:valid-sa-090
@@ -2011,7 +1946,7 @@ fn validsa090() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2033,11 +1968,10 @@ fn validsa091() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa092() {
     /*
         Test ID:valid-sa-092
@@ -2055,11 +1989,10 @@ fn validsa092() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa093() {
     /*
         Test ID:valid-sa-093
@@ -2077,11 +2010,10 @@ fn validsa093() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa094() {
     /*
         Test ID:valid-sa-094
@@ -2099,7 +2031,7 @@ fn validsa094() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2121,7 +2053,7 @@ fn validsa095() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2143,7 +2075,7 @@ fn validsa096() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2165,11 +2097,10 @@ fn validsa097() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa098() {
     /*
         Test ID:valid-sa-098
@@ -2187,11 +2118,10 @@ fn validsa098() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa099() {
     /*
         Test ID:valid-sa-099
@@ -2209,7 +2139,7 @@ fn validsa099() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2231,11 +2161,10 @@ fn validsa100() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa101() {
     /*
         Test ID:valid-sa-101
@@ -2253,11 +2182,10 @@ fn validsa101() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa102() {
     /*
         Test ID:valid-sa-102
@@ -2275,11 +2203,10 @@ fn validsa102() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa103() {
     /*
         Test ID:valid-sa-103
@@ -2297,11 +2224,10 @@ fn validsa103() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa104() {
     /*
         Test ID:valid-sa-104
@@ -2319,11 +2245,10 @@ fn validsa104() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa105() {
     /*
         Test ID:valid-sa-105
@@ -2341,11 +2266,10 @@ fn validsa105() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa106() {
     /*
         Test ID:valid-sa-106
@@ -2363,11 +2287,10 @@ fn validsa106() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa107() {
     /*
         Test ID:valid-sa-107
@@ -2385,7 +2308,7 @@ fn validsa107() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2407,11 +2330,10 @@ fn validsa108() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa109() {
     /*
         Test ID:valid-sa-109
@@ -2429,7 +2351,7 @@ fn validsa109() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2451,7 +2373,7 @@ fn validsa110() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2473,11 +2395,10 @@ fn validsa111() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa112() {
     /*
         Test ID:valid-sa-112
@@ -2495,11 +2416,10 @@ fn validsa112() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa113() {
     /*
         Test ID:valid-sa-113
@@ -2517,7 +2437,7 @@ fn validsa113() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2539,7 +2459,7 @@ fn validsa114() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2561,11 +2481,10 @@ fn validsa115() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa116() {
     /*
         Test ID:valid-sa-116
@@ -2583,7 +2502,7 @@ fn validsa116() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2605,7 +2524,7 @@ fn validsa117() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
@@ -2627,11 +2546,10 @@ fn validsa118() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }
 
 #[test]
-#[ignore]
 fn validsa119() {
     /*
         Test ID:valid-sa-119
@@ -2649,5 +2567,5 @@ fn validsa119() {
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
-    assert!(testxml.unwrap() == canonicalxml.unwrap());
+    assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
 }

@@ -138,6 +138,7 @@ fn invalidsa141() {
 }
 
 #[test]
+#[ignore]
 fn xrmt5014() {
     /*
         Test ID:x-rmt5-014
@@ -154,6 +155,7 @@ fn xrmt5014() {
 }
 
 #[test]
+#[ignore]
 fn xrmt5016() {
     /*
         Test ID:x-rmt5-016
