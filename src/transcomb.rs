@@ -21,7 +21,7 @@ pub struct Context<N: Node> {
     depth: usize,	// Depth of evaluation
     rd: Option<N>,	// Result document
     // templates
-    // built-in templates
+    builtin_templates: Vec<Template<N>>,
     // variables
     vars: HashMap<String, Vec<Sequence<N>>>,
     // grouping
@@ -37,6 +37,7 @@ impl<N: Node> Context<N> {
 	    i: 0,
 	    depth: 0,
 	    vars: HashMap::new(),
+	    builtin_templates: Vec::new(),
 	    rd: None,
 	}
     }
@@ -68,6 +69,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
 	    i: 0,
 	    depth: 0,
 	    vars: HashMap::new(),
+	    builtin_templates: Vec::new(),
 	    rd: None,
 	}
     }
@@ -98,6 +100,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn result_document(mut self, rd: N) -> Self {
 	self.0.rd = Some(rd);
+	self
+    }
+    pub fn builtin_template(mut self, t: Template<N>) -> Self {
+	self.0.builtin_templates.push(t);
 	self
     }
     pub fn build(self) -> Context<N> {
@@ -745,6 +751,63 @@ pub fn reference_variable<N: Node>(name: String) -> Box<dyn Fn(&mut Context<N>) 
 	    None => Err(Error::new(ErrorKind::Unknown, format!("unknown variable \"{}\"", name)))
 	}
     })
+}
+
+/// Apply templates to the select expression.
+pub fn apply_templates<F, N: Node>(s: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    Box::new(move |ctxt| {
+	// s is the select expression. Evaluate it, and then iterate over it's items.
+	// Each iteration becomes an item in the result sequence.
+	s(ctxt)?.iter()
+	    .try_fold(
+		vec![],
+		|mut result, i| {
+		    let mut candidates = ctxt.templates.iter()
+			.try_map(|t| {
+			    t(Context::from(vec![t.clone()]))?
+			})
+			.collect();
+		    if candidates.len() != 0 {
+                        // Find the template(s) with the lowest priority.
+			// Built-in templates are always lower priority.
+			candidates.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+			let l = candidate[0].priority;
+		    } else {
+			Err(Error::new(ErrorKind::Unknown, String::from("no matching template")))
+		    }
+		}
+	    )?
+    })
+}
+
+/// A template asociates a pattern to a sequence constructor
+#[derive(Clone)]
+pub struct Template<F, N: Node>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static
+{
+    pattern: F,
+    body: F,
+    priority: f64,
+    builtin: bool,
+    mode: Option<String>,
+    import: usize,
+}
+
+impl<F, N: Node> fmt::Debug for Template<F, N> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "match \{\} prio {}, import {}, builtin {}",
+            //format_constructor(&self.pattern, 0),
+            self.priority,
+            self.import,
+	    self.builtin,
+        )
+    }
 }
 
 /// XPath concat function. All arguments are concatenated into a single string value.
