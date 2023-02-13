@@ -491,7 +491,7 @@ fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         Ok((mut d, (_, _, _, _, n, _, s, _, _))) => {
             d.dtd
                 .paramentities
-                .insert(n.to_string(), DTDDecl::ParamEntity(n, s));
+                .insert(n.to_string(), DTDDecl::ParamEntity(n, s.replace("&#60;","<")));
             Ok((d, ()))
         }
         Err(err) => Err(err),
@@ -515,7 +515,7 @@ fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         Ok((mut d, (_, _, n, _, s, _, _))) => {
             d.dtd
                 .generalentities
-                .insert(n.to_string(), DTDDecl::GeneralEntity(n, s));
+                .insert(n.to_string(), DTDDecl::GeneralEntity(n, s.replace("&#60;","<")));
             Ok((d, ()))
         }
         Err(err) => Err(err),
@@ -703,23 +703,16 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
             ),
             |(_, n, _a, _, _, _c, _, e, _, _)|
                 {
-                    //println!("NTS-{:?}", n.clone().to_string());
-                    //println!("NTS2-{:?}", e.clone().to_string());
-                    //println!("NTS3-{:?}", n.clone().to_string() == e.clone().to_string());
                     n.to_string() == e.to_string()
                 }
         )(input) {
             Ok((mut input1, (_, n, av, _, _, c, _, _, _, _))) => {
                 let mut e = NodeBuilder::new(NodeType::Element).name(n.clone()).build();
-                //println!("here");
                 match input1.namespace.pop() {
                     None => {
-                        //println!("NS-NONS");
                         //No namespace to assign.
                     },
                     Some(ns) => {
-                        //println!("here2");
-                        //println!("{:?}",ns);
                         let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
                         if ns_to_check == "xml".to_string(){
                             e.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
@@ -946,24 +939,42 @@ fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
         ),
         |(c, v)| {
             let mut new: Vec<RNode> = Vec::new();
-            if c.is_some() {
-                new.push(
-                    NodeBuilder::new(NodeType::Text)
-                        .value(Value::String(c.unwrap()))
-                        .build(),
-                );
+            let mut notex: Vec<String> = Vec::new();
+
+
+            if c.is_some(){
+                notex.push(c.unwrap());
             }
+
             if !v.is_empty() {
                 for (w, d) in v {
-                    new.push(w);
-                    if d.is_some() {
-                        new.push(
-                            NodeBuilder::new(NodeType::Text)
-                                .value(Value::String(d.unwrap()))
-                                .build(),
-                        );
+                    match w.node_type() {
+                        NodeType::Text => {
+                            notex.push(w.to_string())
+                        },
+                        OtherNode =>{
+                            if !notex.is_empty(){
+                                new.push(
+                                    NodeBuilder::new(NodeType::Text)
+                                        .value(Value::String(notex.concat()))
+                                        .build(),
+                                );
+                                notex.clear();
+                            }
+                            new.push(w);
+                        }
+                    }
+                    if d.is_some(){
+                        notex.push(d.unwrap())
                     }
                 }
+            }
+            if notex.len() > 0{
+                new.push(
+                    NodeBuilder::new(NodeType::Text)
+                        .value(Value::String(notex.concat()))
+                        .build(),
+                );
             }
             new
         },
