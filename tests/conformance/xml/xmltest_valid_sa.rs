@@ -1457,7 +1457,6 @@ fn validsa067() {
 }
 
 #[test]
-#[ignore]
 fn validsa068() {
     /*
         Test ID:valid-sa-068
@@ -1885,7 +1884,6 @@ fn validsa087() {
 }
 
 #[test]
-#[ignore]
 fn validsa088() {
     /*
         Test ID:valid-sa-088
@@ -1907,7 +1905,6 @@ fn validsa088() {
 }
 
 #[test]
-#[ignore]
 fn validsa089() {
     /*
         Test ID:valid-sa-089
@@ -2441,7 +2438,6 @@ fn validsa113() {
 }
 
 #[test]
-#[ignore]
 fn validsa114() {
     /*
         Test ID:valid-sa-114
@@ -2463,7 +2459,6 @@ fn validsa114() {
 }
 
 #[test]
-#[ignore]
 fn validsa115() {
     /*
         Test ID:valid-sa-115
@@ -2506,7 +2501,6 @@ fn validsa116() {
 }
 
 #[test]
-#[ignore]
 fn validsa117() {
     /*
         Test ID:valid-sa-117
@@ -2528,7 +2522,6 @@ fn validsa117() {
 }
 
 #[test]
-#[ignore]
 fn validsa118() {
     /*
         Test ID:valid-sa-118
