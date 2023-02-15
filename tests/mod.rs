@@ -5,6 +5,7 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::{Document, Error};
 
+/*
 #[test]
 #[ignore]
 fn bigfile() {
@@ -16,8 +17,8 @@ fn bigfile() {
 
     assert!(testxml.is_ok());
 }
-
-
+*/
+/*
 #[test]
 #[ignore]
 fn testfile() {
@@ -35,3 +36,6 @@ fn testfile() {
 
     //assert!(testxml.is_ok());
 }
+
+
+ */

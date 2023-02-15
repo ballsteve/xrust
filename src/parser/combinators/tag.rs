@@ -3,14 +3,11 @@ use crate::parser::{ParseInput, ParseError, ParseResult};
 pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
     move |mut input| {
         let tagchars = expected.chars();
-        let mut cnt = 0;
         for tchar in tagchars {
             match input.next() {
                 None => return Err(ParseError::Combinator),
                 Some(char) => {
-                    if char == tchar {
-                        cnt += 1
-                    } else {
+                    if char != tchar {
                         return Err(ParseError::Combinator);
                     }
                 }

@@ -7,7 +7,6 @@ pub(crate) mod take;
 pub(crate) mod tuple;
 
 pub(crate) mod expander;
-pub(crate) mod none_of;
 pub(crate) mod opt;
 pub(crate) mod validate;
 pub(crate) mod value;
