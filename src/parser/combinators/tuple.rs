@@ -191,6 +191,7 @@ where
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn tuple8<P1, P2, P3, P4, P5, P6, P7, P8, R1, R2, R3, R4, R5, R6, R7, R8>(
     parser1: P1,
     parser2: P2,
@@ -244,6 +245,7 @@ where
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn tuple9<P1, P2, P3, P4, P5, P6, P7, P8, P9, R1, R2, R3, R4, R5, R6, R7, R8, R9>(
     parser1: P1,
     parser2: P2,
@@ -302,6 +304,7 @@ where
     }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn tuple10<
 P1, P2, P3, P4, P5, P6, P7, P8, P9, P10,
 R1, R2, R3, R4, R5, R6, R7, R8, R9, R10,

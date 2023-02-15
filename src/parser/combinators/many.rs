@@ -1,4 +1,4 @@
-use crate::parser::{ParseInput, ParseError, ParseResult};
+use crate::parser::{ParseInput, ParseResult};
 
 pub(crate) fn many0<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R>>
 where
