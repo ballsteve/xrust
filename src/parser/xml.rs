@@ -13,11 +13,11 @@ use crate::parser::common::{
     is_char, is_namechar, is_pubid_char, is_pubid_charwithapos, name, ncname,
 };
 use crate::qname::*;
-use std::collections::{HashMap, HashSet};
+use std::collections::HashMap;//, HashSet};
 use std::str::FromStr;
 use crate::xdmerror::*;
 
-use crate::parser::combinators::alt::{alt2, alt3, alt4, alt6, alt7, alt8};
+use crate::parser::combinators::alt::{alt2, alt3, alt4, alt7, alt8};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::expander::{genentityexpander, paramentityexpander};
 use crate::parser::combinators::many::{many0, many1};
@@ -32,7 +32,7 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::{ParseInput, ParseError, ParseResult};
 
 use crate::intmuttree::{
-    DTDDecl, Document, DocumentBuilder, NodeBuilder, RNode, XMLDecl, XMLDeclBuilder,
+    DTDDecl, Document, DocumentBuilder, NodeBuilder, RNode, XMLDecl,
 };
 use crate::item::{Node as ItemNode, NodeType};
 use crate::value::Value;
@@ -59,7 +59,7 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
                         message: "Unrecoverable parser error.".to_string(),
                     })
                 }
-                ParseError::InvalidChar { row, col } => {
+                ParseError::InvalidChar { row: _, col: _ } => {
                     Result::Err(Error {
                         kind: ErrorKind::ParseError,
                         message: "Invalid character in document.".to_string(),
@@ -778,7 +778,7 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     move |input|
         match many0(attribute())(input){
             Ok((mut input1, nodes)) => {
-                let mut n: HashMap<String, String> = HashMap::new();
+                let n: HashMap<String, String> = HashMap::new();
                 let mut namespaces = input1.namespace.last().unwrap_or(&n).clone();
                 for node in nodes.clone() {
                     //Return error if someone attempts to redefine namespaces.

@@ -2,10 +2,8 @@
 //!
 //! Uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
-use std::any::Any;
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
-//use crate::parsexml::content;
 use crate::qname::*;
 use crate::value::Value;
 use crate::xdmerror::*;
@@ -489,7 +487,7 @@ impl ItemNode for RNode {
                     .build();
                     Ok(result)
             }
-            other => {
+            _ => {
                 let mut result = NodeBuilder::new(self.node_type())
                     .name(self.name())
                     .value(self.value())

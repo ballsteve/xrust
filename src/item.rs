@@ -11,7 +11,6 @@ use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 use std::fmt;
 use std::rc::Rc;
-use crate::intmuttree::NodeBuilder;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
