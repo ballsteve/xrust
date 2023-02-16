@@ -81,14 +81,18 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Node] into an [Evaluator].
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
-/// The argument f is a function that parses a string to a [Node]. The argument g is a function that resolves a URL to a string. These are used for include and import modules.
-pub fn from_document<N: Node>(
+/// The argument f is a closure that parses a string to a [Node]. The argument g is a closure that resolves a URL to a string. These are used for include and import modules.
+pub fn from_document<N: Node, F, G>(
     styledoc: N,
     sc: &mut StaticContext<N>,
     b: Option<Url>,
-    f: fn(&str) -> Result<N, Error>,
-    g: fn(&Url) -> Result<String, Error>,
-) -> Result<Evaluator<N>, Error> {
+    f: F,
+    g: G,
+) -> Result<Evaluator<N>, Error>
+where
+    F: Fn(&str) -> Result<N, Error>,
+    G: Fn(&Url) -> Result<String, Error>,
+{
     let mut ev = Evaluator::new();
     if b.is_some() {
         ev.set_baseurl(b.unwrap())
@@ -214,7 +218,6 @@ pub fn from_document<N: Node>(
             ev.set_output_definition(od);
         });
 
-    eprintln!("doing includes");
     // Iterate over children, looking for includes
     // * resolve href
     // * fetch document
@@ -246,14 +249,11 @@ pub fn from_document<N: Node>(
                     })
                 }
             };
-            eprintln!("got URL, about to fetch data");
             let xml = g(&url)?;
-            eprintln!("got data, about to parse");
             let module = f(xml.as_str().trim())?;
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
             // inserting before the xsl:include node
-            eprintln!("inserting elements");
             let moddoc = module.first_child().unwrap();
             moddoc.child_iter().try_for_each(|mc| {
                 c.insert_before(mc)?;
@@ -261,7 +261,6 @@ pub fn from_document<N: Node>(
             })?;
             // Remove the xsl:include element node
             c.pop()?;
-            eprintln!("done");
             Ok(())
         })?;
 
