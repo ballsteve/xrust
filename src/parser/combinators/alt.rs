@@ -1,4 +1,4 @@
-use crate::parser::{ParseInput, ParseError, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn alt2<P1, P2, A>(parser1: P1, parser2: P2) -> impl Fn(ParseInput) -> ParseResult<A>
 where
@@ -208,15 +208,15 @@ pub(crate) fn alt8<P1, P2, P3, P4, P5, P6, P7, P8, A>(
     parser7: P7,
     parser8: P8,
 ) -> impl Fn(ParseInput) -> ParseResult<A>
-    where
-        P1: Fn(ParseInput) -> ParseResult<A>,
-        P2: Fn(ParseInput) -> ParseResult<A>,
-        P3: Fn(ParseInput) -> ParseResult<A>,
-        P4: Fn(ParseInput) -> ParseResult<A>,
-        P5: Fn(ParseInput) -> ParseResult<A>,
-        P6: Fn(ParseInput) -> ParseResult<A>,
-        P7: Fn(ParseInput) -> ParseResult<A>,
-        P8: Fn(ParseInput) -> ParseResult<A>,
+where
+    P1: Fn(ParseInput) -> ParseResult<A>,
+    P2: Fn(ParseInput) -> ParseResult<A>,
+    P3: Fn(ParseInput) -> ParseResult<A>,
+    P4: Fn(ParseInput) -> ParseResult<A>,
+    P5: Fn(ParseInput) -> ParseResult<A>,
+    P6: Fn(ParseInput) -> ParseResult<A>,
+    P7: Fn(ParseInput) -> ParseResult<A>,
+    P8: Fn(ParseInput) -> ParseResult<A>,
 {
     move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),

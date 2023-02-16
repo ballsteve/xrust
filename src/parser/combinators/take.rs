@@ -1,16 +1,11 @@
-use crate::parser::{ParseInput, ParseError, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn take_until(s: &'static str) -> impl Fn(ParseInput) -> ParseResult<String> {
     move |input| {
         let mut chars = s.chars();
         match chars.clone().count() {
-            1 => take_until1(
-                chars.next().unwrap()
-            )(input),
-            2 => take_until2(
-                chars.next().unwrap(),
-                chars.next().unwrap()
-            )(input),
+            1 => take_until1(chars.next().unwrap())(input),
+            2 => take_until2(chars.next().unwrap(), chars.next().unwrap())(input),
             3 => take_until3(
                 chars.next().unwrap(),
                 chars.next().unwrap(),
@@ -22,7 +17,7 @@ pub(crate) fn take_until(s: &'static str) -> impl Fn(ParseInput) -> ParseResult<
 }
 
 fn take_until1(ch: char) -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |mut input | match input.clone().position(|c| c == ch) {
+    move |mut input| match input.clone().position(|c| c == ch) {
         None => Err(ParseError::Combinator),
         Some(pos) => {
             let res = (&mut input).take(pos).collect::<String>();

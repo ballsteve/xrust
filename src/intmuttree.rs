@@ -4,6 +4,8 @@
 
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
+use crate::parser;
+use crate::parser::xml::XMLDocument;
 use crate::qname::*;
 use crate::value::Value;
 use crate::xdmerror::*;
@@ -11,8 +13,6 @@ use std::cell::RefCell;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::rc::{Rc, Weak};
-use crate::parser;
-use crate::parser::xml::XMLDocument;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -48,22 +48,18 @@ impl Document {
             .for_each(|c| result.push_str(c.to_xml().as_str()));
         result
     }
-    pub fn canonical(self) -> Document{
-        let d = match self.xmldecl{
-            None => {
-                XMLDecl{
-                    version: "1.0".to_string(),
-                    encoding: Some("UTF-8".to_string()),
-                    standalone: None,
-                }
-            }
-            Some(x) => {
-                XMLDecl{
-                    version: x.version,
-                    encoding: Some("UTF-8".to_string()),
-                    standalone: None,
-                }
-            }
+    pub fn canonical(self) -> Document {
+        let d = match self.xmldecl {
+            None => XMLDecl {
+                version: "1.0".to_string(),
+                encoding: Some("UTF-8".to_string()),
+                standalone: None,
+            },
+            Some(x) => XMLDecl {
+                version: x.version,
+                encoding: Some("UTF-8".to_string()),
+                standalone: None,
+            },
         };
         let mut p = vec![];
         for pn in self.prologue {
@@ -85,7 +81,7 @@ impl Document {
             }
         }
 
-        XMLDocument{
+        XMLDocument {
             xmldecl: Some(d),
             prologue: p,
             content: c,
@@ -145,7 +141,6 @@ impl TryFrom<String> for Document {
     }
 }
 
-
 impl PartialEq for Document {
     fn eq(&self, other: &Document) -> bool {
         self.xmldecl == other.xmldecl
@@ -172,6 +167,7 @@ impl PartialEq for Node {
     }
 }
 
+/*
 fn expand_node(mut n: RNode, ent: &HashMap<QualifiedName, Vec<RNode>>) -> Result<(), Error> {
     // TODO: Don't Panic
     match n.node_type() {
@@ -190,6 +186,7 @@ fn expand_node(mut n: RNode, ent: &HashMap<QualifiedName, Vec<RNode>>) -> Result
         _ => Ok(()),
     }
 }
+ */
 
 pub struct DocumentBuilder(Document);
 
@@ -469,21 +466,26 @@ impl ItemNode for RNode {
         Ok(result)
     }
 
-    fn get_canonical(&self) -> Result<Self, Error>{
-        match self.node_type(){
-            NodeType::Comment => {return Err(Error { kind: ErrorKind::TypeError, message: "".to_string() }) }
+    fn get_canonical(&self) -> Result<Self, Error> {
+        match self.node_type() {
+            NodeType::Comment => {
+                return Err(Error {
+                    kind: ErrorKind::TypeError,
+                    message: "".to_string(),
+                })
+            }
             NodeType::Text => {
-                let v = match self.value(){
+                let v = match self.value() {
                     Value::String(s) => {
-                        Value::String(s.replace("\r\n", "\n").replace("\n\n","\n"))
+                        Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n"))
                     }
-                    e => e
+                    e => e,
                 };
-                let mut result = NodeBuilder::new(self.node_type())
+                let result = NodeBuilder::new(self.node_type())
                     .name(self.name())
                     .value(v)
                     .build();
-                    Ok(result)
+                Ok(result)
             }
             _ => {
                 let mut result = NodeBuilder::new(self.node_type())
@@ -805,7 +807,6 @@ impl XMLDeclBuilder {
 /// DTD declarations.
 /// Only general entities are supported, so far.
 /// TODO: element, attribute declarations
-
 
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub struct DTD {

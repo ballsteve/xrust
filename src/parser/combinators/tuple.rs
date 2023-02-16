@@ -55,9 +55,7 @@ where
         Ok((input1, result1)) => match parser2(input1) {
             Ok((input2, result2)) => match parser3(input2) {
                 Ok((input3, result3)) => match parser4(input3) {
-                    Ok((input4, result4)) => {
-                        Ok((input4, (result1, result2, result3, result4)))
-                    }
+                    Ok((input4, result4)) => Ok((input4, (result1, result2, result3, result4))),
                     Err(err) => Err(err),
                 },
                 Err(err) => Err(err),
@@ -87,10 +85,9 @@ where
             Ok((input2, result2)) => match parser3(input2) {
                 Ok((input3, result3)) => match parser4(input3) {
                     Ok((input4, result4)) => match parser5(input4) {
-                        Ok((input5, result5)) => Ok((
-                            input5,
-                            (result1, result2, result3, result4, result5),
-                        )),
+                        Ok((input5, result5)) => {
+                            Ok((input5, (result1, result2, result3, result4, result5)))
+                        }
                         Err(err) => Err(err),
                     },
                     Err(err) => Err(err),
@@ -306,8 +303,26 @@ where
 
 #[allow(clippy::too_many_arguments)]
 pub(crate) fn tuple10<
-P1, P2, P3, P4, P5, P6, P7, P8, P9, P10,
-R1, R2, R3, R4, R5, R6, R7, R8, R9, R10,
+    P1,
+    P2,
+    P3,
+    P4,
+    P5,
+    P6,
+    P7,
+    P8,
+    P9,
+    P10,
+    R1,
+    R2,
+    R3,
+    R4,
+    R5,
+    R6,
+    R7,
+    R8,
+    R9,
+    R10,
 >(
     parser1: P1,
     parser2: P2,
@@ -342,18 +357,17 @@ where
                                 Ok((input7, result7)) => match parser8(input7) {
                                     Ok((input8, result8)) => match parser9(input8) {
                                         Ok((input9, result9)) => match parser10(input9) {
-                                                Ok((input10, result10)) => Ok((
-                                                    input10,
-                                                    (
-                                                        result1, result2, result3, result4,
-                                                        result5, result6, result7, result8,
-                                                        result9, result10,
-                                                    ),
-                                                )),
-                                                Err(err) => Err(err),
-                                            }
+                                            Ok((input10, result10)) => Ok((
+                                                input10,
+                                                (
+                                                    result1, result2, result3, result4, result5,
+                                                    result6, result7, result8, result9, result10,
+                                                ),
+                                            )),
+                                            Err(err) => Err(err),
+                                        },
                                         Err(err) => Err(err),
-                                    }
+                                    },
                                     Err(err) => Err(err),
                                 },
                                 Err(err) => Err(err),

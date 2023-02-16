@@ -1,4 +1,4 @@
-use crate::parser::{ParseInput, ParseError, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn opt<P1, R1>(parser1: P1) -> impl Fn(ParseInput) -> ParseResult<Option<R1>>
 where
@@ -21,19 +21,13 @@ mod tests {
     fn parser_opt_test1() {
         let testdoc = ParseInput::new("<doc>");
         let parse_doc = opt(tag("<"));
-        assert_eq!(
-            Ok((ParseInput::new("<doc>"), Some(()))),
-            parse_doc(testdoc)
-        );
+        assert_eq!(Ok((ParseInput::new("<doc>"), Some(()))), parse_doc(testdoc));
     }
 
     #[test]
     fn parser_opt_test2() {
         let testdoc = ParseInput::new("<doc>");
         let parse_doc = opt(tag(">"));
-        assert_eq!(
-            Ok((ParseInput::new("<doc>"), None)),
-            parse_doc(testdoc)
-        );
+        assert_eq!(Ok((ParseInput::new("<doc>"), None)), parse_doc(testdoc));
     }
 }

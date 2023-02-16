@@ -6,7 +6,6 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
 
-
 #[test]
 fn invalidbo7() {
     /*

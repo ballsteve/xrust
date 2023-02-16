@@ -1,5 +1,5 @@
-use std::collections::HashMap;
 use crate::intmuttree::DTD;
+use std::collections::HashMap;
 use std::str::Chars;
 
 pub(crate) mod combinators;
@@ -10,21 +10,21 @@ pub(crate) mod xml;
 pub(crate) type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub(crate) enum ParseError{
+pub(crate) enum ParseError {
     // The "Combinator" error just means a parser hasn't matched, its not serious necessarily.
     // Every other error should get returned.
     Combinator, // Combinator isn't correct, not a serious error.
     //InvalidChar{ row:usize, col:usize },
     //MissingClosingElement{ row:usize, col:usize, element: String},
     //IncorrectClosingElement{ row:usize, col:usize, open: String, close:String},
-    MissingGenEntity{row: usize, col:usize },
-    MissingParamEntity{row: usize, col:usize },
-    EntityDepth{row: usize, col:usize },
-    Validation{row: usize, col:usize },
-    Unknown{row:usize, col:usize},
+    MissingGenEntity { row: usize, col: usize },
+    MissingParamEntity { row: usize, col: usize },
+    EntityDepth { row: usize, col: usize },
+    Validation { row: usize, col: usize },
+    Unknown { row: usize, col: usize },
     MissingNameSpace,
     NotWellFormed,
-    Notimplemented
+    Notimplemented,
 }
 
 #[derive(Clone, Debug)]
@@ -46,11 +46,11 @@ pub(crate) struct ParseInput<'a> {
     maxentitydepth: usize,
     currententitydepth: usize,
     currentcol: usize,
-    currentrow: usize
+    currentrow: usize,
 }
 
 impl ParseInput<'_> {
-    pub fn new(xmldoc: &str) -> ParseInput  {
+    pub fn new(xmldoc: &str) -> ParseInput {
         return ParseInput {
             entityfeed: vec![],
             input: xmldoc.chars(),
@@ -62,7 +62,7 @@ impl ParseInput<'_> {
             maxentitydepth: 4,
             currententitydepth: 0,
             currentcol: 1,
-            currentrow: 1
+            currentrow: 1,
         };
     }
 }
@@ -76,17 +76,17 @@ impl<'a> Iterator for ParseInput<'a> {
                 if self.currententitydepth > 0 {
                     self.currententitydepth = 0;
                 }
-                match self.input.next(){
+                match self.input.next() {
                     Some('\n') => {
                         self.currentrow += 1;
                         self.currentcol = 1;
                         Some('\n')
-                    },
+                    }
                     Some(c) => {
                         self.currentcol += 1;
                         Some(c)
-                    },
-                    None => None
+                    }
+                    None => None,
                 }
             }
         }

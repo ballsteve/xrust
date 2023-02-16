@@ -8,7 +8,6 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
 
-
 #[test]
 fn ibm11valid_p02ibm02v01xml() {
     /*

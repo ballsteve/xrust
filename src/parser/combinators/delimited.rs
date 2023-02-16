@@ -32,9 +32,6 @@ mod tests {
     fn parser_delimited_test1() {
         let testdoc = ParseInput::new("<doc>");
         let parse_doc = delimited(tag("<"), tag("doc"), tag(">"));
-        assert_eq!(
-            Ok((ParseInput::new("<doc>"), ())),
-            parse_doc(testdoc)
-        );
+        assert_eq!(Ok((ParseInput::new("<doc>"), ())), parse_doc(testdoc));
     }
 }

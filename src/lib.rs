@@ -70,5 +70,5 @@ pub mod xslt;
 pub mod intmuttree;
 pub use intmuttree::Document;
 
-pub mod testutils;
 mod parser;
+pub mod testutils;
