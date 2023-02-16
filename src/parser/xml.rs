@@ -13,7 +13,7 @@ use crate::parser::common::{
     is_char, is_namechar, is_pubid_char, is_pubid_charwithapos, name, ncname,
 };
 use crate::qname::*;
-use std::collections::HashMap;//, HashSet};
+use std::collections::HashMap;
 use std::str::FromStr;
 use crate::xdmerror::*;
 
@@ -59,12 +59,14 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
                         message: "Unrecoverable parser error.".to_string(),
                     })
                 }
-                ParseError::InvalidChar { row: _, col: _ } => {
+                /*
+                ParseError::InvalidChar { row, col } => {
                     Result::Err(Error {
                         kind: ErrorKind::ParseError,
                         message: "Invalid character in document.".to_string(),
                     })
                 }
+                 */
                 ParseError::MissingGenEntity { .. } => {
                     Result::Err(Error {
                         kind: ErrorKind::ParseError,
@@ -131,9 +133,11 @@ fn document(input: ParseInput) -> ParseResult<XMLDocument> {
                     let mut a = DocumentBuilder::new()
                         .prologue(pr.1)
                         .content(vec![e])
-                        .epilogue(m.unwrap_or(vec![]))
+                        .epilogue(m.unwrap_or_default())
                         .build();
-                    pr.0.map(|x| a.set_xmldecl(x));
+                    if let Some(x) = pr.0 {
+                        a.set_xmldecl(x)
+                    };
                     Ok((input1,a))
                 }
             }
@@ -161,7 +165,7 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
         delimited_string(),
     )(input){
         Ok((input1,(_, _, _, _, v))) => {
-            if v == "1.1".to_string(){
+            if v == *"1.1"{
                 Ok((input1, v))
             } else if v.starts_with("1."){
                 Ok((input1, "1.0".to_string()))
@@ -287,8 +291,8 @@ fn intsubset() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
         gedecl(),
         ndatadecl(),
         whitespace1(),
-        map(comment(), |c| ()),
-        map(processing_instruction(), |c| ()),
+        map(comment(), |_| ()),
+        map(processing_instruction(), |_| ()),
     ))
 }
 
@@ -657,13 +661,13 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                         //No namespace to assign.
                     },
                     Some(ns) => {
-                        let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
-                        if ns_to_check == "xml".to_string(){
+                        let ns_to_check = n.get_prefix().unwrap_or_else(|| "xmlns".to_string());
+                        if ns_to_check == *"xml"{
                             e.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
                         } else {
                             match ns.get(&*ns_to_check) {
                                 None => {
-                                    if ns_to_check != "xmlns".to_string() {
+                                    if ns_to_check != *"xmlns" {
                                         return Err(ParseError::MissingNameSpace)
                                     }
                                 }
@@ -713,13 +717,13 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                         //No namespace to assign.
                     },
                     Some(ns) => {
-                        let ns_to_check = n.get_prefix().unwrap_or("xmlns".to_string());
-                        if ns_to_check == "xml".to_string(){
+                        let ns_to_check = n.get_prefix().unwrap_or_else(|| "xmlns".to_string());
+                        if ns_to_check == *"xml"{
                             e.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
                         } else {
                             match ns.get(&*ns_to_check) {
                                 None => {
-                                    if ns_to_check != "xmlns".to_string() {
+                                    if ns_to_check != *"xmlns" {
                                         return Err(ParseError::MissingNameSpace)
                                     }
                                 }
@@ -784,22 +788,22 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                     //Return error if someone attempts to redefine namespaces.
                     if (node.name().get_prefix() == Some("xmlns".to_string()))
                         &&
-                        (node.name().get_localname() == "xmlns".to_string()){
+                        (node.name().get_localname() == *"xmlns"){
                         return Err(ParseError::NotWellFormed)
                     }
                     //xml prefix must always be set to http://www.w3.org/XML/1998/namespace
                     if (node.name().get_prefix() == Some("xmlns".to_string()))
                         &&
-                        (node.name().get_localname() == "xml".to_string())
+                        (node.name().get_localname() == *"xml")
                         &&
-                        (node.to_string() != "http://www.w3.org/XML/1998/namespace".to_string())
+                        (node.to_string() != *"http://www.w3.org/XML/1998/namespace")
                     {
                         return Err(ParseError::NotWellFormed)
                     }
 
                     if (node.name().get_prefix() == Some("xmlns".to_string()))
                         ||
-                        (node.name().get_localname() == "xmlns".to_string()) {
+                        (node.name().get_localname() == *"xmlns") {
                         namespaces.insert(node.name().get_localname(),
                                           node.to_string());
                     };
@@ -820,22 +824,17 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 for node in nodes {
                     if node.name().get_prefix()!=Some("xmlns".to_string())
                         &&
-                        node.name().get_localname()!="xmlns".to_string(){
-                        match node.name().get_prefix(){
-                            Some(ns) => {
-                                if ns == "xml".to_string(){
-                                    node.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
-                                } else {
-                                    match namespaces.get(&*ns) {
-                                        None => { return Err(ParseError::MissingNameSpace) }
-                                        Some(nsuri) => {
-                                            node.set_nsuri(nsuri.clone())
-                                        }
+                        node.name().get_localname()!=*"xmlns"{
+                        if let Some(ns) = node.name().get_prefix() {
+                            if ns == *"xml"{
+                                node.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
+                            } else {
+                                match namespaces.get(&*ns) {
+                                    None => { return Err(ParseError::MissingNameSpace) }
+                                    Some(nsuri) => {
+                                        node.set_nsuri(nsuri.clone())
                                     }
                                 }
-                            }
-                            None => {
-                                //node.set_nsuri(namespaces.get("xmlns").unwrap_or(&("".to_string())).clone())
                             }
                         }
                         resnodes.push(node);
@@ -845,31 +844,6 @@ fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
             },
             Err(err) => Err(err)
         }
-    //this is just a wrapper around the attribute function, that checks for duplicates.
-    /*
-    validate(many0(attribute()), |v: &Vec<RNode>| {
-        let attrs = v.clone();
-
-
-        //filter namespace declarations
-        let attrsnons: Vec<RNode> = v.clone()
-            .into_iter()
-            .filter(|a|
-                a.name().get_prefix()!=Some("xmlns".to_string())
-                &&
-                a.name().get_localname()!="xmlns".to_string()
-            ).collect();
-        //Check if duplicates
-        let uniqueattrs: HashSet<_> = attrs
-            .iter()
-            .map(|xmlnode| match xmlnode.node_type() {
-                NodeType::Attribute => xmlnode.name().to_string(),
-                _ => "".to_string(),
-            })
-            .collect();
-        attrsnons.len() == uniqueattrs.len()
-    })
-     */
 }
 // Attribute ::= Name '=' AttValue
 fn attribute() -> impl Fn(ParseInput) -> ParseResult<RNode> {
@@ -942,7 +916,7 @@ fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
             let mut notex: Vec<String> = Vec::new();
 
 
-            if c.is_some(){
+            if let Some(..) = c {
                 notex.push(c.unwrap());
             }
 
@@ -952,7 +926,7 @@ fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                         NodeType::Text => {
                             notex.push(w.to_string())
                         },
-                        OtherNode =>{
+                        _ =>{
                             if !notex.is_empty(){
                                 new.push(
                                     NodeBuilder::new(NodeType::Text)
@@ -964,12 +938,12 @@ fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                             new.push(w);
                         }
                     }
-                    if d.is_some(){
+                    if let Some(..) = d {
                         notex.push(d.unwrap())
                     }
                 }
             }
-            if notex.len() > 0{
+            if !notex.is_empty() {
                 new.push(
                     NodeBuilder::new(NodeType::Text)
                         .value(Value::String(notex.concat()))
@@ -1022,7 +996,7 @@ fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                 if v.to_string().contains(|c: char| !is_char(&c)){
                     false
                 } else {
-                    v.pi_name().unwrap().to_lowercase() != "xml".to_string()
+                    v.pi_name().unwrap().to_lowercase() != *"xml"
                     /*
                     match v.name(){
                         QualifiedName {nsuri, prefix, localname} => {

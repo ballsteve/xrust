@@ -67,16 +67,14 @@ impl Document {
         };
         let mut p = vec![];
         for pn in self.prologue {
-            match pn.get_canonical() {
-                Ok(pcn) => p.push(pcn),
-                Err(_) => {}
+            if let Ok(pcn) = pn.get_canonical() {
+                p.push(pcn)
             }
         }
         let mut c = vec![];
         for cn in self.content {
-            match cn.get_canonical() {
-                Ok(ccn) => c.push(ccn),
-                Err(_) => {}
+            if let Ok(ccn) = cn.get_canonical() {
+                c.push(ccn)
             }
         }
         let mut e = vec![];
@@ -86,13 +84,13 @@ impl Document {
                 Err(_) => {}
             }
         }
-        let result = XMLDocument{
+
+        XMLDocument{
             xmldecl: Some(d),
             prologue: p,
             content: c,
             epilogue: e,
-        };
-        result
+        }
     }
     /*
     /// Expand the general entities in the document content.
@@ -772,6 +770,12 @@ impl XMLDecl {
 }
 
 pub struct XMLDeclBuilder(XMLDecl);
+
+impl Default for XMLDeclBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl XMLDeclBuilder {
     pub fn new() -> Self {

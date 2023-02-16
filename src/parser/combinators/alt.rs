@@ -69,6 +69,7 @@ where
     }
 }
 
+/*
 pub(crate) fn alt5<P1, P2, P3, P4, P5, A>(
     parser1: P1,
     parser2: P2,
@@ -146,6 +147,7 @@ where
         Err(err) => Err(err),
     }
 }
+ */
 
 pub(crate) fn alt7<P1, P2, P3, P4, P5, P6, P7, A>(
     parser1: P1,
@@ -195,7 +197,7 @@ where
     }
 }
 
-
+#[allow(clippy::too_many_arguments)]
 pub(crate) fn alt8<P1, P2, P3, P4, P5, P6, P7, P8, A>(
     parser1: P1,
     parser2: P2,
