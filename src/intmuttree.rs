@@ -252,8 +252,8 @@ impl Node {
         let new = match &*self.name.borrow() {
             Some(old) => QualifiedName::new(
                 Some(uri),
-                old.get_prefix().clone(),
-                old.get_localname().clone(),
+                old.get_prefix(),
+                old.get_localname(),
             ),
             None => panic!("no node name"),
         };
@@ -267,7 +267,7 @@ impl ItemNode for RNode {
     type NodeIterator = Box<dyn Iterator<Item = RNode>>;
 
     fn node_type(&self) -> NodeType {
-        self.node_type.clone()
+        self.node_type
     }
     fn name(&self) -> QualifiedName {
         self.name
@@ -321,7 +321,7 @@ impl ItemNode for RNode {
                         format!(" {}='{}'", k.to_string(), v.value().to_string()).as_str(),
                     )
                 });
-                result.push_str(">");
+                result.push('>');
                 self.children
                     .borrow()
                     .iter()
@@ -334,7 +334,7 @@ impl ItemNode for RNode {
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
                 );
-                result.push_str(">");
+                result.push('>');
                 result
             }
             NodeType::Text => self.value().to_string(),
@@ -426,7 +426,7 @@ impl ItemNode for RNode {
                 String::from("must be an attribute node"),
             ));
         }
-        self.attributes.borrow_mut().insert(att.name(), att.clone());
+        self.attributes.borrow_mut().insert(att.name(), att);
         Ok(())
     }
     /// Insert a node into the child list immediately before this node.
@@ -469,7 +469,7 @@ impl ItemNode for RNode {
     fn get_canonical(&self) -> Result<Self, Error> {
         match self.node_type() {
             NodeType::Comment => {
-                return Err(Error {
+                Err(Error {
                     kind: ErrorKind::TypeError,
                     message: "".to_string(),
                 })
@@ -528,7 +528,7 @@ fn find_index(p: &RNode, c: &RNode) -> Result<usize, Error> {
             ErrorKind::Unknown,
             String::from("unable to find child"),
         )),
-        |i| Ok(i),
+        Ok,
     )
 }
 
@@ -579,7 +579,7 @@ impl Iterator for Ancestors {
         let p = s.parent.borrow();
         match &*p {
             None => None,
-            Some(q) => match Weak::upgrade(&q) {
+            Some(q) => match Weak::upgrade(q) {
                 None => None,
                 Some(r) => {
                     self.cur = r.clone();
@@ -645,7 +645,7 @@ impl Siblings {
             .enumerate()
             .find(|&(_, j)| Rc::ptr_eq(j, n))
             .unwrap();
-        Siblings(p.clone(), j, dir)
+        Siblings(p, j, dir)
     }
 }
 impl Iterator for Siblings {
@@ -686,7 +686,7 @@ impl Iterator for Attributes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        self.it.next().map(|(_, n)| n.clone())
+        self.it.next().map(|(_, n)| n)
     }
 }
 

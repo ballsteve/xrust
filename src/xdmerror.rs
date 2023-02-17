@@ -69,9 +69,6 @@ impl Error {
     pub fn new(kind: ErrorKind, message: String) -> Self {
         Error { kind, message }
     }
-    pub fn to_string(&self) -> String {
-        self.message.clone()
-    }
 }
 
 impl fmt::Debug for Error {

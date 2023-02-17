@@ -28,10 +28,7 @@ impl QualifiedName {
         self.nsuri.clone()
     }
     pub fn get_nsuri_ref(&self) -> Option<&str> {
-        match self.nsuri {
-            Some(ref n) => Some(&n),
-            None => None,
-        }
+        self.nsuri.as_ref().map(|x| x as _)
     }
     pub fn get_prefix(&self) -> Option<String> {
         self.prefix.clone()
@@ -75,7 +72,7 @@ impl Eq for QualifiedName {}
 
 impl Hash for QualifiedName {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.nsuri.as_ref().map(|ns| ns.hash(state));
+        if let Some(ns) = self.nsuri.as_ref() { ns.hash(state) }
         self.localname.hash(state);
     }
 }

@@ -17,6 +17,7 @@ use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
 use std::rc::Rc;
+use chrono::Utc;
 use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
 
@@ -31,6 +32,12 @@ pub struct DynamicContext<N: Node> {
     current_group: RefCell<Vec<Option<Sequence<N>>>>,
     current_import: RefCell<usize>,
     deps: RefCell<Vec<Url>>, // URIs for included/imported stylesheets
+}
+
+impl<N: Node> Default for DynamicContext<N> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<N: Node> DynamicContext<N> {
@@ -129,6 +136,12 @@ pub struct Evaluator<N: Node> {
     base: Option<Url>,                   // The base URL of the primary stylesheet
 }
 
+impl<N: Node> Default for Evaluator<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N: Node> Evaluator<N> {
     /// Create a dynamic context.
     pub fn new() -> Self {
@@ -209,7 +222,7 @@ impl<N: Node> Evaluator<N> {
         loop {
             match it.next() {
                 Some(t) => {
-                    if self.item_matches(&t.pattern, i, &rd)? {
+                    if self.item_matches(&t.pattern, i, rd)? {
                         r.push(t)
                     }
                 }
@@ -222,9 +235,9 @@ impl<N: Node> Evaluator<N> {
             .filter(|j| im.map_or(true, |k| j.import >= k))
             .reduce(|a, b| if a.priority < b.priority { b } else { a });
 
-        if s.is_some() {
+        if let Some(b) = s {
             eprintln!("found template");
-            Ok(s.unwrap().body.clone())
+            Ok(b.body.clone())
         } else {
             // Try builtin templates
             eprintln!("trying built-in templates");
@@ -233,7 +246,7 @@ impl<N: Node> Evaluator<N> {
             loop {
                 match builtins.next() {
                     Some(u) => {
-                        if self.item_matches(&u.pattern, i, &rd)? {
+                        if self.item_matches(&u.pattern, i, rd)? {
                             w.push(u)
                         }
                     }
@@ -306,7 +319,7 @@ impl<N: Node> Evaluator<N> {
             .iter()
             .map(|a| self.evaluate_one(ctxt.clone(), posn, a, rd))
             .partition(Result::is_ok);
-        if errors.len() != 0 {
+        if !errors.is_empty() {
             Result::Err(
                 errors
                     .iter()
@@ -317,11 +330,10 @@ impl<N: Node> Evaluator<N> {
         } else {
             Ok(results
                 .iter()
-                .map(|a| {
+                .flat_map(|a| {
                     let b: Sequence<N> = a.clone().ok().unwrap_or(vec![]);
                     b
                 })
-                .flatten()
                 .collect::<Vec<Rc<Item<N>>>>())
         }
     }
@@ -347,7 +359,7 @@ impl<N: Node> Evaluator<N> {
                 let mut l = rd.new_element(n.clone())?;
 
                 // add content to newly created element
-                let seq = self.evaluate(ctxt.clone(), posn, c, rd)?;
+                let seq = self.evaluate(ctxt, posn, c, rd)?;
                 seq.iter().try_for_each(|i| {
                     // Item could be a Node or text
                     match &**i {
@@ -365,7 +377,7 @@ impl<N: Node> Evaluator<N> {
             }
             // This creates a Node in the current result document
             Constructor::LiteralAttribute(n, v) => {
-                let w = self.evaluate(ctxt.clone(), posn, v, rd)?;
+                let w = self.evaluate(ctxt, posn, v, rd)?;
                 let x = Value::from(w.to_string());
                 let l = rd.new_attribute(n.clone(), x)?;
                 Ok(vec![Rc::new(Item::Node(l))])
@@ -452,11 +464,9 @@ impl<N: Node> Evaluator<N> {
                             })
                         }
                     }
-                    atnode.map(|a| {
-                        ctxt.unwrap()[posn.unwrap()]
+                    if let Some(a) = atnode { ctxt.unwrap()[posn.unwrap()]
                             .add_attribute(a)
-                            .expect("unable to add attribute");
-                    });
+                            .expect("unable to add attribute"); }
                     Ok(vec![])
                 } else {
                     Result::Err(Error {
@@ -537,8 +547,8 @@ impl<N: Node> Evaluator<N> {
                 if v.len() == 2 {
                     // Evaluate the two operands: they must both be literal integer items
                     let start = self.evaluate(ctxt.clone(), posn, &v[0], rd)?;
-                    let end = self.evaluate(ctxt.clone(), posn, &v[1], rd)?;
-                    if start.len() == 0 || end.len() == 0 {
+                    let end = self.evaluate(ctxt, posn, &v[1], rd)?;
+                    if start.is_empty() || end.is_empty() {
                         // empty sequence is the result
                         Ok(vec![])
                     } else if start.len() == 1 {
@@ -603,7 +613,7 @@ impl<N: Node> Evaluator<N> {
                             ArithmeticOperator::Multiply => acc *= u,
                             ArithmeticOperator::Divide => acc /= u,
                             ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
-                            ArithmeticOperator::Modulo => acc = acc % u,
+                            ArithmeticOperator::Modulo => acc %= u,
                         }
                     }
                 }
@@ -642,7 +652,7 @@ impl<N: Node> Evaluator<N> {
                 let u: Sequence<N>; // accumulator - each time around the loop this will be the new context
 
                 if ctxt.is_some() {
-                    u = ctxt.unwrap().clone()
+                    u = ctxt.unwrap()
                 } else {
                     u = vec![]
                 }
@@ -665,7 +675,7 @@ impl<N: Node> Evaluator<N> {
                         d.iter().for_each(|e| {
                             if b.iter().fold(true, |acc, f| match (&**e, &**f) {
                                 (Item::Node(g), Item::Node(h)) => {
-                                    if g.is_same(&h) {
+                                    if g.is_same(h) {
                                         acc && false
                                     } else {
                                         acc && true
@@ -704,7 +714,7 @@ impl<N: Node> Evaluator<N> {
                                         .child_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -742,7 +752,7 @@ impl<N: Node> Evaluator<N> {
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -753,7 +763,7 @@ impl<N: Node> Evaluator<N> {
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
                                     if is_node_match::<N>(&nm.nodetest, n) {
@@ -767,13 +777,13 @@ impl<N: Node> Evaluator<N> {
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
                                     if is_node_match::<N>(&nm.nodetest, n) {
                                         seq.insert(0, Rc::new(Item::Node(n.clone())));
                                     }
-                                    seq.insert(0, Rc::new(Item::Node(n.owner_document().clone())));
+                                    seq.insert(0, Rc::new(Item::Node(n.owner_document())));
 
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
@@ -782,7 +792,7 @@ impl<N: Node> Evaluator<N> {
                                         .ancestor_iter()
                                         .filter(|p| is_node_match::<N>(&nm.nodetest, p))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -793,7 +803,7 @@ impl<N: Node> Evaluator<N> {
                                         .ancestor_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -808,7 +818,7 @@ impl<N: Node> Evaluator<N> {
                                         .next_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -819,7 +829,7 @@ impl<N: Node> Evaluator<N> {
                                         .prev_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -841,7 +851,7 @@ impl<N: Node> Evaluator<N> {
                                     n.ancestor_iter().for_each(|a| {
                                         a.next_iter().for_each(|b| {
                                             d.push(b.clone());
-                                            b.descend_iter().for_each(|c| d.push(c.clone()));
+                                            b.descend_iter().for_each(|c| d.push(c));
                                         })
                                     });
                                     let seq = d
@@ -938,7 +948,7 @@ impl<N: Node> Evaluator<N> {
                             b.push(r)
                         }
                         // Invoke the function
-                        Ok(g(&self, ctxt, posn, b, rd)?)
+                        Ok(g(self, ctxt, posn, b, rd)?)
                     }
                     None => Result::Err(Error {
                         kind: ErrorKind::NotImplemented,
@@ -991,7 +1001,7 @@ impl<N: Node> Evaluator<N> {
                     let mut result: Sequence<N> = vec![];
                     match &v[0] {
                         Constructor::VariableDeclaration(v, a) => {
-                            let s = self.evaluate(ctxt.clone(), posn, &a, rd)?;
+                            let s = self.evaluate(ctxt.clone(), posn, a, rd)?;
 
                             for i in s {
                                 // Push the new value for this variable
@@ -1019,7 +1029,7 @@ impl<N: Node> Evaluator<N> {
                 for t in v.chunks(2) {
                     let x = self.evaluate(ctxt.clone(), posn, &t[0], rd)?;
                     if x.to_bool() {
-                        candidate = self.evaluate(ctxt.clone(), posn, &t[1], rd)?;
+                        candidate = self.evaluate(ctxt, posn, &t[1], rd)?;
                         break;
                     }
                 }
@@ -1029,7 +1039,7 @@ impl<N: Node> Evaluator<N> {
                 // Evaluate 's' to find the nodes to apply templates to
                 // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-                let sel = self.evaluate(ctxt.clone(), posn, s, rd)?;
+                let sel = self.evaluate(ctxt, posn, s, rd)?;
                 // TODO: Don't Panic
                 let result = sel.iter().fold(vec![], |mut acc, i| {
                     let mut matching_template: Vec<&Template<N>> = vec![];
@@ -1037,12 +1047,12 @@ impl<N: Node> Evaluator<N> {
                         let e = self
                             .evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, rd)
                             .expect("evaluating pattern failed");
-                        if e.len() != 0 {
-                            matching_template.push(&t)
+                        if !e.is_empty() {
+                            matching_template.push(t)
                         }
                     }
 
-                    if matching_template.len() != 0 {
+                    if !matching_template.is_empty() {
                         // find the template(s) with the lowest priority
                         matching_template
                             .sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
@@ -1060,7 +1070,7 @@ impl<N: Node> Evaluator<N> {
                                 panic!("too many matching templates")
                             } else {
                                 p = t.import;
-                                ()
+                                
                             }
                         });
 
@@ -1090,11 +1100,7 @@ impl<N: Node> Evaluator<N> {
                                 let e = self
                                     .evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, rd)
                                     .expect("failed to evaluate pattern");
-                                if e.len() == 0 {
-                                    false
-                                } else {
-                                    true
-                                }
+                                !e.is_empty()
                             })
                             .scan(-2.0, |prio, t| {
                                 if *prio < t.priority {
@@ -1135,14 +1141,14 @@ impl<N: Node> Evaluator<N> {
                 let mut matching_template: Vec<&Template<N>> = vec![];
                 for t in &self.templates {
                     let e = self
-                        .evaluate(ctxt.clone(), posn.clone(), &t.pattern, rd)
+                        .evaluate(ctxt.clone(), posn, &t.pattern, rd)
                         .expect("evaluating pattern failed");
-                    if e.len() != 0 {
-                        matching_template.push(&t)
+                    if !e.is_empty() {
+                        matching_template.push(t)
                     }
                 }
 
-                if matching_template.len() != 0 {
+                if !matching_template.is_empty() {
                     // find the template(s) with the lowest priority
                     matching_template
                         .sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
@@ -1185,11 +1191,7 @@ impl<N: Node> Evaluator<N> {
                             let e = self
                                 .evaluate(ctxt.clone(), posn, &t.pattern, rd)
                                 .expect("failed to evaluate pattern");
-                            if e.len() == 0 {
-                                false
-                            } else {
-                                true
-                            }
+                            !e.is_empty()
                         })
                         .scan(-2.0, |prio, t| {
                             if *prio < t.priority {
@@ -1222,7 +1224,7 @@ impl<N: Node> Evaluator<N> {
                 // Evaluate 's' to find the nodes to iterate over
                 // Use 'g' to group the nodes
                 // Evaluate 't' for each group
-                let sel = self.evaluate(ctxt.clone(), posn, s, rd)?;
+                let sel = self.evaluate(ctxt, posn, s, rd)?;
                 // Divide sel into groups: each item in groups is an individual group
                 let mut groups = Vec::new();
                 match g {
@@ -1248,7 +1250,7 @@ impl<N: Node> Evaluator<N> {
                         // The first item starts the first group.
                         // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
                         // then it is added to the current group. Otherwise it starts a new group.
-                        if sel.len() > 0 {
+                        if !sel.is_empty() {
                             let mut curgrp = vec![sel[0].clone()];
                             let mut curkey = self.evaluate(Some(sel.clone()), Some(1), h, rd)?;
                             if curkey.len() != 1 {
@@ -1326,7 +1328,7 @@ impl<N: Node> Evaluator<N> {
         posn: Option<usize>,
         rd: &N,
     ) -> Result<Rc<Item<N>>, Error> {
-        let cp = self.item_copy(orig.clone(), &vec![], ctxt.clone(), posn, rd)?;
+        let cp = self.item_copy(orig.clone(), &vec![], ctxt, posn, rd)?;
 
         // If this item is an element node, then copy all of its attributes and children
         match &*orig {
@@ -1350,7 +1352,7 @@ impl<N: Node> Evaluator<N> {
                         // TODO: Don't Panic
                         new.iter().for_each(|a| {
                             let _at = rd
-                                .new_attribute(a.name().clone(), a.value().clone())
+                                .new_attribute(a.name(), a.value())
                                 .expect("unable to create attribute");
                             // TODO: cannot borrow as mutable
                             //cur.add_attribute(at)
@@ -1390,7 +1392,7 @@ impl<N: Node> Evaluator<N> {
                             Ok(e) => {
                                 // Add content to the new element
                                 // TODO: Don't Panic
-                                let r = self.evaluate(ctxt.clone(), posn, content, rd)?;
+                                let r = self.evaluate(ctxt, posn, content, rd)?;
                                 r.iter().for_each(|i| {
                                     // Item could be a Node or text
                                     match &**i {
@@ -1423,7 +1425,7 @@ impl<N: Node> Evaluator<N> {
                                 Ok(Rc::new(Item::Node(e)))
                             }
                             _ => {
-                                return Result::Err(Error {
+                                Result::Err(Error {
                                     kind: ErrorKind::Unknown,
                                     message: "unable to create element node".to_string(),
                                 })
@@ -1435,7 +1437,7 @@ impl<N: Node> Evaluator<N> {
                         match rd.new_text(x) {
                             Ok(m) => Ok(Rc::new(Item::Node(m))),
                             _ => {
-                                return Result::Err(Error {
+                                Result::Err(Error {
                                     kind: ErrorKind::Unknown,
                                     message: "unable to create text node".to_string(),
                                 })
@@ -1477,7 +1479,7 @@ impl<N: Node> Evaluator<N> {
         if p.is_empty() {
             Ok(s)
         } else {
-            let mut result = s.clone();
+            let mut result = s;
 
             // iterate over the predicates
             for q in p {
@@ -1486,7 +1488,7 @@ impl<N: Node> Evaluator<N> {
                 // for each predicate, evaluate each item in s to a boolean
                 for i in 0..result.len() {
                     let b = self.evaluate(Some(result.clone()), Some(i), q, rd)?;
-                    if b.to_bool() == true {
+                    if b.to_bool() {
                         new.push(result[i].clone());
                     }
                 }
@@ -1509,7 +1511,7 @@ impl<N: Node> Evaluator<N> {
         let e = self.evaluate(Some(vec![i.clone()]), Some(0), pat, rd)?;
 
         // If anything is left in the context then the pattern matched
-        if e.len() != 0 {
+        if !e.is_empty() {
             Ok(true)
         } else {
             Ok(false)
@@ -1527,10 +1529,10 @@ impl<N: Node> Evaluator<N> {
     ) -> Result<bool, Error> {
         let mut b = false;
         let left_seq = self.evaluate(ctxt.clone(), posn, left, rd)?;
-        let right_seq = self.evaluate(ctxt.clone(), posn, right, rd)?;
+        let right_seq = self.evaluate(ctxt, posn, right, rd)?;
         for l in left_seq {
             for r in &right_seq {
-                b = l.compare(&*r, op).unwrap();
+                b = l.compare(r, op).unwrap();
                 if b {
                     break;
                 }
@@ -1553,7 +1555,7 @@ impl<N: Node> Evaluator<N> {
         rd: &N,
     ) -> Result<bool, Error> {
         let left_seq = self.evaluate(ctxt.clone(), posn, left, rd)?;
-        if left_seq.len() == 0 {
+        if left_seq.is_empty() {
             return Result::Err(Error {
                 kind: ErrorKind::TypeError,
                 message: String::from("left-hand sequence is empty"),
@@ -1561,7 +1563,7 @@ impl<N: Node> Evaluator<N> {
         }
         // TODO: Don't Panic
         if left_seq.len() == 1 {
-            let right_seq = self.evaluate(ctxt.clone(), posn, right, rd)?;
+            let right_seq = self.evaluate(ctxt, posn, right, rd)?;
             if right_seq.len() == 1 {
                 Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
             } else {
@@ -1796,20 +1798,18 @@ impl TryFrom<&str> for NodeTest {
                             prefix: None,
                         }))
                     }
+                } else if tok[1] == "*" {
+                    Ok(NodeTest::Name(NameTest {
+                        name: Some(WildcardOrName::Wildcard),
+                        ns: None,
+                        prefix: Some(tok[0].to_string()),
+                    }))
                 } else {
-                    if tok[1] == "*" {
-                        Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Wildcard),
-                            ns: None,
-                            prefix: Some(tok[0].to_string()),
-                        }))
-                    } else {
-                        Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Name(tok[1].to_string())),
-                            ns: None,
-                            prefix: Some(tok[0].to_string()),
-                        }))
-                    }
+                    Ok(NodeTest::Name(NameTest {
+                        name: Some(WildcardOrName::Name(tok[1].to_string())),
+                        ns: None,
+                        prefix: Some(tok[0].to_string()),
+                    }))
                 }
             }
             _ => Result::Err(Error {
@@ -2020,7 +2020,7 @@ pub fn to_pattern<N: Node>(sc: Vec<Constructor<N>>) -> Result<Vec<Constructor<N>
                 vec![],
             )]),
             Constructor::Path(ref s) => {
-                if s.len() == 0 {
+                if s.is_empty() {
                     return Result::Err(Error {
                         kind: ErrorKind::TypeError,
                         message: "sequence constructor must not be empty".to_string(),
@@ -2574,7 +2574,7 @@ impl<N: Node> StaticContext<N> {
     }
     /// Declares a variable in the static context. The first argument is the name of the variable. The second argument is the namespace URI (not currently supported).
     pub fn declare_variable(&self, n: String, _ns: String) {
-        self.vars.borrow_mut().insert(n.clone(), vec![]);
+        self.vars.borrow_mut().insert(n, vec![]);
     }
 
     /// Perform static analysis of a sequence constructor.
@@ -2709,7 +2709,7 @@ impl<N: Node> Function<N> {
         self.params.clone()
     }
     pub fn get_body(&self) -> Option<FunctionImpl<N>> {
-        self.body.clone()
+        self.body
     }
 }
 
@@ -3353,7 +3353,7 @@ pub fn func_round<N: Node>(
                     .to_double()
                     .powi(args[1][0].to_int().unwrap() as i32)
                     .round()
-                    .powi(-1 * args[1][0].to_int().unwrap() as i32),
+                    .powi(-(args[1][0].to_int().unwrap() as i32)),
             )))]),
             _ => Result::Err(Error {
                 kind: ErrorKind::TypeError,
@@ -3392,7 +3392,7 @@ pub fn func_current_date<N: Node>(
     // TODO: check number of arguments
     // TODO: do the check in static analysis phase
 
-    Ok(vec![Rc::new(Item::Value(Value::Date(Local::today())))])
+    Ok(vec![Rc::new(Item::Value(Value::Date(Utc::now().date_naive())))])
 }
 
 pub fn func_current_time<N: Node>(
@@ -3510,7 +3510,7 @@ pub fn func_format_date<N: Node>(
                             let a = format!("{}T00:00:00Z", s);
                             match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
                                 Ok(dt) => Ok(vec![Rc::new(Item::Value(Value::String(
-                                    dt.date().format(&pic).to_string(),
+                                    dt.date_naive().format(&pic).to_string(),
                                 )))]),
                                 Err(_) => Result::Err(Error {
                                     kind: ErrorKind::TypeError,
@@ -3656,22 +3656,22 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
             Constructor::LiteralAttribute(qn, v) => {
                 format!("{:in$} Construct literal attribute \"{}\" with value \"{}\"", "",
 	  qn.get_localname(),
-	  format_constructor(&v, i + 4),
+	  format_constructor(v, i + 4),
 	  in=i)
             }
             Constructor::LiteralElement(qn, c) => {
                 format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", qn.get_localname(),
-	  format_constructor(&c, i + 4),
+	  format_constructor(c, i + 4),
 	  in=i)
             }
             Constructor::Copy(_sel, c) => {
                 format!("{:in$} Construct copy with content:\n{}", "",
-	  format_constructor(&c, i + 4),
+	  format_constructor(c, i + 4),
 	  in=i)
             }
             Constructor::DeepCopy(c) => {
                 format!("{:in$} Construct deep copy with content:\n{}", "",
-	  format_constructor(&c, i + 4),
+	  format_constructor(c, i + 4),
 	  in=i)
             }
             Constructor::ContextItem => {
@@ -3680,7 +3680,7 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
             Constructor::SetAttribute(qn, v) => {
                 format!("{:in$} Construct set attribute named \"{}\":\n{}", "",
 	  qn.get_localname(),
-	  format_constructor(&v, i + 4),
+	  format_constructor(v, i + 4),
 	  in=i)
             }
             Constructor::Or(v) => {
@@ -3706,7 +3706,7 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
                 format!(
                   "{:in$} Construct step {}{}", "",
                   nm.to_string(),
-                  if p.len() != 0 {format!("\npredicates: {}", format_constructor(&p[0], 0))} else {"".to_string()},
+                  if !p.is_empty() {format!("\npredicates: {}", format_constructor(&p[0], 0))} else {"".to_string()},
                   in=i
                 )
             }

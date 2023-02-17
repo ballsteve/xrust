@@ -90,7 +90,7 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
 
     /// Calculate the effective boolean value of the Sequence
     fn to_bool(&self) -> bool {
-        if self.len() == 0 {
+        if self.is_empty() {
             false
         } else {
             match *self[0] {
@@ -134,6 +134,7 @@ impl<N: Node> From<Item<N>> for Sequence<N> {
 ///
 /// Every document must have a single node as it's toplevel node that is of type "Document".
 #[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Default)]
 pub enum NodeType {
     Document,
     Element,
@@ -142,6 +143,7 @@ pub enum NodeType {
     Comment,
     ProcessingInstruction,
     Reference,
+    #[default]
     Unknown,
 }
 
@@ -161,11 +163,7 @@ impl NodeType {
     }
 }
 
-impl Default for NodeType {
-    fn default() -> Self {
-        NodeType::Unknown
-    }
-}
+
 
 /// An Item in a [Sequence]. Can be a node, function or [Value].
 ///
@@ -286,10 +284,13 @@ impl<N: Node> Item<N> {
     /// Is this item an element-type node?
     pub fn is_element_node(&self) -> bool {
         match self {
-            Item::Node(n) => match n.node_type() {
+            Item::Node(n) => matches!(n.node_type(), NodeType::Element),
+                /*
+                match n.node_type() {
                 NodeType::Element => true,
                 _ => false,
             },
+                 */
             _ => false,
         }
     }

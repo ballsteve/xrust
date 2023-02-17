@@ -3,7 +3,7 @@
 //! An atomic value as an item in a sequence.
 
 use crate::xdmerror::{Error, ErrorKind};
-use chrono::{Date, DateTime, Local};
+use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
 use rust_decimal::Decimal;
 #[cfg(test)]
@@ -83,7 +83,7 @@ pub enum Value {
     PositiveInteger(PositiveInteger),
     DateTime(DateTime<Local>),
     DateTimeStamp,
-    Date(Date<Local>),
+    Date(NaiveDate),
     String(String),
     NormalizedString(NormalizedString),
     /// Like normalizedString, but without leading, trailing and consecutive whitespace
@@ -137,12 +137,12 @@ impl Value {
     /// Give the effective boolean value.
     pub fn to_bool(&self) -> bool {
         match &self {
-            Value::Boolean(b) => *b == true,
+            Value::Boolean(b) => *b,
             Value::String(t) => {
                 //t.is_empty()
-                t.len() != 0
+                !t.is_empty()
             }
-            Value::NormalizedString(s) => s.0.len() != 0,
+            Value::NormalizedString(s) => !s.0.is_empty(),
             Value::Double(n) => *n != 0.0,
             Value::Integer(i) => *i != 0,
             Value::Int(i) => *i != 0,
@@ -228,9 +228,9 @@ impl Value {
                 match op {
                     Operator::Equal => Ok(*b == c),
                     Operator::NotEqual => Ok(*b != c),
-                    Operator::LessThan => Ok(*b < c),
+                    Operator::LessThan => Ok(!(*b) & c),
                     Operator::LessThanEqual => Ok(*b <= c),
-                    Operator::GreaterThan => Ok(*b > c),
+                    Operator::GreaterThan => Ok(*b & !c),
                     Operator::GreaterThanEqual => Ok(*b >= c),
                     Operator::Is | Operator::Before | Operator::After => {
                         Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
@@ -749,7 +749,7 @@ mod tests {
 
     #[test]
     fn value_to_bool_string() {
-        assert_eq!(Value::from("2").to_bool(), true)
+        assert!(Value::from("2").to_bool())
     }
 
     // value to_int
@@ -775,21 +775,19 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-        assert_eq!(
+        assert!(
             Value::from("3")
                 .compare(&Value::Double(3.0), Operator::Equal)
-                .expect("unable to compare"),
-            true
+                .expect("unable to compare")
         )
     }
 
     #[test]
     fn value_compare_ne() {
-        assert_eq!(
-            Value::from("3")
+        assert!(
+            !Value::from("3")
                 .compare(&Value::Double(3.0), Operator::NotEqual)
-                .expect("unable to compare"),
-            false
+                .expect("unable to compare")
         )
     }
 

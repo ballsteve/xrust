@@ -47,15 +47,12 @@ fn is_ncnamechar(ch: char) -> bool {
     if is_ncnamestartchar(ch) {
         true
     } else {
-        match ch {
-            '.'
+        matches!(ch, '.'
             | '-'
             | '0'..='9'
             | '\u{B7}'
             | '\u{0300}'..='\u{036F}'
-            | '\u{203F}'..='\u{2040}' => true,
-            _ => false,
-        }
+            | '\u{203F}'..='\u{2040}')
     }
 }
 //fn namestartchar(input: &str) -> IResult<&str, char> {
@@ -169,6 +166,6 @@ mod tests {
     }
     #[test]
     fn test_ischar() {
-        assert_eq!(is_char(&'F'), true)
+        assert!(is_char(&'F'))
     }
 }

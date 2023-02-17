@@ -9,6 +9,12 @@ pub struct OutputDefinition {
     // TODO: all the other myriad output parameters
 }
 
+impl Default for OutputDefinition {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl OutputDefinition {
     pub fn new() -> OutputDefinition {
         OutputDefinition {
