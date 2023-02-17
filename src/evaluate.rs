@@ -16,6 +16,7 @@ use std::cell::{RefCell, RefMut};
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
+use std::fmt::Formatter;
 use std::rc::Rc;
 use chrono::Utc;
 use unicode_segmentation::UnicodeSegmentation;
@@ -308,7 +309,7 @@ impl<N: Node> Evaluator<N> {
         &self,
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
-        c: &Vec<Constructor<N>>,
+        c: &[Constructor<N>],
         rd: &N, // Result document
     ) -> Result<Sequence<N>, Error> {
         // Evaluate all sequence constructors. This will result in a sequence of sequences.
@@ -648,13 +649,13 @@ impl<N: Node> Evaluator<N> {
                 // Each step creates a new context for the next step
                 // TODO: if initial context is None then error
 
-                let u: Sequence<N>; // accumulator - each time around the loop this will be the new context
 
-                if ctxt.is_some() {
-                    u = ctxt.unwrap()
+                // accumulator - each time around the loop this will be the new context
+                let u: Sequence<N> = if ctxt.is_some() {
+                    ctxt.unwrap()
                 } else {
-                    u = vec![]
-                }
+                    vec![]
+                };
 
                 // TODO: Don't Panic
                 let result = s.iter().fold(u, |a, c| {
@@ -998,21 +999,16 @@ impl<N: Node> Evaluator<N> {
                     })
                 } else {
                     let mut result: Sequence<N> = vec![];
-                    match &v[0] {
-                        Constructor::VariableDeclaration(v, a) => {
-                            let s = self.evaluate(ctxt.clone(), posn, a, rd)?;
+                    if let Constructor::VariableDeclaration(v, a) = &v[0] {
+                        let s = self.evaluate(ctxt.clone(), posn, a, rd)?;
 
-                            for i in s {
-                                // Push the new value for this variable
-                                self.dc.var_push(v, vec![i]);
-                                let mut x = self.evaluate(ctxt.clone(), posn, b, rd)?;
-                                result.append(&mut x);
-                                // Pop the value for this variable
-                                self.dc.var_pop(v);
-                            }
-                        }
-                        _ => {
-                            // Error: no variable bindings
+                        for i in s {
+                            // Push the new value for this variable
+                            self.dc.var_push(v, vec![i]);
+                            let mut x = self.evaluate(ctxt.clone(), posn, b, rd)?;
+                            result.append(&mut x);
+                            // Pop the value for this variable
+                            self.dc.var_pop(v);
                         }
                     }
                     Ok(result)
@@ -1727,15 +1723,16 @@ pub struct NodeMatch {
     pub nodetest: NodeTest,
 }
 
-impl NodeMatch {
-    fn to_string(&self) -> String {
-        format!(
+impl fmt::Display for NodeMatch{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(format!(
             "NodeMatch {}::{}",
             self.axis.to_string(),
             self.nodetest.to_string()
-        )
+        ).as_str())
     }
 }
+
 
 #[derive(Clone)]
 pub enum NodeTest {
@@ -1804,12 +1801,13 @@ impl TryFrom<&str> for NodeTest {
     }
 }
 
-impl NodeTest {
-    pub fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for NodeTest{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let result = match self {
             NodeTest::Name(nt) => nt.to_string(),
             NodeTest::Kind(kt) => kt.to_string().to_string(),
-        }
+        };
+        f.write_str(result.as_str())
     }
 }
 
@@ -1851,16 +1849,17 @@ pub struct NameTest {
     pub name: Option<WildcardOrName>,
 }
 
-impl NameTest {
-    pub fn to_string(&self) -> String {
-        if self.name.is_some() {
+impl fmt::Display for NameTest{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let mut result = if self.name.is_some() {
             match self.name.as_ref().unwrap() {
                 WildcardOrName::Wildcard => "*".to_string(),
                 WildcardOrName::Name(n) => n.to_string(),
             }
         } else {
             "--no name--".to_string()
-        }
+        };
+        f.write_str(result.as_str())
     }
 }
 
@@ -1914,28 +1913,6 @@ impl From<&str> for Axis {
 }
 
 impl Axis {
-    pub fn to_string(&self) -> String {
-        match self {
-            Axis::Child => "child".to_string(),
-            Axis::Descendant => "descendant".to_string(),
-            Axis::DescendantOrSelf => "descendant-or-self".to_string(),
-            Axis::DescendantOrSelfOrRoot => "descendant-or-self-or-root".to_string(),
-            Axis::Attribute => "attribute".to_string(),
-            Axis::SelfAttribute => "self-attribute".to_string(),
-            Axis::Selfaxis => "self".to_string(),
-            Axis::SelfDocument => "self-document".to_string(),
-            Axis::Following => "following".to_string(),
-            Axis::FollowingSibling => "following-sibling".to_string(),
-            Axis::Namespace => "namespace".to_string(),
-            Axis::Parent => "parent".to_string(),
-            Axis::ParentDocument => "parent-document".to_string(),
-            Axis::Ancestor => "ancestor".to_string(),
-            Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
-            Axis::Preceding => "preceding".to_string(),
-            Axis::PrecedingSibling => "preceding-sibling".to_string(),
-            _ => "unknown".to_string(),
-        }
-    }
     fn opposite(&self) -> Axis {
         // SelfDocument opposite is undefined
         match self {
@@ -1955,6 +1932,32 @@ impl Axis {
             Axis::PrecedingSibling => Axis::FollowingSibling,
             _ => Axis::Unknown,
         }
+    }
+}
+
+impl fmt::Display for Axis{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let result = match self {
+            Axis::Child => "child".to_string(),
+            Axis::Descendant => "descendant".to_string(),
+            Axis::DescendantOrSelf => "descendant-or-self".to_string(),
+            Axis::DescendantOrSelfOrRoot => "descendant-or-self-or-root".to_string(),
+            Axis::Attribute => "attribute".to_string(),
+            Axis::SelfAttribute => "self-attribute".to_string(),
+            Axis::Selfaxis => "self".to_string(),
+            Axis::SelfDocument => "self-document".to_string(),
+            Axis::Following => "following".to_string(),
+            Axis::FollowingSibling => "following-sibling".to_string(),
+            Axis::Namespace => "namespace".to_string(),
+            Axis::Parent => "parent".to_string(),
+            Axis::ParentDocument => "parent-document".to_string(),
+            Axis::Ancestor => "ancestor".to_string(),
+            Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
+            Axis::Preceding => "preceding".to_string(),
+            Axis::PrecedingSibling => "preceding-sibling".to_string(),
+            _ => "unknown".to_string(),
+        };
+        f.write_str(result.as_str())
     }
 }
 
@@ -3102,6 +3105,20 @@ pub fn func_translate<N: Node>(
 
             for c in args[0].to_string().graphemes(true) {
                 let mut a: Option<Option<usize>> = Some(None);
+                for (i, _item) in m.iter().enumerate(){
+                    if c == m[i] {
+                        if i < t.len() {
+                            a = Some(Some(i));
+                            break;
+                        } else {
+                            // omit this character
+                            a = None
+                        }
+                    } else {
+                        // keep looking for a match
+                    }
+                }
+                /*
                 for i in 0..m.len() {
                     if c == m[i] {
                         if i < t.len() {
@@ -3115,6 +3132,7 @@ pub fn func_translate<N: Node>(
                         // keep looking for a match
                     }
                 }
+                 */
                 match a {
                     Some(None) => {
                         result.push_str(c);
@@ -3641,7 +3659,7 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
         result.push_str(", ");
         let t = match v {
             Constructor::Literal(l) => {
-                format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
+                format!("{:in$} Construct literal \"{}\"", "", l, in=i)
             }
             Constructor::LiteralAttribute(qn, v) => {
                 format!("{:in$} Construct literal attribute \"{}\" with value \"{}\"", "",

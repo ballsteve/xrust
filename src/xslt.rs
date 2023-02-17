@@ -94,8 +94,8 @@ where
     G: Fn(&Url) -> Result<String, Error>,
 {
     let mut ev = Evaluator::new();
-    if b.is_some() {
-        ev.set_baseurl(b.unwrap())
+    if let Some(c) = b {
+        ev.set_baseurl(c)
     }
 
     // Check that this is a valid XSLT stylesheet
@@ -195,25 +195,24 @@ where
     ev.add_builtin_template(bi3pat, bi3bod, None, -1.0, 0);
 
     // Setup the serialization of the primary result document
-    stylenode
+    if let Some(c) = stylenode
         .child_iter()
-        .skip_while(|c| {
+        .find(|c| {
             !(c.is_element()
                 && c.name().get_nsuri_ref() == Some(XSLTNS)
                 && c.name().get_localname() == "output")
-        }).next()
-        .map(|c| {
-            let b: bool = matches!(c
+        }) {
+        let b: bool = matches!(c
                 .get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
                 .to_string()
                 .as_str()
                 ,
                 "yes" | "true" | "1" );
 
-            let mut od = OutputDefinition::new();
-            od.set_indent(b);
-            ev.set_output_definition(od);
-        });
+        let mut od = OutputDefinition::new();
+        od.set_indent(b);
+        ev.set_output_definition(od);
+    };
 
     // Iterate over children, looking for includes
     // * resolve href
@@ -239,7 +238,7 @@ where
                         kind: ErrorKind::Unknown,
                         message: format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
-                            h.to_string(),
+                            h,
                             ev.baseurl()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
@@ -286,7 +285,7 @@ where
                         kind: ErrorKind::Unknown,
                         message: format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
-                            h.to_string(),
+                            h,
                             ev.baseurl()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),

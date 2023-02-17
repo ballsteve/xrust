@@ -12,6 +12,8 @@ use crate::xdmerror::*;
 use std::cell::RefCell;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 use std::rc::{Rc, Weak};
 
 /// An XML document.
@@ -323,7 +325,7 @@ impl ItemNode for RNode {
                 );
                 self.attributes.borrow().iter().for_each(|(k, v)| {
                     result.push_str(
-                        format!(" {}='{}'", k.to_string(), v.value().to_string()).as_str(),
+                        format!(" {}='{}'", k, v.value()).as_str(),
                     )
                 });
                 result.push('>');
@@ -758,21 +760,24 @@ impl XMLDecl {
             .as_ref()
             .map_or(String::new(), |e| e.clone())
     }
-    pub fn to_string(&self) -> String {
+}
+
+impl fmt::Display for XMLDecl{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::from("<?xml version=\"");
         result.push_str(self.version.as_str());
         result.push('"');
-        self.encoding.as_ref().map(|e| {
+        if let Some(e) = self.encoding.as_ref(){
             result.push_str(" encoding=\"");
             result.push_str(e.as_str());
             result.push('"');
-        });
-        self.standalone.as_ref().map(|e| {
+        };
+        if let Some(e) = self.standalone.as_ref(){
             result.push_str(" standalone=\"");
             result.push_str(e.as_str());
             result.push('"');
-        });
-        result
+        };
+        f.write_str(result.as_str())
     }
 }
 
