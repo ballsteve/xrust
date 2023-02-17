@@ -10,6 +10,7 @@ use rust_decimal::Decimal;
 use rust_decimal_macros::dec;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
+use std::fmt::Formatter;
 
 /// Comparison operators for values
 #[derive(Copy, Clone)]
@@ -105,10 +106,9 @@ pub enum Value {
     Boolean(bool),
 }
 
-impl Value {
-    /// Give the string value.
-    pub fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for Value{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let result = match self {
             Value::String(s) => s.to_string(),
             Value::NormalizedString(s) => s.0.to_string(),
             Value::Decimal(d) => d.to_string(),
@@ -131,8 +131,12 @@ impl Value {
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
             _ => "".to_string(),
-        }
+        };
+        f.write_str(result.as_str())
     }
+}
+
+impl Value {
 
     /// Give the effective boolean value.
     pub fn to_bool(&self) -> bool {

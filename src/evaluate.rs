@@ -322,8 +322,7 @@ impl<N: Node> Evaluator<N> {
         if !errors.is_empty() {
             Result::Err(
                 errors
-                    .iter()
-                    .nth(0)
+                    .get(0)
                     .map(|e| e.clone().err().unwrap())
                     .unwrap(),
             )
@@ -331,7 +330,7 @@ impl<N: Node> Evaluator<N> {
             Ok(results
                 .iter()
                 .flat_map(|a| {
-                    let b: Sequence<N> = a.clone().ok().unwrap_or(vec![]);
+                    let b: Sequence<N> = a.clone().ok().unwrap_or_default();
                     b
                 })
                 .collect::<Vec<Rc<Item<N>>>>())
@@ -676,12 +675,12 @@ impl<N: Node> Evaluator<N> {
                             if b.iter().fold(true, |acc, f| match (&**e, &**f) {
                                 (Item::Node(g), Item::Node(h)) => {
                                     if g.is_same(h) {
-                                        acc && false
+                                        false
                                     } else {
-                                        acc && true
+                                        acc
                                     }
                                 }
-                                _ => acc && true,
+                                _ => acc,
                             }) {
                                 b.push(e.clone())
                             }
@@ -1235,7 +1234,7 @@ impl<N: Node> Evaluator<N> {
                         for i in 0..sel.len() {
                             let keys = self.evaluate(Some(sel.clone()), Some(i), h, rd)?;
                             for j in keys {
-                                let e = map.entry(j.to_string()).or_insert(vec![]);
+                                let e: &mut Vec<Rc<Item<N>>> = map.entry(j.to_string()).or_default();
                                 e.push(sel[i].clone());
                             }
                         }
@@ -1707,26 +1706,11 @@ fn is_node_match<N: Node>(nt: &NodeTest, n: &N) -> bool {
         }
         NodeTest::Kind(k) => {
             match k {
-                KindTest::DocumentTest => match n.node_type() {
-                    NodeType::Document => true,
-                    _ => false,
-                },
-                KindTest::ElementTest => match n.node_type() {
-                    NodeType::Element => true,
-                    _ => false,
-                },
-                KindTest::PITest => match n.node_type() {
-                    NodeType::ProcessingInstruction => true,
-                    _ => false,
-                },
-                KindTest::CommentTest => match n.node_type() {
-                    NodeType::Comment => true,
-                    _ => false,
-                },
-                KindTest::TextTest => match n.node_type() {
-                    NodeType::Text => true,
-                    _ => false,
-                },
+                KindTest::DocumentTest => matches!(n.node_type(), NodeType::Document),
+                KindTest::ElementTest => matches!(n.node_type(), NodeType::Element),
+                KindTest::PITest => matches!(n.node_type(), NodeType::ProcessingInstruction),
+                KindTest::CommentTest => matches!(n.node_type(), NodeType::Comment),
+                KindTest::TextTest => matches!(n.node_type(), NodeType::Text),
                 KindTest::AnyKindTest => true,
                 KindTest::AttributeTest
                 | KindTest::SchemaElementTest
@@ -2183,6 +2167,12 @@ impl<N: Node> fmt::Debug for Template<N> {
 pub struct StaticContext<N: Node> {
     pub funcs: RefCell<HashMap<String, Function<N>>>,
     pub vars: RefCell<HashMap<String, Vec<Sequence<N>>>>, // each entry in the vector is an inner scope of the variable
+}
+
+impl<N: Node> Default for StaticContext<N>{
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<N: Node> StaticContext<N> {

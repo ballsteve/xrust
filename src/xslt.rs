@@ -203,14 +203,12 @@ where
                 && c.name().get_localname() == "output")
         }).next()
         .map(|c| {
-            let b: bool = match c
+            let b: bool = matches!(c
                 .get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
                 .to_string()
                 .as_str()
-            {
-                "yes" | "true" | "1" => true,
-                _ => false,
-            };
+                ,
+                "yes" | "true" | "1" );
 
             let mut od = OutputDefinition::new();
             od.set_indent(b);

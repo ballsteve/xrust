@@ -4,6 +4,8 @@
 
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 
 #[derive(Clone, Debug)]
 pub struct QualifiedName {
@@ -36,14 +38,17 @@ impl QualifiedName {
     pub fn get_localname(&self) -> String {
         self.localname.clone()
     }
-    pub fn to_string(&self) -> String {
+}
+
+impl fmt::Display for QualifiedName{
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
         self.prefix.as_ref().map_or((), |p| {
             result.push_str(p.as_str());
             result.push(':');
         });
         result.push_str(self.localname.as_str());
-        result
+        f.write_str(result.as_str())
     }
 }
 

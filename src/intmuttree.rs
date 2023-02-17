@@ -75,9 +75,8 @@ impl Document {
         }
         let mut e = vec![];
         for en in self.epilogue {
-            match en.get_canonical() {
-                Ok(ecn) => e.push(ecn),
-                Err(_) => {}
+            if let Ok(ecn) = en.get_canonical(){
+                e.push(ecn)
             }
         }
 
@@ -189,6 +188,12 @@ fn expand_node(mut n: RNode, ent: &HashMap<QualifiedName, Vec<RNode>>) -> Result
  */
 
 pub struct DocumentBuilder(Document);
+
+impl Default for DocumentBuilder{
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl DocumentBuilder {
     pub fn new() -> Self {
@@ -404,7 +409,7 @@ impl ItemNode for RNode {
     /// Remove a node from the tree. If the node is unattached (i.e. does not have a parent), then this has no effect.
     fn pop(&mut self) -> Result<(), Error> {
         // Find this node in the parent's node list
-        let parent = self.parent().ok_or(Error::new(
+        let parent = self.parent().ok_or_else(||Error::new(
             ErrorKind::Unknown,
             String::from("unable to insert before: node is an orphan"),
         ))?;
@@ -434,7 +439,7 @@ impl ItemNode for RNode {
         // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
         _ = insert.pop();
         // Get the parent of this node. It is an error if there is no parent.
-        let parent = self.parent().ok_or(Error::new(
+        let parent = self.parent().ok_or_else(|| Error::new(
             ErrorKind::Unknown,
             String::from("unable to insert before: node is an orphan"),
         ))?;
