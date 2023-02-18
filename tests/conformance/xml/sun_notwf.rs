@@ -721,7 +721,6 @@ fn sgml01() {
 }
 
 #[test]
-#[ignore]
 fn sgml02() {
     /*
         Test ID:sgml02

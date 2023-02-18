@@ -347,8 +347,8 @@ fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
             tag("IDREFS"),
             tag("ENTITY"),
             tag("ENTITIES"),
-            tag("NMTOKEN"),
             tag("NMTOKENS"),
+            tag("NMTOKEN"),
         ),
         enumeratedtype(),
     )

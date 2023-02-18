@@ -1245,7 +1245,6 @@ fn validsa057() {
 }
 
 #[test]
-#[ignore]
 fn validsa058() {
     /*
         Test ID:valid-sa-058
@@ -2032,7 +2031,6 @@ fn validsa094() {
 }
 
 #[test]
-#[ignore]
 fn validsa095() {
     /*
         Test ID:valid-sa-095
@@ -2054,7 +2052,6 @@ fn validsa095() {
 }
 
 #[test]
-#[ignore]
 fn validsa096() {
     /*
         Test ID:valid-sa-096
@@ -2374,7 +2371,6 @@ fn validsa110() {
 }
 
 #[test]
-#[ignore]
 fn validsa111() {
     /*
         Test ID:valid-sa-111

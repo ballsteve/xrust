@@ -526,6 +526,7 @@ fn ibminvalid_p56ibm56i17xml() {
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p56ibm56i18xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i18.xml

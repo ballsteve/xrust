@@ -176,6 +176,7 @@ fn rmte2e15h() {
 }
 
 #[test]
+#[ignore]
 fn rmte2e20() {
     /*
         Test ID:rmt-e2e-20

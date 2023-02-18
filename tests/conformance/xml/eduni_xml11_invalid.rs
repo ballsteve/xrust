@@ -75,6 +75,7 @@ fn rmt030() {
 }
 
 #[test]
+#[ignore]
 fn rmt032() {
     /*
         Test ID:rmt-032

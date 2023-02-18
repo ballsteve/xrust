@@ -466,7 +466,6 @@ fn op53pass1() {
 }
 
 #[test]
-#[ignore]
 fn op54pass1() {
     /*
         Test ID:o-p54pass1

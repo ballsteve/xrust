@@ -9,7 +9,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn op01fail1() {
     /*
         Test ID:o-p01fail1
@@ -25,7 +24,6 @@ fn op01fail1() {
 }
 
 #[test]
-#[ignore]
 fn op01fail2() {
     /*
         Test ID:o-p01fail2
@@ -1556,7 +1554,6 @@ fn op15fail3() {
 }
 
 #[test]
-#[ignore]
 fn op16fail1() {
     /*
         Test ID:o-p16fail1
@@ -1653,7 +1650,6 @@ fn op18fail3() {
 }
 
 #[test]
-#[ignore]
 fn op22fail1() {
     /*
         Test ID:o-p22fail1
@@ -1670,7 +1666,6 @@ fn op22fail1() {
 }
 
 #[test]
-#[ignore]
 fn op22fail2() {
     /*
         Test ID:o-p22fail2
@@ -1687,7 +1682,6 @@ fn op22fail2() {
 }
 
 #[test]
-#[ignore]
 fn op23fail1() {
     /*
         Test ID:o-p23fail1
@@ -1704,7 +1698,6 @@ fn op23fail1() {
 }
 
 #[test]
-#[ignore]
 fn op23fail2() {
     /*
         Test ID:o-p23fail2
@@ -1721,7 +1714,6 @@ fn op23fail2() {
 }
 
 #[test]
-#[ignore]
 fn op23fail3() {
     /*
         Test ID:o-p23fail3
@@ -1738,7 +1730,6 @@ fn op23fail3() {
 }
 
 #[test]
-#[ignore]
 fn op23fail4() {
     /*
         Test ID:o-p23fail4
@@ -1771,7 +1762,6 @@ fn op23fail5() {
 }
 
 #[test]
-#[ignore]
 fn op24fail1() {
     /*
         Test ID:o-p24fail1
@@ -1788,7 +1778,6 @@ fn op24fail1() {
 }
 
 #[test]
-#[ignore]
 fn op24fail2() {
     /*
         Test ID:o-p24fail2
@@ -1805,7 +1794,6 @@ fn op24fail2() {
 }
 
 #[test]
-#[ignore]
 fn op25fail1() {
     /*
         Test ID:o-p25fail1
@@ -1938,7 +1926,6 @@ fn op31fail1() {
 }
 
 #[test]
-#[ignore]
 fn op32fail1() {
     /*
         Test ID:o-p32fail1
@@ -1955,7 +1942,6 @@ fn op32fail1() {
 }
 
 #[test]
-#[ignore]
 fn op32fail2() {
     /*
         Test ID:o-p32fail2
@@ -1972,7 +1958,6 @@ fn op32fail2() {
 }
 
 #[test]
-#[ignore]
 fn op32fail3() {
     /*
         Test ID:o-p32fail3
@@ -1989,7 +1974,6 @@ fn op32fail3() {
 }
 
 #[test]
-#[ignore]
 fn op32fail4() {
     /*
         Test ID:o-p32fail4
@@ -2006,7 +1990,6 @@ fn op32fail4() {
 }
 
 #[test]
-#[ignore]
 fn op32fail5() {
     /*
         Test ID:o-p32fail5

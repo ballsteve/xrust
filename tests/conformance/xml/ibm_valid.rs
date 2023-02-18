@@ -62,7 +62,6 @@ fn ibmvalid_p03ibm03v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p09ibm09v01xml() {
     /*
         Test ID:ibm-valid-P09-ibm09v01.xml
@@ -84,7 +83,6 @@ fn ibmvalid_p09ibm09v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p09ibm09v02xml() {
     /*
         Test ID:ibm-valid-P09-ibm09v02.xml
@@ -128,7 +126,6 @@ fn ibmvalid_p09ibm09v03xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p09ibm09v04xml() {
     /*
         Test ID:ibm-valid-P09-ibm09v04.xml
@@ -172,7 +169,6 @@ fn ibmvalid_p09ibm09v05xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p10ibm10v01xml() {
     /*
         Test ID:ibm-valid-P10-ibm10v01.xml
@@ -194,7 +190,6 @@ fn ibmvalid_p10ibm10v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p10ibm10v02xml() {
     /*
         Test ID:ibm-valid-P10-ibm10v02.xml
@@ -216,7 +211,6 @@ fn ibmvalid_p10ibm10v02xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p10ibm10v03xml() {
     /*
         Test ID:ibm-valid-P10-ibm10v03.xml
@@ -238,7 +232,6 @@ fn ibmvalid_p10ibm10v03xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p10ibm10v04xml() {
     /*
         Test ID:ibm-valid-P10-ibm10v04.xml
@@ -1599,7 +1592,6 @@ fn ibmvalid_p32ibm32v04xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p33ibm33v01xml() {
     /*
         Test ID:ibm-valid-P33-ibm33v01.xml
@@ -1621,7 +1613,6 @@ fn ibmvalid_p33ibm33v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p34ibm34v01xml() {
     /*
         Test ID:ibm-valid-P34-ibm34v01.xml
@@ -1643,7 +1634,6 @@ fn ibmvalid_p34ibm34v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p35ibm35v01xml() {
     /*
         Test ID:ibm-valid-P35-ibm35v01.xml
@@ -1665,7 +1655,6 @@ fn ibmvalid_p35ibm35v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p36ibm36v01xml() {
     /*
         Test ID:ibm-valid-P36-ibm36v01.xml
@@ -1687,7 +1676,6 @@ fn ibmvalid_p36ibm36v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p37ibm37v01xml() {
     /*
         Test ID:ibm-valid-P37-ibm37v01.xml
@@ -1709,7 +1697,6 @@ fn ibmvalid_p37ibm37v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p38ibm38v01xml() {
     /*
         Test ID:ibm-valid-P38-ibm38v01.xml
@@ -2021,7 +2008,6 @@ fn ibmvalid_p54ibm54v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p54ibm54v02xml() {
     /*
         Test ID:ibm-valid-P54-ibm54v02.xml
@@ -2278,7 +2264,6 @@ fn ibmvalid_p56ibm56v09xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p56ibm56v10xml() {
     /*
         Test ID:ibm-valid-P56-ibm56v10.xml
