@@ -419,47 +419,48 @@ impl<N: Node> Evaluator<N> {
                 // The context item must be an element node (TODO: use an expression to select the element)
                 // If the element does not have an attribute with the given name, create it
                 // Otherwise replace the attribute's value with the supplied value
-                if ctxt.is_some() {
-                    // Work out if an attribute is required, then set it
-                    let atnode: Option<N>;
-                    match &*ctxt.as_ref().unwrap()[posn.unwrap()] {
-                        Item::Node(nd) => match nd.node_type() {
-                            NodeType::Element => {
-                                let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
-                                if attval.len() == 1 {
-                                    match &*attval[0] {
-                                        Item::Value(av) => {
-                                            atnode = Some(rd.new_attribute(n.clone(), av.clone())?);
+                if let Some(ref c) = ctxt {
+                        // Work out if an attribute is required, then set it
+                        let atnode: Option<N>;
+                        match &*c[posn.unwrap()] {
+                            Item::Node(nd) => match nd.node_type() {
+                                NodeType::Element => {
+                                    let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
+                                    if attval.len() == 1 {
+                                        match &*attval[0] {
+                                            Item::Value(av) => {
+                                                atnode = Some(rd.new_attribute(n.clone(), av.clone())?);
+                                            }
+                                            _ => {
+                                                let w = Value::from(attval.to_string());
+                                                atnode = Some(rd.new_attribute(n.clone(), w)?);
+                                            }
                                         }
-                                        _ => {
-                                            let w = Value::from(attval.to_string());
-                                            atnode = Some(rd.new_attribute(n.clone(), w)?);
-                                        }
+                                    } else {
+                                        let w = Value::from(attval.to_string());
+                                        atnode = Some(rd.new_attribute(n.clone(), w)?);
                                     }
-                                } else {
-                                    let w = Value::from(attval.to_string());
-                                    atnode = Some(rd.new_attribute(n.clone(), w)?);
                                 }
-                            }
+                                _ => {
+                                    return Result::Err(Error {
+                                        kind: ErrorKind::TypeError,
+                                        message: "context item is not an element".to_string(),
+                                    })
+                                }
+                            },
                             _ => {
                                 return Result::Err(Error {
                                     kind: ErrorKind::TypeError,
-                                    message: "context item is not an element".to_string(),
+                                    message: "context item must be a mutable element node".to_string(),
                                 })
                             }
-                        },
-                        _ => {
-                            return Result::Err(Error {
-                                kind: ErrorKind::TypeError,
-                                message: "context item must be a mutable element node".to_string(),
-                            })
                         }
-                    }
-                    if let Some(a) = atnode { ctxt.unwrap()[posn.unwrap()]
+                        if let Some(a) = atnode { ctxt.unwrap()[posn.unwrap()]
                             .add_attribute(a)
                             .expect("unable to add attribute"); }
-                    Ok(vec![])
-                } else {
+                        Ok(vec![])
+                }
+                else {
                     Result::Err(Error {
                         kind: ErrorKind::DynamicAbsent,
                         message: "no context item".to_string(),
@@ -647,11 +648,7 @@ impl<N: Node> Evaluator<N> {
 
 
                 // accumulator - each time around the loop this will be the new context
-                let u: Sequence<N> = if ctxt.is_some() {
-                    ctxt.unwrap()
-                } else {
-                    vec![]
-                };
+                let u: Sequence<N> = ctxt.unwrap_or_default();
 
                 // TODO: Don't Panic
                 let result = s.iter().fold(u, |a, c| {
