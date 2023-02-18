@@ -13,6 +13,7 @@ use crate::xdmerror::*;
 #[allow(unused_imports)]
 use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use std::cell::{RefCell, RefMut};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
@@ -219,15 +220,10 @@ impl<N: Node> Evaluator<N> {
         eprintln!("find_match for {:?}", i);
         let mut r: Vec<&Template<N>> = vec![];
         eprintln!("searching {} templates", self.templates.len());
-        let mut it = self.templates.iter();
-        loop {
-            match it.next() {
-                Some(t) => {
-                    if self.item_matches(&t.pattern, i, rd)? {
-                        r.push(t)
-                    }
-                }
-                None => break,
+        let it = self.templates.iter();
+        for t in it {
+            if self.item_matches(&t.pattern, i, rd)? {
+                r.push(t)
             }
         }
         let s: Option<&Template<N>> = r
@@ -243,23 +239,18 @@ impl<N: Node> Evaluator<N> {
             // Try builtin templates
             eprintln!("trying built-in templates");
             let mut w: Vec<&Template<N>> = vec![];
-            let mut builtins = self.builtin_templates.iter();
-            loop {
-                match builtins.next() {
-                    Some(u) => {
-                        if self.item_matches(&u.pattern, i, rd)? {
-                            w.push(u)
-                        }
-                    }
-                    None => break,
+            let builtins = self.builtin_templates.iter();
+            for u in builtins {
+                if self.item_matches(&u.pattern, i, rd)? {
+                    w.push(u)
                 }
             }
             let v = w
                 .iter()
                 .reduce(|a, b| if a.priority < b.priority { b } else { a });
 
-            if v.is_some() {
-                Ok(v.unwrap().body.clone())
+            if let Some(b) = v {
+                Ok(b.body.clone())
             } else {
                 Ok(vec![])
             }
@@ -555,19 +546,24 @@ impl<N: Node> Evaluator<N> {
                         if end.len() == 1 {
                             let i = start[0].to_int().unwrap();
                             let j = end[0].to_int().unwrap();
-                            if i > j {
-                                // empty sequence result
-                                Ok(vec![])
-                            } else if i == j {
-                                let mut seq = Sequence::new();
-                                seq.push_value(Value::Integer(i));
-                                Ok(seq)
-                            } else {
-                                let mut result = Sequence::new();
-                                for k in i..=j {
-                                    result.push_value(Value::from(k))
+
+                            match i.cmp(&j){
+                                Ordering::Greater => {
+                                    // empty sequence result
+                                    Ok(vec![])
                                 }
-                                Ok(result)
+                                Ordering::Equal => {
+                                    let mut seq = Sequence::new();
+                                    seq.push_value(Value::Integer(i));
+                                    Ok(seq)
+                                }
+                                Ordering::Less => {
+                                    let mut result = Sequence::new();
+                                    for k in i..=j {
+                                        result.push_value(Value::from(k))
+                                    }
+                                    Ok(result)
+                                }
                             }
                         } else {
                             Result::Err(Error {
@@ -1323,56 +1319,91 @@ impl<N: Node> Evaluator<N> {
         posn: Option<usize>,
         rd: &N,
     ) -> Result<Rc<Item<N>>, Error> {
-        let cp = self.item_copy(orig.clone(), &vec![], ctxt, posn, rd)?;
+        let cp = self.item_copy(orig.clone(), &[], ctxt, posn, rd)?;
 
+     if let Item::Node(n) = &*orig {
+          if n.node_type() == NodeType::Element {
+              let mut _cur = match *cp {
+                  Item::Node(ref m) => m,
+                  _ => {
+                      return Result::Err(Error {
+                          kind: ErrorKind::Unknown,
+                          message: "unable to copy element node".to_string(),
+                      })
+                  }
+              };
+              // To handle borrowing correctly:
+              // Iterate over the attributes
+              // Work out what attributes need to be created
+              // Then create them
+              let new: Vec<N> = n.attribute_iter().collect();
+              // TODO: Don't Panic
+              new.iter().for_each(|a| {
+                  let _at = rd
+                      .new_attribute(a.name(), a.value())
+                      .expect("unable to create attribute");
+                  // TODO: cannot borrow as mutable
+                  //cur.add_attribute(at)
+                  //    .expect("unable to add attribute");
+              });
+              // TODO
+              //            n.child_iter()
+              //                .for_each(|c| {
+              //                cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
+              //                });
+          }
+
+
+     }
+
+
+        /*
         // If this item is an element node, then copy all of its attributes and children
         match &*orig {
             Item::Node(n) => {
-                match n.node_type() {
-                    NodeType::Element => {
-                        let mut _cur = match *cp {
-                            Item::Node(ref m) => m,
-                            _ => {
-                                return Result::Err(Error {
-                                    kind: ErrorKind::Unknown,
-                                    message: "unable to copy element node".to_string(),
-                                })
-                            }
-                        };
-                        // To handle borrowing correctly:
-                        // Iterate over the attributes
-                        // Work out what attributes need to be created
-                        // Then create them
-                        let new: Vec<N> = n.attribute_iter().collect();
-                        // TODO: Don't Panic
-                        new.iter().for_each(|a| {
-                            let _at = rd
-                                .new_attribute(a.name(), a.value())
-                                .expect("unable to create attribute");
-                            // TODO: cannot borrow as mutable
-                            //cur.add_attribute(at)
-                            //	.expect("unable to add attribute");
-                        });
-                        // TODO
-                        //			n.child_iter()
-                        //			    .for_each(|c| {
-                        //				cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
-                        //			    });
-                    }
-                    _ => {}
-                }
+                 if n.node_type() == NodeType::Element {
+                     let mut _cur = match *cp {
+                         Item::Node(ref m) => m,
+                         _ => {
+                             return Result::Err(Error {
+                                 kind: ErrorKind::Unknown,
+                                 message: "unable to copy element node".to_string(),
+                             })
+                         }
+                     };
+                     // To handle borrowing correctly:
+                     // Iterate over the attributes
+                     // Work out what attributes need to be created
+                     // Then create them
+                     let new: Vec<N> = n.attribute_iter().collect();
+                     // TODO: Don't Panic
+                     new.iter().for_each(|a| {
+                         let _at = rd
+                             .new_attribute(a.name(), a.value())
+                             .expect("unable to create attribute");
+                         // TODO: cannot borrow as mutable
+                         //cur.add_attribute(at)
+                         //    .expect("unable to add attribute");
+                     });
+                     // TODO
+                     //            n.child_iter()
+                     //                .for_each(|c| {
+                     //                cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
+                     //                });
+                 }
             }
             _ => {}
-        }
+        }*/
 
         Ok(cp)
     }
+
 
     // Copy an item
     fn item_copy(
         &self,
         orig: Rc<Item<N>>,
-        content: &Vec<Constructor<N>>,
+        content: &[Constructor<N>],
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
         rd: &N,
@@ -1499,7 +1530,7 @@ impl<N: Node> Evaluator<N> {
     /// The sequence constructor is a pattern: the steps of a path in reverse.
     pub fn item_matches(
         &self,
-        pat: &Vec<Constructor<N>>,
+        pat: &[Constructor<N>],
         i: &Rc<Item<N>>,
         rd: &N,
     ) -> Result<bool, Error> {
@@ -1518,8 +1549,8 @@ impl<N: Node> Evaluator<N> {
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
         op: Operator,
-        left: &Vec<Constructor<N>>,
-        right: &Vec<Constructor<N>>,
+        left: &[Constructor<N>],
+        right: &[Constructor<N>],
         rd: &N,
     ) -> Result<bool, Error> {
         let mut b = false;
@@ -1545,8 +1576,8 @@ impl<N: Node> Evaluator<N> {
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
         op: Operator,
-        left: &Vec<Constructor<N>>,
-        right: &Vec<Constructor<N>>,
+        left: &[Constructor<N>],
+        right: &[Constructor<N>],
         rd: &N,
     ) -> Result<bool, Error> {
         let left_seq = self.evaluate(ctxt.clone(), posn, left, rd)?;
@@ -1727,8 +1758,8 @@ impl fmt::Display for NodeMatch{
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         f.write_str(format!(
             "NodeMatch {}::{}",
-            self.axis.to_string(),
-            self.nodetest.to_string()
+            self.axis,
+            self.nodetest
         ).as_str())
     }
 }
@@ -1851,7 +1882,7 @@ pub struct NameTest {
 
 impl fmt::Display for NameTest{
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        let mut result = if self.name.is_some() {
+        let result = if self.name.is_some() {
             match self.name.as_ref().unwrap() {
                 WildcardOrName::Wildcard => "*".to_string(),
                 WildcardOrName::Name(n) => n.to_string(),
@@ -3713,7 +3744,7 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
             Constructor::Step(nm, p) => {
                 format!(
                   "{:in$} Construct step {}{}", "",
-                  nm.to_string(),
+                  nm,
                   if !p.is_empty() {format!("\npredicates: {}", format_constructor(&p[0], 0))} else {"".to_string()},
                   in=i
                 )

@@ -10,7 +10,9 @@ use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 use std::fmt;
+use std::fmt::Formatter;
 use std::rc::Rc;
+use crate::item;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -180,15 +182,19 @@ pub enum Item<N: Node> {
     Value(Value),
 }
 
-impl<N: Node> Item<N> {
-    /// Gives the string value of an item. All items have a string value.
-    pub fn to_string(&self) -> String {
-        match self {
+impl<N: item::Node> fmt::Display for Item<N> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        // Gives the string value of an item. All items have a string value.
+        let result = match self {
             Item::Node(n) => n.to_string(),
             Item::Function => "".to_string(),
             Item::Value(v) => v.to_string(),
-        }
+        };
+        f.write_str(result.as_str())
     }
+}
+
+impl<N: Node> Item<N> {
     /// Serialize as XML
     pub fn to_xml(&self) -> String {
         match self {
@@ -325,14 +331,14 @@ impl<N: Node> fmt::Debug for Item<N> {
                     f,
                     "node type item (node type {}, name \"{}\")",
                     n.node_type().to_string(),
-                    n.name().to_string()
+                    n.name()
                 )
             }
             Item::Function => {
                 write!(f, "function type item")
             }
             Item::Value(v) => {
-                write!(f, "value type item ({})", v.to_string())
+                write!(f, "value type item ({})", v)
             }
         }
     }
