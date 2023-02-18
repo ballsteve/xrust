@@ -77,7 +77,7 @@ impl Document {
         }
         let mut e = vec![];
         for en in self.epilogue {
-            if let Ok(ecn) = en.get_canonical(){
+            if let Ok(ecn) = en.get_canonical() {
                 e.push(ecn)
             }
         }
@@ -191,7 +191,7 @@ fn expand_node(mut n: RNode, ent: &HashMap<QualifiedName, Vec<RNode>>) -> Result
 
 pub struct DocumentBuilder(Document);
 
-impl Default for DocumentBuilder{
+impl Default for DocumentBuilder {
     fn default() -> Self {
         Self::new()
     }
@@ -257,11 +257,7 @@ impl Node {
     }
     pub fn set_nsuri(&self, uri: String) {
         let new = match &*self.name.borrow() {
-            Some(old) => QualifiedName::new(
-                Some(uri),
-                old.get_prefix(),
-                old.get_localname(),
-            ),
+            Some(old) => QualifiedName::new(Some(uri), old.get_prefix(), old.get_localname()),
             None => panic!("no node name"),
         };
         let _ = self.name.borrow_mut().insert(new);
@@ -323,11 +319,10 @@ impl ItemNode for RNode {
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
                 );
-                self.attributes.borrow().iter().for_each(|(k, v)| {
-                    result.push_str(
-                        format!(" {}='{}'", k, v.value()).as_str(),
-                    )
-                });
+                self.attributes
+                    .borrow()
+                    .iter()
+                    .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.value()).as_str()));
                 result.push('>');
                 self.children
                     .borrow()
@@ -411,10 +406,12 @@ impl ItemNode for RNode {
     /// Remove a node from the tree. If the node is unattached (i.e. does not have a parent), then this has no effect.
     fn pop(&mut self) -> Result<(), Error> {
         // Find this node in the parent's node list
-        let parent = self.parent().ok_or_else(||Error::new(
-            ErrorKind::Unknown,
-            String::from("unable to insert before: node is an orphan"),
-        ))?;
+        let parent = self.parent().ok_or_else(|| {
+            Error::new(
+                ErrorKind::Unknown,
+                String::from("unable to insert before: node is an orphan"),
+            )
+        })?;
         let idx = find_index(&parent, self)?;
         parent.children.borrow_mut().remove(idx);
         Ok(())
@@ -441,10 +438,12 @@ impl ItemNode for RNode {
         // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
         _ = insert.pop();
         // Get the parent of this node. It is an error if there is no parent.
-        let parent = self.parent().ok_or_else(|| Error::new(
-            ErrorKind::Unknown,
-            String::from("unable to insert before: node is an orphan"),
-        ))?;
+        let parent = self.parent().ok_or_else(|| {
+            Error::new(
+                ErrorKind::Unknown,
+                String::from("unable to insert before: node is an orphan"),
+            )
+        })?;
         // Find the child node's index in the parent's child list
         let idx = find_index(&parent, self)?;
         // Insert the node at position of self, shifting insert right
@@ -475,12 +474,10 @@ impl ItemNode for RNode {
 
     fn get_canonical(&self) -> Result<Self, Error> {
         match self.node_type() {
-            NodeType::Comment => {
-                Err(Error {
-                    kind: ErrorKind::TypeError,
-                    message: "".to_string(),
-                })
-            }
+            NodeType::Comment => Err(Error {
+                kind: ErrorKind::TypeError,
+                message: "".to_string(),
+            }),
             NodeType::Text => {
                 let v = match self.value() {
                     Value::String(s) => {
@@ -762,17 +759,17 @@ impl XMLDecl {
     }
 }
 
-impl fmt::Display for XMLDecl{
+impl fmt::Display for XMLDecl {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::from("<?xml version=\"");
         result.push_str(self.version.as_str());
         result.push('"');
-        if let Some(e) = self.encoding.as_ref(){
+        if let Some(e) = self.encoding.as_ref() {
             result.push_str(" encoding=\"");
             result.push_str(e.as_str());
             result.push('"');
         };
-        if let Some(e) = self.standalone.as_ref(){
+        if let Some(e) = self.standalone.as_ref() {
             result.push_str(" standalone=\"");
             result.push_str(e.as_str());
             result.push('"');

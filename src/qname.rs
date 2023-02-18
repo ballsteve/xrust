@@ -40,7 +40,7 @@ impl QualifiedName {
     }
 }
 
-impl fmt::Display for QualifiedName{
+impl fmt::Display for QualifiedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
         self.prefix.as_ref().map_or((), |p| {
@@ -77,7 +77,9 @@ impl Eq for QualifiedName {}
 
 impl Hash for QualifiedName {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        if let Some(ns) = self.nsuri.as_ref() { ns.hash(state) }
+        if let Some(ns) = self.nsuri.as_ref() {
+            ns.hash(state)
+        }
         self.localname.hash(state);
     }
 }

@@ -85,10 +85,7 @@ pub fn parse(e: &str) -> Result<String, Error> {
             } else {
                 Result::Err(Error {
                     kind: ErrorKind::Unknown,
-                    message: format!(
-                        "extra characters after expression: \"{}\"",
-                        rest
-                    ),
+                    message: format!("extra characters after expression: \"{}\"", rest),
                 })
             }
         }

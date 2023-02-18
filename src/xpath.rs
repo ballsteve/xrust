@@ -23,8 +23,8 @@ use nom::{
     Err as NomErr, IResult,
 };
 use rust_decimal::Decimal;
-use std::str::FromStr;
 use std::cmp::Ordering;
+use std::str::FromStr;
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
@@ -1392,7 +1392,7 @@ fn take_until_balanced<'a>(
                     }
                     (None, Some(c)) => {
                         // Scenario 2
-                        match bracket_counter.cmp(&1){
+                        match bracket_counter.cmp(&1) {
                             Ordering::Greater => {
                                 bracket_counter -= 1;
                                 index += c + close.len();
@@ -1407,7 +1407,6 @@ fn take_until_balanced<'a>(
                                     code: NomErrorKind::TakeUntil,
                                 }));
                             }
-
                         }
                     }
                     (Some(o), Some(c)) => {
@@ -1450,10 +1449,7 @@ pub fn parse<N: Node>(e: &str) -> Result<Vec<Constructor<N>>, crate::xdmerror::E
             } else {
                 Result::Err(Error {
                     kind: ErrorKind::Unknown,
-                    message: format!(
-                        "extra characters after expression: \"{}\"",
-                        rest
-                    ),
+                    message: format!("extra characters after expression: \"{}\"", rest),
                 })
             }
         }

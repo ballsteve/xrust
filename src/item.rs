@@ -5,6 +5,7 @@
 //!
 //! Nodes are implemented as a trait.
 
+use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
@@ -12,7 +13,6 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use crate::item;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -135,8 +135,7 @@ impl<N: Node> From<Item<N>> for Sequence<N> {
 /// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 ///
 /// Every document must have a single node as it's toplevel node that is of type "Document".
-#[derive(Copy, Clone, PartialEq, Debug)]
-#[derive(Default)]
+#[derive(Copy, Clone, PartialEq, Debug, Default)]
 pub enum NodeType {
     Document,
     Element,
@@ -164,8 +163,6 @@ impl NodeType {
         }
     }
 }
-
-
 
 /// An Item in a [Sequence]. Can be a node, function or [Value].
 ///
@@ -291,7 +288,7 @@ impl<N: Node> Item<N> {
     pub fn is_element_node(&self) -> bool {
         match self {
             Item::Node(n) => matches!(n.node_type(), NodeType::Element),
-                /*
+            /*
                 match n.node_type() {
                 NodeType::Element => true,
                 _ => false,

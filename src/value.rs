@@ -106,7 +106,7 @@ pub enum Value {
     Boolean(bool),
 }
 
-impl fmt::Display for Value{
+impl fmt::Display for Value {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let result = match self {
             Value::String(s) => s.to_string(),
@@ -137,7 +137,6 @@ impl fmt::Display for Value{
 }
 
 impl Value {
-
     /// Give the effective boolean value.
     pub fn to_bool(&self) -> bool {
         match &self {
@@ -779,20 +778,16 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-        assert!(
-            Value::from("3")
-                .compare(&Value::Double(3.0), Operator::Equal)
-                .expect("unable to compare")
-        )
+        assert!(Value::from("3")
+            .compare(&Value::Double(3.0), Operator::Equal)
+            .expect("unable to compare"))
     }
 
     #[test]
     fn value_compare_ne() {
-        assert!(
-            !Value::from("3")
-                .compare(&Value::Double(3.0), Operator::NotEqual)
-                .expect("unable to compare")
-        )
+        assert!(!Value::from("3")
+            .compare(&Value::Double(3.0), Operator::NotEqual)
+            .expect("unable to compare"))
     }
 
     //#[test]

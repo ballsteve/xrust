@@ -10,6 +10,7 @@ use crate::parsepicture::parse as picture_parse;
 use crate::qname::*;
 use crate::value::{Operator, Value};
 use crate::xdmerror::*;
+use chrono::Utc;
 #[allow(unused_imports)]
 use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use std::cell::{RefCell, RefMut};
@@ -19,7 +20,6 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use chrono::Utc;
 use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
 
@@ -312,12 +312,7 @@ impl<N: Node> Evaluator<N> {
             .map(|a| self.evaluate_one(ctxt.clone(), posn, a, rd))
             .partition(Result::is_ok);
         if !errors.is_empty() {
-            Result::Err(
-                errors
-                    .get(0)
-                    .map(|e| e.clone().err().unwrap())
-                    .unwrap(),
-            )
+            Result::Err(errors.get(0).map(|e| e.clone().err().unwrap()).unwrap())
         } else {
             Ok(results
                 .iter()
@@ -420,47 +415,48 @@ impl<N: Node> Evaluator<N> {
                 // If the element does not have an attribute with the given name, create it
                 // Otherwise replace the attribute's value with the supplied value
                 if let Some(ref c) = ctxt {
-                        // Work out if an attribute is required, then set it
-                        let atnode: Option<N>;
-                        match &*c[posn.unwrap()] {
-                            Item::Node(nd) => match nd.node_type() {
-                                NodeType::Element => {
-                                    let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
-                                    if attval.len() == 1 {
-                                        match &*attval[0] {
-                                            Item::Value(av) => {
-                                                atnode = Some(rd.new_attribute(n.clone(), av.clone())?);
-                                            }
-                                            _ => {
-                                                let w = Value::from(attval.to_string());
-                                                atnode = Some(rd.new_attribute(n.clone(), w)?);
-                                            }
+                    // Work out if an attribute is required, then set it
+                    let atnode: Option<N>;
+                    match &*c[posn.unwrap()] {
+                        Item::Node(nd) => match nd.node_type() {
+                            NodeType::Element => {
+                                let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
+                                if attval.len() == 1 {
+                                    match &*attval[0] {
+                                        Item::Value(av) => {
+                                            atnode = Some(rd.new_attribute(n.clone(), av.clone())?);
                                         }
-                                    } else {
-                                        let w = Value::from(attval.to_string());
-                                        atnode = Some(rd.new_attribute(n.clone(), w)?);
+                                        _ => {
+                                            let w = Value::from(attval.to_string());
+                                            atnode = Some(rd.new_attribute(n.clone(), w)?);
+                                        }
                                     }
+                                } else {
+                                    let w = Value::from(attval.to_string());
+                                    atnode = Some(rd.new_attribute(n.clone(), w)?);
                                 }
-                                _ => {
-                                    return Result::Err(Error {
-                                        kind: ErrorKind::TypeError,
-                                        message: "context item is not an element".to_string(),
-                                    })
-                                }
-                            },
+                            }
                             _ => {
                                 return Result::Err(Error {
                                     kind: ErrorKind::TypeError,
-                                    message: "context item must be a mutable element node".to_string(),
+                                    message: "context item is not an element".to_string(),
                                 })
                             }
+                        },
+                        _ => {
+                            return Result::Err(Error {
+                                kind: ErrorKind::TypeError,
+                                message: "context item must be a mutable element node".to_string(),
+                            })
                         }
-                        if let Some(a) = atnode { ctxt.unwrap()[posn.unwrap()]
+                    }
+                    if let Some(a) = atnode {
+                        ctxt.unwrap()[posn.unwrap()]
                             .add_attribute(a)
-                            .expect("unable to add attribute"); }
-                        Ok(vec![])
-                }
-                else {
+                            .expect("unable to add attribute");
+                    }
+                    Ok(vec![])
+                } else {
                     Result::Err(Error {
                         kind: ErrorKind::DynamicAbsent,
                         message: "no context item".to_string(),
@@ -548,7 +544,7 @@ impl<N: Node> Evaluator<N> {
                             let i = start[0].to_int().unwrap();
                             let j = end[0].to_int().unwrap();
 
-                            match i.cmp(&j){
+                            match i.cmp(&j) {
                                 Ordering::Greater => {
                                     // empty sequence result
                                     Ok(vec![])
@@ -645,7 +641,6 @@ impl<N: Node> Evaluator<N> {
                 // Each item is a step in the path.
                 // Each step creates a new context for the next step
                 // TODO: if initial context is None then error
-
 
                 // accumulator - each time around the loop this will be the new context
                 let u: Sequence<N> = ctxt.unwrap_or_default();
@@ -1058,7 +1053,6 @@ impl<N: Node> Evaluator<N> {
                                 panic!("too many matching templates")
                             } else {
                                 p = t.import;
-                                
                             }
                         });
 
@@ -1223,7 +1217,8 @@ impl<N: Node> Evaluator<N> {
                         for i in 0..sel.len() {
                             let keys = self.evaluate(Some(sel.clone()), Some(i), h, rd)?;
                             for j in keys {
-                                let e: &mut Vec<Rc<Item<N>>> = map.entry(j.to_string()).or_default();
+                                let e: &mut Vec<Rc<Item<N>>> =
+                                    map.entry(j.to_string()).or_default();
                                 e.push(sel[i].clone());
                             }
                         }
@@ -1318,41 +1313,38 @@ impl<N: Node> Evaluator<N> {
     ) -> Result<Rc<Item<N>>, Error> {
         let cp = self.item_copy(orig.clone(), &[], ctxt, posn, rd)?;
 
-     if let Item::Node(n) = &*orig {
-          if n.node_type() == NodeType::Element {
-              let mut _cur = match *cp {
-                  Item::Node(ref m) => m,
-                  _ => {
-                      return Result::Err(Error {
-                          kind: ErrorKind::Unknown,
-                          message: "unable to copy element node".to_string(),
-                      })
-                  }
-              };
-              // To handle borrowing correctly:
-              // Iterate over the attributes
-              // Work out what attributes need to be created
-              // Then create them
-              let new: Vec<N> = n.attribute_iter().collect();
-              // TODO: Don't Panic
-              new.iter().for_each(|a| {
-                  let _at = rd
-                      .new_attribute(a.name(), a.value())
-                      .expect("unable to create attribute");
-                  // TODO: cannot borrow as mutable
-                  //cur.add_attribute(at)
-                  //    .expect("unable to add attribute");
-              });
-              // TODO
-              //            n.child_iter()
-              //                .for_each(|c| {
-              //                cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
-              //                });
-          }
-
-
-     }
-
+        if let Item::Node(n) = &*orig {
+            if n.node_type() == NodeType::Element {
+                let mut _cur = match *cp {
+                    Item::Node(ref m) => m,
+                    _ => {
+                        return Result::Err(Error {
+                            kind: ErrorKind::Unknown,
+                            message: "unable to copy element node".to_string(),
+                        })
+                    }
+                };
+                // To handle borrowing correctly:
+                // Iterate over the attributes
+                // Work out what attributes need to be created
+                // Then create them
+                let new: Vec<N> = n.attribute_iter().collect();
+                // TODO: Don't Panic
+                new.iter().for_each(|a| {
+                    let _at = rd
+                        .new_attribute(a.name(), a.value())
+                        .expect("unable to create attribute");
+                    // TODO: cannot borrow as mutable
+                    //cur.add_attribute(at)
+                    //    .expect("unable to add attribute");
+                });
+                // TODO
+                //            n.child_iter()
+                //                .for_each(|c| {
+                //                cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
+                //                });
+            }
+        }
 
         /*
         // If this item is an element node, then copy all of its attributes and children
@@ -1394,7 +1386,6 @@ impl<N: Node> Evaluator<N> {
 
         Ok(cp)
     }
-
 
     // Copy an item
     fn item_copy(
@@ -1447,24 +1438,20 @@ impl<N: Node> Evaluator<N> {
                                 });
                                 Ok(Rc::new(Item::Node(e)))
                             }
-                            _ => {
-                                Result::Err(Error {
-                                    kind: ErrorKind::Unknown,
-                                    message: "unable to create element node".to_string(),
-                                })
-                            }
+                            _ => Result::Err(Error {
+                                kind: ErrorKind::Unknown,
+                                message: "unable to create element node".to_string(),
+                            }),
                         }
                     }
                     NodeType::Text => {
                         let x = Value::from(n.to_string());
                         match rd.new_text(x) {
                             Ok(m) => Ok(Rc::new(Item::Node(m))),
-                            _ => {
-                                Result::Err(Error {
-                                    kind: ErrorKind::Unknown,
-                                    message: "unable to create text node".to_string(),
-                                })
-                            }
+                            _ => Result::Err(Error {
+                                kind: ErrorKind::Unknown,
+                                message: "unable to create text node".to_string(),
+                            }),
                         }
                     }
                     NodeType::Attribute => {
@@ -1751,16 +1738,11 @@ pub struct NodeMatch {
     pub nodetest: NodeTest,
 }
 
-impl fmt::Display for NodeMatch{
+impl fmt::Display for NodeMatch {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        f.write_str(format!(
-            "NodeMatch {}::{}",
-            self.axis,
-            self.nodetest
-        ).as_str())
+        f.write_str(format!("NodeMatch {}::{}", self.axis, self.nodetest).as_str())
     }
 }
-
 
 #[derive(Clone)]
 pub enum NodeTest {
@@ -1829,7 +1811,7 @@ impl TryFrom<&str> for NodeTest {
     }
 }
 
-impl fmt::Display for NodeTest{
+impl fmt::Display for NodeTest {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let result = match self {
             NodeTest::Name(nt) => nt.to_string(),
@@ -1877,7 +1859,7 @@ pub struct NameTest {
     pub name: Option<WildcardOrName>,
 }
 
-impl fmt::Display for NameTest{
+impl fmt::Display for NameTest {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let result = if self.name.is_some() {
             match self.name.as_ref().unwrap() {
@@ -1963,7 +1945,7 @@ impl Axis {
     }
 }
 
-impl fmt::Display for Axis{
+impl fmt::Display for Axis {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let result = match self {
             Axis::Child => "child".to_string(),
@@ -2200,7 +2182,7 @@ pub struct StaticContext<N: Node> {
     pub vars: RefCell<HashMap<String, Vec<Sequence<N>>>>, // each entry in the vector is an inner scope of the variable
 }
 
-impl<N: Node> Default for StaticContext<N>{
+impl<N: Node> Default for StaticContext<N> {
     fn default() -> Self {
         Self::new()
     }
@@ -3133,7 +3115,7 @@ pub fn func_translate<N: Node>(
 
             for c in args[0].to_string().graphemes(true) {
                 let mut a: Option<Option<usize>> = Some(None);
-                for (i, _item) in m.iter().enumerate(){
+                for (i, _item) in m.iter().enumerate() {
                     if c == m[i] {
                         if i < t.len() {
                             a = Some(Some(i));
@@ -3428,7 +3410,9 @@ pub fn func_current_date<N: Node>(
     // TODO: check number of arguments
     // TODO: do the check in static analysis phase
 
-    Ok(vec![Rc::new(Item::Value(Value::Date(Utc::now().date_naive())))])
+    Ok(vec![Rc::new(Item::Value(Value::Date(
+        Utc::now().date_naive(),
+    )))])
 }
 
 pub fn func_current_time<N: Node>(

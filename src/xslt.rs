@@ -195,19 +195,17 @@ where
     ev.add_builtin_template(bi3pat, bi3bod, None, -1.0, 0);
 
     // Setup the serialization of the primary result document
-    if let Some(c) = stylenode
-        .child_iter()
-        .find(|c| {
-            !(c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "output")
-        }) {
-        let b: bool = matches!(c
-                .get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
+    if let Some(c) = stylenode.child_iter().find(|c| {
+        !(c.is_element()
+            && c.name().get_nsuri_ref() == Some(XSLTNS)
+            && c.name().get_localname() == "output")
+    }) {
+        let b: bool = matches!(
+            c.get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
                 .to_string()
-                .as_str()
-                ,
-                "yes" | "true" | "1" );
+                .as_str(),
+            "yes" | "true" | "1"
+        );
 
         let mut od = OutputDefinition::new();
         od.set_indent(b);
@@ -440,14 +438,11 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                                     .replace('\"', "&quot;");
                                 Ok(Constructor::Literal(Value::from(text)))
                             }
-                            _ => {
-                                Result::Err(Error {
-                                    kind: ErrorKind::TypeError,
-                                    message:
-                                        "disable-output-escaping only accepts values yes or no."
-                                            .to_string(),
-                                })
-                            }
+                            _ => Result::Err(Error {
+                                kind: ErrorKind::TypeError,
+                                message: "disable-output-escaping only accepts values yes or no."
+                                    .to_string(),
+                            }),
                         }
                     } else {
                         let text = n
