@@ -972,9 +972,9 @@ macro_rules! evaluate_tests (
 	    assert_eq!(r.len(), 1);
 	    match &*r[0] {
 		Item::Value(Value::Date(d)) => {
-		    assert_eq!(d.year(), Local::today().year());
-		    assert_eq!(d.month(), Local::today().month());
-		    assert_eq!(d.day(), Local::today().day());
+		    assert_eq!(d.year(), Local::now().year());
+		    assert_eq!(d.month(), Local::now().month());
+		    assert_eq!(d.day(), Local::now().day());
 		}
 		_ => panic!("not a singleton date value")
 	    }
@@ -1014,9 +1014,9 @@ macro_rules! evaluate_tests (
 	    assert_eq!(r.len(), 1);
 	    match &*r[0] {
 		Item::Value(Value::DateTime(dt)) => {
-		    assert_eq!(dt.year(), Local::today().year());
-		    assert_eq!(dt.month(), Local::today().month());
-		    assert_eq!(dt.day(), Local::today().day());
+		    assert_eq!(dt.year(), Local::now().year());
+		    assert_eq!(dt.month(), Local::now().month());
+		    assert_eq!(dt.day(), Local::now().day());
 		    assert_eq!(dt.hour(), Local::now().hour());
 		    assert_eq!(dt.minute(), Local::now().minute());
 		    assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum

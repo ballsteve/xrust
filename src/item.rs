@@ -5,11 +5,13 @@
 //!
 //! Nodes are implemented as a trait.
 
+use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 use std::fmt;
+use std::fmt::Formatter;
 use std::rc::Rc;
 
 /// In XPath, the Sequence is the fundamental data structure.
@@ -90,7 +92,7 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
 
     /// Calculate the effective boolean value of the Sequence
     fn to_bool(&self) -> bool {
-        if self.len() == 0 {
+        if self.is_empty() {
             false
         } else {
             match *self[0] {
@@ -133,7 +135,7 @@ impl<N: Node> From<Item<N>> for Sequence<N> {
 /// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 ///
 /// Every document must have a single node as it's toplevel node that is of type "Document".
-#[derive(Copy, Clone, PartialEq, Debug)]
+#[derive(Copy, Clone, PartialEq, Debug, Default)]
 pub enum NodeType {
     Document,
     Element,
@@ -142,6 +144,7 @@ pub enum NodeType {
     Comment,
     ProcessingInstruction,
     Reference,
+    #[default]
     Unknown,
 }
 
@@ -188,15 +191,19 @@ pub enum Item<N: Node> {
     Value(Value),
 }
 
-impl<N: Node> Item<N> {
-    /// Gives the string value of an item. All items have a string value.
-    pub fn to_string(&self) -> String {
-        match self {
+impl<N: item::Node> fmt::Display for Item<N> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        // Gives the string value of an item. All items have a string value.
+        let result = match self {
             Item::Node(n) => n.to_string(),
             Item::Function => "".to_string(),
             Item::Value(v) => v.to_string(),
-        }
+        };
+        f.write_str(result.as_str())
     }
+}
+
+impl<N: Node> Item<N> {
     /// Serialize as XML
     pub fn to_xml(&self) -> String {
         match self {
@@ -292,10 +299,13 @@ impl<N: Node> Item<N> {
     /// Is this item an element-type node?
     pub fn is_element_node(&self) -> bool {
         match self {
-            Item::Node(n) => match n.node_type() {
+            Item::Node(n) => matches!(n.node_type(), NodeType::Element),
+            /*
+                match n.node_type() {
                 NodeType::Element => true,
                 _ => false,
             },
+                 */
             _ => false,
         }
     }
@@ -330,14 +340,14 @@ impl<N: Node> fmt::Debug for Item<N> {
                     f,
                     "node type item (node type {}, name \"{}\")",
                     n.node_type().to_string(),
-                    n.name().to_string()
+                    n.name()
                 )
             }
             Item::Function => {
                 write!(f, "function type item")
             }
             Item::Value(v) => {
-                write!(f, "value type item ({})", v.to_string())
+                write!(f, "value type item ({})", v)
             }
         }
     }
@@ -417,11 +427,13 @@ pub trait Node: Clone {
     fn push(&mut self, n: Self) -> Result<(), Error>;
     /// Remove a node from the tree
     fn pop(&mut self) -> Result<(), Error>;
-    /// Insert a node in the child list before the given node.
+    /// Insert a node in the child list before the given node. The node will be detached from it's current position prior to insertion.
     fn insert_before(&mut self, n: Self) -> Result<(), Error>;
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
 
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
+    /// Canonical XML representation of the node
+    fn get_canonical(&self) -> Result<Self, Error>;
 }

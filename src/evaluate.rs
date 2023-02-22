@@ -10,12 +10,15 @@ use crate::parsepicture::parse as picture_parse;
 use crate::qname::*;
 use crate::value::{Operator, Value};
 use crate::xdmerror::*;
+use chrono::Utc;
 #[allow(unused_imports)]
 use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use std::cell::{RefCell, RefMut};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::convert::TryFrom;
 use std::fmt;
+use std::fmt::Formatter;
 use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
@@ -31,6 +34,12 @@ pub struct DynamicContext<N: Node> {
     current_group: RefCell<Vec<Option<Sequence<N>>>>,
     current_import: RefCell<usize>,
     deps: RefCell<Vec<Url>>, // URIs for included/imported stylesheets
+}
+
+impl<N: Node> Default for DynamicContext<N> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<N: Node> DynamicContext<N> {
@@ -129,6 +138,12 @@ pub struct Evaluator<N: Node> {
     base: Option<Url>,                   // The base URL of the primary stylesheet
 }
 
+impl<N: Node> Default for Evaluator<N> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl<N: Node> Evaluator<N> {
     /// Create a dynamic context.
     pub fn new() -> Self {
@@ -205,15 +220,10 @@ impl<N: Node> Evaluator<N> {
         eprintln!("find_match for {:?}", i);
         let mut r: Vec<&Template<N>> = vec![];
         eprintln!("searching {} templates", self.templates.len());
-        let mut it = self.templates.iter();
-        loop {
-            match it.next() {
-                Some(t) => {
-                    if self.item_matches(&t.pattern, i, &rd)? {
-                        r.push(t)
-                    }
-                }
-                None => break,
+        let it = self.templates.iter();
+        for t in it {
+            if self.item_matches(&t.pattern, i, rd)? {
+                r.push(t)
             }
         }
         let s: Option<&Template<N>> = r
@@ -222,30 +232,25 @@ impl<N: Node> Evaluator<N> {
             .filter(|j| im.map_or(true, |k| j.import >= k))
             .reduce(|a, b| if a.priority < b.priority { b } else { a });
 
-        if s.is_some() {
+        if let Some(b) = s {
             eprintln!("found template");
-            Ok(s.unwrap().body.clone())
+            Ok(b.body.clone())
         } else {
             // Try builtin templates
             eprintln!("trying built-in templates");
             let mut w: Vec<&Template<N>> = vec![];
-            let mut builtins = self.builtin_templates.iter();
-            loop {
-                match builtins.next() {
-                    Some(u) => {
-                        if self.item_matches(&u.pattern, i, &rd)? {
-                            w.push(u)
-                        }
-                    }
-                    None => break,
+            let builtins = self.builtin_templates.iter();
+            for u in builtins {
+                if self.item_matches(&u.pattern, i, rd)? {
+                    w.push(u)
                 }
             }
             let v = w
                 .iter()
                 .reduce(|a, b| if a.priority < b.priority { b } else { a });
 
-            if v.is_some() {
-                Ok(v.unwrap().body.clone())
+            if let Some(b) = v {
+                Ok(b.body.clone())
             } else {
                 Ok(vec![])
             }
@@ -295,7 +300,7 @@ impl<N: Node> Evaluator<N> {
         &self,
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
-        c: &Vec<Constructor<N>>,
+        c: &[Constructor<N>],
         rd: &N, // Result document
     ) -> Result<Sequence<N>, Error> {
         // Evaluate all sequence constructors. This will result in a sequence of sequences.
@@ -306,22 +311,15 @@ impl<N: Node> Evaluator<N> {
             .iter()
             .map(|a| self.evaluate_one(ctxt.clone(), posn, a, rd))
             .partition(Result::is_ok);
-        if errors.len() != 0 {
-            Result::Err(
-                errors
-                    .iter()
-                    .nth(0)
-                    .map(|e| e.clone().err().unwrap())
-                    .unwrap(),
-            )
+        if !errors.is_empty() {
+            Result::Err(errors.get(0).map(|e| e.clone().err().unwrap()).unwrap())
         } else {
             Ok(results
                 .iter()
-                .map(|a| {
-                    let b: Sequence<N> = a.clone().ok().unwrap_or(vec![]);
+                .flat_map(|a| {
+                    let b: Sequence<N> = a.clone().ok().unwrap_or_default();
                     b
                 })
-                .flatten()
                 .collect::<Vec<Rc<Item<N>>>>())
         }
     }
@@ -347,7 +345,7 @@ impl<N: Node> Evaluator<N> {
                 let mut l = rd.new_element(n.clone())?;
 
                 // add content to newly created element
-                let seq = self.evaluate(ctxt.clone(), posn, c, rd)?;
+                let seq = self.evaluate(ctxt, posn, c, rd)?;
                 seq.iter().try_for_each(|i| {
                     // Item could be a Node or text
                     match &**i {
@@ -365,7 +363,7 @@ impl<N: Node> Evaluator<N> {
             }
             // This creates a Node in the current result document
             Constructor::LiteralAttribute(n, v) => {
-                let w = self.evaluate(ctxt.clone(), posn, v, rd)?;
+                let w = self.evaluate(ctxt, posn, v, rd)?;
                 let x = Value::from(w.to_string());
                 let l = rd.new_attribute(n.clone(), x)?;
                 Ok(vec![Rc::new(Item::Node(l))])
@@ -416,10 +414,10 @@ impl<N: Node> Evaluator<N> {
                 // The context item must be an element node (TODO: use an expression to select the element)
                 // If the element does not have an attribute with the given name, create it
                 // Otherwise replace the attribute's value with the supplied value
-                if ctxt.is_some() {
+                if let Some(ref c) = ctxt {
                     // Work out if an attribute is required, then set it
                     let atnode: Option<N>;
-                    match &*ctxt.as_ref().unwrap()[posn.unwrap()] {
+                    match &*c[posn.unwrap()] {
                         Item::Node(nd) => match nd.node_type() {
                             NodeType::Element => {
                                 let attval = self.evaluate(ctxt.clone(), posn, v, rd)?;
@@ -452,11 +450,11 @@ impl<N: Node> Evaluator<N> {
                             })
                         }
                     }
-                    atnode.map(|a| {
+                    if let Some(a) = atnode {
                         ctxt.unwrap()[posn.unwrap()]
                             .add_attribute(a)
                             .expect("unable to add attribute");
-                    });
+                    }
                     Ok(vec![])
                 } else {
                     Result::Err(Error {
@@ -537,27 +535,32 @@ impl<N: Node> Evaluator<N> {
                 if v.len() == 2 {
                     // Evaluate the two operands: they must both be literal integer items
                     let start = self.evaluate(ctxt.clone(), posn, &v[0], rd)?;
-                    let end = self.evaluate(ctxt.clone(), posn, &v[1], rd)?;
-                    if start.len() == 0 || end.len() == 0 {
+                    let end = self.evaluate(ctxt, posn, &v[1], rd)?;
+                    if start.is_empty() || end.is_empty() {
                         // empty sequence is the result
                         Ok(vec![])
                     } else if start.len() == 1 {
                         if end.len() == 1 {
                             let i = start[0].to_int().unwrap();
                             let j = end[0].to_int().unwrap();
-                            if i > j {
-                                // empty sequence result
-                                Ok(vec![])
-                            } else if i == j {
-                                let mut seq = Sequence::new();
-                                seq.push_value(Value::Integer(i));
-                                Ok(seq)
-                            } else {
-                                let mut result = Sequence::new();
-                                for k in i..=j {
-                                    result.push_value(Value::from(k))
+
+                            match i.cmp(&j) {
+                                Ordering::Greater => {
+                                    // empty sequence result
+                                    Ok(vec![])
                                 }
-                                Ok(result)
+                                Ordering::Equal => {
+                                    let mut seq = Sequence::new();
+                                    seq.push_value(Value::Integer(i));
+                                    Ok(seq)
+                                }
+                                Ordering::Less => {
+                                    let mut result = Sequence::new();
+                                    for k in i..=j {
+                                        result.push_value(Value::from(k))
+                                    }
+                                    Ok(result)
+                                }
                             }
                         } else {
                             Result::Err(Error {
@@ -603,7 +606,7 @@ impl<N: Node> Evaluator<N> {
                             ArithmeticOperator::Multiply => acc *= u,
                             ArithmeticOperator::Divide => acc /= u,
                             ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
-                            ArithmeticOperator::Modulo => acc = acc % u,
+                            ArithmeticOperator::Modulo => acc %= u,
                         }
                     }
                 }
@@ -639,13 +642,8 @@ impl<N: Node> Evaluator<N> {
                 // Each step creates a new context for the next step
                 // TODO: if initial context is None then error
 
-                let u: Sequence<N>; // accumulator - each time around the loop this will be the new context
-
-                if ctxt.is_some() {
-                    u = ctxt.unwrap().clone()
-                } else {
-                    u = vec![]
-                }
+                // accumulator - each time around the loop this will be the new context
+                let u: Sequence<N> = ctxt.unwrap_or_default();
 
                 // TODO: Don't Panic
                 let result = s.iter().fold(u, |a, c| {
@@ -665,13 +663,13 @@ impl<N: Node> Evaluator<N> {
                         d.iter().for_each(|e| {
                             if b.iter().fold(true, |acc, f| match (&**e, &**f) {
                                 (Item::Node(g), Item::Node(h)) => {
-                                    if g.is_same(&h) {
-                                        acc && false
+                                    if g.is_same(h) {
+                                        false
                                     } else {
-                                        acc && true
+                                        acc
                                     }
                                 }
-                                _ => acc && true,
+                                _ => acc,
                             }) {
                                 b.push(e.clone())
                             }
@@ -704,7 +702,7 @@ impl<N: Node> Evaluator<N> {
                                         .child_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -742,7 +740,7 @@ impl<N: Node> Evaluator<N> {
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -753,7 +751,7 @@ impl<N: Node> Evaluator<N> {
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
                                     if is_node_match::<N>(&nm.nodetest, n) {
@@ -767,13 +765,13 @@ impl<N: Node> Evaluator<N> {
                                         .descend_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
                                     if is_node_match::<N>(&nm.nodetest, n) {
                                         seq.insert(0, Rc::new(Item::Node(n.clone())));
                                     }
-                                    seq.insert(0, Rc::new(Item::Node(n.owner_document().clone())));
+                                    seq.insert(0, Rc::new(Item::Node(n.owner_document())));
 
                                     Ok(self.predicates(seq, p, rd)?)
                                 }
@@ -782,7 +780,7 @@ impl<N: Node> Evaluator<N> {
                                         .ancestor_iter()
                                         .filter(|p| is_node_match::<N>(&nm.nodetest, p))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -793,7 +791,7 @@ impl<N: Node> Evaluator<N> {
                                         .ancestor_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -808,7 +806,7 @@ impl<N: Node> Evaluator<N> {
                                         .next_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -819,7 +817,7 @@ impl<N: Node> Evaluator<N> {
                                         .prev_iter()
                                         .filter(|c| is_node_match::<N>(&nm.nodetest, c))
                                         .fold(Sequence::new(), |mut c, a| {
-                                            c.push_node(a.clone());
+                                            c.push_node(a);
                                             c
                                         });
 
@@ -841,7 +839,7 @@ impl<N: Node> Evaluator<N> {
                                     n.ancestor_iter().for_each(|a| {
                                         a.next_iter().for_each(|b| {
                                             d.push(b.clone());
-                                            b.descend_iter().for_each(|c| d.push(c.clone()));
+                                            b.descend_iter().for_each(|c| d.push(c));
                                         })
                                     });
                                     let seq = d
@@ -938,7 +936,7 @@ impl<N: Node> Evaluator<N> {
                             b.push(r)
                         }
                         // Invoke the function
-                        Ok(g(&self, ctxt, posn, b, rd)?)
+                        Ok(g(self, ctxt, posn, b, rd)?)
                     }
                     None => Result::Err(Error {
                         kind: ErrorKind::NotImplemented,
@@ -989,21 +987,16 @@ impl<N: Node> Evaluator<N> {
                     })
                 } else {
                     let mut result: Sequence<N> = vec![];
-                    match &v[0] {
-                        Constructor::VariableDeclaration(v, a) => {
-                            let s = self.evaluate(ctxt.clone(), posn, &a, rd)?;
+                    if let Constructor::VariableDeclaration(v, a) = &v[0] {
+                        let s = self.evaluate(ctxt.clone(), posn, a, rd)?;
 
-                            for i in s {
-                                // Push the new value for this variable
-                                self.dc.var_push(v, vec![i]);
-                                let mut x = self.evaluate(ctxt.clone(), posn, b, rd)?;
-                                result.append(&mut x);
-                                // Pop the value for this variable
-                                self.dc.var_pop(v);
-                            }
-                        }
-                        _ => {
-                            // Error: no variable bindings
+                        for i in s {
+                            // Push the new value for this variable
+                            self.dc.var_push(v, vec![i]);
+                            let mut x = self.evaluate(ctxt.clone(), posn, b, rd)?;
+                            result.append(&mut x);
+                            // Pop the value for this variable
+                            self.dc.var_pop(v);
                         }
                     }
                     Ok(result)
@@ -1019,7 +1012,7 @@ impl<N: Node> Evaluator<N> {
                 for t in v.chunks(2) {
                     let x = self.evaluate(ctxt.clone(), posn, &t[0], rd)?;
                     if x.to_bool() {
-                        candidate = self.evaluate(ctxt.clone(), posn, &t[1], rd)?;
+                        candidate = self.evaluate(ctxt, posn, &t[1], rd)?;
                         break;
                     }
                 }
@@ -1029,7 +1022,7 @@ impl<N: Node> Evaluator<N> {
                 // Evaluate 's' to find the nodes to apply templates to
                 // For each node, find a matching template and evaluate its sequence constructor. The result of that becomes an item in the new sequence
 
-                let sel = self.evaluate(ctxt.clone(), posn, s, rd)?;
+                let sel = self.evaluate(ctxt, posn, s, rd)?;
                 // TODO: Don't Panic
                 let result = sel.iter().fold(vec![], |mut acc, i| {
                     let mut matching_template: Vec<&Template<N>> = vec![];
@@ -1037,12 +1030,12 @@ impl<N: Node> Evaluator<N> {
                         let e = self
                             .evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, rd)
                             .expect("evaluating pattern failed");
-                        if e.len() != 0 {
-                            matching_template.push(&t)
+                        if !e.is_empty() {
+                            matching_template.push(t)
                         }
                     }
 
-                    if matching_template.len() != 0 {
+                    if !matching_template.is_empty() {
                         // find the template(s) with the lowest priority
                         matching_template
                             .sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
@@ -1060,7 +1053,6 @@ impl<N: Node> Evaluator<N> {
                                 panic!("too many matching templates")
                             } else {
                                 p = t.import;
-                                ()
                             }
                         });
 
@@ -1090,11 +1082,7 @@ impl<N: Node> Evaluator<N> {
                                 let e = self
                                     .evaluate(Some(vec![i.clone()]), Some(0), &t.pattern, rd)
                                     .expect("failed to evaluate pattern");
-                                if e.len() == 0 {
-                                    false
-                                } else {
-                                    true
-                                }
+                                !e.is_empty()
                             })
                             .scan(-2.0, |prio, t| {
                                 if *prio < t.priority {
@@ -1135,14 +1123,14 @@ impl<N: Node> Evaluator<N> {
                 let mut matching_template: Vec<&Template<N>> = vec![];
                 for t in &self.templates {
                     let e = self
-                        .evaluate(ctxt.clone(), posn.clone(), &t.pattern, rd)
+                        .evaluate(ctxt.clone(), posn, &t.pattern, rd)
                         .expect("evaluating pattern failed");
-                    if e.len() != 0 {
-                        matching_template.push(&t)
+                    if !e.is_empty() {
+                        matching_template.push(t)
                     }
                 }
 
-                if matching_template.len() != 0 {
+                if !matching_template.is_empty() {
                     // find the template(s) with the lowest priority
                     matching_template
                         .sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
@@ -1185,11 +1173,7 @@ impl<N: Node> Evaluator<N> {
                             let e = self
                                 .evaluate(ctxt.clone(), posn, &t.pattern, rd)
                                 .expect("failed to evaluate pattern");
-                            if e.len() == 0 {
-                                false
-                            } else {
-                                true
-                            }
+                            !e.is_empty()
                         })
                         .scan(-2.0, |prio, t| {
                             if *prio < t.priority {
@@ -1222,7 +1206,7 @@ impl<N: Node> Evaluator<N> {
                 // Evaluate 's' to find the nodes to iterate over
                 // Use 'g' to group the nodes
                 // Evaluate 't' for each group
-                let sel = self.evaluate(ctxt.clone(), posn, s, rd)?;
+                let sel = self.evaluate(ctxt, posn, s, rd)?;
                 // Divide sel into groups: each item in groups is an individual group
                 let mut groups = Vec::new();
                 match g {
@@ -1233,7 +1217,8 @@ impl<N: Node> Evaluator<N> {
                         for i in 0..sel.len() {
                             let keys = self.evaluate(Some(sel.clone()), Some(i), h, rd)?;
                             for j in keys {
-                                let e = map.entry(j.to_string()).or_insert(vec![]);
+                                let e: &mut Vec<Rc<Item<N>>> =
+                                    map.entry(j.to_string()).or_default();
                                 e.push(sel[i].clone());
                             }
                         }
@@ -1248,7 +1233,7 @@ impl<N: Node> Evaluator<N> {
                         // The first item starts the first group.
                         // For the second and subsequent items, if the result of 'h; is the same as the previous item's 'h'
                         // then it is added to the current group. Otherwise it starts a new group.
-                        if sel.len() > 0 {
+                        if !sel.is_empty() {
                             let mut curgrp = vec![sel[0].clone()];
                             let mut curkey = self.evaluate(Some(sel.clone()), Some(1), h, rd)?;
                             if curkey.len() != 1 {
@@ -1326,47 +1311,78 @@ impl<N: Node> Evaluator<N> {
         posn: Option<usize>,
         rd: &N,
     ) -> Result<Rc<Item<N>>, Error> {
-        let cp = self.item_copy(orig.clone(), &vec![], ctxt.clone(), posn, rd)?;
+        let cp = self.item_copy(orig.clone(), &[], ctxt, posn, rd)?;
 
+        if let Item::Node(n) = &*orig {
+            if n.node_type() == NodeType::Element {
+                let mut _cur = match *cp {
+                    Item::Node(ref m) => m,
+                    _ => {
+                        return Result::Err(Error {
+                            kind: ErrorKind::Unknown,
+                            message: "unable to copy element node".to_string(),
+                        })
+                    }
+                };
+                // To handle borrowing correctly:
+                // Iterate over the attributes
+                // Work out what attributes need to be created
+                // Then create them
+                let new: Vec<N> = n.attribute_iter().collect();
+                // TODO: Don't Panic
+                new.iter().for_each(|a| {
+                    let _at = rd
+                        .new_attribute(a.name(), a.value())
+                        .expect("unable to create attribute");
+                    // TODO: cannot borrow as mutable
+                    //cur.add_attribute(at)
+                    //    .expect("unable to add attribute");
+                });
+                // TODO
+                //            n.child_iter()
+                //                .for_each(|c| {
+                //                cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
+                //                });
+            }
+        }
+
+        /*
         // If this item is an element node, then copy all of its attributes and children
         match &*orig {
             Item::Node(n) => {
-                match n.node_type() {
-                    NodeType::Element => {
-                        let mut _cur = match *cp {
-                            Item::Node(ref m) => m,
-                            _ => {
-                                return Result::Err(Error {
-                                    kind: ErrorKind::Unknown,
-                                    message: "unable to copy element node".to_string(),
-                                })
-                            }
-                        };
-                        // To handle borrowing correctly:
-                        // Iterate over the attributes
-                        // Work out what attributes need to be created
-                        // Then create them
-                        let new: Vec<N> = n.attribute_iter().collect();
-                        // TODO: Don't Panic
-                        new.iter().for_each(|a| {
-                            let _at = rd
-                                .new_attribute(a.name().clone(), a.value().clone())
-                                .expect("unable to create attribute");
-                            // TODO: cannot borrow as mutable
-                            //cur.add_attribute(at)
-                            //	.expect("unable to add attribute");
-                        });
-                        // TODO
-                        //			n.child_iter()
-                        //			    .for_each(|c| {
-                        //				cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
-                        //			    });
-                    }
-                    _ => {}
-                }
+                 if n.node_type() == NodeType::Element {
+                     let mut _cur = match *cp {
+                         Item::Node(ref m) => m,
+                         _ => {
+                             return Result::Err(Error {
+                                 kind: ErrorKind::Unknown,
+                                 message: "unable to copy element node".to_string(),
+                             })
+                         }
+                     };
+                     // To handle borrowing correctly:
+                     // Iterate over the attributes
+                     // Work out what attributes need to be created
+                     // Then create them
+                     let new: Vec<N> = n.attribute_iter().collect();
+                     // TODO: Don't Panic
+                     new.iter().for_each(|a| {
+                         let _at = rd
+                             .new_attribute(a.name(), a.value())
+                             .expect("unable to create attribute");
+                         // TODO: cannot borrow as mutable
+                         //cur.add_attribute(at)
+                         //    .expect("unable to add attribute");
+                     });
+                     // TODO
+                     //            n.child_iter()
+                     //                .for_each(|c| {
+                     //                cur.push(self.item_deep_copy(Rc::new(Item::Node(c)), ctxt.clone(), posn, rd))
+                     //                });
+                 }
             }
             _ => {}
-        }
+        }*/
 
         Ok(cp)
     }
@@ -1375,7 +1391,7 @@ impl<N: Node> Evaluator<N> {
     fn item_copy(
         &self,
         orig: Rc<Item<N>>,
-        content: &Vec<Constructor<N>>,
+        content: &[Constructor<N>],
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
         rd: &N,
@@ -1390,7 +1406,7 @@ impl<N: Node> Evaluator<N> {
                             Ok(e) => {
                                 // Add content to the new element
                                 // TODO: Don't Panic
-                                let r = self.evaluate(ctxt.clone(), posn, content, rd)?;
+                                let r = self.evaluate(ctxt, posn, content, rd)?;
                                 r.iter().for_each(|i| {
                                     // Item could be a Node or text
                                     match &**i {
@@ -1422,24 +1438,20 @@ impl<N: Node> Evaluator<N> {
                                 });
                                 Ok(Rc::new(Item::Node(e)))
                             }
-                            _ => {
-                                return Result::Err(Error {
-                                    kind: ErrorKind::Unknown,
-                                    message: "unable to create element node".to_string(),
-                                })
-                            }
+                            _ => Result::Err(Error {
+                                kind: ErrorKind::Unknown,
+                                message: "unable to create element node".to_string(),
+                            }),
                         }
                     }
                     NodeType::Text => {
                         let x = Value::from(n.to_string());
                         match rd.new_text(x) {
                             Ok(m) => Ok(Rc::new(Item::Node(m))),
-                            _ => {
-                                return Result::Err(Error {
-                                    kind: ErrorKind::Unknown,
-                                    message: "unable to create text node".to_string(),
-                                })
-                            }
+                            _ => Result::Err(Error {
+                                kind: ErrorKind::Unknown,
+                                message: "unable to create text node".to_string(),
+                            }),
                         }
                     }
                     NodeType::Attribute => {
@@ -1477,7 +1489,7 @@ impl<N: Node> Evaluator<N> {
         if p.is_empty() {
             Ok(s)
         } else {
-            let mut result = s.clone();
+            let mut result = s;
 
             // iterate over the predicates
             for q in p {
@@ -1486,7 +1498,7 @@ impl<N: Node> Evaluator<N> {
                 // for each predicate, evaluate each item in s to a boolean
                 for i in 0..result.len() {
                     let b = self.evaluate(Some(result.clone()), Some(i), q, rd)?;
-                    if b.to_bool() == true {
+                    if b.to_bool() {
                         new.push(result[i].clone());
                     }
                 }
@@ -1502,14 +1514,14 @@ impl<N: Node> Evaluator<N> {
     /// The sequence constructor is a pattern: the steps of a path in reverse.
     pub fn item_matches(
         &self,
-        pat: &Vec<Constructor<N>>,
+        pat: &[Constructor<N>],
         i: &Rc<Item<N>>,
         rd: &N,
     ) -> Result<bool, Error> {
         let e = self.evaluate(Some(vec![i.clone()]), Some(0), pat, rd)?;
 
         // If anything is left in the context then the pattern matched
-        if e.len() != 0 {
+        if !e.is_empty() {
             Ok(true)
         } else {
             Ok(false)
@@ -1521,16 +1533,16 @@ impl<N: Node> Evaluator<N> {
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
         op: Operator,
-        left: &Vec<Constructor<N>>,
-        right: &Vec<Constructor<N>>,
+        left: &[Constructor<N>],
+        right: &[Constructor<N>],
         rd: &N,
     ) -> Result<bool, Error> {
         let mut b = false;
         let left_seq = self.evaluate(ctxt.clone(), posn, left, rd)?;
-        let right_seq = self.evaluate(ctxt.clone(), posn, right, rd)?;
+        let right_seq = self.evaluate(ctxt, posn, right, rd)?;
         for l in left_seq {
             for r in &right_seq {
-                b = l.compare(&*r, op).unwrap();
+                b = l.compare(r, op).unwrap();
                 if b {
                     break;
                 }
@@ -1548,12 +1560,12 @@ impl<N: Node> Evaluator<N> {
         ctxt: Option<Sequence<N>>,
         posn: Option<usize>,
         op: Operator,
-        left: &Vec<Constructor<N>>,
-        right: &Vec<Constructor<N>>,
+        left: &[Constructor<N>],
+        right: &[Constructor<N>],
         rd: &N,
     ) -> Result<bool, Error> {
         let left_seq = self.evaluate(ctxt.clone(), posn, left, rd)?;
-        if left_seq.len() == 0 {
+        if left_seq.is_empty() {
             return Result::Err(Error {
                 kind: ErrorKind::TypeError,
                 message: String::from("left-hand sequence is empty"),
@@ -1561,7 +1573,7 @@ impl<N: Node> Evaluator<N> {
         }
         // TODO: Don't Panic
         if left_seq.len() == 1 {
-            let right_seq = self.evaluate(ctxt.clone(), posn, right, rd)?;
+            let right_seq = self.evaluate(ctxt, posn, right, rd)?;
             if right_seq.len() == 1 {
                 Ok(left_seq[0].compare(&*right_seq[0], op).unwrap())
             } else {
@@ -1705,26 +1717,11 @@ pub(crate) fn is_node_match<N: Node>(nt: &NodeTest, n: &N) -> bool {
         }
         NodeTest::Kind(k) => {
             match k {
-                KindTest::DocumentTest => match n.node_type() {
-                    NodeType::Document => true,
-                    _ => false,
-                },
-                KindTest::ElementTest => match n.node_type() {
-                    NodeType::Element => true,
-                    _ => false,
-                },
-                KindTest::PITest => match n.node_type() {
-                    NodeType::ProcessingInstruction => true,
-                    _ => false,
-                },
-                KindTest::CommentTest => match n.node_type() {
-                    NodeType::Comment => true,
-                    _ => false,
-                },
-                KindTest::TextTest => match n.node_type() {
-                    NodeType::Text => true,
-                    _ => false,
-                },
+                KindTest::DocumentTest => matches!(n.node_type(), NodeType::Document),
+                KindTest::ElementTest => matches!(n.node_type(), NodeType::Element),
+                KindTest::PITest => matches!(n.node_type(), NodeType::ProcessingInstruction),
+                KindTest::CommentTest => matches!(n.node_type(), NodeType::Comment),
+                KindTest::TextTest => matches!(n.node_type(), NodeType::Text),
                 KindTest::AnyKindTest => match n.node_type() {
 		    NodeType::Document => false,
 		    _ => true,
@@ -1744,13 +1741,9 @@ pub struct NodeMatch {
     pub nodetest: NodeTest,
 }
 
-impl NodeMatch {
-    fn to_string(&self) -> String {
-        format!(
-            "NodeMatch {}::{}",
-            self.axis.to_string(),
-            self.nodetest.to_string()
-        )
+impl fmt::Display for NodeMatch {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(format!("NodeMatch {}::{}", self.axis, self.nodetest).as_str())
     }
 }
 
@@ -1799,20 +1792,18 @@ impl TryFrom<&str> for NodeTest {
                             prefix: None,
                         }))
                     }
+                } else if tok[1] == "*" {
+                    Ok(NodeTest::Name(NameTest {
+                        name: Some(WildcardOrName::Wildcard),
+                        ns: None,
+                        prefix: Some(tok[0].to_string()),
+                    }))
                 } else {
-                    if tok[1] == "*" {
-                        Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Wildcard),
-                            ns: None,
-                            prefix: Some(tok[0].to_string()),
-                        }))
-                    } else {
-                        Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Name(tok[1].to_string())),
-                            ns: None,
-                            prefix: Some(tok[0].to_string()),
-                        }))
-                    }
+                    Ok(NodeTest::Name(NameTest {
+                        name: Some(WildcardOrName::Name(tok[1].to_string())),
+                        ns: None,
+                        prefix: Some(tok[0].to_string()),
+                    }))
                 }
             }
             _ => Result::Err(Error {
@@ -1823,12 +1814,13 @@ impl TryFrom<&str> for NodeTest {
     }
 }
 
-impl NodeTest {
-    pub fn to_string(&self) -> String {
-        match self {
+impl fmt::Display for NodeTest {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let result = match self {
             NodeTest::Name(nt) => nt.to_string(),
             NodeTest::Kind(kt) => kt.to_string().to_string(),
-        }
+        };
+        f.write_str(result.as_str())
     }
 }
 
@@ -1870,16 +1862,17 @@ pub struct NameTest {
     pub name: Option<WildcardOrName>,
 }
 
-impl NameTest {
-    pub fn to_string(&self) -> String {
-        if self.name.is_some() {
+impl fmt::Display for NameTest {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let result = if self.name.is_some() {
             match self.name.as_ref().unwrap() {
                 WildcardOrName::Wildcard => "*".to_string(),
                 WildcardOrName::Name(n) => n.to_string(),
             }
         } else {
             "--no name--".to_string()
-        }
+        };
+        f.write_str(result.as_str())
     }
 }
 
@@ -1933,28 +1926,6 @@ impl From<&str> for Axis {
 }
 
 impl Axis {
-    pub fn to_string(&self) -> String {
-        match self {
-            Axis::Child => "child".to_string(),
-            Axis::Descendant => "descendant".to_string(),
-            Axis::DescendantOrSelf => "descendant-or-self".to_string(),
-            Axis::DescendantOrSelfOrRoot => "descendant-or-self-or-root".to_string(),
-            Axis::Attribute => "attribute".to_string(),
-            Axis::SelfAttribute => "self-attribute".to_string(),
-            Axis::Selfaxis => "self".to_string(),
-            Axis::SelfDocument => "self-document".to_string(),
-            Axis::Following => "following".to_string(),
-            Axis::FollowingSibling => "following-sibling".to_string(),
-            Axis::Namespace => "namespace".to_string(),
-            Axis::Parent => "parent".to_string(),
-            Axis::ParentDocument => "parent-document".to_string(),
-            Axis::Ancestor => "ancestor".to_string(),
-            Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
-            Axis::Preceding => "preceding".to_string(),
-            Axis::PrecedingSibling => "preceding-sibling".to_string(),
-            _ => "unknown".to_string(),
-        }
-    }
     fn opposite(&self) -> Axis {
         // SelfDocument opposite is undefined
         match self {
@@ -1974,6 +1945,32 @@ impl Axis {
             Axis::PrecedingSibling => Axis::FollowingSibling,
             _ => Axis::Unknown,
         }
+    }
+}
+
+impl fmt::Display for Axis {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let result = match self {
+            Axis::Child => "child".to_string(),
+            Axis::Descendant => "descendant".to_string(),
+            Axis::DescendantOrSelf => "descendant-or-self".to_string(),
+            Axis::DescendantOrSelfOrRoot => "descendant-or-self-or-root".to_string(),
+            Axis::Attribute => "attribute".to_string(),
+            Axis::SelfAttribute => "self-attribute".to_string(),
+            Axis::Selfaxis => "self".to_string(),
+            Axis::SelfDocument => "self-document".to_string(),
+            Axis::Following => "following".to_string(),
+            Axis::FollowingSibling => "following-sibling".to_string(),
+            Axis::Namespace => "namespace".to_string(),
+            Axis::Parent => "parent".to_string(),
+            Axis::ParentDocument => "parent-document".to_string(),
+            Axis::Ancestor => "ancestor".to_string(),
+            Axis::AncestorOrSelf => "ancestor-or-self".to_string(),
+            Axis::Preceding => "preceding".to_string(),
+            Axis::PrecedingSibling => "preceding-sibling".to_string(),
+            _ => "unknown".to_string(),
+        };
+        f.write_str(result.as_str())
     }
 }
 
@@ -2037,7 +2034,7 @@ pub fn to_pattern<N: Node>(sc: Vec<Constructor<N>>) -> Result<Vec<Constructor<N>
                 vec![],
             )]),
             Constructor::Path(ref s) => {
-                if s.len() == 0 {
+                if s.is_empty() {
                     return Result::Err(Error {
                         kind: ErrorKind::TypeError,
                         message: "sequence constructor must not be empty".to_string(),
@@ -2200,6 +2197,12 @@ impl<N: Node> fmt::Debug for Template<N> {
 pub struct StaticContext<N: Node> {
     pub funcs: RefCell<HashMap<String, Function<N>>>,
     pub vars: RefCell<HashMap<String, Vec<Sequence<N>>>>, // each entry in the vector is an inner scope of the variable
+}
+
+impl<N: Node> Default for StaticContext<N> {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl<N: Node> StaticContext<N> {
@@ -2591,7 +2594,7 @@ impl<N: Node> StaticContext<N> {
     }
     /// Declares a variable in the static context. The first argument is the name of the variable. The second argument is the namespace URI (not currently supported).
     pub fn declare_variable(&self, n: String, _ns: String) {
-        self.vars.borrow_mut().insert(n.clone(), vec![]);
+        self.vars.borrow_mut().insert(n, vec![]);
     }
 
     /// Perform static analysis of a sequence constructor.
@@ -2726,7 +2729,7 @@ impl<N: Node> Function<N> {
         self.params.clone()
     }
     pub fn get_body(&self) -> Option<FunctionImpl<N>> {
-        self.body.clone()
+        self.body
     }
 }
 
@@ -3129,6 +3132,20 @@ pub fn func_translate<N: Node>(
 
             for c in args[0].to_string().graphemes(true) {
                 let mut a: Option<Option<usize>> = Some(None);
+                for (i, _item) in m.iter().enumerate() {
+                    if c == m[i] {
+                        if i < t.len() {
+                            a = Some(Some(i));
+                            break;
+                        } else {
+                            // omit this character
+                            a = None
+                        }
+                    } else {
+                        // keep looking for a match
+                    }
+                }
+                /*
                 for i in 0..m.len() {
                     if c == m[i] {
                         if i < t.len() {
@@ -3142,6 +3159,7 @@ pub fn func_translate<N: Node>(
                         // keep looking for a match
                     }
                 }
+                 */
                 match a {
                     Some(None) => {
                         result.push_str(c);
@@ -3370,7 +3388,7 @@ pub fn func_round<N: Node>(
                     .to_double()
                     .powi(args[1][0].to_int().unwrap() as i32)
                     .round()
-                    .powi(-1 * args[1][0].to_int().unwrap() as i32),
+                    .powi(-(args[1][0].to_int().unwrap() as i32)),
             )))]),
             _ => Result::Err(Error {
                 kind: ErrorKind::TypeError,
@@ -3409,7 +3427,9 @@ pub fn func_current_date<N: Node>(
     // TODO: check number of arguments
     // TODO: do the check in static analysis phase
 
-    Ok(vec![Rc::new(Item::Value(Value::Date(Local::today())))])
+    Ok(vec![Rc::new(Item::Value(Value::Date(
+        Utc::now().date_naive(),
+    )))])
 }
 
 pub fn func_current_time<N: Node>(
@@ -3527,7 +3547,7 @@ pub fn func_format_date<N: Node>(
                             let a = format!("{}T00:00:00Z", s);
                             match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
                                 Ok(dt) => Ok(vec![Rc::new(Item::Value(Value::String(
-                                    dt.date().format(&pic).to_string(),
+                                    dt.date_naive().format(&pic).to_string(),
                                 )))]),
                                 Err(_) => Result::Err(Error {
                                     kind: ErrorKind::TypeError,
@@ -3668,27 +3688,27 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
         result.push_str(", ");
         let t = match v {
             Constructor::Literal(l) => {
-                format!("{:in$} Construct literal \"{}\"", "", l.to_string(), in=i)
+                format!("{:in$} Construct literal \"{}\"", "", l, in=i)
             }
             Constructor::LiteralAttribute(qn, v) => {
                 format!("{:in$} Construct literal attribute \"{}\" with value \"{}\"", "",
 	  qn.get_localname(),
-	  format_constructor(&v, i + 4),
+	  format_constructor(v, i + 4),
 	  in=i)
             }
             Constructor::LiteralElement(qn, c) => {
                 format!("{:in$} Construct literal element \"{}\" with content:\n{}", "", qn.get_localname(),
-	  format_constructor(&c, i + 4),
+	  format_constructor(c, i + 4),
 	  in=i)
             }
             Constructor::Copy(_sel, c) => {
                 format!("{:in$} Construct copy with content:\n{}", "",
-	  format_constructor(&c, i + 4),
+	  format_constructor(c, i + 4),
 	  in=i)
             }
             Constructor::DeepCopy(c) => {
                 format!("{:in$} Construct deep copy with content:\n{}", "",
-	  format_constructor(&c, i + 4),
+	  format_constructor(c, i + 4),
 	  in=i)
             }
             Constructor::ContextItem => {
@@ -3697,7 +3717,7 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
             Constructor::SetAttribute(qn, v) => {
                 format!("{:in$} Construct set attribute named \"{}\":\n{}", "",
 	  qn.get_localname(),
-	  format_constructor(&v, i + 4),
+	  format_constructor(v, i + 4),
 	  in=i)
             }
             Constructor::Or(v) => {
@@ -3722,8 +3742,8 @@ pub fn format_constructor<N: Node>(c: &Vec<Constructor<N>>, i: usize) -> String 
             Constructor::Step(nm, p) => {
                 format!(
                   "{:in$} Construct step {}{}", "",
-                  nm.to_string(),
-                  if p.len() != 0 {format!("\npredicates: {}", format_constructor(&p[0], 0))} else {"".to_string()},
+                  nm,
+                  if !p.is_empty() {format!("\npredicates: {}", format_constructor(&p[0], 0))} else {"".to_string()},
                   in=i
                 )
             }

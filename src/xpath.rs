@@ -23,6 +23,7 @@ use nom::{
     Err as NomErr, IResult,
 };
 use rust_decimal::Decimal;
+use std::cmp::Ordering;
 use std::str::FromStr;
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
@@ -351,7 +352,7 @@ fn additive_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 // The arguments to the constructor are the items to be summed
@@ -391,7 +392,7 @@ fn multiplicative_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 // The arguments to the constructor are the items to be summed
@@ -456,7 +457,7 @@ fn intersectexcept_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 // The arguments to the intersectexcept function are the sequences to be operated upon.
@@ -639,7 +640,7 @@ fn arrow_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
             ))),
         ),
         |(u, v)| {
-            if v.len() == 0 {
+            if v.is_empty() {
                 u
             } else {
                 //vec![SequenceConstructor::new(cons_arrow)]
@@ -688,7 +689,7 @@ fn unary_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(many0(alt((tag("-"), tag("+")))), value_expr),
         |(u, v)| {
-            if u.len() == 0 {
+            if u.is_empty() {
                 v
             } else {
                 //let mut a = Vec::new();
@@ -708,7 +709,7 @@ fn value_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(path_expr, many0(tuple((tag("!"), path_expr::<N>)))),
         |(u, v)| {
-            if v.len() == 0 {
+            if v.is_empty() {
                 u
             } else {
                 //let mut s = Vec::new();
@@ -826,7 +827,7 @@ fn relativepath_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>>
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 let mut r = Vec::new();
@@ -1391,17 +1392,21 @@ fn take_until_balanced<'a>(
                     }
                     (None, Some(c)) => {
                         // Scenario 2
-                        if bracket_counter > 1 {
-                            bracket_counter -= 1;
-                            index += c + close.len();
-                        } else if bracket_counter == 1 {
-                            index += c + close.len();
-                            return Ok((&i[index..], &i[0..index]));
-                        } else {
-                            return Result::Err(NomErr::Error(NomError {
-                                input: i,
-                                code: NomErrorKind::TakeUntil,
-                            }));
+                        match bracket_counter.cmp(&1) {
+                            Ordering::Greater => {
+                                bracket_counter -= 1;
+                                index += c + close.len();
+                            }
+                            Ordering::Equal => {
+                                index += c + close.len();
+                                return Ok((&i[index..], &i[0..index]));
+                            }
+                            Ordering::Less => {
+                                return Result::Err(NomErr::Error(NomError {
+                                    input: i,
+                                    code: NomErrorKind::TakeUntil,
+                                }));
+                            }
                         }
                     }
                     (Some(o), Some(c)) => {
@@ -1439,15 +1444,12 @@ fn take_until_balanced<'a>(
 pub fn parse<N: Node>(e: &str) -> Result<Vec<Constructor<N>>, crate::xdmerror::Error> {
     match expr(e) {
         Ok((rest, value)) => {
-            if rest == "" {
+            if rest.is_empty() {
                 Result::Ok(value)
             } else {
                 Result::Err(Error {
                     kind: ErrorKind::Unknown,
-                    message: String::from(format!(
-                        "extra characters after expression: \"{}\"",
-                        rest
-                    )),
+                    message: format!("extra characters after expression: \"{}\"", rest),
                 })
             }
         }

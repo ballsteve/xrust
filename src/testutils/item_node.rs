@@ -59,6 +59,52 @@ macro_rules! item_node_tests (
 	}
 
 	#[test]
+	fn item_node_pop() {
+	    let mut d = $x();
+	    let mut new = d.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element node");
+	    d.push(new.clone())
+		.expect("unable to add node");
+	    assert_eq!(d.to_xml(), "<Test></Test>");
+	    let mut e = d.new_element(QualifiedName::new(None, None, String::from("Foo")))
+		.expect("unable to create element node");
+	    new.push(e.clone())
+		.expect("unable to add node");
+	    let mut f = d.new_element(QualifiedName::new(None, None, String::from("Bar")))
+		.expect("unable to create element node");
+	    e.push(f)
+		.expect("unable to add node");
+	    assert_eq!(d.to_xml(), "<Test><Foo><Bar></Bar></Foo></Test>");
+	    e.pop()
+		.expect("unable to remove node");
+	    assert_eq!(d.to_xml(), "<Test></Test>")
+	}
+
+	#[test]
+	fn item_node_insert_before() {
+	    let mut d = $x();
+	    let mut new = d.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element node");
+	    d.push(new.clone())
+		.expect("unable to add node");
+	    assert_eq!(d.to_xml(), "<Test></Test>");
+	    let mut e = d.new_element(QualifiedName::new(None, None, String::from("Foo")))
+		.expect("unable to create element node");
+	    new.push(e.clone())
+		.expect("unable to add node");
+	    let mut f = d.new_element(QualifiedName::new(None, None, String::from("Bar")))
+		.expect("unable to create element node");
+	    e.push(f.clone())
+		.expect("unable to add node");
+	    assert_eq!(d.to_xml(), "<Test><Foo><Bar></Bar></Foo></Test>");
+	    let g = d.new_element(QualifiedName::new(None, None, String::from("Inserted")))
+		.expect("unable to create element node");
+	    f.insert_before(g)
+		.expect("unable to insert element");
+	    assert_eq!(d.to_xml(), "<Test><Foo><Inserted></Inserted><Bar></Bar></Foo></Test>")
+	}
+
+	#[test]
 	fn item_node_to_string_doc() {
 	    let d = $y(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar"));
 	    assert_eq!(d.to_string(), "foobar")

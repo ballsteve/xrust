@@ -81,17 +81,21 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// Compiles a [Node] into an [Evaluator].
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
-/// The argument f is a function that parses a string to a [Node]. The argument g is a function that resolves a URL to a string. These are used for include and import modules.
-pub fn from_document<N: Node>(
+/// The argument f is a closure that parses a string to a [Node]. The argument g is a closure that resolves a URL to a string. These are used for include and import modules.
+pub fn from_document<N: Node, F, G>(
     styledoc: N,
     sc: &mut StaticContext<N>,
     b: Option<Url>,
-    f: fn(&str) -> Result<N, Error>,
-    g: fn(&Url) -> Result<String, Error>,
-) -> Result<Evaluator<N>, Error> {
+    f: F,
+    g: G,
+) -> Result<Evaluator<N>, Error>
+where
+    F: Fn(&str) -> Result<N, Error>,
+    G: Fn(&Url) -> Result<String, Error>,
+{
     let mut ev = Evaluator::new();
-    if b.is_some() {
-        ev.set_baseurl(b.unwrap())
+    if let Some(c) = b {
+        ev.set_baseurl(c)
     }
 
     // Check that this is a valid XSLT stylesheet
@@ -99,6 +103,13 @@ pub fn from_document<N: Node>(
     let mut rnit = styledoc.child_iter();
     let stylenode = match rnit.next() {
         Some(root) => {
+            eprintln!(
+                "root element ns \"{}\", name \"{}\"",
+                root.name()
+                    .get_nsuri_ref()
+                    .map_or("-- no namespace --", |x| x),
+                root.name().get_localname()
+            );
             if !(root.name().get_nsuri_ref() == Some(XSLTNS)
                 && (root.name().get_localname() == "stylesheet"
                     || root.name().get_localname() == "transform"))
@@ -184,28 +195,22 @@ pub fn from_document<N: Node>(
     ev.add_builtin_template(bi3pat, bi3bod, None, -1.0, 0);
 
     // Setup the serialization of the primary result document
-    stylenode
-        .child_iter()
-        .skip_while(|c| {
-            !(c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "output")
-        })
-        .nth(0)
-        .map(|c| {
-            let b: bool = match c
-                .get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
+    if let Some(c) = stylenode.child_iter().find(|c| {
+        !(c.is_element()
+            && c.name().get_nsuri_ref() == Some(XSLTNS)
+            && c.name().get_localname() == "output")
+    }) {
+        let b: bool = matches!(
+            c.get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
                 .to_string()
-                .as_str()
-            {
-                "yes" | "true" | "1" => true,
-                _ => false,
-            };
+                .as_str(),
+            "yes" | "true" | "1"
+        );
 
-            let mut od = OutputDefinition::new();
-            od.set_indent(b);
-            ev.set_output_definition(od);
-        });
+        let mut od = OutputDefinition::new();
+        od.set_indent(b);
+        ev.set_output_definition(od);
+    };
 
     // Iterate over children, looking for includes
     // * resolve href
@@ -231,7 +236,7 @@ pub fn from_document<N: Node>(
                         kind: ErrorKind::Unknown,
                         message: format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
-                            h.to_string(),
+                            h,
                             ev.baseurl()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
@@ -243,7 +248,6 @@ pub fn from_document<N: Node>(
             // TODO: check that the module is a valid XSLT stylesheet, etc
             // Copy each top-level element of the module to the main stylesheet,
             // inserting before the xsl:include node
-            // TODO: Don't Panic
             let moddoc = module.first_child().unwrap();
             moddoc.child_iter().try_for_each(|mc| {
                 c.insert_before(mc)?;
@@ -254,6 +258,7 @@ pub fn from_document<N: Node>(
             Ok(())
         })?;
 
+    eprintln!("doing imports");
     // Iterate over children, looking for imports
     // * resolve href
     // * fetch document
@@ -278,7 +283,7 @@ pub fn from_document<N: Node>(
                         kind: ErrorKind::Unknown,
                         message: format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
-                            h.to_string(),
+                            h,
                             ev.baseurl()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
@@ -317,6 +322,7 @@ pub fn from_document<N: Node>(
             Ok::<(), Error>(())
         })?;
 
+    eprintln!("doing templates");
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
@@ -330,7 +336,7 @@ pub fn from_document<N: Node>(
         })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
-            let n = m.clone().to_string();
+            let n = m.to_string();
             let a = parse(&n).expect("failed to parse match expression");
             let mut pat = to_pattern(a).expect("failed to compile match pattern");
             let mut body = vec![];
@@ -403,6 +409,7 @@ pub fn from_document<N: Node>(
             Ok::<(), Error>(())
         })?;
 
+    eprintln!("done");
     Ok(ev)
 }
 
@@ -418,43 +425,40 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                         None,
                         "disable-output-escaping".to_string(),
                     ));
-                    if doe.to_string().len() != 0 {
+                    if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
                             "yes" => Ok(Constructor::Literal(Value::String(n.to_string()))),
                             "no" => {
                                 let text = n
                                     .to_string()
-                                    .replace("&", "&amp;")
-                                    .replace(">", "&gt;")
-                                    .replace("<", "&lt;")
-                                    .replace("'", "&apos;")
-                                    .replace("\"", "&quot;");
+                                    .replace('&', "&amp;")
+                                    .replace('>', "&gt;")
+                                    .replace('<', "&lt;")
+                                    .replace('\'', "&apos;")
+                                    .replace('\"', "&quot;");
                                 Ok(Constructor::Literal(Value::from(text)))
                             }
-                            _ => {
-                                return Result::Err(Error {
-                                    kind: ErrorKind::TypeError,
-                                    message:
-                                        "disable-output-escaping only accepts values yes or no."
-                                            .to_string(),
-                                })
-                            }
+                            _ => Result::Err(Error {
+                                kind: ErrorKind::TypeError,
+                                message: "disable-output-escaping only accepts values yes or no."
+                                    .to_string(),
+                            }),
                         }
                     } else {
                         let text = n
                             .to_string()
-                            .replace("&", "&amp;")
-                            .replace(">", "&gt;")
-                            .replace("<", "&lt;")
-                            .replace("'", "&apos;")
-                            .replace("\"", "&quot;");
+                            .replace('&', "&amp;")
+                            .replace('>', "&gt;")
+                            .replace('<', "&lt;")
+                            .replace('\'', "&apos;")
+                            .replace('\"', "&quot;");
                         Ok(Constructor::Literal(Value::from(text)))
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {
                     let sel =
                         n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if sel.to_string().len() != 0 {
+                    if !sel.to_string().is_empty() {
                         Ok(Constructor::ApplyTemplates(parse(&sel.to_string())?))
                     } else {
                         // If there is no select attribute, then default is "child::node()"
@@ -470,7 +474,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                 (Some(XSLTNS), "apply-imports") => Ok(Constructor::ApplyImports),
                 (Some(XSLTNS), "sequence") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if s.to_string().len() != 0 {
+                    if !s.to_string().is_empty() {
                         let cons = parse(&s.to_string())?;
                         if cons.len() > 1 {
                             return Result::Err(Error {
@@ -481,15 +485,15 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                         }
                         Ok(cons[0].clone())
                     } else {
-                        return Result::Err(Error {
+                        Result::Err(Error {
                             kind: ErrorKind::TypeError,
                             message: "missing select attribute".to_string(),
-                        });
+                        })
                     }
                 }
                 (Some(XSLTNS), "if") => {
                     let t = n.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
-                    if t.to_string().len() != 0 {
+                    if !t.to_string().is_empty() {
                         Ok(Constructor::Switch(
                             vec![
                                 parse(&t.to_string())?,
@@ -501,10 +505,10 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                             vec![],
                         ))
                     } else {
-                        return Result::Err(Error {
+                        Result::Err(Error {
                             kind: ErrorKind::TypeError,
                             message: "missing test attribute".to_string(),
-                        });
+                        })
                     }
                 }
                 (Some(XSLTNS), "choose") => {
@@ -520,9 +524,9 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
 				NodeType::Element => {
       				    match (m.name().get_nsuri_ref(), m.name().get_localname().as_str()) {
         				(Some(XSLTNS), "when") => {
-					    if otherwise.len() == 0 {
+					    if otherwise.is_empty() {
 						let t = m.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
-						if t.to_string().len() != 0 {
+						if !t.to_string().is_empty() {
 						    when.push(
 		    					parse(&t.to_string())?
 						    );
@@ -544,7 +548,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
 					    }
 					}
         				(Some(XSLTNS), "otherwise") => {
-					    if when.len() != 0 {
+					    if !when.is_empty() {
 						m.child_iter()
 						    .try_for_each(|e| {
 							otherwise.push(to_constructor(e)?);
@@ -579,7 +583,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                 }
                 (Some(XSLTNS), "for-each") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if s.to_string().len() != 0 {
+                    if !s.to_string().is_empty() {
                         Ok(Constructor::ForEach(
                             parse(&s.to_string())?,
                             n.child_iter().try_fold(vec![], |mut body, e| {
@@ -589,15 +593,15 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                             None,
                         ))
                     } else {
-                        return Result::Err(Error {
+                        Result::Err(Error {
                             kind: ErrorKind::TypeError,
                             message: "missing select attribute".to_string(),
-                        });
+                        })
                     }
                 }
                 (Some(XSLTNS), "for-each-group") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if s.to_string().len() != 0 {
+                    if !s.to_string().is_empty() {
                         match (
                             n.get_attribute(&QualifiedName::new(
                                 None,
@@ -634,7 +638,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                                     body.push(to_constructor(e)?);
                                     Ok(body)
                                 })?,
-                                Some(Grouping::By(parse(&by.to_string())?)),
+                                Some(Grouping::By(parse(by)?)),
                             )),
                             ("", adj, "", "") => Ok(Constructor::ForEach(
                                 parse(&s.to_string())?,
@@ -642,7 +646,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                                     body.push(to_constructor(e)?);
                                     Ok(body)
                                 })?,
-                                Some(Grouping::Adjacent(parse(&adj.to_string())?)),
+                                Some(Grouping::Adjacent(parse(adj)?)),
                             )),
                             // TODO: group-starting-with and group-ending-with
                             _ => Result::Err(Error {
@@ -651,10 +655,10 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                             }),
                         }
                     } else {
-                        return Result::Err(Error {
+                        Result::Err(Error {
                             kind: ErrorKind::TypeError,
                             message: "missing select attribute".to_string(),
-                        });
+                        })
                     }
                 }
                 (Some(XSLTNS), "copy") => {
@@ -670,18 +674,18 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                 }
                 (Some(XSLTNS), "copy-of") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
-                    if s.to_string().len() != 0 {
+                    if !s.to_string().is_empty() {
                         Ok(Constructor::DeepCopy(parse(&s.to_string())?))
                     } else {
-                        return Result::Err(Error {
+                        Result::Err(Error {
                             kind: ErrorKind::TypeError,
                             message: "missing select attribute".to_string(),
-                        });
+                        })
                     }
                 }
                 (Some(XSLTNS), "attribute") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
-                    if m.to_string().len() != 0 {
+                    if !m.to_string().is_empty() {
                         Ok(Constructor::LiteralAttribute(
                             QualifiedName::new(None, None, m.to_string()),
                             n.child_iter().try_fold(vec![], |mut body, e| {
@@ -690,10 +694,10 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                             })?,
                         ))
                     } else {
-                        return Result::Err(Error {
+                        Result::Err(Error {
                             kind: ErrorKind::TypeError,
                             message: "missing select attribute".to_string(),
-                        });
+                        })
                     }
                 }
                 (Some(XSLTNS), u) => Ok(Constructor::NotImplemented(format!(
@@ -727,6 +731,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
         }
         _ => {
             // TODO: literal elements, etc, pretty much everything in the XSLT spec
+            println!("found a strange element");
             Ok(Constructor::NotImplemented(
                 "other template content".to_string(),
             ))
@@ -768,7 +773,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
                 (NodeType::Element, Some(XSLTNS), "strip-space") => {
                     let v =
                         m.get_attribute(&QualifiedName::new(None, None, "elements".to_string()));
-                    if v.to_string().len() != 0 {
+                    if !v.to_string().is_empty() {
                         v.to_string().split_whitespace().try_for_each(|t| {
                             ss.push(NodeTest::try_from(t)?);
                             Ok::<(), Error>(())
@@ -783,7 +788,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
                 (NodeType::Element, Some(XSLTNS), "preserve-space") => {
                     let v =
                         m.get_attribute(&QualifiedName::new(None, None, "elements".to_string()));
-                    if v.to_string().len() != 0 {
+                    if !v.to_string().is_empty() {
                         v.to_string().split_whitespace().try_for_each(|t| {
                             ps.push(NodeTest::try_from(t)?);
                             Ok::<(), Error>(())
@@ -921,18 +926,11 @@ fn strip_whitespace_node<N: Node>(
                     strip,
                     preserve,
                     if ss > -1.0 {
-                        if ps >= ss {
-                            // Assume preserve-space is later in document order than strip-space
-                            true
-                        } else {
-                            false
-                        }
+                        ps >= ss
+                    } else if ps > -1.0 {
+                        true
                     } else {
-                        if ps > -1.0 {
-                            true
-                        } else {
-                            keep
-                        }
+                        keep
                     },
                 )
             })?

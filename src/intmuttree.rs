@@ -1,16 +1,50 @@
-//! # A tree structure for XDM
-//!
-//! Uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
+/*! # A tree structure for XDM
+
+This module implements the Item module's [ItemNode] trait.
+
+This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
+
+To create a tree, use [NodeBuilder] to make a Document-type node. To add a node, first create it using [NodeBuilder], then use a trait method to attach it to the tree.
+
+NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
+
+```rust
+use xrust::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::item::{Node, NodeType};
+use xrust::qname::QualifiedName;
+use xrust::value::Value;
+
+// A document always has a NodeType::Document node as the toplevel node.
+let mut doc = NodeBuilder::new(NodeType::Document).build();
+
+let mut top = NodeBuilder::new(NodeType::Element)
+    .name(QualifiedName::new(None, None, String::from("Top-Level")))
+    .build();
+// Nodes are Rc-shared, so it is cheap to clone them
+doc.push(top.clone())
+    .expect("unable to append child node");
+
+top.push(
+    NodeBuilder::new(NodeType::Text)
+    .value(Value::from("content of the element"))
+    .build()
+).expect("unable to append child node");
+
+assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
+*/
 
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
-use crate::parsexml::content;
+use crate::parser;
+use crate::parser::xml::XMLDocument;
 use crate::qname::*;
 use crate::value::Value;
 use crate::xdmerror::*;
 use std::cell::RefCell;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 use std::rc::{Rc, Weak};
 
 /// An XML document.
@@ -47,6 +81,46 @@ impl Document {
             .for_each(|c| result.push_str(c.to_xml().as_str()));
         result
     }
+    pub fn canonical(self) -> Document {
+        let d = match self.xmldecl {
+            None => XMLDecl {
+                version: "1.0".to_string(),
+                encoding: Some("UTF-8".to_string()),
+                standalone: None,
+            },
+            Some(x) => XMLDecl {
+                version: x.version,
+                encoding: Some("UTF-8".to_string()),
+                standalone: None,
+            },
+        };
+        let mut p = vec![];
+        for pn in self.prologue {
+            if let Ok(pcn) = pn.get_canonical() {
+                p.push(pcn)
+            }
+        }
+        let mut c = vec![];
+        for cn in self.content {
+            if let Ok(ccn) = cn.get_canonical() {
+                c.push(ccn)
+            }
+        }
+        let mut e = vec![];
+        for en in self.epilogue {
+            if let Ok(ecn) = en.get_canonical() {
+                e.push(ecn)
+            }
+        }
+
+        XMLDocument {
+            xmldecl: Some(d),
+            prologue: p,
+            content: c,
+            epilogue: e,
+        }
+    }
+    /*
     /// Expand the general entities in the document content.
     pub fn expand(&self) -> Result<(), Error> {
         let mut ent: HashMap<QualifiedName, Vec<RNode>> = HashMap::new();
@@ -82,6 +156,21 @@ impl Document {
 
         Ok(())
     }
+
+     */
+}
+
+impl TryFrom<&str> for Document {
+    type Error = Error;
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        Document::try_from(s.to_string())
+    }
+}
+impl TryFrom<String> for Document {
+    type Error = Error;
+    fn try_from(s: String) -> Result<Self, Self::Error> {
+        parser::xml::parse(s)
+    }
 }
 
 impl PartialEq for Document {
@@ -110,6 +199,7 @@ impl PartialEq for Node {
     }
 }
 
+/*
 fn expand_node(mut n: RNode, ent: &HashMap<QualifiedName, Vec<RNode>>) -> Result<(), Error> {
     // TODO: Don't Panic
     match n.node_type() {
@@ -128,8 +218,15 @@ fn expand_node(mut n: RNode, ent: &HashMap<QualifiedName, Vec<RNode>>) -> Result
         _ => Ok(()),
     }
 }
+ */
 
 pub struct DocumentBuilder(Document);
+
+impl Default for DocumentBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl DocumentBuilder {
     pub fn new() -> Self {
@@ -168,7 +265,7 @@ pub struct Node {
     name: RefCell<Option<QualifiedName>>,
     value: Option<Value>,
     pi_name: Option<String>,
-    dtd: Option<DTDDecl>,
+    dtd: Option<DTD>,
     reference: Option<QualifiedName>,
 }
 
@@ -191,11 +288,7 @@ impl Node {
     }
     pub fn set_nsuri(&self, uri: String) {
         let new = match &*self.name.borrow() {
-            Some(old) => QualifiedName::new(
-                Some(uri),
-                old.get_prefix().clone(),
-                old.get_localname().clone(),
-            ),
+            Some(old) => QualifiedName::new(Some(uri), old.get_prefix(), old.get_localname()),
             None => panic!("no node name"),
         };
         let _ = self.name.borrow_mut().insert(new);
@@ -208,7 +301,7 @@ impl ItemNode for RNode {
     type NodeIterator = Box<dyn Iterator<Item = RNode>>;
 
     fn node_type(&self) -> NodeType {
-        self.node_type.clone()
+        self.node_type
     }
     fn name(&self) -> QualifiedName {
         self.name
@@ -257,12 +350,11 @@ impl ItemNode for RNode {
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
                 );
-                self.attributes.borrow().iter().for_each(|(k, v)| {
-                    result.push_str(
-                        format!(" {}='{}'", k.to_string(), v.value().to_string()).as_str(),
-                    )
-                });
-                result.push_str(">");
+                self.attributes
+                    .borrow()
+                    .iter()
+                    .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.value()).as_str()));
+                result.push('>');
                 self.children
                     .borrow()
                     .iter()
@@ -275,7 +367,7 @@ impl ItemNode for RNode {
                         .map_or(String::new(), |n| n.to_string())
                         .as_str(),
                 );
-                result.push_str(">");
+                result.push('>');
                 result
             }
             NodeType::Text => self.value().to_string(),
@@ -345,30 +437,15 @@ impl ItemNode for RNode {
     /// Remove a node from the tree. If the node is unattached (i.e. does not have a parent), then this has no effect.
     fn pop(&mut self) -> Result<(), Error> {
         // Find this node in the parent's node list
-        match &*self.parent.borrow() {
-            None => Ok(()),
-            Some(p) => {
-                match Weak::upgrade(&p) {
-                    None => Ok(()),
-                    Some(q) => {
-                        let idx =
-                            q.children
-                                .borrow()
-                                .iter()
-                                .enumerate()
-                                .fold(None, |mut acc, (i, v)| {
-                                    if Rc::ptr_eq(self, v) {
-                                        acc = Some(i);
-                                        // TODO: stop here
-                                    }
-                                    acc
-                                });
-                        q.children.borrow_mut().remove(idx.unwrap());
-                        Ok(())
-                    }
-                }
-            }
-        }
+        let parent = self.parent().ok_or_else(|| {
+            Error::new(
+                ErrorKind::Unknown,
+                String::from("unable to insert before: node is an orphan"),
+            )
+        })?;
+        let idx = find_index(&parent, self)?;
+        parent.children.borrow_mut().remove(idx);
+        Ok(())
     }
     /// Add an attribute to this element-type node
     fn add_attribute(&self, att: Self) -> Result<(), Error> {
@@ -384,15 +461,26 @@ impl ItemNode for RNode {
                 String::from("must be an attribute node"),
             ));
         }
-        self.attributes.borrow_mut().insert(att.name(), att.clone());
+        self.attributes.borrow_mut().insert(att.name(), att);
         Ok(())
     }
-    /// Remove this node from the tree.
-    fn insert_before(&mut self, _n: Self) -> Result<(), Error> {
-        Result::Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not yet implemented"),
-        ))
+    /// Insert a node into the child list immediately before this node.
+    fn insert_before(&mut self, mut insert: Self) -> Result<(), Error> {
+        // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
+        _ = insert.pop();
+        // Get the parent of this node. It is an error if there is no parent.
+        let parent = self.parent().ok_or_else(|| {
+            Error::new(
+                ErrorKind::Unknown,
+                String::from("unable to insert before: node is an orphan"),
+            )
+        })?;
+        // Find the child node's index in the parent's child list
+        let idx = find_index(&parent, self)?;
+        // Insert the node at position of self, shifting insert right
+        parent.children.borrow_mut().insert(idx, insert);
+        // All done
+        Ok(())
     }
 
     /// Deep copy the node. Returned node is unattached.
@@ -414,6 +502,69 @@ impl ItemNode for RNode {
 
         Ok(result)
     }
+
+    fn get_canonical(&self) -> Result<Self, Error> {
+        match self.node_type() {
+            NodeType::Comment => Err(Error {
+                kind: ErrorKind::TypeError,
+                message: "".to_string(),
+            }),
+            NodeType::Text => {
+                let v = match self.value() {
+                    Value::String(s) => {
+                        Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n"))
+                    }
+                    e => e,
+                };
+                let result = NodeBuilder::new(self.node_type())
+                    .name(self.name())
+                    .value(v)
+                    .build();
+                Ok(result)
+            }
+            _ => {
+                let mut result = NodeBuilder::new(self.node_type())
+                    .name(self.name())
+                    .value(self.value())
+                    .build();
+
+                self.attribute_iter().try_for_each(|a| {
+                    result.add_attribute(a.deep_copy()?)?;
+                    Ok::<(), Error>(())
+                })?;
+
+                self.child_iter().try_for_each(|c| {
+                    result.push(c.get_canonical()?)?;
+                    Ok::<(), Error>(())
+                })?;
+
+                Ok(result)
+            }
+        }
+    }
+}
+
+// Find the position of this node in the parent's child list.
+fn find_index(p: &RNode, c: &RNode) -> Result<usize, Error> {
+    let idx = p
+        .children
+        .borrow()
+        .iter()
+        .enumerate()
+        .fold(None, |mut acc, (i, v)| {
+            if Rc::ptr_eq(c, v) {
+                acc = Some(i);
+                // TODO: stop here
+            }
+            acc
+        });
+    idx.map_or(
+        Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("unable to find child"),
+        )),
+        Ok,
+    )
 }
 
 pub struct Children {
@@ -463,7 +614,7 @@ impl Iterator for Ancestors {
         let p = s.parent.borrow();
         match &*p {
             None => None,
-            Some(q) => match Weak::upgrade(&q) {
+            Some(q) => match Weak::upgrade(q) {
                 None => None,
                 Some(r) => {
                     self.cur = r.clone();
@@ -577,7 +728,7 @@ impl Iterator for Attributes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        self.it.next().map(|(_, n)| n.clone())
+        self.it.next().map(|(_, n)| n)
     }
 }
 
@@ -599,7 +750,7 @@ impl NodeBuilder {
         self.0.pi_name = Some(pi);
         self
     }
-    pub fn dtd(mut self, d: DTDDecl) -> Self {
+    pub fn dtd(mut self, d: DTD) -> Self {
         self.0.dtd = Some(d);
         self
     }
@@ -614,9 +765,9 @@ impl NodeBuilder {
 
 #[derive(Clone, PartialEq)]
 pub struct XMLDecl {
-    version: String,
-    encoding: Option<String>,
-    standalone: Option<String>,
+    pub(crate) version: String,
+    pub(crate) encoding: Option<String>,
+    pub(crate) standalone: Option<String>,
 }
 
 impl XMLDecl {
@@ -644,25 +795,34 @@ impl XMLDecl {
             .as_ref()
             .map_or(String::new(), |e| e.clone())
     }
-    pub fn to_string(&self) -> String {
+}
+
+impl fmt::Display for XMLDecl {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::from("<?xml version=\"");
         result.push_str(self.version.as_str());
         result.push('"');
-        self.encoding.as_ref().map(|e| {
+        if let Some(e) = self.encoding.as_ref() {
             result.push_str(" encoding=\"");
             result.push_str(e.as_str());
             result.push('"');
-        });
-        self.standalone.as_ref().map(|e| {
+        };
+        if let Some(e) = self.standalone.as_ref() {
             result.push_str(" standalone=\"");
             result.push_str(e.as_str());
             result.push('"');
-        });
-        result
+        };
+        f.write_str(result.as_str())
     }
 }
 
 pub struct XMLDeclBuilder(XMLDecl);
+
+impl Default for XMLDeclBuilder {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 
 impl XMLDeclBuilder {
     pub fn new() -> Self {
@@ -692,9 +852,47 @@ impl XMLDeclBuilder {
 /// DTD declarations.
 /// Only general entities are supported, so far.
 /// TODO: element, attribute declarations
-#[derive(Clone, PartialEq)]
+
+#[derive(Clone, Debug, PartialEq, Eq)]
+pub struct DTD {
+    pub(crate) elements: HashMap<String, DTDDecl>,
+    pub(crate) attlists: HashMap<String, DTDDecl>,
+    pub(crate) notations: HashMap<String, DTDDecl>,
+    pub(crate) generalentities: HashMap<String, DTDDecl>,
+    pub(crate) paramentities: HashMap<String, DTDDecl>,
+    publicid: Option<String>,
+    systemid: Option<String>,
+    name: Option<String>,
+}
+
+impl DTD {
+    pub fn new() -> DTD {
+        DTD {
+            elements: Default::default(),
+            attlists: Default::default(),
+            notations: Default::default(),
+            generalentities: Default::default(),
+            paramentities: Default::default(),
+            publicid: None,
+            systemid: None,
+            name: None,
+        }
+    }
+}
+
+impl Default for DTD {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DTDDecl {
+    Element(QualifiedName, String),
+    Attlist(QualifiedName, String),
+    Notation(QualifiedName, String),
     GeneralEntity(QualifiedName, String),
+    ParamEntity(QualifiedName, String),
 }
 
 #[cfg(test)]

@@ -22,7 +22,7 @@ macro_rules! xslt_tests (
 		style,
 		&mut sc,
 		None,
-		$x,
+		|s| $x(s),
 		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
@@ -59,7 +59,7 @@ macro_rules! xslt_tests (
 		style,
 		&mut sc,
 		None,
-		$x,
+		|s| $x(s),
 		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
@@ -98,7 +98,7 @@ macro_rules! xslt_tests (
 		style,
 		&mut sc,
 		None,
-		$x,
+		|s| $x(s),
 		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
@@ -138,7 +138,7 @@ macro_rules! xslt_tests (
 		style,
 		&mut sc,
 		None,
-		$x,
+		|s| $x(s),
 		|url| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");
@@ -181,7 +181,7 @@ macro_rules! xslt_tests (
 		style,
 		&mut sc,
 		Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
-		$x,
+		|s| $x(s),
 		|_| Ok(String::new()),
 	    )
 		.expect("failed to compile stylesheet");

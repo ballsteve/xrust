@@ -30,6 +30,7 @@ pub enum ErrorKind {
     ContextNotNode,
     /// XPTY0020
     NotImplemented,
+    ParseError,
     Unknown,
 }
 
@@ -50,6 +51,7 @@ impl ErrorKind {
             ErrorKind::ContextNotNode => "context item is not a node for an axis step",
             ErrorKind::NotImplemented => "not implemented",
             ErrorKind::Unknown => "unknown",
+            ErrorKind::ParseError => "XML Parse error",
         }
     }
 }
@@ -66,9 +68,6 @@ impl std::error::Error for Error {}
 impl Error {
     pub fn new(kind: ErrorKind, message: String) -> Self {
         Error { kind, message }
-    }
-    pub fn to_string(&self) -> String {
-        self.message.clone()
     }
 }
 
