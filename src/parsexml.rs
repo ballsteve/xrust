@@ -5,9 +5,15 @@
 //!
 //! This is a very simple, minimalist parser of XML. It excludes:
 //!	DTDs (and therefore entities)
+//!
+//! The parser produces a document tree as an [ADoc]; a tree structure that is mutable, but not fully navigable.
 
 extern crate nom;
 
+use crate::intmuttree::{
+    DTDDecl, Document, DocumentBuilder, NodeBuilder, RNode, XMLDecl, XMLDeclBuilder,
+};
+use crate::item::{Node as ItemNode, NodeType};
 use crate::parsecommon::*;
 use crate::qname::*;
 use crate::value::Value;
@@ -27,100 +33,16 @@ use std::collections::HashSet;
 use std::convert::TryFrom;
 use std::str::FromStr;
 
+// For backward compatibility
+pub type XMLDocument = Document;
+
 // nom doesn't pass additional parameters, only the input,
 // so this is a two-pass process.
-// First, use nom to tokenize and parse the input.
-// Second, use the internal structure returned by the parser
-// to build the document structure.
 
-// This structure allows multiple root elements.
-// An XML document will only be well-formed if there is exactly one element.
-// However, external general entities may have more than one element.
-#[derive(PartialEq)]
-pub struct XMLDocument {
-    pub prologue: Vec<XMLNode>,
-    pub content: Vec<XMLNode>,
-    pub epilogue: Vec<XMLNode>,
-    pub xmldecl: Option<XMLdecl>,
-}
-
-impl XMLDocument {
-    /// Expand general entities in the document
-    pub fn expand(&mut self) -> Result<(), Error> {
-        let mut ent: HashMap<QualifiedName, Vec<XMLNode>> = HashMap::new();
-
-        // Process the entity declarations to get the definition of each entity
-        for p in &self.prologue {
-            if let XMLNode::DTD(d) = p {
-                let DTDDecl::GeneralEntity(n, c) = d;
-                let (rest, e) = content(c.as_str())
-                    .map_err(|e| Error::new(ErrorKind::Unknown, e.to_string()))?;
-                if rest.len() != 0 {
-                    return Result::Err(Error::new(
-                        ErrorKind::Unknown,
-                        format!("unable to parse general entity \"{}\"", n.to_string()),
-                    ));
-                }
-                match ent.insert(n.clone(), e) {
-                    Some(_) => {
-                        return Result::Err(Error::new(
-                            ErrorKind::Unknown,
-                            format!("general entity \"{}\" already defined", n.to_string()),
-                        ))
-                    }
-                    None => {}
-                }
-            }
-        }
-
-        // Now search for references and replace them with their content
-        // This naieve implementation copies the entire document...
-        // TODO: a better implementation that mutates the current document
-        let mut new: Vec<XMLNode> = vec![];
-        for e in &self.content {
-            let mut a = expand_node(e, &ent);
-            new.append(&mut a);
-        }
-        self.content = new;
-
-        Ok(())
-    }
-}
-
-fn expand_node(n: &XMLNode, ent: &HashMap<QualifiedName, Vec<XMLNode>>) -> Vec<XMLNode> {
-    match n {
-        XMLNode::Reference(qn) => {
-            ent.get(&qn).map_or(vec![], |x| x.clone()) // TODO: an undefined entity name is an error
-        }
-        XMLNode::Element(qn, attr, content) => {
-            let mut attrs: Vec<XMLNode> = vec![];
-            for a in attr {
-                let mut b = expand_node(a, ent);
-                attrs.append(&mut b);
-            }
-            let mut newcontent: Vec<XMLNode> = vec![];
-            for c in content {
-                let mut d = expand_node(c, ent);
-                newcontent.append(&mut d);
-            }
-            vec![XMLNode::Element(qn.clone(), attrs, newcontent)]
-        }
-        XMLNode::Attribute(qn, v) => {
-            // TODO: expand attribute value
-            vec![XMLNode::Attribute(qn.clone(), v.clone())]
-        }
-        XMLNode::Text(t) => {
-            vec![XMLNode::Text(t.clone())]
-        }
-        XMLNode::PI(_, _) | XMLNode::Comment(_) | XMLNode::DTD(_) => vec![], // TODO
-    }
-}
-
-impl TryFrom<&str> for XMLDocument {
+impl TryFrom<&str> for Document {
     type Error = Error;
     fn try_from(e: &str) -> Result<Self, Self::Error> {
-        let e = trim_whitespace(e);
-        match document(&e) {
+        match document(e) {
             Ok((rest, value)) => {
                 if rest == "" {
                     Result::Ok(value)
@@ -135,7 +57,7 @@ impl TryFrom<&str> for XMLDocument {
                 }
             }
             Err(nom::Err::Error(c)) => Result::Err(Error {
-                kind: ErrorKind::Unknown,
+                kind: ErrorXMLNodeKind::Unknown,
                 message: format!("parser error: {:?}", c),
             }),
             Err(nom::Err::Incomplete(_)) => Result::Err(Error {
@@ -149,61 +71,67 @@ impl TryFrom<&str> for XMLDocument {
         }
     }
 }
-impl TryFrom<String> for XMLDocument {
+impl TryFrom<String> for Document {
     type Error = Error;
     fn try_from(s: String) -> Result<Self, Self::Error> {
-        XMLDocument::try_from(s.as_str())
+        Document::try_from(s.as_str())
     }
 }
 
-#[derive(Clone, PartialEq)]
-pub enum XMLNode {
-    Element(QualifiedName, Vec<XMLNode>, Vec<XMLNode>), // Element name, attributes, content
-    Attribute(QualifiedName, Value),
-    Text(Value),
-    PI(String, Value),
-    Comment(Value),           // Comment value is a string
-    DTD(DTDDecl),             // These only occur in the prologue
-    Reference(QualifiedName), // General entity reference. These need to be resolved before presentation to the application
-}
-
-#[derive(PartialEq)]
-pub struct XMLdecl {
-    version: String,
-    encoding: Option<String>,
-    standalone: Option<String>,
-}
-
-/// DTD declarations.
-/// Only general entities are supported, so far.
-/// TODO: element, attribute declarations
-#[derive(Clone, PartialEq)]
-pub enum DTDDecl {
-    GeneralEntity(QualifiedName, String),
-}
-
 // document ::= ( prolog element misc*)
-fn document(input: &str) -> IResult<&str, XMLDocument> {
+fn document(input: &str) -> IResult<&str, Document> {
     map(tuple((opt(prolog), element, opt(misc))), |(p, e, m)| {
         let pr = p.unwrap_or((None, vec![]));
 
-        XMLDocument {
-            content: vec![e],
-            epilogue: m.unwrap_or(vec![]),
-            xmldecl: pr.0,
-            prologue: pr.1,
-        }
+        // TODO: resolve XML Namespace declarations during the parsing phase. To do that, the parser needs to be able to build state and carry that forward through the parsing process
+        let mut ns: HashMap<String, String> = HashMap::new();
+        resolve_namespaces(e.clone(), &mut ns).expect("unable to resolve namespaces");
+
+        let mut a = DocumentBuilder::new()
+            .prologue(pr.1)
+            .content(vec![e])
+            .epilogue(m.unwrap_or(vec![]))
+            .build();
+        pr.0.map(|x| a.set_xmldecl(x));
+        a
     })(input)
 }
 
+// Resolve XML Namespace declarations and qualified names
+fn resolve_namespaces(e: RNode, ns: &mut HashMap<String, String>) -> Result<(), Error> {
+    e.attribute_iter()
+        .filter(|b| b.name().get_prefix().map_or(false, |p| p == "xmlns"))
+        .for_each(|b| {
+            ns.insert(b.name().get_localname(), b.value().to_string());
+        });
+    if e.node_type() == NodeType::Element {
+        if let Some(p) = e.name().get_prefix() {
+            match ns.get(&p) {
+                Some(u) => e.set_nsuri(u.clone()),
+                None => {
+                    return Result::Err(Error::new(
+                        ErrorKind::Unknown,
+                        format!("XML Namespace URI not found for prefix \"{}\"", p),
+                    ))
+                }
+            }
+        }
+    }
+    e.child_iter().try_for_each(|c| {
+        resolve_namespaces(c, ns)?;
+        Ok::<(), Error>(())
+    })?;
+    Ok(())
+}
+
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
-fn prolog(input: &str) -> IResult<&str, (Option<XMLdecl>, Vec<XMLNode>)> {
+fn prolog(input: &str) -> IResult<&str, (Option<XMLDecl>, Vec<RNode>)> {
     map(tuple((opt(xmldecl), opt(doctypedecl))), |(x, dtd)| {
         (x, dtd.map_or(vec![], |d| d))
     })(input)
 }
 
-fn xmldecl(input: &str) -> IResult<&str, XMLdecl> {
+fn xmldecl(input: &str) -> IResult<&str, XMLDecl> {
     map(
         tuple((
             tag("<?xml"),
@@ -243,15 +171,16 @@ fn xmldecl(input: &str) -> IResult<&str, XMLdecl> {
             multispace0,
             tag("?>"),
         )),
-        |(_, _, ver, _, enc, _, sta, _, _)| XMLdecl {
-            version: ver,
-            encoding: enc,
-            standalone: sta,
+        |(_, _, ver, _, enc, _, sta, _, _)| {
+            let mut x = XMLDeclBuilder::new().version(ver).build();
+            enc.map(|e| x.set_encoding(e));
+            sta.map(|s| x.set_standalone(s));
+            x
         },
     )(input)
 }
 
-fn doctypedecl(input: &str) -> IResult<&str, Vec<XMLNode>> {
+fn doctypedecl(input: &str) -> IResult<&str, Vec<RNode>> {
     map(
         tuple((
             tag("<!DOCTYPE"),
@@ -282,13 +211,13 @@ fn doctypedecl(input: &str) -> IResult<&str, Vec<XMLNode>> {
 // TODO: parameter entities
 // intSubset ::= (markupdecl | DeclSep)*
 // markupdecl ::= elementdecl | AttlistDecl | EntityDecl | NotationDecl | PI | Comment
-fn intsubset(input: &str) -> IResult<&str, Vec<XMLNode>> {
+fn intsubset(input: &str) -> IResult<&str, Vec<RNode>> {
     many0(alt((entitydecl, processing_instruction, comment)))(input)
 }
 
 // EntityDecl ::= GEDecl | PEDecl
 // TODO: support parameter entities
-fn entitydecl(input: &str) -> IResult<&str, XMLNode> {
+fn entitydecl(input: &str) -> IResult<&str, RNode> {
     // TODO: handle quotes properly
     map(
         tuple((
@@ -300,7 +229,11 @@ fn entitydecl(input: &str) -> IResult<&str, XMLNode> {
             multispace0,
             tag(">"),
         )),
-        |(_, _, n, _, v, _, _)| XMLNode::DTD(DTDDecl::GeneralEntity(n, v)),
+        |(_, _, n, _, v, _, _)| {
+            NodeBuilder::new(NodeType::Unknown)
+                .dtd(DTDDecl::GeneralEntity(n, v))
+                .build()
+        },
     )(input)
 }
 
@@ -335,16 +268,16 @@ fn entityvalue_double(input: &str) -> IResult<&str, String> {
     )(input)
 }
 
-fn externalid(input: &str) -> IResult<&str, Vec<XMLNode>> {
+fn externalid(input: &str) -> IResult<&str, Vec<RNode>> {
     map(tag("not yet implemented"), |_| {
-        vec![XMLNode::Text(Value::String(
-            "external ID not yet implemented".to_string(),
-        ))]
+        vec![NodeBuilder::new(NodeType::Text)
+            .value(Value::String("external ID not yet implemented".to_string()))
+            .build()]
     })(input)
 }
 
 // Element ::= EmptyElemTag | STag content ETag
-fn element(input: &str) -> IResult<&str, XMLNode> {
+fn element(input: &str) -> IResult<&str, RNode> {
     map(alt((emptyelem, taggedelem)), |e| {
         // TODO: Check for namespace declarations, and resolve URIs in the node tree under 'e'
         e
@@ -354,7 +287,7 @@ fn element(input: &str) -> IResult<&str, XMLNode> {
 // STag ::= '<' Name (Attribute)* '>'
 // ETag ::= '</' Name '>'
 // NB. Names must match
-fn taggedelem(input: &str) -> IResult<&str, XMLNode> {
+fn taggedelem(input: &str) -> IResult<&str, RNode> {
     map(
         tuple((
             tag("<"),
@@ -368,15 +301,21 @@ fn taggedelem(input: &str) -> IResult<&str, XMLNode> {
             multispace0,
             tag(">"),
         )),
-        |(_, n, a, _, _, c, _, _e, _, _)| {
+        |(_, n, av, _, _, c, _, _e, _, _)| {
             // TODO: check that the start tag name and end tag name match (n == e)
-            XMLNode::Element(n, a, c)
+            let mut a = NodeBuilder::new(NodeType::Element).name(n).build();
+            av.iter()
+                .for_each(|b| a.add_attribute(b.clone()).expect("unable to add attribute"));
+            c.iter().for_each(|d| {
+                a.push(d.clone()).expect("unable to add node");
+            });
+            a
         },
     )(input)
 }
 
-// EmptyElemTag ::= '<' Name (Attribute)* '/>'
-fn emptyelem(input: &str) -> IResult<&str, XMLNode> {
+// EmptyElemTag ::= '<' Name (Attrprologibute)* '/>'
+fn emptyelem(input: &str) -> IResult<&str, RNode> {
     map(
         tuple((
             tag("<"),
@@ -385,31 +324,18 @@ fn emptyelem(input: &str) -> IResult<&str, XMLNode> {
             multispace0,
             tag("/>"),
         )),
-        |(_, n, a, _, _)| XMLNode::Element(n, a, vec![]),
+        |(_, n, av, _, _)| {
+            let e = NodeBuilder::new(NodeType::Element).name(n).build();
+            av.iter()
+                .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
+            e
+        },
     )(input)
 }
 
-fn attributes(input: &str) -> IResult<&str, Vec<XMLNode>> {
-    //this is just a wrapper around the attribute function, that checks for duplicates.
-    verify(many0(attribute), |v: &[XMLNode]| {
-        let attrs = v.clone();
-        let uniqueattrs: HashSet<_> = attrs
-            .iter()
-            .map(|xmlnode| match xmlnode {
-                XMLNode::Attribute(q, _) => q.to_string(),
-                _ => "".to_string(),
-            })
-            .collect();
-        if &v.len() == &uniqueattrs.len() {
-            true
-        } else {
-            false
-        }
-    })(input)
-}
 
 // Attribute ::= Name '=' AttValue
-fn attribute(input: &str) -> IResult<&str, XMLNode> {
+fn attribute(input: &str) -> IResult<&str, RNode> {
     map(
         tuple((
             multispace1,
@@ -419,7 +345,12 @@ fn attribute(input: &str) -> IResult<&str, XMLNode> {
             multispace0,
             delimited_string,
         )),
-        |(_, n, _, _, _, s)| XMLNode::Attribute(n, Value::String(s)),
+        |(_, n, _, _, _, s)| {
+            NodeBuilder::new(NodeType::Attribute)
+                .name(n)
+                .value(Value::String(s))
+                .build()
+        },
     )(input)
 }
 fn delimited_string(input: &str) -> IResult<&str, String> {
@@ -441,7 +372,7 @@ fn string_double(input: &str) -> IResult<&str, String> {
 }
 
 // content ::= CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
-fn content(input: &str) -> IResult<&str, Vec<XMLNode>> {
+pub(crate) fn content(input: &str) -> IResult<&str, Vec<RNode>> {
     map(
         tuple((
             opt(chardata),
@@ -457,15 +388,23 @@ fn content(input: &str) -> IResult<&str, Vec<XMLNode>> {
             ))),
         )),
         |(c, v)| {
-            let mut new: Vec<XMLNode> = Vec::new();
+            let mut new: Vec<RNode> = Vec::new();
             if c.is_some() {
-                new.push(XMLNode::Text(Value::String(c.unwrap())));
+                new.push(
+                    NodeBuilder::new(NodeType::Text)
+                        .value(Value::String(c.unwrap()))
+                        .build(),
+                );
             }
             if v.len() != 0 {
                 for (w, d) in v {
                     new.push(w);
                     if d.is_some() {
-                        new.push(XMLNode::Text(Value::String(d.unwrap())));
+                        new.push(
+                            NodeBuilder::new(NodeType::Text)
+                                .value(Value::String(d.unwrap()))
+                                .build(),
+                        );
                     }
                 }
             }
@@ -475,18 +414,18 @@ fn content(input: &str) -> IResult<&str, Vec<XMLNode>> {
 }
 
 // Reference ::= EntityRef | CharRef
-fn reference(input: &str) -> IResult<&str, XMLNode> {
+fn reference(input: &str) -> IResult<&str, RNode> {
     alt((entityref, charref))(input)
 }
-fn entityref(input: &str) -> IResult<&str, XMLNode> {
+fn entityref(input: &str) -> IResult<&str, RNode> {
     map(tuple((char('&'), qualname, char(';'))), |(_, n, _)| {
-        XMLNode::Reference(n)
+        NodeBuilder::new(NodeType::Unknown).reference(n).build()
     })(input)
 }
-fn charref(input: &str) -> IResult<&str, XMLNode> {
+fn charref(input: &str) -> IResult<&str, RNode> {
     alt((charref_octal, charref_hex))(input)
 }
-fn charref_octal(input: &str) -> IResult<&str, XMLNode> {
+fn charref_octal(input: &str) -> IResult<&str, RNode> {
     map(
         tuple((char('&'), char('#'), digit1, char(';'))),
         |(_, _, n, _)| {
@@ -495,16 +434,20 @@ fn charref_octal(input: &str) -> IResult<&str, XMLNode> {
                 Err(_) => 0, // TODO: pass back error to nom
             };
             match std::char::from_u32(u) {
-                Some(c) => XMLNode::Text(Value::from(c.to_string())),
+                Some(c) => NodeBuilder::new(NodeType::Text)
+                    .value(Value::from(c.to_string()))
+                    .build(),
                 None => {
                     //make_error(input, NomErrorKind::OctDigit)
-                    XMLNode::Text(Value::from(""))
+                    NodeBuilder::new(NodeType::Text)
+                        .value(Value::from(""))
+                        .build()
                 }
             }
         },
     )(input)
 }
-fn charref_hex(input: &str) -> IResult<&str, XMLNode> {
+fn charref_hex(input: &str) -> IResult<&str, RNode> {
     map(
         tuple((char('&'), char('#'), char('x'), hex_digit1, char(';'))),
         |(_, _, _, n, _)| {
@@ -513,38 +456,24 @@ fn charref_hex(input: &str) -> IResult<&str, XMLNode> {
                 Err(_) => 0, // TODO: pass back error to nom
             };
             match std::char::from_u32(u) {
-                Some(c) => XMLNode::Text(Value::from(c.to_string())),
+                Some(c) => NodeBuilder::new(NodeType::Text)
+                    .value(Value::from(c.to_string()))
+                    .build(),
                 None => {
                     //make_error(input, NomErrorKind::OctDigit)
-                    XMLNode::Text(Value::from(""))
+                    NodeBuilder::new(NodeType::Text)
+                        .value(Value::from(""))
+                        .build()
                 }
             }
         },
     )(input)
 }
 
-// PI ::= '<?' PITarget (char* - '?>') '?>'
-fn processing_instruction(input: &str) -> IResult<&str, XMLNode> {
-    map(
-        delimited(
-            tag("<?"),
-            tuple((multispace0, name, multispace0, take_until("?>"))),
-            tag("?>"),
-        ),
-        |(_, n, _, v)| XMLNode::PI(String::from(n), Value::String(v.to_string())),
-    )(input)
-}
 
-// Comment ::= '<!--' (char* - '--') '-->'
-fn comment(input: &str) -> IResult<&str, XMLNode> {
-    map(
-        delimited(tag("<!--"), take_until("--"), tag("-->")),
-        |v: &str| XMLNode::Comment(Value::String(v.to_string())),
-    )(input)
-}
 
 // Misc ::= Comment | PI | S
-fn misc(input: &str) -> IResult<&str, Vec<XMLNode>> {
+fn misc(input: &str) -> IResult<&str, Vec<RNode>> {
     map(tag("not yet implemented"), |_| {
         //vec![Node::new(NodeType::Comment).set_value("not yet implemented".to_string())]
         vec![]
@@ -635,136 +564,134 @@ fn prefixed_name(input: &str) -> IResult<&str, QualifiedName> {
     )(input)
 }
 
-fn trim_whitespace(s: &str) -> String {
-    let s = s.replace("", "<!--  -->");
-    let s = s.replace("", "<!--  -->");
-    let re = regex::Regex::new(r"^[\s]+(.*?)[\s]*$").unwrap();
-    let result = re.replace_all(&s, "$1");
-
-    result.to_owned().to_string()
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
 
     #[test]
     fn empty() {
-        let doc = XMLDocument::try_from("<Test/>").expect("failed to parse XML \"<Test/>\"");
+        let doc = Document::try_from("<Test/>").expect("failed to parse XML \"<Test/>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 0);
-            }
-            _ => {
-                panic!("root is not an element node")
-            }
-        }
-    }
-
-    #[test]
-    fn preceeding_and_trailing_whitespace() {
-        let doc =
-            XMLDocument::try_from("   <Test/> \n \r  ").expect("failed to parse XML \"<Test/>\"");
-        assert_eq!(doc.prologue.len(), 0);
-        assert_eq!(doc.epilogue.len(), 0);
-        assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 0);
-            }
-            _ => {
-                panic!("root is not an element node")
-            }
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        match doc.content[0].child_iter().next() {
+            None => {}
+            _ => panic!("unexpected child node"),
         }
     }
 
     #[test]
     fn root_element() {
         let doc =
-            XMLDocument::try_from("<Test></Test>").expect("failed to parse XML \"<Test></Test>\"");
+            Document::try_from("<Test></Test>").expect("failed to parse XML \"<Test></Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 0);
-            }
-            _ => {
-                panic!("root is not an element node")
-            }
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        match doc.content[0].child_iter().next() {
+            None => {}
+            _ => panic!("unexpected child node"),
         }
     }
 
     #[test]
     fn root_element_text() {
-        let doc = XMLDocument::try_from("<Test>Foobar</Test>")
+        let doc = Document::try_from("<Test>Foobar</Test>")
             .expect("failed to parse XML \"<Test>Foobar</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Text(v) => {
-                        assert_eq!(v.to_string(), "Foobar")
-                    }
-                    _ => panic!("root element content is not text"),
-                }
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        let mut it = doc.content[0].child_iter();
+        match it.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Text);
+                assert_eq!(c.value().to_string(), "Foobar");
             }
             _ => {
-                panic!("root is not an element node")
+                panic!("no text child")
             }
         }
     }
 
     #[test]
     fn nested() {
-        let doc = XMLDocument::try_from("<Test><Foo>bar</Foo></Test>")
+        let doc = Document::try_from("<Test><Foo>bar</Foo></Test>")
             .expect("failed to parse XML \"<Test><Foo>bar</Foo></Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Element(m, b, d) => {
-                        assert_eq!(m.get_localname(), "Foo");
-                        assert_eq!(b.len(), 0);
-                        assert_eq!(d.len(), 1);
-                        match &d[0] {
-                            XMLNode::Text(w) => {
-                                assert_eq!(w.to_string(), "bar")
-                            }
-                            _ => panic!("child element content is not text"),
-                        }
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        let mut it1 = doc.content[0].child_iter();
+        match it1.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Element);
+                assert_eq!(c.name().get_localname(), "Foo");
+                let mut it2 = c.child_iter();
+                match it2.next() {
+                    Some(d) => {
+                        assert_eq!(d.node_type(), NodeType::Text);
+                        assert_eq!(d.value().to_string(), "bar");
                     }
-                    _ => panic!("child element is not an element"),
+                    None => {
+                        panic!("no element grandchild")
+                    }
                 }
             }
             _ => {
-                panic!("root is not an element node")
+                panic!("no element child")
+            }
+        }
+    }
+
+    #[test]
+    fn ns_1() {
+        let doc = Document::try_from("<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>")
+            .expect(
+                "failed to parse XML \"<a:Test xmlns:a='urn:test'><a:Foo>bar</a:Foo></a:Test>\"",
+            );
+        assert_eq!(doc.prologue.len(), 0);
+        assert_eq!(doc.epilogue.len(), 0);
+        assert_eq!(doc.content.len(), 1);
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        assert_eq!(doc.content[0].name().get_prefix(), Some(String::from("a")));
+        assert_eq!(
+            doc.content[0].name().get_nsuri(),
+            Some(String::from("urn:test"))
+        );
+        let mut it1 = doc.content[0].child_iter();
+        match it1.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Element);
+                assert_eq!(c.name().get_localname(), "Foo");
+                assert_eq!(c.name().get_prefix(), Some(String::from("a")));
+                assert_eq!(c.name().get_nsuri(), Some(String::from("urn:test")));
+                let mut it2 = c.child_iter();
+                match it2.next() {
+                    Some(d) => {
+                        assert_eq!(d.node_type(), NodeType::Text);
+                        assert_eq!(d.value().to_string(), "bar");
+                    }
+                    None => {
+                        panic!("no element grandchild")
+                    }
+                }
+            }
+            _ => {
+                panic!("no element child")
             }
         }
     }
 
     #[test]
     fn ref_pos() {
-        let doc = XMLDocument::try_from("<Test>&foo;</Test>")
+        let doc = Document::try_from("<Test>&foo;</Test>")
             .expect("failed to parse XML \"<Test>&foo;</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
@@ -774,7 +701,7 @@ mod tests {
     #[should_panic]
     fn ref_neg_1() {
         // Missing ;
-        let doc = XMLDocument::try_from("<Test>&foo</Test>")
+        let doc = Document::try_from("<Test>&foo</Test>")
             .expect("failed to parse XML \"<Test>&foo</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
@@ -783,250 +710,225 @@ mod tests {
     #[test]
     fn ref_neg_2() {
         // space
-        let doc = XMLDocument::try_from("<Test>& foo;</Test>");
+        let doc = Document::try_from("<Test>& foo;</Test>");
         assert!(doc.is_err());
     }
 
     #[test]
     fn char_ref_oct() {
-        let doc = XMLDocument::try_from("<Test>&#65;</Test>")
+        let doc = Document::try_from("<Test>&#65;</Test>")
             .expect("failed to parse XML \"<Test>&#65;</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Text(t) => {
-                        assert_eq!(t.to_string(), "A")
-                    }
-                    _ => panic!("document element content is not text"),
-                }
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        let mut it = doc.content[0].child_iter();
+        match it.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Text);
+                assert_eq!(c.value().to_string(), "A");
             }
-            _ => panic!("document element is not \"Test\""),
+            _ => panic!("no child node"),
         }
     }
     #[test]
     fn char_ref_hex() {
-        let doc = XMLDocument::try_from("<Test>&#x03c7;</Test>")
+        let doc = Document::try_from("<Test>&#x03c7;</Test>")
             .expect("failed to parse XML \"<Test>&#x03c7;</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Text(t) => {
-                        assert_eq!(t.to_string(), "\u{03c7}")
-                    }
-                    _ => panic!("document element content is not text"),
-                }
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        let mut it = doc.content[0].child_iter();
+        match it.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Text);
+                assert_eq!(c.value().to_string(), "\u{03c7}");
             }
-            _ => panic!("document element is not \"Test\""),
+            _ => panic!("no child node"),
         }
     }
 
     #[test]
     fn mixed() {
-        let doc = XMLDocument::try_from("<Test>i1<Foo>bar</Foo>i2</Test>")
+        let doc = Document::try_from("<Test>i1<Foo>bar</Foo>i2</Test>")
             .expect("failed to parse XML \"<Test>i1<Foo>bar</Foo>i2</Test>\"");
         assert_eq!(doc.prologue.len(), 0);
         assert_eq!(doc.epilogue.len(), 0);
         assert_eq!(doc.content.len(), 1);
-        match &doc.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "Test");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 3);
-                match &c[0] {
-                    XMLNode::Text(y) => {
-                        assert_eq!(y.to_string(), "i1")
-                    }
-                    _ => panic!("first mixed element content is not text"),
-                };
-                match &c[1] {
-                    XMLNode::Element(m, b, d) => {
-                        assert_eq!(m.get_localname(), "Foo");
-                        assert_eq!(b.len(), 0);
-                        assert_eq!(d.len(), 1);
-                        match &d[0] {
-                            XMLNode::Text(w) => {
-                                assert_eq!(w.to_string(), "bar")
+        assert_eq!(doc.content[0].node_type(), NodeType::Element);
+        assert_eq!(doc.content[0].name().get_localname(), "Test");
+        let mut it = doc.content[0].child_iter();
+        match it.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Text);
+                assert_eq!(c.value().to_string(), "i1");
+                match it.next() {
+                    Some(d) => {
+                        assert_eq!(d.node_type(), NodeType::Element);
+                        assert_eq!(d.name().get_localname(), "Foo");
+                        match it.next() {
+                            Some(e) => {
+                                assert_eq!(e.node_type(), NodeType::Text);
+                                assert_eq!(e.value().to_string(), "i2");
                             }
-                            _ => panic!("child element content is not text"),
+                            None => panic!("no third mixed node"),
                         }
                     }
-                    _ => panic!("child element is not an element"),
-                };
-                match &c[2] {
-                    XMLNode::Text(z) => {
-                        assert_eq!(z.to_string(), "i2")
-                    }
-                    _ => panic!("third mixed element content is not text"),
-                };
+                    None => panic!("no second mixed node"),
+                }
             }
-            _ => {
-                panic!("root is not an element node")
-            }
+            _ => panic!("no child node"),
         }
     }
 
     #[test]
     fn cdata() {
         let doc = "<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>";
-        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>\"");
+        let result = Document::try_from(doc).expect("failed to parse XML \"<doc><![CDATA[<doc<!DOCTYPE&a%b&#c]] >] ]> ]]]><![CDATA[]]><![CDATA[<![CDATA[]]></doc>\"");
         assert_eq!(result.prologue.len(), 0);
         assert_eq!(result.epilogue.len(), 0);
         assert_eq!(result.content.len(), 1);
-        match &result.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "doc");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Text(t) => {
-                        assert_eq!(t.to_string(), "<doc<!DOCTYPE&a%b&#c]] >] ]> ]<![CDATA[");
-                    }
-                    _ => {
-                        panic!("element content is not text")
-                    }
-                }
+        assert_eq!(result.content[0].node_type(), NodeType::Element);
+        assert_eq!(result.content[0].name().get_localname(), "doc");
+        let mut it = result.content[0].child_iter();
+        match it.next() {
+            Some(c) => {
+                assert_eq!(c.node_type(), NodeType::Text);
+                assert_eq!(
+                    c.value().to_string(),
+                    "<doc<!DOCTYPE&a%b&#c]] >] ]> ]<![CDATA["
+                );
             }
             _ => {
-                panic!("root is not an element node")
+                panic!("no text child node")
             }
         }
     }
 
     #[test]
-    fn xmldeclaration() {
-        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><doc/>"#;
-        let result = XMLDocument::try_from(doc)
-            .expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc/>\"");
+    fn attrs_1() {
+        let doc = "<doc mode='testing'></doc>";
+        let result =
+            Document::try_from(doc).expect("failed to parse XML \"<doc mode='testing'></doc>\"");
         assert_eq!(result.prologue.len(), 0);
         assert_eq!(result.epilogue.len(), 0);
         assert_eq!(result.content.len(), 1);
-        match result.xmldecl {
-            None => {
-                panic!("XML Declaration not parsed")
+        assert_eq!(result.content[0].node_type(), NodeType::Element);
+        assert_eq!(result.content[0].name().get_localname(), "doc");
+        let mut it = result.content[0].attribute_iter();
+        match it.next() {
+            Some(a) => {
+                assert_eq!(a.node_type(), NodeType::Attribute);
+                assert_eq!(a.name().to_string(), "mode");
+                assert_eq!(a.value().to_string(), "testing");
             }
-            Some(XMLdecl {
-                version,
-                encoding,
-                standalone,
-            }) => {
-                assert_eq!(version, "1.0");
-                assert_eq!(encoding, Some("UTF-8".to_string()));
-                assert_eq!(standalone, None);
+            _ => {
+                panic!("no attribute node")
             }
         }
     }
 
-    #[test]
-    fn general_entity_1() {
-        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general 'entity'>]><doc>&general;</doc>"#;
-        let result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
-        assert_eq!(result.prologue.len(), 1);
-        assert_eq!(result.epilogue.len(), 0);
-        assert_eq!(result.content.len(), 1);
-        match result.xmldecl {
-            None => {
-                panic!("XML Declaration not parsed")
-            }
-            Some(XMLdecl {
-                version,
-                encoding,
-                standalone,
-            }) => {
-                assert_eq!(version, "1.0");
-                assert_eq!(encoding, Some("UTF-8".to_string()));
-                assert_eq!(standalone, None);
-            }
-        }
-        match &result.prologue[0] {
-            XMLNode::DTD(DTDDecl::GeneralEntity(n, v)) => {
-                assert_eq!(n.to_string(), "general");
-                assert_eq!(v, "entity");
-            }
-            _ => {
-                panic!("prologue contains something other than a general entity declaration")
-            }
-        }
-        match &result.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "doc");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Reference(e) => {
-                        assert_eq!(e.to_string(), "general")
-                    }
-                    _ => {
-                        panic!("failed to find text")
-                    }
-                }
-            }
-            _ => {
-                panic!("root is not an element node")
-            }
-        }
-    }
+    //    #[test]
+    //    fn xmldeclaration() {
+    //        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><doc/>"#;
+    //        let result = ADoc::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc/>\"");
+    //        assert_eq!(result.prologue.len(), 0);
+    //        assert_eq!(result.epilogue.len(), 0);
+    //        assert_eq!(result.content.len(), 1);
+    //        match result.get_xmldecl() {
+    //            None => {panic!("XML Declaration not parsed")},
+    //            Some(x) => {
+    //                assert_eq!(x.to_string(), String::from("<?xml version=\"1.0\" encoding=\"UTF-8\""));
+    //            }
+    //        }
+    //    }
 
-    #[test]
-    fn general_entity_2() {
-        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general '<expansion>entity</expansion>'>]><doc>&general;</doc>"#;
-        let mut result = XMLDocument::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
-        result.expand().expect("unable to expand entities");
-        assert_eq!(result.prologue.len(), 1);
-        assert_eq!(result.epilogue.len(), 0);
-        assert_eq!(result.content.len(), 1);
-        match result.xmldecl {
-            None => {
-                panic!("XML Declaration not parsed")
-            }
-            Some(XMLdecl {
-                version,
-                encoding,
-                standalone,
-            }) => {
-                assert_eq!(version, "1.0");
-                assert_eq!(encoding, Some("UTF-8".to_string()));
-                assert_eq!(standalone, None);
-            }
-        }
-        match &result.content[0] {
-            XMLNode::Element(n, a, c) => {
-                assert_eq!(n.get_localname(), "doc");
-                assert_eq!(a.len(), 0);
-                assert_eq!(c.len(), 1);
-                match &c[0] {
-                    XMLNode::Element(m, b, d) => {
-                        assert_eq!(m.get_localname(), "expansion");
-                        assert_eq!(b.len(), 0);
-                        assert_eq!(d.len(), 1);
-                        match &d[0] {
-                            XMLNode::Text(e) => {
-                                assert_eq!(e.to_string(), "entity")
-                            }
-                            _ => {
-                                panic!("failed to find text")
-                            }
-                        }
-                    }
-                    _ => {
-                        panic!("failed to find \"expansion\" element")
-                    }
-                }
-            }
-            _ => {
-                panic!("root is not an element node")
-            }
-        }
-    }
+    //    #[test]
+    //    fn general_entity_1() {
+    //        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general 'entity'>]><doc>&general;</doc>"#;
+    //        let result = ADoc::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
+    //        assert_eq!(result.prologue.len(), 1);
+    //        assert_eq!(result.epilogue.len(), 0);
+    //        assert_eq!(result.content.len(), 1);
+    //        match result.get_xmldecl() {
+    //            None => {panic!("XML Declaration not parsed")},
+    //            Some(x) => {
+    //                assert_eq!(x.to_string(), String::from("<?xml version=\"1.0\" encoding=\"UTF-8\""));
+    //            }
+    //        }
+    //	match &result.prologue[0] {
+    //	    ANode::DTD(DTDDecl::GeneralEntity(n, v)) => {
+    //		assert_eq!(n.to_string(), "general");
+    //		assert_eq!(v, "entity");
+    //	    }
+    //	    _ => {
+    //		panic!("prologue contains something other than a general entity declaration")
+    //	    }
+    //	}
+    //	match &result.content[0] {
+    //	    ANode::Element(n, a, c) => {
+    //		assert_eq!(n.get_localname(), "doc");
+    //		assert_eq!(a.len(), 0);
+    //		assert_eq!(c.len(), 1);
+    //		match &c[0] {
+    //		    ANode::Reference(e) => {
+    //			assert_eq!(e.to_string(), "general")
+    //		    }
+    //		    _ => {
+    //			panic!("failed to find text")
+    //		    }
+    //		}
+    //	    }
+    //	    _ => {
+    //		panic!("root is not an element node")
+    //	    }
+    //	}
+    //    }
+
+    //    #[test]
+    //    fn general_entity_2() {
+    //        let doc = r#"<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE doc [<!ENTITY general '<expansion>entity</expansion>'>]><doc>&general;</doc>"#;
+    //        let result = ADoc::try_from(doc).expect("failed to parse XML \"<?xml version=\"1.0\" encoding=\"UTF-8\"?><doc>&general;</doc>\"");
+    //	result.expand().expect("unable to expand entities");
+    //        assert_eq!(result.prologue.len(), 1);
+    //        assert_eq!(result.epilogue.len(), 0);
+    //        assert_eq!(result.content.len(), 1);
+    //        match result.get_xmldecl() {
+    //            None => {panic!("XML Declaration not parsed")},
+    //            Some(x) => {
+    //                assert_eq!(x.to_string(), String::from("<?xml version=\"1.0\" encoding=\"UTF-8\""));
+    //            }
+    //        }
+    //	match &result.content[0] {
+    //	    ANode::Element(n, a, c) => {
+    //		assert_eq!(n.get_localname(), "doc");
+    //		assert_eq!(a.len(), 0);
+    //		assert_eq!(c.len(), 1);
+    //		match &c[0] {
+    //		    ANode::Element(m, b, d) => {
+    //			assert_eq!(m.get_localname(), "expansion");
+    //			assert_eq!(b.len(), 0);
+    //			assert_eq!(d.len(), 1);
+    //			match &d[0] {
+    //			    ANode::Text(e) => {
+    //				assert_eq!(e.to_string(), "entity")
+    //			    }
+    //			    _ => {
+    //				panic!("failed to find text")
+    //			    }
+    //			}
+    //		    }
+    //		    _ => {
+    //			panic!("failed to find \"expansion\" element")
+    //		    }
+    //		}
+    //	    }
+    //	    _ => {
+    //		panic!("root is not an element node")
+    //	    }
+    //	}
+    //    }
 }

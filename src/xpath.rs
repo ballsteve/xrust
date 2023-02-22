@@ -7,8 +7,7 @@ use crate::evaluate::{
     ArithmeticOperand, ArithmeticOperator, Axis, Constructor, Function, KindTest, NameTest,
     NodeMatch, NodeTest, WildcardOrName,
 };
-#[cfg(test)]
-use crate::evaluate::{Evaluator, StaticContext};
+use crate::item::Node;
 use crate::parsecommon::*;
 use crate::value::*;
 use crate::xdmerror::*;
@@ -24,11 +23,12 @@ use nom::{
     Err as NomErr, IResult,
 };
 use rust_decimal::Decimal;
+use std::cmp::Ordering;
 use std::str::FromStr;
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
 // we need to unpack each primary_expr
-fn expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         separated_list1(tuple((xpwhitespace, tag(","), xpwhitespace)), expr_single),
         |v| {
@@ -44,7 +44,7 @@ fn expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
-fn expr_single(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn expr_single<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     alt((
         or_expr, let_expr, for_expr, if_expr,
         // TODO: other branches
@@ -52,7 +52,7 @@ fn expr_single(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-fn if_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn if_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         tuple((
             tag("if"),
@@ -76,7 +76,7 @@ fn if_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-fn for_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn for_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         tuple((
             simple_for_clause,
@@ -89,7 +89,7 @@ fn for_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn simple_for_clause<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         tuple((
             tag("for"),
@@ -117,7 +117,7 @@ fn simple_for_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-fn let_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn let_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         tuple((
             simple_let_clause,
@@ -135,7 +135,7 @@ fn let_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
-fn simple_let_clause(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn simple_let_clause<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         tuple((
             tag("let"),
@@ -174,10 +174,10 @@ fn get_nt_localname(nt: &NodeTest) -> String {
 }
 
 // OrExpr ::= AndExpr ('or' AndExpr)*
-fn or_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn or_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         separated_list1(tuple((xpwhitespace, tag("or"), xpwhitespace)), and_expr),
-        |v: Vec<Vec<Constructor>>| {
+        |v: Vec<Vec<Constructor<N>>>| {
             if v.len() == 1 {
                 let mut s = Vec::new();
                 for i in v {
@@ -194,13 +194,13 @@ fn or_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
-fn and_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn and_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         separated_list1(
             tuple((xpwhitespace, tag("and"), xpwhitespace)),
             comparison_expr,
         ),
-        |v: Vec<Vec<Constructor>>| {
+        |v: Vec<Vec<Constructor<N>>>| {
             if v.len() == 1 {
                 let mut s = Vec::new();
                 for i in v {
@@ -217,7 +217,7 @@ fn and_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-fn comparison_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn comparison_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             stringconcat_expr,
@@ -295,7 +295,7 @@ fn comparison_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
-fn stringconcat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn stringconcat_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         separated_list1(tuple((xpwhitespace, tag("||"), xpwhitespace)), range_expr),
         |v| {
@@ -315,7 +315,7 @@ fn stringconcat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-fn range_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn range_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             additive_expr,
@@ -339,7 +339,7 @@ fn range_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // TODO: find a better way
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
-fn additive_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn additive_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             multiplicative_expr,
@@ -352,13 +352,13 @@ fn additive_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 // The arguments to the constructor are the items to be summed
                 // These are pair-wise items: first is the operator as a string literal,
                 // second is the value
-                let mut r: Vec<ArithmeticOperand> = Vec::new();
+                let mut r: Vec<ArithmeticOperand<N>> = Vec::new();
 
                 r.push(ArithmeticOperand {
                     op: ArithmeticOperator::Noop,
@@ -377,7 +377,7 @@ fn additive_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     )(input)
 }
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
-fn multiplicative_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn multiplicative_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             union_expr,
@@ -392,13 +392,13 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 // The arguments to the constructor are the items to be summed
                 // These are pair-wise items: first is the operator as a string literal,
                 // second is the value
-                let mut r: Vec<ArithmeticOperand> = Vec::new();
+                let mut r: Vec<ArithmeticOperand<N>> = Vec::new();
 
                 r.push(ArithmeticOperand {
                     op: ArithmeticOperator::Noop,
@@ -418,7 +418,7 @@ fn multiplicative_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
-fn union_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn union_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         separated_list1(
             alt((
@@ -444,7 +444,7 @@ fn union_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
-fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn intersectexcept_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             instanceof_expr,
@@ -453,11 +453,11 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
                     tuple((xpwhitespace, tag("intersect"), xpwhitespace)),
                     tuple((xpwhitespace, tag("except"), xpwhitespace)),
                 )),
-                instanceof_expr,
+                instanceof_expr::<N>,
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 // The arguments to the intersectexcept function are the sequences to be operated upon.
@@ -480,7 +480,7 @@ fn intersectexcept_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
-fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn instanceof_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             treat_expr,
@@ -490,7 +490,7 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
                 xpwhitespace,
                 tag("of"),
                 xpwhitespace,
-                sequencetype_expr,
+                sequencetype_expr::<N>,
             ))),
         ),
         |(u, v)| {
@@ -511,12 +511,12 @@ fn instanceof_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
 // TODO: implement this parser fully
-fn sequencetype_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn sequencetype_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(tag("empty-sequence()"), |_v| Vec::new())(input)
 }
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
-fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn treat_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             castable_expr,
@@ -526,7 +526,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
                 xpwhitespace,
                 tag("as"),
                 xpwhitespace,
-                sequencetype_expr,
+                sequencetype_expr::<N>,
             ))),
         ),
         |(u, v)| {
@@ -546,7 +546,7 @@ fn treat_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
-fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn castable_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             cast_expr,
@@ -556,7 +556,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
                 xpwhitespace,
                 tag("as"),
                 xpwhitespace,
-                singletype_expr,
+                singletype_expr::<N>,
             ))),
         ),
         |(u, v)| {
@@ -588,7 +588,7 @@ fn castable_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
 // TODO: implement this parser fully
-fn singletype_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn singletype_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(qname, opt(tuple((xpwhitespace, tag("?"), xpwhitespace)))),
         |(_u, _v)| Vec::new(),
@@ -596,7 +596,7 @@ fn singletype_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
-fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn cast_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             arrow_expr,
@@ -606,7 +606,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
                 xpwhitespace,
                 tag("as"),
                 xpwhitespace,
-                singletype_expr,
+                singletype_expr::<N>,
             ))),
         ),
         |(u, v)| {
@@ -626,7 +626,7 @@ fn cast_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
-fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn arrow_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             unary_expr,
@@ -634,13 +634,13 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
                 xpwhitespace,
                 tag("=>"),
                 xpwhitespace,
-                arrowfunctionspecifier,
+                arrowfunctionspecifier::<N>,
                 xpwhitespace,
-                opt(argumentlist),
+                opt(argumentlist::<N>),
             ))),
         ),
         |(u, v)| {
-            if v.len() == 0 {
+            if v.is_empty() {
                 u
             } else {
                 //vec![SequenceConstructor::new(cons_arrow)]
@@ -652,10 +652,10 @@ fn arrow_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
-fn arrowfunctionspecifier(input: &str) -> IResult<&str, Vec<Constructor>> {
-    map(alt((qname_expr, parenthesized_expr)), |_v| Vec::new())(input)
+fn arrowfunctionspecifier<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
+    map(alt((qname_expr::<N>, parenthesized_expr)), |_v| Vec::new())(input)
 }
-fn qname_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn qname_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(qname, |q| match q {
         NodeTest::Name(NameTest {
             name: Some(WildcardOrName::Name(localpart)),
@@ -672,7 +672,7 @@ fn qname_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn argumentlist<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         tag("()"),
         //tuple((
@@ -685,11 +685,11 @@ fn argumentlist(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-fn unary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn unary_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(many0(alt((tag("-"), tag("+")))), value_expr),
         |(u, v)| {
-            if u.len() == 0 {
+            if u.is_empty() {
                 v
             } else {
                 //let mut a = Vec::new();
@@ -705,11 +705,11 @@ fn unary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ValueExpr (SimpleMapExpr) ::= PathExpr ('!' PathExpr)*
-fn value_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn value_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
-        pair(path_expr, many0(tuple((tag("!"), path_expr)))),
+        pair(path_expr, many0(tuple((tag("!"), path_expr::<N>)))),
         |(u, v)| {
-            if v.len() == 0 {
+            if v.is_empty() {
                 u
             } else {
                 //let mut s = Vec::new();
@@ -727,7 +727,7 @@ fn value_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
-fn path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn path_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     alt((
         absolute_descendant_expr,
         absolute_path_expr,
@@ -735,7 +735,7 @@ fn path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     ))(input)
 }
 // ('/' RelativePathExpr?)
-fn absolute_path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn absolute_path_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(pair(tag("/"), opt(relativepath_expr)), |(_u, v)| {
         match v {
             Some(a) => {
@@ -764,18 +764,57 @@ fn absolute_path_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
     })(input)
 }
 // ('//' RelativePathExpr)
-fn absolute_descendant_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
-    map(pair(tag("//"), relativepath_expr), |(_u, _v)| {
-        vec![
-            Constructor::Root,
-            Constructor::NotImplemented("absolute_descendant".to_string()),
-        ]
-        // TODO: process v to implement descendant-or-self
+fn absolute_descendant_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
+    map(pair(tag("//"), relativepath_expr::<N>), |(_u, v)| {
+        // Unpack the relative path
+        if v.len() == 1 {
+            match &v[0] {
+                Constructor::Path(s) => {
+                    let mut t = s.clone();
+                    t.insert(
+                        0,
+                        vec![Constructor::Step(
+                            NodeMatch {
+                                axis: Axis::DescendantOrSelfOrRoot,
+                                nodetest: NodeTest::Name(NameTest {
+                                    ns: None,
+                                    prefix: None,
+                                    name: Some(WildcardOrName::Wildcard),
+                                }),
+                            },
+                            vec![],
+                        )],
+                    );
+                    t.insert(0, vec![Constructor::Root]);
+                    vec![Constructor::Path(t)]
+                }
+                _ => {
+                    let mut t = vec![
+                        vec![Constructor::Root],
+                        vec![Constructor::Step(
+                            NodeMatch {
+                                axis: Axis::DescendantOrSelfOrRoot,
+                                nodetest: NodeTest::Name(NameTest {
+                                    ns: None,
+                                    prefix: None,
+                                    name: Some(WildcardOrName::Wildcard),
+                                }),
+                            },
+                            vec![],
+                        )],
+                    ];
+                    t.push(v);
+                    vec![Constructor::Path(t)]
+                }
+            }
+        } else {
+            v
+        }
     })(input)
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn relativepath_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(
             step_expr,
@@ -788,7 +827,7 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
             ))),
         ),
         |(a, b)| {
-            if b.len() == 0 {
+            if b.is_empty() {
                 a
             } else {
                 let mut r = Vec::new();
@@ -849,7 +888,7 @@ fn relativepath_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 //}
 
 // StepExpr ::= PostfixExpr | AxisStep
-fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn step_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     alt((
         postfix_expr, // These two return different objects; we need to switch between them
         axisstep,     // TODO: define an enum that allows us to do the switch
@@ -858,7 +897,7 @@ fn step_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
 // TODO: predicates
-fn axisstep(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn axisstep<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         pair(alt((reversestep, forwardstep)), predicate_list),
         |(a, p)| {
@@ -886,19 +925,19 @@ fn axisstep(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // PredicateList ::= Predicate*
-fn predicate_list(input: &str) -> IResult<&str, Vec<Vec<Constructor>>> {
+fn predicate_list<N: Node>(input: &str) -> IResult<&str, Vec<Vec<Constructor<N>>>> {
     many0(predicate)(input)
 }
 
 // Predicate ::= '[' Expr ']'
-fn predicate(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn predicate<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(tuple((tag("["), expr, tag("]"))), |(_, e, _)| e)(input)
 }
 
 // ForwardStep ::= (ForwardAxis NodeTest) | AbbrevForwardStep
 // TODO: abbreviated step
-fn forwardstep(input: &str) -> IResult<&str, Vec<Constructor>> {
-    map(pair(forwardaxis, nodetest), |(a, n)| {
+fn forwardstep<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
+    map(pair(forwardaxis::<N>, nodetest), |(a, n)| {
         vec![Constructor::Step(
             NodeMatch {
                 axis: Axis::from(a),
@@ -910,8 +949,8 @@ fn forwardstep(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 // ReverseStep ::= (ReverseAxis NodeTest) | AbbrevReverseStep
 // TODO: abbreviated step
-fn reversestep(input: &str) -> IResult<&str, Vec<Constructor>> {
-    map(pair(reverseaxis, nodetest), |(a, n)| {
+fn reversestep<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
+    map(pair(reverseaxis::<N>, nodetest), |(a, n)| {
         vec![Constructor::Step(
             NodeMatch {
                 axis: Axis::from(a),
@@ -923,7 +962,7 @@ fn reversestep(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
-fn forwardaxis(input: &str) -> IResult<&str, &str> {
+fn forwardaxis<N: Node>(input: &str) -> IResult<&str, &str> {
     map(
         pair(
             alt((
@@ -942,7 +981,7 @@ fn forwardaxis(input: &str) -> IResult<&str, &str> {
     )(input)
 }
 // ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding' | 'preceding-sibling') '::'
-fn reverseaxis(input: &str) -> IResult<&str, &str> {
+fn reverseaxis<N: Node>(input: &str) -> IResult<&str, &str> {
     map(
         pair(
             alt((
@@ -1148,13 +1187,13 @@ fn wildcard(input: &str) -> IResult<&str, NodeTest> {
 
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
 // TODO: predicates, arg list, lookup
-fn postfix_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn postfix_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     primary_expr(input)
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
 // TODO: finish this parser
-fn primary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn primary_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     alt((
         literal,
         context_item,
@@ -1165,14 +1204,14 @@ fn primary_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // VarRef ::= '$' VarName
-fn variable_reference(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn variable_reference<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(pair(tag("$"), qname), |(_, v)| {
         vec![Constructor::VariableReference(get_nt_localname(&v))]
     })(input)
 }
 
 // FunctionCall ::= EQName ArgumentList
-fn function_call(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn function_call<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(pair(qname, arglist), |(n, a)| match n {
         NodeTest::Name(NameTest {
             name: Some(WildcardOrName::Name(localpart)),
@@ -1191,7 +1230,7 @@ fn function_call(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
-fn arglist(input: &str) -> IResult<&str, Vec<Vec<Constructor>>> {
+fn arglist<N: Node>(input: &str) -> IResult<&str, Vec<Vec<Constructor<N>>>> {
     map(
         tuple((
             tag("("),
@@ -1204,21 +1243,21 @@ fn arglist(input: &str) -> IResult<&str, Vec<Vec<Constructor>>> {
 
 // Argument ::= ExpreSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn argument<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     expr_single(input)
 }
 
 // Literal ::= NumericLiteral | StringLiteral
-fn literal(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn literal<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     alt((numeric_literal, string_literal))(input)
 }
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
-fn numeric_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn numeric_literal<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     alt((double_literal, decimal_literal, integer_literal))(input)
 }
 // IntegerLiteral ::= Digits
-fn integer_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn integer_literal<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(digit1, |s: &str| {
         let n = s.parse::<i64>().unwrap();
         vec![Constructor::Literal(Value::Integer(n))]
@@ -1226,7 +1265,7 @@ fn integer_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
 // Construct a double, but if that fails fall back to decimal
-fn decimal_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn decimal_literal<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         alt((
             recognize(complete(pair(tag("."), digit1))),
@@ -1244,7 +1283,7 @@ fn decimal_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
 }
 // DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
 // Construct a double
-fn double_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn double_literal<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(
         recognize(tuple((
             alt((
@@ -1286,17 +1325,17 @@ fn string_literal_single(input: &str) -> IResult<&str, String> {
         char('\''),
     )(input)
 }
-fn string_literal(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn string_literal<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(alt((string_literal_double, string_literal_single)), |s| {
         vec![Constructor::Literal(Value::from(s))]
     })(input)
 }
 // ContextItemExpr ::= '.'
-fn context_item(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn context_item<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     map(tag("."), |_| vec![Constructor::ContextItem])(input)
 }
 // ParenthesizedExpr ::= '(' Expr? ')'
-fn parenthesized_expr(input: &str) -> IResult<&str, Vec<Constructor>> {
+fn parenthesized_expr<N: Node>(input: &str) -> IResult<&str, Vec<Constructor<N>>> {
     delimited(
         tag("("),
         map(opt(expr), |e| match e {
@@ -1353,17 +1392,21 @@ fn take_until_balanced<'a>(
                     }
                     (None, Some(c)) => {
                         // Scenario 2
-                        if bracket_counter > 1 {
-                            bracket_counter -= 1;
-                            index += c + close.len();
-                        } else if bracket_counter == 1 {
-                            index += c + close.len();
-                            return Ok((&i[index..], &i[0..index]));
-                        } else {
-                            return Result::Err(NomErr::Error(NomError {
-                                input: i,
-                                code: NomErrorKind::TakeUntil,
-                            }));
+                        match bracket_counter.cmp(&1) {
+                            Ordering::Greater => {
+                                bracket_counter -= 1;
+                                index += c + close.len();
+                            }
+                            Ordering::Equal => {
+                                index += c + close.len();
+                                return Ok((&i[index..], &i[0..index]));
+                            }
+                            Ordering::Less => {
+                                return Result::Err(NomErr::Error(NomError {
+                                    input: i,
+                                    code: NomErrorKind::TakeUntil,
+                                }));
+                            }
                         }
                     }
                     (Some(o), Some(c)) => {
@@ -1398,18 +1441,15 @@ fn take_until_balanced<'a>(
 }
 
 /// Parse an XPath expression. The result is a Sequence constructor.
-pub fn parse(e: &str) -> Result<Vec<Constructor>, crate::xdmerror::Error> {
+pub fn parse<N: Node>(e: &str) -> Result<Vec<Constructor<N>>, crate::xdmerror::Error> {
     match expr(e) {
         Ok((rest, value)) => {
-            if rest == "" {
+            if rest.is_empty() {
                 Result::Ok(value)
             } else {
                 Result::Err(Error {
                     kind: ErrorKind::Unknown,
-                    message: String::from(format!(
-                        "extra characters after expression: \"{}\"",
-                        rest
-                    )),
+                    message: format!("extra characters after expression: \"{}\"", rest),
                 })
             }
         }
@@ -1431,196 +1471,7 @@ pub fn parse(e: &str) -> Result<Vec<Constructor>, crate::xdmerror::Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::forest::Forest;
-    use crate::item::*;
-    use std::rc::Rc;
 
-    // Parses to a singleton integer sequence constructor
-    #[test]
-    fn nomxpath_parse_int() {
-        let e = parse("1").expect("failed to parse expression \"1\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_int().unwrap(), 1)
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    // Parses to a singleton double/decimal sequence constructor
-    #[test]
-    fn nomxpath_parse_decimal() {
-        let e = parse("1.2").expect("failed to parse expression \"1.2\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_double(), 1.2)
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    // Parses to a singleton double sequence constructor
-    #[test]
-    fn nomxpath_parse_double() {
-        let e = parse("1.2e2").expect("failed to parse expression \"1.2e2\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_double(), 120.0)
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    //#[test]
-    //fn nomxpath_parse_double() {
-    //assert_eq!(parse("2.0").unwrap(), Box::new(Value::Double(2.0)));
-    //}
-    // Parses to a singleton string
-    #[test]
-    fn nomxpath_parse_string_apos() {
-        let e = parse("'abc'").expect("failed to parse expression \"'abc'\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_string(None), "abc")
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    // Parses to a singleton string
-    #[test]
-    fn nomxpath_parse_string_apos_esc() {
-        let e = parse("'abc''def'").expect("failed to parse expression \"'abc''def'\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_string(None), "abc'def")
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    // Parses to a singleton string
-    #[test]
-    fn nomxpath_parse_string_quot() {
-        let e = parse(r#""abc""#).expect("failed to parse expression \"\"abc\"\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_string(None), "abc")
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    // Parses to a singleton string
-    #[test]
-    fn nomxpath_parse_string_quot_esc() {
-        let e = parse(r#""abc""def""#).expect("failed to parse expression \"\"abc\"\"def\"\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_string(None), r#"abc"def"#)
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-    #[test]
-    fn nomxpath_parse_literal_sequence() {
-        let e = parse("1,'abc',2").expect("failed to parse \"1,'abc',2\"");
-        if e.len() == 3 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 3 {
-                assert_eq!(s[0].to_int().unwrap(), 1);
-                assert_eq!(s[1].to_string(None), r#"abc"#);
-                assert_eq!(s[2].to_int().unwrap(), 2);
-            } else {
-                panic!("sequence does not have 3 items")
-            }
-        } else {
-            panic!("constructor does not have 3 items")
-        }
-    }
-    #[test]
-    fn nomxpath_parse_literal_seq_ws() {
-        let e = parse("1 , 'abc', 2").expect("failed to parse \"1 , 'abc', 2\"");
-        if e.len() == 3 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 3 {
-                assert_eq!(s[0].to_int().unwrap(), 1);
-                assert_eq!(s[1].to_string(None), r#"abc"#);
-                assert_eq!(s[2].to_int().unwrap(), 2);
-            } else {
-                panic!("sequence does not have 3 items")
-            }
-        } else {
-            panic!("constructor does not have 3 items")
-        }
-    }
     #[test]
     fn xpcomment_1() {
         assert_eq!(xpcomment("(: my comment :)"), Ok(("", "(: my comment :)")))
@@ -1666,702 +1517,5 @@ mod tests {
         );
         assert_eq!(xpwhitespace(" (: foobar :) "), Ok(("", " (: foobar :) ")));
         assert_eq!(xpwhitespace("X(: foobar :)"), Ok(("X(: foobar :)", "")));
-    }
-    #[test]
-    fn nomxpath_parse_ws_comment_2() {
-        let e = parse("1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2").expect(
-            "failed to parse \"1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2\"",
-        );
-        if e.len() == 3 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 3 {
-                assert_eq!(s[0].to_int().unwrap(), 1);
-                assert_eq!(s[1].to_string(None), r#"abc"#);
-                assert_eq!(s[2].to_int().unwrap(), 2);
-            } else {
-                panic!("sequence does not have 3 items")
-            }
-        } else {
-            panic!("constructor does not have 3 items")
-        }
-    }
-
-    // Parses to a singleton context item sequence constructor
-    #[test]
-    fn nomxpath_parse_context_item() {
-        let e = parse(".").expect("failed to parse expression \".\"");
-        if e.len() == 1 {
-            let ctxt = vec![Rc::new(Item::Value(Value::from("foobar")))];
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(Some(ctxt), Some(0), &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_string(None), "foobar")
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_empty() {
-        let e = parse("()").expect("failed to parse expression \"()\"");
-        assert_eq!(e.len(), 0)
-    }
-    #[test]
-    fn nomxpath_parse_singleton_paren() {
-        let e = parse("(1)").expect("failed to parse expression \"(1)\"");
-        if e.len() == 1 {
-            let mut f = Forest::new();
-            let sd = f.plant_tree();
-            let rd = f.plant_tree();
-            let s = Evaluator::new()
-                .evaluate(None, None, &e, &mut f, sd, rd)
-                .expect("unable to evaluate sequence constructor");
-            if s.len() == 1 {
-                assert_eq!(s[0].to_int().unwrap(), 1)
-            } else {
-                panic!("sequence is not a singleton")
-            }
-        } else {
-            panic!("constructor is not a single item")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_union() {
-        let e = parse("'a' | 'b'").expect("failed to parse expression \"'a' | 'b'\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_intersectexcept() {
-        let e = parse("'a' intersect 'b' except 'c'")
-            .expect("failed to parse expression \"'a' intersect 'b' except 'c'\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_instanceof() {
-        let e = parse("'a' instance of empty-sequence()")
-            .expect("failed to parse expression \"'a' instance of empty-sequence()\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_treat() {
-        let e = parse("'a' treat as empty-sequence()")
-            .expect("failed to parse expression \"'a' treat as empty-sequence()\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_castable() {
-        let e = parse("'a' castable as type")
-            .expect("failed to parse expression \"'a' castable as type\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_cast() {
-        let e = parse("'a' cast as type").expect("failed to parse expression \"'a' cast as type\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_arrow() {
-        let e = parse("'a' => spec()").expect("failed to parse expression \"'a' => spec()\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_unary() {
-        let e = parse("+'a'").expect("failed to parse expression \"+'a'\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_simplemap() {
-        let e = parse("'a'!'b'").expect("failed to parse expression \"'a'!'b'\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-
-    #[test]
-    fn nomxpath_parse_root_step_1() {
-        let _e = parse("/child::a").expect("failed to parse expression \"/child::a\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_root_step_2() {
-        let _e =
-            parse("/child::a/child::b").expect("failed to parse expression \"/child::a/child::b\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_desc_or_self_1() {
-        let _e = parse("//child::a").expect("failed to parse expression \"//child::a\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_desc_or_self_2() {
-        let _e = parse("//child::a/child::b")
-            .expect("failed to parse expression \"//child::a/child::b\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_desc_or_self_3() {
-        let _e = parse("//child::a//child::b")
-            .expect("failed to parse expression \"//child::a//child::b\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_relative_path_1() {
-        let e =
-            parse("child::a/child::b").expect("failed to parse expression \"child::a/child::b\"");
-        if e.len() == 1 {
-            assert!(true) // TODO: check the sequence constructor
-        } else {
-            panic!("sequence is not a singleton")
-        }
-    }
-    #[test]
-    fn nomxpath_parse_relative_path_2() {
-        let _e =
-            parse("child::a//child::b").expect("failed to parse expression \"child::a//child::b\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-
-    #[test]
-    fn nomxpath_parse_step_1() {
-        let _e = parse("child::a").expect("failed to parse expression \"child::a\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_step_2() {
-        let _e = parse("child::bc").expect("failed to parse expression \"child::bc\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-    #[test]
-    fn nomxpath_parse_step_wild() {
-        let _e = parse("child::*").expect("failed to parse expression \"child::*\"");
-        assert!(true) // TODO: check the sequence constructor
-    }
-
-    #[test]
-    fn parse_eval_fncall_string() {
-        let mut e = parse("string(('a', 'b', 'c'))")
-            .expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "abc")
-    }
-    #[test]
-    fn parse_eval_fncall_concat() {
-        let mut e = parse("concat('a', 'b', 'c')")
-            .expect("failed to parse expression \"concat('a', 'b', 'c')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "abc")
-    }
-    #[test]
-    fn parse_eval_fncall_startswith_pos() {
-        let mut e = parse("starts-with('abc', 'a')")
-            .expect("failed to parse expression \"starts-with('abc', 'a')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_bool(), true)
-    }
-    #[test]
-    fn parse_eval_fncall_startswith_neg() {
-        let mut e = parse("starts-with('abc', 'b')")
-            .expect("failed to parse expression \"starts-with('abc', 'a')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_bool(), false)
-    }
-    #[test]
-    fn parse_eval_fncall_contains_pos() {
-        let mut e = parse("contains('abc', 'b')")
-            .expect("failed to parse expression \"contains('abc', 'b')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_bool(), true)
-    }
-    #[test]
-    fn parse_eval_fncall_contains_neg() {
-        let mut e = parse("contains('abc', 'd')")
-            .expect("failed to parse expression \"contains('abc', 'd')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_bool(), false)
-    }
-    #[test]
-    fn parse_eval_fncall_substringbefore_pos() {
-        let mut e = parse("substring-before('abc', 'b')")
-            .expect("failed to parse expression \"substring-before('abc', 'b')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "a")
-    }
-    #[test]
-    fn parse_eval_fncall_substringbefore_neg() {
-        let mut e = parse("substring-before('abc', 'd')")
-            .expect("failed to parse expression \"substring-before('abc', 'd')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "")
-    }
-    #[test]
-    fn parse_eval_fncall_substringafter_pos_1() {
-        let mut e = parse("substring-after('abc', 'b')")
-            .expect("failed to parse expression \"substring-after('abc', 'b')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "c")
-    }
-    #[test]
-    fn parse_eval_fncall_substringafter_pos_2() {
-        let mut e = parse("substring-after('abc', 'c')")
-            .expect("failed to parse expression \"substring-after('abc', 'b')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "")
-    }
-    #[test]
-    fn parse_eval_fncall_substringafter_neg() {
-        let mut e = parse("substring-after('abc', 'd')")
-            .expect("failed to parse expression \"substring-after('abc', 'd')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "")
-    }
-    #[test]
-    fn parse_eval_fncall_normalizespace() {
-        let mut e = parse("normalize-space('	a  b\nc 	')")
-            .expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "abc")
-    }
-    #[test]
-    fn parse_eval_fncall_translate() {
-        let mut e = parse("translate('abcdeabcde', 'ade', 'XY')")
-            .expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "XbcYXbcY")
-    }
-    #[test]
-    fn parse_eval_fncall_boolean_true() {
-        let mut e = parse("boolean('abcdeabcde')")
-            .expect("failed to parse expression \"boolean('abcdeabcde')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-            _ => panic!("not a singleton boolean true value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_boolean_false() {
-        let mut e = parse("boolean('')").expect("failed to parse expression \"boolean('')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-            _ => panic!("not a singleton boolean false value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_not_true() {
-        let mut e = parse("not('')").expect("failed to parse expression \"not('')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-            _ => panic!("not a singleton boolean true value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_not_false() {
-        let mut e = parse("not('abc')").expect("failed to parse expression \"not('abc')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-            _ => panic!("not a singleton boolean false value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_true() {
-        let mut e = parse("true()").expect("failed to parse expression \"true()\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-            _ => panic!("not a singleton boolean true value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_false() {
-        let mut e = parse("false()").expect("failed to parse expression \"false()\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-            _ => panic!("not a singleton boolean false value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_number_int() {
-        let mut e = parse("number('123')").expect("failed to parse expression \"number('123')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
-            _ => panic!(
-                "not a singleton integer value, got \"{}\"",
-                s.to_string(None)
-            ),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_number_double() {
-        let mut e =
-            parse("number('123.456')").expect("failed to parse expression \"number('123.456')\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
-            _ => panic!("not a singleton double value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_sum() {
-        let mut e = parse("sum(('123.456', 10, 20, '0'))")
-            .expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 + 20.0),
-            _ => panic!("not a singleton double value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_floor() {
-        let mut e = parse("floor(123.456)").expect("failed to parse expression \"floor(123.456)\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
-            _ => panic!("not a singleton double value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_ceiling() {
-        let mut e =
-            parse("ceiling(123.456)").expect("failed to parse expression \"ceiling(123.456)\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
-            _ => panic!("not a singleton double value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_round_down() {
-        let mut e = parse("round(123.456)").expect("failed to parse expression \"round(123.456)\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
-            _ => panic!("not a singleton double value"),
-        }
-    }
-    #[test]
-    fn parse_eval_fncall_round_up() {
-        let mut e = parse("round(123.654)").expect("failed to parse expression \"round(123.654)\"");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        match *s[0] {
-            Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
-            _ => panic!("not a singleton double value"),
-        }
-    }
-
-    // Variables
-    #[test]
-    fn parse_eval_let_1() {
-        let mut e = parse("let $x := 'a' return ($x, $x)").expect("failed to parse let expression");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.to_string(None), "aa")
-    }
-    #[test]
-    fn parse_eval_let_2() {
-        let mut e = parse("let $x := 'a', $y := 'b' return ($x, $y)")
-            .expect("failed to parse let expression");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 2);
-        assert_eq!(s.to_string(None), "ab")
-    }
-
-    // Loops
-    #[test]
-    fn parse_eval_for_1() {
-        let mut e = parse("for $x in ('a', 'b', 'c') return ($x, $x)")
-            .expect("failed to parse let expression");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 6);
-        assert_eq!(s.to_string(None), "aabbcc")
-    }
-    #[test]
-    fn parse_eval_for_2() {
-        let mut e =
-            parse("for $x in (1, 2, 3) return $x * 2").expect("failed to parse let expression");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 3);
-        assert_eq!(s.to_string(None), "246")
-    }
-
-    #[test]
-    fn parse_eval_if_1() {
-        let mut e =
-            parse("if (1) then 'one' else 'not one'").expect("failed to parse let expression");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        assert_eq!(s.to_string(None), "one")
-    }
-    #[test]
-    fn parse_eval_if_2() {
-        let mut e =
-            parse("if (0) then 'one' else 'not one'").expect("failed to parse let expression");
-        StaticContext::new_with_builtins().static_analysis(&mut e);
-        let mut f = Forest::new();
-        let sd = f.plant_tree();
-        let rd = f.plant_tree();
-        let s = Evaluator::new()
-            .evaluate(None, None, &e, &mut f, sd, rd)
-            .expect("evaluation failed");
-        assert_eq!(s.len(), 1);
-        assert_eq!(s.to_string(None), "not one")
     }
 }

@@ -23,13 +23,13 @@ use nom::{
 fn picture(input: &str) -> IResult<&str, String> {
     map(
         many0(alt((open_escape, close_escape, literal, marker))),
-        |v| v.iter().map(|s| s.clone()).collect::<String>(),
+        |v| v.iter().cloned().collect::<String>(),
     )(input)
 }
 
 #[allow(dead_code)]
 fn literal(input: &str) -> IResult<&str, String> {
-    map(none_of("[]"), |c| String::from(c))(input)
+    map(none_of("[]"), String::from)(input)
 }
 
 #[allow(dead_code)]
@@ -80,15 +80,12 @@ fn close_escape(input: &str) -> IResult<&str, String> {
 pub fn parse(e: &str) -> Result<String, Error> {
     match picture(e) {
         Ok((rest, value)) => {
-            if rest == "" {
+            if rest.is_empty() {
                 Result::Ok(value)
             } else {
                 Result::Err(Error {
                     kind: ErrorKind::Unknown,
-                    message: String::from(format!(
-                        "extra characters after expression: \"{}\"",
-                        rest
-                    )),
+                    message: format!("extra characters after expression: \"{}\"", rest),
                 })
             }
         }

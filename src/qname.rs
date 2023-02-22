@@ -4,6 +4,8 @@
 
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 
 #[derive(Clone, Debug)]
 pub struct QualifiedName {
@@ -28,10 +30,7 @@ impl QualifiedName {
         self.nsuri.clone()
     }
     pub fn get_nsuri_ref(&self) -> Option<&str> {
-        match self.nsuri {
-            Some(ref n) => Some(&n),
-            None => None,
-        }
+        self.nsuri.as_ref().map(|x| x as _)
     }
     pub fn get_prefix(&self) -> Option<String> {
         self.prefix.clone()
@@ -39,14 +38,17 @@ impl QualifiedName {
     pub fn get_localname(&self) -> String {
         self.localname.clone()
     }
-    pub fn to_string(&self) -> String {
+}
+
+impl fmt::Display for QualifiedName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
         self.prefix.as_ref().map_or((), |p| {
             result.push_str(p.as_str());
             result.push(':');
         });
         result.push_str(self.localname.as_str());
-        result
+        f.write_str(result.as_str())
     }
 }
 
@@ -75,7 +77,9 @@ impl Eq for QualifiedName {}
 
 impl Hash for QualifiedName {
     fn hash<H: Hasher>(&self, state: &mut H) {
-        self.nsuri.as_ref().map(|ns| ns.hash(state));
+        if let Some(ns) = self.nsuri.as_ref() {
+            ns.hash(state)
+        }
         self.localname.hash(state);
     }
 }

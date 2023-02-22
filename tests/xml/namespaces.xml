@@ -1,0 +1,12 @@
+<test xmlns:a="namespace1">
+    <test attr="attrval">testvalnons</test>
+    <a:test attr="attrval">testvalns1</a:test>
+    <test xmlns="namespace2" attr="attrval">testvaluens2</test>
+    <a:test xmlns="namespace3" attr="attrval">
+        <test xmlns="namespace1" xmlns:b="namespace4">
+            <a:test>testvaluens1</a:test>
+            <b:test>testvaluens4</b:test>
+            <test>testvaluens1</test>
+        </test>
+    </a:test>
+</test>

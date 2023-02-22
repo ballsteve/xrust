@@ -37,7 +37,7 @@ NB. We're picking the low-hanging fruit first. So major, fundamental features of
 
 ## Documentation
 
-See the [XSLT module](https://docs.rs/xrust/0.7.0/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
+See the [XSLT module](xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
 ## Compliance
 

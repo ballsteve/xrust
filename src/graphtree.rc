@@ -1,0 +1,5 @@
+//! # A tree structure for XDM
+//!
+//! Uses petgraph for a fully navigable tree structure, and interior mutability to allow the structure to be modified.
+
+use petgraph::stable_graph::{StableGraph, NodeIndex};
