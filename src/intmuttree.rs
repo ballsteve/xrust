@@ -1,6 +1,37 @@
-//! # A tree structure for XDM
-//!
-//! Uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
+/*! # A tree structure for XDM
+
+This module implements the Item module's [ItemNode] trait.
+
+This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
+
+To create a tree, use [NodeBuilder] to make a Document-type node. To add a node, first create it using [NodeBuilder], then use a trait method to attach it to the tree.
+
+NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
+
+```rust
+use xrust::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::item::{Node, NodeType};
+use xrust::qname::QualifiedName;
+use xrust::value::Value;
+
+// A document always has a NodeType::Document node as the toplevel node.
+let mut doc = NodeBuilder::new(NodeType::Document).build();
+
+let mut top = NodeBuilder::new(NodeType::Element)
+    .name(QualifiedName::new(None, None, String::from("Top-Level")))
+    .build();
+// Nodes are Rc-shared, so it is cheap to clone them
+doc.push(top.clone())
+    .expect("unable to append child node");
+
+top.push(
+    NodeBuilder::new(NodeType::Text)
+    .value(Value::from("content of the element"))
+    .build()
+).expect("unable to append child node");
+
+assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
+*/
 
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;

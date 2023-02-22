@@ -7,6 +7,14 @@ A [Sequence] is an ordered collection of zero or more [Item]s, implemented as a 
 
 See the [xslt](xslt/index.html) module for an example of how to evaluate an XSL stylesheet.
 
+## Trees
+
+The evaluator needs a tree that is both navigable and mutable. The [Item] module defines the [Node] trait that defines what the tree structure looks like. The module [intmuttree] is an implementation of the [Node] trait.
+
+## Parsing XML
+
+Parsing XML documents is done using a parser combinator: [parser].
+
 ## Status
 
 For XPath it provides most of v1.0 functionality, with some v2.0 and v3.1 features.
@@ -70,5 +78,5 @@ pub mod xslt;
 pub mod intmuttree;
 pub use intmuttree::Document;
 
-mod parser;
+pub mod parser;
 pub mod testutils;
