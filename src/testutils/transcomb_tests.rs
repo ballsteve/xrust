@@ -5,7 +5,7 @@ macro_rules! transcomb_tests (
 	//use xrust::value::Value;
 	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName,};
-	use xrust::transcomb::{Context, ContextBuilder,
+	use xrust::transcomb::{Context, ContextBuilder, Template,
 			       empty,
 			       literal, literal_element, literal_attribute,
 			       context, root,
@@ -15,6 +15,7 @@ macro_rules! transcomb_tests (
 			       general_comparison, value_comparison,
 			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
+			       apply_templates,
 			       function_concat,
 			       function_user_defined,
 	};
@@ -1420,6 +1421,59 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "foo")
+	}
+
+	#[test]
+	fn tc_apply_templates_1() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_text(Value::from("Test"))
+		.expect("unable to text node");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+
+	    // Built-in template rule for "/"
+	    let ev = apply_templates(root::<$x>());
+	    let mut ctxt = ContextBuilder::new()
+		.builtin_template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::SelfDocument,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    ), // pattern "/",
+		    apply_templates(step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    )), // body "apply-templates select=node()",
+		    true, // built-in
+		    -1000.00, // priority
+		    0, // import
+		    None, // mode
+		))
+		.builtin_template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+			    nodetest: NodeTest::Kind(KindTest::TextTest)
+			}
+		    ), // pattern child::text()
+		    context(), // body value-of select='.'
+		    true,
+		    -1001.00,
+		    0,
+		    None,
+		))
+		.sequence(vec![Rc::new(Item::Node(sd))])
+		.build();
+
+	    // Now Evaluate the combinator with the source document root node as the context item
+	    let seq = ev(&mut ctxt)
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "Test")
 	}
 
 	#[test]

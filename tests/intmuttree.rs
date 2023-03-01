@@ -5,10 +5,10 @@ use xrust::item::{Node, NodeType};
 use xrust::item_node_tests;
 use xrust::item_value_tests;
 use xrust::qname::QualifiedName;
+use xrust::transcomb_tests;
 use xrust::xdmerror::Error;
 use xrust::xpath_tests;
 use xrust::xslt_tests;
-use xrust::transcomb_tests;
 
 // Run the generic Item/Value tests
 item_value_tests!(RNode);

@@ -175,7 +175,7 @@ impl Value {
                 Err(_) => f64::NAN,
             },
             Value::Integer(i) => (*i) as f64,
-	    Value::Int(i) => (*i) as f64,
+            Value::Int(i) => (*i) as f64,
             Value::Double(d) => *d,
             _ => f64::NAN,
         }
