@@ -22,7 +22,7 @@ pub struct Context<N: Node> {
     i: usize,         // Which item in the sequence is the current context
     depth: usize,     // Depth of evaluation
     rd: Option<N>,    // Result document
-    // templates
+    templates: Vec<Rc<Template<N>>>,
     builtin_templates: Vec<Rc<Template<N>>>,
     // variables
     vars: HashMap<String, Vec<Sequence<N>>>,
@@ -39,6 +39,7 @@ impl<N: Node> Context<N> {
             i: 0,
             depth: 0,
             vars: HashMap::new(),
+            templates: Vec::new(),
             builtin_templates: Vec::new(),
             rd: None,
         }
@@ -49,6 +50,7 @@ impl<N: Node> Context<N> {
             i: self.i,
             depth: self.depth,
             vars: self.vars.clone(),
+            templates: self.templates.clone(),
             builtin_templates: self.builtin_templates.clone(),
             rd: self.rd.clone(),
         }
@@ -81,6 +83,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             i: 0,
             depth: 0,
             vars: HashMap::new(),
+            templates: Vec::new(),
             builtin_templates: Vec::new(),
             rd: None,
         }
@@ -112,6 +115,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn result_document(mut self, rd: N) -> Self {
         self.0.rd = Some(rd);
+        self
+    }
+    pub fn template(mut self, t: Template<N>) -> Self {
+        self.0.templates.push(Rc::new(t));
         self
     }
     pub fn builtin_template(mut self, t: Template<N>) -> Self {
@@ -771,17 +778,14 @@ where
         // Each iteration becomes an item in the result sequence.
         s(ctxt)?.iter().try_fold(vec![], |mut result, i| {
             // Find all potential templates. Evaluate the match pattern against this item.
-            eprintln!("there are {} templates", ctxt.builtin_templates.len());
-            let candidates = ctxt
-                .builtin_templates
-                .iter()
-                .try_fold(vec![], |mut cand, t| {
-                    let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
-                    if !e.is_empty() {
-                        cand.push(t)
-                    }
-                    Ok(cand)
-                })?;
+            eprintln!("there are {} templates", ctxt.templates.len());
+            let candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
+                let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
+                if !e.is_empty() {
+                    cand.push(t)
+                }
+                Ok(cand)
+            })?;
             if candidates.len() != 0 {
                 // Find the template(s) with the lowest priority.
                 // Built-in templates are always lower priority.
@@ -801,10 +805,33 @@ where
                 result.append(&mut u);
                 Ok(result)
             } else {
-                Err(Error::new(
-                    ErrorKind::Unknown,
-                    String::from("no matching template"),
-                ))
+                // Try builtin templates
+                eprintln!(
+                    "there are {} builtin templates",
+                    ctxt.builtin_templates.len()
+                );
+                let builtins = ctxt
+                    .builtin_templates
+                    .iter()
+                    .try_fold(vec![], |mut cand, t| {
+                        let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
+                        if !e.is_empty() {
+                            cand.push(t)
+                        }
+                        Ok(cand)
+                    })?;
+                if builtins.len() != 0 {
+                    eprintln!("evaluating body for template {}", builtins[0].priority);
+                    let mut u = (builtins[0].body)(&mut ctxt.copy_with_sequence(vec![i.clone()]))?;
+                    eprintln!("evaluated template body, {} items in result", u.len());
+                    result.append(&mut u);
+                    Ok(result)
+                } else {
+                    Err(Error::new(
+                        ErrorKind::Unknown,
+                        String::from("no matching template"),
+                    ))
+                }
             }
         })
     })

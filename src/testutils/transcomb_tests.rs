@@ -1424,7 +1424,7 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
-	fn tc_apply_templates_1() {
+	fn tc_apply_templates_builtins() {
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
 	    let mut t = sd.new_text(Value::from("Test"))
@@ -1474,6 +1474,84 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "Test")
+	}
+
+	#[test]
+	fn tc_apply_templates_1() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create new element");
+	    sd.push(t.clone());
+	    let c = sd.new_text(Value::from("content"))
+		.expect("unable to text node");
+	    t.push(c)
+		.expect("unable to append child");
+
+	    // Template rule for "Test", plus builtins
+	    let ev = apply_templates(root::<$x>());
+	    let mut ctxt = ContextBuilder::new()
+		.template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+		    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from("Test")))})
+			}
+		    ), // pattern "Test"
+		    tc_sequence(vec![
+			literal((Rc::new(Item::<$x>::Value(Value::from("before "))))),
+			apply_templates(step(
+			    NodeMatch {
+				axis: Axis::Child,
+				nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			    }
+			)),
+			literal((Rc::new(Item::<$x>::Value(Value::from(" after"))))),
+		    ]), // body "before", "apply-templates select=node()", "after"
+		    true, // built-in
+		    0.0, // priority
+		    0, // import
+		    None, // mode
+		))
+		.builtin_template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::SelfDocument,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    ), // pattern "/",
+		    apply_templates(step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    )), // body "apply-templates select=node()",
+		    true, // built-in
+		    -1000.00, // priority
+		    0, // import
+		    None, // mode
+		))
+		.builtin_template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+			    nodetest: NodeTest::Kind(KindTest::TextTest)
+			}
+		    ), // pattern child::text()
+		    context(), // body value-of select='.'
+		    true,
+		    -1001.00,
+		    0,
+		    None,
+		))
+		.sequence(vec![Rc::new(Item::Node(sd))])
+		.build();
+
+	    // Now Evaluate the combinator with the source document root node as the context item
+	    let seq = ev(&mut ctxt)
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 3);
+	    assert_eq!(seq.to_string(), "before content after")
 	}
 
 	#[test]
