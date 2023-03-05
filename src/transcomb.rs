@@ -779,7 +779,7 @@ where
         s(ctxt)?.iter().try_fold(vec![], |mut result, i| {
             // Find all potential templates. Evaluate the match pattern against this item.
             eprintln!("there are {} templates", ctxt.templates.len());
-            let candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
+            let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
                 let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
                 if !e.is_empty() {
                     cand.push(t)
@@ -787,15 +787,25 @@ where
                 Ok(cand)
             })?;
             if candidates.len() != 0 {
+                eprintln!("{} templates match:", candidates.len());
+                candidates.iter().for_each(|t| eprintln!("{:?}", t));
                 // Find the template(s) with the lowest priority.
-                // Built-in templates are always lower priority.
-                // TODO: template priority
-                //candidates.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
-                //let l = candidates[0].priority;
-                // TODO: import precedence
-                eprintln!("evaluating body for template {}", candidates[0].priority);
-                let mut u = (candidates[0].body)(&mut ctxt.copy_with_sequence(vec![i.clone()]))?;
+
+                candidates.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+                eprintln!("after sorting:");
+                candidates.iter().for_each(|t| eprintln!("{:?}", t));
+                let l = candidates.last().unwrap().priority;
+                eprintln!("highest priority is {}", l);
+                let cand_highest: Vec<&Rc<Template<N>>> = candidates
+                    .into_iter()
+                    .skip_while(|t| t.priority != l)
+                    .collect();
+
+                eprintln!("evaluating body for template {}", cand_highest[0].priority);
+                let mut u = (cand_highest[0].body)(&mut ctxt.copy_with_sequence(vec![i.clone()]))?;
                 eprintln!("evaluated template body, {} items in result", u.len());
+
+                // TODO: import precedence
                 //			let mut u = candidates.iter()
                 //			    .take(1)
                 //			    .flat_map(|t| {
