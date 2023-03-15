@@ -903,7 +903,6 @@ fn validsa041() {
 }
 
 #[test]
-#[ignore]
 fn validsa042() {
     /*
         Test ID:valid-sa-042
@@ -1202,7 +1201,6 @@ fn validsa055() {
 }
 
 #[test]
-#[ignore]
 fn validsa056() {
     /*
         Test ID:valid-sa-056

@@ -15,6 +15,7 @@ use crate::parser::common::{
 use crate::qname::*;
 use crate::xdmerror::*;
 use std::collections::HashMap;
+use std::num::ParseIntError;
 use std::str::FromStr;
 
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt7, alt8};
@@ -1058,15 +1059,30 @@ fn chardata_unicode_codepoint() -> impl Fn(ParseInput) -> ParseResult<String> {
     )
 }
 fn parse_hex() -> impl Fn(ParseInput) -> ParseResult<u32> {
-    map(
-        take_while_m_n(1, 6, |c: char| c.is_ascii_hexdigit()),
-        |hex| u32::from_str_radix(&hex, 16).unwrap(),
-    )
+    move |input| {
+        match take_while(|c: char| c.is_ascii_hexdigit())(input){
+            Ok((input1, hex)) => {
+                match u32::from_str_radix(&hex, 16){
+                    Ok(r) => Ok((input1, r)),
+                    Err(e) => Err(ParseError::NotWellFormed)
+                }
+            }
+            Err(e) => Err(e)
+        }
+    }
 }
 fn parse_decimal() -> impl Fn(ParseInput) -> ParseResult<u32> {
-    map(take_while_m_n(1, 6, |c: char| c.is_ascii_digit()), |dec| {
-        u32::from_str(&dec).unwrap()
-    })
+    move |input| {
+        match take_while(|c: char| c.is_ascii_digit())(input){
+            Ok((input1, dec)) => {
+                match u32::from_str(&dec){
+                    Ok(r) => Ok((input1, r)),
+                    Err(e) => Err(ParseError::NotWellFormed)
+                }
+            }
+            Err(e) => Err(e)
+        }
+    }
 }
 
 fn chardata_literal() -> impl Fn(ParseInput) -> ParseResult<String> {
