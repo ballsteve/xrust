@@ -27,7 +27,7 @@ pub struct Context<N: Node> {
     // variables
     vars: HashMap<String, Vec<Sequence<N>>>,
     // grouping
-    // import level
+    import: usize,	// import level
     // output defn
     // base URI
 }
@@ -38,6 +38,7 @@ impl<N: Node> Context<N> {
             seq: Sequence::new(),
             i: 0,
             depth: 0,
+	    import: 0,
             vars: HashMap::new(),
             templates: Vec::new(),
             builtin_templates: Vec::new(),
@@ -49,6 +50,19 @@ impl<N: Node> Context<N> {
             seq: s,
             i: self.i,
             depth: self.depth,
+	    import: self.import,
+            vars: self.vars.clone(),
+            templates: self.templates.clone(),
+            builtin_templates: self.builtin_templates.clone(),
+            rd: self.rd.clone(),
+        }
+    }
+    pub fn copy_with_import(&self, i: usize) -> Self {
+        Context {
+            seq: self.seq.clone(),
+            i: self.i,
+            depth: self.depth,
+	    import: i,
             vars: self.vars.clone(),
             templates: self.templates.clone(),
             builtin_templates: self.builtin_templates.clone(),
@@ -82,6 +96,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             seq,
             i: 0,
             depth: 0,
+	    import: 0,
             vars: HashMap::new(),
             templates: Vec::new(),
             builtin_templates: Vec::new(),
@@ -107,6 +122,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn depth(mut self, d: usize) -> Self {
         self.0.depth = d;
+        self
+    }
+    pub fn import(mut self, i: usize) -> Self {
+        self.0.import = i;
         self
     }
     pub fn variables(mut self, v: HashMap<String, Vec<Sequence<N>>>) -> Self {
@@ -777,41 +796,62 @@ where
         // s is the select expression. Evaluate it, and then iterate over it's items.
         // Each iteration becomes an item in the result sequence.
         s(ctxt)?.iter().try_fold(vec![], |mut result, i| {
-            // Find all potential templates. Evaluate the match pattern against this item.
-            eprintln!("there are {} templates", ctxt.templates.len());
-            let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
-                let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
-                if !e.is_empty() {
-                    cand.push(t)
-                }
-                Ok(cand)
-            })?;
-            if candidates.len() != 0 {
-                eprintln!("{} templates match:", candidates.len());
-                candidates.iter().for_each(|t| eprintln!("{:?}", t));
-                // Find the template(s) with the lowest priority.
+	    let templates = match_templates(ctxt, i)?;
+	    // If there are two or more templates with the same priority and import level, then that's an error
 
-                candidates.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
-                eprintln!("after sorting:");
-                candidates.iter().for_each(|t| eprintln!("{:?}", t));
-                let l = candidates.last().unwrap().priority;
-                eprintln!("highest priority is {}", l);
-                let cand_highest: Vec<&Rc<Template<N>>> = candidates
-                    .into_iter()
-                    .skip_while(|t| t.priority != l)
-                    .collect();
+        })
+    })
+}
 
-                eprintln!("evaluating body for template {}", cand_highest[0].priority);
+/// Apply templates to the select expression with a higher import precedence.
+pub fn apply_imports<F, N: Node>(s: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |ctxt| {
+	// increment the import level and call back into apply_templates
+	apply_templates(ctxt.copy_with_import(ctxt.import + 1))
+    })
+}
+
+// Find all potential templates. Evaluate the match pattern against this item.
+fn match_templates<N: Node>(ctxt: Context<N>, i: Item<N>) -> Result<Vec<Template<N>>, Error> {
+    eprintln!("there are {} templates", ctxt.templates.len());
+    let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
+        let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
+        if !e.is_empty() {
+            cand.push(t)
+        }
+        Ok(cand)
+    })?;
+    if candidates.len() != 0 {
+        eprintln!("{} templates match:", candidates.len());
+        candidates.iter().for_each(|t| eprintln!("{:?}", t));
+        // Find the template(s) with the lowest priority.
+
+        candidates.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+        eprintln!("after sorting:");
+        candidates.iter().for_each(|t| eprintln!("{:?}", t));
+        let l = candidates.last().unwrap().priority;
+        eprintln!("highest priority is {}", l);
+        let cand_highest: Vec<&Rc<Template<N>>> = candidates
+            .into_iter()
+            .skip_while(|t| t.priority != l)
+            .collect();
+
+        eprintln!("evaluating body for template {}", cand_highest[0].priority);
                 let mut u = (cand_highest[0].body)(&mut ctxt.copy_with_sequence(vec![i.clone()]))?;
                 eprintln!("evaluated template body, {} items in result", u.len());
 
-                // TODO: import precedence
-                //			let mut u = candidates.iter()
-                //			    .take(1)
-                //			    .flat_map(|t| {
-                //				(t.body)(&mut Context::from(vec![i.clone()]))
-                //			    })
-                //			    .collect::<Sequence<N>>();
+                // Find the template with the lowest import precedence,
+		// unless we're inside an apply-imports
+                //let mut u = candidates.iter()
+                //    .take(1)
+                //    .flat_map(|t| {
+                //	(t.body)(&mut Context::from(vec![i.clone()]))
+                //    })
+                //    .collect::<Sequence<N>>();
+
                 result.append(&mut u);
                 Ok(result)
             } else {
@@ -843,8 +883,6 @@ where
                     ))
                 }
             }
-        })
-    })
 }
 
 /// A template associates a pattern to a sequence constructor
