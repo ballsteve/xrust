@@ -473,8 +473,9 @@ fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     )(input)
     {
         Ok((mut d, (_, _, _, _, n, _, s, _, _))) => {
-            d.dtd.paramentities.insert(
-                n.to_string(),
+
+            /* Entities should always bind to the first value */
+            d.dtd.paramentities.entry(n.to_string()).or_insert(
                 DTDDecl::ParamEntity(n, s.replace("&#60;", "<")),
             );
             Ok((d, ()))
@@ -501,8 +502,8 @@ fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     )(input)
     {
         Ok((mut d, (_, _, n, _, s, _, _))) => {
-            d.dtd.generalentities.insert(
-                n.to_string(),
+            /* Entities should always bind to the first value */
+            d.dtd.generalentities.entry(n.to_string()).or_insert(
                 DTDDecl::GeneralEntity(n, s.replace("&#60;", "<")),
             );
             Ok((d, ()))
