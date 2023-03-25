@@ -35,4 +35,10 @@ regex = "1.6.0"
 
 [dev-dependencies]
 criterion = "0.3"
-
+# These are for example issue_52
+html_parser = "0.6.3"
+tokio = { version = "1.26.0", features = ["full"] }
+reqwest = "0.11.4"
+log = "0.4.17"
+futures = "0.3.27"
+env_logger = "0.10.0"
