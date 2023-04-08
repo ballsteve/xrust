@@ -883,6 +883,21 @@ where
     })
 }
 
+/// Apply the next template that matches.
+pub fn next_match<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
+    Box::new(move |ctxt| {
+        if ctxt.current_templates.len() > 2 {
+            (ctxt.current_templates[1].body)(
+                &mut ContextBuilder::from(ctxt.clone())
+                    .current_templates(ctxt.current_templates.iter().skip(1).cloned().collect())
+                    .build(),
+            )
+        } else {
+            Ok(vec![])
+        }
+    })
+}
+
 // Find all potential templates. Evaluate the match pattern against this item.
 // Sort the result by priority and import precedence.
 fn match_templates<N: Node>(

@@ -16,6 +16,7 @@ macro_rules! transcomb_tests (
 			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
 			       apply_templates,
+			       apply_imports, next_match,
 			       function_concat,
 			       function_user_defined,
 	};
@@ -1736,6 +1737,108 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "priority 1 template, import level 0")
+	}
+
+	#[test]
+	fn tc_apply_templates_next_match() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create new element");
+	    sd.push(t.clone());
+	    let c = sd.new_text(Value::from("content"))
+		.expect("unable to text node");
+	    t.push(c)
+		.expect("unable to append child");
+
+	    // Template rule for "Test", an overridden rule, plus builtins
+	    let ev = apply_templates(root::<$x>());
+	    let mut ctxt = ContextBuilder::new()
+		.template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+			    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from("Test")))})
+			}
+		    ), // pattern "Test"
+		    tc_sequence(vec![
+			literal((Rc::new(Item::<$x>::Value(Value::from("priority 1 template"))))),
+			next_match::<$x>(),
+		    ]),
+		    Some(1.0), // priority
+		    vec![0], // import
+		    Some(1), // document order
+		    None, // mode
+		))
+		.template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+			    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from("Test")))})
+			}
+		    ), // pattern "Test"
+		    literal((Rc::new(Item::<$x>::Value(Value::from("priority 0 template"))))),
+		    Some(0.0), // priority
+		    vec![0], // import
+		    Some(2), // document order
+		    None, // mode
+		))
+		.template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+			    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Wildcard)})
+			}
+		    ), // pattern "*"
+		    apply_templates(step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    )), // body "apply-templates select=node()",
+		    None, // priority
+		    vec![0], // import
+		    None, // document order
+		    None, // mode
+		))
+		.template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::SelfDocument,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    ), // pattern "/",
+		    apply_templates(step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    )), // body "apply-templates select=node()",
+		    None, // priority
+		    vec![0], // import
+		    None, // document order
+		    None, // mode
+		))
+		.template(Template::new(
+		    step(
+			NodeMatch {
+			    axis: Axis::Selfaxis,
+			    nodetest: NodeTest::Kind(KindTest::TextTest)
+			}
+		    ), // pattern child::text()
+		    context(), // body value-of select='.'
+		    None, // priority
+		    vec![0], // import
+		    None, // document order
+		    None, // mode
+		))
+		.sequence(vec![Rc::new(Item::Node(sd))])
+		.build();
+
+	    // Now Evaluate the combinator with the source document root node as the context item
+	    let seq = ev(&mut ctxt)
+		.expect("evaluation failed");
+	    assert_eq!(seq.to_string(), "priority 1 templatepriority 0 template")
 	}
 
 	#[test]
