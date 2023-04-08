@@ -1,5 +1,6 @@
 //! # Transformation Combinator
 
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::marker::PhantomData;
@@ -22,12 +23,13 @@ pub struct Context<N: Node> {
     i: usize,         // Which item in the sequence is the current context
     depth: usize,     // Depth of evaluation
     rd: Option<N>,    // Result document
+    // No distinction between built-in and stylesheet-defined templates. Built-in templates have no priority and no document order.
     templates: Vec<Rc<Template<N>>>,
-    builtin_templates: Vec<Rc<Template<N>>>,
+    //builtin_templates: Vec<Rc<Template<N>>>,
+    current_templates: Vec<Rc<Template<N>>>,
     // variables
     vars: HashMap<String, Vec<Sequence<N>>>,
     // grouping
-    import: usize,	// import level
     // output defn
     // base URI
 }
@@ -38,37 +40,51 @@ impl<N: Node> Context<N> {
             seq: Sequence::new(),
             i: 0,
             depth: 0,
-	    import: 0,
             vars: HashMap::new(),
             templates: Vec::new(),
-            builtin_templates: Vec::new(),
+            current_templates: Vec::new(),
             rd: None,
         }
     }
-    pub fn copy_with_sequence(&self, s: Sequence<N>) -> Self {
-        Context {
-            seq: s,
-            i: self.i,
-            depth: self.depth,
-	    import: self.import,
-            vars: self.vars.clone(),
-            templates: self.templates.clone(),
-            builtin_templates: self.builtin_templates.clone(),
-            rd: self.rd.clone(),
-        }
-    }
-    pub fn copy_with_import(&self, i: usize) -> Self {
-        Context {
-            seq: self.seq.clone(),
-            i: self.i,
-            depth: self.depth,
-	    import: i,
-            vars: self.vars.clone(),
-            templates: self.templates.clone(),
-            builtin_templates: self.builtin_templates.clone(),
-            rd: self.rd.clone(),
-        }
-    }
+    //    pub fn copy_with_sequence(&self, s: Sequence<N>) -> Self {
+    //        Context {
+    //            seq: s,
+    //            i: self.i,
+    //            depth: self.depth,
+    //	    import: self.import,
+    //            vars: self.vars.clone(),
+    //            templates: self.templates.clone(),
+    //            builtin_templates: self.builtin_templates.clone(),
+    //            current_templates: self.current_templates.clone(),
+    //            rd: self.rd.clone(),
+    //        }
+    //    }
+    //    pub fn copy_with_import(&self, i: usize) -> Self {
+    //        Context {
+    //            seq: self.seq.clone(),
+    //            i: self.i,
+    //            depth: self.depth,
+    //	    import: i,
+    //            vars: self.vars.clone(),
+    //            templates: self.templates.clone(),
+    //            builtin_templates: self.builtin_templates.clone(),
+    //            current_templates: self.current_templates.clone(),
+    //            rd: self.rd.clone(),
+    //        }
+    //    }
+    //    pub fn copy_with_current(&self, c: &Vec<Template<N>>) -> Self {
+    //        Context {
+    //            seq: self.seq.clone(),
+    //            i: self.i,
+    //            depth: self.depth,
+    //	    import: self.import,
+    //            vars: self.vars.clone(),
+    //            templates: self.templates.clone(),
+    //            builtin_templates: self.builtin_templates.clone(),
+    //            current_templates: c.clone(),
+    //            rd: self.rd.clone(),
+    //        }
+    //    }
 
     fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
@@ -96,10 +112,9 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             seq,
             i: 0,
             depth: 0,
-	    import: 0,
             vars: HashMap::new(),
             templates: Vec::new(),
-            builtin_templates: Vec::new(),
+            current_templates: Vec::new(),
             rd: None,
         }
     }
@@ -124,10 +139,6 @@ impl<N: Node> ContextBuilder<N> {
         self.0.depth = d;
         self
     }
-    pub fn import(mut self, i: usize) -> Self {
-        self.0.import = i;
-        self
-    }
     pub fn variables(mut self, v: HashMap<String, Vec<Sequence<N>>>) -> Self {
         self.0.vars = v;
         self
@@ -140,14 +151,22 @@ impl<N: Node> ContextBuilder<N> {
         self.0.templates.push(Rc::new(t));
         self
     }
-    pub fn builtin_template(mut self, t: Template<N>) -> Self {
-        self.0.builtin_templates.push(Rc::new(t));
+    pub fn current_templates(mut self, c: Vec<Rc<Template<N>>>) -> Self {
+        self.0.current_templates = c;
         self
     }
     pub fn build(self) -> Context<N> {
         self.0
     }
 }
+
+impl<N: Node> From<Context<N>> for ContextBuilder<N> {
+    fn from(c: Context<N>) -> Self {
+        ContextBuilder(c.clone())
+    }
+}
+
+/// An import tree
 
 /// Creates an empty sequence
 pub fn empty<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
@@ -796,31 +815,88 @@ where
         // s is the select expression. Evaluate it, and then iterate over it's items.
         // Each iteration becomes an item in the result sequence.
         s(ctxt)?.iter().try_fold(vec![], |mut result, i| {
-	    let templates = match_templates(ctxt, i)?;
-	    // If there are two or more templates with the same priority and import level, then that's an error
-
+            let templates = match_templates(ctxt, i)?;
+            // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
+            let matching = if templates.len() > 1 {
+                if templates[0].priority == templates[1].priority
+                    && templates[0].import.len() == templates[1].import.len()
+                {
+                    let mut candidates: Vec<Rc<Template<N>>> = templates
+                        .iter()
+                        .take_while(|t| {
+                            t.priority == templates[0].priority
+                                && t.import.len() == templates[0].import.len()
+                        })
+                        .cloned()
+                        .collect();
+                    candidates.sort_unstable_by(|a, b| {
+                        a.document_order.map_or(Ordering::Greater, |v| {
+                            b.document_order.map_or(Ordering::Less, |u| v.cmp(&u))
+                        })
+                    });
+                    candidates.last().unwrap().clone()
+                } else {
+                    templates[0].clone()
+                }
+            } else {
+                templates[0].clone()
+            };
+            // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
+            let mut u = (matching.body)(
+                &mut ContextBuilder::from(ctxt.clone())
+                    .sequence(vec![i.clone()])
+                    .current_templates(templates)
+                    .build(),
+            )?;
+            result.append(&mut u);
+            Ok(result)
         })
     })
 }
 
-/// Apply templates to the select expression with a higher import precedence.
-pub fn apply_imports<F, N: Node>(s: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+/// Apply template with a higher import precedence.
+pub fn apply_imports<F, N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-	// increment the import level and call back into apply_templates
-	apply_templates(ctxt.copy_with_import(ctxt.import + 1))
+        // Find the template with the next highest level within the same import tree
+        // current_templates[0] is the currently matching template
+        let cur = &(ctxt.current_templates[0]);
+        let next: Vec<Rc<Template<N>>> = ctxt
+            .current_templates
+            .iter()
+            .skip(1)
+            .skip_while(|t| t.import.len() == cur.import.len()) // import level is the same (iow, different priority templates in the same import level)
+            .cloned()
+            .collect();
+
+        if !next.is_empty() {
+            (next[0].body)(
+                &mut ContextBuilder::from(ctxt.clone())
+                    .current_templates(next.clone())
+                    .build(),
+            )
+        } else {
+            Ok(vec![])
+        }
     })
 }
 
 // Find all potential templates. Evaluate the match pattern against this item.
-fn match_templates<N: Node>(ctxt: Context<N>, i: Item<N>) -> Result<Vec<Template<N>>, Error> {
-    eprintln!("there are {} templates", ctxt.templates.len());
+// Sort the result by priority and import precedence.
+fn match_templates<N: Node>(
+    ctxt: &mut Context<N>,
+    i: &Rc<Item<N>>,
+) -> Result<Vec<Rc<Template<N>>>, Error> {
+    eprintln!(
+        "match_templates: there are {} templates",
+        ctxt.templates.len()
+    );
     let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
         let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
         if !e.is_empty() {
-            cand.push(t)
+            cand.push(t.clone())
         }
         Ok(cand)
     })?;
@@ -829,71 +905,29 @@ fn match_templates<N: Node>(ctxt: Context<N>, i: Item<N>) -> Result<Vec<Template
         candidates.iter().for_each(|t| eprintln!("{:?}", t));
         // Find the template(s) with the lowest priority.
 
-        candidates.sort_unstable_by(|s, t| s.priority.partial_cmp(&t.priority).unwrap());
+        candidates.sort_unstable_by(|a, b| (*a).cmp(&*b));
         eprintln!("after sorting:");
         candidates.iter().for_each(|t| eprintln!("{:?}", t));
-        let l = candidates.last().unwrap().priority;
-        eprintln!("highest priority is {}", l);
-        let cand_highest: Vec<&Rc<Template<N>>> = candidates
-            .into_iter()
-            .skip_while(|t| t.priority != l)
-            .collect();
-
-        eprintln!("evaluating body for template {}", cand_highest[0].priority);
-                let mut u = (cand_highest[0].body)(&mut ctxt.copy_with_sequence(vec![i.clone()]))?;
-                eprintln!("evaluated template body, {} items in result", u.len());
-
-                // Find the template with the lowest import precedence,
-		// unless we're inside an apply-imports
-                //let mut u = candidates.iter()
-                //    .take(1)
-                //    .flat_map(|t| {
-                //	(t.body)(&mut Context::from(vec![i.clone()]))
-                //    })
-                //    .collect::<Sequence<N>>();
-
-                result.append(&mut u);
-                Ok(result)
-            } else {
-                // Try builtin templates
-                eprintln!(
-                    "there are {} builtin templates",
-                    ctxt.builtin_templates.len()
-                );
-                let builtins = ctxt
-                    .builtin_templates
-                    .iter()
-                    .try_fold(vec![], |mut cand, t| {
-                        let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
-                        if !e.is_empty() {
-                            cand.push(t)
-                        }
-                        Ok(cand)
-                    })?;
-                if builtins.len() != 0 {
-                    eprintln!("evaluating body for template {}", builtins[0].priority);
-                    let mut u = (builtins[0].body)(&mut ctxt.copy_with_sequence(vec![i.clone()]))?;
-                    eprintln!("evaluated template body, {} items in result", u.len());
-                    result.append(&mut u);
-                    Ok(result)
-                } else {
-                    Err(Error::new(
-                        ErrorKind::Unknown,
-                        String::from("no matching template"),
-                    ))
-                }
-            }
+        Ok(candidates)
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("no matching template"),
+        ))
+    }
 }
 
-/// A template associates a pattern to a sequence constructor
+/// A template associates a pattern to a sequence constructor.
+/// The import tree is represented by a vector of usize that is a signature for where the template was imported into the stylesheet. Templates from the primary stylesheet have an import precedence of 0.
+/// Built-in templates have no priority and no document order and are considered to be in the primary stylesheet.
 //#[derive(Clone)]
 pub struct Template<N: Node> {
     pattern: Box<dyn Fn(&mut Context<N>) -> TransResult<N> + 'static>,
     body: Box<dyn Fn(&mut Context<N>) -> TransResult<N> + 'static>,
-    priority: f64,
-    builtin: bool,
+    priority: Option<f64>,
+    import: Vec<usize>,
+    document_order: Option<usize>,
     mode: Option<String>,
-    import: usize,
     phantom: PhantomData<N>,
 }
 
@@ -901,17 +935,17 @@ impl<N: Node> Template<N> {
     pub fn new(
         pattern: Box<dyn Fn(&mut Context<N>) -> TransResult<N> + 'static>,
         body: Box<dyn Fn(&mut Context<N>) -> TransResult<N> + 'static>,
-        builtin: bool,
-        priority: f64,
-        import: usize,
+        priority: Option<f64>,
+        import: Vec<usize>,
+        document_order: Option<usize>,
         mode: Option<String>,
     ) -> Self {
         Template {
             pattern,
             body,
-            builtin,
             priority,
             import,
+            document_order,
             mode,
             phantom: PhantomData,
         }
@@ -922,14 +956,57 @@ impl<N: Node> fmt::Debug for Template<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
-            "match {{}} prio {}, import {}, builtin {}",
+            "match {{}} prio {:?}, import {:?}, doc order {:?}",
             //format_constructor(&self.pattern, 0),
             self.priority,
             self.import,
-            self.builtin,
+            self.document_order,
         )
     }
 }
+
+/// Templates are ordered in decreasing order of priority, and increasing order of import precedence.
+/// The length of the import vector indicates the depth of a template in the import tree.
+/// Absent values are always less.
+impl<N: Node> PartialOrd for Template<N> {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        // An absent priority is always lower
+        self.priority.map_or(Some(Ordering::Greater), |v| {
+            other.priority.map_or(Some(Ordering::Greater), |u| {
+                if v == u {
+                    Some(self.import.len().cmp(&other.import.len()))
+                } else if v < u {
+                    Some(Ordering::Greater)
+                } else {
+                    Some(Ordering::Less)
+                }
+            })
+        })
+    }
+}
+impl<N: Node> Ord for Template<N> {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).map_or(Ordering::Equal, |o| o)
+    }
+}
+
+impl<N: Node> PartialEq for Template<N> {
+    fn eq(&self, other: &Self) -> bool {
+        self.priority.map_or_else(
+            || other.priority.map_or(true, |_| false),
+            |v| {
+                other.priority.map_or(false, |u| {
+                    if v == u {
+                        self.import.len() == other.import.len()
+                    } else {
+                        false
+                    }
+                })
+            },
+        )
+    }
+}
+impl<N: Node> Eq for Template<N> {}
 
 /// XPath concat function. All arguments are concatenated into a single string value.
 pub fn function_concat<F, N: Node>(
