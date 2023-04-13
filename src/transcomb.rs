@@ -205,7 +205,64 @@ where
     })
 }
 
-/// TODO: Set-Attribute
+/// Set an attribute on the context item, which must be an element-type node.
+/// (TODO: use an expression to select the element)
+/// If the element does not have an attribute with the given name, create it.
+/// Otherwise replace the attribute's value with the supplied value
+pub fn set_attribute<F, N: Node + 'static>(
+    atname: QualifiedName,
+    v: F,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |ctxt| {
+        if ctxt.rd.is_none() {
+            return Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("context has no result document"),
+            ));
+        }
+        match &*ctxt.seq[ctxt.i] {
+            Item::Node(n) => match n.node_type() {
+                NodeType::Element => {
+                    let od = n.owner_document();
+                    let attval = v(&mut ctxt.clone())?;
+                    if attval.len() == 1 {
+                        match &*attval[0] {
+                            Item::Value(av) => {
+                                n.add_attribute(od.new_attribute(atname.clone(), av.clone())?)?;
+                            }
+                            _ => {
+                                n.add_attribute(od.new_attribute(
+                                    atname.clone(),
+                                    Value::from(attval.to_string()),
+                                )?)?;
+                            }
+                        }
+                    } else {
+                        n.add_attribute(
+                            od.new_attribute(atname.clone(), Value::from(attval.to_string()))?,
+                        )?;
+                    }
+                }
+                _ => {
+                    return Err(Error::new(
+                        ErrorKind::Unknown,
+                        String::from("context item is not an element-type node"),
+                    ))
+                }
+            },
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("context item is not a node"),
+                ))
+            }
+        }
+        Ok(vec![])
+    })
+}
 
 /// TODO: Copy, Deep-Copy
 
