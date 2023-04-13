@@ -5,7 +5,7 @@ macro_rules! transcomb_tests (
 	//use xrust::value::Value;
 	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::evaluate::{Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName,};
-	use xrust::transcomb::{Context, ContextBuilder, Template,
+	use xrust::transcomb::{Context, ContextBuilder, Template, TransResult,
 			       empty,
 			       literal, literal_element, literal_attribute,
 			       context, root,
@@ -17,7 +17,14 @@ macro_rules! transcomb_tests (
 			       declare_variable, reference_variable,
 			       apply_templates,
 			       apply_imports, next_match,
-			       function_concat,
+			       position, last, tc_count,
+			       local_name, name,
+			       string, tc_concat, starts_with, contains, substring, substring_before, substring_after,
+			       normalize_space, translate,
+			       boolean, not, tc_true, tc_false,
+			       number, sum, floor, ceiling, round,
+			       current_date_time, current_date, current_time,
+			       format_date_time, format_date, format_time,
 			       function_user_defined,
 	};
 
@@ -184,7 +191,7 @@ macro_rules! transcomb_tests (
 			literal(Rc::new(Item::<$x>::Value(Value::from("three")))),
 		    ]
 		)),
-		function_concat(vec![
+		tc_concat(vec![
 		    reference_variable(String::from("x")),
 		    reference_variable(String::from("x")),
 		])
@@ -1842,9 +1849,165 @@ macro_rules! transcomb_tests (
 	}
 
 	#[test]
-	fn tc_func_concat() {
+	fn tc_position() {
+	    // XPath == position()
+	    // NB. rust indexes start at 0, whereas XPath positions start at 1
+
+	    let ev = position();
+	    let seq = ev(
+		&mut ContextBuilder::new()
+		    .sequence(vec![
+			Rc::new(Item::<$x>::Value(Value::from("one"))),
+			Rc::new(Item::<$x>::Value(Value::from("two"))),
+			Rc::new(Item::<$x>::Value(Value::from("three"))),
+			Rc::new(Item::<$x>::Value(Value::from("four"))),
+		    ])
+		    .index(2)
+		    .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "3")
+	}
+
+	#[test]
+	fn tc_last() {
+	    // XPath == last()
+	    // NB. rust indexes start at 0, whereas XPath positions start at 1
+
+	    let ev = last();
+	    let seq = ev(
+		&mut ContextBuilder::new()
+		    .sequence(vec![
+			Rc::new(Item::<$x>::Value(Value::from("one"))),
+			Rc::new(Item::<$x>::Value(Value::from("two"))),
+			Rc::new(Item::<$x>::Value(Value::from("three"))),
+			Rc::new(Item::<$x>::Value(Value::from("four"))),
+		    ])
+		    .index(2)
+		    .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "4")
+	}
+
+	#[test]
+	fn tc_count_0() {
+	    // XPath == count()
+
+	    let ev = tc_count(Vec::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>::new());
+	    let seq = ev(
+		&mut ContextBuilder::new()
+		    .sequence(vec![
+			Rc::new(Item::<$x>::Value(Value::from("one"))),
+			Rc::new(Item::<$x>::Value(Value::from("two"))),
+			Rc::new(Item::<$x>::Value(Value::from("three"))),
+			Rc::new(Item::<$x>::Value(Value::from("four"))),
+		    ])
+		    .index(2)
+		    .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "4")
+	}
+
+	#[test]
+	fn tc_count_1() {
+	    // XPath == count()
+
+	    let ev = tc_count(vec![
+		tc_sequence(vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
+		])
+	    ]);
+	    let seq = ev(
+		&mut ContextBuilder::new()
+		    .sequence(vec![
+			Rc::new(Item::<$x>::Value(Value::from("one"))),
+			Rc::new(Item::<$x>::Value(Value::from("two"))),
+			Rc::new(Item::<$x>::Value(Value::from("three"))),
+			Rc::new(Item::<$x>::Value(Value::from("four"))),
+		    ])
+		    .index(2)
+		    .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "3")
+	}
+
+	#[test]
+	fn tc_localname_0() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1 = sd.new_element(
+		QualifiedName::new(
+		    Some(String::from("urn::test-example.com")),
+		    Some(String::from("eg")),
+		    String::from("Level-1")
+		)
+	    ).expect("unable to create element");
+	    t.push(l1.clone())
+		.expect("unable to append child");
+
+	    let ev = local_name(Vec::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>::new());
+
+	    // Now evaluate the combinator with <Level-1> as the context item
+	    let seq = ev(&mut Context::from(vec![Rc::new(Item::Node(l1))]))
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_xml(), "Level-1");
+	}
+
+	#[test]
+	fn tc_name_0() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l1 = sd.new_element(
+		QualifiedName::new(
+		    Some(String::from("urn::test-example.com")),
+		    Some(String::from("eg")),
+		    String::from("Level-1")
+		)
+	    ).expect("unable to create element");
+	    t.push(l1.clone())
+		.expect("unable to append child");
+
+	    let ev = name(Vec::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>::new());
+
+	    // Now evaluate the combinator with <Level-1> as the context item
+	    let seq = ev(&mut Context::from(vec![Rc::new(Item::Node(l1))]))
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_xml(), "eg:Level-1");
+	}
+
+	#[test]
+	fn tc_string() {
+	    // XPath == string(1.0)
+	    let ev = string(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from(1.0)))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "1")
+	}
+
+	#[test]
+	fn tc_concat_literal() {
 	    // XPath == concat("abc", 1, "foo")
-	    let ev = function_concat(
+	    let ev = tc_concat(
 		vec![
 		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
 		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
@@ -1855,6 +2018,424 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "abc1foo")
+	}
+
+	#[test]
+	fn tc_starts_with_pos() {
+	    // XPath == starts-with("abc", "ab")
+	    let ev = starts_with(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("ab")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+	#[test]
+	fn tc_starts_with_neg() {
+	    // XPath == starts-with("abc", "x")
+	    let ev = starts_with(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("x")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
+	}
+
+	#[test]
+	fn tc_contains_pos() {
+	    // XPath == contains("abcd", "bc")
+	    let ev = contains(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+	#[test]
+	fn tc_contains_neg() {
+	    // XPath == contains("abcd", "xyz")
+	    let ev = contains(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("xyz")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
+	}
+
+	#[test]
+	fn tc_substring_2args() {
+	    // XPath == substring("abcd", 2)
+	    let ev = substring(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "bcd")
+	}
+	#[test]
+	fn tc_substring_3args() {
+	    // XPath == substring("abcd", 2, 2)
+	    let ev = substring(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "bc")
+	}
+
+	#[test]
+	fn tc_substring_before() {
+	    // XPath == substring-before("abcd", "bc")
+	    let ev = substring_before(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "a")
+	}
+	#[test]
+	fn tc_substring_after() {
+	    // XPath == substring-after("abcd", "bc")
+	    let ev = substring_after(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "d")
+	}
+
+	#[test]
+	fn tc_normalize_space_1() {
+	    // XPath == normalize-space(" a b  c	d\n")
+	    let ev = normalize_space(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from(" a b  c	d
+")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "a b c d")
+	}
+
+	#[test]
+	fn tc_translate_1() {
+	    // XPath == translate("abcd", "bdc" "BD")
+	    let ev = translate(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("bdc")))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from("BD")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "aBD")
+	}
+
+	#[test]
+	fn tc_boolean_string_pos() {
+	    // XPath == boolean("abcd")
+	    let ev = boolean(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+	#[test]
+	fn tc_boolean_string_neg() {
+	    // XPath == boolean("")
+	    let ev = boolean(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
+	}
+	#[test]
+	fn tc_boolean_int_pos() {
+	    // XPath == boolean(1)
+	    let ev = boolean(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+	#[test]
+	fn tc_boolean_int_neg() {
+	    // XPath == boolean(0)
+	    let ev = boolean(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
+	}
+
+	#[test]
+	fn tc_not_pos() {
+	    // XPath == not("abcd")
+	    let ev = not(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
+	}
+	#[test]
+	fn tc_not_neg() {
+	    // XPath == not(0)
+	    let ev = not(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+
+	#[test]
+	fn tc_true_literal() {
+	    // XPath == true()
+	    let ev = tc_true::<$x>();
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), true)
+	}
+	#[test]
+	fn tc_false_literal() {
+	    // XPath == false()
+	    let ev = tc_false::<$x>();
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_bool(), false)
+	}
+
+	#[test]
+	fn tc_number() {
+	    // XPath == number("124")
+	    let ev = number(
+		vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from("124")))),
+		]
+	    );
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_int().unwrap(), 124)
+	}
+
+	#[test]
+	fn tc_sum() {
+	    // XPath == sum((1, 2, 4))
+	    let ev = sum(vec![
+		tc_sequence(vec![
+		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(4)))),
+		])
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_int().unwrap(), 7)
+	}
+
+	#[test]
+	fn tc_floor() {
+	    // XPath == floor((1.2))
+	    let ev = floor(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from(1.2)))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq[0].to_double(), 1.0)
+	}
+
+	#[test]
+	fn tc_ceiling() {
+	    // XPath == ceiling((1.2))
+	    let ev = ceiling(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from(1.2)))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq[0].to_double(), 2.0)
+	}
+
+	#[test]
+	fn tc_round_1() {
+	    // XPath == round((1.23456))
+	    let ev = round(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from(1.23456)))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq[0].to_double(), 1.0)
+	}
+	#[test]
+	fn tc_round_2() {
+	    // XPath == round((1.23456, 4))
+	    let ev = round(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from(1.23456)))),
+		literal(Rc::new(Item::<$x>::Value(Value::from(4)))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert!(seq[0].to_double() - 1.2346 < 0.000001)
+	}
+
+	#[test]
+	fn tc_current_date_time() {
+	    // XPath == current-date-time()
+	    let ev = current_date_time::<$x>();
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    match &*seq[0] {
+		Item::Value(Value::DateTime(dt)) => {
+		    assert_eq!(dt.year(), Local::now().year());
+		    assert_eq!(dt.month(), Local::now().month());
+		    assert_eq!(dt.day(), Local::now().day());
+		    assert_eq!(dt.hour(), Local::now().hour());
+		    assert_eq!(dt.minute(), Local::now().minute());
+		    assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+		}
+		_ => panic!("not a singleton dateTime value")
+	    }
+	}
+
+	#[test]
+	fn tc_current_date() {
+	    // XPath == current-date()
+	    let ev = current_date::<$x>();
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    match &*seq[0] {
+		Item::Value(Value::Date(dt)) => {
+		    assert_eq!(dt.year(), Local::now().year());
+		    assert_eq!(dt.month(), Local::now().month());
+		    assert_eq!(dt.day(), Local::now().day());
+		}
+		_ => panic!("not a singleton date value")
+	    }
+	}
+
+	#[test]
+	fn tc_current_time() {
+	    // XPath == current-time()
+	    let ev = current_time::<$x>();
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    match &*seq[0] {
+		Item::Value(Value::Time(dt)) => {
+		    assert_eq!(dt.hour(), Local::now().hour());
+		    assert_eq!(dt.minute(), Local::now().minute());
+		    assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+		}
+		_ => panic!("not a singleton time value")
+	    }
+	}
+
+	#[test]
+	fn tc_format_date_time() {
+	    // XPath == format-dateTime("2022-01-03T04:05:06.789+10:00", "[H]:[m] [D]/[M]/[Y]")
+	    let ev = format_date_time(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from("2022-01-03T04:05:06.789+10:00")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("[H]:[m] [D]/[M]/[Y]")))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "04:05 03/01/2022")
+	}
+
+	#[test]
+	fn tc_format_date() {
+	    // XPath == format-date("2022-01-03", "[D]/[M]/[Y]")
+	    let ev = format_date(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from("2022-01-03")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("[D]/[M]/[Y]")))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "03/01/2022")
+	}
+
+	#[test]
+	fn tc_format_time() {
+	    // XPath == format-time("04:05:06.789+10:00", "[H]:[m]")
+	    let ev = format_time(vec![
+		literal(Rc::new(Item::<$x>::Value(Value::from("04:05:06.789")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("[H]:[m]:[s]")))),
+	    ]);
+	    let seq = ev(&mut Context::new())
+		.expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "04:05:06")
 	}
 
 	#[test]
