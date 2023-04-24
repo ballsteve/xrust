@@ -329,6 +329,44 @@ impl<N: Node> Item<N> {
             Item::Value(v) => v.value_type(),
         }
     }
+    /// Make a shallow copy of an item.
+    /// That is, the item is duplicated but not it's content, including attributes.
+    pub fn shallow_copy(&self) -> Result<Self, Error> {
+        match self {
+            Item::Value(v) => Ok(Item::Value(v.clone())),
+            Item::Node(n) => {
+                match n.node_type() {
+                    NodeType::Element => {
+                        Ok(Item::Node(n.owner_document().new_element(self.name())?))
+                    }
+                    NodeType::Attribute => Ok(Item::Node(
+                        n.owner_document()
+                            .new_attribute(n.name(), Value::from(n.to_string()))?,
+                    )),
+                    NodeType::Text => Ok(Item::Node(
+                        n.owner_document().new_text(Value::from(n.to_string()))?,
+                    )),
+                    //		    NodeType::Comment => {
+                    //			Ok(Item::Node(n.owner_document().new_comment(Value::from(n.to_string()))?))
+                    //		    }
+                    //		    NodeType::ProcessingInstruction => {
+                    //			Ok(Item::Node(n.owner_document().new_processing_instruction(
+                    //			    n.name(),
+                    //			    Value::from(n.to_string())
+                    //			)?))
+                    //		    }
+                    _ => Result::Err(Error {
+                        kind: ErrorKind::NotImplemented,
+                        message: "not implemented".to_string(),
+                    }),
+                }
+            }
+            _ => Result::Err(Error {
+                kind: ErrorKind::NotImplemented,
+                message: "not implemented".to_string(),
+            }),
+        }
+    }
 }
 
 impl<N: Node> fmt::Debug for Item<N> {

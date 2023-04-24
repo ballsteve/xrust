@@ -264,7 +264,50 @@ where
     })
 }
 
-/// TODO: Copy, Deep-Copy
+/// Shallow copy of an item. The first argument selects the items to be copied. If not specified then the context item is copied. The content of the item can, optionally, be added.
+pub fn copy<F, N: Node + 'static>(
+    i: Option<F>,
+    c: Option<F>,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |ctxt| {
+        // If item (i) is None then copy the context item
+        let orig = if i.is_some() {
+            (i.as_ref().unwrap())(ctxt)?
+        } else {
+            vec![ctxt.seq[ctxt.i].clone()]
+        };
+        let mut result: Sequence<N> = Vec::new();
+        for k in orig {
+            let cp = k.shallow_copy()?;
+            result.push(Rc::new(cp.clone()));
+            if c.is_some() {
+                match cp {
+                    Item::Node(mut im) => {
+                        for j in (c.as_ref().unwrap())(ctxt)? {
+                            match &*j {
+                                Item::Value(v) => im.push(im.new_text(v.clone())?)?,
+                                Item::Node(n) => im.push(n.clone())?,
+                                _ => {
+                                    return Err(Error::new(
+                                        ErrorKind::NotImplemented,
+                                        String::from("not yet implemented"),
+                                    ))
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+        Ok(result)
+    })
+}
+
+/// TODO: Deep-Copy
 
 /// Creates a singleton sequence with the context item as its value
 pub fn context<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {

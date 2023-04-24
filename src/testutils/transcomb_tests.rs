@@ -9,6 +9,7 @@ macro_rules! transcomb_tests (
 			       empty,
 			       literal, literal_element, literal_attribute,
 			       set_attribute,
+			       copy,
 			       context, root,
 			       tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
@@ -110,6 +111,58 @@ macro_rules! transcomb_tests (
 	    let seq = ev(&mut ctxt).expect("evaluation failed");
 	    assert_eq!(sd.to_xml(), "<Test foo='bar'></Test>")
 	}
+	#[test]
+	fn tc_copy_literal() {
+	    let ev = copy(
+		Some(literal(Rc::new(Item::<$x>::Value(Value::from("this is the original"))))),
+		None
+	    );
+	    let seq = ev(&mut Context::new()).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "this is the original")
+	}
+	#[test]
+	fn tc_copy_context_literal() {
+	    let ev = copy(
+		None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>,
+		None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>
+	    );
+	    let seq = ev(
+		&mut ContextBuilder::new()
+		    .sequence(vec![Rc::new(Item::<$x>::Value(Value::from("this is the original")))])
+		    .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_string(), "this is the original")
+	}
+	#[test]
+	fn tc_copy_context_node() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    t.push(sd.new_text(Value::from("this is the original")).expect("unable to create text node"))
+		.expect("unable to add text node");
+
+	    let ev = copy(
+		None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>,
+		Some(literal((Rc::new(Item::<$x>::Value(Value::from("this is the copy"))))))
+	    );
+
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+		.result_document(mydoc)
+		.sequence(vec![Rc::new(Item::Node(t))])
+		.build();
+	    let seq = ev(&mut ctxt).expect("evaluation failed");
+
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_xml(), "<Test>this is the copy</Test>");
+	    assert_eq!(sd.to_xml(), "<Test>this is the original</Test>")
+	}
+
 	#[test]
 	fn tc_seq_of_literals() {
 	    let ev = tc_sequence(
