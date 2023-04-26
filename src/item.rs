@@ -334,33 +334,18 @@ impl<N: Node> Item<N> {
     pub fn shallow_copy(&self) -> Result<Self, Error> {
         match self {
             Item::Value(v) => Ok(Item::Value(v.clone())),
-            Item::Node(n) => {
-                match n.node_type() {
-                    NodeType::Element => {
-                        Ok(Item::Node(n.owner_document().new_element(self.name())?))
-                    }
-                    NodeType::Attribute => Ok(Item::Node(
-                        n.owner_document()
-                            .new_attribute(n.name(), Value::from(n.to_string()))?,
-                    )),
-                    NodeType::Text => Ok(Item::Node(
-                        n.owner_document().new_text(Value::from(n.to_string()))?,
-                    )),
-                    //		    NodeType::Comment => {
-                    //			Ok(Item::Node(n.owner_document().new_comment(Value::from(n.to_string()))?))
-                    //		    }
-                    //		    NodeType::ProcessingInstruction => {
-                    //			Ok(Item::Node(n.owner_document().new_processing_instruction(
-                    //			    n.name(),
-                    //			    Value::from(n.to_string())
-                    //			)?))
-                    //		    }
-                    _ => Result::Err(Error {
-                        kind: ErrorKind::NotImplemented,
-                        message: "not implemented".to_string(),
-                    }),
-                }
-            }
+            Item::Node(n) => Ok(Item::Node(n.shallow_copy()?)),
+            _ => Result::Err(Error {
+                kind: ErrorKind::NotImplemented,
+                message: "not implemented".to_string(),
+            }),
+        }
+    }
+    /// Make a deep copy of an item.
+    pub fn deep_copy(&self) -> Result<Self, Error> {
+        match self {
+            Item::Value(v) => Ok(Item::Value(v.clone())),
+            Item::Node(n) => Ok(Item::Node(n.deep_copy()?)),
             _ => Result::Err(Error {
                 kind: ErrorKind::NotImplemented,
                 message: "not implemented".to_string(),
@@ -469,6 +454,8 @@ pub trait Node: Clone {
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
 
+    /// Shallow copy the node, i.e. copy only the node, but not it's attributes or content.
+    fn shallow_copy(&self) -> Result<Self, Error>;
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
     /// Canonical XML representation of the node

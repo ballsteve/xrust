@@ -307,7 +307,27 @@ where
     })
 }
 
-/// TODO: Deep-Copy
+/// Deep copy of an item. The first argument selects the items to be copied. If not specified then the context item is copied.
+pub fn deep_copy<F, N: Node + 'static>(
+    i: Option<F>,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |ctxt| {
+        // If item (i) is None then copy the context item
+        let orig = if i.is_some() {
+            (i.as_ref().unwrap())(ctxt)?
+        } else {
+            vec![ctxt.seq[ctxt.i].clone()]
+        };
+        let mut result: Sequence<N> = Vec::new();
+        for k in orig {
+            result.push(Rc::new(k.deep_copy()?));
+        }
+        Ok(result)
+    })
+}
 
 /// Creates a singleton sequence with the context item as its value
 pub fn context<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {

@@ -483,6 +483,14 @@ impl ItemNode for RNode {
         Ok(())
     }
 
+    /// Shallow copy the node. Returned node is unattached.
+    fn shallow_copy(&self) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(self.node_type())
+            .name(self.name())
+            .value(self.value())
+            .build())
+    }
+
     /// Deep copy the node. Returned node is unattached.
     fn deep_copy(&self) -> Result<Self, Error> {
         let mut result = NodeBuilder::new(self.node_type())

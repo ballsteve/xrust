@@ -9,7 +9,7 @@ macro_rules! transcomb_tests (
 			       empty,
 			       literal, literal_element, literal_attribute,
 			       set_attribute,
-			       copy,
+			       copy, deep_copy,
 			       context, root,
 			       tc_sequence, compose, step, filter,
 			       tc_or, tc_and,
@@ -161,6 +161,33 @@ macro_rules! transcomb_tests (
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Test>this is the copy</Test>");
 	    assert_eq!(sd.to_xml(), "<Test>this is the original</Test>")
+	}
+	#[test]
+	fn tc_deep_copy() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut u = sd.new_element(QualifiedName::new(None, None, String::from("inner")))
+		.expect("unable to create element");
+	    t.push(u.clone())
+		.expect("unable to append child");
+	    u.push(sd.new_text(Value::from("this is the original")).expect("unable to create text node"))
+		.expect("unable to add text node");
+
+	    let ev = deep_copy(
+		None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>
+	    );
+
+	    let mut ctxt = ContextBuilder::new()
+		.sequence(vec![Rc::new(Item::Node(t))])
+		.build();
+	    let seq = ev(&mut ctxt).expect("evaluation failed");
+
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_xml(), "<Test><inner>this is the original</inner></Test>");
 	}
 
 	#[test]
