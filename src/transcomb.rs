@@ -894,7 +894,89 @@ pub fn reference_variable<N: Node>(name: String) -> Box<dyn Fn(&mut Context<N>) 
     })
 }
 
-/// TODO: for-each
+/// Evaluate a combinator for each item.
+pub fn for_each<F, N: Node>(s: F, body: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |ctxt| {
+        let mut result: Sequence<N> = Vec::new();
+
+        for i in s(ctxt)? {
+            let mut v = body(&mut ContextBuilder::from(ctxt.clone()).sequence(vec![i]).build())?;
+            result.append(&mut v);
+        }
+        Ok(result)
+    })
+}
+
+/// Evaluate a combinator for each group of items.
+pub fn for_each_by<F, N: Node>(
+    _s: F,
+    _body: F,
+    _by: F,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |_ctxt| {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    })
+}
+
+/// Evaluate a combinator for each group of items.
+pub fn for_each_adjacent<F, N: Node>(
+    _s: F,
+    _body: F,
+    _adj: F,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |_ctxt| {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    })
+}
+
+/// Evaluate a combinator for each group of items.
+pub fn for_each_starting_with<F, N: Node>(
+    _s: F,
+    _body: F,
+    _pat: F,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |_ctxt| {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    })
+}
+
+/// Evaluate a combinator for each group of items.
+pub fn for_each_ending_with<F, N: Node>(
+    _s: F,
+    _body: F,
+    _pat: F,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+where
+    F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
+{
+    Box::new(move |_ctxt| {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    })
+}
 
 /// Apply templates to the select expression.
 pub fn apply_templates<F, N: Node>(s: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>

@@ -17,6 +17,7 @@ macro_rules! transcomb_tests (
 			       general_comparison, value_comparison,
 			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
+			       for_each,
 			       apply_templates,
 			       apply_imports, next_match,
 			       position, last, tc_count,
@@ -1531,6 +1532,61 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "foo")
+	}
+
+	#[test]
+	fn tc_for_each() {
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to element node");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut l1 = sd.new_element(QualifiedName::new(None, None, String::from("Level1")))
+		.expect("unable to element node");
+	    t.push(l1.clone())
+		.expect("unable to append child");
+	    l1.push(sd.new_text(Value::from("one")).expect("unable to create text node"))
+		.expect("unable to append text");
+	    let mut l2 = sd.new_element(QualifiedName::new(None, None, String::from("Level1")))
+		.expect("unable to element node");
+	    t.push(l2.clone())
+		.expect("unable to append child");
+	    l2.push(sd.new_text(Value::from("two")).expect("unable to create text node"))
+		.expect("unable to append text");
+	    let mut l3 = sd.new_element(QualifiedName::new(None, None, String::from("Level1")))
+		.expect("unable to element node");
+	    t.push(l3.clone())
+		.expect("unable to append child");
+	    l3.push(sd.new_text(Value::from("three")).expect("unable to create text node"))
+		.expect("unable to append text");
+
+	    // xsl:for-each select="/*/*" body == xsl:text "found a Level-1"
+	    let ev = for_each(
+		compose(vec![
+		    root(),
+		    step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    ),
+		    step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Kind(KindTest::AnyKindTest)
+			}
+		    ),
+		]),
+		literal(Rc::new(Item::Value(Value::from("found a Level-1")))),
+	    );
+
+	    let seq = ev(&mut ContextBuilder::new()
+			 .sequence(vec![Rc::new(Item::Node(sd))])
+			 .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 3);
+	    assert_eq!(seq.to_string(), "found a Level-1found a Level-1found a Level-1")
 	}
 
 	#[test]
