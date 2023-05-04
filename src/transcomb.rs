@@ -36,6 +36,8 @@ pub struct Context<N: Node> {
     // variables
     vars: HashMap<String, Vec<Sequence<N>>>,
     // grouping
+    current_grouping_key: Option<Value>,
+    current_group: Sequence<N>,
     // output defn
     // base URI
 }
@@ -50,6 +52,8 @@ impl<N: Node> Context<N> {
             templates: Vec::new(),
             current_templates: Vec::new(),
             rd: None,
+            current_grouping_key: None,
+            current_group: Vec::new(),
         }
     }
 
@@ -79,6 +83,8 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             vars: HashMap::new(),
             templates: Vec::new(),
             current_templates: Vec::new(),
+            current_grouping_key: None,
+            current_group: Vec::new(),
             rd: None,
         }
     }
@@ -117,6 +123,14 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn current_templates(mut self, c: Vec<Rc<Template<N>>>) -> Self {
         self.0.current_templates = c;
+        self
+    }
+    pub fn current_group(mut self, c: Sequence<N>) -> Self {
+        self.0.current_group = c;
+        self
+    }
+    pub fn current_grouping_key(mut self, k: Value) -> Self {
+        self.0.current_grouping_key = Some(k);
         self
     }
     pub fn build(self) -> Context<N> {
@@ -911,24 +925,43 @@ where
 }
 
 /// Evaluate a combinator for each group of items.
-pub fn for_each_by<F, N: Node>(
-    _s: F,
-    _body: F,
-    _by: F,
-) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn group_by<F, N: Node>(s: F, by: F, body: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
-    Box::new(move |_ctxt| {
-        Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not implemented"),
-        ))
+    Box::new(move |ctxt| {
+        // Each 'by' expression is evaluated to a string key and stored in the hashmap
+        let mut groups = HashMap::new();
+        s(ctxt)?.iter().try_for_each(|i| {
+            // There may be multiple keys returned.
+            // For each one, add this item into the group for that key
+            by(&mut ContextBuilder::from(ctxt.clone())
+                .sequence(vec![i.clone()])
+                .build())?
+            .iter()
+            .for_each(|k| {
+                let e: &mut Vec<Rc<Item<N>>> = groups.entry(k.to_string()).or_default();
+                e.push(i.clone());
+            });
+            Ok(())
+        })?;
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = body(
+                &mut ContextBuilder::from(ctxt.clone())
+                    .current_grouping_key(Value::from(k.clone()))
+                    .current_group(v.clone())
+                    .build(),
+            )?;
+            result.append(&mut r);
+            Ok(result)
+        })
     })
 }
 
 /// Evaluate a combinator for each group of items.
-pub fn for_each_adjacent<F, N: Node>(
+pub fn group_adjacent<F, N: Node>(
     _s: F,
     _body: F,
     _adj: F,
@@ -945,7 +978,7 @@ where
 }
 
 /// Evaluate a combinator for each group of items.
-pub fn for_each_starting_with<F, N: Node>(
+pub fn group_starting_with<F, N: Node>(
     _s: F,
     _body: F,
     _pat: F,
@@ -962,7 +995,7 @@ where
 }
 
 /// Evaluate a combinator for each group of items.
-pub fn for_each_ending_with<F, N: Node>(
+pub fn group_ending_with<F, N: Node>(
     _s: F,
     _body: F,
     _pat: F,
@@ -1076,10 +1109,6 @@ fn match_templates<N: Node>(
     ctxt: &mut Context<N>,
     i: &Rc<Item<N>>,
 ) -> Result<Vec<Rc<Template<N>>>, Error> {
-    eprintln!(
-        "match_templates: there are {} templates",
-        ctxt.templates.len()
-    );
     let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
         let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
         if !e.is_empty() {
@@ -1088,13 +1117,9 @@ fn match_templates<N: Node>(
         Ok(cand)
     })?;
     if candidates.len() != 0 {
-        eprintln!("{} templates match:", candidates.len());
-        candidates.iter().for_each(|t| eprintln!("{:?}", t));
         // Find the template(s) with the lowest priority.
 
         candidates.sort_unstable_by(|a, b| (*a).cmp(&*b));
-        eprintln!("after sorting:");
-        candidates.iter().for_each(|t| eprintln!("{:?}", t));
         Ok(candidates)
     } else {
         Err(Error::new(
@@ -1229,6 +1254,8 @@ impl<N: Node> Eq for Template<N> {}
 /// * format-dateTime()
 /// * format-date()
 /// * format-time()
+/// * current-group()
+/// * current-grouping-key()
 
 /// XPath position function.
 pub fn position<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
@@ -2037,6 +2064,26 @@ where
                 String::from("wrong number of arguments"),
             )),
         }
+    })
+}
+
+/// XSLT current-group function.
+pub fn current_group<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
+    Box::new(move |ctxt| Ok(ctxt.current_group.clone()))
+}
+
+/// XSLT current-grouping-key function.
+pub fn current_grouping_key<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
+    Box::new(move |ctxt| {
+        ctxt.current_grouping_key.clone().map_or_else(
+            || {
+                Err(Error::new(
+                    ErrorKind::TypeError,
+                    String::from("no current grouping key"),
+                ))
+            },
+            |k| Ok(vec![Rc::new(Item::Value(k))]),
+        )
     })
 }
 

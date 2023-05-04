@@ -103,13 +103,6 @@ where
     let mut rnit = styledoc.child_iter();
     let stylenode = match rnit.next() {
         Some(root) => {
-            eprintln!(
-                "root element ns \"{}\", name \"{}\"",
-                root.name()
-                    .get_nsuri_ref()
-                    .map_or("-- no namespace --", |x| x),
-                root.name().get_localname()
-            );
             if !(root.name().get_nsuri_ref() == Some(XSLTNS)
                 && (root.name().get_localname() == "stylesheet"
                     || root.name().get_localname() == "transform"))
@@ -258,7 +251,6 @@ where
             Ok(())
         })?;
 
-    eprintln!("doing imports");
     // Iterate over children, looking for imports
     // * resolve href
     // * fetch document
@@ -322,7 +314,6 @@ where
             Ok::<(), Error>(())
         })?;
 
-    eprintln!("doing templates");
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
@@ -409,7 +400,6 @@ where
             Ok::<(), Error>(())
         })?;
 
-    eprintln!("done");
     Ok(ev)
 }
 

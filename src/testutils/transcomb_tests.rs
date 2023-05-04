@@ -18,6 +18,8 @@ macro_rules! transcomb_tests (
 			       tc_range, arithmetic,
 			       declare_variable, reference_variable,
 			       for_each,
+			       group_by,
+			       current_group, current_grouping_key,
 			       apply_templates,
 			       apply_imports, next_match,
 			       position, last, tc_count,
@@ -1587,6 +1589,39 @@ macro_rules! transcomb_tests (
 	    ).expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	    assert_eq!(seq.to_string(), "found a Level-1found a Level-1found a Level-1")
+	}
+
+	#[test]
+	fn tc_group_by_1() {
+	    // xsl:for-each-group select="1 to 50" group-by=". mod 10" body == xsl:text "group current-grouping-key size count(current-group)"
+	    let ev = group_by(
+		tc_range(
+		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+		    literal(Rc::new(Item::<$x>::Value(Value::from(50)))),
+		),
+		arithmetic(vec![
+		    (ArithmeticOperator::Noop, context()),
+		    (ArithmeticOperator::Modulo, literal(Rc::new(Item::<$x>::Value(Value::from(10)))))
+		]),
+		literal_element(
+		    QualifiedName::new(None, None, String::from("group")),
+		    tc_sequence(vec![
+			literal(Rc::new(Item::Value(Value::from("key ")))),
+			current_grouping_key(),
+			literal(Rc::new(Item::Value(Value::from(" #members ")))),
+			tc_count(vec![current_group()]),
+		    ])
+		)
+	    );
+
+	    let mut resdoc = $y();
+	    let seq = ev(&mut ContextBuilder::new()
+			 .result_document(resdoc)
+			 .build()
+	    ).expect("evaluation failed");
+	    assert_eq!(seq.len(), 10);
+	    // the groups are not ordered, so it is difficult to test all of the groups are correct
+	    //assert_eq!(seq[0].to_string(), "key 0 #members 10")
 	}
 
 	#[test]
