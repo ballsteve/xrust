@@ -945,6 +945,7 @@ where
             });
             Ok(())
         })?;
+
         // Now evaluate the body for each group
         groups.iter().try_fold(vec![], |mut result, (k, v)| {
             // Set current-group and current-grouping-key
@@ -960,20 +961,69 @@ where
     })
 }
 
-/// Evaluate a combinator for each group of items.
+/// Evaluate a combinator for each group of items. 'adj' is an expression that is evaluated for each selected item. It must resolve to a singleton item. The first item starts the first group. For the second and subsequent items, if the 'adj' item is the same as the previous item then the item is added to the same group. Otherwise a new group is started.
 pub fn group_adjacent<F, N: Node>(
-    _s: F,
-    _body: F,
-    _adj: F,
+    s: F,
+    adj: F,
+    body: F,
 ) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
-    Box::new(move |_ctxt| {
-        Err(Error::new(
-            ErrorKind::NotImplemented,
-            String::from("not implemented"),
-        ))
+    Box::new(move |ctxt| {
+        let mut groups = Vec::new();
+        let sel = s(ctxt)?;
+        if sel.is_empty() {
+            return Ok(vec![]);
+        } else {
+            let mut curgrp = vec![sel[0].clone()];
+            let mut curkey = adj(&mut ContextBuilder::from(ctxt.clone())
+                .sequence(vec![sel[1].clone()])
+                .build())?;
+            if curkey.len() != 1 {
+                return Err(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("group-adjacent attribute must evaluate to a single item"),
+                ));
+            }
+            sel.iter().skip(1).try_for_each(|i| {
+                let thiskey = adj(&mut ContextBuilder::from(ctxt.clone())
+                    .sequence(vec![i.clone()])
+                    .build())?;
+                if thiskey.len() == 1 {
+                    if curkey[0].compare(&*thiskey[0], Operator::Equal)? {
+                        // Append to the current group
+                        curgrp.push(i.clone())
+                    } else {
+                        // Close the previous group, start a new group with this item as its first member
+                        groups.push((curkey.to_string(), curgrp.clone()));
+                        curgrp = vec![i.clone()];
+                        curkey = thiskey;
+                    }
+                    Ok(())
+                } else {
+                    Err(Error::new(
+                        ErrorKind::Unknown,
+                        String::from("group-adjacent attribute must evaluate to a single item"),
+                    ))
+                }
+            })?;
+            // Close the last group
+            groups.push((curkey.to_string(), curgrp))
+        }
+
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = body(
+                &mut ContextBuilder::from(ctxt.clone())
+                    .current_grouping_key(Value::from(k.clone()))
+                    .current_group(v.clone())
+                    .build(),
+            )?;
+            result.append(&mut r);
+            Ok(result)
+        })
     })
 }
 
