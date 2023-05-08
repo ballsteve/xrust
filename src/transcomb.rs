@@ -1322,40 +1322,34 @@ pub fn last<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
 }
 
 /// XPath count function.
-pub fn tc_count<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn tc_count<F, N: Node>(s: Option<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        match arguments.len() {
-            0 => {
-                // Count the context items
+        s.as_ref().map_or_else(
+            || {
                 Ok(vec![Rc::new(Item::Value(Value::from(
                     ctxt.seq.len() as i64
                 )))])
-            }
-            1 => {
-                // Count the argument items
+            },
+            |i| {
                 Ok(vec![Rc::new(Item::Value(Value::from(
-                    (arguments[0])(ctxt)?.len() as i64,
+                    i(&mut ctxt.clone())?.len() as i64,
                 )))])
-            }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+            },
+        )
     })
 }
 
 /// XPath local-name function.
-pub fn local_name<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn local_name<F, N: Node>(s: Option<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        match arguments.len() {
-            0 => {
+        s.as_ref().map_or_else(
+            || {
                 // Get the name of the context item
                 match *ctxt.seq[ctxt.i] {
                     Item::Node(ref m) => Ok(vec![Rc::new(Item::Value(Value::from(
@@ -1366,10 +1360,10 @@ where
                         String::from("type error: not a node"),
                     )),
                 }
-            }
-            1 => {
+            },
+            |t| {
                 // Get the name of the singleton node
-                let n = (arguments[0])(ctxt)?;
+                let n = t(&mut ctxt.clone())?;
                 match n.len() {
                     0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
                     1 => match *n[0] {
@@ -1386,23 +1380,19 @@ where
                         String::from("type error: not a singleton node"),
                     )),
                 }
-            }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+            },
+        )
     })
 }
 
 /// XPath name function.
-pub fn name<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn name<F, N: Node>(s: Option<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        match arguments.len() {
-            0 => {
+        s.as_ref().map_or_else(
+            || {
                 // Get the name of the context item
                 match *ctxt.seq[ctxt.i] {
                     Item::Node(ref m) => Ok(vec![Rc::new(Item::Value(Value::from(
@@ -1413,10 +1403,10 @@ where
                         String::from("type error: not a node"),
                     )),
                 }
-            }
-            1 => {
+            },
+            |t| {
                 // Get the name of the singleton node
-                let n = (arguments[0])(ctxt)?;
+                let n = t(&mut ctxt.clone())?;
                 match n.len() {
                     0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
                     1 => match *n[0] {
@@ -1433,28 +1423,20 @@ where
                         String::from("type error: not a singleton node"),
                     )),
                 }
-            }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+            },
+        )
     })
 }
 
 /// XPath string function.
-pub fn string<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn string<F, N: Node>(s: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
-    Box::new(move |ctxt| match arguments.len() {
-        1 => Ok(vec![Rc::new(Item::Value(Value::from(
-            (arguments[0])(ctxt)?.to_string(),
-        )))]),
-        _ => Err(Error::new(
-            ErrorKind::TypeError,
-            String::from("wrong number of arguments"),
-        )),
+    Box::new(move |ctxt| {
+        Ok(vec![Rc::new(Item::Value(Value::from(
+            s(ctxt)?.to_string(),
+        )))])
     })
 }
 
@@ -1480,181 +1462,142 @@ where
 }
 
 /// XPath starts-with function.
-pub fn starts_with<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn starts_with<F, N: Node>(s: F, t: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have exactly two arguments. arg[0] is the string to search, arg[1] is what to search for
-        match arguments.len() {
-            2 => Ok(vec![Rc::new(Item::Value(Value::from(
-                (arguments[0])(ctxt)?
-                    .to_string()
-                    .starts_with(arguments[1](ctxt)?.to_string().as_str()),
-            )))]),
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+        // s is the string to search, t is what to search for
+        Ok(vec![Rc::new(Item::Value(Value::from(
+            s(ctxt)?
+                .to_string()
+                .starts_with(t(ctxt)?.to_string().as_str()),
+        )))])
     })
 }
 
 /// XPath contains function.
-pub fn contains<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn contains<F, N: Node>(s: F, t: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have exactly two arguments. arg[0] is the string to search, arg[1] is what to search for
-        match arguments.len() {
-            2 => Ok(vec![Rc::new(Item::Value(Value::from(
-                (arguments[0])(ctxt)?
-                    .to_string()
-                    .contains(arguments[1](ctxt)?.to_string().as_str()),
-            )))]),
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+        // s is the string to search, t is what to search for
+        Ok(vec![Rc::new(Item::Value(Value::from(
+            s(ctxt)?.to_string().contains(t(ctxt)?.to_string().as_str()),
+        )))])
     })
 }
 
 /// XPath substring function.
-pub fn substring<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn substring<F, N: Node>(
+    s: F,
+    t: F,
+    l: Option<F>,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
         // must have two or three arguments.
-        // arg[0] is the string to search,
-        // arg[1] is the index to start at,
-        // arg[2] is the length of the substring at extract (or the rest of the string if missing)
-        match arguments.len() {
-            2 => Ok(vec![Rc::new(Item::Value(Value::from(
-                (arguments[0])(ctxt)?
-                    .to_string()
-                    .graphemes(true)
-                    .skip((arguments[1])(ctxt)?.to_int()? as usize - 1)
-                    .collect::<String>(),
-            )))]),
-            3 => Ok(vec![Rc::new(Item::Value(Value::from(
-                (arguments[0])(ctxt)?
-                    .to_string()
-                    .graphemes(true)
-                    .skip((arguments[1])(ctxt)?.to_int()? as usize - 1)
-                    .take((arguments[2])(ctxt)?.to_int()? as usize)
-                    .collect::<String>(),
-            )))]),
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+        // s is the string to search,
+        // t is the index to start at,
+        // l is the length of the substring at extract (or the rest of the string if missing)
+        l.as_ref().map_or_else(
+            || {
+                Ok(vec![Rc::new(Item::Value(Value::from(
+                    s(&mut ctxt.clone())?
+                        .to_string()
+                        .graphemes(true)
+                        .skip(t(&mut ctxt.clone())?.to_int()? as usize - 1)
+                        .collect::<String>(),
+                )))])
+            },
+            |m| {
+                Ok(vec![Rc::new(Item::Value(Value::from(
+                    s(&mut ctxt.clone())?
+                        .to_string()
+                        .graphemes(true)
+                        .skip(t(&mut ctxt.clone())?.to_int()? as usize - 1)
+                        .take(m(&mut ctxt.clone())?.to_int()? as usize)
+                        .collect::<String>(),
+                )))])
+            },
+        )
     })
 }
 
 /// XPath substring-before function.
-pub fn substring_before<F, N: Node>(
-    arguments: Vec<F>,
-) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn substring_before<F, N: Node>(s: F, t: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have two arguments.
-        // arg[0] is the string to search,
-        // arg[1] is the string to find.
-        match arguments.len() {
-            2 => {
-                let s = (arguments[0])(ctxt)?.to_string();
-                match s.find((arguments[1])(ctxt)?.to_string().as_str()) {
-                    Some(i) => {
-                        match s.get(0..i) {
-                            Some(t) => Ok(vec![Rc::new(Item::Value(Value::from(t)))]),
-                            None => {
-                                // This shouldn't happen!
-                                Err(Error::new(
-                                    ErrorKind::Unknown,
-                                    String::from("unable to extract substring"),
-                                ))
-                            }
-                        }
+        // s is the string to search,
+        // t is the string to find.
+        let u = s(ctxt)?.to_string();
+        match u.find(t(ctxt)?.to_string().as_str()) {
+            Some(i) => {
+                match u.get(0..i) {
+                    Some(v) => Ok(vec![Rc::new(Item::Value(Value::from(v)))]),
+                    None => {
+                        // This shouldn't happen!
+                        Err(Error::new(
+                            ErrorKind::Unknown,
+                            String::from("unable to extract substring"),
+                        ))
                     }
-                    None => Ok(vec![]),
                 }
             }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
+            None => Ok(vec![]),
         }
     })
 }
 
 /// XPath substring-after function.
-pub fn substring_after<F, N: Node>(
-    arguments: Vec<F>,
-) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn substring_after<F, N: Node>(s: F, t: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have two arguments.
-        // arg[0] is the string to search,
-        // arg[1] is the string to find.
-        match arguments.len() {
-            2 => {
-                let s = (arguments[0])(ctxt)?.to_string();
-                let t = (arguments[1])(ctxt)?.to_string();
-                match s.find(t.as_str()) {
-                    Some(i) => {
-                        match s.get(i + t.len()..s.len()) {
-                            Some(u) => Ok(vec![Rc::new(Item::Value(Value::from(u)))]),
-                            None => {
-                                // This shouldn't happen!
-                                Err(Error::new(
-                                    ErrorKind::Unknown,
-                                    String::from("unable to extract substring"),
-                                ))
-                            }
-                        }
+        // s is the string to search,
+        // t is the string to find.
+        let u = s(ctxt)?.to_string();
+        let v = t(ctxt)?.to_string();
+        match u.find(v.as_str()) {
+            Some(i) => {
+                match u.get(i + v.len()..u.len()) {
+                    Some(w) => Ok(vec![Rc::new(Item::Value(Value::from(w)))]),
+                    None => {
+                        // This shouldn't happen!
+                        Err(Error::new(
+                            ErrorKind::Unknown,
+                            String::from("unable to extract substring"),
+                        ))
                     }
-                    None => Ok(vec![]),
                 }
             }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
+            None => Ok(vec![]),
         }
     })
 }
 
 /// XPath normalize-space function.
-pub fn normalize_space<F, N: Node>(
-    arguments: Vec<F>,
-) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn normalize_space<F, N: Node>(n: Option<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have zero or one arguments.
-        let s: Result<String, Error> = match arguments.len() {
-            0 => {
+        let s: Result<String, Error> = n.as_ref().map_or_else(
+            || {
                 // Use the current item
                 Ok(ctxt.seq[ctxt.i].to_string())
-            }
-            1 => {
-                let t = (arguments[0])(ctxt)?;
+            },
+            |m| {
+                let t = m(&mut ctxt.clone())?;
                 Ok(t.to_string())
-            }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        };
+            },
+        );
         // intersperse is the right iterator to use, but it is only available in nightly at the moment
         s.map(|u| {
             vec![Rc::new(Item::Value(Value::from(
@@ -1665,93 +1608,70 @@ where
 }
 
 /// XPath translate function.
-pub fn translate<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn translate<F, N: Node>(s: F, map: F, trn: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have three arguments.
-        match arguments.len() {
-            3 => {
-                // arg[0] is the string to search
-                // arg[1] are the map chars
-                // arg[2] are the translate chars
-                let o = (arguments[1])(ctxt)?.to_string();
-                let m: Vec<&str> = o.graphemes(true).collect();
-                let u = (arguments[2])(ctxt)?.to_string();
-                let t: Vec<&str> = u.graphemes(true).collect();
-                let mut result: String = String::new();
+        // s is the string to search
+        // map are the map chars
+        // trn are the translate chars
+        let o = map(ctxt)?.to_string();
+        let m: Vec<&str> = o.graphemes(true).collect();
+        let u = trn(ctxt)?.to_string();
+        let t: Vec<&str> = u.graphemes(true).collect();
+        let mut result: String = String::new();
 
-                for c in (arguments[0])(ctxt)?.to_string().graphemes(true) {
-                    let mut a: Option<Option<usize>> = Some(None);
-                    for (i, _item) in m.iter().enumerate() {
-                        if c == m[i] {
-                            if i < t.len() {
-                                a = Some(Some(i));
-                                break;
-                            } else {
-                                // omit this character
-                                a = None
-                            }
-                        } else {
-                            // keep looking for a match
-                        }
+        for c in s(ctxt)?.to_string().graphemes(true) {
+            let mut a: Option<Option<usize>> = Some(None);
+            for (i, _item) in m.iter().enumerate() {
+                if c == m[i] {
+                    if i < t.len() {
+                        a = Some(Some(i));
+                        break;
+                    } else {
+                        // omit this character
+                        a = None
                     }
-                    match a {
-                        Some(None) => {
-                            result.push_str(c);
-                        }
-                        Some(Some(j)) => result.push_str(t[j]),
-                        None => {
-                            // omit char
-                        }
-                    }
+                } else {
+                    // keep looking for a match
                 }
-                Ok(vec![Rc::new(Item::Value(Value::from(result)))])
             }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
+            match a {
+                Some(None) => {
+                    result.push_str(c);
+                }
+                Some(Some(j)) => result.push_str(t[j]),
+                None => {
+                    // omit char
+                }
+            }
         }
+        Ok(vec![Rc::new(Item::Value(Value::from(result)))])
     })
 }
 
 /// XPath boolean function.
-pub fn boolean<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn boolean<F, N: Node>(b: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one argument.
-        match arguments.len() {
-            1 => Ok(vec![Rc::new(Item::Value(Value::Boolean(
-                (arguments[0])(ctxt)?.to_bool(),
-            )))]),
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+        Ok(vec![Rc::new(Item::Value(Value::Boolean(
+            b(ctxt)?.to_bool(),
+        )))])
     })
 }
 
 /// XPath not function.
-pub fn not<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn not<F, N: Node>(n: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one argument.
-        match arguments.len() {
-            1 => Ok(vec![Rc::new(Item::Value(Value::Boolean(
-                !(arguments[0])(ctxt)?.to_bool(),
-            )))]),
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+        Ok(vec![Rc::new(Item::Value(Value::Boolean(
+            !n(ctxt)?.to_bool(),
+        )))])
     })
 }
 
@@ -1766,130 +1686,95 @@ pub fn tc_false<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
 }
 
 /// XPath number function.
-pub fn number<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn number<F, N: Node>(num: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one argument.
-        match arguments.len() {
+        let n = num(ctxt)?;
+        match n.len() {
             1 => {
-                let n = (arguments[0])(ctxt)?;
-                match n.len() {
-                    1 => {
-                        // First try converting to an integer
-                        match n[0].to_int() {
-                            Ok(i) => Ok(vec![Rc::new(Item::Value(Value::Integer(i)))]),
-                            _ => {
-                                // Otherwise convert to double.
-                                // NB. This can't fail. At worst it returns NaN.
-                                Ok(vec![Rc::new(Item::Value(Value::Double(n[0].to_double())))])
-                            }
-                        }
+                // First try converting to an integer
+                match n[0].to_int() {
+                    Ok(i) => Ok(vec![Rc::new(Item::Value(Value::Integer(i)))]),
+                    _ => {
+                        // Otherwise convert to double.
+                        // NB. This can't fail. At worst it returns NaN.
+                        Ok(vec![Rc::new(Item::Value(Value::Double(n[0].to_double())))])
                     }
-                    _ => Err(Error::new(
-                        ErrorKind::TypeError,
-                        String::from("not a singleton sequence"),
-                    )),
                 }
             }
             _ => Err(Error::new(
                 ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
+                String::from("not a singleton sequence"),
             )),
         }
     })
 }
 
 /// XPath sum function.
-pub fn sum<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn sum<F, N: Node>(s: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one argument.
-        match arguments.len() {
-            1 => Ok(vec![Rc::new(Item::Value(Value::Double(
-                (arguments[0])(ctxt)?.iter().fold(0.0, |mut acc, i| {
-                    acc += i.to_double();
-                    acc
-                }),
-            )))]),
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+        Ok(vec![Rc::new(Item::Value(Value::Double(
+            s(ctxt)?.iter().fold(0.0, |mut acc, i| {
+                acc += i.to_double();
+                acc
+            }),
+        )))])
     })
 }
 
 /// XPath floor function.
-pub fn floor<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn floor<F, N: Node>(f: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one argument that evaluates to a singleton.
-        match arguments.len() {
-            1 => {
-                let n = (arguments[0])(ctxt)?;
-                match n.len() {
-                    1 => Ok(vec![Rc::new(Item::Value(Value::Double(
-                        n[0].to_double().floor(),
-                    )))]),
-                    _ => Err(Error::new(
-                        ErrorKind::TypeError,
-                        String::from("not a singleton sequence"),
-                    )),
-                }
-            }
+        let n = f(ctxt)?;
+        match n.len() {
+            1 => Ok(vec![Rc::new(Item::Value(Value::Double(
+                n[0].to_double().floor(),
+            )))]),
             _ => Err(Error::new(
                 ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
+                String::from("not a singleton sequence"),
             )),
         }
     })
 }
 
 /// XPath ceiling function.
-pub fn ceiling<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn ceiling<F, N: Node>(c: F) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one argument that evaluates to a singleton.
-        match arguments.len() {
-            1 => {
-                let n = (arguments[0])(ctxt)?;
-                match n.len() {
-                    1 => Ok(vec![Rc::new(Item::Value(Value::Double(
-                        n[0].to_double().ceil(),
-                    )))]),
-                    _ => Err(Error::new(
-                        ErrorKind::TypeError,
-                        String::from("not a singleton sequence"),
-                    )),
-                }
-            }
+        let n = c(ctxt)?;
+        match n.len() {
+            1 => Ok(vec![Rc::new(Item::Value(Value::Double(
+                n[0].to_double().ceil(),
+            )))]),
             _ => Err(Error::new(
                 ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
+                String::from("not a singleton sequence"),
             )),
         }
     })
 }
 
 /// XPath round function.
-pub fn round<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+pub fn round<F, N: Node>(r: F, pr: Option<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have one or two arguments.
-        match arguments.len() {
-            1 => {
+        pr.as_ref().map_or_else(
+            || {
                 // precision is 0, i.e. round to nearest whole number
-                let n = (arguments[0])(ctxt)?;
+                let n = r(&mut ctxt.clone())?;
                 match n.len() {
                     1 => Ok(vec![Rc::new(Item::Value(Value::Double(
                         n[0].to_double().round(),
@@ -1899,10 +1784,10 @@ where
                         String::from("not a singleton sequence"),
                     )),
                 }
-            }
-            2 => {
-                let n = (arguments[0])(ctxt)?;
-                let m = (arguments[1])(ctxt)?;
+            },
+            |p| {
+                let n = r(&mut ctxt.clone())?;
+                let m = p(&mut ctxt.clone())?;
                 match (n.len(), m.len()) {
                     (1, 1) => Ok(vec![Rc::new(Item::Value(Value::Double(
                         ((n[0].to_double() * (10.0_f64).powi(m[0].to_int().unwrap() as i32))
@@ -1914,12 +1799,8 @@ where
                         String::from("not a singleton sequence"),
                     )),
                 }
-            }
-            _ => Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
-            )),
-        }
+            },
+        )
     })
 }
 
@@ -1932,7 +1813,7 @@ pub fn current_date_time<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResul
 pub fn current_date<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>> {
     Box::new(move |_| {
         Ok(vec![Rc::new(Item::Value(Value::Date(
-            Utc::now().date_naive(),
+            Local::now().date_naive(),
         )))])
     })
 }
@@ -1943,175 +1824,146 @@ pub fn current_time<N: Node>() -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 }
 
 /// XPath format-date-time function.
+/// NB. language, calendar, and place are not implemented.
 pub fn format_date_time<F, N: Node>(
-    arguments: Vec<F>,
+    value: F,
+    picture: F,
+    _language: Option<F>,
+    _calendar: Option<F>,
+    _place: Option<F>,
 ) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have 2 or 5 arguments.
-        // TODO: implement 5 argument version.
-        match arguments.len() {
-            2 => {
-                // First argument is the dateTime value
-                let dt = (arguments[0])(ctxt)?;
-                // Second argument is the picture
-                let pic = picture_parse(&(arguments[1])(ctxt)?.to_string())?;
-                match dt.len() {
-                    0 => Ok(vec![]), // Empty value returns empty sequence
-                    1 => {
-                        match *dt[0] {
-                            Item::Value(Value::DateTime(i)) => Ok(vec![Rc::new(Item::Value(
-                                Value::String(i.format(&pic).to_string()),
-                            ))]),
-                            Item::Value(Value::String(ref s)) => {
-                                // Try and coerce into a DateTime value
-                                match DateTime::<FixedOffset>::parse_from_rfc3339(s.as_str()) {
-                                    Ok(j) => Ok(vec![Rc::new(Item::Value(Value::String(
-                                        j.format(&pic).to_string(),
-                                    )))]),
-                                    _ => Err(Error::new(
-                                        ErrorKind::TypeError,
-                                        String::from("unable to determine date value"),
-                                    )),
-                                }
-                            }
+        let dt = value(ctxt)?;
+        let pic = picture_parse(&picture(ctxt)?.to_string())?;
+        match dt.len() {
+            0 => Ok(vec![]), // Empty value returns empty sequence
+            1 => {
+                match *dt[0] {
+                    Item::Value(Value::DateTime(i)) => Ok(vec![Rc::new(Item::Value(
+                        Value::String(i.format(&pic).to_string()),
+                    ))]),
+                    Item::Value(Value::String(ref s)) => {
+                        // Try and coerce into a DateTime value
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(s.as_str()) {
+                            Ok(j) => Ok(vec![Rc::new(Item::Value(Value::String(
+                                j.format(&pic).to_string(),
+                            )))]),
                             _ => Err(Error::new(
                                 ErrorKind::TypeError,
-                                String::from("not a dateTime value"),
+                                String::from("unable to determine date value"),
                             )),
                         }
                     }
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
-                        String::from("not a singleton sequence"),
+                        String::from("not a dateTime value"),
                     )),
                 }
             }
-            5 => Err(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("not yet implemented"),
-            )),
             _ => Err(Error::new(
                 ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
+                String::from("not a singleton sequence"),
             )),
         }
     })
 }
 
 /// XPath format-date function.
-pub fn format_date<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+/// NB. language, calendar, and place are not implemented.
+pub fn format_date<F, N: Node>(
+    value: F,
+    picture: F,
+    _language: Option<F>,
+    _calendar: Option<F>,
+    _place: Option<F>,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have 2 or 5 arguments.
-        // TODO: implement 5 argument version.
-        match arguments.len() {
-            2 => {
-                // First argument is the date value
-                let dt = (arguments[0])(ctxt)?;
-                // Second argument is the picture
-                let pic = picture_parse(&(arguments[1])(ctxt)?.to_string())?;
-                match dt.len() {
-                    0 => Ok(vec![]), // Empty value returns empty sequence
-                    1 => {
-                        match *dt[0] {
-                            Item::Value(Value::Date(i)) => Ok(vec![Rc::new(Item::Value(
-                                Value::String(i.format(&pic).to_string()),
-                            ))]),
-                            Item::Value(Value::String(ref s)) => {
-                                // Try and coerce into a DateTime value
-                                let a = format!("{}T00:00:00Z", s);
-                                match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
-                                    Ok(j) => Ok(vec![Rc::new(Item::Value(Value::String(
-                                        j.date_naive().format(&pic).to_string(),
-                                    )))]),
-                                    _ => Err(Error::new(
-                                        ErrorKind::TypeError,
-                                        String::from("unable to determine date value"),
-                                    )),
-                                }
-                            }
+        let dt = value(ctxt)?;
+        let pic = picture_parse(&picture(ctxt)?.to_string())?;
+        match dt.len() {
+            0 => Ok(vec![]), // Empty value returns empty sequence
+            1 => {
+                match *dt[0] {
+                    Item::Value(Value::Date(i)) => Ok(vec![Rc::new(Item::Value(Value::String(
+                        i.format(&pic).to_string(),
+                    )))]),
+                    Item::Value(Value::String(ref s)) => {
+                        // Try and coerce into a DateTime value
+                        let a = format!("{}T00:00:00Z", s);
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
+                            Ok(j) => Ok(vec![Rc::new(Item::Value(Value::String(
+                                j.date_naive().format(&pic).to_string(),
+                            )))]),
                             _ => Err(Error::new(
                                 ErrorKind::TypeError,
-                                String::from("not a date value"),
+                                String::from("unable to determine date value"),
                             )),
                         }
                     }
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
-                        String::from("not a singleton sequence"),
+                        String::from("not a date value"),
                     )),
                 }
             }
-            5 => Err(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("not yet implemented"),
-            )),
             _ => Err(Error::new(
                 ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
+                String::from("not a singleton sequence"),
             )),
         }
     })
 }
 
 /// XPath format-time function.
-pub fn format_time<F, N: Node>(arguments: Vec<F>) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
+/// NB. language, calendar, and place are not implemented.
+pub fn format_time<F, N: Node>(
+    value: F,
+    picture: F,
+    _language: Option<F>,
+    _calendar: Option<F>,
+    _place: Option<F>,
+) -> Box<dyn Fn(&mut Context<N>) -> TransResult<N>>
 where
     F: Fn(&mut Context<N>) -> TransResult<N> + 'static,
 {
     Box::new(move |ctxt| {
-        // must have 2 or 5 arguments.
-        // TODO: implement 5 argument version.
-        match arguments.len() {
-            2 => {
-                // First argument is the dateTime value
-                let dt = (arguments[0])(ctxt)?;
-                // Second argument is the picture
-                let pic = picture_parse(&(arguments[1])(ctxt)?.to_string())?;
-                match dt.len() {
-                    0 => Ok(vec![]), // Empty value returns empty sequence
-                    1 => {
-                        match *dt[0] {
-                            Item::Value(Value::Time(i)) => Ok(vec![Rc::new(Item::Value(
-                                Value::String(i.format(&pic).to_string()),
-                            ))]),
-                            Item::Value(Value::String(ref s)) => {
-                                // Try and coerce into a DateTime value
-                                let a = format!("1900-01-01T{}Z", s);
-                                match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
-                                    Ok(j) => Ok(vec![Rc::new(Item::Value(Value::String(
-                                        j.format(&pic).to_string(),
-                                    )))]),
-                                    _ => Err(Error::new(
-                                        ErrorKind::TypeError,
-                                        String::from("unable to determine time value"),
-                                    )),
-                                }
-                            }
+        let dt = value(ctxt)?;
+        let pic = picture_parse(&picture(ctxt)?.to_string())?;
+        match dt.len() {
+            0 => Ok(vec![]), // Empty value returns empty sequence
+            1 => {
+                match *dt[0] {
+                    Item::Value(Value::Time(i)) => Ok(vec![Rc::new(Item::Value(Value::String(
+                        i.format(&pic).to_string(),
+                    )))]),
+                    Item::Value(Value::String(ref s)) => {
+                        // Try and coerce into a DateTime value
+                        let a = format!("1900-01-01T{}Z", s);
+                        match DateTime::<FixedOffset>::parse_from_rfc3339(a.as_str()) {
+                            Ok(j) => Ok(vec![Rc::new(Item::Value(Value::String(
+                                j.format(&pic).to_string(),
+                            )))]),
                             _ => Err(Error::new(
                                 ErrorKind::TypeError,
-                                String::from("not a time value"),
+                                String::from("unable to determine time value"),
                             )),
                         }
                     }
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
-                        String::from("not a singleton sequence"),
+                        String::from("not a time value"),
                     )),
                 }
             }
-            5 => Err(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("not yet implemented"),
-            )),
             _ => Err(Error::new(
                 ErrorKind::TypeError,
-                String::from("wrong number of arguments"),
+                String::from("not a singleton sequence"),
             )),
         }
     })

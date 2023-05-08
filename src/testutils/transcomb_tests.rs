@@ -1609,7 +1609,7 @@ macro_rules! transcomb_tests (
 			literal(Rc::new(Item::Value(Value::from("key ")))),
 			current_grouping_key(),
 			literal(Rc::new(Item::Value(Value::from(" #members ")))),
-			tc_count(vec![current_group()]),
+			tc_count(Some(current_group())),
 		    ])
 		)
 	    );
@@ -1643,7 +1643,7 @@ macro_rules! transcomb_tests (
 			literal(Rc::new(Item::Value(Value::from("key ")))),
 			current_grouping_key(),
 			literal(Rc::new(Item::Value(Value::from(" #members ")))),
-			tc_count(vec![current_group()]),
+			tc_count(Some(current_group())),
 		    ])
 		)
 	    );
@@ -2121,7 +2121,7 @@ macro_rules! transcomb_tests (
 	fn tc_count_0() {
 	    // XPath == count()
 
-	    let ev = tc_count(Vec::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>::new());
+	    let ev = tc_count(None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>);
 	    let seq = ev(
 		&mut ContextBuilder::new()
 		    .sequence(vec![
@@ -2141,13 +2141,13 @@ macro_rules! transcomb_tests (
 	fn tc_count_1() {
 	    // XPath == count()
 
-	    let ev = tc_count(vec![
+	    let ev = tc_count(Some(
 		tc_sequence(vec![
 		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
 		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
 		    literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
 		])
-	    ]);
+	    ));
 	    let seq = ev(
 		&mut ContextBuilder::new()
 		    .sequence(vec![
@@ -2181,7 +2181,7 @@ macro_rules! transcomb_tests (
 	    t.push(l1.clone())
 		.expect("unable to append child");
 
-	    let ev = local_name(Vec::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>::new());
+	    let ev = local_name(None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>);
 
 	    // Now evaluate the combinator with <Level-1> as the context item
 	    let seq = ev(&mut Context::from(vec![Rc::new(Item::Node(l1))]))
@@ -2208,7 +2208,7 @@ macro_rules! transcomb_tests (
 	    t.push(l1.clone())
 		.expect("unable to append child");
 
-	    let ev = name(Vec::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>::new());
+	    let ev = name(None::<Box<dyn Fn(&mut Context<$x>) -> TransResult<$x>>>);
 
 	    // Now evaluate the combinator with <Level-1> as the context item
 	    let seq = ev(&mut Context::from(vec![Rc::new(Item::Node(l1))]))
@@ -2220,11 +2220,7 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_string() {
 	    // XPath == string(1.0)
-	    let ev = string(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from(1.0)))),
-		]
-	    );
+	    let ev = string(literal(Rc::new(Item::<$x>::Value(Value::from(1.0)))) );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2251,10 +2247,8 @@ macro_rules! transcomb_tests (
 	fn tc_starts_with_pos() {
 	    // XPath == starts-with("abc", "ab")
 	    let ev = starts_with(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("ab")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("ab")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2265,10 +2259,8 @@ macro_rules! transcomb_tests (
 	fn tc_starts_with_neg() {
 	    // XPath == starts-with("abc", "x")
 	    let ev = starts_with(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("x")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("x")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2280,10 +2272,8 @@ macro_rules! transcomb_tests (
 	fn tc_contains_pos() {
 	    // XPath == contains("abcd", "bc")
 	    let ev = contains(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2294,10 +2284,8 @@ macro_rules! transcomb_tests (
 	fn tc_contains_neg() {
 	    // XPath == contains("abcd", "xyz")
 	    let ev = contains(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("xyz")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("xyz")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2309,10 +2297,9 @@ macro_rules! transcomb_tests (
 	fn tc_substring_2args() {
 	    // XPath == substring("abcd", 2)
 	    let ev = substring(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+		None
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2323,11 +2310,9 @@ macro_rules! transcomb_tests (
 	fn tc_substring_3args() {
 	    // XPath == substring("abcd", 2, 2)
 	    let ev = substring(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+		Some(literal(Rc::new(Item::<$x>::Value(Value::from(2)))))
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2339,10 +2324,8 @@ macro_rules! transcomb_tests (
 	fn tc_substring_before() {
 	    // XPath == substring-before("abcd", "bc")
 	    let ev = substring_before(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2353,10 +2336,8 @@ macro_rules! transcomb_tests (
 	fn tc_substring_after() {
 	    // XPath == substring-after("abcd", "bc")
 	    let ev = substring_after(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("bc")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2368,10 +2349,8 @@ macro_rules! transcomb_tests (
 	fn tc_normalize_space_1() {
 	    // XPath == normalize-space(" a b  c	d\n")
 	    let ev = normalize_space(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from(" a b  c	d
-")))),
-		]
+		Some(literal(Rc::new(Item::<$x>::Value(Value::from(" a b  c	d
+")))))
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2383,11 +2362,9 @@ macro_rules! transcomb_tests (
 	fn tc_translate_1() {
 	    // XPath == translate("abcd", "bdc" "BD")
 	    let ev = translate(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("bdc")))),
-		    literal(Rc::new(Item::<$x>::Value(Value::from("BD")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("bdc")))),
+		literal(Rc::new(Item::<$x>::Value(Value::from("BD")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2399,9 +2376,7 @@ macro_rules! transcomb_tests (
 	fn tc_boolean_string_pos() {
 	    // XPath == boolean("abcd")
 	    let ev = boolean(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2412,9 +2387,7 @@ macro_rules! transcomb_tests (
 	fn tc_boolean_string_neg() {
 	    // XPath == boolean("")
 	    let ev = boolean(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2425,9 +2398,7 @@ macro_rules! transcomb_tests (
 	fn tc_boolean_int_pos() {
 	    // XPath == boolean(1)
 	    let ev = boolean(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2438,9 +2409,7 @@ macro_rules! transcomb_tests (
 	fn tc_boolean_int_neg() {
 	    // XPath == boolean(0)
 	    let ev = boolean(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2452,9 +2421,7 @@ macro_rules! transcomb_tests (
 	fn tc_not_pos() {
 	    // XPath == not("abcd")
 	    let ev = not(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("abcd")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2465,9 +2432,7 @@ macro_rules! transcomb_tests (
 	fn tc_not_neg() {
 	    // XPath == not(0)
 	    let ev = not(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2498,9 +2463,7 @@ macro_rules! transcomb_tests (
 	fn tc_number() {
 	    // XPath == number("124")
 	    let ev = number(
-		vec![
-		    literal(Rc::new(Item::<$x>::Value(Value::from("124")))),
-		]
+		literal(Rc::new(Item::<$x>::Value(Value::from("124")))),
 	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
@@ -2511,13 +2474,13 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_sum() {
 	    // XPath == sum((1, 2, 4))
-	    let ev = sum(vec![
+	    let ev = sum(
 		tc_sequence(vec![
 		    literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
 		    literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
 		    literal(Rc::new(Item::<$x>::Value(Value::from(4)))),
 		])
-	    ]);
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2527,9 +2490,9 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_floor() {
 	    // XPath == floor((1.2))
-	    let ev = floor(vec![
+	    let ev = floor(
 		literal(Rc::new(Item::<$x>::Value(Value::from(1.2)))),
-	    ]);
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2539,9 +2502,9 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_ceiling() {
 	    // XPath == ceiling((1.2))
-	    let ev = ceiling(vec![
+	    let ev = ceiling(
 		literal(Rc::new(Item::<$x>::Value(Value::from(1.2)))),
-	    ]);
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2551,9 +2514,10 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_round_1() {
 	    // XPath == round((1.23456))
-	    let ev = round(vec![
+	    let ev = round(
 		literal(Rc::new(Item::<$x>::Value(Value::from(1.23456)))),
-	    ]);
+		None,
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2562,10 +2526,10 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_round_2() {
 	    // XPath == round((1.23456, 4))
-	    let ev = round(vec![
+	    let ev = round(
 		literal(Rc::new(Item::<$x>::Value(Value::from(1.23456)))),
-		literal(Rc::new(Item::<$x>::Value(Value::from(4)))),
-	    ]);
+		Some(literal(Rc::new(Item::<$x>::Value(Value::from(4))))),
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2629,10 +2593,13 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_format_date_time() {
 	    // XPath == format-dateTime("2022-01-03T04:05:06.789+10:00", "[H]:[m] [D]/[M]/[Y]")
-	    let ev = format_date_time(vec![
+	    let ev = format_date_time(
 		literal(Rc::new(Item::<$x>::Value(Value::from("2022-01-03T04:05:06.789+10:00")))),
 		literal(Rc::new(Item::<$x>::Value(Value::from("[H]:[m] [D]/[M]/[Y]")))),
-	    ]);
+		None,
+		None,
+		None,
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2642,10 +2609,13 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_format_date() {
 	    // XPath == format-date("2022-01-03", "[D]/[M]/[Y]")
-	    let ev = format_date(vec![
+	    let ev = format_date(
 		literal(Rc::new(Item::<$x>::Value(Value::from("2022-01-03")))),
 		literal(Rc::new(Item::<$x>::Value(Value::from("[D]/[M]/[Y]")))),
-	    ]);
+		None,
+		None,
+		None,
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2655,10 +2625,13 @@ macro_rules! transcomb_tests (
 	#[test]
 	fn tc_format_time() {
 	    // XPath == format-time("04:05:06.789+10:00", "[H]:[m]")
-	    let ev = format_time(vec![
+	    let ev = format_time(
 		literal(Rc::new(Item::<$x>::Value(Value::from("04:05:06.789")))),
 		literal(Rc::new(Item::<$x>::Value(Value::from("[H]:[m]:[s]")))),
-	    ]);
+		None,
+		None,
+		None,
+	    );
 	    let seq = ev(&mut Context::new())
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
