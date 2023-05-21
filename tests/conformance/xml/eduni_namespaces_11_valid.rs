@@ -16,10 +16,10 @@ fn rmtns11001() {
         Description:Namespace name test: a perfectly good http IRI that is not a URI
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/001.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -33,10 +33,10 @@ fn rmtns11002() {
         Description:Namespace inequality test: different escaping of non-ascii letter
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/002.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -49,10 +49,10 @@ fn rmtns11003() {
         Description:1.1 style prefix unbinding
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/003.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -65,10 +65,10 @@ fn rmtns11004() {
         Description:1.1 style prefix unbinding and rebinding
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/004.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -81,9 +81,9 @@ fn rmtns11006() {
         Description:Test whether non-Latin-1 characters are accepted in IRIs, and whether they are correctly distinguished
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/006.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }

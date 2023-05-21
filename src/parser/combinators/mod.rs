@@ -6,7 +6,7 @@ pub(crate) mod tag;
 pub(crate) mod take;
 pub(crate) mod tuple;
 
-pub(crate) mod expander;
+//pub(crate) mod expander;
 pub(crate) mod opt;
 pub(crate) mod validate;
 pub(crate) mod value;

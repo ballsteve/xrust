@@ -6,13 +6,15 @@ This parser combinator passes a context into the function, which includes the st
 
 use crate::intmuttree::DTD;
 use std::collections::HashMap;
-use std::str::Chars;
+use std::fmt;
+use crate::xdmerror::{Error, ErrorKind};
 
 pub(crate) mod combinators;
 pub(crate) mod common;
 pub(crate) mod xml;
 
-//pub(crate) type ParseInput<'a> = (Parserinput<'a>, usize);
+
+pub(crate) type ParseInput<'a> = (&'a str, ParserState);
 pub(crate) type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -33,10 +35,8 @@ pub(crate) enum ParseError {
     Notimplemented,
 }
 
-#[derive(Clone, Debug)]
-pub(crate) struct ParseInput<'a> {
-    entityfeed: Vec<char>,
-    input: Chars<'a>,
+#[derive(Clone)]
+pub(crate) struct ParserState {
     dtd: DTD,
     /*
     The namespaces are tracked in a hashmap of vectors, each prefix tracking which namespace you
@@ -51,56 +51,49 @@ pub(crate) struct ParseInput<'a> {
      */
     maxentitydepth: usize,
     currententitydepth: usize,
+    /* eventual error location reporting */
     currentcol: usize,
     currentrow: usize,
+    /* entity downloader function */
+    entityresolver: Option<fn(String) -> Result<String, Error>>
+
 }
 
-impl ParseInput<'_> {
-    pub fn new(xmldoc: &str) -> ParseInput {
-        return ParseInput {
-            entityfeed: vec![],
-            input: xmldoc.chars(),
+impl ParserState {
+    pub fn new(resolver: Option<fn(String) -> Result<String, Error>>) -> ParserState {
+        return ParserState {
             dtd: DTD::new(),
             /*
             The below hashmap
              */
             namespace: vec![],
             maxentitydepth: 4,
-            currententitydepth: 0,
+            currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,
+            entityresolver: resolver
         };
     }
-}
 
-impl<'a> Iterator for ParseInput<'a> {
-    type Item = char;
-    fn next(&mut self) -> Option<Self::Item> {
-        match &self.entityfeed.pop() {
-            Some(c) => Some(*c),
-            None => {
-                if self.currententitydepth > 0 {
-                    self.currententitydepth = 0;
-                }
-                match self.input.next() {
-                    Some('\n') => {
-                        self.currentrow += 1;
-                        self.currentcol = 1;
-                        Some('\n')
-                    }
-                    Some(c) => {
-                        self.currentcol += 1;
-                        Some(c)
-                    }
-                    None => None,
-                }
-            }
+    pub fn resolve(self, uri: String) -> Result<String, Error> {
+        match self.entityresolver {
+            None => Err(Error {
+                kind: ErrorKind::Unknown,
+                message: "External DTDs are not supported".to_string(),
+            }),
+            Some(e) => { e(uri) }
         }
     }
 }
 
-impl PartialEq for ParseInput<'_> {
-    fn eq(&self, other: &Self) -> bool {
-        self.entityfeed == other.entityfeed
+impl PartialEq for ParserState {
+    fn eq(&self, other: &ParserState) -> bool {
+        true
+    }
+}
+
+impl fmt::Debug for ParserState {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.debug_struct("ParserState").finish()
     }
 }

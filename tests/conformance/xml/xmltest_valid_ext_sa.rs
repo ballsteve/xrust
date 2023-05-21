@@ -10,6 +10,8 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
 
+
+
 #[test]
 #[ignore]
 fn validextsa001() {
@@ -20,13 +22,14 @@ fn validextsa001() {
         Description:A combination of carriage return line feed in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/001.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/001.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/001.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -43,13 +46,14 @@ fn validextsa002() {
         Description:A carriage return (also CRLF) in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/002.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/002.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/002.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -66,13 +70,14 @@ fn validextsa003() {
         Description:Test demonstrates that the content of an element can be empty. In this case the external entity is an empty file.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/003.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/003.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/003.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -89,13 +94,14 @@ fn validextsa004() {
         Description:A carriage return (also CRLF) in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/004.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/004.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/004.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -112,13 +118,14 @@ fn validextsa005() {
         Description:Test demonstrates the use of optional character and content particles within an element content. The test also show the use of external entity.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/005.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/005.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/005.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -135,13 +142,14 @@ fn validextsa006() {
         Description:Test demonstrates the use of optional character and content particles within mixed element content. The test also shows the use of an external entity and that a carriage control line feed in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/006.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/006.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/006.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -158,13 +166,14 @@ fn validextsa007() {
         Description:Test demonstrates the use of external entity and how replacement text is retrieved and processed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/007.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/007.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/007.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -181,13 +190,14 @@ fn validextsa008() {
         Description:Test demonstrates the use of external entity and how replacement text is retrieved and processed. Also tests the use of an EncodingDecl of UTF-16.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/008.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/008.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/008.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -204,13 +214,14 @@ fn validextsa009() {
         Description:A carriage return (also CRLF) in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/009.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/009.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/009.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -227,13 +238,14 @@ fn validextsa011() {
         Description:Test demonstrates the use of a public identifier with and external entity. The test also show that a carriage control line feed combination in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/011.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/011.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/011.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -250,13 +262,14 @@ fn validextsa012() {
         Description:Test demonstrates both internal and external entities and that processing of entity references may be required to produce the correct replacement text.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/012.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/012.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/012.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -273,13 +286,14 @@ fn validextsa013() {
         Description:Test demonstrates that whitespace is handled by adding a single whitespace to the normalized value in the attribute list.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/013.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/013.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/013.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -296,13 +310,14 @@ fn validextsa014() {
         Description:Test demonstrates use of characters outside of normal ASCII range.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/014.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/014.xml")
-            .unwrap(),
-    );
+        None
+    ));
+    let canonicalxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/014.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());

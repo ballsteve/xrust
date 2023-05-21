@@ -15,19 +15,21 @@ where
 mod tests {
     use crate::parser::combinators::opt::opt;
     use crate::parser::combinators::tag::tag;
-    use crate::parser::ParseInput;
+    use crate::parser::ParserState;
 
     #[test]
     fn parser_opt_test1() {
-        let testdoc = ParseInput::new("<doc>");
+        let testdoc = "<doc>";
+        let teststate = ParserState::new(None);
         let parse_doc = opt(tag("<"));
-        assert_eq!(Ok((ParseInput::new("<doc>"), Some(()))), parse_doc(testdoc));
+        assert_eq!(Ok((("doc>", ParserState::new(None)),   Some(()))), parse_doc((testdoc, teststate)));
     }
 
     #[test]
     fn parser_opt_test2() {
-        let testdoc = ParseInput::new("<doc>");
+        let testdoc = "<doc>";
+        let teststate = ParserState::new(None);
         let parse_doc = opt(tag(">"));
-        assert_eq!(Ok((ParseInput::new("<doc>"), None)), parse_doc(testdoc));
+        assert_eq!(Ok((("<doc>", ParserState::new(None)),   None)), parse_doc((testdoc, teststate)));
     }
 }

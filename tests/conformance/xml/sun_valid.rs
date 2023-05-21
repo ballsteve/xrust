@@ -18,9 +18,10 @@ fn pe01() {
         Description:    Parameter entities references are NOT RECOGNIZED in default attribute    values.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
 }
@@ -34,12 +35,14 @@ fn dtd00() {
         Description:Tests parsing of alternative forms of text-only mixedcontent declaration.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/dtd00.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/dtd00.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -55,12 +58,14 @@ fn dtd01() {
         Description:Comments don't get parameter entity expansion
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/dtd01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/dtd01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -76,12 +81,14 @@ fn element() {
         Description:Tests clauses 1, 3, and 4 of the Element Validvalidity constraint.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/element.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/element.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -98,12 +105,14 @@ fn ext01() {
         Description:Tests use of external parsed entities with and without content.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/ext01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/ext01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -120,12 +129,14 @@ fn ext02() {
         Description:Tests use of external parsed entities with differentencodings than the base document.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/ext02.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/ext02.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -141,12 +152,14 @@ fn notsa01() {
         Description:A non-standalone document is valid if declared as such.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -163,12 +176,14 @@ fn notsa02() {
         Description:A non-standalone document is valid if declared as such.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa02.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa02.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -185,12 +200,14 @@ fn notsa03() {
         Description:A non-standalone document is valid if declared as such.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa03.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa03.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -207,12 +224,14 @@ fn notsa04() {
         Description:A non-standalone document is valid if declared as such.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa04.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa04.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -229,12 +248,14 @@ fn notation01() {
         Description:NOTATION declarations don't need SYSTEM IDs; andexternally declared notations may be used to declareunparsed entities in the internal DTD subset.The notation must be reported to the application.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/notation01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/notation01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -251,12 +272,14 @@ fn optional() {
         Description:Tests declarations of "children" content models, andthe validity constraints associated with them.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/optional.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/optional.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -272,12 +295,14 @@ fn required00() {
         Description:Tests the #REQUIRED attribute declaration syntax, andthe associated validity constraint.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/required00.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/required00.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -293,21 +318,15 @@ fn sa01() {
         Description:A document may be marked 'standalone' if any optional whitespace is defined within the internal DTD subset.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa01.xml").unwrap(),
-    );
+        None
+    ));
 
-    match &testxml {
-        Ok(..) => {
-            println!("OK!")
-        }
-        Err(e) => {
-            println!("Err-{:?}", e)
-        }
-    }
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
     assert!(testxml.unwrap().canonical() == canonicalxml.unwrap().canonical());
@@ -323,12 +342,14 @@ fn sa02() {
         Description:A document may be marked 'standalone' if anyattributes that need normalization aredefined within the internal DTD subset.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa02.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa02.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -345,12 +366,14 @@ fn sa03() {
         Description:A document may be marked 'standalone' if anythe defined entities need expanding are internal,and no attributes need defaulting or normalization.On output, requires notations to be correctly reported.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa03.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa03.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -367,12 +390,14 @@ fn sa04() {
         Description:Like sa03 but relies on attributedefaulting defined in the internal subset.On output, requires notations to be correctly reported.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa04.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa04.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -388,12 +413,14 @@ fn sa05() {
         Description:Like sa01 but this document is standalonesince it has no optional whitespace.On output, requires notations to be correctly reported.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa05.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa05.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -409,12 +436,14 @@ fn vsgml01() {
         Description:XML permits token reuse, while SGML does not.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sgml01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sgml01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -430,12 +459,14 @@ fn vlang01() {
         Description:Tests a lowercase ISO language code.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang01.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -451,12 +482,14 @@ fn vlang02() {
         Description:Tests a ISO language code with a subcode.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang02.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang02.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -472,12 +505,14 @@ fn vlang03() {
         Description:Tests a IANA language code with a subcode.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang03.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang03.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -493,12 +528,14 @@ fn vlang04() {
         Description:Tests a user language code with a subcode.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang04.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang04.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -514,12 +551,14 @@ fn vlang05() {
         Description:Tests an uppercase ISO language code.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang05.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang05.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -535,12 +574,14 @@ fn vlang06() {
         Description:Tests a user language code.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang06.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang06.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -557,12 +598,14 @@ fn vpe00() {
         Description:Tests construction of internal entity replacement text, usingan example in the XML specification.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe00.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe00.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -570,7 +613,6 @@ fn vpe00() {
 }
 
 #[test]
-#[ignore]
 fn vpe03() {
     /*
         Test ID:v-pe03
@@ -579,12 +621,14 @@ fn vpe03() {
         Description:Tests construction of internal entity replacement text, usingan example in the XML specification.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe03.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe03.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());
@@ -601,12 +645,14 @@ fn vpe02() {
         Description:Tests construction of internal entity replacement text, usinga complex example in the XML specification.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe02.xml").unwrap(),
-    );
-    let canonicalxml = Document::try_from(
+        None
+    ));
+    let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe02.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_ok());
     assert!(canonicalxml.is_ok());

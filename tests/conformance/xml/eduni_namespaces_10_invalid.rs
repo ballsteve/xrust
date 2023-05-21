@@ -20,10 +20,10 @@ fn rmtns10017() {
         Description:Simple legal case: no namespaces
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/017.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
  */
@@ -38,10 +38,10 @@ fn rmtns10018() {
         Description:Simple legal case: default namespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/018.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -55,10 +55,10 @@ fn rmtns10019() {
         Description:Simple legal case: prefixed element
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/019.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -72,10 +72,10 @@ fn rmtns10020() {
         Description:Simple legal case: prefixed attribute
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/020.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -89,10 +89,10 @@ fn rmtns10021() {
         Description:Simple legal case: default namespace and unbinding
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/021.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -106,10 +106,10 @@ fn rmtns10022() {
         Description:Simple legal case: default namespace and rebinding
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/022.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -123,10 +123,10 @@ fn rmtns10024() {
         Description:Simple legal case: prefix rebinding
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/024.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -140,10 +140,10 @@ fn rmtns10027() {
         Description:Reserved prefixes and namespaces: using the xml prefix undeclared
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/027.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -157,10 +157,10 @@ fn rmtns10028() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix correctly
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/028.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -174,10 +174,10 @@ fn rmtns10034() {
         Description:Reserved prefixes and namespaces: binding a reserved prefix
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/034.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -191,10 +191,10 @@ fn rmtns10037() {
         Description:Attribute uniqueness: different attributes with same local name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/037.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -208,10 +208,10 @@ fn rmtns10038() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/038.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -225,10 +225,10 @@ fn rmtns10039() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, with default namespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/039.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -242,10 +242,10 @@ fn rmtns10040() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, with default namespace and element in default namespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/040.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -259,10 +259,10 @@ fn rmtns10041() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, element in same namespace as prefixed attribute
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/041.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -276,10 +276,10 @@ fn rmtns10045() {
         Description:Colon in ID attribute name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/045.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -292,9 +292,9 @@ fn rmtns10046() {
         Description:Colon in ID attribute name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/046.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }

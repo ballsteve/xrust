@@ -15,10 +15,10 @@ fn hstbh001() {
         Description:decimal charref > 10FFFF, indeed > max 32 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/001.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -31,10 +31,10 @@ fn hstbh002() {
         Description:hex charref > 10FFFF, indeed > max 32 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/002.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -47,10 +47,10 @@ fn hstbh003() {
         Description:decimal charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/003.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -63,10 +63,10 @@ fn hstbh004() {
         Description:hex charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/004.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -79,10 +79,10 @@ fn hstlhs007() {
         Description:UTF-8 BOM plus xml decl of iso-8859-1 incompatible
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/007.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -96,10 +96,10 @@ fn hstlhs008() {
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-16 coding) incompatible
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/008.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -113,9 +113,9 @@ fn hstlhs009() {
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-8 coding) incompatible
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/009.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }

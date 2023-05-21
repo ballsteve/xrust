@@ -13,6 +13,10 @@ use xrust::intmuttree::{Document, NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
+use xrust::xdmerror::Error;
+
+pub(crate) type EntityResolver = Option<fn(String) -> Result<String, Error>>;
+
 
 // A document always has a NodeType::Document node as the toplevel node.
 let mut doc = NodeBuilder::new(NodeType::Document).build();
@@ -160,18 +164,19 @@ impl Document {
      */
 }
 
-impl TryFrom<&str> for Document {
+impl TryFrom<(String, Option<fn(String) -> Result<String, Error>>)> for Document {
     type Error = Error;
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        Document::try_from(s.to_string())
+    fn try_from(s: (String, Option<fn(String) -> Result<String, Error>>)) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0.as_str(), s.1)
     }
 }
-impl TryFrom<String> for Document {
+impl TryFrom<(&str, Option<fn(String) -> Result<String, Error>>)> for Document {
     type Error = Error;
-    fn try_from(s: String) -> Result<Self, Self::Error> {
-        parser::xml::parse(s)
+    fn try_from(s: (&str, Option<fn(String) -> Result<String, Error>>)) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0, s.1)
     }
 }
+
 
 impl PartialEq for Document {
     fn eq(&self, other: &Document) -> bool {
@@ -846,13 +851,13 @@ impl XMLDeclBuilder {
 /// Only general entities are supported, so far.
 /// TODO: element, attribute declarations
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq)]
 pub struct DTD {
     pub(crate) elements: HashMap<String, DTDDecl>,
     pub(crate) attlists: HashMap<String, DTDDecl>,
     pub(crate) notations: HashMap<String, DTDDecl>,
-    pub(crate) generalentities: HashMap<String, DTDDecl>,
-    pub(crate) paramentities: HashMap<String, DTDDecl>,
+    pub(crate) generalentities: HashMap<String, String>,
+    pub(crate) paramentities: HashMap<String, String>,
     publicid: Option<String>,
     systemid: Option<String>,
     name: Option<String>,
@@ -864,8 +869,8 @@ impl DTD {
             elements: Default::default(),
             attlists: Default::default(),
             notations: Default::default(),
-            generalentities: Default::default(),
-            paramentities: Default::default(),
+            generalentities: HashMap::new(),
+            paramentities: HashMap::new(),
             publicid: None,
             systemid: None,
             name: None,

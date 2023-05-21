@@ -17,10 +17,10 @@ fn ibm11notwf_p02ibm02n01xml() {
         Description:This test contains embeded control character 0x1.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n01.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n01.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -34,10 +34,10 @@ fn ibm11notwf_p02ibm02n02xml() {
         Description:This test contains embeded control character 0x2.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n02.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n02.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -51,10 +51,10 @@ fn ibm11notwf_p02ibm02n03xml() {
         Description:This test contains embeded control character 0x3.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n03.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n03.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -68,10 +68,10 @@ fn ibm11notwf_p02ibm02n04xml() {
         Description:This test contains embeded control character 0x4.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n04.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n04.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -85,10 +85,10 @@ fn ibm11notwf_p02ibm02n05xml() {
         Description:This test contains embeded control character 0x5.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n05.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n05.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -102,10 +102,10 @@ fn ibm11notwf_p02ibm02n06xml() {
         Description:This test contains embeded control character 0x6.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n06.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n06.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -119,10 +119,10 @@ fn ibm11notwf_p02ibm02n07xml() {
         Description:This test contains embeded control character 0x7.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n07.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n07.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -136,10 +136,10 @@ fn ibm11notwf_p02ibm02n08xml() {
         Description:This test contains embeded control character 0x8.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n08.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n08.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -153,10 +153,10 @@ fn ibm11notwf_p02ibm02n09xml() {
         Description:This test contains embeded control character 0x0.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n09.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n09.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -170,10 +170,10 @@ fn ibm11notwf_p02ibm02n10xml() {
         Description:This test contains embeded control character 0x100.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n10.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n10.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -187,10 +187,10 @@ fn ibm11notwf_p02ibm02n11xml() {
         Description:This test contains embeded control character 0x0B.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n11.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n11.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -204,10 +204,10 @@ fn ibm11notwf_p02ibm02n12xml() {
         Description:This test contains embeded control character 0x0C.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n12.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n12.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -221,10 +221,10 @@ fn ibm11notwf_p02ibm02n14xml() {
         Description:This test contains embeded control character 0x0E.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n14.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n14.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -238,10 +238,10 @@ fn ibm11notwf_p02ibm02n15xml() {
         Description:This test contains embeded control character 0x0F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n15.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n15.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -255,10 +255,10 @@ fn ibm11notwf_p02ibm02n16xml() {
         Description:This test contains embeded control character 0x10.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n16.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n16.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -272,10 +272,10 @@ fn ibm11notwf_p02ibm02n17xml() {
         Description:This test contains embeded control character 0x11.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n17.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n17.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -289,10 +289,10 @@ fn ibm11notwf_p02ibm02n18xml() {
         Description:This test contains embeded control character 0x12.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n18.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n18.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -306,10 +306,10 @@ fn ibm11notwf_p02ibm02n19xml() {
         Description:This test contains embeded control character 0x13.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n19.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n19.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -323,10 +323,10 @@ fn ibm11notwf_p02ibm02n20xml() {
         Description:This test contains embeded control character 0x14.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n20.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n20.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -340,10 +340,10 @@ fn ibm11notwf_p02ibm02n21xml() {
         Description:This test contains embeded control character 0x15.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n21.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n21.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -357,10 +357,10 @@ fn ibm11notwf_p02ibm02n22xml() {
         Description:This test contains embeded control character 0x16.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n22.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n22.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -374,10 +374,10 @@ fn ibm11notwf_p02ibm02n23xml() {
         Description:This test contains embeded control character 0x17.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n23.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n23.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -391,10 +391,10 @@ fn ibm11notwf_p02ibm02n24xml() {
         Description:This test contains embeded control character 0x18.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n24.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n24.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -408,10 +408,10 @@ fn ibm11notwf_p02ibm02n25xml() {
         Description:This test contains embeded control character 0x19.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n25.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n25.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -425,10 +425,10 @@ fn ibm11notwf_p02ibm02n26xml() {
         Description:This test contains embeded control character 0x1A.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n26.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n26.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -442,10 +442,10 @@ fn ibm11notwf_p02ibm02n27xml() {
         Description:This test contains embeded control character 0x1B.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n27.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n27.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -459,10 +459,10 @@ fn ibm11notwf_p02ibm02n28xml() {
         Description:This test contains embeded control character 0x1C.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n28.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n28.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -476,10 +476,10 @@ fn ibm11notwf_p02ibm02n29xml() {
         Description:This test contains embeded control character 0x1D.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n29.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n29.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -493,10 +493,10 @@ fn ibm11notwf_p02ibm02n30xml() {
         Description:This test contains embeded control character 0x1E.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n30.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n30.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -510,10 +510,10 @@ fn ibm11notwf_p02ibm02n31xml() {
         Description:This test contains embeded control character 0x1F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n31.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n31.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -528,10 +528,10 @@ fn ibm11notwf_p02ibm02n32xml() {
         Description:This test contains embeded control character 0x7F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n32.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n32.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -546,10 +546,10 @@ fn ibm11notwf_p02ibm02n33xml() {
         Description:This test contains embeded control character 0x80.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n33.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n33.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -564,10 +564,10 @@ fn ibm11notwf_p02ibm02n34xml() {
         Description:This test contains embeded control character 0x81.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n34.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n34.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -582,10 +582,10 @@ fn ibm11notwf_p02ibm02n35xml() {
         Description:This test contains embeded control character 0x82.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n35.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n35.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -600,10 +600,10 @@ fn ibm11notwf_p02ibm02n36xml() {
         Description:This test contains embeded control character 0x83.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n36.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n36.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -618,10 +618,10 @@ fn ibm11notwf_p02ibm02n37xml() {
         Description:This test contains embeded control character 0x84.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n37.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n37.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -636,10 +636,10 @@ fn ibm11notwf_p02ibm02n38xml() {
         Description:This test contains embeded control characters x82, x83 and x84.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n38.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n38.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -654,10 +654,10 @@ fn ibm11notwf_p02ibm02n39xml() {
         Description:This test contains embeded control character 0x86.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n39.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n39.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -672,10 +672,10 @@ fn ibm11notwf_p02ibm02n40xml() {
         Description:This test contains embeded control character 0x87.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n40.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n40.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -690,10 +690,10 @@ fn ibm11notwf_p02ibm02n41xml() {
         Description:This test contains embeded control character 0x88.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n41.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n41.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -708,10 +708,10 @@ fn ibm11notwf_p02ibm02n42xml() {
         Description:This test contains embeded control character 0x89.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n42.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n42.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -726,10 +726,10 @@ fn ibm11notwf_p02ibm02n43xml() {
         Description:This test contains embeded control character 0x8A.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n43.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n43.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -744,10 +744,10 @@ fn ibm11notwf_p02ibm02n44xml() {
         Description:This test contains embeded control character 0x8B.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n44.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n44.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -762,10 +762,10 @@ fn ibm11notwf_p02ibm02n45xml() {
         Description:This test contains embeded control character 0x8C.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n45.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n45.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -780,10 +780,10 @@ fn ibm11notwf_p02ibm02n46xml() {
         Description:This test contains embeded control character 0x8D.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n46.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n46.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -798,10 +798,10 @@ fn ibm11notwf_p02ibm02n47xml() {
         Description:This test contains embeded control character 0x8E.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n47.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n47.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -816,10 +816,10 @@ fn ibm11notwf_p02ibm02n48xml() {
         Description:This test contains embeded control character 0x8F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n48.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n48.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -834,10 +834,10 @@ fn ibm11notwf_p02ibm02n49xml() {
         Description:This test contains embeded control character 0x90.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n49.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n49.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -852,10 +852,10 @@ fn ibm11notwf_p02ibm02n50xml() {
         Description:This test contains embeded control character 0x91.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n50.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n50.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -870,10 +870,10 @@ fn ibm11notwf_p02ibm02n51xml() {
         Description:This test contains embeded control character 0x92.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n51.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n51.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -888,10 +888,10 @@ fn ibm11notwf_p02ibm02n52xml() {
         Description:This test contains embeded control character 0x93.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n52.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n52.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -906,10 +906,10 @@ fn ibm11notwf_p02ibm02n53xml() {
         Description:This test contains embeded control character 0x94.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n53.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n53.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -924,10 +924,10 @@ fn ibm11notwf_p02ibm02n54xml() {
         Description:This test contains embeded control character 0x95.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n54.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n54.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -942,10 +942,10 @@ fn ibm11notwf_p02ibm02n55xml() {
         Description:This test contains embeded control character 0x96.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n55.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n55.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -960,10 +960,10 @@ fn ibm11notwf_p02ibm02n56xml() {
         Description:This test contains embeded control character 0x97.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n56.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n56.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -978,10 +978,10 @@ fn ibm11notwf_p02ibm02n57xml() {
         Description:This test contains embeded control character 0x98.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n57.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n57.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -996,10 +996,10 @@ fn ibm11notwf_p02ibm02n58xml() {
         Description:This test contains embeded control character 0x99.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n58.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n58.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1014,10 +1014,10 @@ fn ibm11notwf_p02ibm02n59xml() {
         Description:This test contains embeded control character 0x9A.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n59.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n59.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1032,10 +1032,10 @@ fn ibm11notwf_p02ibm02n60xml() {
         Description:This test contains embeded control character 0x9B.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n60.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n60.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1050,10 +1050,10 @@ fn ibm11notwf_p02ibm02n61xml() {
         Description:This test contains embeded control character 0x9C.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n61.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n61.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1068,10 +1068,10 @@ fn ibm11notwf_p02ibm02n62xml() {
         Description:This test contains embeded control character 0x9D.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n62.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n62.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1086,10 +1086,10 @@ fn ibm11notwf_p02ibm02n63xml() {
         Description:This test contains embeded control character 0x9E.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n63.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n63.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1103,10 +1103,10 @@ fn ibm11notwf_p02ibm02n64xml() {
         Description:This test contains embeded control characters present in an external entity.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n64.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n64.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1120,10 +1120,10 @@ fn ibm11notwf_p02ibm02n65xml() {
         Description:This test contains embeded control characters present in an external entity.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n65.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n65.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1137,10 +1137,10 @@ fn ibm11notwf_p02ibm02n66xml() {
         Description:This test contains embeded control characters present in an external entity.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n66.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n66.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1155,10 +1155,10 @@ fn ibm11notwf_p02ibm02n67xml() {
         Description:This test contains embeded character 0xD800. (Invalid UTF8 sequence)
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n67.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n67.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1172,10 +1172,10 @@ fn ibm11notwf_p02ibm02n68xml() {
         Description:This test contains embeded character 0xFFFE.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n68.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n68.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1189,10 +1189,10 @@ fn ibm11notwf_p02ibm02n69xml() {
         Description:This test contains embeded character 0xFFFF.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n69.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n69.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1206,10 +1206,10 @@ fn ibm11notwf_p02ibm02n70xml() {
         Description:This test contains a reference to character 0xFFFE.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n70.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n70.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1223,10 +1223,10 @@ fn ibm11notwf_p02ibm02n71xml() {
         Description:This test contains a reference to character 0xFFFF.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n71.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n71.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1240,10 +1240,10 @@ fn ibm11notwf_p04ibm04n01xml() {
         Description:Tests an element with an illegal NameStartChar: #x300
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n01.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n01.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1257,10 +1257,10 @@ fn ibm11notwf_p04ibm04n02xml() {
         Description:Tests an element with an illegal NameStartChar: #0x333
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n02.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n02.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1274,10 +1274,10 @@ fn ibm11notwf_p04ibm04n03xml() {
         Description:Tests an element with an illegal NameStartChar: #0x369
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n03.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n03.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1291,10 +1291,10 @@ fn ibm11notwf_p04ibm04n04xml() {
         Description:Tests an element with an illegal NameStartChar: #0x37E
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n04.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n04.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1308,10 +1308,10 @@ fn ibm11notwf_p04ibm04n05xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2000
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n05.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n05.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1325,10 +1325,10 @@ fn ibm11notwf_p04ibm04n06xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2001
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n06.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n06.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1342,10 +1342,10 @@ fn ibm11notwf_p04ibm04n07xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2002
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n07.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n07.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1359,10 +1359,10 @@ fn ibm11notwf_p04ibm04n08xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2005
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n08.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n08.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1376,10 +1376,10 @@ fn ibm11notwf_p04ibm04n09xml() {
         Description:Tests an element with an illegal NameStartChar: #0x200B
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n09.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n09.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1393,10 +1393,10 @@ fn ibm11notwf_p04ibm04n10xml() {
         Description:Tests an element with an illegal NameStartChar: #0x200E
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n10.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n10.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1410,10 +1410,10 @@ fn ibm11notwf_p04ibm04n11xml() {
         Description:Tests an element with an illegal NameStartChar: #0x200F
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n11.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n11.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1427,10 +1427,10 @@ fn ibm11notwf_p04ibm04n12xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2069
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n12.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n12.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1444,10 +1444,10 @@ fn ibm11notwf_p04ibm04n13xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2190
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n13.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n13.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1461,10 +1461,10 @@ fn ibm11notwf_p04ibm04n14xml() {
         Description:Tests an element with an illegal NameStartChar: #0x23FF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n14.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n14.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1478,10 +1478,10 @@ fn ibm11notwf_p04ibm04n15xml() {
         Description:Tests an element with an illegal NameStartChar: #0x280F
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n15.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n15.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1495,10 +1495,10 @@ fn ibm11notwf_p04ibm04n16xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2A00
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n16.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n16.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1512,10 +1512,10 @@ fn ibm11notwf_p04ibm04n17xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2EDC
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n17.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n17.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1529,10 +1529,10 @@ fn ibm11notwf_p04ibm04n18xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2B00
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n18.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n18.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1546,10 +1546,10 @@ fn ibm11notwf_p04ibm04n19xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2BFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n19.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n19.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1563,10 +1563,10 @@ fn ibm11notwf_p04ibm04n20xml() {
         Description:Tests an element with an illegal NameStartChar: #0x3000
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n20.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n20.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1581,10 +1581,10 @@ fn ibm11notwf_p04ibm04n21xml() {
         Description:Tests an element with an illegal NameStartChar: #0xD800
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n21.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n21.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1599,10 +1599,10 @@ fn ibm11notwf_p04ibm04n22xml() {
         Description:Tests an element with an illegal NameStartChar: #0xD801
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n22.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n22.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1617,10 +1617,10 @@ fn ibm11notwf_p04ibm04n23xml() {
         Description:Tests an element with an illegal NameStartChar: #0xDAFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n23.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n23.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1635,10 +1635,10 @@ fn ibm11notwf_p04ibm04n24xml() {
         Description:Tests an element with an illegal NameStartChar: #0xDFFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n24.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n24.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1652,10 +1652,10 @@ fn ibm11notwf_p04ibm04n25xml() {
         Description:Tests an element with an illegal NameStartChar: #0xEFFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n25.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n25.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1669,10 +1669,10 @@ fn ibm11notwf_p04ibm04n26xml() {
         Description:Tests an element with an illegal NameStartChar: #0xF1FF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n26.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n26.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1686,10 +1686,10 @@ fn ibm11notwf_p04ibm04n27xml() {
         Description:Tests an element with an illegal NameStartChar: #0xF8FF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n27.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n27.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1703,10 +1703,10 @@ fn ibm11notwf_p04ibm04n28xml() {
         Description:Tests an element with an illegal NameStartChar: #0xFFFFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n28.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n28.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1720,10 +1720,10 @@ fn ibm11notwf_p04aibm04an01xml() {
         Description:Tests an element with an illegal NameChar: #xB8
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an01.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an01.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1737,10 +1737,10 @@ fn ibm11notwf_p04aibm04an02xml() {
         Description:Tests an element with an illegal NameChar: #0xA1
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an02.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an02.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1754,10 +1754,10 @@ fn ibm11notwf_p04aibm04an03xml() {
         Description:Tests an element with an illegal NameChar: #0xAF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an03.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an03.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1771,10 +1771,10 @@ fn ibm11notwf_p04aibm04an04xml() {
         Description:Tests an element with an illegal NameChar: #0x37E
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an04.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an04.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1788,10 +1788,10 @@ fn ibm11notwf_p04aibm04an05xml() {
         Description:Tests an element with an illegal NameChar: #0x2000
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an05.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an05.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1805,10 +1805,10 @@ fn ibm11notwf_p04aibm04an06xml() {
         Description:Tests an element with an illegal NameChar: #0x2001
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an06.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an06.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1822,10 +1822,10 @@ fn ibm11notwf_p04aibm04an07xml() {
         Description:Tests an element with an illegal NameChar: #0x2002
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an07.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an07.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1839,10 +1839,10 @@ fn ibm11notwf_p04aibm04an08xml() {
         Description:Tests an element with an illegal NameChar: #0x2005
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an08.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an08.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1856,10 +1856,10 @@ fn ibm11notwf_p04aibm04an09xml() {
         Description:Tests an element with an illegal NameChar: #0x200B
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an09.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an09.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1873,10 +1873,10 @@ fn ibm11notwf_p04aibm04an10xml() {
         Description:Tests an element with an illegal NameChar: #0x200E
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an10.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an10.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1890,10 +1890,10 @@ fn ibm11notwf_p04aibm04an11xml() {
         Description:Tests an element with an illegal NameChar: #0x2038
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an11.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an11.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1907,10 +1907,10 @@ fn ibm11notwf_p04aibm04an12xml() {
         Description:Tests an element with an illegal NameChar: #0x2041
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an12.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an12.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1924,10 +1924,10 @@ fn ibm11notwf_p04aibm04an13xml() {
         Description:Tests an element with an illegal NameChar: #0x2190
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an13.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an13.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1941,10 +1941,10 @@ fn ibm11notwf_p04aibm04an14xml() {
         Description:Tests an element with an illegal NameChar: #0x23FF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an14.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an14.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1958,10 +1958,10 @@ fn ibm11notwf_p04aibm04an15xml() {
         Description:Tests an element with an illegal NameChar: #0x280F
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an15.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an15.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1975,10 +1975,10 @@ fn ibm11notwf_p04aibm04an16xml() {
         Description:Tests an element with an illegal NameChar: #0x2A00
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an16.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an16.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1992,10 +1992,10 @@ fn ibm11notwf_p04aibm04an17xml() {
         Description:Tests an element with an illegal NameChar: #0xFDD0
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an17.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an17.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2009,10 +2009,10 @@ fn ibm11notwf_p04aibm04an18xml() {
         Description:Tests an element with an illegal NameChar: #0xFDEF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an18.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an18.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2026,10 +2026,10 @@ fn ibm11notwf_p04aibm04an19xml() {
         Description:Tests an element with an illegal NameChar: #0x2FFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an19.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an19.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2043,10 +2043,10 @@ fn ibm11notwf_p04aibm04an20xml() {
         Description:Tests an element with an illegal NameChar: #0x3000
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an20.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an20.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2061,10 +2061,10 @@ fn ibm11notwf_p04aibm04an21xml() {
         Description:Tests an element with an illegal NameChar: #0xD800
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an21.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an21.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2079,10 +2079,10 @@ fn ibm11notwf_p04aibm04an22xml() {
         Description:Tests an element with an illegal NameChar: #0xD801
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an22.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an22.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2097,10 +2097,10 @@ fn ibm11notwf_p04aibm04an23xml() {
         Description:Tests an element with an illegal NameChar: #0xDAFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an23.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an23.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2115,10 +2115,10 @@ fn ibm11notwf_p04aibm04an24xml() {
         Description:Tests an element with an illegal NameChar: #0xDFFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an24.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an24.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2132,10 +2132,10 @@ fn ibm11notwf_p04aibm04an25xml() {
         Description:Tests an element with an illegal NameChar: #0xEFFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an25.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an25.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2149,10 +2149,10 @@ fn ibm11notwf_p04aibm04an26xml() {
         Description:Tests an element with an illegal NameChar: #0xF1FF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an26.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an26.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2166,10 +2166,10 @@ fn ibm11notwf_p04aibm04an27xml() {
         Description:Tests an element with an illegal NameChar: #0xF8FF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an27.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an27.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2183,10 +2183,10 @@ fn ibm11notwf_p04aibm04an28xml() {
         Description:Tests an element with an illegal NameChar: #0xFFFFF
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an28.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an28.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2200,10 +2200,10 @@ fn ibm11notwf_p05ibm05n01xml() {
         Description:Tests an element with an illegal Name containing #0x0B
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n01.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n01.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2217,10 +2217,10 @@ fn ibm11notwf_p05ibm05n02xml() {
         Description:Tests an element with an illegal Name containing #0x300
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n02.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n02.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2234,10 +2234,10 @@ fn ibm11notwf_p05ibm05n03xml() {
         Description:Tests an element with an illegal Name containing #0x36F
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n03.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n03.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2251,10 +2251,10 @@ fn ibm11notwf_p05ibm05n04xml() {
         Description:Tests an element with an illegal Name containing #0x203F
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n04.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n04.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2268,10 +2268,10 @@ fn ibm11notwf_p05ibm05n05xml() {
         Description:Tests an element with an illegal Name containing #x2040
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n05.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n05.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2285,10 +2285,10 @@ fn ibm11notwf_p05ibm05n06xml() {
         Description:Tests an element with an illegal Name containing #0xB7
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n06.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n06.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2302,10 +2302,10 @@ fn ibm11notwf_p77ibm77n01xml() {
         Description:The VersionNum of the document entity is 1.1 and that of the external dtd 1.0. The external dtd contains the invalid XML1.1 but valid XML 1.0 character #x7F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n01.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n01.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2320,10 +2320,10 @@ fn ibm11notwf_p77ibm77n02xml() {
         Description:The VersionNum of the document entity is 1.1 and that of the external dtd 1.0. The external dtd contains a comment with the invalid XML1.1 but valid XML 1.0 character #x80.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n02.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n02.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2338,10 +2338,10 @@ fn ibm11notwf_p77ibm77n03xml() {
         Description:The VersionNum of the document entity is 1.1 and that of the external dtd 1.0. The external dtd contains a PI with the invalid XML1.1 but valid XML 1.0 character #x9F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n03.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n03.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2355,10 +2355,10 @@ fn ibm11notwf_p77ibm77n04xml() {
         Description:The VersionNum of the document entity is 1.1 and that of the external entity 1.0. The external entity the contains invalid XML1.1 but valid XML 1.0 character #x89.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n04.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n04.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2372,10 +2372,10 @@ fn ibm11notwf_p77ibm77n05xml() {
         Description:The VersionNum of the document entity is 1.1 and that of the external entity 1.0. The external entity contains the invalid XML1.1 but valid XML 1.0 character #x94.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n05.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n05.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2389,10 +2389,10 @@ fn ibm11notwf_p77ibm77n06xml() {
         Description:The VersionNum of the document entity is 1.1 and that of the external entity 1.0. The external entity contains the invalid XML1.1 but valid XML 1.0 character #x9F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n06.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n06.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2406,10 +2406,10 @@ fn ibm11notwf_p77ibm77n07xml() {
         Description:The VersionNum of the document entity is 1.1 and the external dtd does not contain a textDecl. The external entity contains the invalid XML1.1 but valid XML 1.0 character #x7F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n07.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n07.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2423,10 +2423,10 @@ fn ibm11notwf_p77ibm77n08xml() {
         Description:The VersionNum of the document entity is 1.1 and the external dtd does not contain a VersionNum in the textDecl. The external entity contains the invalid XML1.1 but valid XML 1.0 character #x9B.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n08.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n08.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2440,10 +2440,10 @@ fn ibm11notwf_p77ibm77n09xml() {
         Description:The VersionNum of the document entity is 1.1 and the external dtd does not contain a textDecl. The external entity contains the invalid XML1.1 but valid XML 1.0 character #x8D.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n09.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n09.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2457,10 +2457,10 @@ fn ibm11notwf_p77ibm77n10xml() {
         Description:The VersionNum of the document entity is 1.1 and the external dtd does not contain a VersionNum in the textDecl. The external entity contains the invalid XML 1.1 but valid XML 1.0 character #x84.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n10.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n10.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2474,10 +2474,10 @@ fn ibm11notwf_p77ibm77n11xml() {
         Description:The VersionNum of the document entity is 1.1 and the external dtd does not contain a textDecl. The external entity contains the invalid XML 1.1 but valid XML 1.0 character #x88.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n11.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n11.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2491,10 +2491,10 @@ fn ibm11notwf_p77ibm77n12xml() {
         Description:The VersionNum of the document entity is 1.1 and the external dtd does not contain a textDecl. The external entity contains the invalid XML 1.1 but valid XML 1.0 character #x8E.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n12.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n12.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2508,10 +2508,10 @@ fn ibm11notwf_p77ibm77n13xml() {
         Description:The VersionNum of the primary document entity is 1.0 and that of the external dtd is 1.0. The external dtd contains an external entity whose VersionNum is 1.1.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n13.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n13.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2526,10 +2526,10 @@ fn ibm11notwf_p77ibm77n14xml() {
         Description:The VersionNum of the primary document entity is 1.1 and that of the external dtd is 1.0. The external dtd contains an element declaration with an invalid XML 1.1 and 1.0 name.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n14.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n14.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2543,10 +2543,10 @@ fn ibm11notwf_p77ibm77n15xml() {
         Description:The VersionNum of the primary document entity is 1.1 and testDecl of the external dtd is absent. The external dtd contains an external entity whose VersionNum is 1.1 containing a valid XML1.0 but an invalid XML 1.1 character #x7F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n15.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n15.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2560,10 +2560,10 @@ fn ibm11notwf_p77ibm77n16xml() {
         Description:The VersionNum of the primary document entity is 1.0 and VersioNum of the external entity is absent. The replacement text of the entity contains an element followed by the valid XML 1.1 of line character NEL #x85 in its empty elem tag.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n16.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n16.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2577,10 +2577,10 @@ fn ibm11notwf_p77ibm77n17xml() {
         Description:The VersionNum of the primary document entity is absent and that of the external entity is 1.0. The textDecl in the external entity contains an invalid XML1.0 but valid XML 1.1 enf of line character NEL #x85.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n17.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n17.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2594,10 +2594,10 @@ fn ibm11notwf_p77ibm77n18xml() {
         Description:The VersionNum of the primary document entity is absent and that of the external entity is 1.0. The textDecl in the external entity contains an invalid XML1.0 but valid XML 1.1 of line character Unicode line separator #x2028.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n18.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n18.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2611,10 +2611,10 @@ fn ibm11notwf_p77ibm77n19xml() {
         Description:The VersionNum of the primary document entity is 1.1 and that of the external dtd is absent. The external dtd contains an external entity whose VersionNum is absent and it contains a valid XML 1.0 but an invalid XML 1.1 character #x94.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n19.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n19.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2628,10 +2628,10 @@ fn ibm11notwf_p77ibm77n20xml() {
         Description:The VersionNum of the primary document entity is 1.1 and that of the external dtd is 1.1. The external dtd contains an external entity whose VersionNum is absent and it contains a valid XML 1.0 but an invalid XML 1.1 character #x8F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n20.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n20.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2646,10 +2646,10 @@ fn ibm11notwf_p77ibm77n21xml() {
         Description:The VersionNum of the primary document entity is 1.1 and the texlDecl of the external dtd is absent. The external dtd contains a reference to an external parameter entity whose VersionNum is absent from the textDecl and it contains an invalid XML 1.1 character #x8F.
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n21.xml")
-            .unwrap(),
-    );
+    let testxml = Document::try_from((
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n21.xml").unwrap(),
+        None
+    ));
 
     assert!(testxml.is_err());
 }

@@ -1,3 +1,5 @@
+use xrust::xdmerror::Error;
+
 mod eduni_errata2e_error;
 mod eduni_errata2e_invalid;
 mod eduni_errata2e_notwf;
@@ -42,3 +44,5 @@ mod xmltest_valid_ext_sa;
 mod xmltest_valid_not_sa;
 mod xmltest_valid_sa;
 mod xmltest_valid_sa_canonicalonly;
+
+

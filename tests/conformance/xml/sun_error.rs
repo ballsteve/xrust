@@ -17,9 +17,10 @@ fn uri01() {
         Description:SYSTEM ids may not have URI fragments
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/uri01.xml").unwrap(),
-    );
+        None
+    ));
 
     assert!(testxml.is_err());
 }

@@ -16,10 +16,10 @@ fn hstbh005() {
         Description:xmlns:xml is an attribute as far as validation is concerned and must be declared
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/005.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }
 
@@ -33,9 +33,9 @@ fn hstbh006() {
         Description:xmlns:foo is an attribute as far as validation is concerned and must be declared
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/006.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_err());
 }

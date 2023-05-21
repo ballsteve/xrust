@@ -15,10 +15,10 @@ fn rmte3e05a() {
         Description:CDATA sections may occur in Mixed content.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05a.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -31,10 +31,10 @@ fn rmte3e05b() {
         Description:CDATA sections, comments and PIs may occur in ANY content.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E05b.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -48,9 +48,9 @@ fn rmte3e06i() {
         Description:Non-syntactic validity errors in default attributes only happen if the attribute is in fact defaulted.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06i.xml").unwrap(),
-    );
-
+        None
+    ));
     assert!(testxml.is_ok());
 }
