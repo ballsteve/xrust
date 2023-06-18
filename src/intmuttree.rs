@@ -857,7 +857,7 @@ pub struct DTD {
     pub(crate) attlists: HashMap<String, DTDDecl>,
     pub(crate) notations: HashMap<String, DTDDecl>,
     pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
-    pub(crate) paramentities: HashMap<String, String>,
+    pub(crate) paramentities: HashMap<String, (String, bool)>,
     publicid: Option<String>,
     systemid: Option<String>,
     name: Option<String>,

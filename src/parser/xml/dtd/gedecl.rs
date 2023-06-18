@@ -82,7 +82,6 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     }
 }
 
-/*
 pub(crate) fn extgedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match wellformed(
         tuple7(
@@ -124,12 +123,24 @@ pub(crate) fn extgedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 
             match entityparse {
                 Ok(((_, _), res)) => {
-                    /* Entities should always bind to the first value when internal. External DTDs
-                     on the other hand can */
-                    state2.dtd
-                        .generalentities
-                        .insert(n.to_string(), res);
-                    Ok(((input2, state2), ()))
+                    /* Entities should always bind to the first value, except when there is external DTDs, we can override those. */
+                    match state2.dtd.generalentities.get(n.to_string().as_str()) {
+                        None => {
+                            state2.dtd.generalentities.insert(n.to_string(), (res, true));
+                            Ok(((input2, state2), ()))
+                        },
+                        Some((_, true)) => {
+                            state2.dtd.generalentities.entry(n.to_string()).or_insert((res, true));
+                            Ok(((input2, state2), ()))
+                        },
+                        _ => {
+                            Ok(((input2, state2), ()))
+                        }
+                    }
+                    //state2.dtd
+                    //    .generalentities.entry(n.to_string())
+                    //    .or_insert(res);
+
                 }
                 Err(e) => Err(e)
             }
@@ -138,5 +149,3 @@ pub(crate) fn extgedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         Err(err) => Err(err),
     }
 }
-
- */
