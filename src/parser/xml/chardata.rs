@@ -2,7 +2,7 @@ use std::str::FromStr;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::many::many1;
 use crate::parser::combinators::map::map;
-use crate::parser::combinators::validate::validate;
+use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::common::is_char;
 use crate::parser::{ParseInput, ParseResult, ParseError};
 use crate::parser::combinators::delimited::delimited;
@@ -11,11 +11,11 @@ use crate::parser::combinators::take::{take_until, take_while};
 
 // CharData ::= [^<&]* - (']]>')
 pub(crate) fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
-    validate(
+    wellformed(
         map(
             many1(alt3(
                 chardata_cdata(),
-                chardata_escapes(),
+                chardata_unicode_codepoint(),
                 chardata_literal(),
             )),
             |v|
@@ -34,17 +34,7 @@ fn chardata_cdata() -> impl Fn(ParseInput) -> ParseResult<String> {
 pub(crate) fn chardata_escapes() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |input| match chardata_unicode_codepoint()(input.clone()) {
         Ok((inp, s)) => Ok((inp, s)),
-        Err(e) => match delimited(tag("&"), take_until(";"), tag(";"))(input) {
-            Ok((inp, rstr)) => match rstr.as_str() {
-                "gt" => Ok((inp, ">".to_string())),
-                "lt" => Ok((inp, "<".to_string())),
-                "amp" => Ok((inp, "&".to_string())),
-                "quot" => Ok((inp, "\"".to_string())),
-                "apos" => Ok((inp, "\'".to_string())),
-                _ => Err(e),
-            },
-            Err(e) => Err(e),
-        },
+        Err(e) => Err(e),
     }
 }
 
@@ -85,7 +75,7 @@ fn parse_decimal() -> impl Fn(ParseInput) -> ParseResult<u32> {
 }
 
 fn chardata_literal() -> impl Fn(ParseInput) -> ParseResult<String> {
-    validate(take_while(|c| c != '<' && c != '&'), |s| {
+    wellformed(take_while(|c| c != '<' && c != '&'), |s| {
         !s.contains("]]>") && !s.contains(|c: char| !is_char(&c))
     })
 }

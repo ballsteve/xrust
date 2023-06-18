@@ -8,7 +8,7 @@ use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple10, tuple2, tuple5};
-use crate::parser::combinators::validate::validate;
+use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::qname::qualname;
@@ -73,7 +73,7 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
 // NB. Names must match
 fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
     move |input| {
-        match validate(
+        match wellformed(
             tuple10(
                 tag("<"),
                 qualname(),

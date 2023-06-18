@@ -856,7 +856,7 @@ pub struct DTD {
     pub(crate) elements: HashMap<String, DTDDecl>,
     pub(crate) attlists: HashMap<String, DTDDecl>,
     pub(crate) notations: HashMap<String, DTDDecl>,
-    pub(crate) generalentities: HashMap<String, String>,
+    pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
     pub(crate) paramentities: HashMap<String, String>,
     publicid: Option<String>,
     systemid: Option<String>,
@@ -865,11 +865,18 @@ pub struct DTD {
 
 impl DTD {
     pub fn new() -> DTD {
+        let default_entities = vec![
+            ("amp".to_string(), ("&".to_string(), false)),
+            ("gt".to_string(), (">".to_string(), false)),
+            ("lt".to_string(), ("<".to_string(), false)),
+            ("apos".to_string(), ("'".to_string(), false)),
+            ("quot".to_string(), ("\"".to_string(), false))
+        ];
         DTD {
             elements: Default::default(),
             attlists: Default::default(),
             notations: Default::default(),
-            generalentities: HashMap::new(),
+            generalentities: default_entities.into_iter().collect(),
             paramentities: HashMap::new(),
             publicid: None,
             systemid: None,

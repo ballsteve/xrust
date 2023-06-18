@@ -1,5 +1,5 @@
 mod intsubset;
-mod extsubset;
+//mod extsubset;
 mod elementdecl;
 mod attlistdecl;
 mod pedecl;

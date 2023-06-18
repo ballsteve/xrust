@@ -5,7 +5,7 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_one, take_while, take_while_m_n};
 use crate::parser::combinators::tuple::{tuple2, tuple3};
-use crate::parser::combinators::validate::validate;
+use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::common::{is_namestartchar, is_namechar, is_ncnamestartchar, is_ncnamechar};
 use crate::qname::QualifiedName;
 
@@ -32,7 +32,7 @@ fn prefixed_name() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
 pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
     map(
         tuple2(
-            validate(take_one(), |c| is_ncnamestartchar(&c)),
+            wellformed(take_one(), |c| is_ncnamestartchar(&c)),
             opt(take_while(|c| is_ncnamechar(&c))),
         ),
         |(a, b)| [a.to_string(), b.unwrap_or_default()].concat(),
@@ -42,7 +42,7 @@ pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
 pub(crate) fn name() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
         tuple2(
-            validate(take_one(), |c| is_namestartchar(&c)),
+            wellformed(take_one(), |c| is_namestartchar(&c)),
             opt(take_while(|c| is_namechar(&c))),
         ),
         |(nsc, nc)| match nc {

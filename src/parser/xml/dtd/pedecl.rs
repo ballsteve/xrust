@@ -7,7 +7,7 @@ use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_until_end};
 use crate::parser::combinators::tuple::{tuple2, tuple9};
-use crate::parser::combinators::validate::validate;
+use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::is_char;
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
@@ -15,7 +15,7 @@ use crate::parser::xml::element::content;
 use crate::parser::xml::qname::qualname;
 
 pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |input| match validate(
+    move |input| match wellformed(
         tuple9(
             tag("<!ENTITY"),
             whitespace1(),

@@ -36,14 +36,17 @@ pub(crate) fn take_while<F>(condition: F) -> impl Fn(ParseInput) -> ParseResult<
 where
     F: Fn(char) -> bool,
 {
-    move |(input, state)| match input.find(|c| !condition(c)) {
-        None => Err(ParseError::Combinator),
-        Some(0) => Err(ParseError::Combinator),
-        Some(pos) => {
-            Ok(((&input[pos..],state), input[0..pos].to_string()))
+    move |(input, state)| {
+        match input.find(|c| !condition(c)) {
+            None => Err(ParseError::Combinator),
+            Some(0) => Err(ParseError::Combinator),
+            Some(pos) => {
+                Ok(((&input[pos..],state), input[0..pos].to_string()))
+            }
         }
     }
 }
+
 
 pub(crate) fn take_while_m_n<F>(
     min: usize,
@@ -71,7 +74,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::combinators::take::take_until;
+    use crate::parser::combinators::take::{take_until, take_while};
     use crate::parser::ParserState;
 
     #[test]
@@ -97,4 +100,29 @@ mod tests {
         let parse_doc = take_until("doc");
         assert_eq!(Ok((("doc>", ParserState::new(None)),  "<".to_string())), parse_doc((testdoc, teststate)));
     }
+
+    #[test]
+    fn parser_take_while_test1() {
+        let testdoc = "AAAAABCCCCC";
+        let teststate = ParserState::new(None);
+        let parse_doc = take_while(|c| c != 'B');
+        assert_eq!(Ok((("BCCCCC", ParserState::new(None)),  "AAAAA".to_string())), parse_doc((testdoc, teststate)));
+    }
+
+    #[test]
+    fn parser_take_while_test2() {
+        let testdoc = "ABCDEFGH";
+        let teststate = ParserState::new(None);
+        let parse_doc = take_while(|c| c != 'B' && c != 'C');
+        assert_eq!(Ok((("BCDEFGH", ParserState::new(None)),  "A".to_string())), parse_doc((testdoc, teststate)));
+    }
+
+    #[test]
+    fn parser_take_while_test3() {
+        let testdoc = "v1\"></doc>";
+        let teststate = ParserState::new(None);
+        let parse_doc = take_while(|c| c != '&' && c != '"');
+        assert_eq!(Ok((("\"></doc>", ParserState::new(None)),  "v1".to_string())), parse_doc((testdoc, teststate)));
+    }
+
 }

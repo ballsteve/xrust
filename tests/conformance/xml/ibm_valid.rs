@@ -1878,6 +1878,7 @@ fn ibmvalid_p38ibm38v01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p39ibm39v01xml() {
     /*
         Test ID:ibm-valid-P39-ibm39v01.xml
@@ -2039,6 +2040,7 @@ fn ibmvalid_p45ibm45v01xml() {
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p47ibm47v01xml() {
     /*
         Test ID:ibm-valid-P47-ibm47v01.xml

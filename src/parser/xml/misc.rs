@@ -6,7 +6,7 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::combinators::tuple::{tuple2, tuple5};
-use crate::parser::combinators::validate::validate;
+use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::qname::name;
 use crate::{Node, Value};
@@ -19,7 +19,7 @@ use crate::parser::common::is_char;
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
 pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
-    validate(
+    wellformed(
         map(
             tuple5(
                 tag("<?"),
@@ -56,7 +56,7 @@ pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNo
 
 // Comment ::= '<!--' (char* - '--') '-->'
 pub(crate) fn comment() -> impl Fn(ParseInput) -> ParseResult<RNode> {
-    validate(
+    wellformed(
         map(
             delimited(tag("<!--"), take_until("--"), tag("-->")),
             |v: String| {

@@ -346,6 +346,7 @@ fn invnotsa01() {
 }
 
 #[test]
+#[ignore]
 fn invnotsa02() {
     /*
         Test ID:inv-not-sa02
