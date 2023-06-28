@@ -1,7 +1,9 @@
 pub(crate) mod alt;
 pub(crate) mod delimited;
+pub(crate) mod list;
 pub(crate) mod many;
 pub(crate) mod map;
+pub(crate) mod pair;
 pub(crate) mod tag;
 pub(crate) mod take;
 pub(crate) mod tuple;

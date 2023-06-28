@@ -68,6 +68,10 @@ fn is_namestartchar(ch: &char) -> bool {
     }
 }
 fn is_ncnamestartchar(ch: &char) -> bool {
+    let b = is_ncnamestartchar_dbg(ch);
+    b
+}
+fn is_ncnamestartchar_dbg(ch: &char) -> bool {
     matches!(ch,
         '\u{0041}'..='\u{005A}' // A-Z
         | '\u{005F}' // _

@@ -16,9 +16,18 @@ pub(crate) fn take_until(s: &'static str) -> impl Fn(ParseInput) -> ParseResult<
     }
 }
 
+/// Take all characters up to the search character.
+/// If the search character is not found, then if there is no more input return ParseError::Combinator (i.e. no match).
+/// Otherwise return the remaining input.
 fn take_until1(ch: char) -> impl Fn(ParseInput) -> ParseResult<String> {
     move |mut input| match input.clone().position(|c| c == ch) {
-        None => Err(ParseError::Combinator),
+        None => match input.clone().peekable().peek() {
+            Some(_) => {
+                let res = (&mut input).collect::<String>();
+                Ok((input, res))
+            }
+            None => Err(ParseError::Combinator),
+        },
         Some(pos) => {
             let res = (&mut input).take(pos).collect::<String>();
             Ok((input, res))
@@ -93,13 +102,23 @@ fn take_until3(ch1: char, ch2: char, ch3: char) -> impl Fn(ParseInput) -> ParseR
     }
 }
 
+/// Take characters from the input while the condition is true.
+/// If there is no character that fails the condition,
+/// then if the input is empty returns ParseError::Combinator (i.e. no match),
+/// otherwise returns the input.
 pub(crate) fn take_while<F>(condition: F) -> impl Fn(ParseInput) -> ParseResult<String>
 //TODO REPLACE WITH ORDINARY TAKE_WHILE
 where
     F: Fn(char) -> bool,
 {
     move |mut input| match input.clone().position(|c| !condition(c)) {
-        None => Err(ParseError::Combinator),
+        None => match input.clone().peekable().peek() {
+            Some(_) => {
+                let res = (&mut input).collect::<String>();
+                Ok((input, res))
+            }
+            None => Err(ParseError::Combinator),
+        },
         Some(0) => Err(ParseError::Combinator),
         Some(pos) => {
             let res = (&mut input).take(pos).collect::<String>();
@@ -108,6 +127,10 @@ where
     }
 }
 
+/// Take characters from the input while the condition is true.
+/// If there is no character that fails the condition,
+/// then if the input is empty returns ParseError::Combinator (i.e. no match),
+/// otherwise returns the input.
 pub(crate) fn take_while_m_n<F>(
     min: usize,
     max: usize,
@@ -117,7 +140,13 @@ where
     F: Fn(char) -> bool,
 {
     move |mut input| match input.clone().position(|c| !condition(c)) {
-        None => Err(ParseError::Combinator),
+        None => match input.clone().peekable().peek() {
+            Some(_) => {
+                let res = (&mut input).take(max).collect::<String>();
+                Ok((input, res))
+            }
+            None => Err(ParseError::Combinator),
+        },
         Some(pos) => {
             if pos >= min {
                 if pos > max {
@@ -136,7 +165,7 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::combinators::take::take_until;
+    use crate::parser::combinators::take::{take_until, take_while};
     use crate::parser::ParseInput;
 
     #[test]
@@ -145,6 +174,15 @@ mod tests {
         let parse_doc = take_until(">");
         assert_eq!(
             Ok((ParseInput::new("<doc>"), "<doc".to_string())),
+            parse_doc(testdoc)
+        );
+    }
+    #[test]
+    fn parser_take_until1_test2() {
+        let testdoc = ParseInput::new("<document");
+        let parse_doc = take_until(">");
+        assert_eq!(
+            Ok((ParseInput::new("<document"), "<document".to_string())),
             parse_doc(testdoc)
         );
     }
@@ -165,6 +203,25 @@ mod tests {
         let parse_doc = take_until("doc");
         assert_eq!(
             Ok((ParseInput::new("<doc>"), "<".to_string())),
+            parse_doc(testdoc)
+        );
+    }
+
+    #[test]
+    fn parser_take_while_test1() {
+        let testdoc = ParseInput::new("<doc>");
+        let parse_doc = take_while(|c| c != '>');
+        assert_eq!(
+            Ok((ParseInput::new("<doc>"), "<doc".to_string())),
+            parse_doc(testdoc)
+        );
+    }
+    #[test]
+    fn parser_take_while_test2() {
+        let testdoc = ParseInput::new("<document");
+        let parse_doc = take_while(|c| c != '>');
+        assert_eq!(
+            Ok((ParseInput::new("<document"), "<document".to_string())),
             parse_doc(testdoc)
         );
     }

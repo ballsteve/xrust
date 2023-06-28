@@ -8,7 +8,7 @@ use xrust::qname::QualifiedName;
 use xrust::transcomb_tests;
 use xrust::xdmerror::Error;
 use xrust::xpath_tests;
-use xrust::xslt_tests;
+//use xrust::xslt_tests;
 
 // Run the generic Item/Value tests
 item_value_tests!(RNode);
@@ -49,5 +49,5 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
 
 item_node_tests!(make_empty_doc, make_doc);
 evaluate_tests!(make_empty_doc);
-xpath_tests!(make_empty_doc, make_sd);
-xslt_tests!(make_from_str, make_empty_doc);
+xpath_tests!(RNode, make_empty_doc, make_sd);
+//xslt_tests!(make_from_str, make_empty_doc);

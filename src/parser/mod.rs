@@ -6,6 +6,8 @@ This parser combinator passes a context into the function, which includes the st
 
 use crate::intmuttree::DTD;
 use std::collections::HashMap;
+use std::fmt;
+use std::fmt::Formatter;
 use std::str::Chars;
 
 pub(crate) mod combinators;
@@ -102,5 +104,11 @@ impl<'a> Iterator for ParseInput<'a> {
 impl PartialEq for ParseInput<'_> {
     fn eq(&self, other: &Self) -> bool {
         self.entityfeed == other.entityfeed
+    }
+}
+
+impl fmt::Display for ParseInput<'_> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        f.write_str(self.input.as_str())
     }
 }

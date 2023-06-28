@@ -42,6 +42,28 @@ impl Operator {
     }
 }
 
+impl From<String> for Operator {
+    fn from(s: String) -> Self {
+        Operator::from(s.as_str())
+    }
+}
+impl From<&str> for Operator {
+    fn from(s: &str) -> Self {
+        match s {
+            "=" | "eq" => Operator::Equal,
+            "!=" | "ne" => Operator::NotEqual,
+            "<" | "lt" => Operator::LessThan,
+            "<=" | "le" => Operator::LessThanEqual,
+            ">" | "gt" => Operator::GreaterThan,
+            ">=" | "ge" => Operator::GreaterThanEqual,
+            "is" => Operator::Is,
+            "<<" => Operator::Before,
+            ">>" => Operator::After,
+            _ => Operator::After, // TODO: add error value
+        }
+    }
+}
+
 /// A concrete type that implements atomic values.
 /// These are the 19 predefined types in XSD Schema Part 2, plus five additional types.
 #[derive(Clone, Debug)]
