@@ -18,7 +18,8 @@ fn rmtns10009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -35,7 +36,8 @@ fn rmtns10010() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -52,7 +54,8 @@ fn rmtns10011() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -69,7 +72,8 @@ fn rmtns10012() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -85,7 +89,8 @@ fn rmtns10013() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -101,7 +106,8 @@ fn rmtns10014() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -117,7 +123,8 @@ fn rmtns10015() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -133,7 +140,8 @@ fn rmtns10016() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -150,7 +158,8 @@ fn rmtns10023() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -166,7 +175,8 @@ fn rmtns10025() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -182,7 +192,8 @@ fn rmtns10026() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -198,7 +209,8 @@ fn rmtns10029() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -215,7 +227,8 @@ fn rmtns10030() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -231,7 +244,8 @@ fn rmtns10031() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -247,7 +261,8 @@ fn rmtns10032() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -264,7 +279,8 @@ fn rmtns10033() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -281,7 +297,8 @@ fn rmtns10035() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -298,7 +315,8 @@ fn rmtns10036() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -315,7 +333,8 @@ fn rmtns10042() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -332,7 +351,8 @@ fn rmtns10043() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -349,7 +369,8 @@ fn rmtns10044() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

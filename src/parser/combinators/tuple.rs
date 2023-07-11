@@ -395,8 +395,11 @@ mod tests {
     #[test]
     fn parser_tuple3_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None);
+        let teststate = ParserState::new(None, None);
         let parse_doc = tuple3(tag("<"), tag("doc"), tag(">"));
-        assert_eq!(Ok((("", ParserState::new(None)),  ((), (), ()))), parse_doc((testdoc, teststate)));
+        assert_eq!(
+            Ok((("", ParserState::new(None, None)), ((), (), ()))),
+            parse_doc((testdoc, teststate))
+        );
     }
 }

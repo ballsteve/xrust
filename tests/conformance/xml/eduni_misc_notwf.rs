@@ -17,7 +17,8 @@ fn hstbh001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/001.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -33,7 +34,8 @@ fn hstbh002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/002.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -49,7 +51,8 @@ fn hstbh003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/003.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -65,7 +68,8 @@ fn hstbh004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/004.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -81,7 +85,8 @@ fn hstlhs007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/007.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -98,7 +103,8 @@ fn hstlhs008() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/008.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -115,7 +121,8 @@ fn hstlhs009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/009.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

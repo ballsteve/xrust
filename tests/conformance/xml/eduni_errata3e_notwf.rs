@@ -17,7 +17,8 @@ fn rmte3e12() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

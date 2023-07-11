@@ -17,7 +17,8 @@ fn xrmt008b() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -33,7 +34,8 @@ fn xrmt5014a() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014a.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -50,7 +52,8 @@ fn xibm105valid_p04ibm04v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04v01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -66,7 +69,8 @@ fn xibm105valid_p04ibm04av01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04av01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -83,7 +87,8 @@ fn xibm105valid_p05ibm05v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -99,7 +104,8 @@ fn xibm105valid_p05ibm05v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -116,7 +122,8 @@ fn xibm105valid_p05ibm05v03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -133,7 +140,8 @@ fn xibm105valid_p05ibm05v04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -150,7 +158,8 @@ fn xibm105valid_p05ibm05v05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -166,7 +175,8 @@ fn xibm105valid_p047ibm07v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm07v01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -182,7 +192,8 @@ fn ibmvalid_p85ibm85n03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -198,7 +209,8 @@ fn ibmvalid_p85ibm85n04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -214,7 +226,8 @@ fn ibmvalid_p85ibm85n05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -230,7 +243,8 @@ fn ibmvalid_p85ibm85n06xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -246,7 +260,8 @@ fn ibmvalid_p85ibm85n07xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -262,7 +277,8 @@ fn ibmvalid_p85ibm85n08xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -278,7 +294,8 @@ fn ibmvalid_p85ibm85n09xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -294,7 +311,8 @@ fn ibmvalid_p85ibm85n10xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -310,7 +328,8 @@ fn ibmvalid_p85ibm85n100xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n100.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -326,7 +345,8 @@ fn ibmvalid_p85ibm85n101xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n101.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -342,7 +362,8 @@ fn ibmvalid_p85ibm85n102xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n102.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -358,7 +379,8 @@ fn ibmvalid_p85ibm85n103xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n103.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -374,7 +396,8 @@ fn ibmvalid_p85ibm85n104xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n104.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -390,7 +413,8 @@ fn ibmvalid_p85ibm85n105xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n105.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -406,7 +430,8 @@ fn ibmvalid_p85ibm85n106xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n106.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -422,7 +447,8 @@ fn ibmvalid_p85ibm85n107xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n107.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -438,7 +464,8 @@ fn ibmvalid_p85ibm85n108xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n108.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -454,7 +481,8 @@ fn ibmvalid_p85ibm85n109xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n109.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -470,7 +498,8 @@ fn ibmvalid_p85ibm85n11xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -486,7 +515,8 @@ fn ibmvalid_p85ibm85n110xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n110.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -502,7 +532,8 @@ fn ibmvalid_p85ibm85n111xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n111.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -518,7 +549,8 @@ fn ibmvalid_p85ibm85n112xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n112.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -534,7 +566,8 @@ fn ibmvalid_p85ibm85n113xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n113.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -550,7 +583,8 @@ fn ibmvalid_p85ibm85n114xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n114.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -566,7 +600,8 @@ fn ibmvalid_p85ibm85n115xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n115.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -582,7 +617,8 @@ fn ibmvalid_p85ibm85n116xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n116.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -598,7 +634,8 @@ fn ibmvalid_p85ibm85n117xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n117.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -614,7 +651,8 @@ fn ibmvalid_p85ibm85n118xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n118.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -630,7 +668,8 @@ fn ibmvalid_p85ibm85n119xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n119.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -646,7 +685,8 @@ fn ibmvalid_p85ibm85n12xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -662,7 +702,8 @@ fn ibmvalid_p85ibm85n120xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n120.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -678,7 +719,8 @@ fn ibmvalid_p85ibm85n121xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n121.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -694,7 +736,8 @@ fn ibmvalid_p85ibm85n122xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n122.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -710,7 +753,8 @@ fn ibmvalid_p85ibm85n123xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n123.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -726,7 +770,8 @@ fn ibmvalid_p85ibm85n124xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n124.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -742,7 +787,8 @@ fn ibmvalid_p85ibm85n125xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n125.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -758,7 +804,8 @@ fn ibmvalid_p85ibm85n126xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n126.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -774,7 +821,8 @@ fn ibmvalid_p85ibm85n127xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n127.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -790,7 +838,8 @@ fn ibmvalid_p85ibm85n128xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n128.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -806,7 +855,8 @@ fn ibmvalid_p85ibm85n129xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n129.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -822,7 +872,8 @@ fn ibmvalid_p85ibm85n13xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n13.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -838,7 +889,8 @@ fn ibmvalid_p85ibm85n130xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n130.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -854,7 +906,8 @@ fn ibmvalid_p85ibm85n131xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n131.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -870,7 +923,8 @@ fn ibmvalid_p85ibm85n132xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n132.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -886,7 +940,8 @@ fn ibmvalid_p85ibm85n133xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n133.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -902,7 +957,8 @@ fn ibmvalid_p85ibm85n134xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n134.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -918,7 +974,8 @@ fn ibmvalid_p85ibm85n135xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n135.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -934,7 +991,8 @@ fn ibmvalid_p85ibm85n136xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n136.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -950,7 +1008,8 @@ fn ibmvalid_p85ibm85n137xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n137.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -966,7 +1025,8 @@ fn ibmvalid_p85ibm85n138xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n138.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -982,7 +1042,8 @@ fn ibmvalid_p85ibm85n139xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n139.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -998,7 +1059,8 @@ fn ibmvalid_p85ibm85n14xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n14.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1014,7 +1076,8 @@ fn ibmvalid_p85ibm85n140xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n140.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1030,7 +1093,8 @@ fn ibmvalid_p85ibm85n141xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n141.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1046,7 +1110,8 @@ fn ibmvalid_p85ibm85n142xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n142.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1062,7 +1127,8 @@ fn ibmvalid_p85ibm85n143xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n143.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1078,7 +1144,8 @@ fn ibmvalid_p85ibm85n144xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n144.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1094,7 +1161,8 @@ fn ibmvalid_p85ibm85n145xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n145.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1110,7 +1178,8 @@ fn ibmvalid_p85ibm85n146xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n146.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1126,7 +1195,8 @@ fn ibmvalid_p85ibm85n147xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n147.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1142,7 +1212,8 @@ fn ibmvalid_p85ibm85n148xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n148.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1158,7 +1229,8 @@ fn ibmvalid_p85ibm85n149xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n149.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1174,7 +1246,8 @@ fn ibmvalid_p85ibm85n15xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n15.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1190,7 +1263,8 @@ fn ibmvalid_p85ibm85n150xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n150.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1206,7 +1280,8 @@ fn ibmvalid_p85ibm85n151xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n151.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1222,7 +1297,8 @@ fn ibmvalid_p85ibm85n152xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n152.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1238,7 +1314,8 @@ fn ibmvalid_p85ibm85n153xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n153.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1254,7 +1331,8 @@ fn ibmvalid_p85ibm85n154xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n154.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1270,7 +1348,8 @@ fn ibmvalid_p85ibm85n155xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n155.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1286,7 +1365,8 @@ fn ibmvalid_p85ibm85n156xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n156.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1302,7 +1382,8 @@ fn ibmvalid_p85ibm85n157xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n157.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1318,7 +1399,8 @@ fn ibmvalid_p85ibm85n158xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n158.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1334,7 +1416,8 @@ fn ibmvalid_p85ibm85n159xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n159.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1350,7 +1433,8 @@ fn ibmvalid_p85ibm85n16xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n16.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1366,7 +1450,8 @@ fn ibmvalid_p85ibm85n160xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n160.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1382,7 +1467,8 @@ fn ibmvalid_p85ibm85n161xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n161.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1398,7 +1484,8 @@ fn ibmvalid_p85ibm85n162xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n162.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1414,7 +1501,8 @@ fn ibmvalid_p85ibm85n163xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n163.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1430,7 +1518,8 @@ fn ibmvalid_p85ibm85n164xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n164.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1446,7 +1535,8 @@ fn ibmvalid_p85ibm85n165xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n165.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1462,7 +1552,8 @@ fn ibmvalid_p85ibm85n166xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n166.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1478,7 +1569,8 @@ fn ibmvalid_p85ibm85n167xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n167.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1494,7 +1586,8 @@ fn ibmvalid_p85ibm85n168xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n168.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1510,7 +1603,8 @@ fn ibmvalid_p85ibm85n169xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n169.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1526,7 +1620,8 @@ fn ibmvalid_p85ibm85n17xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n17.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1542,7 +1637,8 @@ fn ibmvalid_p85ibm85n170xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n170.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1558,7 +1654,8 @@ fn ibmvalid_p85ibm85n171xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n171.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1574,7 +1671,8 @@ fn ibmvalid_p85ibm85n172xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n172.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1590,7 +1688,8 @@ fn ibmvalid_p85ibm85n173xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n173.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1606,7 +1705,8 @@ fn ibmvalid_p85ibm85n174xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n174.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1622,7 +1722,8 @@ fn ibmvalid_p85ibm85n175xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n175.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1638,7 +1739,8 @@ fn ibmvalid_p85ibm85n176xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n176.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1654,7 +1756,8 @@ fn ibmvalid_p85ibm85n177xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n177.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1670,7 +1773,8 @@ fn ibmvalid_p85ibm85n178xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n178.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1686,7 +1790,8 @@ fn ibmvalid_p85ibm85n179xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n179.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1702,7 +1807,8 @@ fn ibmvalid_p85ibm85n18xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n18.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1718,7 +1824,8 @@ fn ibmvalid_p85ibm85n180xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n180.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1734,7 +1841,8 @@ fn ibmvalid_p85ibm85n181xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n181.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1750,7 +1858,8 @@ fn ibmvalid_p85ibm85n182xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n182.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1766,7 +1875,8 @@ fn ibmvalid_p85ibm85n183xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n183.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1782,7 +1892,8 @@ fn ibmvalid_p85ibm85n184xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n184.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1798,7 +1909,8 @@ fn ibmvalid_p85ibm85n185xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n185.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1814,7 +1926,8 @@ fn ibmvalid_p85ibm85n186xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n186.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1830,7 +1943,8 @@ fn ibmvalid_p85ibm85n187xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n187.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1846,7 +1960,8 @@ fn ibmvalid_p85ibm85n188xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n188.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1862,7 +1977,8 @@ fn ibmvalid_p85ibm85n189xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n189.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1878,7 +1994,8 @@ fn ibmvalid_p85ibm85n19xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n19.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1894,7 +2011,8 @@ fn ibmvalid_p85ibm85n190xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n190.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1910,7 +2028,8 @@ fn ibmvalid_p85ibm85n191xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n191.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1926,7 +2045,8 @@ fn ibmvalid_p85ibm85n192xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n192.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1942,7 +2062,8 @@ fn ibmvalid_p85ibm85n193xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n193.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1958,7 +2079,8 @@ fn ibmvalid_p85ibm85n194xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n194.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1974,7 +2096,8 @@ fn ibmvalid_p85ibm85n195xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n195.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -1990,7 +2113,8 @@ fn ibmvalid_p85ibm85n196xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n196.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2006,7 +2130,8 @@ fn ibmvalid_p85ibm85n197xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n197.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2022,7 +2147,8 @@ fn ibmvalid_p85ibm85n198xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n198.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2038,7 +2164,8 @@ fn ibmvalid_p85ibm85n20xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n20.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2054,7 +2181,8 @@ fn ibmvalid_p85ibm85n21xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n21.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2070,7 +2198,8 @@ fn ibmvalid_p85ibm85n22xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n22.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2086,7 +2215,8 @@ fn ibmvalid_p85ibm85n23xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n23.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2102,7 +2232,8 @@ fn ibmvalid_p85ibm85n24xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n24.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2118,7 +2249,8 @@ fn ibmvalid_p85ibm85n25xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n25.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2134,7 +2266,8 @@ fn ibmvalid_p85ibm85n26xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n26.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2150,7 +2283,8 @@ fn ibmvalid_p85ibm85n27xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n27.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2166,7 +2300,8 @@ fn ibmvalid_p85ibm85n28xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n28.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2182,7 +2317,8 @@ fn ibmvalid_p85ibm85n29xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n29.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2198,7 +2334,8 @@ fn ibmvalid_p85ibm85n30xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n30.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2214,7 +2351,8 @@ fn ibmvalid_p85ibm85n31xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n31.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2230,7 +2368,8 @@ fn ibmvalid_p85ibm85n32xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n32.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2246,7 +2385,8 @@ fn ibmvalid_p85ibm85n33xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n33.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2262,7 +2402,8 @@ fn ibmvalid_p85ibm85n34xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n34.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2278,7 +2419,8 @@ fn ibmvalid_p85ibm85n35xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n35.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2294,7 +2436,8 @@ fn ibmvalid_p85ibm85n36xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n36.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2310,7 +2453,8 @@ fn ibmvalid_p85ibm85n37xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n37.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2326,7 +2470,8 @@ fn ibmvalid_p85ibm85n38xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n38.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2342,7 +2487,8 @@ fn ibmvalid_p85ibm85n39xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n39.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2358,7 +2504,8 @@ fn ibmvalid_p85ibm85n40xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n40.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2374,7 +2521,8 @@ fn ibmvalid_p85ibm85n41xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n41.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2390,7 +2538,8 @@ fn ibmvalid_p85ibm85n42xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n42.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2406,7 +2555,8 @@ fn ibmvalid_p85ibm85n43xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n43.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2422,7 +2572,8 @@ fn ibmvalid_p85ibm85n44xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n44.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2438,7 +2589,8 @@ fn ibmvalid_p85ibm85n45xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n45.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2454,7 +2606,8 @@ fn ibmvalid_p85ibm85n46xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n46.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2470,7 +2623,8 @@ fn ibmvalid_p85ibm85n47xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n47.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2486,7 +2640,8 @@ fn ibmvalid_p85ibm85n48xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n48.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2502,7 +2657,8 @@ fn ibmvalid_p85ibm85n49xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n49.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2518,7 +2674,8 @@ fn ibmvalid_p85ibm85n50xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n50.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2534,7 +2691,8 @@ fn ibmvalid_p85ibm85n51xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n51.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2550,7 +2708,8 @@ fn ibmvalid_p85ibm85n52xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n52.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2566,7 +2725,8 @@ fn ibmvalid_p85ibm85n53xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n53.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2582,7 +2742,8 @@ fn ibmvalid_p85ibm85n54xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n54.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2598,7 +2759,8 @@ fn ibmvalid_p85ibm85n55xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n55.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2614,7 +2776,8 @@ fn ibmvalid_p85ibm85n56xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n56.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2630,7 +2793,8 @@ fn ibmvalid_p85ibm85n57xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n57.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2646,7 +2810,8 @@ fn ibmvalid_p85ibm85n58xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n58.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2662,7 +2827,8 @@ fn ibmvalid_p85ibm85n59xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n59.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2678,7 +2844,8 @@ fn ibmvalid_p85ibm85n60xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n60.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2694,7 +2861,8 @@ fn ibmvalid_p85ibm85n61xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n61.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2710,7 +2878,8 @@ fn ibmvalid_p85ibm85n62xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n62.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2726,7 +2895,8 @@ fn ibmvalid_p85ibm85n63xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n63.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2742,7 +2912,8 @@ fn ibmvalid_p85ibm85n64xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n64.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2758,7 +2929,8 @@ fn ibmvalid_p85ibm85n65xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n65.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2774,7 +2946,8 @@ fn ibmvalid_p85ibm85n66xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n66.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2790,7 +2963,8 @@ fn ibmvalid_p85ibm85n67xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n67.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2806,7 +2980,8 @@ fn ibmvalid_p85ibm85n68xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n68.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2822,7 +2997,8 @@ fn ibmvalid_p85ibm85n69xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n69.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2838,7 +3014,8 @@ fn ibmvalid_p85ibm85n70xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n70.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2854,7 +3031,8 @@ fn ibmvalid_p85ibm85n71xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n71.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2870,7 +3048,8 @@ fn ibmvalid_p85ibm85n72xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n72.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2886,7 +3065,8 @@ fn ibmvalid_p85ibm85n73xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n73.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2902,7 +3082,8 @@ fn ibmvalid_p85ibm85n74xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n74.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2918,7 +3099,8 @@ fn ibmvalid_p85ibm85n75xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n75.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2934,7 +3116,8 @@ fn ibmvalid_p85ibm85n76xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n76.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2950,7 +3133,8 @@ fn ibmvalid_p85ibm85n77xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n77.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2966,7 +3150,8 @@ fn ibmvalid_p85ibm85n78xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n78.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2982,7 +3167,8 @@ fn ibmvalid_p85ibm85n79xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n79.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -2998,7 +3184,8 @@ fn ibmvalid_p85ibm85n80xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n80.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3014,7 +3201,8 @@ fn ibmvalid_p85ibm85n81xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n81.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3030,8 +3218,10 @@ fn ibmvalid_p85ibm85n82xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n82.xml").unwrap(),
-        None
-    ));    assert!(testxml.is_ok());
+        None,
+        None,
+    ));
+    assert!(testxml.is_ok());
 }
 
 #[test]
@@ -3045,7 +3235,8 @@ fn ibmvalid_p85ibm85n83xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n83.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3061,7 +3252,8 @@ fn ibmvalid_p85ibm85n84xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n84.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3077,7 +3269,8 @@ fn ibmvalid_p85ibm85n85xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n85.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3093,7 +3286,8 @@ fn ibmvalid_p85ibm85n86xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n86.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3109,7 +3303,8 @@ fn ibmvalid_p85ibm85n87xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n87.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3125,7 +3320,8 @@ fn ibmvalid_p85ibm85n88xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n88.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3141,7 +3337,8 @@ fn ibmvalid_p85ibm85n89xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n89.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3157,7 +3354,8 @@ fn ibmvalid_p85ibm85n90xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n90.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3173,7 +3371,8 @@ fn ibmvalid_p85ibm85n91xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n91.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3189,7 +3388,8 @@ fn ibmvalid_p85ibm85n92xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n92.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3205,7 +3405,8 @@ fn ibmvalid_p85ibm85n93xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n93.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3221,7 +3422,8 @@ fn ibmvalid_p85ibm85n94xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n94.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3237,7 +3439,8 @@ fn ibmvalid_p85ibm85n95xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n95.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3253,7 +3456,8 @@ fn ibmvalid_p85ibm85n96xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n96.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3269,7 +3473,8 @@ fn ibmvalid_p85ibm85n97xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n97.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3285,7 +3490,8 @@ fn ibmvalid_p85ibm85n98xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n98.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3301,7 +3507,8 @@ fn ibmvalid_p85ibm85n99xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n99.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3317,7 +3524,8 @@ fn ibmvalid_p86ibm86n01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3333,7 +3541,8 @@ fn ibmvalid_p86ibm86n02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3349,7 +3558,8 @@ fn ibmvalid_p86ibm86n03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3365,7 +3575,8 @@ fn ibmvalid_p86ibm86n04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3381,7 +3592,8 @@ fn ibmvalid_p87ibm87n01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3397,7 +3609,8 @@ fn ibmvalid_p87ibm87n02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3413,7 +3626,8 @@ fn ibmvalid_p87ibm87n03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3429,7 +3643,8 @@ fn ibmvalid_p87ibm87n04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3445,7 +3660,8 @@ fn ibmvalid_p87ibm87n05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3461,7 +3677,8 @@ fn ibmvalid_p87ibm87n06xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3477,7 +3694,8 @@ fn ibmvalid_p87ibm87n07xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3493,7 +3711,8 @@ fn ibmvalid_p87ibm87n08xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3509,7 +3728,8 @@ fn ibmvalid_p87ibm87n09xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3525,7 +3745,8 @@ fn ibmvalid_p87ibm87n10xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3541,7 +3762,8 @@ fn ibmvalid_p87ibm87n11xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3557,7 +3779,8 @@ fn ibmvalid_p87ibm87n12xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3573,7 +3796,8 @@ fn ibmvalid_p87ibm87n13xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n13.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3589,7 +3813,8 @@ fn ibmvalid_p87ibm87n14xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n14.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3605,7 +3830,8 @@ fn ibmvalid_p87ibm87n15xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n15.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3621,7 +3847,8 @@ fn ibmvalid_p87ibm87n16xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n16.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3637,7 +3864,8 @@ fn ibmvalid_p87ibm87n17xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n17.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3653,7 +3881,8 @@ fn ibmvalid_p87ibm87n18xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n18.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3669,7 +3898,8 @@ fn ibmvalid_p87ibm87n19xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n19.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3685,7 +3915,8 @@ fn ibmvalid_p87ibm87n20xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n20.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3701,7 +3932,8 @@ fn ibmvalid_p87ibm87n21xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n21.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3717,7 +3949,8 @@ fn ibmvalid_p87ibm87n22xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n22.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3733,7 +3966,8 @@ fn ibmvalid_p87ibm87n23xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n23.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3749,7 +3983,8 @@ fn ibmvalid_p87ibm87n24xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n24.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3765,7 +4000,8 @@ fn ibmvalid_p87ibm87n25xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n25.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3781,7 +4017,8 @@ fn ibmvalid_p87ibm87n26xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n26.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3797,7 +4034,8 @@ fn ibmvalid_p87ibm87n27xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n27.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3813,7 +4051,8 @@ fn ibmvalid_p87ibm87n28xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n28.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3829,7 +4068,8 @@ fn ibmvalid_p87ibm87n29xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n29.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3845,7 +4085,8 @@ fn ibmvalid_p87ibm87n30xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n30.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3861,7 +4102,8 @@ fn ibmvalid_p87ibm87n31xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n31.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3877,7 +4119,8 @@ fn ibmvalid_p87ibm87n32xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n32.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3893,7 +4136,8 @@ fn ibmvalid_p87ibm87n33xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n33.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3909,7 +4153,8 @@ fn ibmvalid_p87ibm87n34xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n34.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3925,7 +4170,8 @@ fn ibmvalid_p87ibm87n35xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n35.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3941,7 +4187,8 @@ fn ibmvalid_p87ibm87n36xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n36.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3957,7 +4204,8 @@ fn ibmvalid_p87ibm87n37xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n37.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3973,7 +4221,8 @@ fn ibmvalid_p87ibm87n38xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n38.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -3989,7 +4238,8 @@ fn ibmvalid_p87ibm87n39xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n39.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4005,7 +4255,8 @@ fn ibmvalid_p87ibm87n40xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n40.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4021,7 +4272,8 @@ fn ibmvalid_p87ibm87n41xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n41.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4037,7 +4289,8 @@ fn ibmvalid_p87ibm87n42xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n42.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4053,7 +4306,8 @@ fn ibmvalid_p87ibm87n43xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n43.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4069,7 +4323,8 @@ fn ibmvalid_p87ibm87n44xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n44.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4085,7 +4340,8 @@ fn ibmvalid_p87ibm87n45xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n45.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4101,7 +4357,8 @@ fn ibmvalid_p87ibm87n46xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n46.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4117,7 +4374,8 @@ fn ibmvalid_p87ibm87n47xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n47.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4133,7 +4391,8 @@ fn ibmvalid_p87ibm87n48xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n48.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4149,7 +4408,8 @@ fn ibmvalid_p87ibm87n49xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n49.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4165,7 +4425,8 @@ fn ibmvalid_p87ibm87n50xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n50.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4181,7 +4442,8 @@ fn ibmvalid_p87ibm87n51xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n51.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4197,7 +4459,8 @@ fn ibmvalid_p87ibm87n52xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n52.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4213,7 +4476,8 @@ fn ibmvalid_p87ibm87n53xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n53.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4229,7 +4493,8 @@ fn ibmvalid_p87ibm87n54xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n54.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4245,7 +4510,8 @@ fn ibmvalid_p87ibm87n55xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n55.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4261,7 +4527,8 @@ fn ibmvalid_p87ibm87n56xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n56.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4277,7 +4544,8 @@ fn ibmvalid_p87ibm87n57xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n57.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4293,7 +4561,8 @@ fn ibmvalid_p87ibm87n58xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n58.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4309,7 +4578,8 @@ fn ibmvalid_p87ibm87n59xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n59.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4325,7 +4595,8 @@ fn ibmvalid_p87ibm87n60xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n60.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4341,7 +4612,8 @@ fn ibmvalid_p87ibm87n61xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n61.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4357,7 +4629,8 @@ fn ibmvalid_p87ibm87n62xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n62.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4373,7 +4646,8 @@ fn ibmvalid_p87ibm87n63xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n63.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4389,7 +4663,8 @@ fn ibmvalid_p87ibm87n64xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n64.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4405,7 +4680,8 @@ fn ibmvalid_p87ibm87n66xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n66.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4421,7 +4697,8 @@ fn ibmvalid_p87ibm87n67xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n67.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4437,7 +4714,8 @@ fn ibmvalid_p87ibm87n68xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n68.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4453,7 +4731,8 @@ fn ibmvalid_p87ibm87n69xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n69.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4469,7 +4748,8 @@ fn ibmvalid_p87ibm87n70xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n70.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4485,7 +4765,8 @@ fn ibmvalid_p87ibm87n71xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n71.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4501,7 +4782,8 @@ fn ibmvalid_p87ibm87n72xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n72.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4517,7 +4799,8 @@ fn ibmvalid_p87ibm87n73xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n73.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4533,7 +4816,8 @@ fn ibmvalid_p87ibm87n74xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n74.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4549,7 +4833,8 @@ fn ibmvalid_p87ibm87n75xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n75.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4565,7 +4850,8 @@ fn ibmvalid_p87ibm87n76xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n76.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4581,7 +4867,8 @@ fn ibmvalid_p87ibm87n77xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n77.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4597,7 +4884,8 @@ fn ibmvalid_p87ibm87n78xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n78.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4613,7 +4901,8 @@ fn ibmvalid_p87ibm87n79xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n79.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4629,7 +4918,8 @@ fn ibmvalid_p87ibm87n80xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n80.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4645,7 +4935,8 @@ fn ibmvalid_p87ibm87n81xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n81.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4661,7 +4952,8 @@ fn ibmvalid_p87ibm87n82xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n82.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4677,7 +4969,8 @@ fn ibmvalid_p87ibm87n83xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n83.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4693,7 +4986,8 @@ fn ibmvalid_p87ibm87n84xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n84.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4709,7 +5003,8 @@ fn ibmvalid_p87ibm87n85xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n85.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4725,7 +5020,8 @@ fn ibmvalid_p88ibm88n03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4741,7 +5037,8 @@ fn ibmvalid_p88ibm88n04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4757,7 +5054,8 @@ fn ibmvalid_p88ibm88n05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4773,7 +5071,8 @@ fn ibmvalid_p88ibm88n06xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4789,7 +5088,8 @@ fn ibmvalid_p88ibm88n08xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4805,7 +5105,8 @@ fn ibmvalid_p88ibm88n09xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4821,7 +5122,8 @@ fn ibmvalid_p88ibm88n10xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4837,7 +5139,8 @@ fn ibmvalid_p88ibm88n11xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4853,7 +5156,8 @@ fn ibmvalid_p88ibm88n12xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4869,7 +5173,8 @@ fn ibmvalid_p88ibm88n13xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n13.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4885,7 +5190,8 @@ fn ibmvalid_p88ibm88n14xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n14.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4901,7 +5207,8 @@ fn ibmvalid_p88ibm88n15xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n15.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4917,7 +5224,8 @@ fn ibmvalid_p88ibm88n16xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n16.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4933,7 +5241,8 @@ fn ibmvalid_p89ibm89n03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4949,7 +5258,8 @@ fn ibmvalid_p89ibm89n04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -4965,7 +5275,8 @@ fn ibmvalid_p89ibm89n05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }

@@ -1,12 +1,12 @@
-use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple4, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
-use crate::parser::xml::dtd::notation::notationtype;
 use crate::parser::xml::dtd::misc::nmtoken;
+use crate::parser::xml::dtd::notation::notationtype;
+use crate::parser::{ParseInput, ParseResult};
 
 //EnumeratedType ::= NotationType | Enumeration
 pub(crate) fn enumeratedtype() -> impl Fn(ParseInput) -> ParseResult<()> {

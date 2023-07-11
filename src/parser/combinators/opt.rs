@@ -20,16 +20,22 @@ mod tests {
     #[test]
     fn parser_opt_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None);
+        let teststate = ParserState::new(None, None);
         let parse_doc = opt(tag("<"));
-        assert_eq!(Ok((("doc>", ParserState::new(None)),   Some(()))), parse_doc((testdoc, teststate)));
+        assert_eq!(
+            Ok((("doc>", ParserState::new(None, None)), Some(()))),
+            parse_doc((testdoc, teststate))
+        );
     }
 
     #[test]
     fn parser_opt_test2() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None);
+        let teststate = ParserState::new(None, None);
         let parse_doc = opt(tag(">"));
-        assert_eq!(Ok((("<doc>", ParserState::new(None)),   None)), parse_doc((testdoc, teststate)));
+        assert_eq!(
+            Ok((("<doc>", ParserState::new(None, None)), None)),
+            parse_doc((testdoc, teststate))
+        );
     }
 }

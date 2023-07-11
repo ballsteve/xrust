@@ -17,8 +17,10 @@ fn rmtnse1013a() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13a.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13a.xml")
+            .unwrap(),
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -34,8 +36,10 @@ fn rmtnse1013b() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13b.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13b.xml")
+            .unwrap(),
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -51,8 +55,10 @@ fn rmtnse1013c() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13c.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13c.xml")
+            .unwrap(),
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

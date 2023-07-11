@@ -1,6 +1,9 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub(crate) fn wellformed<P, F, A>(parser: P, validate_fn: F) -> impl Fn(ParseInput) -> ParseResult<A>
+pub(crate) fn wellformed<P, F, A>(
+    parser: P,
+    validate_fn: F,
+) -> impl Fn(ParseInput) -> ParseResult<A>
 where
     P: Fn(ParseInput) -> ParseResult<A>,
     F: Fn(&A) -> bool,

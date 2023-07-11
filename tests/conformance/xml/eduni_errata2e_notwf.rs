@@ -18,7 +18,8 @@ fn rmte2e27() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E27.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -34,7 +35,8 @@ fn rmte2e38() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E38.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -51,7 +53,8 @@ fn rmte2e61() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E61.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

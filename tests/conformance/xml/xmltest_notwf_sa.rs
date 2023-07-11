@@ -22,7 +22,8 @@ fn notwfsa001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/001.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -39,7 +40,8 @@ fn notwfsa002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/002.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -56,7 +58,8 @@ fn notwfsa003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/003.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -73,7 +76,8 @@ fn notwfsa004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/004.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -90,7 +94,8 @@ fn notwfsa005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/005.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -107,7 +112,8 @@ fn notwfsa006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/006.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -124,7 +130,8 @@ fn notwfsa007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/007.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -141,7 +148,8 @@ fn notwfsa008() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/008.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -158,7 +166,8 @@ fn notwfsa009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/009.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -175,7 +184,8 @@ fn notwfsa010() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/010.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -192,7 +202,8 @@ fn notwfsa011() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/011.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -209,7 +220,8 @@ fn notwfsa012() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/012.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -226,7 +238,8 @@ fn notwfsa013() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/013.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -243,7 +256,8 @@ fn notwfsa014() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/014.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -260,7 +274,8 @@ fn notwfsa015() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/015.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -277,7 +292,8 @@ fn notwfsa016() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/016.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -294,7 +310,8 @@ fn notwfsa017() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/017.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -311,7 +328,8 @@ fn notwfsa018() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/018.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -328,7 +346,8 @@ fn notwfsa019() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/019.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -345,7 +364,8 @@ fn notwfsa020() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/020.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -362,7 +382,8 @@ fn notwfsa021() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/021.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -379,7 +400,8 @@ fn notwfsa022() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/022.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -396,7 +418,8 @@ fn notwfsa023() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/023.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -413,7 +436,8 @@ fn notwfsa024() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/024.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -430,7 +454,8 @@ fn notwfsa025() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/025.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -447,7 +472,8 @@ fn notwfsa026() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/026.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -464,7 +490,8 @@ fn notwfsa027() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/027.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -481,7 +508,8 @@ fn notwfsa028() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/028.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -498,7 +526,8 @@ fn notwfsa029() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/029.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -515,7 +544,8 @@ fn notwfsa030() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/030.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -532,7 +562,8 @@ fn notwfsa031() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/031.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -549,7 +580,8 @@ fn notwfsa032() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/032.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -566,7 +598,8 @@ fn notwfsa033() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/033.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -583,7 +616,8 @@ fn notwfsa034() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/034.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -600,7 +634,8 @@ fn notwfsa035() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/035.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -617,7 +652,8 @@ fn notwfsa036() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/036.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -634,7 +670,8 @@ fn notwfsa037() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/037.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -652,7 +689,8 @@ fn notwfsa038() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/038.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -669,7 +707,8 @@ fn notwfsa039() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/039.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -686,7 +725,8 @@ fn notwfsa040() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/040.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -703,7 +743,8 @@ fn notwfsa041() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/041.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -720,7 +761,8 @@ fn notwfsa042() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/042.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -737,7 +779,8 @@ fn notwfsa043() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/043.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -754,7 +797,8 @@ fn notwfsa044() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/044.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -771,7 +815,8 @@ fn notwfsa045() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/045.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -788,7 +833,8 @@ fn notwfsa046() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/046.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -805,7 +851,8 @@ fn notwfsa047() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/047.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -822,7 +869,8 @@ fn notwfsa048() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/048.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -839,7 +887,8 @@ fn notwfsa049() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/049.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -856,7 +905,8 @@ fn notwfsa050() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/050.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -873,7 +923,8 @@ fn notwfsa051() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/051.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -890,7 +941,8 @@ fn notwfsa052() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/052.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -907,7 +959,8 @@ fn notwfsa053() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/053.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -924,7 +977,8 @@ fn notwfsa054() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/054.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -941,7 +995,8 @@ fn notwfsa055() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/055.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -958,7 +1013,8 @@ fn notwfsa056() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/056.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -975,7 +1031,8 @@ fn notwfsa057() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/057.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -992,7 +1049,8 @@ fn notwfsa058() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/058.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1009,7 +1067,8 @@ fn notwfsa059() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/059.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1026,7 +1085,8 @@ fn notwfsa060() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/060.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1043,7 +1103,8 @@ fn notwfsa061() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/061.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1060,7 +1121,8 @@ fn notwfsa062() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/062.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1077,7 +1139,8 @@ fn notwfsa063() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/063.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1094,7 +1157,8 @@ fn notwfsa064() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/064.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1111,7 +1175,8 @@ fn notwfsa065() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/065.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1128,7 +1193,8 @@ fn notwfsa066() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/066.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1145,7 +1211,8 @@ fn notwfsa067() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/067.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1162,7 +1229,8 @@ fn notwfsa068() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/068.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1179,7 +1247,8 @@ fn notwfsa069() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/069.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1196,7 +1265,8 @@ fn notwfsa070() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/070.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1213,7 +1283,8 @@ fn notwfsa071() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/071.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1230,7 +1301,8 @@ fn notwfsa072() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/072.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1247,7 +1319,8 @@ fn notwfsa073() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/073.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1264,7 +1337,8 @@ fn notwfsa074() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/074.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1281,7 +1355,8 @@ fn notwfsa075() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/075.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1298,7 +1373,8 @@ fn notwfsa076() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/076.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1315,7 +1391,8 @@ fn notwfsa077() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/077.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1332,7 +1409,8 @@ fn notwfsa078() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/078.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1349,7 +1427,8 @@ fn notwfsa079() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/079.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1366,7 +1445,8 @@ fn notwfsa080() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/080.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1383,7 +1463,8 @@ fn notwfsa081() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/081.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1400,7 +1481,8 @@ fn notwfsa082() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/082.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1417,7 +1499,8 @@ fn notwfsa083() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/083.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1434,7 +1517,8 @@ fn notwfsa084() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/084.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1451,7 +1535,8 @@ fn notwfsa085() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/085.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1468,7 +1553,8 @@ fn notwfsa086() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/086.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1486,7 +1572,8 @@ fn notwfsa087() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/087.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1503,7 +1590,8 @@ fn notwfsa088() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/088.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1520,7 +1608,8 @@ fn notwfsa089() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/089.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1537,7 +1626,8 @@ fn notwfsa090() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/090.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1554,7 +1644,8 @@ fn notwfsa091() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/091.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1571,7 +1662,8 @@ fn notwfsa092() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/092.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1588,7 +1680,8 @@ fn notwfsa093() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/093.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1605,7 +1698,8 @@ fn notwfsa094() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/094.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1622,7 +1716,8 @@ fn notwfsa095() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/095.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1639,7 +1734,8 @@ fn notwfsa096() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/096.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1656,7 +1752,8 @@ fn notwfsa097() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/097.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1673,7 +1770,8 @@ fn notwfsa098() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/098.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1690,7 +1788,8 @@ fn notwfsa099() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/099.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1707,7 +1806,8 @@ fn notwfsa100() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/100.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1725,7 +1825,8 @@ fn notwfsa101() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/101.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1743,7 +1844,8 @@ fn notwfsa102() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/102.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1760,7 +1862,8 @@ fn notwfsa103() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/103.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1777,7 +1880,8 @@ fn notwfsa104() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/104.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1794,7 +1898,8 @@ fn notwfsa105() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/105.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1811,7 +1916,8 @@ fn notwfsa106() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/106.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1828,7 +1934,8 @@ fn notwfsa107() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/107.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1845,7 +1952,8 @@ fn notwfsa108() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/108.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1862,7 +1970,8 @@ fn notwfsa109() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/109.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1879,7 +1988,8 @@ fn notwfsa110() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/110.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1896,7 +2006,8 @@ fn notwfsa111() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/111.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1913,7 +2024,8 @@ fn notwfsa112() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/112.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1931,7 +2043,8 @@ fn notwfsa113() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/113.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1949,7 +2062,8 @@ fn notwfsa114() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/114.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1966,7 +2080,8 @@ fn notwfsa115() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/115.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1983,7 +2098,8 @@ fn notwfsa116() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/116.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2000,7 +2116,8 @@ fn notwfsa117() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/117.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2017,7 +2134,8 @@ fn notwfsa118() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/118.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2034,7 +2152,8 @@ fn notwfsa119() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/119.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2051,7 +2170,8 @@ fn notwfsa120() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/120.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2068,7 +2188,8 @@ fn notwfsa121() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/121.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2085,7 +2206,8 @@ fn notwfsa122() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/122.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2102,7 +2224,8 @@ fn notwfsa123() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/123.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2119,7 +2242,8 @@ fn notwfsa124() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/124.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2136,7 +2260,8 @@ fn notwfsa125() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/125.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2153,7 +2278,8 @@ fn notwfsa126() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/126.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2170,7 +2296,8 @@ fn notwfsa127() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/127.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2187,7 +2314,8 @@ fn notwfsa128() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/128.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2204,7 +2332,8 @@ fn notwfsa129() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/129.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2221,7 +2350,8 @@ fn notwfsa130() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/130.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2238,7 +2368,8 @@ fn notwfsa131() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/131.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2255,7 +2386,8 @@ fn notwfsa132() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/132.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2272,7 +2404,8 @@ fn notwfsa133() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/133.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2289,7 +2422,8 @@ fn notwfsa134() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/134.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2306,7 +2440,8 @@ fn notwfsa135() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/135.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2323,7 +2458,8 @@ fn notwfsa136() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/136.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2340,7 +2476,8 @@ fn notwfsa137() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/137.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2357,7 +2494,8 @@ fn notwfsa138() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/138.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2374,7 +2512,8 @@ fn notwfsa139() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/139.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2399,7 +2538,7 @@ fn notwfsa140() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/140.xml").unwrap(),
-        None
+        None,None
     ));
 
     assert!(testxml.is_err());
@@ -2425,7 +2564,7 @@ fn notwfsa141() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/141.xml").unwrap(),
-        None
+        None,None
     ));
 
     assert!(testxml.is_err());
@@ -2443,7 +2582,8 @@ fn notwfsa142() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/142.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2460,7 +2600,8 @@ fn notwfsa143() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/143.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2477,7 +2618,8 @@ fn notwfsa144() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/144.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2495,7 +2637,8 @@ fn notwfsa145() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/145.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2513,7 +2656,8 @@ fn notwfsa146() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/146.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2530,7 +2674,8 @@ fn notwfsa147() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/147.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2547,7 +2692,8 @@ fn notwfsa148() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/148.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2564,7 +2710,8 @@ fn notwfsa149() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/149.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2581,7 +2728,8 @@ fn notwfsa150() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/150.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2598,7 +2746,8 @@ fn notwfsa151() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/151.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2615,7 +2764,8 @@ fn notwfsa152() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/152.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2632,7 +2782,8 @@ fn notwfsa153() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/153.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2649,7 +2800,8 @@ fn notwfsa154() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/154.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2666,7 +2818,8 @@ fn notwfsa155() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/155.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2683,7 +2836,8 @@ fn notwfsa156() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/156.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2700,7 +2854,8 @@ fn notwfsa157() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/157.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2717,7 +2872,8 @@ fn notwfsa158() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/158.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2735,7 +2891,8 @@ fn notwfsa159() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/159.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2753,7 +2910,8 @@ fn notwfsa160() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/160.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2770,7 +2928,8 @@ fn notwfsa161() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/161.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2788,7 +2947,8 @@ fn notwfsa162() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/162.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2805,7 +2965,8 @@ fn notwfsa163() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/163.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2822,7 +2983,8 @@ fn notwfsa164() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/164.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2839,7 +3001,8 @@ fn notwfsa165() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/165.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2856,7 +3019,8 @@ fn notwfsa166() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/166.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2873,7 +3037,8 @@ fn notwfsa167() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/167.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2891,7 +3056,8 @@ fn notwfsa168() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/168.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2909,7 +3075,8 @@ fn notwfsa169() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/169.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2927,7 +3094,8 @@ fn notwfsa170() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/170.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2944,7 +3112,8 @@ fn notwfsa171() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/171.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2961,7 +3130,8 @@ fn notwfsa172() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/172.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2979,7 +3149,8 @@ fn notwfsa173() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/173.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2996,7 +3167,8 @@ fn notwfsa174() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/174.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3013,7 +3185,8 @@ fn notwfsa175() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/175.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3030,7 +3203,8 @@ fn notwfsa176() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/176.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3047,7 +3221,8 @@ fn notwfsa177() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/177.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3064,7 +3239,8 @@ fn notwfsa178() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/178.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3081,7 +3257,8 @@ fn notwfsa179() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/179.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3098,7 +3275,8 @@ fn notwfsa180() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/180.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3115,7 +3293,8 @@ fn notwfsa181() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/181.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3132,7 +3311,8 @@ fn notwfsa182() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/182.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3149,7 +3329,8 @@ fn notwfsa183() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/183.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3166,7 +3347,8 @@ fn notwfsa184() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/184.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3183,7 +3365,8 @@ fn notwfsa185() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/185.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -3200,7 +3383,8 @@ fn notwfsa186() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/sa/186.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());

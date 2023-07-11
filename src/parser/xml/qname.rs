@@ -1,4 +1,3 @@
-use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -6,7 +5,8 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_one, take_while, take_while_m_n};
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::wellformed::wellformed;
-use crate::parser::common::{is_namestartchar, is_namechar, is_ncnamestartchar, is_ncnamechar};
+use crate::parser::common::{is_namechar, is_namestartchar, is_ncnamechar, is_ncnamestartchar};
+use crate::parser::{ParseInput, ParseResult};
 use crate::qname::QualifiedName;
 
 // QualifiedName

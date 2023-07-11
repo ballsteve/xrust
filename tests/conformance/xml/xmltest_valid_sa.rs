@@ -23,11 +23,13 @@ fn validsa001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/001.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/001.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -46,11 +48,13 @@ fn validsa002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/002.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/002.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -69,11 +73,13 @@ fn validsa003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/003.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/003.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -92,11 +98,13 @@ fn validsa004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/004.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/004.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -115,11 +123,13 @@ fn validsa005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/005.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/005.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -138,11 +148,13 @@ fn validsa006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/006.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/006.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -161,11 +173,13 @@ fn validsa007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/007.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/007.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -184,11 +198,13 @@ fn validsa008() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/008.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/008.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -207,11 +223,13 @@ fn validsa009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/009.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/009.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -230,11 +248,13 @@ fn validsa010() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/010.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/010.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -253,11 +273,13 @@ fn validsa011() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/011.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/011.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -282,11 +304,11 @@ fn validsa012() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/012.xml").unwrap(),
-        None
+        None,None
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/012.xml").unwrap(),
-        None
+        None,None
     ));
 
     assert!(testxml.is_ok());
@@ -306,11 +328,13 @@ fn validsa013() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/013.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/013.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -329,11 +353,13 @@ fn validsa014() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/014.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/014.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -352,11 +378,13 @@ fn validsa015() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/015.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/015.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -375,11 +403,13 @@ fn validsa016() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/016.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/016.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -398,11 +428,13 @@ fn validsa017() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/017.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -421,11 +453,13 @@ fn validsa018() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/018.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/018.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -444,11 +478,13 @@ fn validsa019() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/019.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/019.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -467,11 +503,13 @@ fn validsa020() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/020.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/020.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -490,11 +528,13 @@ fn validsa021() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/021.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/021.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -513,11 +553,13 @@ fn validsa022() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/022.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/022.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -536,11 +578,13 @@ fn validsa023() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/023.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/023.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -559,11 +603,13 @@ fn validsa024() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/024.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/024.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -582,11 +628,13 @@ fn validsa025() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/025.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/025.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -605,11 +653,13 @@ fn validsa026() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/026.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/026.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -628,11 +678,13 @@ fn validsa027() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/027.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/027.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -651,11 +703,13 @@ fn validsa028() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/028.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/028.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -674,11 +728,13 @@ fn validsa029() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/029.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/029.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -697,11 +753,13 @@ fn validsa030() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/030.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/030.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -720,11 +778,13 @@ fn validsa031() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/031.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/031.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -743,11 +803,13 @@ fn validsa032() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/032.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/032.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -766,11 +828,13 @@ fn validsa033() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/033.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/033.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -789,11 +853,13 @@ fn validsa034() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/034.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/034.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -812,11 +878,13 @@ fn validsa035() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/035.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/035.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -835,11 +903,13 @@ fn validsa036() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/036.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/036.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -858,11 +928,13 @@ fn validsa017a() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/017a.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017a.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -881,11 +953,13 @@ fn validsa037() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/037.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/037.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -904,11 +978,13 @@ fn validsa038() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/038.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/038.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -927,11 +1003,13 @@ fn validsa039() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/039.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/039.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -950,11 +1028,13 @@ fn validsa040() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/040.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/040.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -973,11 +1053,13 @@ fn validsa041() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/041.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/041.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -996,11 +1078,13 @@ fn validsa042() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/042.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/042.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1019,11 +1103,13 @@ fn validsa043() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/043.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/043.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1042,11 +1128,13 @@ fn validsa044() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/044.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/044.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1065,11 +1153,13 @@ fn validsa045() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/045.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/045.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1088,11 +1178,13 @@ fn validsa046() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/046.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/046.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1111,11 +1203,13 @@ fn validsa047() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/047.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/047.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1134,11 +1228,13 @@ fn validsa048() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/048.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/048.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1158,11 +1254,13 @@ fn validsa049() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/049.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/049.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1182,11 +1280,13 @@ fn validsa050() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/050.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/050.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1206,11 +1306,13 @@ fn validsa051() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/051.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/051.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1229,11 +1331,13 @@ fn validsa052() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/052.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/052.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1252,11 +1356,13 @@ fn validsa053() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/053.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/053.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1275,11 +1381,13 @@ fn validsa054() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/054.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/054.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1298,11 +1406,13 @@ fn validsa055() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/055.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/055.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1321,11 +1431,13 @@ fn validsa056() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/056.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/056.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1344,11 +1456,13 @@ fn validsa057() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/057.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/057.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1367,11 +1481,13 @@ fn validsa058() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/058.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/058.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1390,11 +1506,13 @@ fn validsa059() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/059.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/059.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1413,11 +1531,13 @@ fn validsa060() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/060.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/060.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1436,11 +1556,13 @@ fn validsa061() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/061.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/061.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1459,11 +1581,13 @@ fn validsa062() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/062.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/062.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1482,11 +1606,13 @@ fn validsa063() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/063.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/063.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1505,11 +1631,13 @@ fn validsa064() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/064.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/064.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1528,11 +1656,13 @@ fn validsa065() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/065.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/065.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1551,11 +1681,13 @@ fn validsa066() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/066.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/066.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1574,11 +1706,13 @@ fn validsa067() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/067.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/067.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1597,11 +1731,13 @@ fn validsa068() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/068.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/068.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1620,11 +1756,13 @@ fn validsa069() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/069.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/069.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1644,11 +1782,13 @@ fn validsa070() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/070.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/070.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1667,11 +1807,13 @@ fn validsa071() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/071.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/071.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1691,11 +1833,13 @@ fn validsa072() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/072.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/072.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1715,11 +1859,13 @@ fn validsa073() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/073.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/073.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1738,11 +1884,13 @@ fn validsa074() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/074.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/074.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1761,11 +1909,13 @@ fn validsa075() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/075.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/075.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1784,11 +1934,13 @@ fn validsa076() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/076.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/076.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1807,11 +1959,13 @@ fn validsa077() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/077.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/077.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1830,11 +1984,13 @@ fn validsa078() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/078.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/078.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1853,11 +2009,13 @@ fn validsa079() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/079.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/079.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1876,11 +2034,13 @@ fn validsa080() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/080.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/080.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1899,11 +2059,13 @@ fn validsa081() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/081.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/081.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1923,11 +2085,13 @@ fn validsa082() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/082.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/082.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1947,11 +2111,13 @@ fn validsa083() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/083.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/083.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1970,11 +2136,13 @@ fn validsa084() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/084.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/084.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -1993,11 +2161,13 @@ fn validsa085() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/085.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/085.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2016,11 +2186,13 @@ fn validsa086() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/086.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/086.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2039,11 +2211,13 @@ fn validsa087() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/087.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/087.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2062,11 +2236,13 @@ fn validsa088() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/088.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/088.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2085,11 +2261,13 @@ fn validsa089() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/089.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/089.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2108,11 +2286,13 @@ fn validsa090() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/090.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/090.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2132,11 +2312,13 @@ fn validsa091() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/091.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/091.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2155,11 +2337,13 @@ fn validsa092() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/092.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/092.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2178,11 +2362,13 @@ fn validsa093() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/093.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/093.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2201,11 +2387,13 @@ fn validsa094() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/094.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/094.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2224,11 +2412,13 @@ fn validsa095() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/095.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/095.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2247,11 +2437,13 @@ fn validsa096() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/096.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/096.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2271,11 +2463,13 @@ fn validsa097() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/097.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2294,11 +2488,13 @@ fn validsa098() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/098.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/098.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2317,11 +2513,13 @@ fn validsa099() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/099.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/099.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2341,11 +2539,13 @@ fn validsa100() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/100.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2364,11 +2564,13 @@ fn validsa101() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/101.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/101.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2387,11 +2589,13 @@ fn validsa102() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/102.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/102.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2410,11 +2614,13 @@ fn validsa103() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/103.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/103.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2433,11 +2639,13 @@ fn validsa104() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/104.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/104.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2456,11 +2664,13 @@ fn validsa105() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/105.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/105.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2479,11 +2689,13 @@ fn validsa106() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/106.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/106.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2502,11 +2714,13 @@ fn validsa107() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/107.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/107.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2525,11 +2739,13 @@ fn validsa108() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/108.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/108.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2548,11 +2764,13 @@ fn validsa109() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/109.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/109.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2571,11 +2789,13 @@ fn validsa110() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/110.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/110.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2594,11 +2814,13 @@ fn validsa111() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/111.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/111.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2617,11 +2839,13 @@ fn validsa112() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/112.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/112.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2640,11 +2864,13 @@ fn validsa113() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/113.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/113.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2663,11 +2889,13 @@ fn validsa114() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/114.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/114.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2686,11 +2914,13 @@ fn validsa115() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/115.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/115.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2709,11 +2939,13 @@ fn validsa116() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/116.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/116.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2732,11 +2964,13 @@ fn validsa117() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/117.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/117.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2755,11 +2989,13 @@ fn validsa118() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/118.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/118.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -2778,11 +3014,13 @@ fn validsa119() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/119.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/119.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());

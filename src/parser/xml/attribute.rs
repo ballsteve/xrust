@@ -1,22 +1,22 @@
-use std::collections::HashMap;
 use crate::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
-use crate::parser::{ParseInput, ParseResult, ParseError};
-use crate::parser::combinators::many::{many0, many1};
-use crate::parser::combinators::map::map;
-use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple2, tuple3, tuple6};
-use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::{Node, Value};
 use crate::parser::combinators::alt::{alt2, alt3, alt4};
 use crate::parser::combinators::delimited::delimited;
+use crate::parser::combinators::many::{many0, many1};
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
+use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_while};
+use crate::parser::combinators::tuple::{tuple2, tuple3, tuple6};
 use crate::parser::combinators::wellformed::wellformed;
+use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::chardata::{chardata, chardata_unicode_codepoint};
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::{reference, textreference};
 use crate::parser::xml::strings::delimited_string;
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::{Node, Value};
+use std::collections::HashMap;
 
 pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     move |input| match many0(attribute())(input) {
@@ -77,7 +77,7 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                     resnodes.push(node);
                 }
             }
-            Ok(((input1,state1), resnodes))
+            Ok(((input1, state1), resnodes))
         }
         Err(err) => Err(err),
     }
@@ -91,7 +91,7 @@ fn attribute() -> impl Fn(ParseInput) -> ParseResult<RNode> {
             whitespace0(),
             tag("="),
             whitespace0(),
-            attribute_value()
+            attribute_value(),
         ),
         |(_, n, _, _, _, s)| {
             NodeBuilder::new(NodeType::Attribute)
@@ -103,46 +103,45 @@ fn attribute() -> impl Fn(ParseInput) -> ParseResult<RNode> {
 }
 
 fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |(input, state)|{
+    move |(input, state)| {
         let parse = alt2(
             delimited(
                 tag("'"),
-                many0(
-                    alt3(
-                        wellformed(chardata_unicode_codepoint(), |c| {!c.contains('<')}),
-                        textreference(),
-                        wellformed(take_while(|c| c != '&' && c != '\''), |c| {!c.contains('<')}),
-                    )
-                ),
-            tag("'")),
+                many0(alt3(
+                    wellformed(chardata_unicode_codepoint(), |c| !c.contains('<')),
+                    textreference(),
+                    wellformed(take_while(|c| c != '&' && c != '\''), |c| !c.contains('<')),
+                )),
+                tag("'"),
+            ),
             delimited(
                 tag("\""),
-                    many0(
-                        alt3(
-                            wellformed(chardata_unicode_codepoint(), |c| {!c.contains('<')}),
-                            textreference(),
-                            wellformed(take_while(|c| c != '&' && c != '\"'), |c| {!c.contains('<')}),
-                        )
-                    ),
-                tag("\""))
+                many0(alt3(
+                    wellformed(chardata_unicode_codepoint(), |c| !c.contains('<')),
+                    textreference(),
+                    wellformed(take_while(|c| c != '&' && c != '\"'), |c| !c.contains('<')),
+                )),
+                tag("\""),
+            ),
         )((input, state));
 
         match parse {
             Err(e) => Err(e),
-            Ok(((input1, state1),rn)) => {
+            Ok(((input1, state1), rn)) => {
                 /*  For each character, entity reference, or character reference in the unnormalized
-                    attribute value, beginning with the first and continuing to the last, do the following:
+                   attribute value, beginning with the first and continuing to the last, do the following:
 
-                    For a character reference, append the referenced character to the normalized value.
-                    For an entity reference, recursively apply step 3 of this algorithm to the replacement text of the entity.
-                    For a white space character (#x20, #xD, #xA, #x9), append a space character (#x20) to the normalized value.
-                    For another character, append the character to the normalized value.
-                 */
-                let mut r = rn.concat()
-                                      .replace("\n"," ")
-                                      .replace("\r"," ")
-                                      .replace("\t"," ")
-                                      .replace("\n"," ");
+                   For a character reference, append the referenced character to the normalized value.
+                   For an entity reference, recursively apply step 3 of this algorithm to the replacement text of the entity.
+                   For a white space character (#x20, #xD, #xA, #x9), append a space character (#x20) to the normalized value.
+                   For another character, append the character to the normalized value.
+                */
+                let mut r = rn
+                    .concat()
+                    .replace("\n", " ")
+                    .replace("\r", " ")
+                    .replace("\t", " ")
+                    .replace("\n", " ");
                 //NEL character cannot be in attributes.
                 if r.contains('\u{0085}') {
                     Err(ParseError::NotWellFormed)

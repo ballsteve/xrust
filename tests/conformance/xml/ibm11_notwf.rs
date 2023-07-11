@@ -18,8 +18,10 @@ fn ibm11notwf_p02ibm02n01xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n01.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n01.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -35,8 +37,10 @@ fn ibm11notwf_p02ibm02n02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n02.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n02.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -52,8 +56,10 @@ fn ibm11notwf_p02ibm02n03xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n03.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n03.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -69,8 +75,10 @@ fn ibm11notwf_p02ibm02n04xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n04.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n04.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -86,8 +94,10 @@ fn ibm11notwf_p02ibm02n05xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n05.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n05.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -103,8 +113,10 @@ fn ibm11notwf_p02ibm02n06xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n06.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n06.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -120,8 +132,10 @@ fn ibm11notwf_p02ibm02n07xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n07.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n07.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -137,8 +151,10 @@ fn ibm11notwf_p02ibm02n08xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n08.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n08.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -154,8 +170,10 @@ fn ibm11notwf_p02ibm02n09xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n09.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n09.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -171,8 +189,10 @@ fn ibm11notwf_p02ibm02n10xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n10.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n10.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -188,8 +208,10 @@ fn ibm11notwf_p02ibm02n11xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n11.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n11.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -205,8 +227,10 @@ fn ibm11notwf_p02ibm02n12xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n12.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n12.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -222,8 +246,10 @@ fn ibm11notwf_p02ibm02n14xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n14.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n14.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -239,8 +265,10 @@ fn ibm11notwf_p02ibm02n15xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n15.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n15.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -256,8 +284,10 @@ fn ibm11notwf_p02ibm02n16xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n16.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n16.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -273,8 +303,10 @@ fn ibm11notwf_p02ibm02n17xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n17.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n17.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -290,8 +322,10 @@ fn ibm11notwf_p02ibm02n18xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n18.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n18.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -307,8 +341,10 @@ fn ibm11notwf_p02ibm02n19xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n19.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n19.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -324,8 +360,10 @@ fn ibm11notwf_p02ibm02n20xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n20.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n20.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -341,8 +379,10 @@ fn ibm11notwf_p02ibm02n21xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n21.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n21.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -358,8 +398,10 @@ fn ibm11notwf_p02ibm02n22xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n22.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n22.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -375,8 +417,10 @@ fn ibm11notwf_p02ibm02n23xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n23.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n23.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -392,8 +436,10 @@ fn ibm11notwf_p02ibm02n24xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n24.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n24.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -409,8 +455,10 @@ fn ibm11notwf_p02ibm02n25xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n25.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n25.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -426,8 +474,10 @@ fn ibm11notwf_p02ibm02n26xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n26.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n26.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -443,8 +493,10 @@ fn ibm11notwf_p02ibm02n27xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n27.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n27.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -460,8 +512,10 @@ fn ibm11notwf_p02ibm02n28xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n28.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n28.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -477,8 +531,10 @@ fn ibm11notwf_p02ibm02n29xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n29.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n29.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -494,8 +550,10 @@ fn ibm11notwf_p02ibm02n30xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n30.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n30.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -511,8 +569,10 @@ fn ibm11notwf_p02ibm02n31xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n31.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n31.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -529,8 +589,10 @@ fn ibm11notwf_p02ibm02n32xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n32.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n32.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -547,8 +609,10 @@ fn ibm11notwf_p02ibm02n33xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n33.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n33.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -565,8 +629,10 @@ fn ibm11notwf_p02ibm02n34xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n34.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n34.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -583,8 +649,10 @@ fn ibm11notwf_p02ibm02n35xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n35.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n35.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -601,8 +669,10 @@ fn ibm11notwf_p02ibm02n36xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n36.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n36.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -619,8 +689,10 @@ fn ibm11notwf_p02ibm02n37xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n37.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n37.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -637,8 +709,10 @@ fn ibm11notwf_p02ibm02n38xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n38.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n38.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -655,8 +729,10 @@ fn ibm11notwf_p02ibm02n39xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n39.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n39.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -673,8 +749,10 @@ fn ibm11notwf_p02ibm02n40xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n40.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n40.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -691,8 +769,10 @@ fn ibm11notwf_p02ibm02n41xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n41.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n41.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -709,8 +789,10 @@ fn ibm11notwf_p02ibm02n42xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n42.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n42.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -727,8 +809,10 @@ fn ibm11notwf_p02ibm02n43xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n43.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n43.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -745,8 +829,10 @@ fn ibm11notwf_p02ibm02n44xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n44.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n44.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -763,8 +849,10 @@ fn ibm11notwf_p02ibm02n45xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n45.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n45.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -781,8 +869,10 @@ fn ibm11notwf_p02ibm02n46xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n46.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n46.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -799,8 +889,10 @@ fn ibm11notwf_p02ibm02n47xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n47.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n47.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -817,8 +909,10 @@ fn ibm11notwf_p02ibm02n48xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n48.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n48.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -835,8 +929,10 @@ fn ibm11notwf_p02ibm02n49xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n49.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n49.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -853,8 +949,10 @@ fn ibm11notwf_p02ibm02n50xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n50.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n50.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -871,8 +969,10 @@ fn ibm11notwf_p02ibm02n51xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n51.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n51.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -889,8 +989,10 @@ fn ibm11notwf_p02ibm02n52xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n52.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n52.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -907,8 +1009,10 @@ fn ibm11notwf_p02ibm02n53xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n53.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n53.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -925,8 +1029,10 @@ fn ibm11notwf_p02ibm02n54xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n54.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n54.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -943,8 +1049,10 @@ fn ibm11notwf_p02ibm02n55xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n55.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n55.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -961,8 +1069,10 @@ fn ibm11notwf_p02ibm02n56xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n56.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n56.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -979,8 +1089,10 @@ fn ibm11notwf_p02ibm02n57xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n57.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n57.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -997,8 +1109,10 @@ fn ibm11notwf_p02ibm02n58xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n58.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n58.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1015,8 +1129,10 @@ fn ibm11notwf_p02ibm02n59xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n59.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n59.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1033,8 +1149,10 @@ fn ibm11notwf_p02ibm02n60xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n60.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n60.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1051,8 +1169,10 @@ fn ibm11notwf_p02ibm02n61xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n61.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n61.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1069,8 +1189,10 @@ fn ibm11notwf_p02ibm02n62xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n62.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n62.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1087,8 +1209,10 @@ fn ibm11notwf_p02ibm02n63xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n63.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n63.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1104,8 +1228,10 @@ fn ibm11notwf_p02ibm02n64xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n64.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n64.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1121,8 +1247,10 @@ fn ibm11notwf_p02ibm02n65xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n65.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n65.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1138,8 +1266,10 @@ fn ibm11notwf_p02ibm02n66xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n66.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n66.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1156,8 +1286,10 @@ fn ibm11notwf_p02ibm02n67xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n67.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n67.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1173,8 +1305,10 @@ fn ibm11notwf_p02ibm02n68xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n68.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n68.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1190,8 +1324,10 @@ fn ibm11notwf_p02ibm02n69xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n69.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n69.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1207,8 +1343,10 @@ fn ibm11notwf_p02ibm02n70xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n70.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n70.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1224,8 +1362,10 @@ fn ibm11notwf_p02ibm02n71xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n71.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n71.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1241,8 +1381,10 @@ fn ibm11notwf_p04ibm04n01xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n01.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n01.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1258,8 +1400,10 @@ fn ibm11notwf_p04ibm04n02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n02.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n02.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1275,8 +1419,10 @@ fn ibm11notwf_p04ibm04n03xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n03.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n03.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1292,8 +1438,10 @@ fn ibm11notwf_p04ibm04n04xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n04.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n04.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1309,8 +1457,10 @@ fn ibm11notwf_p04ibm04n05xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n05.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n05.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1326,8 +1476,10 @@ fn ibm11notwf_p04ibm04n06xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n06.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n06.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1343,8 +1495,10 @@ fn ibm11notwf_p04ibm04n07xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n07.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n07.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1360,8 +1514,10 @@ fn ibm11notwf_p04ibm04n08xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n08.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n08.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1377,8 +1533,10 @@ fn ibm11notwf_p04ibm04n09xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n09.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n09.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1394,8 +1552,10 @@ fn ibm11notwf_p04ibm04n10xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n10.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n10.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1411,8 +1571,10 @@ fn ibm11notwf_p04ibm04n11xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n11.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n11.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1428,8 +1590,10 @@ fn ibm11notwf_p04ibm04n12xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n12.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n12.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1445,8 +1609,10 @@ fn ibm11notwf_p04ibm04n13xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n13.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n13.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1462,8 +1628,10 @@ fn ibm11notwf_p04ibm04n14xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n14.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n14.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1479,8 +1647,10 @@ fn ibm11notwf_p04ibm04n15xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n15.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n15.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1496,8 +1666,10 @@ fn ibm11notwf_p04ibm04n16xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n16.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n16.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1513,8 +1685,10 @@ fn ibm11notwf_p04ibm04n17xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n17.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n17.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1530,8 +1704,10 @@ fn ibm11notwf_p04ibm04n18xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n18.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n18.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1547,8 +1723,10 @@ fn ibm11notwf_p04ibm04n19xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n19.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n19.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1564,8 +1742,10 @@ fn ibm11notwf_p04ibm04n20xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n20.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n20.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1582,8 +1762,10 @@ fn ibm11notwf_p04ibm04n21xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n21.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n21.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1600,8 +1782,10 @@ fn ibm11notwf_p04ibm04n22xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n22.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n22.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1618,8 +1802,10 @@ fn ibm11notwf_p04ibm04n23xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n23.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n23.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1636,8 +1822,10 @@ fn ibm11notwf_p04ibm04n24xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n24.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n24.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1653,8 +1841,10 @@ fn ibm11notwf_p04ibm04n25xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n25.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n25.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1670,8 +1860,10 @@ fn ibm11notwf_p04ibm04n26xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n26.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n26.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1687,8 +1879,10 @@ fn ibm11notwf_p04ibm04n27xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n27.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n27.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1704,8 +1898,10 @@ fn ibm11notwf_p04ibm04n28xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n28.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04/ibm04n28.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1721,8 +1917,10 @@ fn ibm11notwf_p04aibm04an01xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an01.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an01.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1738,8 +1936,10 @@ fn ibm11notwf_p04aibm04an02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an02.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an02.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1755,8 +1955,10 @@ fn ibm11notwf_p04aibm04an03xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an03.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an03.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1772,8 +1974,10 @@ fn ibm11notwf_p04aibm04an04xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an04.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an04.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1789,8 +1993,10 @@ fn ibm11notwf_p04aibm04an05xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an05.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an05.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1806,8 +2012,10 @@ fn ibm11notwf_p04aibm04an06xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an06.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an06.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1823,8 +2031,10 @@ fn ibm11notwf_p04aibm04an07xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an07.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an07.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1840,8 +2050,10 @@ fn ibm11notwf_p04aibm04an08xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an08.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an08.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1857,8 +2069,10 @@ fn ibm11notwf_p04aibm04an09xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an09.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an09.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1874,8 +2088,10 @@ fn ibm11notwf_p04aibm04an10xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an10.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an10.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1891,8 +2107,10 @@ fn ibm11notwf_p04aibm04an11xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an11.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an11.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1908,8 +2126,10 @@ fn ibm11notwf_p04aibm04an12xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an12.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an12.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1925,8 +2145,10 @@ fn ibm11notwf_p04aibm04an13xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an13.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an13.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1942,8 +2164,10 @@ fn ibm11notwf_p04aibm04an14xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an14.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an14.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1959,8 +2183,10 @@ fn ibm11notwf_p04aibm04an15xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an15.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an15.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1976,8 +2202,10 @@ fn ibm11notwf_p04aibm04an16xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an16.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an16.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -1993,8 +2221,10 @@ fn ibm11notwf_p04aibm04an17xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an17.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an17.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2010,8 +2240,10 @@ fn ibm11notwf_p04aibm04an18xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an18.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an18.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2027,8 +2259,10 @@ fn ibm11notwf_p04aibm04an19xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an19.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an19.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2044,8 +2278,10 @@ fn ibm11notwf_p04aibm04an20xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an20.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an20.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2062,8 +2298,10 @@ fn ibm11notwf_p04aibm04an21xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an21.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an21.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2080,8 +2318,10 @@ fn ibm11notwf_p04aibm04an22xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an22.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an22.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2098,8 +2338,10 @@ fn ibm11notwf_p04aibm04an23xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an23.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an23.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2116,8 +2358,10 @@ fn ibm11notwf_p04aibm04an24xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an24.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an24.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2133,8 +2377,10 @@ fn ibm11notwf_p04aibm04an25xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an25.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an25.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2150,8 +2396,10 @@ fn ibm11notwf_p04aibm04an26xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an26.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an26.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2167,8 +2415,10 @@ fn ibm11notwf_p04aibm04an27xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an27.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an27.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2184,8 +2434,10 @@ fn ibm11notwf_p04aibm04an28xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an28.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P04a/ibm04an28.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2201,8 +2453,10 @@ fn ibm11notwf_p05ibm05n01xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n01.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n01.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2218,8 +2472,10 @@ fn ibm11notwf_p05ibm05n02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n02.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n02.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2235,8 +2491,10 @@ fn ibm11notwf_p05ibm05n03xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n03.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n03.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2252,8 +2510,10 @@ fn ibm11notwf_p05ibm05n04xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n04.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n04.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2269,8 +2529,10 @@ fn ibm11notwf_p05ibm05n05xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n05.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n05.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2286,8 +2548,10 @@ fn ibm11notwf_p05ibm05n06xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n06.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P05/ibm05n06.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2303,8 +2567,10 @@ fn ibm11notwf_p77ibm77n01xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n01.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n01.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2321,8 +2587,10 @@ fn ibm11notwf_p77ibm77n02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n02.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n02.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2339,8 +2607,10 @@ fn ibm11notwf_p77ibm77n03xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n03.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n03.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2356,8 +2626,10 @@ fn ibm11notwf_p77ibm77n04xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n04.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n04.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2373,8 +2645,10 @@ fn ibm11notwf_p77ibm77n05xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n05.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n05.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2390,8 +2664,10 @@ fn ibm11notwf_p77ibm77n06xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n06.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n06.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2407,8 +2683,10 @@ fn ibm11notwf_p77ibm77n07xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n07.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n07.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2424,8 +2702,10 @@ fn ibm11notwf_p77ibm77n08xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n08.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n08.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2441,8 +2721,10 @@ fn ibm11notwf_p77ibm77n09xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n09.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n09.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2458,8 +2740,10 @@ fn ibm11notwf_p77ibm77n10xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n10.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n10.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2475,8 +2759,10 @@ fn ibm11notwf_p77ibm77n11xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n11.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n11.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2492,8 +2778,10 @@ fn ibm11notwf_p77ibm77n12xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n12.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n12.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2509,8 +2797,10 @@ fn ibm11notwf_p77ibm77n13xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n13.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n13.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2527,8 +2817,10 @@ fn ibm11notwf_p77ibm77n14xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n14.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n14.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2544,8 +2836,10 @@ fn ibm11notwf_p77ibm77n15xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n15.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n15.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2561,8 +2855,10 @@ fn ibm11notwf_p77ibm77n16xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n16.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n16.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2578,8 +2874,10 @@ fn ibm11notwf_p77ibm77n17xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n17.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n17.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2595,8 +2893,10 @@ fn ibm11notwf_p77ibm77n18xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n18.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n18.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2612,8 +2912,10 @@ fn ibm11notwf_p77ibm77n19xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n19.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n19.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2629,8 +2931,10 @@ fn ibm11notwf_p77ibm77n20xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n20.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n20.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -2647,8 +2951,10 @@ fn ibm11notwf_p77ibm77n21xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n21.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n21.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());

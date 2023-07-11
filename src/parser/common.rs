@@ -1,4 +1,3 @@
-
 pub(crate) fn is_namechar(ch: &char) -> bool {
     if is_namestartchar(ch) {
         true

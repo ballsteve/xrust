@@ -26,14 +26,17 @@ where
 mod tests {
     use crate::parser::combinators::delimited::delimited;
     use crate::parser::combinators::tag::tag;
-    use crate::parser:: ParserState;
+    use crate::parser::ParserState;
 
     #[test]
     fn parser_delimited_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None);
+        let teststate = ParserState::new(None, None);
         let parse_doc = delimited(tag("<"), tag("doc"), tag(">"));
 
-        assert_eq!(Ok((("", ParserState::new(None)), ())), parse_doc((testdoc, teststate)));
+        assert_eq!(
+            Ok((("", ParserState::new(None, None)), ())),
+            parse_doc((testdoc, teststate))
+        );
     }
 }

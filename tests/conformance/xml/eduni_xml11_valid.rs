@@ -18,7 +18,8 @@ fn rmt006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/006.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -34,7 +35,8 @@ fn rmt007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/007.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -51,7 +53,8 @@ fn rmt010() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -67,7 +70,8 @@ fn rmt012() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/012.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -84,7 +88,8 @@ fn rmt022() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -101,7 +106,8 @@ fn rmt023() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -117,7 +123,8 @@ fn rmt024() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/024.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -133,7 +140,8 @@ fn rmt025() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/025.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -150,7 +158,8 @@ fn rmt026() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/026.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -167,7 +176,8 @@ fn rmt027() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/027.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -183,7 +193,8 @@ fn rmt028() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/028.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -199,7 +210,8 @@ fn rmt029() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/029.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -216,7 +228,8 @@ fn rmt031() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -233,7 +246,8 @@ fn rmt033() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/033.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -250,7 +264,8 @@ fn rmt034() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/034.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -267,7 +282,8 @@ fn rmt035() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/035.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -284,7 +300,8 @@ fn rmt040() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -301,7 +318,8 @@ fn rmt043() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/043.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -317,7 +335,8 @@ fn rmt044() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/044.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -333,7 +352,8 @@ fn rmt045() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/045.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -350,7 +370,8 @@ fn rmt047() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -366,7 +387,8 @@ fn rmt049() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/049.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -382,7 +404,8 @@ fn rmt050() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/050.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -398,7 +421,8 @@ fn rmt051() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/051.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }
@@ -415,7 +439,8 @@ fn rmt054() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/054.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_ok());
 }

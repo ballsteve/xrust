@@ -15,7 +15,7 @@ use xrust::qname::QualifiedName;
 use xrust::value::Value;
 use xrust::xdmerror::Error;
 
-pub(crate) type EntityResolver = Option<fn(String) -> Result<String, Error>>;
+pub(crate) type extDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 
 // A document always has a NodeType::Document node as the toplevel node.
@@ -50,6 +50,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::{Rc, Weak};
+
+pub(crate) type extDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -164,19 +166,42 @@ impl Document {
      */
 }
 
-impl TryFrom<(String, Option<fn(String) -> Result<String, Error>>)> for Document {
+impl
+    TryFrom<(
+        String,
+        Option<extDTDresolver>,
+        Option<String>,
+    )> for Document
+{
     type Error = Error;
-    fn try_from(s: (String, Option<fn(String) -> Result<String, Error>>)) -> Result<Self, Self::Error> {
-        parser::xml::parse(s.0.as_str(), s.1)
+    fn try_from(
+        s: (
+            String,
+            Option<extDTDresolver>,
+            Option<String>,
+        ),
+    ) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0.as_str(), s.1, s.2)
     }
 }
-impl TryFrom<(&str, Option<fn(String) -> Result<String, Error>>)> for Document {
+impl
+    TryFrom<(
+        &str,
+        Option<extDTDresolver>,
+        Option<String>,
+    )> for Document
+{
     type Error = Error;
-    fn try_from(s: (&str, Option<fn(String) -> Result<String, Error>>)) -> Result<Self, Self::Error> {
-        parser::xml::parse(s.0, s.1)
+    fn try_from(
+        s: (
+            &str,
+            Option<extDTDresolver>,
+            Option<String>,
+        ),
+    ) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0, s.1, s.2)
     }
 }
-
 
 impl PartialEq for Document {
     fn eq(&self, other: &Document) -> bool {
@@ -870,7 +895,7 @@ impl DTD {
             ("gt".to_string(), (">".to_string(), false)),
             ("lt".to_string(), ("<".to_string(), false)),
             ("apos".to_string(), ("'".to_string(), false)),
-            ("quot".to_string(), ("\"".to_string(), false))
+            ("quot".to_string(), ("\"".to_string(), false)),
         ];
         DTD {
             elements: Default::default(),

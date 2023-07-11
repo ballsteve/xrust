@@ -4,15 +4,14 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
-use crate::intmuttree::DTD;
+use crate::intmuttree::{DTD, extDTDresolver};
+use crate::xdmerror::{Error, ErrorKind};
 use std::collections::HashMap;
 use std::fmt;
-use crate::xdmerror::{Error, ErrorKind};
 
 pub(crate) mod combinators;
 pub(crate) mod common;
 pub(crate) mod xml;
-
 
 pub(crate) type ParseInput<'a> = (&'a str, ParserState);
 pub(crate) type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
@@ -33,6 +32,7 @@ pub(crate) enum ParseError {
     MissingNameSpace,
     NotWellFormed,
     Notimplemented,
+    ExtDTDLoadError,
 }
 
 #[derive(Clone)]
@@ -55,12 +55,15 @@ pub(crate) struct ParserState {
     currentcol: usize,
     currentrow: usize,
     /* entity downloader function */
-    entityresolver: Option<fn(String) -> Result<String, Error>>
-
+    extDTDresolver: Option<extDTDresolver>,
+    docloc: Option<String>,
 }
 
 impl ParserState {
-    pub fn new(resolver: Option<fn(String) -> Result<String, Error>>) -> ParserState {
+    pub fn new(
+        resolver: Option<extDTDresolver>,
+        docloc: Option<String>,
+    ) -> ParserState {
         return ParserState {
             dtd: DTD::new(),
             /*
@@ -71,17 +74,18 @@ impl ParserState {
             currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,
-            entityresolver: resolver
+            extDTDresolver: resolver,
+            docloc: docloc,
         };
     }
 
-    pub fn resolve(self, uri: String) -> Result<String, Error> {
-        match self.entityresolver {
+    pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
+        match self.extDTDresolver {
             None => Err(Error {
                 kind: ErrorKind::Unknown,
                 message: "External DTDs are not supported".to_string(),
             }),
-            Some(e) => { e(uri) }
+            Some(e) => e(locdir, uri),
         }
     }
 }

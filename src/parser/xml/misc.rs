@@ -1,6 +1,8 @@
 use crate::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::combinators::alt::alt2;
+use crate::parser::combinators::delimited::delimited;
+use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
@@ -8,14 +10,10 @@ use crate::parser::combinators::take::take_until;
 use crate::parser::combinators::tuple::{tuple2, tuple5};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::xml::qname::name;
-use crate::{Node, Value};
-use crate::parser::combinators::alt::alt2;
-use crate::parser::combinators::delimited::delimited;
-use crate::parser::combinators::many::many0;
 use crate::parser::common::is_char;
-
-
+use crate::parser::xml::qname::name;
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::{Node, Value};
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
 pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNode> {
@@ -39,8 +37,7 @@ pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNo
                     .build(),
             },
         ),
-        |v| {
-            match v.node_type() {
+        |v| match v.node_type() {
             NodeType::ProcessingInstruction => {
                 if v.to_string().contains(|c: char| !is_char(&c)) {
                     false
@@ -49,8 +46,7 @@ pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNo
                 }
             }
             _ => false,
-        }
-    }
+        },
     )
 }
 
@@ -88,5 +84,3 @@ pub(crate) fn misc() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
         |(v, _)| v,
     )
 }
-
-

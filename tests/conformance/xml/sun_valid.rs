@@ -20,7 +20,8 @@ fn pe01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -37,11 +38,13 @@ fn dtd00() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/dtd00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/dtd00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -60,11 +63,13 @@ fn dtd01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/dtd01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/dtd01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -83,11 +88,13 @@ fn element() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/element.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/element.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -107,11 +114,13 @@ fn ext01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/ext01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/ext01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -131,11 +140,13 @@ fn ext02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/ext02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/ext02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -154,11 +165,13 @@ fn notsa01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -178,11 +191,13 @@ fn notsa02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -202,11 +217,13 @@ fn notsa03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -226,11 +243,13 @@ fn notsa04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -250,11 +269,13 @@ fn notation01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/notation01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/notation01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -274,11 +295,13 @@ fn optional() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/optional.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/optional.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -297,11 +320,13 @@ fn required00() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/required00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/required00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -320,11 +345,13 @@ fn sa01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -344,11 +371,13 @@ fn sa02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -368,11 +397,13 @@ fn sa03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -392,11 +423,13 @@ fn sa04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -415,11 +448,13 @@ fn sa05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -438,11 +473,13 @@ fn vsgml01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sgml01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sgml01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -461,11 +498,13 @@ fn vlang01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -484,11 +523,13 @@ fn vlang02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -507,11 +548,13 @@ fn vlang03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -530,11 +573,13 @@ fn vlang04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -553,11 +598,13 @@ fn vlang05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -576,11 +623,13 @@ fn vlang06() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/v-lang06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/v-lang06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -600,11 +649,13 @@ fn vpe00() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -623,11 +674,13 @@ fn vpe03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());
@@ -647,11 +700,13 @@ fn vpe02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/pe02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/pe02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_ok());

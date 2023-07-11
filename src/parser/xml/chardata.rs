@@ -1,13 +1,13 @@
-use std::str::FromStr;
 use crate::parser::combinators::alt::{alt2, alt3};
+use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many1;
 use crate::parser::combinators::map::map;
-use crate::parser::combinators::wellformed::wellformed;
-use crate::parser::common::is_char;
-use crate::parser::{ParseInput, ParseResult, ParseError};
-use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_while};
+use crate::parser::combinators::wellformed::wellformed;
+use crate::parser::common::is_char;
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use std::str::FromStr;
 
 // CharData ::= [^<&]* - (']]>')
 pub(crate) fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
@@ -18,10 +18,7 @@ pub(crate) fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
                 chardata_unicode_codepoint(),
                 chardata_literal(),
             )),
-            |v|
-                {
-                    v.concat()
-                }
+            |v| v.concat(),
         ),
         |s| !s.contains(|c: char| !is_char(&c)),
     )
@@ -48,29 +45,21 @@ pub(crate) fn chardata_unicode_codepoint() -> impl Fn(ParseInput) -> ParseResult
     )
 }
 fn parse_hex() -> impl Fn(ParseInput) -> ParseResult<u32> {
-    move |input| {
-        match take_while(|c: char| c.is_ascii_hexdigit())(input){
-            Ok((input1, hex)) => {
-                match u32::from_str_radix(&hex, 16){
-                    Ok(r) => Ok((input1, r)),
-                    Err(_) => Err(ParseError::NotWellFormed)
-                }
-            }
-            Err(e) => Err(e)
-        }
+    move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
+        Ok((input1, hex)) => match u32::from_str_radix(&hex, 16) {
+            Ok(r) => Ok((input1, r)),
+            Err(_) => Err(ParseError::NotWellFormed),
+        },
+        Err(e) => Err(e),
     }
 }
 fn parse_decimal() -> impl Fn(ParseInput) -> ParseResult<u32> {
-    move |input| {
-        match take_while(|c: char| c.is_ascii_digit())(input){
-            Ok((input1, dec)) => {
-                match u32::from_str(&dec){
-                    Ok(r) => Ok((input1, r)),
-                    Err(_) => Err(ParseError::NotWellFormed)
-                }
-            }
-            Err(e) => Err(e)
-        }
+    move |input| match take_while(|c: char| c.is_ascii_digit())(input) {
+        Ok((input1, dec)) => match u32::from_str(&dec) {
+            Ok(r) => Ok((input1, r)),
+            Err(_) => Err(ParseError::NotWellFormed),
+        },
+        Err(e) => Err(e),
     }
 }
 

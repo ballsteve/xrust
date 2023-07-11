@@ -18,7 +18,8 @@ fn notwfsa03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/not-sa03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -35,7 +36,8 @@ fn attlist01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -52,7 +54,8 @@ fn attlist02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -69,7 +72,8 @@ fn attlist03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -86,7 +90,8 @@ fn attlist04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -103,7 +108,8 @@ fn attlist05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -120,7 +126,8 @@ fn attlist06() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -137,7 +144,8 @@ fn attlist07() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -154,7 +162,8 @@ fn attlist08() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -171,7 +180,8 @@ fn attlist09() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -188,7 +198,8 @@ fn attlist10() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -205,7 +216,8 @@ fn attlist11() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -223,7 +235,8 @@ fn cond01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -241,7 +254,8 @@ fn cond02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -258,7 +272,8 @@ fn content01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -275,7 +290,8 @@ fn content02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -292,7 +308,8 @@ fn content03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -309,7 +326,8 @@ fn decl01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/decl01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -326,7 +344,8 @@ fn nwfdtd00() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -343,7 +362,8 @@ fn nwfdtd01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -360,7 +380,8 @@ fn dtd02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -377,7 +398,8 @@ fn dtd03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -394,7 +416,8 @@ fn dtd04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -411,7 +434,8 @@ fn dtd05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -429,7 +453,8 @@ fn dtd07() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -446,7 +471,8 @@ fn element00() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element00.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -463,7 +489,8 @@ fn element01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -480,7 +507,8 @@ fn element02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -497,7 +525,8 @@ fn element03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -514,7 +543,8 @@ fn element04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -532,7 +562,8 @@ fn encoding01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -550,7 +581,8 @@ fn encoding02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -568,7 +600,8 @@ fn encoding03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -586,7 +619,8 @@ fn encoding04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -604,7 +638,8 @@ fn encoding05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -622,7 +657,8 @@ fn encoding06() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -639,7 +675,8 @@ fn encoding07() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -656,7 +693,8 @@ fn pi() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pi.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -673,7 +711,8 @@ fn pubid01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -690,7 +729,8 @@ fn pubid02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -707,7 +747,8 @@ fn pubid03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -724,7 +765,8 @@ fn pubid04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -741,7 +783,8 @@ fn pubid05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -758,7 +801,8 @@ fn sgml01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -775,7 +819,8 @@ fn sgml02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -792,7 +837,8 @@ fn sgml03() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -809,7 +855,8 @@ fn sgml04() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -826,7 +873,8 @@ fn sgml05() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -843,7 +891,8 @@ fn sgml06() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -860,7 +909,8 @@ fn sgml07() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -877,7 +927,8 @@ fn sgml08() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -894,7 +945,8 @@ fn sgml09() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -911,7 +963,8 @@ fn sgml10() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -928,7 +981,8 @@ fn sgml11() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -945,7 +999,8 @@ fn sgml12() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -962,7 +1017,8 @@ fn sgml13() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml13.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());

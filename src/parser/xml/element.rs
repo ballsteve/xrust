@@ -1,7 +1,5 @@
 use crate::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
-use crate::{Node, Value};
-use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::combinators::alt::{alt2, alt3, alt4};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -10,19 +8,17 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple10, tuple2, tuple5};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::whitespace0;
-use crate::parser::xml::misc::{comment, processing_instruction};
-use crate::parser::xml::qname::qualname;
 use crate::parser::xml::attribute::attributes;
 use crate::parser::xml::chardata::chardata;
+use crate::parser::xml::misc::{comment, processing_instruction};
+use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::{Node, Value};
 
 // Element ::= EmptyElemTag | STag content ETag
 pub(crate) fn element() -> impl Fn(ParseInput) -> ParseResult<RNode> {
-    move |input|
-        alt2(
-            emptyelem(),
-            taggedelem(),
-        )(input)
+    move |input| alt2(emptyelem(), taggedelem())(input)
 }
 
 // EmptyElemTag ::= '<' Name (Attribute)* '/>'
@@ -36,7 +32,7 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
             tag("/>"),
         )(input)
         {
-            Ok(((input1,mut state1), (_, n, av, _, _))) => {
+            Ok(((input1, mut state1), (_, n, av, _, _))) => {
                 let e = NodeBuilder::new(NodeType::Element).name(n.clone()).build();
                 match state1.namespace.pop() {
                     None => {
@@ -60,13 +56,12 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                 };
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
-                Ok(((input1,state1), e))
+                Ok(((input1, state1), e))
             }
             Err(err) => Err(err),
         }
     }
 }
-
 
 // STag ::= '<' Name (Attribute)* '>'
 // ETag ::= '</' Name '>'
@@ -123,7 +118,6 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
     }
 }
 
-
 // content ::= CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
 pub(crate) fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     map(
@@ -131,9 +125,9 @@ pub(crate) fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
             opt(chardata()),
             many0(tuple2(
                 alt4(
-                    map(processing_instruction(), |e| {vec![e] }),
-                    map(comment(), |e| { vec![e] }),
-                    map(element(), |e| { vec![e] }),
+                    map(processing_instruction(), |e| vec![e]),
+                    map(comment(), |e| vec![e]),
+                    map(element(), |e| vec![e]),
                     reference(),
                 ),
                 opt(chardata()),

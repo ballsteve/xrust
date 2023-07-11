@@ -16,8 +16,10 @@ fn invalidbo7() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -33,8 +35,10 @@ fn invalidbo8() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -50,8 +54,10 @@ fn invalidbo9() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -69,7 +75,8 @@ fn xrmt008() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

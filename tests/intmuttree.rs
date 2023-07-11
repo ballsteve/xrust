@@ -29,7 +29,7 @@ fn make_doc(n: QualifiedName, v: Value) -> RNode {
 fn make_sd() -> Rc<Item<RNode>> {
     let e = Document::try_from((
         "<a id='a1'><b id='b1'><a id='a2'><b id='b2'/><b id='b3'/></a><a id='a3'><b id='b4'/><b id='b5'/></a></b><b id='b6'><a id='a4'><b id='b7'/><b id='b8'/></a><a id='a5'><b id='b9'/><b id='b10'/></a></b></a>",
-    None ))
+    None,None ))
     .expect("failed to parse XML")
     .content[0]
         .clone();
@@ -39,7 +39,10 @@ fn make_sd() -> Rc<Item<RNode>> {
 }
 
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from((s,None)).expect("failed to parse XML").content[0].clone();
+    let e = Document::try_from((s, None, None))
+        .expect("failed to parse XML")
+        .content[0]
+        .clone();
     let mut d = NodeBuilder::new(NodeType::Document).build();
     d.push(e).expect("unable to append node");
     Ok(d)

@@ -1,7 +1,7 @@
 use crate::intmuttree::DTDDecl;
-use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::alt::{alt2, alt3, alt7};
 use crate::parser::combinators::delimited::delimited;
+use crate::parser::{ParseInput, ParseResult};
 //use crate::parser::combinators::expander::{genentityexpander, paramentityexpander};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -11,8 +11,8 @@ use crate::parser::combinators::take::take_while;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::xml::qname::{name, qualname};
 use crate::parser::xml::dtd::enumerated::enumeratedtype;
+use crate::parser::xml::qname::{name, qualname};
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
 pub(crate) fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
@@ -25,8 +25,9 @@ pub(crate) fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     )(input)
     {
-        Ok(((input2,mut state2), (_, _, n, _, _, _))) => {
-            state2.dtd
+        Ok(((input2, mut state2), (_, _, n, _, _, _))) => {
+            state2
+                .dtd
                 .attlists
                 .insert(n.to_string(), DTDDecl::Attlist(n, "".to_string()));
             Ok(((input2, state2), ()))
@@ -68,7 +69,6 @@ fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
     )
 }
 
-
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
 fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     map(
@@ -102,12 +102,13 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
         delimited(
             tag("\'"),
             map(
-                many0(//alt3(
+                many0(
+                    //alt3(
                     take_while(|c| !"&\'<".contains(c)),
                     //genentityexpander(),
                     //paramentityexpander(),
-                //)
-            ),
+                    //)
+                ),
                 |v| v.join(""),
             ),
             tag("\'"),
@@ -115,16 +116,16 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
         delimited(
             tag("\""),
             map(
-                many0(//alt3(
+                many0(
+                    //alt3(
                     take_while(|c| !"&\"<".contains(c)),
                     //genentityexpander(),
                     //paramentityexpander(),
-                //)
-            ),
+                    //)
+                ),
                 |v| v.join(""),
             ),
             tag("\""),
         ),
     )
 }
-

@@ -1,32 +1,33 @@
-mod dtd;
-mod xmldecl;
-mod element;
 mod attribute;
 mod chardata;
-mod qname;
-mod strings;
+mod dtd;
+mod element;
 mod misc;
+mod qname;
 mod reference;
+mod strings;
+mod xmldecl;
 
-use crate::{Document, xdmerror};
-use crate::intmuttree::{DocumentBuilder, RNode, XMLDecl};
-use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::intmuttree::{DocumentBuilder, extDTDresolver, RNode, XMLDecl};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tuple::{tuple3, tuple4};
+use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
-use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::xmldecl::xmldecl;
+use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::{xdmerror, Document};
 
 // For backward compatibility
 pub type XMLDocument = Document;
 
 pub fn parse(
     input: &str,
-    entityresolver: Option<fn(String) -> Result<String, xdmerror::Error>>
+    entityresolver: Option<extDTDresolver>,
+    docloc: Option<String>,
 ) -> Result<XMLDocument, xdmerror::Error> {
-    let state = ParserState::new(None);
+    let state = ParserState::new(entityresolver, docloc);
     match document((input, state)) {
         Ok((_, xmldoc)) => Result::Ok(xmldoc),
         Err(err) => {
@@ -71,6 +72,10 @@ pub fn parse(
                     kind: xdmerror::ErrorKind::ParseError,
                     message: "XML document not well formed.".to_string(),
                 }),
+                ParseError::ExtDTDLoadError => Result::Err(xdmerror::Error {
+                    kind: xdmerror::ErrorKind::ParseError,
+                    message: "Unable to open external DTD.".to_string(),
+                }),
                 ParseError::Notimplemented => Result::Err(xdmerror::Error {
                     kind: xdmerror::ErrorKind::ParseError,
                     message: "Unimplemented feature.".to_string(),
@@ -86,19 +91,18 @@ fn document(input: ParseInput) -> ParseResult<XMLDocument> {
         Ok(((input1, state1), (p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
             if input1.is_empty() {
-                    let pr = p.unwrap_or((None, vec![]));
+                let pr = p.unwrap_or((None, vec![]));
 
-                    let mut a = DocumentBuilder::new()
-                        .prologue(pr.1)
-                        .content(vec![e])
-                        .epilogue(m.unwrap_or_default())
-                        .build();
-                    if let Some(x) = pr.0 {
-                        a.set_xmldecl(x)
-                    };
-                    Ok(((input1, state1), a))
-                }
-            else {
+                let mut a = DocumentBuilder::new()
+                    .prologue(pr.1)
+                    .content(vec![e])
+                    .epilogue(m.unwrap_or_default())
+                    .build();
+                if let Some(x) = pr.0 {
+                    a.set_xmldecl(x)
+                };
+                Ok(((input1, state1), a))
+            } else {
                 Err(ParseError::NotWellFormed)
             }
         }

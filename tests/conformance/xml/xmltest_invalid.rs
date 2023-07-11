@@ -22,7 +22,8 @@ fn invalid002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/002.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -40,7 +41,8 @@ fn invalid005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/005.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -58,7 +60,8 @@ fn invalid006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/006.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -76,7 +79,8 @@ fn invalidnotsa022() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/022.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());

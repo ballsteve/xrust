@@ -1,4 +1,3 @@
-use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
@@ -9,11 +8,11 @@ use crate::parser::combinators::tuple::{tuple2, tuple4, tuple5, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
 use crate::parser::xml::qname::name;
+use crate::parser::{ParseInput, ParseResult};
 
 pub(crate) fn nmtoken() -> impl Fn(ParseInput) -> ParseResult<()> {
     map(many1(take_while(|c| is_namechar(&c))), |_x| ())
 }
-
 
 //Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
 pub(crate) fn mixed() -> impl Fn(ParseInput) -> ParseResult<String> {

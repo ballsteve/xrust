@@ -17,7 +17,8 @@ fn invalidbo1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -33,7 +34,8 @@ fn invalidbo2() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -49,7 +51,8 @@ fn invalidbo3() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -64,8 +67,10 @@ fn invalidbo4() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -81,8 +86,10 @@ fn invalidbo5() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml")
+            .unwrap(),
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -98,8 +105,10 @@ fn invalidbo6() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml")
+            .unwrap(),
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -123,7 +132,7 @@ fn invalidsa140() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml").unwrap(),
-        None
+        None,None
     ));
     assert!(testxml.is_err());
 }
@@ -148,7 +157,7 @@ fn invalidsa141() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml").unwrap(),
-        None
+        None,None
     ));
     assert!(testxml.is_err());
 }
@@ -173,7 +182,7 @@ fn xrmt5014() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml").unwrap(),
-        None
+        None,None
     ));
     assert!(testxml.is_err());
 }
@@ -198,7 +207,7 @@ fn xrmt5016() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml").unwrap(),
-        None
+        None,None
     ));
     assert!(testxml.is_err());
 }
@@ -238,7 +247,8 @@ fn ibminvalid_p89ibm89n06xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
@@ -255,7 +265,8 @@ fn ibminvalid_p89ibm89n07xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
@@ -272,7 +283,8 @@ fn ibminvalid_p89ibm89n08xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
@@ -289,7 +301,8 @@ fn ibminvalid_p89ibm89n09xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
@@ -306,7 +319,8 @@ fn ibminvalid_p89ibm89n10xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
@@ -323,7 +337,8 @@ fn ibminvalid_p89ibm89n11xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
@@ -340,7 +355,8 @@ fn ibminvalid_p89ibm89n12xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
     //assert!(testxml.is_err());
     assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1

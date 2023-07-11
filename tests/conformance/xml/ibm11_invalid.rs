@@ -19,8 +19,10 @@ fn ibm11valid_p46ibm46i01xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/invalid/P46/ibm46i01.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/invalid/P46/ibm46i01.xml")
+            .unwrap(),
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }
@@ -36,8 +38,10 @@ fn ibm11valid_p46ibm46i02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/invalid/P46/ibm46i02.xml").unwrap(),
-        None
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/invalid/P46/ibm46i02.xml")
+            .unwrap(),
+        None,
+        None,
     ));
     assert!(testxml.is_err());
 }

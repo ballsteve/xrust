@@ -20,7 +20,8 @@ fn ibminvalid_p28ibm28i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P28/ibm28i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -38,7 +39,8 @@ fn ibminvalid_p32ibm32i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P32/ibm32i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -56,7 +58,8 @@ fn ibminvalid_p32ibm32i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P32/ibm32i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -74,7 +77,8 @@ fn ibminvalid_p32ibm32i04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P32/ibm32i04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -92,7 +96,8 @@ fn ibminvalid_p39ibm39i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -110,7 +115,8 @@ fn ibminvalid_p39ibm39i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -128,7 +134,8 @@ fn ibminvalid_p39ibm39i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -146,7 +153,8 @@ fn ibminvalid_p39ibm39i04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P39/ibm39i04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -164,7 +172,8 @@ fn ibminvalid_p41ibm41i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P41/ibm41i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -182,7 +191,8 @@ fn ibminvalid_p41ibm41i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P41/ibm41i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -200,7 +210,8 @@ fn ibminvalid_p45ibm45i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P45/ibm45i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -218,7 +229,8 @@ fn ibminvalid_p49ibm49i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P49/ibm49i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -236,7 +248,8 @@ fn ibminvalid_p50ibm50i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P50/ibm50i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -254,7 +267,8 @@ fn ibminvalid_p51ibm51i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P51/ibm51i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -272,7 +286,8 @@ fn ibminvalid_p51ibm51i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P51/ibm51i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -290,7 +305,8 @@ fn ibminvalid_p56ibm56i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -308,7 +324,8 @@ fn ibminvalid_p56ibm56i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -326,7 +343,8 @@ fn ibminvalid_p56ibm56i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -344,7 +362,8 @@ fn ibminvalid_p56ibm56i05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i05.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -362,7 +381,8 @@ fn ibminvalid_p56ibm56i06xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i06.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -379,7 +399,8 @@ fn ibminvalid_p56ibm56i07xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i07.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -396,7 +417,8 @@ fn ibminvalid_p56ibm56i08xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i08.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -413,7 +435,8 @@ fn ibminvalid_p56ibm56i09xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i09.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -430,7 +453,8 @@ fn ibminvalid_p56ibm56i10xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i10.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -447,7 +471,8 @@ fn ibminvalid_p56ibm56i11xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i11.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -464,7 +489,8 @@ fn ibminvalid_p56ibm56i12xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i12.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -481,7 +507,8 @@ fn ibminvalid_p56ibm56i13xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i13.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -498,7 +525,8 @@ fn ibminvalid_p56ibm56i14xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i14.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -515,7 +543,8 @@ fn ibminvalid_p56ibm56i15xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i15.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -532,7 +561,8 @@ fn ibminvalid_p56ibm56i16xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i16.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -550,7 +580,8 @@ fn ibminvalid_p56ibm56i17xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i17.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -568,7 +599,8 @@ fn ibminvalid_p56ibm56i18xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P56/ibm56i18.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -586,7 +618,8 @@ fn ibminvalid_p58ibm58i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P58/ibm58i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -604,7 +637,8 @@ fn ibminvalid_p58ibm58i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P58/ibm58i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -622,7 +656,8 @@ fn ibminvalid_p59ibm59i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P59/ibm59i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -640,7 +675,8 @@ fn ibminvalid_p60ibm60i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -658,7 +694,8 @@ fn ibminvalid_p60ibm60i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -676,7 +713,8 @@ fn ibminvalid_p60ibm60i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -694,7 +732,8 @@ fn ibminvalid_p60ibm60i04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P60/ibm60i04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -712,7 +751,8 @@ fn ibminvalid_p68ibm68i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P68/ibm68i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -730,7 +770,8 @@ fn ibminvalid_p68ibm68i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P68/ibm68i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -747,7 +788,8 @@ fn ibminvalid_p68ibm68i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P68/ibm68i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -764,7 +806,8 @@ fn ibminvalid_p68ibm68i04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P68/ibm68i04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -782,7 +825,8 @@ fn ibminvalid_p69ibm69i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P69/ibm69i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -800,7 +844,8 @@ fn ibminvalid_p69ibm69i02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P69/ibm69i02.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -817,7 +862,8 @@ fn ibminvalid_p69ibm69i03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P69/ibm69i03.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -834,7 +880,8 @@ fn ibminvalid_p69ibm69i04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P69/ibm69i04.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
@@ -851,7 +898,8 @@ fn ibminvalid_p76ibm76i01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/invalid/P76/ibm76i01.xml").unwrap(),
-        None
+        None,
+        None,
     ));
 
     assert!(testxml.is_err());
