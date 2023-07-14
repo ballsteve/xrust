@@ -51,21 +51,24 @@ where
     P3: Fn(ParseInput) -> ParseResult<A>,
     P4: Fn(ParseInput) -> ParseResult<A>,
 {
-    move |input| match parser1(input.clone()) {
-        Ok(parse_result) => Ok(parse_result),
-        Err(ParseError::Combinator) => match parser2(input.clone()) {
-            Ok(parse_result2) => Ok(parse_result2),
-            Err(ParseError::Combinator) => match parser3(input.clone()) {
-                Ok(parse_result3) => Ok(parse_result3),
-                Err(ParseError::Combinator) => match parser4(input) {
-                    Ok(parse_result4) => Ok(parse_result4),
+    move |mut input| {
+	input.stack_push(format!("alt4 - input=\"{}\"", input));
+	match parser1(input.clone()) {
+            Ok(parse_result) => Ok(parse_result),
+            Err(ParseError::Combinator) => match parser2(input.clone()) {
+		Ok(parse_result2) => Ok(parse_result2),
+		Err(ParseError::Combinator) => match parser3(input.clone()) {
+                    Ok(parse_result3) => Ok(parse_result3),
+                    Err(ParseError::Combinator) => match parser4(input) {
+			Ok(parse_result4) => Ok(parse_result4),
+			Err(err) => Err(err),
+                    },
                     Err(err) => Err(err),
-                },
-                Err(err) => Err(err),
+		},
+		Err(err) => Err(err),
             },
             Err(err) => Err(err),
-        },
-        Err(err) => Err(err),
+	}
     }
 }
 

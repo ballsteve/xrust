@@ -55,6 +55,9 @@ pub(crate) struct ParseInput<'a> {
     currententitydepth: usize,
     currentcol: usize,
     currentrow: usize,
+    /* For tracking down stack overflows */
+    stack: Vec<String>,
+    limit: Option<usize>,
 }
 
 impl ParseInput<'_> {
@@ -71,7 +74,24 @@ impl ParseInput<'_> {
             currententitydepth: 0,
             currentcol: 1,
             currentrow: 1,
+	    stack: vec![],
+	    limit: None,
         };
+    }
+    pub fn stack_push(&mut self, msg: String) {
+	//eprintln!("{}", msg);
+	self.stack.push(msg);
+	if self.limit.is_some() {
+	    if self.limit.unwrap() < self.stack.len() {
+		panic!("stack depth exceeded")
+	    }
+	}
+    }
+    pub fn stack_depth(&self) -> usize {
+	self.stack.len()
+    }
+    pub fn set_limit(&mut self, l: usize) {
+	self.limit = Some(l)
     }
 }
 

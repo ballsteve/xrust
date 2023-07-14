@@ -9,6 +9,7 @@ where
     P2: Fn(ParseInput) -> ParseResult<R1>,
 {
     move |mut input| {
+	input.stack_push(format!("sep-list1 - input=\"{}\"", input));
         let mut res = Vec::new();
 
         match f(input.clone()) {

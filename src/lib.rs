@@ -48,6 +48,8 @@ We need your help!
 
 */
 
+//#![recursion_limit = "10"]
+
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 

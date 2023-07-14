@@ -6,8 +6,11 @@ where
     P: Fn(ParseInput) -> ParseResult<A>,
     F: Fn(A) -> B,
 {
-    move |input| match parser(input) {
-        Ok((input2, result)) => Ok((input2, map_fn(result))),
-        Err(err) => Err(err),
+    move |mut input| {
+	input.stack_push(format!("map - input=\"{}\"", input));
+	match parser(input) {
+            Ok((input2, result)) => Ok((input2, map_fn(result))),
+            Err(err) => Err(err),
+	}
     }
 }
