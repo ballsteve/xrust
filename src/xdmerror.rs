@@ -5,7 +5,7 @@
 use core::{fmt, str};
 
 /// Errors defined in XPath
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ErrorKind {
     StaticAbsent,
     /// XPST0001

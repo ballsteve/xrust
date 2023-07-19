@@ -9,13 +9,13 @@ where
     P2: Fn(ParseInput) -> ParseResult<B>,
 {
     move |mut input| {
-	input.stack_push(format!("pair - input=\"{}\"", input));
-	match parser1(input) {
+        input.stack_push(format!("pair - input=\"{}\"", input));
+        match parser1(input) {
             Ok((input1, parse1_result)) => match parser2(input1) {
-		Ok((input2, parse2_result)) => Ok((input2, (parse1_result, parse2_result))),
-		Err(err) => Err(err),
+                Ok((input2, parse2_result)) => Ok((input2, (parse1_result, parse2_result))),
+                Err(err) => Err(err),
             },
             Err(err) => Err(err),
-	}
+        }
     }
 }

@@ -96,6 +96,10 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
                     kind: ErrorKind::ParseError,
                     message: "Unimplemented feature.".to_string(),
                 }),
+                ParseError::IncorrectArguments => Result::Err(Error {
+                    kind: ErrorKind::ParseError,
+                    message: "Incorrect arguments.".to_string(),
+                }),
             }
         }
     }

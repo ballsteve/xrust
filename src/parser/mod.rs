@@ -31,6 +31,7 @@ pub(crate) enum ParseError {
     Validation { row: usize, col: usize },
     Unknown { row: usize, col: usize },
     MissingNameSpace,
+    IncorrectArguments,
     NotWellFormed,
     Notimplemented,
 }
@@ -74,24 +75,24 @@ impl ParseInput<'_> {
             currententitydepth: 0,
             currentcol: 1,
             currentrow: 1,
-	    stack: vec![],
-	    limit: None,
+            stack: vec![],
+            limit: None,
         };
     }
     pub fn stack_push(&mut self, msg: String) {
-	//eprintln!("{}", msg);
-	self.stack.push(msg);
-	if self.limit.is_some() {
-	    if self.limit.unwrap() < self.stack.len() {
-		panic!("stack depth exceeded")
-	    }
-	}
+        //eprintln!("{}", msg);
+        self.stack.push(msg);
+        if self.limit.is_some() {
+            if self.limit.unwrap() < self.stack.len() {
+                panic!("stack depth exceeded")
+            }
+        }
     }
     pub fn stack_depth(&self) -> usize {
-	self.stack.len()
+        self.stack.len()
     }
     pub fn set_limit(&mut self, l: usize) {
-	self.limit = Some(l)
+        self.limit = Some(l)
     }
 }
 
