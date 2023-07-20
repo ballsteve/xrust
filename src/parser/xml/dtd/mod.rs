@@ -7,6 +7,9 @@ mod gedecl;
 mod misc;
 mod notation;
 mod pedecl;
+mod extsubset;
+mod textdecl;
+mod pereference;
 
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::delimited::delimited;
@@ -21,6 +24,7 @@ use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::Error;
+use crate::parser::xml::dtd::extsubset::extsubset;
 
 pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match tuple8(
@@ -84,7 +88,12 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<(String, Option<String>)> 
                     }
                     Ok(s) => {
                         println!("extdtd={:?}", s);
-                        Ok(((input2, state2), (sid, pid)))
+                        match extsubset()((s.as_str(), state2.clone())){
+                            Err(e) => {Err(e)}
+                            Ok(((pi, state3), v)) => {
+                                Ok(((input2, state3), (sid, pid)))
+                            }
+                        }
                     }
                 }
                 //TODO how to tell folder location?

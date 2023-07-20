@@ -7,6 +7,7 @@ IBM test cases
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
 fn ibmvalid_p01ibm01v01xml() {
@@ -463,8 +464,8 @@ fn ibmvalid_p11ibm11v03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P11/ibm11v03.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P11/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P11/out/ibm11v03.xml").unwrap(),
@@ -488,8 +489,8 @@ fn ibmvalid_p11ibm11v04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P11/ibm11v04.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P11/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P11/out/ibm11v04.xml").unwrap(),
@@ -1721,8 +1722,8 @@ fn ibmvalid_p30ibm30v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P30/ibm30v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P30/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P30/out/ibm30v01.xml").unwrap(),
@@ -1746,8 +1747,8 @@ fn ibmvalid_p30ibm30v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P30/ibm30v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P30/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P30/out/ibm30v02.xml").unwrap(),
@@ -1771,8 +1772,8 @@ fn ibmvalid_p31ibm31v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P31/ibm31v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P31/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P31/out/ibm31v01.xml").unwrap(),
@@ -1796,8 +1797,8 @@ fn ibmvalid_p32ibm32v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P32/ibm32v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P32/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P32/out/ibm32v01.xml").unwrap(),
@@ -1811,7 +1812,6 @@ fn ibmvalid_p32ibm32v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmvalid_p32ibm32v02xml() {
     /*
         Test ID:ibm-valid-P32-ibm32v02.xml
@@ -1822,8 +1822,8 @@ fn ibmvalid_p32ibm32v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P32/ibm32v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P32/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P32/out/ibm32v02.xml").unwrap(),
@@ -1847,8 +1847,8 @@ fn ibmvalid_p32ibm32v03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P32/ibm32v03.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P32/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P32/out/ibm32v03.xml").unwrap(),
@@ -2250,8 +2250,8 @@ fn ibmvalid_p49ibm49v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P49/ibm49v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P49/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P49/out/ibm49v01.xml").unwrap(),
@@ -2275,8 +2275,8 @@ fn ibmvalid_p50ibm50v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P50/ibm50v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P50/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P50/out/ibm50v01.xml").unwrap(),
@@ -2300,8 +2300,8 @@ fn ibmvalid_p51ibm51v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P51/ibm51v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P51/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P51/out/ibm51v01.xml").unwrap(),
@@ -2325,8 +2325,8 @@ fn ibmvalid_p51ibm51v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P51/ibm51v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P51/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P51/out/ibm51v02.xml").unwrap(),
@@ -2948,8 +2948,8 @@ fn ibmvalid_p61ibm61v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P61/ibm61v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P61/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P61/out/ibm61v01.xml").unwrap(),
@@ -2973,8 +2973,8 @@ fn ibmvalid_p61ibm61v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P61/ibm61v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P61/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P61/out/ibm61v02.xml").unwrap(),
@@ -2998,8 +2998,8 @@ fn ibmvalid_p62ibm62v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/ibm62v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P62/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/out/ibm62v01.xml").unwrap(),
@@ -3023,8 +3023,8 @@ fn ibmvalid_p62ibm62v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/ibm62v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P62/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/out/ibm62v02.xml").unwrap(),
@@ -3048,8 +3048,8 @@ fn ibmvalid_p62ibm62v03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/ibm62v03.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P62/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/out/ibm62v03.xml").unwrap(),
@@ -3073,8 +3073,8 @@ fn ibmvalid_p62ibm62v04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/ibm62v04.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P62/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/out/ibm62v04.xml").unwrap(),
@@ -3098,8 +3098,8 @@ fn ibmvalid_p62ibm62v05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/ibm62v05.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P62/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P62/out/ibm62v05.xml").unwrap(),
@@ -3123,8 +3123,8 @@ fn ibmvalid_p63ibm63v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/ibm63v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P63/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/out/ibm63v01.xml").unwrap(),
@@ -3148,8 +3148,8 @@ fn ibmvalid_p63ibm63v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/ibm63v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P63/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/out/ibm63v02.xml").unwrap(),
@@ -3173,8 +3173,8 @@ fn ibmvalid_p63ibm63v03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/ibm63v03.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P63/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/out/ibm63v03.xml").unwrap(),
@@ -3198,8 +3198,8 @@ fn ibmvalid_p63ibm63v04xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/ibm63v04.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P63/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/out/ibm63v04.xml").unwrap(),
@@ -3223,8 +3223,8 @@ fn ibmvalid_p63ibm63v05xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/ibm63v05.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P63/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P63/out/ibm63v05.xml").unwrap(),
@@ -3248,8 +3248,8 @@ fn ibmvalid_p64ibm64v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P64/ibm64v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P64/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P64/out/ibm64v01.xml").unwrap(),
@@ -3273,8 +3273,8 @@ fn ibmvalid_p64ibm64v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P64/ibm64v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P64/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P64/out/ibm64v02.xml").unwrap(),
@@ -3298,8 +3298,8 @@ fn ibmvalid_p64ibm64v03xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P64/ibm64v03.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P64/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P64/out/ibm64v03.xml").unwrap(),
@@ -3323,8 +3323,8 @@ fn ibmvalid_p65ibm65v01xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P65/ibm65v01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P65/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P65/out/ibm65v01.xml").unwrap(),
@@ -3348,8 +3348,8 @@ fn ibmvalid_p65ibm65v02xml() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P65/ibm65v02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/valid/P65/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P65/out/ibm65v02.xml").unwrap(),

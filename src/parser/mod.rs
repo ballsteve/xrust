@@ -45,6 +45,7 @@ pub(crate) struct ParserState {
     track the namespace when no alias is declared with the namespace.
      */
     namespace: Vec<HashMap<String, String>>,
+    standalone: bool,
     /*
     The below will track Entity Expansion, ensuring that there are no recursive entities and
     some protections from zip bombs
@@ -66,6 +67,7 @@ impl ParserState {
     ) -> ParserState {
         return ParserState {
             dtd: DTD::new(),
+            standalone: false,
             /*
             The below hashmap
              */
@@ -83,7 +85,7 @@ impl ParserState {
         match self.extDTDresolver {
             None => Err(Error {
                 kind: ErrorKind::Unknown,
-                message: "External DTDs are not supported".to_string(),
+                message: "No external DTD resolver provided.".to_string(),
             }),
             Some(e) => e(locdir, uri),
         }

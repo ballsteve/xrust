@@ -7,6 +7,7 @@ Sun Microsystems test cases
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore] //Requires external DTDs
@@ -443,13 +444,13 @@ fn sa05() {
         Test ID:sa05
         Test URI:valid/sa05.xml
         Spec Sections:2.9 [32]
-        Description:Like sa01 but this document is standalonesince it has no optional whitespace.On output, requires notations to be correctly reported.
+        Description:Like sa01 but this document is standalone since it has no optional whitespace.On output, requires notations to be correctly reported.
     */
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa05.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/valid/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/sa05.xml").unwrap(),

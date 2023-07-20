@@ -31,20 +31,30 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 fn xmldeclstandalone() -> impl Fn(ParseInput) -> ParseResult<String> {
-    map(
-        wellformed(
-            tuple6(
-                whitespace1(),
-                tag("standalone"),
-                whitespace0(),
-                tag("="),
-                whitespace0(),
-                delimited_string(),
+    move |(input, state)| {
+        match map(
+            wellformed(
+                tuple6(
+                    whitespace1(),
+                    tag("standalone"),
+                    whitespace0(),
+                    tag("="),
+                    whitespace0(),
+                    delimited_string(),
+                ),
+                |(_, _, _, _, _, s)| vec!["yes".to_string(), "no".to_string()].contains(s),
             ),
-            |(_, _, _, _, _, s)| vec!["yes".to_string(), "no".to_string()].contains(s),
-        ),
-        |(_, _, _, _, _, s)| s,
-    )
+            |(_, _, _, _, _, s)| s,
+        )((input, state)){
+            Err(e) => {Err(e) }
+            Ok(((input2, mut state2), sta)) => {
+                if &sta == "yes" {
+                    state2.standalone = true;
+                }
+                Ok(((input2, state2),sta))
+            }
+        }
+    }
 }
 
 pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {

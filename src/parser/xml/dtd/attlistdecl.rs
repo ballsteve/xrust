@@ -2,7 +2,6 @@ use crate::intmuttree::DTDDecl;
 use crate::parser::combinators::alt::{alt2, alt3, alt7};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::{ParseInput, ParseResult};
-//use crate::parser::combinators::expander::{genentityexpander, paramentityexpander};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -12,6 +11,7 @@ use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::dtd::enumerated::enumeratedtype;
+use crate::parser::xml::reference::textreference;
 use crate::parser::xml::qname::{name, qualname};
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
@@ -103,11 +103,10 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
             tag("\'"),
             map(
                 many0(
-                    //alt3(
+                    alt2(
                     take_while(|c| !"&\'<".contains(c)),
-                    //genentityexpander(),
-                    //paramentityexpander(),
-                    //)
+                    textreference()
+                    )
                 ),
                 |v| v.join(""),
             ),
@@ -117,11 +116,10 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
             tag("\""),
             map(
                 many0(
-                    //alt3(
-                    take_while(|c| !"&\"<".contains(c)),
-                    //genentityexpander(),
-                    //paramentityexpander(),
-                    //)
+                    alt2(
+                        take_while(|c| !"&\"<".contains(c)),
+                        textreference()
+                    )
                 ),
                 |v| v.join(""),
             ),
