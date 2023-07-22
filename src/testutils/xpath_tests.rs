@@ -301,7 +301,8 @@ macro_rules! xpath_tests (
 		.expect("failed to parse expression \"/child::a\"");
 	    let rd = $x();
 	    let s = e(&mut ContextBuilder::new()
-		      .result_document(rd)
+		      .result_document(rd.clone())
+		      .sequence(vec![$y()])
 	    	      .build()
 	    )
 		.expect("evaluation failed");
@@ -321,6 +322,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = e(&mut ContextBuilder::new()
 		      .result_document(rd)
+		      .sequence(vec![$y()])
 	    	      .build()
 	    )
 		.expect("evaluation failed");
@@ -348,6 +350,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = e(&mut ContextBuilder::new()
 		      .result_document(rd)
+		      .sequence(vec![$y()])
 		      .build())
 		.expect("evaluation failed");
 	    assert_eq!(s.len(), 5);
@@ -368,6 +371,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = e(&mut ContextBuilder::new()
 		      .result_document(rd)
+		      .sequence(vec![$y()])
 	    	      .build()).expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {

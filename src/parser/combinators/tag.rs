@@ -2,10 +2,7 @@ use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
     move |mut input| {
-        input.stack_push(format!(
-            "tag - expect=\"{}\" - input=\"{}\"",
-            expected, input
-        ));
+        //eprintln!("tag - expect=\"{}\" - input=\"{}\"", expected, input);
         let tagchars = expected.chars();
         for tchar in tagchars {
             match input.next() {
@@ -17,6 +14,7 @@ pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_
                 }
             }
         }
+        //eprintln!("tag: found \"{}\" OK", expected);
         Ok((input, ()))
     }
 }

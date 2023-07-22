@@ -2,16 +2,19 @@
 //!
 //! An XPath parser using the xrust parser combinator that produces a xrust transformation combinator.
 
+use std::cmp::Ordering;
 use std::rc::Rc;
 
 use crate::evaluate::{ArithmeticOperator, Axis, NameTest, NodeMatch, NodeTest, WildcardOrName};
 use crate::item::{Item, Node};
 use crate::transcomb::{
-    arithmetic, boolean, ceiling, compose, contains, context, declare_variable, empty, floor,
-    general_comparison, last, literal as tc_literal, normalize_space, not, not_implemented, number,
-    position, reference_variable, root, starts_with, step, string, substring, substring_after,
-    substring_before, sum, switch, tc_and, tc_concat, tc_count, tc_false, tc_loop, tc_or, tc_range,
-    tc_sequence, tc_true, translate, value_comparison, Combinator, Context, TransResult,
+    arithmetic, boolean, ceiling, compose, contains, context, current_date, current_date_time,
+    current_group, current_grouping_key, current_time, declare_variable, empty, floor, format_date,
+    format_date_time, format_time, general_comparison, last, literal as tc_literal, local_name,
+    name, normalize_space, not, not_implemented, number, position, reference_variable, root, round,
+    starts_with, step, string, substring, substring_after, substring_before, sum, switch, tc_and,
+    tc_concat, tc_count, tc_false, tc_loop, tc_or, tc_range, tc_sequence, tc_true, translate,
+    value_comparison, Combinator, Context, TransResult,
 };
 use crate::value::Value;
 use crate::value::*;
@@ -20,6 +23,7 @@ use rust_decimal::Decimal;
 use std::str::FromStr;
 
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
+use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::list::{separated_list0, separated_list1};
 use crate::parser::combinators::many::many0;
@@ -73,7 +77,7 @@ where
 {
     Box::new(map(
         separated_list1(
-            map(tuple3(whitespace0(), tag(","), whitespace0()), |_| ()),
+            map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
             expr_single::<N, F>(),
         ),
         |v| tc_sequence(v),
@@ -101,11 +105,14 @@ fn expr_single<'a, N: Node + 'a, F>(
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(alt4(
-        or_expr::<N, F>(),
-        let_expr::<N, F>(),
-        for_expr::<N, F>(),
-        if_expr::<N, F>(),
+    Box::new(inspect(
+        "expr_single",
+        alt4(
+            or_expr::<N, F>(),
+            let_expr::<N, F>(),
+            for_expr::<N, F>(),
+            if_expr::<N, F>(),
+        ),
     ))
 }
 
@@ -134,21 +141,21 @@ where
             // need tuple15
             tuple10(
                 tag("if"),
-                whitespace0(),
+                xpwhitespace(),
                 tag("("),
-                whitespace0(),
+                xpwhitespace(),
                 expr_wrapper::<N, F>(true),
-                whitespace0(),
+                xpwhitespace(),
                 tag(")"),
-                whitespace0(),
+                xpwhitespace(),
                 tag("then"),
-                whitespace0(),
+                xpwhitespace(),
             ),
             tuple5(
                 expr_single_wrapper::<N, F>(true),
-                whitespace0(),
+                xpwhitespace(),
                 tag("else"),
-                whitespace0(),
+                xpwhitespace(),
                 expr_single_wrapper::<N, F>(true),
             ),
         ),
@@ -164,7 +171,7 @@ where
     Box::new(map(
         tuple3(
             simple_for_clause::<N, F>(),
-            tuple3(whitespace0(), tag("return"), whitespace0()),
+            tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
             expr_single_wrapper::<N, F>(true),
         ),
         |(mut f, _, e)| tc_loop(f.pop().unwrap(), e), // tc_loop does not yet support multiple variable bindings
@@ -181,16 +188,16 @@ where
     Box::new(map(
         tuple3(
             tag("for"),
-            whitespace0(),
+            xpwhitespace(),
             separated_list1(
-                map(tuple3(whitespace0(), tag(","), whitespace0()), |_| ()),
+                map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
                 map(
                     tuple6(
                         tag("$"),
                         qname(),
-                        whitespace0(),
+                        xpwhitespace(),
                         tag("in"),
-                        whitespace0(),
+                        xpwhitespace(),
                         expr_single_wrapper::<N, F>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
@@ -209,7 +216,7 @@ where
     Box::new(map(
         tuple3(
             simple_let_clause::<N, F>(),
-            tuple3(whitespace0(), tag("return"), whitespace0()),
+            tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
             expr_single_wrapper::<N, F>(true),
         ),
         |(mut v, _, e)| {
@@ -240,16 +247,16 @@ where
     Box::new(map(
         tuple3(
             tag("let"),
-            whitespace0(),
+            xpwhitespace(),
             separated_list1(
-                map(tuple3(whitespace0(), tag(","), whitespace0()), |_| ()),
+                map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
                 map(
                     tuple6(
                         tag("$"),
                         qname(),
-                        whitespace0(),
+                        xpwhitespace(),
                         tag(":="),
-                        whitespace0(),
+                        xpwhitespace(),
                         expr_single_wrapper::<N, F>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
@@ -278,7 +285,7 @@ where
 {
     Box::new(map(
         separated_list1(
-            map(tuple3(whitespace0(), tag("or"), whitespace0()), |_| ()),
+            map(tuple3(xpwhitespace(), tag("or"), xpwhitespace()), |_| ()),
             and_expr::<N, F>(),
         ),
         |v| {
@@ -299,7 +306,7 @@ where
 {
     Box::new(map(
         separated_list1(
-            map(tuple3(whitespace0(), tag("and"), whitespace0()), |_| ()),
+            map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),
             comparison_expr::<N, F>(),
         ),
         |v| {
@@ -324,7 +331,7 @@ where
             stringconcat_expr::<N, F>(),
             opt(pair(
                 tuple3(
-                    whitespace0(),
+                    xpwhitespace(),
                     anytag(vec![
                         (vec!["=", ""], false),
                         (vec!["!", "="], false),
@@ -336,7 +343,7 @@ where
                         (vec!["g", "te"], false),
                         (vec!["i", "s"], false),
                     ]),
-                    whitespace0(),
+                    xpwhitespace(),
                 ),
                 stringconcat_expr::<N, F>(),
             )),
@@ -366,7 +373,7 @@ where
 {
     Box::new(map(
         separated_list1(
-            map(tuple3(whitespace0(), tag("||"), whitespace0()), |_| ()),
+            map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
             range_expr::<N, F>(),
         ),
         |v| {
@@ -390,7 +397,7 @@ where
         pair(
             additive_expr::<N, F>(),
             opt(tuple2(
-                tuple3(whitespace0(), tag("to"), whitespace0()),
+                tuple3(xpwhitespace(), tag("to"), xpwhitespace()),
                 additive_expr::<N, F>(),
             )),
         ),
@@ -412,8 +419,8 @@ where
             multiplicative_expr::<N, F>(),
             many0(tuple2(
                 alt2(
-                    tuple3(whitespace0(), map(tag("+"), |_| "+"), whitespace0()),
-                    tuple3(whitespace0(), map(tag("-"), |_| "-"), whitespace0()),
+                    tuple3(xpwhitespace(), map(tag("+"), |_| "+"), xpwhitespace()),
+                    tuple3(xpwhitespace(), map(tag("-"), |_| "-"), xpwhitespace()),
                 ),
                 multiplicative_expr::<N, F>(),
             )),
@@ -458,10 +465,10 @@ where
             union_expr::<N, F>(),
             many0(tuple2(
                 alt4(
-                    tuple3(whitespace0(), map(tag("*"), |_| "*"), whitespace0()),
-                    tuple3(whitespace0(), map(tag("div"), |_| "div"), whitespace0()),
-                    tuple3(whitespace0(), map(tag("idiv"), |_| "idiv"), whitespace0()),
-                    tuple3(whitespace0(), map(tag("mod"), |_| "mod"), whitespace0()),
+                    tuple3(xpwhitespace(), map(tag("*"), |_| "*"), xpwhitespace()),
+                    tuple3(xpwhitespace(), map(tag("div"), |_| "div"), xpwhitespace()),
+                    tuple3(xpwhitespace(), map(tag("idiv"), |_| "idiv"), xpwhitespace()),
+                    tuple3(xpwhitespace(), map(tag("mod"), |_| "mod"), xpwhitespace()),
                 ),
                 union_expr::<N, F>(),
             )),
@@ -495,7 +502,7 @@ where
     Box::new(map(
         separated_list1(
             map(
-                tuple3(whitespace0(), alt2(tag("union"), tag("|")), whitespace0()),
+                tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
                 |_| (),
             ),
             intersectexcept_expr::<N, F>(),
@@ -522,9 +529,9 @@ where
             instanceof_expr::<N, F>(),
             many0(tuple2(
                 tuple3(
-                    whitespace0(),
+                    xpwhitespace(),
                     alt2(tag("intersect"), tag("except")),
-                    whitespace0(),
+                    xpwhitespace(),
                 ),
                 instanceof_expr::<N, F>(),
             )),
@@ -549,11 +556,11 @@ where
         pair(
             treat_expr::<N, F>(),
             opt(tuple6(
-                whitespace0(),
+                xpwhitespace(),
                 tag("instance"),
-                whitespace0(),
+                xpwhitespace(),
                 tag("of"),
-                whitespace0(),
+                xpwhitespace(),
                 sequencetype_expr::<N>(),
             )),
         ),
@@ -586,11 +593,11 @@ where
         pair(
             castable_expr::<N, F>(),
             opt(tuple6(
-                whitespace0(),
+                xpwhitespace(),
                 tag("treat"),
-                whitespace0(),
+                xpwhitespace(),
                 tag("as"),
-                whitespace0(),
+                xpwhitespace(),
                 sequencetype_expr::<N>(),
             )),
         ),
@@ -614,11 +621,11 @@ where
         pair(
             cast_expr::<N, F>(),
             opt(tuple6(
-                whitespace0(),
+                xpwhitespace(),
                 tag("castable"),
-                whitespace0(),
+                xpwhitespace(),
                 tag("as"),
-                whitespace0(),
+                xpwhitespace(),
                 singletype_expr::<N>(),
             )),
         ),
@@ -661,11 +668,11 @@ where
         pair(
             arrow_expr::<N, F>(),
             opt(tuple6(
-                whitespace0(),
+                xpwhitespace(),
                 tag("cast"),
-                whitespace0(),
+                xpwhitespace(),
                 tag("as"),
-                whitespace0(),
+                xpwhitespace(),
                 singletype_expr::<N>(),
             )),
         ),
@@ -689,11 +696,11 @@ where
         pair(
             unary_expr::<N, F>(),
             opt(tuple6(
-                whitespace0(),
+                xpwhitespace(),
                 tag("=>"),
-                whitespace0(),
+                xpwhitespace(),
                 arrowfunctionspecifier::<N, F>(),
-                whitespace0(),
+                xpwhitespace(),
                 opt(argumentlist::<N>()),
             )),
         ),
@@ -839,14 +846,11 @@ where
     Box::new(map(
         pair(
             step_expr::<N, F>(),
-            //	    many0(tuple2(
-            //		alt(
-            //		    tuple3(whitespace0(), tag("//"), whitespace0()),
-            //		    tuple3(whitespace0(), tag("/"), whitespace0()),
-            //		)
-            //	    ))
             many0(tuple2(
-                tuple3(whitespace0(), tag("/"), whitespace0()),
+                alt2(
+                    map(tuple3(xpwhitespace(), tag("/"), xpwhitespace()), |_| "/"),
+                    map(tuple3(xpwhitespace(), tag("//"), xpwhitespace()), |_| "//"),
+                ),
                 step_expr::<N, F>(),
             )),
         ),
@@ -856,8 +860,23 @@ where
             } else {
                 let mut r = Vec::new();
                 r.push(a);
-                for (_, c) in b {
-                    r.push(c)
+                for (s, c) in b {
+                    match s {
+                        "/" => r.push(c),
+                        "//" => {
+                            // Insert a descendant-or-self::* step
+                            r.push(step(NodeMatch {
+                                axis: Axis::DescendantOrSelf,
+                                nodetest: NodeTest::Name(NameTest {
+                                    ns: None,
+                                    prefix: None,
+                                    name: Some(WildcardOrName::Wildcard),
+                                }),
+                            }));
+                            r.push(c)
+                        }
+                        _ => panic!("unexpected"),
+                    }
                 }
                 compose(r)
             }
@@ -890,12 +909,15 @@ fn primary_expr<'a, N: Node + 'a, F>(
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(alt5(
-        literal(),
-        context_item(),
-        parenthesized_expr::<N, F>(),
-        function_call::<N, F>(),
-        variable_reference(),
+    Box::new(inspect(
+        "primary_expr",
+        alt5(
+            inspect("literal", literal()),
+            context_item(),
+            parenthesized_expr::<N, F>(),
+            inspect("function_call", function_call::<N, F>()),
+            variable_reference(),
+        ),
     ))
 }
 
@@ -920,6 +942,26 @@ where
                         tc_count::<F, N>(None)
                     } else if a.len() == 1 {
                         tc_count(Some(a.pop().unwrap()))
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "local-name" => {
+                    if a.len() == 0 {
+                        local_name::<F, N>(None)
+                    } else if a.len() == 1 {
+                        local_name(Some(a.pop().unwrap()))
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "name" => {
+                    if a.len() == 0 {
+                        name::<F, N>(None)
+                    } else if a.len() == 1 {
+                        name(Some(a.pop().unwrap()))
                     } else {
                         // Too many arguments
                         empty()
@@ -1067,6 +1109,7 @@ where
                     }
                 }
                 "ceiling" => {
+                    eprintln!("ceiling function");
                     if a.len() == 1 {
                         ceiling(a.pop().unwrap())
                     } else {
@@ -1074,7 +1117,111 @@ where
                         empty()
                     }
                 }
-                _ => empty(),
+                "round" => {
+                    if a.len() == 1 {
+                        let b = a.pop().unwrap();
+                        round(b, None)
+                    } else if a.len() == 2 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        round(c, Some(b))
+                    } else {
+                        // Wrong number of arguments
+                        empty()
+                    }
+                }
+                "current-date-time" => {
+                    if a.len() == 0 {
+                        current_date_time()
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "current-date" => {
+                    if a.len() == 0 {
+                        current_date()
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "current-time" => {
+                    if a.len() == 0 {
+                        current_time()
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "format-date-time" => {
+                    if a.len() == 2 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        format_date_time(c, b, None, None, None)
+                    } else if a.len() == 5 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        let d = a.pop().unwrap();
+                        let e = a.pop().unwrap();
+                        let f = a.pop().unwrap();
+                        format_date_time(f, e, Some(d), Some(c), Some(b))
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "format-date" => {
+                    if a.len() == 2 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        format_date(c, b, None, None, None)
+                    } else if a.len() == 5 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        let d = a.pop().unwrap();
+                        let e = a.pop().unwrap();
+                        let f = a.pop().unwrap();
+                        format_date(f, e, Some(d), Some(c), Some(b))
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "format-time" => {
+                    if a.len() == 2 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        format_time(c, b, None, None, None)
+                    } else if a.len() == 5 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        let d = a.pop().unwrap();
+                        let e = a.pop().unwrap();
+                        let f = a.pop().unwrap();
+                        format_time(f, e, Some(d), Some(c), Some(b))
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "current-group" => {
+                    if a.len() == 0 {
+                        current_group()
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                "current-grouping-key" => {
+                    if a.len() == 0 {
+                        current_grouping_key()
+                    } else {
+                        // Too many arguments
+                        empty()
+                    }
+                }
+                _ => empty(), // TODO: user-defined functions
             },
             _ => empty(),
         },
@@ -1088,13 +1235,19 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        tuple3(
-            tag("("),
-            separated_list0(
-                map(tuple3(whitespace0(), tag(","), whitespace0()), |_| ()),
-                argument::<N, F>(),
+        inspect(
+            "arglist",
+            tuple3(
+                inspect("arglist open", tag("(")),
+                inspect(
+                    "sep0",
+                    separated_list0(
+                        map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
+                        argument::<N, F>(),
+                    ),
+                ),
+                inspect("arglist closed", tag(")")),
             ),
-            tag(")"),
         ),
         |(_, a, _)| a,
     ))
@@ -1106,7 +1259,7 @@ fn argument<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Comb
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(expr_single_wrapper::<N, F>(true))
+    Box::new(inspect("argument", expr_single_wrapper::<N, F>(true)))
 }
 
 // VarRef ::= '$' VarName
@@ -1191,15 +1344,19 @@ fn decimal_literal_frac<'a, N: Node + 'a>(
 }
 fn decimal_literal_comp<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
-    Box::new(map(tuple3(digit1(), tag("."), digit0()), |(w, _, f)| {
-        let s = format!("{}.{}", w, f);
-        let n = s.parse::<f64>();
-        let i = match n {
-            Ok(m) => Value::Double(m),
-            Err(_) => Value::Decimal(Decimal::from_str(&s).unwrap()),
-        };
-        tc_literal(Rc::new(Item::Value(i)))
-    }))
+    Box::new(inspect(
+        "decimal",
+        map(tuple3(digit1(), tag("."), digit0()), |(w, _, f)| {
+            let s = format!("{}.{}", w, f);
+            let n = s.parse::<f64>();
+            let i = match n {
+                Ok(m) => Value::Double(m),
+                Err(_) => Value::Decimal(Decimal::from_str(&s).unwrap()),
+            };
+            eprintln!("decimal found \"{}\"", i);
+            tc_literal(Rc::new(Item::Value(i)))
+        }),
+    ))
 }
 
 // DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
@@ -1280,13 +1437,31 @@ fn string_literal<'a, N: Node + 'a>(
     Box::new(alt2(string_literal_double(), string_literal_single()))
 }
 
-/// Return zero or more digits from the input stream.
+/// Return zero or more digits from the input stream. Be careful not to consume non-digit input.
 fn digit0() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |mut input| {
-        let result = (&mut input)
-            .take_while(|c| *c >= '0' && *c <= '9')
-            .collect::<String>();
-        Ok((input, result))
+        eprintln!("digit0: input \"{}\"", input);
+        match input.clone().position(|c| !(c >= '0' && c <= '9')) {
+            Some(0) => {
+                eprintln!("digit0: non-digit at pos 0");
+                Err(ParseError::Combinator)
+            }
+            Some(pos) => {
+                let result = (&mut input).take(pos).collect::<String>();
+                eprintln!("digit0: got digits \"{}\" input now \"{}\"", result, input);
+                Ok((input, result))
+            }
+            None => {
+                eprintln!("digit0: no non-digits");
+                match input.clone().peekable().peek() {
+                    Some(_) => {
+                        let result = (&mut input).collect::<String>();
+                        Ok((input, result))
+                    }
+                    _ => Err(ParseError::Combinator),
+                }
+            }
+        }
     }
 }
 /// Return one or more digits from the input stream.
@@ -1405,10 +1580,7 @@ fn forwardaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
 }
 
 fn axis_child() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
-    Box::new(map(tag("child"), |c| {
-        eprintln!("found child axis");
-        "child"
-    }))
+    Box::new(map(tag("child"), |c| "child"))
 }
 fn axis_self() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
     Box::new(map(tag("self"), |c| "self"))
@@ -1417,12 +1589,29 @@ fn axis_self() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
 // NodeTest ::= KindTest | NameTest
 // NameTest ::= EQName | Wildcard
 fn nodetest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
-    // shortcut: just unprefixed_name
-    Box::new(map(ncname(), |n| {
+    //    Box::new(alt2(kindtest(), nametest()))
+    Box::new(nametest())
+}
+
+// KindTest ::= DocumentTest | ElementTest | AttributeTest | SchemaElementTest | SchemaAttributeTest | PITest | CommentTest | TextTest | NamespaceNodeTest | AnyKindTest
+//fn kindtest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+//    Box::new(map(tag("not implemented"), |_| not_implemented))
+//}
+
+// NameTest ::= EQName | Wildcard
+// TODO: allow EQName rather than QName
+fn nametest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(alt2(qname(), wildcard()))
+}
+
+// Wildcard ::= '*' | (NCName ':*') | ('*:' NCName) | (BracedURILiteral '*')
+// TODO: more specific wildcards
+fn wildcard() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(map(tag("*"), |_| {
         NodeTest::Name(NameTest {
-            ns: None,
+            ns: Some(WildcardOrName::Wildcard),
             prefix: None,
-            name: Some(WildcardOrName::Name(String::from(n))),
+            name: Some(WildcardOrName::Wildcard),
         })
     }))
 }
@@ -1450,6 +1639,145 @@ fn prefixed_name() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
             })
         },
     ))
+}
+
+fn xpwhitespace() -> Box<dyn Fn(ParseInput) -> ParseResult<()>> {
+    Box::new(inspect(
+        "xpwhitespace",
+        map(
+            tuple3(
+                whitespace0(),
+                take_until_balanced("(:", ":)"),
+                whitespace0(),
+            ),
+            |_| (),
+        ),
+    ))
+}
+/*
+fn xpwhitespace_wrapper(
+    b: bool,
+) -> impl Fn(ParseInput) -> ParseResult<()>
+{
+    move |input| {
+        if b {
+            xpwhitespace()(input)
+        } else {
+            Ok((input, ()))
+        }
+    }
+}
+ */
+
+/// Parse nested input.
+///
+/// Inspired by 'take_until_unbalanced' from parse_hyperlinks crate.
+/// We can't use the parse_hyperlinks version since it only takes character delimiters.
+/// Also, this function does not need to consider escaped brackets.
+///
+/// This function consumes the delimiters.
+/// The start delimiter must be the first token in the input. Finding this sets the bracket count to 1. After that there are 4 scenarios:
+///
+/// * The close delimiter is not found. This is an error.
+/// * There is no open delimiter. In this case, consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
+/// * There is an open delimiter. If the open occurs after the close, then consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
+/// * The open delimiter occurs before the close. In this case, increment the bracket count and continue after the open delimiter.
+fn take_until_balanced(
+    open: &'static str,
+    close: &'static str,
+) -> Box<dyn Fn(ParseInput) -> ParseResult<()>> {
+    Box::new(move |mut input: ParseInput| {
+        let mut counter = 0;
+        let mut bracket_counter = 0;
+
+        // Assume the open and close phrases are the same length
+        loop {
+            eprintln!(
+                "TUB: looking for open in \"{}\", bc=={}",
+                input, bracket_counter
+            );
+            counter += 1;
+            if counter > 1000 {
+                eprintln!("TUB: too many loops");
+                return Err(ParseError::Unknown { row: 0, col: 0 });
+            }
+            match (input.as_str().find(open), input.as_str().find(close)) {
+                (Some(0), _) => {
+                    eprintln!("TUB: found open, bracket counter=={}", bracket_counter);
+                    bracket_counter += 1;
+                    let _: Vec<_> = (&mut input).take(open.len()).collect();
+                    eprintln!("TUB: input now \"{}\"", input);
+                    match (input.as_str().find(&open), input.as_str().find(&close)) {
+                        (_, None) => {
+                            // Scenario 1
+                            eprintln!("TUB: scenario 1");
+                            return Err(ParseError::Unbalanced);
+                        }
+                        (Some(o), Some(c)) => {
+                            // Scenario 3/4
+                            if o > c {
+                                // Scenario 3
+                                eprintln!("TUB: scenario 3");
+                                if bracket_counter == 1 {
+                                    let _: Vec<_> = (&mut input).take(c + close.len()).collect();
+                                    eprintln!("TUB: returning, input now \"{}\"", input);
+                                    return Ok((input, ()));
+                                } else {
+                                    return Err(ParseError::Unbalanced);
+                                }
+                            } else {
+                                // Scenario 4
+                                eprintln!("TUB: scenario 4");
+                                bracket_counter += 1;
+                                let _: Vec<_> = (&mut input).take(o + open.len()).collect();
+                                eprintln!("TUB: input now \"{}\"", input);
+                            }
+                        }
+                        (_, Some(c)) => {
+                            // Scenario 2
+                            eprintln!("TUB: scenario 2");
+                            match bracket_counter.cmp(&1) {
+                                Ordering::Greater => {
+                                    bracket_counter -= 1;
+                                    let _: Vec<_> = (&mut input).take(c + close.len()).collect();
+                                }
+                                Ordering::Equal => {
+                                    let _: Vec<_> = (&mut input).take(c + close.len()).collect();
+                                    eprintln!("TUB: returning, input now \"{}\"", input);
+                                    return Ok((input, ()));
+                                }
+                                Ordering::Less => {
+                                    return Err(ParseError::Unbalanced);
+                                }
+                            }
+                        }
+                        _ => {
+                            eprintln!("TUB: unhandled scenario")
+                        }
+                    }
+                }
+                (None, Some(c)) => {
+                    // Scenario 2
+                    eprintln!("TUB: scenario 2/2");
+                    match bracket_counter.cmp(&1) {
+                        Ordering::Greater => {
+                            bracket_counter -= 1;
+                            let _: Vec<_> = (&mut input).take(c + close.len()).collect();
+                        }
+                        Ordering::Equal => {
+                            let _: Vec<_> = (&mut input).take(c + close.len()).collect();
+                            eprintln!("TUB: returning, input now \"{}\"", input);
+                            return Ok((input, ()));
+                        }
+                        Ordering::Less => {
+                            return Err(ParseError::Unbalanced);
+                        }
+                    }
+                }
+                _ => return Ok((input, ())),
+            }
+        }
+    })
 }
 
 fn noop<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {

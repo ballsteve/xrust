@@ -100,6 +100,10 @@ pub fn parse(e: String) -> Result<XMLDocument, Error> {
                     kind: ErrorKind::ParseError,
                     message: "Incorrect arguments.".to_string(),
                 }),
+                ParseError::Unbalanced => Result::Err(Error {
+                    kind: ErrorKind::ParseError,
+                    message: "Unbalanced.".to_string(),
+                }),
             }
         }
     }

@@ -13,3 +13,5 @@ pub(crate) mod opt;
 pub(crate) mod validate;
 pub(crate) mod value;
 pub(crate) mod whitespace;
+
+pub(crate) mod debug;

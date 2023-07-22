@@ -33,6 +33,7 @@ pub(crate) enum ParseError {
     MissingNameSpace,
     IncorrectArguments,
     NotWellFormed,
+    Unbalanced,
     Notimplemented,
 }
 
@@ -78,6 +79,9 @@ impl ParseInput<'_> {
             stack: vec![],
             limit: None,
         };
+    }
+    pub fn as_str(&self) -> &str {
+        self.input.as_str()
     }
     pub fn stack_push(&mut self, msg: String) {
         //eprintln!("{}", msg);
