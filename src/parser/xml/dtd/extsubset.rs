@@ -8,6 +8,7 @@ use crate::parser::combinators::take::take_until;
 use crate::parser::combinators::tuple::{tuple2, tuple7};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::dtd::attlistdecl::attlistdecl;
+use crate::parser::xml::dtd::conditionals::{ignoresect, includesect};
 use crate::parser::xml::dtd::elementdecl::elementdecl;
 use crate::parser::xml::dtd::gedecl::gedecl;
 use crate::parser::xml::dtd::notation::ndatadecl;
@@ -58,40 +59,3 @@ pub(crate) fn extsubsetdecl() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
     ))
 }
 
-pub(crate) fn includesect() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move|(input, state)|{
-        match tuple7(
-            tag("<!["),
-            whitespace0(),
-            tag("INCLUDE"),
-            whitespace0(),
-            tag("["),
-            extsubsetdecl(),
-            tag("]]>")
-        )((input, state)){
-            Ok(((input2, state2),(_,_,_,_,_,_,_))) => {
-                Ok(((input2, state2), ()))
-            }
-            Err(e) => {Err(e)}
-        }
-    }
-}
-
-pub(crate) fn ignoresect() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move|(input, state)|{
-        match tuple7(
-            tag("<!["),
-            whitespace0(),
-            tag("IGNORE"),
-            whitespace0(),
-            tag("["),
-            take_until("]]>"),
-            tag("]]>")
-        )((input, state.clone())){
-            Ok(((input2, _),(_,_,_,_,_,_,_))) => {
-                Ok(((input2, state), ()))
-            }
-            Err(e) => {Err(e)}
-        }
-    }
-}

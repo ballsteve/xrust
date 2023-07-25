@@ -10,6 +10,7 @@ mod pedecl;
 mod extsubset;
 mod textdecl;
 mod pereference;
+mod conditionals;
 
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::delimited::delimited;
