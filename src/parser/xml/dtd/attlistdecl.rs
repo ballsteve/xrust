@@ -10,6 +10,7 @@ use crate::parser::combinators::take::take_while;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
+use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::dtd::enumerated::enumeratedtype;
 use crate::parser::xml::reference::textreference;
 use crate::parser::xml::qname::{name, qualname};
@@ -71,6 +72,7 @@ fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
 fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+    move |(input, state)|{
     map(
         alt3(
             value(tag("#REQUIRED"), "#REQUIRED".to_string()),
@@ -84,7 +86,9 @@ fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                     attvalue(),
                 ),
                 |(x, y)| match x {
-                    None => y,
+                    None => {
+                        y
+                    },
                     Some((mut f, _)) => {
                         f.push_str(&y);
                         f
@@ -94,6 +98,7 @@ fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         ),
         |_x| (),
     )
+        ((input, state))}
 }
 
 //AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
@@ -103,12 +108,15 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
             tag("\'"),
             map(
                 many0(
-                    alt2(
+                    alt3(
+                    chardata_unicode_codepoint(),
                     take_while(|c| !"&\'<".contains(c)),
                     textreference()
                     )
                 ),
-                |v| v.join(""),
+                |v| {
+                    v.join("")
+                },
             ),
             tag("\'"),
         ),
@@ -116,12 +124,15 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
             tag("\""),
             map(
                 many0(
-                    alt2(
+                    alt3(
+                        chardata_unicode_codepoint(),
                         take_while(|c| !"&\"<".contains(c)),
                         textreference()
                     )
                 ),
-                |v| v.join(""),
+                |v| {
+                    v.join("")
+                },
             ),
             tag("\""),
         ),

@@ -31,6 +31,8 @@ pub(crate) fn elementdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         Err(err) => Err(err),
     }
 }
+
+
 fn contentspec() -> impl Fn(ParseInput) -> ParseResult<String> {
     alt4(
         value(tag("EMPTY"), "EMPTY".to_string()),

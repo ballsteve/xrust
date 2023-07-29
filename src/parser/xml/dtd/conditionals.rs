@@ -1,4 +1,5 @@
 use crate::parser::{ParseInput, ParseResult};
+use crate::parser::combinators::many::many0;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_until_either_or};
@@ -49,16 +50,17 @@ pub(crate) fn ignoresect() -> impl Fn(ParseInput) -> ParseResult<()> {
 fn ignoresectcontents() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |(input, state)| {
         match tuple2(
-            take_until_either_or("<![", "]]>"),
-            opt(
+        many0(
+            tuple2(
+                take_until_either_or("<![", "]]>"),
                 tuple3(
                     tag("<!["),
                     ignoresectcontents(),
-                    take_until("]]>")
-                    )
-                ),
-            //tag("]]>"),
-        )((input, state.clone())){
+                    tag("]]>")
+                )
+            )
+        ),
+        take_until("]]>"))((input, state.clone())){
             Ok(((input2, _), (_,_))) => {
                 Ok(((input2, state),()))
             }

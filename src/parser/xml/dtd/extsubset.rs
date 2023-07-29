@@ -29,8 +29,6 @@ pub(crate) fn extsubset() -> impl Fn(ParseInput) -> ParseResult<()> {
             )((input, state)){
                 Ok(((input2, state2), (_, _))) => {
                     if !input2.is_empty(){
-                        println!("{:?}",input2);
-                        println!("NWF");
                         Err(ParseError::NotWellFormed)
                     } else {
                         Ok(((input2, state2), ()))

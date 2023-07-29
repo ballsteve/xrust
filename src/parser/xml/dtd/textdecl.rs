@@ -61,7 +61,6 @@ pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
             whitespace0(),
         ),
         |(_, ver, enc, _, _, _)| {
-            println!("td-s");
             if ver == Some(((), "1.1".to_string())){
                 XMLDecl {
                     version: "1.1".to_string(),

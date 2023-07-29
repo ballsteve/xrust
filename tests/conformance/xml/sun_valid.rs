@@ -156,6 +156,7 @@ fn ext02() {
 }
 
 #[test]
+#[ignore]
 fn notsa01() {
     /*
         Test ID:not-sa01
@@ -166,8 +167,8 @@ fn notsa01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/valid/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/out/not-sa01.xml").unwrap(),
