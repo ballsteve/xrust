@@ -54,30 +54,6 @@ where
     }
 }
 
-pub(crate) fn take_while_m_n<F>(
-    min: usize,
-    max: usize,
-    condition: F,
-) -> impl Fn(ParseInput) -> ParseResult<String>
-where
-    F: Fn(char) -> bool,
-{
-    move |(input, state)| match input.find(|c| !condition(c)) {
-        None => Err(ParseError::Combinator),
-        Some(pos) => {
-            if pos >= min {
-                if pos > max {
-                    Ok(((&input[max..], state), input[0..max].to_string()))
-                } else {
-                    Ok(((&input[pos..], state), input[0..pos].to_string()))
-                }
-            } else {
-                Err(ParseError::Combinator)
-            }
-        }
-    }
-}
-
 #[cfg(test)]
 mod tests {
     use crate::parser::combinators::take::{take_until, take_until_either_or, take_while};

@@ -1,6 +1,6 @@
 use crate::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
-use crate::parser::combinators::alt::{alt2, alt3, alt4};
+use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;

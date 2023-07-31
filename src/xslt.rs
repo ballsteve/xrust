@@ -17,7 +17,7 @@ use xrust::intmuttree::{Document, RNode, NodeBuilder};
 
 // A little helper function that wraps the toplevel node in a Document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from((s, None)).expect("failed to parse XML").content[0].clone();
+    let e = Document::try_from((s, None, None)).expect("failed to parse XML").content[0].clone();
     let mut d = NodeBuilder::new(NodeType::Document).build();
     d.push(e).expect("unable to append node");
     Ok(d)

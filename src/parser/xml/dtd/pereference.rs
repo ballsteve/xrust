@@ -1,4 +1,3 @@
-use crate::intmuttree::RNode;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
@@ -30,7 +29,7 @@ pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
                             The fix? We append a < character and the parser will stop as if its hit that
                             closing tag. Then we check that that closing tag is all that remained on the parsing.
                              */
-                            let mut e2 = entval.clone();
+                            let e2 = entval.clone();
 
                             match extsubsetdecl()((e2.as_str(), tempstate)) {
                                 Ok(((outstr, _), _)) => {
@@ -40,18 +39,14 @@ pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
                                         Ok(((input1, state1), ()))
                                     }
                                 }
-                                Err(e) => Err(ParseError::NotWellFormed),
+                                Err(_) => Err(ParseError::NotWellFormed),
                             }
                         }
                     }
                     None => Err(ParseError::MissingParamEntity {
                         col: state1.currentcol,
                         row: state1.currentrow,
-                    }),
-                    _ => Err(ParseError::Unknown {
-                        col: state1.currentcol,
-                        row: state1.currentrow,
-                    }),
+                    })
                 }
             }
         }
@@ -87,11 +82,7 @@ pub(crate) fn petextreference() -> impl Fn(ParseInput) -> ParseResult<String> {
                             None => Err(ParseError::MissingParamEntity {
                                 col: state1.currentcol,
                                 row: state1.currentrow,
-                            }),
-                            _ => Err(ParseError::Unknown {
-                                col: state1.currentcol,
-                                row: state1.currentrow,
-                            }),
+                            })
                         }
                     }
                 }

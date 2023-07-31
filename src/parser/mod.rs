@@ -4,7 +4,7 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
-use crate::intmuttree::{DTD, extDTDresolver};
+use crate::intmuttree::{DTD, ExtDTDresolver};
 use crate::xdmerror::{Error, ErrorKind};
 use std::collections::HashMap;
 use std::fmt;
@@ -28,7 +28,7 @@ pub(crate) enum ParseError {
     MissingParamEntity { row: usize, col: usize },
     EntityDepth { row: usize, col: usize },
     Validation { row: usize, col: usize },
-    Unknown { row: usize, col: usize },
+    //Unknown { row: usize, col: usize },
     MissingNameSpace,
     NotWellFormed,
     Notimplemented,
@@ -56,7 +56,7 @@ pub(crate) struct ParserState {
     currentcol: usize,
     currentrow: usize,
     /* entity downloader function */
-    extDTDresolver: Option<extDTDresolver>,
+    ext_dtd_resolver: Option<ExtDTDresolver>,
     docloc: Option<String>,
     /*
     ParamEntities are not allowed in internal subsets, but they are allowed in external DTDs,
@@ -67,7 +67,7 @@ pub(crate) struct ParserState {
 
 impl ParserState {
     pub fn new(
-        resolver: Option<extDTDresolver>,
+        resolver: Option<ExtDTDresolver>,
         docloc: Option<String>,
     ) -> ParserState {
         return ParserState {
@@ -81,14 +81,14 @@ impl ParserState {
             currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,
-            extDTDresolver: resolver,
+            ext_dtd_resolver: resolver,
             docloc: docloc,
             currentlyexternal:false
         };
     }
 
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
-        match self.extDTDresolver {
+        match self.ext_dtd_resolver {
             None => Err(Error {
                 kind: ErrorKind::Unknown,
                 message: "No external DTD resolver provided.".to_string(),
@@ -99,7 +99,7 @@ impl ParserState {
 }
 
 impl PartialEq for ParserState {
-    fn eq(&self, other: &ParserState) -> bool {
+    fn eq(&self, _: &ParserState) -> bool {
         true
     }
 }

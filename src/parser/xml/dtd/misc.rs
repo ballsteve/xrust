@@ -8,7 +8,7 @@ use crate::parser::combinators::tuple::{tuple2, tuple4, tuple5, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
 use crate::parser::xml::qname::name;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseResult};
 use crate::parser::xml::dtd::pereference::petextreference;
 
 pub(crate) fn nmtoken() -> impl Fn(ParseInput) -> ParseResult<()> {
@@ -17,44 +17,6 @@ pub(crate) fn nmtoken() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 //Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
 pub(crate) fn mixed() -> impl Fn(ParseInput) -> ParseResult<String> {
-    alt2(
-        map(
-            tuple6(
-                tag("("),
-                whitespace0(),
-                tag("#PCDATA"),
-                many0(
-                    tuple4(
-                        whitespace0(),
-                        tag("|"),
-                        whitespace0(),
-                        alt2(
-                            petextreference(),
-                            name()
-                        )
-                    )
-                ),
-                whitespace0(),
-                tag(")*"),
-            ),
-            |_x| "".to_string(),
-        ),
-        map(
-            tuple5(
-                tag("("),
-                whitespace0(),
-                tag("#PCDATA"),
-                whitespace0(),
-                tag(")"),
-            ),
-            |_x| "".to_string(),
-        ),
-    )
-}
-
-//Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
-pub(crate) fn extmixed() -> impl Fn(ParseInput) -> ParseResult<String> {
-    // This version of mixed allows param entities. Only to be used external entities
     alt2(
         map(
             tuple6(

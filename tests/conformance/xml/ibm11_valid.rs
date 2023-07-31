@@ -6,7 +6,7 @@ IBM XML 1.1 test cases
 
 use std::convert::TryFrom;
 use std::fs;
-use xrust::{Document, Error, ErrorKind};
+use xrust::Document;
 use crate::conformance::dtdfileresolve;
 
 #[test]

@@ -1,19 +1,17 @@
 use crate::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
-use crate::parser::combinators::alt::{alt2, alt3, alt4};
+use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
-use crate::parser::combinators::many::{many0, many1};
+use crate::parser::combinators::many::{many0};
 use crate::parser::combinators::map::map;
-use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::take::{take_until, take_while};
-use crate::parser::combinators::tuple::{tuple2, tuple3, tuple6};
+use crate::parser::combinators::take::take_while;
+use crate::parser::combinators::tuple::tuple6;
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::xml::chardata::{chardata, chardata_unicode_codepoint};
+use crate::parser::xml::chardata:: chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
-use crate::parser::xml::reference::{reference, textreference};
-use crate::parser::xml::strings::delimited_string;
+use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::{Node, Value};
 use std::collections::HashMap;
@@ -136,7 +134,7 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                    For a white space character (#x20, #xD, #xA, #x9), append a space character (#x20) to the normalized value.
                    For another character, append the character to the normalized value.
                 */
-                let mut r = rn
+                let r = rn
                     .concat()
                     .replace("\n", " ")
                     .replace("\r", " ")

@@ -1,9 +1,8 @@
 use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::many::many0;
-use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_until_either_or};
-use crate::parser::combinators::tuple::{tuple2, tuple3, tuple5, tuple7};
+use crate::parser::combinators::tuple::{tuple2, tuple3, tuple7};
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::dtd::extsubset::extsubsetdecl;
 

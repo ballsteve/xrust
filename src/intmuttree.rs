@@ -15,7 +15,7 @@ use xrust::qname::QualifiedName;
 use xrust::value::Value;
 use xrust::xdmerror::Error;
 
-pub(crate) type extDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 
 // A document always has a NodeType::Document node as the toplevel node.
@@ -51,7 +51,7 @@ use std::fmt;
 use std::fmt::Formatter;
 use std::rc::{Rc, Weak};
 
-pub(crate) type extDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -169,7 +169,7 @@ impl Document {
 impl
     TryFrom<(
         String,
-        Option<extDTDresolver>,
+        Option<ExtDTDresolver>,
         Option<String>,
     )> for Document
 {
@@ -177,7 +177,7 @@ impl
     fn try_from(
         s: (
             String,
-            Option<extDTDresolver>,
+            Option<ExtDTDresolver>,
             Option<String>,
         ),
     ) -> Result<Self, Self::Error> {
@@ -187,7 +187,7 @@ impl
 impl
     TryFrom<(
         &str,
-        Option<extDTDresolver>,
+        Option<ExtDTDresolver>,
         Option<String>,
     )> for Document
 {
@@ -195,7 +195,7 @@ impl
     fn try_from(
         s: (
             &str,
-            Option<extDTDresolver>,
+            Option<ExtDTDresolver>,
             Option<String>,
         ),
     ) -> Result<Self, Self::Error> {

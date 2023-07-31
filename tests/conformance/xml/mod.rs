@@ -1,5 +1,3 @@
-use xrust::xdmerror::Error;
-
 mod eduni_errata2e_error;
 mod eduni_errata2e_invalid;
 mod eduni_errata2e_notwf;

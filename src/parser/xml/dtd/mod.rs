@@ -24,7 +24,6 @@ use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::Error;
 use crate::parser::xml::dtd::extsubset::extsubset;
 
 pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
@@ -83,21 +82,18 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<(String, Option<String>)> 
             Err(e) => Err(e),
             Ok(((input2, state2), (sid, pid))) => {
                 match state2.clone().resolve(state2.docloc.clone(), sid.clone()) {
-                    Err(e) => {
-                        println!("{:?}", e);
+                    Err(_) => {
                         Err(ParseError::ExtDTDLoadError)
                     }
                     Ok(s) => {
-                        println!("extdtd={:?}", s);
                         match extsubset()((s.as_str(), state2.clone())){
                             Err(e) => {Err(e)}
-                            Ok(((pi, state3), v)) => {
+                            Ok(((_, state3), _)) => {
                                 Ok(((input2, state3), (sid, pid)))
                             }
                         }
                     }
                 }
-                //TODO how to tell folder location?
             }
         }
     }

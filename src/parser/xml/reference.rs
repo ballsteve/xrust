@@ -78,18 +78,14 @@ pub(crate) fn reference() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                                                 Ok(((input1, state1), nodes))
                                             }
                                         }
-                                        Err(e) => Err(NotWellFormed),
+                                        Err(_) => Err(NotWellFormed),
                                     }
                                 }
                             }
                             None => Err(ParseError::MissingGenEntity {
                                 col: state1.currentcol,
                                 row: state1.currentrow,
-                            }),
-                            _ => Err(ParseError::Unknown {
-                                col: state1.currentcol,
-                                row: state1.currentrow,
-                            }),
+                            })
                         }
                         //} else {
                         //    Err(ParseError::Combinator)
@@ -153,18 +149,14 @@ pub(crate) fn textreference() -> impl Fn(ParseInput) -> ParseResult<String> {
                                                 Ok(((input1, state1), res.concat()))
                                             }
                                         }
-                                        Err(e) => Err(NotWellFormed),
+                                        Err(_) => Err(NotWellFormed),
                                     }
                                 }
                             }
                             None => Err(ParseError::MissingGenEntity {
                                 col: state1.currentcol,
                                 row: state1.currentrow,
-                            }),
-                            _ => Err(ParseError::Unknown {
-                                col: state1.currentcol,
-                                row: state1.currentrow,
-                            }),
+                            })
                         }
                         //} else {
                         //    Err(ParseError::Combinator)

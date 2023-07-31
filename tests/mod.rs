@@ -1,5 +1,3 @@
-use std::fs;
-use xrust::Document;
 
 mod conformance;
 mod intmuttree;
@@ -8,6 +6,7 @@ mod intmuttree;
 //use std::fs;
 //use xrust::{Document, Error};
 
+/*
 #[test]
 #[ignore]
 fn bigfile() {
@@ -18,6 +17,7 @@ fn bigfile() {
 
     assert!(testxml.is_ok());
 }
+ */
 
 /*
 #[test]

@@ -12,7 +12,7 @@ use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::is_char;
 use crate::parser::xml::qname::name;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseResult};
 use crate::{Node, Value};
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'

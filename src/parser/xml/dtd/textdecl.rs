@@ -2,7 +2,7 @@ use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple2, tuple5, tuple6, tuple7, tuple8};
+use crate::parser::combinators::tuple::{tuple2, tuple5, tuple6};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
 

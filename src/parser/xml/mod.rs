@@ -8,7 +8,7 @@ mod reference;
 mod strings;
 mod xmldecl;
 
-use crate::intmuttree::{DocumentBuilder, extDTDresolver, RNode, XMLDecl};
+use crate::intmuttree::{DocumentBuilder, ExtDTDresolver, RNode, XMLDecl};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tuple::{tuple3, tuple4};
@@ -24,7 +24,7 @@ pub type XMLDocument = Document;
 
 pub fn parse(
     input: &str,
-    entityresolver: Option<extDTDresolver>,
+    entityresolver: Option<ExtDTDresolver>,
     docloc: Option<String>,
 ) -> Result<XMLDocument, xdmerror::Error> {
     let state = ParserState::new(entityresolver, docloc);
@@ -59,10 +59,6 @@ pub fn parse(
                 ParseError::Validation { .. } => Result::Err(xdmerror::Error {
                     kind: xdmerror::ErrorKind::ParseError,
                     message: "Validation error.".to_string(),
-                }),
-                ParseError::Unknown { .. } => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Unknown error.".to_string(),
                 }),
                 ParseError::MissingNameSpace => Result::Err(xdmerror::Error {
                     kind: xdmerror::ErrorKind::ParseError,

@@ -18,7 +18,6 @@ pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_
 #[cfg(test)]
 mod tests {
     use crate::parser::combinators::tag::tag;
-    use crate::parser::ParseInput;
     use crate::parser::{ParseError, ParserState};
 
     #[test]
