@@ -19,18 +19,20 @@ use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::xmldecl::xmldecl;
 
 pub(crate) fn extsubset() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |(input, state)| {
+    move |(input, mut state)| {
         if state.standalone == true {
             Ok(((input, state),()))
         } else {
+            state.currentlyexternal = true;
             match tuple2(
                 opt(textdecl()),
                 extsubsetdecl()
             )((input, state)){
-                Ok(((input2, state2), (_, _))) => {
+                Ok(((input2, mut state2), (_, _))) => {
                     if !input2.is_empty(){
                         Err(ParseError::NotWellFormed)
                     } else {
+                        state2.currentlyexternal = false;
                         Ok(((input2, state2), ()))
                     }
                 }

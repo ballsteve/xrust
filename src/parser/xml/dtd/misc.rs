@@ -1,4 +1,4 @@
-use crate::parser::combinators::alt::{alt2, alt3};
+use crate::parser::combinators::alt::{alt2, alt3, alt4};
 use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -8,7 +8,8 @@ use crate::parser::combinators::tuple::{tuple2, tuple4, tuple5, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
 use crate::parser::xml::qname::name;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::xml::dtd::pereference::petextreference;
 
 pub(crate) fn nmtoken() -> impl Fn(ParseInput) -> ParseResult<()> {
     map(many1(take_while(|c| is_namechar(&c))), |_x| ())
@@ -22,7 +23,55 @@ pub(crate) fn mixed() -> impl Fn(ParseInput) -> ParseResult<String> {
                 tag("("),
                 whitespace0(),
                 tag("#PCDATA"),
-                many0(tuple4(whitespace0(), tag("|"), whitespace0(), name())),
+                many0(
+                    tuple4(
+                        whitespace0(),
+                        tag("|"),
+                        whitespace0(),
+                        alt2(
+                            petextreference(),
+                            name()
+                        )
+                    )
+                ),
+                whitespace0(),
+                tag(")*"),
+            ),
+            |_x| "".to_string(),
+        ),
+        map(
+            tuple5(
+                tag("("),
+                whitespace0(),
+                tag("#PCDATA"),
+                whitespace0(),
+                tag(")"),
+            ),
+            |_x| "".to_string(),
+        ),
+    )
+}
+
+//Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
+pub(crate) fn extmixed() -> impl Fn(ParseInput) -> ParseResult<String> {
+    // This version of mixed allows param entities. Only to be used external entities
+    alt2(
+        map(
+            tuple6(
+                tag("("),
+                whitespace0(),
+                tag("#PCDATA"),
+                many0(
+                    tuple4(
+                        whitespace0(),
+                        tag("|"),
+                        whitespace0(),
+                        alt2(
+                            petextreference(),
+                            name()
+                        )
+                    )
+                ),
                 whitespace0(),
                 tag(")*"),
             ),
@@ -45,7 +94,11 @@ pub(crate) fn mixed() -> impl Fn(ParseInput) -> ParseResult<String> {
 pub(crate) fn children() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
         tuple2(
-            alt2(choice(), seq()),
+            alt3(
+                petextreference(),
+                choice(),
+                seq()
+            ),
             opt(alt3(tag("?"), tag("*"), tag("+"))),
         ),
         |_x| "".to_string(),
@@ -57,7 +110,12 @@ fn cp() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |input| {
         map(
             tuple2(
-                alt3(name(), choice(), seq()),
+                alt4(
+                    petextreference(),
+                    name(),
+                    choice(),
+                    seq()
+                ),
                 opt(alt3(tag("?"), tag("*"), tag("+"))),
             ),
             |_x| "".to_string(),
@@ -72,7 +130,12 @@ fn choice() -> impl Fn(ParseInput) -> ParseResult<String> {
                 tag("("),
                 whitespace0(),
                 cp(),
-                many0(tuple4(whitespace0(), tag("|"), whitespace0(), cp())),
+                many0(
+                    alt2(
+                        map(petextreference(), |x| ((),(),(),x)),
+                        tuple4(whitespace0(), tag("|"), whitespace0(), cp())
+                    )
+                ),
                 whitespace0(),
                 tag(")"),
             ),

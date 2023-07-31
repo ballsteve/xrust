@@ -57,3 +57,45 @@ pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
         }
     }
 }
+
+
+pub(crate) fn petextreference() -> impl Fn(ParseInput) -> ParseResult<String> {
+    move |(input, state)| {
+        let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
+        match e {
+            Err(e) => Err(e),
+            Ok(((input1, state1), entitykey)) => {
+                match state1.currentlyexternal {
+                    /* Are we in an external DTD? Param entities not allowed anywhere else. */
+                    false => Err(ParseError::NotWellFormed),
+                    true => {
+                        match state1.clone().dtd.paramentities.get(&entitykey as &str) {
+                            Some((entval, _)) => {
+                                if state1.currententitydepth >= state1.maxentitydepth {
+                                    //attempting to exceed expansion depth
+                                    Err(ParseError::EntityDepth {
+                                        col: state1.currentcol,
+                                        row: state1.currentrow,
+                                    })
+                                } else {
+                                    //Parse the entity, using the parserstate which has information on namespaces
+                                    let mut tempstate = state1.clone();
+                                    tempstate.currententitydepth += 1;
+                                    Ok(((input1, state1), entval.clone()))
+                                }
+                            }
+                            None => Err(ParseError::MissingParamEntity {
+                                col: state1.currentcol,
+                                row: state1.currentrow,
+                            }),
+                            _ => Err(ParseError::Unknown {
+                                col: state1.currentcol,
+                                row: state1.currentrow,
+                            }),
+                        }
+                    }
+                }
+            }
+        }
+    }
+}

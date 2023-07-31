@@ -58,6 +58,11 @@ pub(crate) struct ParserState {
     /* entity downloader function */
     extDTDresolver: Option<extDTDresolver>,
     docloc: Option<String>,
+    /*
+    ParamEntities are not allowed in internal subsets, but they are allowed in external DTDs,
+    so we need to track when we are currently in the main document or outside it.
+     */
+    currentlyexternal: bool
 }
 
 impl ParserState {
@@ -78,6 +83,7 @@ impl ParserState {
             currentrow: 1,
             extDTDresolver: resolver,
             docloc: docloc,
+            currentlyexternal:false
         };
     }
 
