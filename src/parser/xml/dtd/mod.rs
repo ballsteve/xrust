@@ -86,7 +86,7 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<(String, Option<String>)> 
                         Err(ParseError::ExtDTDLoadError)
                     }
                     Ok(s) => {
-                        match extsubset()((s.as_str(), state2.clone())){
+                        match extsubset()((s.as_str(), state2)){
                             Err(e) => {Err(e)}
                             Ok(((_, state3), _)) => {
                                 Ok(((input2, state3), (sid, pid)))

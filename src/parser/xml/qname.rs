@@ -32,7 +32,7 @@ fn prefixed_name() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
 pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
     map(
         tuple2(
-            wellformed(take_one(), |c| is_ncnamestartchar(&c)),
+            wellformed(take_one(), |c| is_ncnamestartchar(c)),
             opt(take_while(|c| is_ncnamechar(&c))),
         ),
         |(a, b)| [a.to_string(), b.unwrap_or_default()].concat(),
@@ -42,7 +42,7 @@ pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
 pub(crate) fn name() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
         tuple2(
-            wellformed(take_one(), |c| is_namestartchar(&c)),
+            wellformed(take_one(), |c| is_namestartchar(c)),
             opt(take_while(|c| is_namechar(&c))),
         ),
         |(nsc, nc)| match nc {

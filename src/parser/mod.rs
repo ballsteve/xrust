@@ -69,8 +69,8 @@ impl ParserState {
     pub fn new(
         resolver: Option<ExtDTDresolver>,
         docloc: Option<String>,
-    ) -> ParserState {
-        return ParserState {
+    ) -> Self {
+        ParserState {
             dtd: DTD::new(),
             standalone: false,
             /*
@@ -82,9 +82,9 @@ impl ParserState {
             currentcol: 1,
             currentrow: 1,
             ext_dtd_resolver: resolver,
-            docloc: docloc,
+            docloc,
             currentlyexternal:false
-        };
+        }
     }
 
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {

@@ -136,10 +136,10 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                 */
                 let r = rn
                     .concat()
-                    .replace("\n", " ")
-                    .replace("\r", " ")
-                    .replace("\t", " ")
-                    .replace("\n", " ");
+                    .replace('\n', " ")
+                    .replace('\r', " ")
+                    .replace('\t', " ")
+                    .replace('\n', " ");
                 //NEL character cannot be in attributes.
                 if r.contains('\u{0085}') {
                     Err(ParseError::NotWellFormed)

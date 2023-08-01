@@ -18,7 +18,7 @@ use crate::parser::xml::misc::{comment, processing_instruction};
 
 pub(crate) fn extsubset() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |(input, mut state)| {
-        if state.standalone == true {
+        if state.standalone {
             Ok(((input, state),()))
         } else {
             state.currentlyexternal = true;
