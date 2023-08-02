@@ -76,10 +76,10 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        separated_list1(
+        inspect("expr", separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
             expr_single::<N, F>(),
-        ),
+        )),
         |v| tc_sequence(v),
     ))
 }
@@ -284,14 +284,13 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        separated_list1(
+        inspect("or_expr", separated_list1(
             map(tuple3(xpwhitespace(), tag("or"), xpwhitespace()), |_| ()),
-            and_expr::<N, F>(),
-        ),
-        |v| {
+            inspect("or_expr: and", and_expr::<N, F>()),
+        )),
+        |mut v| {
             if v.len() == 1 {
-                // TODO: This is inefficient, but Rust is not allowing v[0]
-                tc_sequence(v)
+		v.pop().unwrap()
             } else {
                 tc_or(v)
             }
@@ -305,10 +304,10 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        separated_list1(
+        inspect("and_expr", separated_list1(
             map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),
             comparison_expr::<N, F>(),
-        ),
+        )),
         |v| {
             if v.len() == 1 {
                 // TODO: This is inefficient, but Rust is not allowing v[0]
@@ -372,10 +371,10 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        separated_list1(
+        inspect("stringconcat", separated_list1(
             map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
             range_expr::<N, F>(),
-        ),
+        )),
         |v| {
             if v.len() == 1 {
                 // TODO: rust doesn't like v[0], see above
@@ -500,13 +499,13 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        separated_list1(
+        inspect("union", separated_list1(
             map(
                 tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
                 |_| (),
             ),
             intersectexcept_expr::<N, F>(),
-        ),
+        )),
         |v| {
             if v.len() == 1 {
                 // TODO: see above
@@ -771,7 +770,7 @@ fn value_expr<'a, N: Node + 'a, F>(
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(map(
+    Box::new(inspect("value_expr", map(
         pair(
             path_expr::<N, F>(),
             many0(tuple2(tag("!"), path_expr::<N, F>())),
@@ -783,7 +782,7 @@ where
                 not_implemented("value_expr".to_string())
             }
         },
-    ))
+    )))
 }
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
@@ -791,11 +790,11 @@ fn path_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Com
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(alt3(
+    Box::new(inspect("path_expr", alt3(
         absolutedescendant_expr::<N, F>(),
         absolutepath_expr::<N, F>(),
         relativepath_expr::<N, F>(),
-    ))
+    )))
 }
 
 // ('//' RelativePathExpr?)
@@ -845,13 +844,13 @@ where
 {
     Box::new(map(
         pair(
-            step_expr::<N, F>(),
+            inspect("relpath: looking for first step", step_expr::<N, F>()),
             many0(tuple2(
-                alt2(
-                    map(tuple3(xpwhitespace(), tag("/"), xpwhitespace()), |_| "/"),
+                inspect("relpath: looking for tag separator", alt2(
                     map(tuple3(xpwhitespace(), tag("//"), xpwhitespace()), |_| "//"),
-                ),
-                step_expr::<N, F>(),
+                    map(tuple3(xpwhitespace(), tag("/"), xpwhitespace()), |_| "/"),
+                )),
+                inspect("relpath: looking for remaining steps", step_expr::<N, F>()),
             )),
         ),
         |(a, b)| {
@@ -1692,50 +1691,50 @@ fn take_until_balanced(
 
         // Assume the open and close phrases are the same length
         loop {
-            eprintln!(
-                "TUB: looking for open in \"{}\", bc=={}",
-                input, bracket_counter
-            );
+//            eprintln!(
+//                "TUB: looking for open in \"{}\", bc=={}",
+//                input, bracket_counter
+//            );
             counter += 1;
             if counter > 1000 {
-                eprintln!("TUB: too many loops");
+//                eprintln!("TUB: too many loops");
                 return Err(ParseError::Unknown { row: 0, col: 0 });
             }
             match (input.as_str().find(open), input.as_str().find(close)) {
                 (Some(0), _) => {
-                    eprintln!("TUB: found open, bracket counter=={}", bracket_counter);
+//                    eprintln!("TUB: found open, bracket counter=={}", bracket_counter);
                     bracket_counter += 1;
                     let _: Vec<_> = (&mut input).take(open.len()).collect();
-                    eprintln!("TUB: input now \"{}\"", input);
+//                    eprintln!("TUB: input now \"{}\"", input);
                     match (input.as_str().find(&open), input.as_str().find(&close)) {
                         (_, None) => {
                             // Scenario 1
-                            eprintln!("TUB: scenario 1");
+//                            eprintln!("TUB: scenario 1");
                             return Err(ParseError::Unbalanced);
                         }
                         (Some(o), Some(c)) => {
                             // Scenario 3/4
                             if o > c {
                                 // Scenario 3
-                                eprintln!("TUB: scenario 3");
+//                                eprintln!("TUB: scenario 3");
                                 if bracket_counter == 1 {
                                     let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-                                    eprintln!("TUB: returning, input now \"{}\"", input);
+//                                    eprintln!("TUB: returning, input now \"{}\"", input);
                                     return Ok((input, ()));
                                 } else {
                                     return Err(ParseError::Unbalanced);
                                 }
                             } else {
                                 // Scenario 4
-                                eprintln!("TUB: scenario 4");
+//                                eprintln!("TUB: scenario 4");
                                 bracket_counter += 1;
                                 let _: Vec<_> = (&mut input).take(o + open.len()).collect();
-                                eprintln!("TUB: input now \"{}\"", input);
+//                                eprintln!("TUB: input now \"{}\"", input);
                             }
                         }
                         (_, Some(c)) => {
                             // Scenario 2
-                            eprintln!("TUB: scenario 2");
+//                            eprintln!("TUB: scenario 2");
                             match bracket_counter.cmp(&1) {
                                 Ordering::Greater => {
                                     bracket_counter -= 1;
@@ -1743,7 +1742,7 @@ fn take_until_balanced(
                                 }
                                 Ordering::Equal => {
                                     let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-                                    eprintln!("TUB: returning, input now \"{}\"", input);
+//                                    eprintln!("TUB: returning, input now \"{}\"", input);
                                     return Ok((input, ()));
                                 }
                                 Ordering::Less => {
@@ -1752,13 +1751,13 @@ fn take_until_balanced(
                             }
                         }
                         _ => {
-                            eprintln!("TUB: unhandled scenario")
+//                            eprintln!("TUB: unhandled scenario")
                         }
                     }
                 }
                 (None, Some(c)) => {
                     // Scenario 2
-                    eprintln!("TUB: scenario 2/2");
+//                    eprintln!("TUB: scenario 2/2");
                     match bracket_counter.cmp(&1) {
                         Ordering::Greater => {
                             bracket_counter -= 1;
@@ -1766,7 +1765,7 @@ fn take_until_balanced(
                         }
                         Ordering::Equal => {
                             let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-                            eprintln!("TUB: returning, input now \"{}\"", input);
+//                            eprintln!("TUB: returning, input now \"{}\"", input);
                             return Ok((input, ()));
                         }
                         Ordering::Less => {

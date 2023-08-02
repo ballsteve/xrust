@@ -52,12 +52,9 @@ where
     P4: Fn(ParseInput) -> ParseResult<A>,
 {
     move |mut input| {
-        input.stack_push(format!("alt4 - input=\"{}\"", input));
-        eprintln!("alt4: try parser1");
         match parser1(input.clone()) {
             Ok(parse_result) => Ok(parse_result),
             Err(ParseError::Combinator) => {
-                eprintln!("alt4: try parser 2");
                 match parser2(input.clone()) {
                     Ok(parse_result2) => Ok(parse_result2),
                     Err(ParseError::Combinator) => match parser3(input.clone()) {
@@ -71,10 +68,7 @@ where
                     Err(err) => Err(err),
                 }
             }
-            Err(err) => {
-                eprintln!("alt4: parser 1 non-combinator error");
-                Err(err)
-            }
+            Err(err) => Err(err),
         }
     }
 }

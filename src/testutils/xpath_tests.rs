@@ -394,6 +394,14 @@ macro_rules! xpath_tests (
 		      .sequence(vec![$y()])
 		      .build()
 	    ).expect("evaluation failed");
+	    for i in 0..s.len() {
+		match &*s[i] {
+		    Item::Node(n) => {
+			eprintln!("item {} is a {} element with id {}", i, n.name(), n.get_attribute(&QualifiedName::new(None, None, "id".to_string())))
+		    }
+		    _ => eprintln!("item {} not a node", i)
+		}
+	    }
 	    assert_eq!(s.len(), 10);
 	    for t in s {
 		match &*t {

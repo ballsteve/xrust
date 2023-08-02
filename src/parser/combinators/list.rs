@@ -62,7 +62,7 @@ where
     move |mut input| {
         let mut res = Vec::new();
 
-        eprintln!("sep1: find first element");
+//        eprintln!("sep1: find first element");
         match f(input.clone()) {
             Err(e) => return Err(e),
             Ok((i1, o)) => {
@@ -71,11 +71,11 @@ where
             }
         }
 
-        eprintln!("sep1: got first element");
+//        eprintln!("sep1: got first element");
         loop {
             match sep(input.clone()) {
                 Err(ParseError::Combinator) => {
-                    eprintln!("sep1 return due to end of input 1");
+//                    eprintln!("sep1 return due to end of input 1");
                     return Ok((input, res));
                 }
                 Err(e) => return Err(e),
@@ -88,7 +88,7 @@ where
 
                     match f(i1) {
                         Err(ParseError::Combinator) => {
-                            eprintln!("sep1: return due to end of input 2");
+//                            eprintln!("sep1: return due to end of input 2");
                             return Ok((input, res));
                         }
                         Err(e) => return Err(e),
