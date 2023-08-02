@@ -46,6 +46,7 @@ pub(crate) struct ParserState {
      */
     namespace: Vec<HashMap<String, String>>,
     standalone: bool,
+    xmlversion: String,
     /*
     The below will track Entity Expansion, ensuring that there are no recursive entities and
     some protections from zip bombs
@@ -73,6 +74,7 @@ impl ParserState {
         ParserState {
             dtd: DTD::new(),
             standalone: false,
+            xmlversion: "1.0".to_string(), // Always assume 1.0
             /*
             The below hashmap
              */

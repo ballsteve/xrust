@@ -17,7 +17,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tuple7(
             tag("<!ENTITY"),
             whitespace1(),
-            qualname(),
+            wellformed(qualname(),|n| !n.to_string().contains(":") ),
             whitespace1(),
             alt2(
                 delimited(tag("'"), take_until("'"), tag("'")),

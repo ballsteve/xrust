@@ -19,7 +19,7 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             whitespace1(),
             tag("%"),
             whitespace1(),
-            qualname(),
+            wellformed(qualname(),|n| !n.to_string().contains(":") ),
             whitespace1(),
             alt2(
                 delimited(tag("'"), take_until("'"), tag("'")),

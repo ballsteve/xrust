@@ -7,6 +7,7 @@ use crate::parser::combinators::tuple::{tuple4, tuple7, tuple8};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::{ParseInput, ParseResult};
+use crate::parser::combinators::wellformed::wellformed;
 
 //NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
 pub(crate) fn notationtype() -> impl Fn(ParseInput) -> ParseResult<()> {
@@ -29,7 +30,7 @@ pub(crate) fn ndatadecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match tuple7(
         tag("<!NOTATION"),
         whitespace1(),
-        qualname(),
+        wellformed(qualname(),|n| !n.to_string().contains(":") ),
         whitespace1(),
         take_until(">"), //contentspec - TODO Build out.
         whitespace0(),

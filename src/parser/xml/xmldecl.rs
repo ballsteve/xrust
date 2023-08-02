@@ -58,7 +58,8 @@ fn xmldeclstandalone() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
-    map(
+    move |(input, state)| {
+        match
         tuple8(
             tag("<?xml"),
             whitespace1(),
@@ -78,11 +79,17 @@ pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
             whitespace0(),
             tag("?>"),
             whitespace0(),
-        ),
-        |(_, _, ver, enc, sta, _, _, _)| XMLDecl {
-            version: ver,
-            encoding: enc,
-            standalone: sta,
-        },
-    )
+        )((input, state)){
+            Ok(((input1, mut state1), (_, _, ver, enc, sta, _, _, _))) => {
+                state1.xmlversion = ver.clone();
+                let res = XMLDecl {
+                    version: ver,
+                    encoding: enc,
+                    standalone: sta,
+                };
+                Ok(((input1, state1), res))
+            },
+            Err(e) => Err(e)
+        }
+    }
 }

@@ -75,6 +75,7 @@ fn xibm105valid_p04ibm04av01xml() {
     assert!(testxml.is_ok());
 }
 
+
 #[test]
 #[ignore]
 fn xibm105valid_p05ibm05v01xml() {
@@ -93,8 +94,13 @@ fn xibm105valid_p05ibm05v01xml() {
     assert!(testxml.is_ok());
 }
 
+/*
 #[test]
 fn xibm105valid_p05ibm05v02xml() {
+    /*
+        This test is deliberately ignored.
+        We only support namespace aware xml documents, and that means no colons in processing instructions.
+    */
     /*
         Test ID:x-ibm-1-0.5-valid-P05-ibm05v02.xml
         Test URI:ibm05v02.xml
@@ -109,6 +115,7 @@ fn xibm105valid_p05ibm05v02xml() {
     ));
     assert!(testxml.is_ok());
 }
+ */
 
 #[test]
 #[ignore]
