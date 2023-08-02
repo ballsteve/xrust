@@ -135,7 +135,7 @@ impl<N: Node> From<Item<N>> for Sequence<N> {
 /// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 ///
 /// Every document must have a single node as it's toplevel node that is of type "Document".
-#[derive(Copy, Clone, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub enum NodeType {
     Document,
     Element,

@@ -15,10 +15,11 @@ fn rmte3e06a() {
         Description:Default values for IDREF attributes must match Name.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06a.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -31,10 +32,11 @@ fn rmte3e06b() {
         Description:Default values for ENTITY attributes must match Name.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06b.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -47,10 +49,11 @@ fn rmte3e06c() {
         Description:Default values for IDREFS attributes must match Names.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06c.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -63,10 +66,11 @@ fn rmte3e06d() {
         Description:Default values for ENTITIES attributes must match Names.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06d.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -80,10 +84,11 @@ fn rmte3e06e() {
         Description:Default values for NMTOKEN attributes must match Nmtoken.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06e.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -97,10 +102,11 @@ fn rmte3e06f() {
         Description:Default values for NMTOKENS attributes must match Nmtokens.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06f.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -114,10 +120,11 @@ fn rmte3e06g() {
         Description:Default values for NOTATION attributes must match one of the enumerated values.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06g.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -131,10 +138,11 @@ fn rmte3e06h() {
         Description:Default values for enumerated attributes must match one of the enumerated values.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06h.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -147,9 +155,10 @@ fn rmte3e13() {
         Description:Even internal parameter entity references are enough to make undeclared entities into mere validity errors rather than well-formedness errors.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E13.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

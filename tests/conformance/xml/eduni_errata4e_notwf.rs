@@ -15,10 +15,11 @@ fn xibm105notwf_p04ibm04n02xml() {
         Description:Tests an element with an illegal NameStartChar: #0x333
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n02.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -31,10 +32,11 @@ fn xibm105notwf_p04ibm04n03xml() {
         Description:Tests an element with an illegal NameStartChar: #0x369
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -47,10 +49,11 @@ fn xibm105notwf_p04ibm04n04xml() {
         Description:Tests an element with an illegal NameStartChar: #0x37E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -63,10 +66,11 @@ fn xibm105notwf_p04ibm04n05xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2000
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -79,10 +83,11 @@ fn xibm105notwf_p04ibm04n06xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2001
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -95,10 +100,11 @@ fn xibm105notwf_p04ibm04n07xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2002
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n07.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -111,10 +117,11 @@ fn xibm105notwf_p04ibm04n08xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2005
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n08.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -127,10 +134,11 @@ fn xibm105notwf_p04ibm04n09xml() {
         Description:Tests an element with an illegal NameStartChar: #0x200B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n09.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -143,10 +151,11 @@ fn xibm105notwf_p04ibm04n10xml() {
         Description:Tests an element with an illegal NameStartChar: #0x200E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n10.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -159,10 +168,11 @@ fn xibm105notwf_p04ibm04n11xml() {
         Description:Tests an element with an illegal NameStartChar: #0x200F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n11.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -175,10 +185,11 @@ fn xibm105notwf_p04ibm04n12xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2069
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n12.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -191,10 +202,11 @@ fn xibm105notwf_p04ibm04n13xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2190
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n13.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -207,10 +219,11 @@ fn xibm105notwf_p04ibm04n14xml() {
         Description:Tests an element with an illegal NameStartChar: #0x23FF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n14.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -223,10 +236,11 @@ fn xibm105notwf_p04ibm04n15xml() {
         Description:Tests an element with an illegal NameStartChar: #0x280F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n15.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -239,10 +253,11 @@ fn xibm105notwf_p04ibm04n16xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2A00
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n16.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -255,10 +270,11 @@ fn xibm105notwf_p04ibm04n17xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2EDC
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n17.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -271,10 +287,11 @@ fn xibm105notwf_p04ibm04n18xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2B00
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n18.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -287,10 +304,11 @@ fn xibm105notwf_p04ibm04n19xml() {
         Description:Tests an element with an illegal NameStartChar: #0x2BFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n19.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -303,10 +321,11 @@ fn xibm105notwf_p04ibm04n20xml() {
         Description:Tests an element with an illegal NameStartChar: #0x3000
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n20.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -320,10 +339,11 @@ fn xibm105notwf_p04ibm04n21xml() {
         Description:Tests an element with an illegal NameStartChar: #0xD800
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n21.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -337,10 +357,11 @@ fn xibm105notwf_p04ibm04n22xml() {
         Description:Tests an element with an illegal NameStartChar: #0xD801
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n22.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -354,10 +375,11 @@ fn xibm105notwf_p04ibm04n23xml() {
         Description:Tests an element with an illegal NameStartChar: #0xDAFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n23.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -371,10 +393,11 @@ fn xibm105notwf_p04ibm04n24xml() {
         Description:Tests an element with an illegal NameStartChar: #0xDFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n24.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -387,10 +410,11 @@ fn xibm105notwf_p04ibm04n25xml() {
         Description:Tests an element with an illegal NameStartChar: #0xEFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n25.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -403,10 +427,11 @@ fn xibm105notwf_p04ibm04n26xml() {
         Description:Tests an element with an illegal NameStartChar: #0xF1FF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n26.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -419,10 +444,11 @@ fn xibm105notwf_p04ibm04n27xml() {
         Description:Tests an element with an illegal NameStartChar: #0xF8FF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n27.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -435,10 +461,11 @@ fn xibm105notwf_p04ibm04n28xml() {
         Description:Tests an element with an illegal NameStartChar: #0xFFFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n28.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -451,10 +478,11 @@ fn xibm105notwf_p04aibm04an01xml() {
         Description:Tests an element with an illegal NameChar: #xB8
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -467,10 +495,11 @@ fn xibm105notwf_p04aibm04an02xml() {
         Description:Tests an element with an illegal NameChar: #0xA1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an02.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -483,10 +512,11 @@ fn xibm105notwf_p04aibm04an03xml() {
         Description:Tests an element with an illegal NameChar: #0xAF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -499,10 +529,11 @@ fn xibm105notwf_p04aibm04an04xml() {
         Description:Tests an element with an illegal NameChar: #0x37E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -515,10 +546,11 @@ fn xibm105notwf_p04aibm04an05xml() {
         Description:Tests an element with an illegal NameChar: #0x2000
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -531,10 +563,11 @@ fn xibm105notwf_p04aibm04an06xml() {
         Description:Tests an element with an illegal NameChar: #0x2001
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -547,10 +580,11 @@ fn xibm105notwf_p04aibm04an07xml() {
         Description:Tests an element with an illegal NameChar: #0x2002
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an07.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -563,10 +597,11 @@ fn xibm105notwf_p04aibm04an08xml() {
         Description:Tests an element with an illegal NameChar: #0x2005
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an08.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -579,10 +614,11 @@ fn xibm105notwf_p04aibm04an09xml() {
         Description:Tests an element with an illegal NameChar: #0x200B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an09.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -595,10 +631,11 @@ fn xibm105notwf_p04aibm04an10xml() {
         Description:Tests an element with an illegal NameChar: #0x200E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an10.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -611,10 +648,11 @@ fn xibm105notwf_p04aibm04an11xml() {
         Description:Tests an element with an illegal NameChar: #0x2038
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an11.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -627,10 +665,11 @@ fn xibm105notwf_p04aibm04an12xml() {
         Description:Tests an element with an illegal NameChar: #0x2041
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an12.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -643,10 +682,11 @@ fn xibm105notwf_p04aibm04an13xml() {
         Description:Tests an element with an illegal NameChar: #0x2190
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an13.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -659,10 +699,11 @@ fn xibm105notwf_p04aibm04an14xml() {
         Description:Tests an element with an illegal NameChar: #0x23FF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an14.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -675,10 +716,11 @@ fn xibm105notwf_p04aibm04an15xml() {
         Description:Tests an element with an illegal NameChar: #0x280F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an15.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -691,10 +733,11 @@ fn xibm105notwf_p04aibm04an16xml() {
         Description:Tests an element with an illegal NameChar: #0x2A00
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an16.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -707,10 +750,11 @@ fn xibm105notwf_p04aibm04an17xml() {
         Description:Tests an element with an illegal NameChar: #0xFDD0
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an17.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -723,10 +767,11 @@ fn xibm105notwf_p04aibm04an18xml() {
         Description:Tests an element with an illegal NameChar: #0xFDEF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an18.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -739,10 +784,11 @@ fn xibm105notwf_p04aibm04an19xml() {
         Description:Tests an element with an illegal NameChar: #0x2FFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an19.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -755,10 +801,11 @@ fn xibm105notwf_p04aibm04an20xml() {
         Description:Tests an element with an illegal NameChar: #0x3000
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an20.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -772,10 +819,11 @@ fn xibm105notwf_p04aibm04an21xml() {
         Description:Tests an element with an illegal NameChar: #0xD800
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an21.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -789,10 +837,11 @@ fn xibm105notwf_p04aibm04an22xml() {
         Description:Tests an element with an illegal NameChar: #0xD801
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an22.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -806,10 +855,11 @@ fn xibm105notwf_p04aibm04an23xml() {
         Description:Tests an element with an illegal NameChar: #0xDAFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an23.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -823,10 +873,11 @@ fn xibm105notwf_p04aibm04an24xml() {
         Description:Tests an element with an illegal NameChar: #0xDFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an24.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -839,10 +890,11 @@ fn xibm105notwf_p04aibm04an25xml() {
         Description:Tests an element with an illegal NameChar: #0xEFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an25.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -855,10 +907,11 @@ fn xibm105notwf_p04aibm04an26xml() {
         Description:Tests an element with an illegal NameChar: #0xF1FF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an26.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -871,10 +924,11 @@ fn xibm105notwf_p04aibm04an27xml() {
         Description:Tests an element with an illegal NameChar: #0xF8FF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an27.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -887,10 +941,11 @@ fn xibm105notwf_p04aibm04an28xml() {
         Description:Tests an element with an illegal NameChar: #0xFFFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an28.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -903,10 +958,11 @@ fn xibm105notwf_p05ibm05n01xml() {
         Description:Tests an element with an illegal Name containing #0x0B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05n01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -919,10 +975,11 @@ fn xibm105notwf_p05ibm05n02xml() {
         Description:Tests an element with an illegal Name containing #0x300
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05n02.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -935,10 +992,11 @@ fn xibm105notwf_p05ibm05n03xml() {
         Description:Tests an element with an illegal Name containing #0x36F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -951,10 +1009,11 @@ fn xibm105notwf_p05ibm05n04xml() {
         Description:Tests an element with an illegal Name containing #0x203F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -967,10 +1026,11 @@ fn xibm105notwf_p05ibm05n05xml() {
         Description:Tests an element with an illegal Name containing #x2040
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05n05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -983,9 +1043,10 @@ fn xibm105notwf_p05ibm05n06xml() {
         Description:Tests an element with an illegal Name containing #0xB7
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05n06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

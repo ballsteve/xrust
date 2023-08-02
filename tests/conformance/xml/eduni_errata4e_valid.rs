@@ -15,10 +15,11 @@ fn xrmt008b() {
         Description:a document with version=1.7, legal in XML 1.0 from 5th edition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -31,10 +32,11 @@ fn xrmt5014a() {
         Description:Has a "long s" in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014a.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -48,10 +50,11 @@ fn xibm105valid_p04ibm04v01xml() {
         Description:This test case covers legal NameStartChars character ranges plus discrete legal characters for production 04.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04v01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -64,10 +67,11 @@ fn xibm105valid_p04ibm04av01xml() {
         Description:This test case covers legal NameChars character ranges plus discrete legal characters for production 04a.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04av01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -81,10 +85,11 @@ fn xibm105valid_p05ibm05v01xml() {
         Description:This test case covers legal Element Names as per production 5.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -97,10 +102,11 @@ fn xibm105valid_p05ibm05v02xml() {
         Description:This test case covers legal PITarget (Names) as per production 5.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v02.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -114,10 +120,11 @@ fn xibm105valid_p05ibm05v03xml() {
         Description:This test case covers legal Attribute (Names) as per production 5.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -131,10 +138,11 @@ fn xibm105valid_p05ibm05v04xml() {
         Description:This test case covers legal ID/IDREF (Names) as per production 5.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -148,10 +156,11 @@ fn xibm105valid_p05ibm05v05xml() {
         Description:This test case covers legal ENTITY (Names) as per production 5.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm05v05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -164,10 +173,11 @@ fn xibm105valid_p047ibm07v01xml() {
         Description:This test case covers legal NMTOKEN Name character ranges plus discrete legal characters for production 7.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm07v01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -180,10 +190,11 @@ fn ibmvalid_p85ibm85n03xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0132 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -196,10 +207,11 @@ fn ibmvalid_p85ibm85n04xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0133 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -212,10 +224,11 @@ fn ibmvalid_p85ibm85n05xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x013F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -228,10 +241,11 @@ fn ibmvalid_p85ibm85n06xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0140 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -244,10 +258,11 @@ fn ibmvalid_p85ibm85n07xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0149 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n07.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -260,10 +275,11 @@ fn ibmvalid_p85ibm85n08xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x017F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n08.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -276,10 +292,11 @@ fn ibmvalid_p85ibm85n09xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01c4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n09.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -292,10 +309,11 @@ fn ibmvalid_p85ibm85n10xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01CC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n10.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -308,10 +326,11 @@ fn ibmvalid_p85ibm85n100xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0BB6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n100.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -324,10 +343,11 @@ fn ibmvalid_p85ibm85n101xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0BBA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n101.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -340,10 +360,11 @@ fn ibmvalid_p85ibm85n102xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C0D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n102.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -356,10 +377,11 @@ fn ibmvalid_p85ibm85n103xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n103.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -372,10 +394,11 @@ fn ibmvalid_p85ibm85n104xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n104.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -388,10 +411,11 @@ fn ibmvalid_p85ibm85n105xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n105.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -404,10 +428,11 @@ fn ibmvalid_p85ibm85n106xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C5F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n106.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -420,10 +445,11 @@ fn ibmvalid_p85ibm85n107xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C62 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n107.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -436,10 +462,11 @@ fn ibmvalid_p85ibm85n108xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C8D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n108.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -452,10 +479,11 @@ fn ibmvalid_p85ibm85n109xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0C91 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n109.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -468,10 +496,11 @@ fn ibmvalid_p85ibm85n11xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01F1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n11.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -484,10 +513,11 @@ fn ibmvalid_p85ibm85n110xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0CA9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n110.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -500,10 +530,11 @@ fn ibmvalid_p85ibm85n111xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0CB4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n111.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -516,10 +547,11 @@ fn ibmvalid_p85ibm85n112xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0CBA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n112.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -532,10 +564,11 @@ fn ibmvalid_p85ibm85n113xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0CDF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n113.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -548,10 +581,11 @@ fn ibmvalid_p85ibm85n114xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0CE2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n114.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -564,10 +598,11 @@ fn ibmvalid_p85ibm85n115xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0D0D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n115.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -580,10 +615,11 @@ fn ibmvalid_p85ibm85n116xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0D11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n116.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -596,10 +632,11 @@ fn ibmvalid_p85ibm85n117xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0D29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n117.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -612,10 +649,11 @@ fn ibmvalid_p85ibm85n118xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0D3A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n118.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -628,10 +666,11 @@ fn ibmvalid_p85ibm85n119xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0D62 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n119.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -644,10 +683,11 @@ fn ibmvalid_p85ibm85n12xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01F3 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n12.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -660,10 +700,11 @@ fn ibmvalid_p85ibm85n120xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E2F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n120.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -676,10 +717,11 @@ fn ibmvalid_p85ibm85n121xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E31 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n121.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -692,10 +734,11 @@ fn ibmvalid_p85ibm85n122xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n122.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -708,10 +751,11 @@ fn ibmvalid_p85ibm85n123xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E46 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n123.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -724,10 +768,11 @@ fn ibmvalid_p85ibm85n124xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E83 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n124.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -740,10 +785,11 @@ fn ibmvalid_p85ibm85n125xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E85 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n125.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -756,10 +802,11 @@ fn ibmvalid_p85ibm85n126xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E89 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n126.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -772,10 +819,11 @@ fn ibmvalid_p85ibm85n127xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E8B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n127.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -788,10 +836,11 @@ fn ibmvalid_p85ibm85n128xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E8E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n128.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -804,10 +853,11 @@ fn ibmvalid_p85ibm85n129xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0E98 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n129.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -820,10 +870,11 @@ fn ibmvalid_p85ibm85n13xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01F6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n13.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -836,10 +887,11 @@ fn ibmvalid_p85ibm85n130xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EA0 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n130.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -852,10 +904,11 @@ fn ibmvalid_p85ibm85n131xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EA4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n131.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -868,10 +921,11 @@ fn ibmvalid_p85ibm85n132xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EA6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n132.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -884,10 +938,11 @@ fn ibmvalid_p85ibm85n133xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EA8 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n133.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -900,10 +955,11 @@ fn ibmvalid_p85ibm85n134xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EAC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n134.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -916,10 +972,11 @@ fn ibmvalid_p85ibm85n135xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EAF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n135.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -932,10 +989,11 @@ fn ibmvalid_p85ibm85n136xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EB1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n136.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -948,10 +1006,11 @@ fn ibmvalid_p85ibm85n137xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EB4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n137.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -964,10 +1023,11 @@ fn ibmvalid_p85ibm85n138xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EBE occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n138.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -980,10 +1040,11 @@ fn ibmvalid_p85ibm85n139xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0EC5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n139.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -996,10 +1057,11 @@ fn ibmvalid_p85ibm85n14xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01F9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n14.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1012,10 +1074,11 @@ fn ibmvalid_p85ibm85n140xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0F48 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n140.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1028,10 +1091,11 @@ fn ibmvalid_p85ibm85n141xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0F6A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n141.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1044,10 +1108,11 @@ fn ibmvalid_p85ibm85n142xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x10C6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n142.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1060,10 +1125,11 @@ fn ibmvalid_p85ibm85n143xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x10F7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n143.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1076,10 +1142,11 @@ fn ibmvalid_p85ibm85n144xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1011 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n144.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1092,10 +1159,11 @@ fn ibmvalid_p85ibm85n145xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1104 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n145.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1108,10 +1176,11 @@ fn ibmvalid_p85ibm85n146xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1108 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n146.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1124,10 +1193,11 @@ fn ibmvalid_p85ibm85n147xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x110A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n147.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1140,10 +1210,11 @@ fn ibmvalid_p85ibm85n148xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x110D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n148.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1156,10 +1227,11 @@ fn ibmvalid_p85ibm85n149xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x113B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n149.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1172,10 +1244,11 @@ fn ibmvalid_p85ibm85n15xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x01F9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n15.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1188,10 +1261,11 @@ fn ibmvalid_p85ibm85n150xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x113F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n150.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1204,10 +1278,11 @@ fn ibmvalid_p85ibm85n151xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1141 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n151.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1220,10 +1295,11 @@ fn ibmvalid_p85ibm85n152xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x114D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n152.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1236,10 +1312,11 @@ fn ibmvalid_p85ibm85n153xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x114f occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n153.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1252,10 +1329,11 @@ fn ibmvalid_p85ibm85n154xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1151 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n154.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1268,10 +1346,11 @@ fn ibmvalid_p85ibm85n155xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1156 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n155.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1284,10 +1363,11 @@ fn ibmvalid_p85ibm85n156xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x115A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n156.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1300,10 +1380,11 @@ fn ibmvalid_p85ibm85n157xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1162 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n157.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1316,10 +1397,11 @@ fn ibmvalid_p85ibm85n158xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1164 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n158.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1332,10 +1414,11 @@ fn ibmvalid_p85ibm85n159xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1166 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n159.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1348,10 +1431,11 @@ fn ibmvalid_p85ibm85n16xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0230 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n16.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1364,10 +1448,11 @@ fn ibmvalid_p85ibm85n160xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x116B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n160.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1380,10 +1465,11 @@ fn ibmvalid_p85ibm85n161xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x116F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n161.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1396,10 +1482,11 @@ fn ibmvalid_p85ibm85n162xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1174 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n162.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1412,10 +1499,11 @@ fn ibmvalid_p85ibm85n163xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x119F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n163.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1428,10 +1516,11 @@ fn ibmvalid_p85ibm85n164xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11AC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n164.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1444,10 +1533,11 @@ fn ibmvalid_p85ibm85n165xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11B6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n165.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1460,10 +1550,11 @@ fn ibmvalid_p85ibm85n166xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11B9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n166.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1476,10 +1567,11 @@ fn ibmvalid_p85ibm85n167xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11BB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n167.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1492,10 +1584,11 @@ fn ibmvalid_p85ibm85n168xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11C3 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n168.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1508,10 +1601,11 @@ fn ibmvalid_p85ibm85n169xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11F1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n169.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1524,10 +1618,11 @@ fn ibmvalid_p85ibm85n17xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x02AF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n17.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1540,10 +1635,11 @@ fn ibmvalid_p85ibm85n170xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x11FA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n170.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1556,10 +1652,11 @@ fn ibmvalid_p85ibm85n171xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1E9C occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n171.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1572,10 +1669,11 @@ fn ibmvalid_p85ibm85n172xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1EFA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n172.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1588,10 +1686,11 @@ fn ibmvalid_p85ibm85n173xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F16 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n173.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1604,10 +1703,11 @@ fn ibmvalid_p85ibm85n174xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F1E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n174.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1620,10 +1720,11 @@ fn ibmvalid_p85ibm85n175xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F46 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n175.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1636,10 +1737,11 @@ fn ibmvalid_p85ibm85n176xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F4F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n176.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1652,10 +1754,11 @@ fn ibmvalid_p85ibm85n177xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F58 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n177.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1668,10 +1771,11 @@ fn ibmvalid_p85ibm85n178xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F5A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n178.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1684,10 +1788,11 @@ fn ibmvalid_p85ibm85n179xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F5C occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n179.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1700,10 +1805,11 @@ fn ibmvalid_p85ibm85n18xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x02CF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n18.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1716,10 +1822,11 @@ fn ibmvalid_p85ibm85n180xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F5E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n180.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1732,10 +1839,11 @@ fn ibmvalid_p85ibm85n181xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1F7E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n181.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1748,10 +1856,11 @@ fn ibmvalid_p85ibm85n182xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FB5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n182.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1764,10 +1873,11 @@ fn ibmvalid_p85ibm85n183xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FBD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n183.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1780,10 +1890,11 @@ fn ibmvalid_p85ibm85n184xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FBF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n184.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1796,10 +1907,11 @@ fn ibmvalid_p85ibm85n185xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FC5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n185.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1812,10 +1924,11 @@ fn ibmvalid_p85ibm85n186xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FCD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n186.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1828,10 +1941,11 @@ fn ibmvalid_p85ibm85n187xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FD5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n187.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1844,10 +1958,11 @@ fn ibmvalid_p85ibm85n188xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FDC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n188.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1860,10 +1975,11 @@ fn ibmvalid_p85ibm85n189xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FED occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n189.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1876,10 +1992,11 @@ fn ibmvalid_p85ibm85n19xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0387 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n19.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1892,10 +2009,11 @@ fn ibmvalid_p85ibm85n190xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FF5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n190.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1908,10 +2026,11 @@ fn ibmvalid_p85ibm85n191xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x1FFD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n191.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1924,10 +2043,11 @@ fn ibmvalid_p85ibm85n192xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x2127 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n192.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1940,10 +2060,11 @@ fn ibmvalid_p85ibm85n193xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x212F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n193.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1956,10 +2077,11 @@ fn ibmvalid_p85ibm85n194xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x2183 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n194.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1972,10 +2094,11 @@ fn ibmvalid_p85ibm85n195xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x3095 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n195.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -1988,10 +2111,11 @@ fn ibmvalid_p85ibm85n196xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x30FB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n196.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2004,10 +2128,11 @@ fn ibmvalid_p85ibm85n197xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x312D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n197.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2020,10 +2145,11 @@ fn ibmvalid_p85ibm85n198xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #xD7A4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n198.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2036,10 +2162,11 @@ fn ibmvalid_p85ibm85n20xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x038B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n20.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2052,10 +2179,11 @@ fn ibmvalid_p85ibm85n21xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x03A2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n21.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2068,10 +2196,11 @@ fn ibmvalid_p85ibm85n22xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x03CF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n22.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2084,10 +2213,11 @@ fn ibmvalid_p85ibm85n23xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x03D7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n23.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2100,10 +2230,11 @@ fn ibmvalid_p85ibm85n24xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x03DD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n24.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2116,10 +2247,11 @@ fn ibmvalid_p85ibm85n25xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x03E1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n25.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2132,10 +2264,11 @@ fn ibmvalid_p85ibm85n26xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x03F4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n26.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2148,10 +2281,11 @@ fn ibmvalid_p85ibm85n27xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x040D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n27.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2164,10 +2298,11 @@ fn ibmvalid_p85ibm85n28xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0450 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n28.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2180,10 +2315,11 @@ fn ibmvalid_p85ibm85n29xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x045D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n29.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2196,10 +2332,11 @@ fn ibmvalid_p85ibm85n30xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0482 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n30.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2212,10 +2349,11 @@ fn ibmvalid_p85ibm85n31xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04C5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n31.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2228,10 +2366,11 @@ fn ibmvalid_p85ibm85n32xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04C6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n32.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2244,10 +2383,11 @@ fn ibmvalid_p85ibm85n33xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04C9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n33.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2260,10 +2400,11 @@ fn ibmvalid_p85ibm85n34xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04EC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n34.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2276,10 +2417,11 @@ fn ibmvalid_p85ibm85n35xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04ED occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n35.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2292,10 +2434,11 @@ fn ibmvalid_p85ibm85n36xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04F6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n36.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2308,10 +2451,11 @@ fn ibmvalid_p85ibm85n37xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x04FA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n37.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2324,10 +2468,11 @@ fn ibmvalid_p85ibm85n38xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0557 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n38.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2340,10 +2485,11 @@ fn ibmvalid_p85ibm85n39xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0558 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n39.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2356,10 +2502,11 @@ fn ibmvalid_p85ibm85n40xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0587 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n40.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2372,10 +2519,11 @@ fn ibmvalid_p85ibm85n41xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x05EB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n41.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2388,10 +2536,11 @@ fn ibmvalid_p85ibm85n42xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x05F3 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n42.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2404,10 +2553,11 @@ fn ibmvalid_p85ibm85n43xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0620 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n43.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2420,10 +2570,11 @@ fn ibmvalid_p85ibm85n44xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x063B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n44.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2436,10 +2587,11 @@ fn ibmvalid_p85ibm85n45xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x064B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n45.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2452,10 +2604,11 @@ fn ibmvalid_p85ibm85n46xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x06B8 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n46.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2468,10 +2621,11 @@ fn ibmvalid_p85ibm85n47xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x06BF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n47.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2484,10 +2638,11 @@ fn ibmvalid_p85ibm85n48xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x06CF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n48.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2500,10 +2655,11 @@ fn ibmvalid_p85ibm85n49xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x06D4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n49.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2516,10 +2672,11 @@ fn ibmvalid_p85ibm85n50xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x06D6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n50.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2532,10 +2689,11 @@ fn ibmvalid_p85ibm85n51xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x06E7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n51.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2548,10 +2706,11 @@ fn ibmvalid_p85ibm85n52xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x093A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n52.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2564,10 +2723,11 @@ fn ibmvalid_p85ibm85n53xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x093E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n53.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2580,10 +2740,11 @@ fn ibmvalid_p85ibm85n54xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0962 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n54.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2596,10 +2757,11 @@ fn ibmvalid_p85ibm85n55xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x098D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n55.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2612,10 +2774,11 @@ fn ibmvalid_p85ibm85n56xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0991 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n56.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2628,10 +2791,11 @@ fn ibmvalid_p85ibm85n57xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0992 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n57.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2644,10 +2808,11 @@ fn ibmvalid_p85ibm85n58xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09A9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n58.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2660,10 +2825,11 @@ fn ibmvalid_p85ibm85n59xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09B1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n59.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2676,10 +2842,11 @@ fn ibmvalid_p85ibm85n60xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09B5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n60.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2692,10 +2859,11 @@ fn ibmvalid_p85ibm85n61xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09BA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n61.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2708,10 +2876,11 @@ fn ibmvalid_p85ibm85n62xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09DE occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n62.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2724,10 +2893,11 @@ fn ibmvalid_p85ibm85n63xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09E2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n63.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2740,10 +2910,11 @@ fn ibmvalid_p85ibm85n64xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x09F2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n64.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2756,10 +2927,11 @@ fn ibmvalid_p85ibm85n65xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A0B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n65.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2772,10 +2944,11 @@ fn ibmvalid_p85ibm85n66xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n66.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2788,10 +2961,11 @@ fn ibmvalid_p85ibm85n67xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n67.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2804,10 +2978,11 @@ fn ibmvalid_p85ibm85n68xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A31 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n68.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2820,10 +2995,11 @@ fn ibmvalid_p85ibm85n69xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n69.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2836,10 +3012,11 @@ fn ibmvalid_p85ibm85n70xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A37 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n70.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2852,10 +3029,11 @@ fn ibmvalid_p85ibm85n71xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A3A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n71.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2868,10 +3046,11 @@ fn ibmvalid_p85ibm85n72xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A5D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n72.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2884,10 +3063,11 @@ fn ibmvalid_p85ibm85n73xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A70 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n73.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2900,10 +3080,11 @@ fn ibmvalid_p85ibm85n74xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A75 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n74.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2916,10 +3097,11 @@ fn ibmvalid_p85ibm85n75xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #xA84 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n75.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2932,10 +3114,11 @@ fn ibmvalid_p85ibm85n76xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0ABC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n76.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2948,10 +3131,11 @@ fn ibmvalid_p85ibm85n77xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0A92 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n77.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2964,10 +3148,11 @@ fn ibmvalid_p85ibm85n78xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0AA9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n78.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2980,10 +3165,11 @@ fn ibmvalid_p85ibm85n79xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0AB1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n79.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -2996,10 +3182,11 @@ fn ibmvalid_p85ibm85n80xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0AB4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n80.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3012,10 +3199,11 @@ fn ibmvalid_p85ibm85n81xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0ABA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n81.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3028,9 +3216,11 @@ fn ibmvalid_p85ibm85n82xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B04 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n82.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3043,10 +3233,11 @@ fn ibmvalid_p85ibm85n83xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B0D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n83.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3059,10 +3250,11 @@ fn ibmvalid_p85ibm85n84xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n84.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3075,10 +3267,11 @@ fn ibmvalid_p85ibm85n85xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n85.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3091,10 +3284,11 @@ fn ibmvalid_p85ibm85n86xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B31 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n86.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3107,10 +3301,11 @@ fn ibmvalid_p85ibm85n87xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n87.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3123,10 +3318,11 @@ fn ibmvalid_p85ibm85n88xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B3A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n88.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3139,10 +3335,11 @@ fn ibmvalid_p85ibm85n89xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B3E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n89.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3155,10 +3352,11 @@ fn ibmvalid_p85ibm85n90xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B5E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n90.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3171,10 +3369,11 @@ fn ibmvalid_p85ibm85n91xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B62 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n91.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3187,10 +3386,11 @@ fn ibmvalid_p85ibm85n92xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B8B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n92.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3203,10 +3403,11 @@ fn ibmvalid_p85ibm85n93xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B91 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n93.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3219,10 +3420,11 @@ fn ibmvalid_p85ibm85n94xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B98 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n94.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3235,10 +3437,11 @@ fn ibmvalid_p85ibm85n95xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B9B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n95.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3251,10 +3454,11 @@ fn ibmvalid_p85ibm85n96xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0B9D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n96.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3267,10 +3471,11 @@ fn ibmvalid_p85ibm85n97xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0BA0 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n97.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3283,10 +3488,11 @@ fn ibmvalid_p85ibm85n98xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0BA7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n98.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3299,10 +3505,11 @@ fn ibmvalid_p85ibm85n99xml() {
         Description:Tests BaseChar with an only legal per 5th edition character. The character #x0BAB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm85n99.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3315,10 +3522,11 @@ fn ibmvalid_p86ibm86n01xml() {
         Description:Tests Ideographic with an only legal per 5th edition character. The character #x4CFF occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3331,10 +3539,11 @@ fn ibmvalid_p86ibm86n02xml() {
         Description:Tests Ideographic with an only legal per 5th edition character. The character #x9FA6 occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n02.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3347,10 +3556,11 @@ fn ibmvalid_p86ibm86n03xml() {
         Description:Tests Ideographic with an only legal per 5th edition character. The character #x3008 occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3363,10 +3573,11 @@ fn ibmvalid_p86ibm86n04xml() {
         Description:Tests Ideographic with an only legal per 5th edition character. The character #x302A occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm86n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3379,10 +3590,11 @@ fn ibmvalid_p87ibm87n01xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x02FF occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n01.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3395,10 +3607,11 @@ fn ibmvalid_p87ibm87n02xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0346 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n02.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3411,10 +3624,11 @@ fn ibmvalid_p87ibm87n03xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0362 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3427,10 +3641,11 @@ fn ibmvalid_p87ibm87n04xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0487 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3443,10 +3658,11 @@ fn ibmvalid_p87ibm87n05xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x05A2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3459,10 +3675,11 @@ fn ibmvalid_p87ibm87n06xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x05BA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3475,10 +3692,11 @@ fn ibmvalid_p87ibm87n07xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x05BE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n07.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3491,10 +3709,11 @@ fn ibmvalid_p87ibm87n08xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x05C0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n08.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3507,10 +3726,11 @@ fn ibmvalid_p87ibm87n09xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x05C3 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n09.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3523,10 +3743,11 @@ fn ibmvalid_p87ibm87n10xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0653 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n10.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3539,10 +3760,11 @@ fn ibmvalid_p87ibm87n11xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x06B8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n11.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3555,10 +3777,11 @@ fn ibmvalid_p87ibm87n12xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x06B9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n12.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3571,10 +3794,11 @@ fn ibmvalid_p87ibm87n13xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x06E9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n13.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3587,10 +3811,11 @@ fn ibmvalid_p87ibm87n14xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x06EE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n14.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3603,10 +3828,11 @@ fn ibmvalid_p87ibm87n15xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0904 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n15.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3619,10 +3845,11 @@ fn ibmvalid_p87ibm87n16xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x093B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n16.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3635,10 +3862,11 @@ fn ibmvalid_p87ibm87n17xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x094E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n17.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3651,10 +3879,11 @@ fn ibmvalid_p87ibm87n18xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0955 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n18.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3667,10 +3896,11 @@ fn ibmvalid_p87ibm87n19xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0964 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n19.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3683,10 +3913,11 @@ fn ibmvalid_p87ibm87n20xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0984 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n20.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3699,10 +3930,11 @@ fn ibmvalid_p87ibm87n21xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x09C5 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n21.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3715,10 +3947,11 @@ fn ibmvalid_p87ibm87n22xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x09C9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n22.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3731,10 +3964,11 @@ fn ibmvalid_p87ibm87n23xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x09CE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n23.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3747,10 +3981,11 @@ fn ibmvalid_p87ibm87n24xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x09D8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n24.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3763,10 +3998,11 @@ fn ibmvalid_p87ibm87n25xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x09E4 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n25.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3779,10 +4015,11 @@ fn ibmvalid_p87ibm87n26xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A03 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n26.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3795,10 +4032,11 @@ fn ibmvalid_p87ibm87n27xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A3D occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n27.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3811,10 +4049,11 @@ fn ibmvalid_p87ibm87n28xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A46 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n28.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3827,10 +4066,11 @@ fn ibmvalid_p87ibm87n29xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A49 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n29.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3843,10 +4083,11 @@ fn ibmvalid_p87ibm87n30xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A4E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n30.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3859,10 +4100,11 @@ fn ibmvalid_p87ibm87n31xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A80 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n31.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3875,10 +4117,11 @@ fn ibmvalid_p87ibm87n32xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0A84 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n32.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3891,10 +4134,11 @@ fn ibmvalid_p87ibm87n33xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0ABB occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n33.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3907,10 +4151,11 @@ fn ibmvalid_p87ibm87n34xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0AC6 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n34.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3923,10 +4168,11 @@ fn ibmvalid_p87ibm87n35xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0ACA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n35.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3939,10 +4185,11 @@ fn ibmvalid_p87ibm87n36xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0ACE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n36.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3955,10 +4202,11 @@ fn ibmvalid_p87ibm87n37xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B04 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n37.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3971,10 +4219,11 @@ fn ibmvalid_p87ibm87n38xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B3B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n38.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -3987,10 +4236,11 @@ fn ibmvalid_p87ibm87n39xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B44 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n39.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4003,10 +4253,11 @@ fn ibmvalid_p87ibm87n40xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B4A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n40.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4019,10 +4270,11 @@ fn ibmvalid_p87ibm87n41xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B4E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n41.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4035,10 +4287,11 @@ fn ibmvalid_p87ibm87n42xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B58 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n42.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4051,10 +4304,11 @@ fn ibmvalid_p87ibm87n43xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0B84 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n43.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4067,10 +4321,11 @@ fn ibmvalid_p87ibm87n44xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0BC3 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n44.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4083,10 +4338,11 @@ fn ibmvalid_p87ibm87n45xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0BC9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n45.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4099,10 +4355,11 @@ fn ibmvalid_p87ibm87n46xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0BD6 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n46.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4115,10 +4372,11 @@ fn ibmvalid_p87ibm87n47xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0C0D occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n47.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4131,10 +4389,11 @@ fn ibmvalid_p87ibm87n48xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0C45 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n48.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4147,10 +4406,11 @@ fn ibmvalid_p87ibm87n49xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0C49 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n49.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4163,10 +4423,11 @@ fn ibmvalid_p87ibm87n50xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0C54 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n50.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4179,10 +4440,11 @@ fn ibmvalid_p87ibm87n51xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0C81 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n51.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4195,10 +4457,11 @@ fn ibmvalid_p87ibm87n52xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0C84 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n52.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4211,10 +4474,11 @@ fn ibmvalid_p87ibm87n53xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0CC5 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n53.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4227,10 +4491,11 @@ fn ibmvalid_p87ibm87n54xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0CC9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n54.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4243,10 +4508,11 @@ fn ibmvalid_p87ibm87n55xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0CD4 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n55.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4259,10 +4525,11 @@ fn ibmvalid_p87ibm87n56xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0CD7 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n56.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4275,10 +4542,11 @@ fn ibmvalid_p87ibm87n57xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0D04 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n57.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4291,10 +4559,11 @@ fn ibmvalid_p87ibm87n58xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0D45 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n58.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4307,10 +4576,11 @@ fn ibmvalid_p87ibm87n59xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0D49 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n59.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4323,10 +4593,11 @@ fn ibmvalid_p87ibm87n60xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0D4E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n60.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4339,10 +4610,11 @@ fn ibmvalid_p87ibm87n61xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0D58 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n61.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4355,10 +4627,11 @@ fn ibmvalid_p87ibm87n62xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0E3F occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n62.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4371,10 +4644,11 @@ fn ibmvalid_p87ibm87n63xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0E3B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n63.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4387,10 +4661,11 @@ fn ibmvalid_p87ibm87n64xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0E4F occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n64.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4403,10 +4678,11 @@ fn ibmvalid_p87ibm87n66xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0EBA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n66.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4419,10 +4695,11 @@ fn ibmvalid_p87ibm87n67xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0EBE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n67.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4435,10 +4712,11 @@ fn ibmvalid_p87ibm87n68xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0ECE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n68.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4451,10 +4729,11 @@ fn ibmvalid_p87ibm87n69xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F1A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n69.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4467,10 +4746,11 @@ fn ibmvalid_p87ibm87n70xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F36 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n70.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4483,10 +4763,11 @@ fn ibmvalid_p87ibm87n71xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F38 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n71.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4499,10 +4780,11 @@ fn ibmvalid_p87ibm87n72xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F3B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n72.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4515,10 +4797,11 @@ fn ibmvalid_p87ibm87n73xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F3A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n73.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4531,10 +4814,11 @@ fn ibmvalid_p87ibm87n74xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F70 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n74.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4547,10 +4831,11 @@ fn ibmvalid_p87ibm87n75xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F85 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n75.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4563,10 +4848,11 @@ fn ibmvalid_p87ibm87n76xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F8C occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n76.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4579,10 +4865,11 @@ fn ibmvalid_p87ibm87n77xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F96 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n77.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4595,10 +4882,11 @@ fn ibmvalid_p87ibm87n78xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0F98 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n78.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4611,10 +4899,11 @@ fn ibmvalid_p87ibm87n79xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0FB0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n79.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4627,10 +4916,11 @@ fn ibmvalid_p87ibm87n80xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0FB8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n80.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4643,10 +4933,11 @@ fn ibmvalid_p87ibm87n81xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x0FBA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n81.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4659,10 +4950,11 @@ fn ibmvalid_p87ibm87n82xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x20DD occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n82.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4675,10 +4967,11 @@ fn ibmvalid_p87ibm87n83xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x20E2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n83.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4691,10 +4984,11 @@ fn ibmvalid_p87ibm87n84xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x3030 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n84.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4707,10 +5001,11 @@ fn ibmvalid_p87ibm87n85xml() {
         Description:Tests CombiningChar with an only legal per 5th edition character. The character #x309B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm87n85.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4723,10 +5018,11 @@ fn ibmvalid_p88ibm88n03xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x066A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4739,10 +5035,11 @@ fn ibmvalid_p88ibm88n04xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x06FA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4755,10 +5052,11 @@ fn ibmvalid_p88ibm88n05xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0970 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4771,10 +5069,11 @@ fn ibmvalid_p88ibm88n06xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x09F2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4787,10 +5086,11 @@ fn ibmvalid_p88ibm88n08xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0AF0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n08.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4803,10 +5103,11 @@ fn ibmvalid_p88ibm88n09xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0B70 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n09.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4819,10 +5120,11 @@ fn ibmvalid_p88ibm88n10xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0C65 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n10.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4835,10 +5137,11 @@ fn ibmvalid_p88ibm88n11xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0CE5 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n11.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4851,10 +5154,11 @@ fn ibmvalid_p88ibm88n12xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0CF0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n12.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4867,10 +5171,11 @@ fn ibmvalid_p88ibm88n13xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0D70 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n13.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4883,10 +5188,11 @@ fn ibmvalid_p88ibm88n14xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0E5A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n14.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4899,10 +5205,11 @@ fn ibmvalid_p88ibm88n15xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0EDA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n15.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4915,10 +5222,11 @@ fn ibmvalid_p88ibm88n16xml() {
         Description:Tests Digit with an only legal per 5th edition character. The character #x0F2A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm88n16.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4931,10 +5239,11 @@ fn ibmvalid_p89ibm89n03xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x02D2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n03.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4947,10 +5256,11 @@ fn ibmvalid_p89ibm89n04xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x03FE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n04.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -4963,9 +5273,10 @@ fn ibmvalid_p89ibm89n05xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x065F occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n05.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }

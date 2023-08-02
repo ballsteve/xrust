@@ -1,36 +1,3 @@
-use crate::parser::combinators::map::map;
-use crate::parser::combinators::opt::opt;
-use crate::parser::combinators::take::{take_while, take_while_m_n};
-use crate::parser::combinators::tuple::tuple2;
-use crate::parser::{ParseInput, ParseResult};
-
-// NCName ::= Name - (Char* ':' Char*)
-// Name ::= NameStartChar NameChar*
-// NameStartChar ::= ':' | [A-Z] | '_' | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
-// NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
-pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
-    map(
-        tuple2(
-            take_while_m_n(1, 1, |c| is_ncnamestartchar(&c)),
-            opt(take_while(|c| is_ncnamechar(&c))),
-        ),
-        |(a, b)| [a, b.unwrap_or_default()].concat(),
-    )
-}
-
-pub(crate) fn name() -> impl Fn(ParseInput) -> ParseResult<String> {
-    map(
-        tuple2(
-            take_while_m_n(1, 1, |c| is_namestartchar(&c)),
-            opt(take_while(|c| is_namechar(&c))),
-        ),
-        |(nsc, nc)| match nc {
-            None => nsc,
-            Some(nc) => [nsc, nc].concat(),
-        },
-    )
-}
-
 pub(crate) fn is_namechar(ch: &char) -> bool {
     if is_namestartchar(ch) {
         true
@@ -46,7 +13,7 @@ pub(crate) fn is_namechar(ch: &char) -> bool {
     }
 }
 
-fn is_ncnamechar(ch: &char) -> bool {
+pub(crate) fn is_ncnamechar(ch: &char) -> bool {
     if is_ncnamestartchar(ch) {
         true
     } else {
@@ -61,13 +28,13 @@ fn is_ncnamechar(ch: &char) -> bool {
     }
 }
 
-fn is_namestartchar(ch: &char) -> bool {
+pub(crate) fn is_namestartchar(ch: &char) -> bool {
     match ch {
         ':' => true,
         _ => is_ncnamestartchar(ch),
     }
 }
-fn is_ncnamestartchar(ch: &char) -> bool {
+pub(crate) fn is_ncnamestartchar(ch: &char) -> bool {
     matches!(ch,
         '\u{0041}'..='\u{005A}' // A-Z
         | '\u{005F}' // _

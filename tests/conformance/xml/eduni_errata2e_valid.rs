@@ -16,10 +16,11 @@ fn rmte2e9a() {
         Description:An unused attribute default need only be syntactically correct
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9a.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -32,10 +33,11 @@ fn rmte2e15e() {
         Description:Element content can contain entity reference if replacement text is whitespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15e.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -48,10 +50,11 @@ fn rmte2e15f() {
         Description:Element content can contain entity reference if replacement text is whitespace, even if it came from a character reference in the literal entity value
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15f.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -64,10 +67,11 @@ fn rmte2e15i() {
         Description:Element content can contain a comment
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15i.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -80,10 +84,11 @@ fn rmte2e15j() {
         Description:Element content can contain a PI
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15j.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -96,10 +101,11 @@ fn rmte2e15k() {
         Description:Mixed content can contain a comment
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15k.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -112,10 +118,11 @@ fn rmte2e15l() {
         Description:Mixed content can contain a PI
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15l.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -129,10 +136,11 @@ fn rmte2e18() {
         Description:External entity containing start of entity declaration is base URI for system identifier
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -146,10 +154,11 @@ fn rmte2e19() {
         Description:Parameter entities and character references are included-in-literal, but general entities are bypassed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -163,10 +172,11 @@ fn rmte2e22() {
         Description:UTF-8 entities may start with a BOM
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E22.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -179,10 +189,11 @@ fn rmte2e24() {
         Description:Either the built-in entity or a character reference can be used to represent greater-than after two close-square-brackets
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E24.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -195,10 +206,11 @@ fn rmte2e29() {
         Description:Three-letter language codes are allowed
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E29.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -212,10 +224,11 @@ fn rmte2e36() {
         Description:An external ATTLIST declaration does not make a document non-standalone if the normalization would have been the same without the declaration
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E36.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -228,10 +241,11 @@ fn rmte2e41() {
         Description:An xml:lang attribute may be empty
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E41.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -244,10 +258,11 @@ fn rmte2e48() {
         Description:ANY content allows character data
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E48.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -261,10 +276,11 @@ fn rmte2e50() {
         Description:All line-ends are normalized, even those not passed to the application. NB this can only be tested effectively in XML 1.1, since CR is in the S production; in 1.1 we can use NEL which isn't.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E50.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }
 
@@ -278,9 +294,10 @@ fn rmte2e60() {
         Description:Conditional sections are allowed in external parameter entities referred to from the internal subset.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E60.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_ok());
 }

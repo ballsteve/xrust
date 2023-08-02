@@ -4,6 +4,10 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
+pub(crate) fn geexpander(inp: RNode) -> RNode{
+
+}
+
 pub(crate) fn genentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> + 'static {
     move |input| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))(input);

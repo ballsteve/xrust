@@ -16,10 +16,11 @@ fn rmt001() {
         Description:External subset has later version number
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/001.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -32,10 +33,11 @@ fn rmt002() {
         Description:External PE has later version number
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/002.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -48,10 +50,11 @@ fn rmt003() {
         Description:External general entity has later version number
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/003.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -64,10 +67,11 @@ fn rmt004() {
         Description:External general entity has later version number (no decl means 1.0)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/004.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -80,10 +84,11 @@ fn rmt005() {
         Description:Indirect external general entity has later version number
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/005.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -97,10 +102,11 @@ fn rmt011() {
         Description:Contains a C1 control, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/011.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -114,10 +120,11 @@ fn rmt013() {
         Description:Contains a DEL, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/013.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -131,10 +138,11 @@ fn rmt014() {
         Description:Has a "long s" in a name, legal in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/014.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -148,10 +156,11 @@ fn rmt016() {
         Description:Has a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/016.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -165,10 +174,11 @@ fn rmt019() {
         Description:Has the last legal namechar in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/019.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -181,10 +191,11 @@ fn rmt020() {
         Description:Has the first character after the last legal namechar in XML 1.1, illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/020.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -197,10 +208,11 @@ fn rmt021() {
         Description:Has the first character after the last legal namechar in XML 1.1, illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/021.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -213,10 +225,11 @@ fn rmt038() {
         Description:Contains a C0 control character (form-feed), illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/038.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -229,10 +242,11 @@ fn rmt039() {
         Description:Contains a C0 control character (form-feed), illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/039.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -246,10 +260,11 @@ fn rmt041() {
         Description:Contains a C1 control character (partial line up), legal in XML 1.0 but not 1.1
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/041.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -262,9 +277,10 @@ fn rmt042() {
         Description:Contains a character reference to a C0 control character (form-feed), legal in XML 1.1 but not 1.0
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/042.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

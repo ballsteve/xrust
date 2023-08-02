@@ -15,10 +15,12 @@ fn invalidbo7() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (big-endian)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
             .unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -32,10 +34,12 @@ fn invalidbo8() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (little-endian)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
             .unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -49,10 +53,12 @@ fn invalidbo9() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (utf-8)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
             .unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -67,9 +73,10 @@ fn xrmt008() {
         Description:a document with version=1.7, illegal in XML 1.0 through 4th edition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
