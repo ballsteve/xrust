@@ -117,9 +117,14 @@ fn xibm105valid_p05ibm05v02xml() {
 }
  */
 
+/*
 #[test]
 #[ignore]
 fn xibm105valid_p05ibm05v03xml() {
+    /*
+        This test is deliberately ignored.
+        We only support namespace-aware XML, no colons allowed.
+    */
     /*
         Test ID:x-ibm-1-0.5-valid-P05-ibm05v03.xml
         Test URI:ibm05v03.xml
@@ -134,6 +139,7 @@ fn xibm105valid_p05ibm05v03xml() {
     ));
     assert!(testxml.is_ok());
 }
+ */
 
 #[test]
 #[ignore]

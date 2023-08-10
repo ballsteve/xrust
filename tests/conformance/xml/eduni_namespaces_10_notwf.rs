@@ -41,7 +41,6 @@ fn rmtns10010() {
 }
 
 #[test]
-#[ignore]
 fn rmtns10011() {
     /*
         Test ID:rmt-ns10-011
@@ -59,7 +58,6 @@ fn rmtns10011() {
 }
 
 #[test]
-#[ignore]
 fn rmtns10012() {
     /*
         Test ID:rmt-ns10-012

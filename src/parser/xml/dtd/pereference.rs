@@ -2,7 +2,7 @@ use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::parser::xml::dtd::extsubset::extsubsetdecl;
+use crate::parser::xml::dtd::extsubset::{extsubset, extsubsetdecl};
 
 pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |(input, state)| {
@@ -23,14 +23,8 @@ pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
                             let mut tempstate = state1.clone();
                             tempstate.currententitydepth += 1;
 
-                            /*
-                            We want to reuse the "Content" combinator to parse the entity, but
-                            that function parses everything up until the closing tag of an XML element.
-                            The fix? We append a < character and the parser will stop as if its hit that
-                            closing tag. Then we check that that closing tag is all that remained on the parsing.
-                             */
-                            let e2 = entval.clone();
 
+                            let e2 = entval.clone();
                             match extsubsetdecl()((e2.as_str(), tempstate)) {
                                 Ok(((outstr, _), _)) => {
                                     if !outstr.is_empty() {

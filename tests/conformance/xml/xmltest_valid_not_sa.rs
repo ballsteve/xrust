@@ -10,9 +10,9 @@ James Clark XMLTEST cases - Standalone
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
-#[ignore]
 fn validnotsa001() {
     /*
         Test ID:valid-not-sa-001
@@ -23,8 +23,8 @@ fn validnotsa001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/001.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/001.xml")
@@ -39,7 +39,6 @@ fn validnotsa001() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa002() {
     /*
         Test ID:valid-not-sa-002
@@ -50,8 +49,8 @@ fn validnotsa002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/002.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/002.xml")
@@ -66,7 +65,6 @@ fn validnotsa002() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa003() {
     /*
         Test ID:valid-not-sa-003
@@ -77,8 +75,8 @@ fn validnotsa003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/003.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/003.xml")
@@ -93,7 +91,6 @@ fn validnotsa003() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa004() {
     /*
         Test ID:valid-not-sa-004
@@ -104,8 +101,8 @@ fn validnotsa004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/004.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/004.xml")
@@ -120,7 +117,6 @@ fn validnotsa004() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa005() {
     /*
         Test ID:valid-not-sa-005
@@ -131,8 +127,8 @@ fn validnotsa005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/005.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/005.xml")
@@ -147,7 +143,6 @@ fn validnotsa005() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa006() {
     /*
         Test ID:valid-not-sa-006
@@ -158,8 +153,8 @@ fn validnotsa006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/006.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/006.xml")
@@ -174,7 +169,6 @@ fn validnotsa006() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa007() {
     /*
         Test ID:valid-not-sa-007
@@ -185,8 +179,8 @@ fn validnotsa007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/007.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/007.xml")
@@ -201,7 +195,6 @@ fn validnotsa007() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa008() {
     /*
         Test ID:valid-not-sa-008
@@ -212,8 +205,8 @@ fn validnotsa008() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/008.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/008.xml")
@@ -228,7 +221,6 @@ fn validnotsa008() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa009() {
     /*
         Test ID:valid-not-sa-009
@@ -239,8 +231,8 @@ fn validnotsa009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/009.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/009.xml")
@@ -255,7 +247,6 @@ fn validnotsa009() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa010() {
     /*
         Test ID:valid-not-sa-010
@@ -266,8 +257,8 @@ fn validnotsa010() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/010.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/010.xml")
@@ -282,7 +273,6 @@ fn validnotsa010() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa011() {
     /*
         Test ID:valid-not-sa-011
@@ -293,8 +283,8 @@ fn validnotsa011() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/011.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/011.xml")
@@ -309,7 +299,6 @@ fn validnotsa011() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa012() {
     /*
         Test ID:valid-not-sa-012
@@ -320,8 +309,8 @@ fn validnotsa012() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/012.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/012.xml")
@@ -336,7 +325,6 @@ fn validnotsa012() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa013() {
     /*
         Test ID:valid-not-sa-013
@@ -347,8 +335,8 @@ fn validnotsa013() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/013.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/013.xml")
@@ -363,7 +351,6 @@ fn validnotsa013() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa014() {
     /*
         Test ID:valid-not-sa-014
@@ -374,8 +361,8 @@ fn validnotsa014() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/014.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/014.xml")
@@ -390,7 +377,6 @@ fn validnotsa014() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa015() {
     /*
         Test ID:valid-not-sa-015
@@ -401,8 +387,8 @@ fn validnotsa015() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/015.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/015.xml")
@@ -417,7 +403,6 @@ fn validnotsa015() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa016() {
     /*
         Test ID:valid-not-sa-016
@@ -428,8 +413,8 @@ fn validnotsa016() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/016.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/016.xml")
@@ -444,7 +429,6 @@ fn validnotsa016() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa017() {
     /*
         Test ID:valid-not-sa-017
@@ -455,8 +439,8 @@ fn validnotsa017() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/017.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/017.xml")
@@ -471,7 +455,6 @@ fn validnotsa017() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa018() {
     /*
         Test ID:valid-not-sa-018
@@ -482,8 +465,8 @@ fn validnotsa018() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/018.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/018.xml")
@@ -498,7 +481,6 @@ fn validnotsa018() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa019() {
     /*
         Test ID:valid-not-sa-019
@@ -509,8 +491,8 @@ fn validnotsa019() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/019.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/019.xml")
@@ -525,7 +507,6 @@ fn validnotsa019() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa020() {
     /*
         Test ID:valid-not-sa-020
@@ -536,8 +517,8 @@ fn validnotsa020() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/020.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/020.xml")
@@ -552,7 +533,6 @@ fn validnotsa020() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa021() {
     /*
         Test ID:valid-not-sa-021
@@ -563,8 +543,8 @@ fn validnotsa021() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/021.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/021.xml")
@@ -579,7 +559,6 @@ fn validnotsa021() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa023() {
     /*
         Test ID:valid-not-sa-023
@@ -590,8 +569,8 @@ fn validnotsa023() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/023.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/023.xml")
@@ -606,7 +585,6 @@ fn validnotsa023() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa024() {
     /*
         Test ID:valid-not-sa-024
@@ -617,8 +595,8 @@ fn validnotsa024() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/024.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/024.xml")
@@ -633,7 +611,6 @@ fn validnotsa024() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa025() {
     /*
         Test ID:valid-not-sa-025
@@ -644,8 +621,8 @@ fn validnotsa025() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/025.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/025.xml")
@@ -660,7 +637,6 @@ fn validnotsa025() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa026() {
     /*
         Test ID:valid-not-sa-026
@@ -671,8 +647,8 @@ fn validnotsa026() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/026.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/026.xml")
@@ -687,7 +663,6 @@ fn validnotsa026() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa027() {
     /*
         Test ID:valid-not-sa-027
@@ -698,8 +673,8 @@ fn validnotsa027() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/027.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/027.xml")
@@ -714,7 +689,6 @@ fn validnotsa027() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa028() {
     /*
         Test ID:valid-not-sa-028
@@ -725,8 +699,8 @@ fn validnotsa028() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/028.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/028.xml")
@@ -741,7 +715,6 @@ fn validnotsa028() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa029() {
     /*
         Test ID:valid-not-sa-029
@@ -752,8 +725,8 @@ fn validnotsa029() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/029.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/029.xml")
@@ -768,7 +741,6 @@ fn validnotsa029() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa030() {
     /*
         Test ID:valid-not-sa-030
@@ -779,8 +751,8 @@ fn validnotsa030() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/030.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/030.xml")
@@ -795,7 +767,6 @@ fn validnotsa030() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa031() {
     /*
         Test ID:valid-not-sa-031
@@ -806,8 +777,8 @@ fn validnotsa031() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/031.xml").unwrap(),
-        None,
-        None,
+                Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/031.xml")

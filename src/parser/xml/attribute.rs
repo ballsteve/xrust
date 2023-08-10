@@ -51,9 +51,13 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                     return Err(ParseError::NotWellFormed);
                 }
                 // Default namespace cannot be http://www.w3.org/XML/1998/namespace
+                // Default namespace cannot be http://www.w3.org/2000/xmlns/
                 if (node.name().get_prefix() == None)
                     && (node.name().get_localname() == *"xmlns")
-                    && (node.to_string() == *"http://www.w3.org/XML/1998/namespace")
+                    && (
+                    node.to_string() == *"http://www.w3.org/XML/1998/namespace"
+                    || node.to_string() == *"http://www.w3.org/2000/xmlns/"
+                        )
                 {
                     return Err(ParseError::NotWellFormed);
                 }
@@ -178,12 +182,11 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                     .replace('\n', " ")
                     .replace('\r', " ")
                     .replace('\t', " ")
-                    .replace('\n', " ");
+                    .replace('\n', " ")
+                    .trim().to_string();
                 //NEL character cannot be in attributes.
                 if r.contains('\u{0085}') {
                     Err(ParseError::NotWellFormed)
-                //} else if r.contains('<') {
-                //    Err(ParseError::NotWellFormed)
                 } else {
                     Ok(((input1, state1), r))
                 }

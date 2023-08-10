@@ -11,6 +11,7 @@ use crate::parser::common::is_char;
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseInput, ParseResult};
+use crate::parser::xml::dtd::textexternalid;
 
 pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match wellformed(
@@ -21,7 +22,8 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             whitespace1(),
             wellformed(qualname(),|n| !n.to_string().contains(":") ),
             whitespace1(),
-            alt2(
+            alt3(
+                textexternalid(),
                 delimited(tag("'"), take_until("'"), tag("'")),
                 delimited(tag("\""), take_until("\""), tag("\"")),
             ),
@@ -54,9 +56,14 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             match entityparse {
                 Ok(((_, _), res)) => {
                     /* Entities should always bind to the first value */
+                    let replaceable = if state2.currentlyexternal {
+                         true
+                    } else {
+                        false
+                    };
                     match state2.dtd.paramentities.get(n.to_string().as_str()) {
                         None => {
-                            state2.dtd.paramentities.insert(n.to_string(), (res, false));
+                            state2.dtd.paramentities.insert(n.to_string(), (res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         Some((_, true)) => {
@@ -64,7 +71,7 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                                 .dtd
                                 .paramentities
                                 .entry(n.to_string())
-                                .or_insert((res, false));
+                                .or_insert((res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         _ => Ok(((input2, state2), ())),
