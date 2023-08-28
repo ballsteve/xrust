@@ -37,17 +37,28 @@ pub(crate) fn chardata_escapes() -> impl Fn(ParseInput) -> ParseResult<String> {
 
 pub(crate) fn chardata_unicode_codepoint() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
-        alt2(
-            delimited(tag("&#x"), parse_hex(), tag(";")),
-            delimited(tag("&#"), parse_decimal(), tag(";")),
+        wellformed(
+            alt2(
+                delimited(tag("&#x"), parse_hex(), tag(";")),
+                delimited(tag("&#"), parse_decimal(), tag(";")),
+            ),
+            |value| {
+                match std::char::from_u32(*value) {
+                    None => false,
+                    _ => true
+                }
+            }
         ),
         |value| std::char::from_u32(value).unwrap().to_string(),
     )
 }
+
 fn parse_hex() -> impl Fn(ParseInput) -> ParseResult<u32> {
     move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
         Ok((input1, hex)) => match u32::from_str_radix(&hex, 16) {
-            Ok(r) => Ok((input1, r)),
+            Ok(r) => {
+                Ok((input1, r))
+            },
             Err(_) => Err(ParseError::NotWellFormed),
         },
         Err(e) => Err(e),

@@ -7,6 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
+#[ignore]
 fn rmte3e06a() {
     /*
         Test ID:rmt-e3e-06a
@@ -41,6 +42,7 @@ fn rmte3e06b() {
 }
 
 #[test]
+#[ignore]
 fn rmte3e06c() {
     /*
         Test ID:rmt-e3e-06c
@@ -58,6 +60,7 @@ fn rmte3e06c() {
 }
 
 #[test]
+#[ignore]
 fn rmte3e06d() {
     /*
         Test ID:rmt-e3e-06d

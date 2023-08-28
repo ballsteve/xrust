@@ -2,11 +2,13 @@ use crate::intmuttree::XMLDecl;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple5, tuple6, tuple8};
+use crate::parser::combinators::tuple::{tuple3, tuple5, tuple6, tuple8};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
 use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::combinators::alt::alt2;
+use crate::parser::combinators::take::take_while;
 
 fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |input| match tuple5(
@@ -18,12 +20,16 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     )(input)
     {
         Ok((input1, (_, _, _, _, v))) => {
-            if v == *"1.1" {
-                Ok((input1, v))
-            } else if v.starts_with("1.") {
-                Ok((input1, "1.0".to_string()))
+            if v.parse::<f64>().is_ok(){
+                if v == *"1.1" {
+                    Ok((input1, v))
+                } else if v.starts_with("1.") {
+                    Ok((input1, "1.0".to_string()))
+                } else {
+                    Err(ParseError::Notimplemented)
+                }
             } else {
-                Err(ParseError::Notimplemented)
+                Err(ParseError::NotWellFormed)
             }
         }
         Err(err) => Err(err),
@@ -57,6 +63,32 @@ fn xmldeclstandalone() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 
+pub(crate) fn encodingdecl() -> impl Fn(ParseInput) -> ParseResult<String> {
+    map(
+        tuple6(
+            whitespace1(),
+            tag("encoding"),
+            whitespace0(),
+            tag("="),
+            whitespace0(),
+            //delimited_string(),
+            alt2(
+                tuple3(
+                    tag("'"),
+                    take_while(|c| is_encname_char(c)),
+                    tag("'"),
+                ),
+                tuple3(
+                    tag("\""),
+                    take_while(|c| is_encname_char(c)),
+                    tag("\""),
+                )
+            )
+        ),
+        |(_, _, _, _, _, (_, e, _ ))| e,
+    )
+}
+
 pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
     move |(input, state)| {
         match
@@ -64,17 +96,7 @@ pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
             tag("<?xml"),
             whitespace1(),
             xmldeclversion(),
-            opt(map(
-                tuple6(
-                    whitespace1(),
-                    tag("encoding"),
-                    whitespace0(),
-                    tag("="),
-                    whitespace0(),
-                    delimited_string(),
-                ),
-                |(_, _, _, _, _, e)| e,
-            )),
+            opt(encodingdecl()),
             opt(xmldeclstandalone()),
             whitespace0(),
             tag("?>"),
@@ -92,4 +114,16 @@ pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
             Err(e) => Err(e)
         }
     }
+}
+
+
+pub(crate) fn is_encname_char(ch: char) -> bool {
+    matches!(ch,
+          'a'..='z'
+        | 'A'..='Z'
+        | '0'..='9'
+        | '-'
+        | '_'
+        | '.'
+    )
 }

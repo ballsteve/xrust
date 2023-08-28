@@ -25,7 +25,6 @@ fn rmtnse1013a() {
 }
 
 #[test]
-#[ignore]
 fn rmtnse1013b() {
     /*
         Test ID:rmt-ns-e1.0-13b

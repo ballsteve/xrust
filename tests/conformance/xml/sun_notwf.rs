@@ -551,7 +551,6 @@ fn element04() {
 }
 
 #[test]
-#[ignore]
 fn encoding01() {
     /*
         Test ID:encoding01
@@ -570,7 +569,6 @@ fn encoding01() {
 }
 
 #[test]
-#[ignore]
 fn encoding02() {
     /*
         Test ID:encoding02
@@ -589,7 +587,6 @@ fn encoding02() {
 }
 
 #[test]
-#[ignore]
 fn encoding03() {
     /*
         Test ID:encoding03
@@ -608,7 +605,6 @@ fn encoding03() {
 }
 
 #[test]
-#[ignore]
 fn encoding04() {
     /*
         Test ID:encoding04
@@ -627,7 +623,6 @@ fn encoding04() {
 }
 
 #[test]
-#[ignore]
 fn encoding05() {
     /*
         Test ID:encoding05
@@ -646,7 +641,6 @@ fn encoding05() {
 }
 
 #[test]
-#[ignore]
 fn encoding06() {
     /*
         Test ID:encoding06

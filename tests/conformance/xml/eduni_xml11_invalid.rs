@@ -10,7 +10,8 @@ use xrust::Document;
 #[test]
 fn rmt015() {
     /*
-        This test is deliberately ignored. The charachter is now valid in 5th edition.
+        This test is deliberately ignored.
+        As this document is now valid in 5th edition, we should not reject as not well formed.
     */
     /*
         Test ID:rmt-015
@@ -28,9 +29,14 @@ fn rmt015() {
 }
  */
 
+/*
 #[test]
 #[ignore]
 fn rmt017() {
+    /*
+        This test is deliberately ignored.
+        As this document is now valid in 5th edition, we should not reject as not well formed.
+    */
     /*
         Test ID:rmt-017
         Test URI:017.xml
@@ -45,10 +51,16 @@ fn rmt017() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn rmt018() {
+    /*
+        This test is deliberately ignored.
+        As this document is now valid in 5th edition, we should not reject as not well formed.
+    */
     /*
         Test ID:rmt-018
         Test URI:018.xml
@@ -63,6 +75,7 @@ fn rmt018() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 #[ignore]

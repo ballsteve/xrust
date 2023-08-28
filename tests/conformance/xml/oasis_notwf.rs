@@ -7,6 +7,7 @@ OASIS/NIST test cases
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
 fn op01fail1() {
@@ -1328,8 +1329,8 @@ fn op09fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p09fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -1464,7 +1465,6 @@ fn op10fail3() {
 }
 
 #[test]
-#[ignore]
 fn op11fail1() {
     /*
         Test ID:o-p11fail1
@@ -1483,7 +1483,6 @@ fn op11fail1() {
 }
 
 #[test]
-#[ignore]
 fn op11fail2() {
     /*
         Test ID:o-p11fail2
@@ -1502,7 +1501,6 @@ fn op11fail2() {
 }
 
 #[test]
-#[ignore]
 fn op12fail1() {
     /*
         Test ID:o-p12fail1
@@ -1521,7 +1519,6 @@ fn op12fail1() {
 }
 
 #[test]
-#[ignore]
 fn op12fail2() {
     /*
         Test ID:o-p12fail2
@@ -1540,7 +1537,6 @@ fn op12fail2() {
 }
 
 #[test]
-#[ignore]
 fn op12fail3() {
     /*
         Test ID:o-p12fail3
@@ -1577,7 +1573,6 @@ fn op12fail4() {
 }
 
 #[test]
-#[ignore]
 fn op12fail5() {
     /*
         Test ID:o-p12fail5
@@ -1596,7 +1591,6 @@ fn op12fail5() {
 }
 
 #[test]
-#[ignore]
 fn op12fail6() {
     /*
         Test ID:o-p12fail6
@@ -1615,7 +1609,6 @@ fn op12fail6() {
 }
 
 #[test]
-#[ignore]
 fn op12fail7() {
     /*
         Test ID:o-p12fail7
@@ -2030,7 +2023,6 @@ fn op25fail1() {
 }
 
 #[test]
-#[ignore]
 fn op26fail1() {
     /*
         Test ID:o-p26fail1
@@ -2049,7 +2041,6 @@ fn op26fail1() {
 }
 
 #[test]
-#[ignore]
 fn op26fail2() {
     /*
         Test ID:o-p26fail2
@@ -2122,7 +2113,6 @@ fn op29fail1() {
 }
 
 #[test]
-#[ignore]
 fn op30fail1() {
     /*
         Test ID:o-p30fail1
@@ -2133,15 +2123,14 @@ fn op30fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p30fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op31fail1() {
     /*
         Test ID:o-p31fail1
@@ -2152,8 +2141,8 @@ fn op31fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p31fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -2645,7 +2634,6 @@ fn op44fail4() {
 }
 
 #[test]
-#[ignore]
 fn op44fail5() {
     /*
         Test ID:o-p44fail5
@@ -3672,7 +3660,6 @@ fn op60fail5() {
 }
 
 #[test]
-#[ignore]
 fn op61fail1() {
     /*
         Test ID:o-p61fail1
@@ -3683,15 +3670,14 @@ fn op61fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p61fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op62fail1() {
     /*
         Test ID:o-p62fail1
@@ -3702,15 +3688,14 @@ fn op62fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op62fail2() {
     /*
         Test ID:o-p62fail2
@@ -3721,15 +3706,14 @@ fn op62fail2() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p62fail2.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op63fail1() {
     /*
         Test ID:o-p63fail1
@@ -3740,15 +3724,14 @@ fn op63fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op63fail2() {
     /*
         Test ID:o-p63fail2
@@ -3759,15 +3742,14 @@ fn op63fail2() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p63fail2.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op64fail1() {
     /*
         Test ID:o-p64fail1
@@ -3778,15 +3760,14 @@ fn op64fail1() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail1.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn op64fail2() {
     /*
         Test ID:o-p64fail2
@@ -3797,8 +3778,8 @@ fn op64fail2() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p64fail2.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/oasis/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -3895,7 +3876,6 @@ fn op66fail5() {
 }
 
 #[test]
-#[should_panic]
 fn op66fail6() {
     /*
         Test ID:o-p66fail6

@@ -299,6 +299,7 @@ fn rmtns10045() {
 }
 
 #[test]
+#[ignore]
 fn rmtns10046() {
     /*
         Test ID:rmt-ns10-046

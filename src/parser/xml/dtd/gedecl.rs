@@ -10,7 +10,8 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::is_char;
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::xml::dtd::intsubset::intsubset;
 
 pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match wellformed(
@@ -34,6 +35,10 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             Numeric entities expanded immediately, since there'll be namespaces and the like to
             deal with later, after that we just store the entity as a string and parse again when called.
              */
+            if !state2.currentlyexternal && s.contains('%'){
+                return Err(ParseError::NotWellFormed)
+            }
+
             let entityparse = map(
                 tuple2(
                     map(
@@ -51,13 +56,28 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 
             match entityparse {
                 Ok(((_, _), res)) => {
+                    if !state2.currentlyexternal {
+                        match intsubset()((res.as_str(), state2.clone())){
+                            Ok(_) => {}
+                            Err(_) => {
+                                return Err(ParseError::NotWellFormed)
+                            }
+                        }
+                    };
+
+
                     /* Entities should always bind to the first value */
+                    let replaceable = if state2.currentlyexternal {
+                         true
+                    } else {
+                        false
+                    };
                     match state2.dtd.generalentities.get(n.to_string().as_str()) {
                         None => {
                             state2
                                 .dtd
                                 .generalentities
-                                .insert(n.to_string(), (res, false));
+                                .insert(n.to_string(), (res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         Some((_, true)) => {
@@ -65,7 +85,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                                 .dtd
                                 .generalentities
                                 .entry(n.to_string())
-                                .or_insert((res, state2.currentlyexternal));
+                                .or_insert((res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         _ => Ok(((input2, state2), ())),

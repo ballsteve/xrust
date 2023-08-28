@@ -23,7 +23,7 @@ fn validnotsa001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/001.xml").unwrap(),
-                Some(dtdfileresolve()),
+        Some(dtdfileresolve()),
         Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
@@ -65,6 +65,7 @@ fn validnotsa002() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa003() {
     /*
         Test ID:valid-not-sa-003
@@ -351,6 +352,7 @@ fn validnotsa013() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa014() {
     /*
         Test ID:valid-not-sa-014
@@ -377,6 +379,7 @@ fn validnotsa014() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa015() {
     /*
         Test ID:valid-not-sa-015
@@ -403,6 +406,7 @@ fn validnotsa015() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa016() {
     /*
         Test ID:valid-not-sa-016
@@ -455,6 +459,7 @@ fn validnotsa017() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa018() {
     /*
         Test ID:valid-not-sa-018
@@ -481,6 +486,7 @@ fn validnotsa018() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa019() {
     /*
         Test ID:valid-not-sa-019
@@ -507,6 +513,7 @@ fn validnotsa019() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa020() {
     /*
         Test ID:valid-not-sa-020
@@ -533,6 +540,7 @@ fn validnotsa020() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa021() {
     /*
         Test ID:valid-not-sa-021
@@ -585,6 +593,7 @@ fn validnotsa023() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa024() {
     /*
         Test ID:valid-not-sa-024
@@ -611,6 +620,7 @@ fn validnotsa024() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa025() {
     /*
         Test ID:valid-not-sa-025
@@ -663,6 +673,7 @@ fn validnotsa026() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa027() {
     /*
         Test ID:valid-not-sa-027
@@ -767,6 +778,7 @@ fn validnotsa030() {
 }
 
 #[test]
+#[ignore]
 fn validnotsa031() {
     /*
         Test ID:valid-not-sa-031

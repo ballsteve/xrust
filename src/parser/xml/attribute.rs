@@ -15,7 +15,7 @@ use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::{Node, Value};
 use std::collections::HashMap;
-use crate::parser::ParseError::NotWellFormed;
+use crate::parser::common::is_char;
 
 pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     move |input| match many0(attribute())(input) {
@@ -185,7 +185,9 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                     .replace('\n', " ")
                     .trim().to_string();
                 //NEL character cannot be in attributes.
-                if r.contains('\u{0085}') {
+                if r.find(|c| !is_char(&c)) != None {
+                    Err(ParseError::NotWellFormed)
+                } else if r.contains('\u{0085}') {
                     Err(ParseError::NotWellFormed)
                 } else {
                     Ok(((input1, state1), r))

@@ -59,15 +59,13 @@ fn attdef() -> impl Fn(ParseInput) -> ParseResult<String> {
 //AttType ::= StringType | TokenizedType | EnumeratedType
 fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
     alt4(
-        map(petextreference(), |g| {
-            ()
-        }),
+        map(petextreference(), |_| { () }),  //TODO
         tag("CDATA"), //Stringtype
         alt7(
             //tokenizedtype
-            tag("ID"),
-            tag("IDREF"),
             tag("IDREFS"),
+            tag("IDREF"),
+            tag("ID"),
             tag("ENTITY"),
             tag("ENTITIES"),
             tag("NMTOKENS"),
@@ -79,7 +77,6 @@ fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
 fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |(input, state)|{
     map(
         alt3(
             value(tag("#REQUIRED"), "#REQUIRED".to_string()),
@@ -105,7 +102,6 @@ fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         ),
         |_x| (),
     )
-        ((input, state))}
 }
 
 //AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"

@@ -678,7 +678,6 @@ fn notwfsa037() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa038() {
     /*
         Test ID:not-wf-sa-038
@@ -1561,7 +1560,6 @@ fn notwfsa086() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa087() {
     /*
         Test ID:not-wf-sa-087
@@ -1814,7 +1812,6 @@ fn notwfsa100() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa101() {
     /*
         Test ID:not-wf-sa-101
@@ -1833,7 +1830,6 @@ fn notwfsa101() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa102() {
     /*
         Test ID:not-wf-sa-102
@@ -2626,7 +2622,6 @@ fn notwfsa144() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa145() {
     /*
         Test ID:not-wf-sa-145
@@ -2645,7 +2640,6 @@ fn notwfsa145() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa146() {
     /*
         Test ID:not-wf-sa-146
@@ -2899,7 +2893,6 @@ fn notwfsa159() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa160() {
     /*
         Test ID:not-wf-sa-160
@@ -2936,7 +2929,6 @@ fn notwfsa161() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa162() {
     /*
         Test ID:not-wf-sa-162
@@ -3138,7 +3130,6 @@ fn notwfsa172() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa173() {
     /*
         Test ID:not-wf-sa-173

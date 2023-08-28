@@ -1,11 +1,8 @@
 use crate::intmuttree::DTDDecl;
-use crate::parser::combinators::alt::alt4;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple7;
-use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::xml::dtd::misc::children;
-use crate::parser::xml::dtd::misc::mixed;
+use crate::parser::xml::dtd::misc::contentspec;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseInput, ParseResult};
 
@@ -34,11 +31,4 @@ pub(crate) fn elementdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 
 
-fn contentspec() -> impl Fn(ParseInput) -> ParseResult<String> {
-    alt4(
-        value(tag("EMPTY"), "EMPTY".to_string()),
-        value(tag("ANY"), "ANY".to_string()),
-        mixed(),
-        children(),
-    )
-}
+

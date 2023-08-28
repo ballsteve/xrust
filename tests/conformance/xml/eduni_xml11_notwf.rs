@@ -153,9 +153,14 @@ fn rmt014() {
 }
  */
 
+/*
 #[test]
 #[ignore]
 fn rmt016() {
+    /*
+        This test is deliberately ignored.
+        As this character is now valid in 5th edition, we should not reject as not well formed.
+    */
     /*
         Test ID:rmt-016
         Test URI:016.xml
@@ -170,6 +175,7 @@ fn rmt016() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 #[ignore]
