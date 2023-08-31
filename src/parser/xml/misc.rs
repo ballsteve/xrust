@@ -41,7 +41,7 @@ pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNo
             NodeType::ProcessingInstruction => {
                 if v.to_string().contains(|c: char| !is_char(&c)) {
                     false
-                } else if v.pi_name().unwrap().contains(":"){
+                } else if v.pi_name().unwrap().contains(':'){
                     //"No entity names, processing instruction targets, or notation names contain any colons."
                     false
                 } else {

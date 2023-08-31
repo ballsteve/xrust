@@ -141,7 +141,7 @@ fn textexternalid() -> impl Fn(ParseInput) -> ParseResult<String> {
         {
             Err(e) => Err(e),
             Ok(((input2, state2), (sid, _pid))) => {
-                match state2.clone().resolve(state2.docloc.clone(), sid.clone()) {
+                match state2.clone().resolve(state2.docloc.clone(), sid) {
                     Err(_) => {
                         Err(ParseError::ExtDTDLoadError)
                     }

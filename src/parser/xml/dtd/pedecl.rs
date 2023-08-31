@@ -21,7 +21,7 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             whitespace1(),
             tag("%"),
             whitespace1(),
-            wellformed(qualname(),|n| !n.to_string().contains(":") ),
+            wellformed(qualname(),|n| !n.to_string().contains(':') ),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -62,7 +62,8 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                 Ok(((_, _), res)) => {
                     if !state2.currentlyexternal {
                         match intsubset()((res.as_str(), state2.clone())){
-                            Ok(_) => {}
+                            Ok(((_i, _s), _)) => {
+                            }
                             Err(_) => {
                                 return Err(ParseError::NotWellFormed)
                             }
@@ -71,11 +72,8 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 
                     /* Entities should always bind to the first value */
-                    let replaceable = if state2.currentlyexternal {
-                         true
-                    } else {
-                        false
-                    };
+                    let replaceable = state2.currentlyexternal;
+
                     match state2.dtd.paramentities.get(n.to_string().as_str()) {
                         None => {
                             state2.dtd.paramentities.insert(n.to_string(), (res, replaceable));

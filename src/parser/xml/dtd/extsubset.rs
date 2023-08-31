@@ -43,8 +43,6 @@ pub(crate) fn extsubset() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 pub(crate) fn extsubsetdecl() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
     many0(alt10(
-        //includesect(),
-        //ignoresect(),
         conditionalsect(),
         elementdecl(),
         attlistdecl(),

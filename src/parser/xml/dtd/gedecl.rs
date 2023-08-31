@@ -18,7 +18,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tuple7(
             tag("<!ENTITY"),
             whitespace1(),
-            wellformed(qualname(),|n| !n.to_string().contains(":") ),
+            wellformed(qualname(),|n| !n.to_string().contains(':') ),
             whitespace1(),
             alt2(
                 delimited(tag("'"), take_until("'"), tag("'")),
@@ -67,11 +67,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 
                     /* Entities should always bind to the first value */
-                    let replaceable = if state2.currentlyexternal {
-                         true
-                    } else {
-                        false
-                    };
+                    let replaceable = state2.currentlyexternal;
                     match state2.dtd.generalentities.get(n.to_string().as_str()) {
                         None => {
                             state2

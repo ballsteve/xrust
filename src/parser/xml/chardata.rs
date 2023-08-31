@@ -43,10 +43,11 @@ pub(crate) fn chardata_unicode_codepoint() -> impl Fn(ParseInput) -> ParseResult
                 delimited(tag("&#"), parse_decimal(), tag(";")),
             ),
             |value| {
-                match std::char::from_u32(*value) {
-                    None => false,
-                    _ => true
-                }
+                std::char::from_u32(*value).is_some()
+                //match std::char::from_u32(*value) {
+                //    None => false,
+                //    _ => true
+                //}
             }
         ),
         |value| std::char::from_u32(value).unwrap().to_string(),

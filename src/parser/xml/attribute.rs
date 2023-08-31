@@ -52,7 +52,7 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 }
                 // Default namespace cannot be http://www.w3.org/XML/1998/namespace
                 // Default namespace cannot be http://www.w3.org/2000/xmlns/
-                if (node.name().get_prefix() == None)
+                if (node.name().get_prefix().is_none())
                     && (node.name().get_localname() == *"xmlns")
                     && (
                     node.to_string() == *"http://www.w3.org/XML/1998/namespace"
@@ -66,7 +66,7 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     && (node.name().get_localname() != "")
                     && (node.to_string() == *"")
-                    && state1.xmlversion == "1.0".to_string()
+                    && state1.xmlversion == *"1.0"
                 {
                     return Err(ParseError::NotWellFormed);
                 }
@@ -179,13 +179,10 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                 */
                 let r = rn
                     .concat()
-                    .replace('\n', " ")
-                    .replace('\r', " ")
-                    .replace('\t', " ")
-                    .replace('\n', " ")
+                    .replace(['\n', '\r', '\t', '\n'], " ")
                     .trim().to_string();
                 //NEL character cannot be in attributes.
-                if r.find(|c| !is_char(&c)) != None {
+                if r.find(|c| !is_char(&c)).is_some() {
                     Err(ParseError::NotWellFormed)
                 } else if r.contains('\u{0085}') {
                     Err(ParseError::NotWellFormed)

@@ -90,7 +90,7 @@ pub(crate) fn ndatadecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match tuple7(
         tag("<!NOTATION"),
         whitespace1(),
-        wellformed(qualname(),|n| !n.to_string().contains(":") ),
+        wellformed(qualname(),|n| !n.to_string().contains(':') ),
         whitespace1(),
         notationpublicid(),
         //contentspec(), //take_until(">"), //contentspec - TODO Build out.

@@ -59,7 +59,7 @@ fn attdef() -> impl Fn(ParseInput) -> ParseResult<String> {
 //AttType ::= StringType | TokenizedType | EnumeratedType
 fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
     alt4(
-        map(petextreference(), |_| { () }),  //TODO
+        map(petextreference(), |_| {  }),  //TODO
         tag("CDATA"), //Stringtype
         alt7(
             //tokenizedtype

@@ -75,12 +75,12 @@ pub(crate) fn encodingdecl() -> impl Fn(ParseInput) -> ParseResult<String> {
             alt2(
                 tuple3(
                     tag("'"),
-                    take_while(|c| is_encname_char(c)),
+                    take_while(is_encname_char),
                     tag("'"),
                 ),
                 tuple3(
                     tag("\""),
-                    take_while(|c| is_encname_char(c)),
+                    take_while(is_encname_char),
                     tag("\""),
                 )
             )
