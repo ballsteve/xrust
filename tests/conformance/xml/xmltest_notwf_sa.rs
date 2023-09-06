@@ -2028,7 +2028,6 @@ fn notwfsa112() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa113() {
     /*
         Test ID:not-wf-sa-113
@@ -2047,7 +2046,6 @@ fn notwfsa113() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa114() {
     /*
         Test ID:not-wf-sa-114
@@ -2874,7 +2872,6 @@ fn notwfsa158() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa159() {
     /*
         Test ID:not-wf-sa-159

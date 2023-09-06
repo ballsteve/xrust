@@ -139,7 +139,6 @@ fn notwfnotsa007() {
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa008() {
     /*
         Test ID:not-wf-not-sa-008

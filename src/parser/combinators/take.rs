@@ -38,6 +38,40 @@ pub(crate) fn take_until_either_or(s1: &'static str, s2: &'static str) -> impl F
     }
 }
 
+pub(crate) fn take_until_either_or_min1(s1: &'static str, s2: &'static str) -> impl Fn(ParseInput) -> ParseResult<String> {
+    move |(input, state)| {
+        let r1 = input.find(s1);
+        let r2 = input.find(s2);
+        match (r1, r2) {
+            (Some(i1), Some(i2)) => {
+                if i1 == 0 || i2 == 0 {
+                    Err(ParseError::Combinator)
+                } else {
+                    Ok(((&input[i1.min(i2)..], state), input[0..i1.min(i2)].to_string()))
+                }
+            },
+            (Some(i1), None) =>{
+                if i1 == 0 {
+                    Err(ParseError::Combinator)
+                } else {
+                    Ok(((&input[i1..], state), input[0..i1].to_string()))
+                }
+            },
+            (None, Some(i2)) =>{
+                if i2 == 0 {
+                    Err(ParseError::Combinator)
+                } else {
+                    Ok(((&input[i2..], state), input[0..i2].to_string()))
+                }
+            },
+            (None, None) => {
+                Err(ParseError::Combinator)
+            }
+        }
+    }
+}
+
+
 pub(crate) fn take_until_end() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |(input, state)| Ok((("", state), input.to_string()))
 }

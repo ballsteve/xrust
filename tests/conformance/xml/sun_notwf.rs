@@ -6,6 +6,7 @@ Sun Microsystems test cases
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
 fn notwfsa03() {
@@ -453,8 +454,8 @@ fn dtd07() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd07.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string()),
     ));
 
     assert!(testxml.is_err());
