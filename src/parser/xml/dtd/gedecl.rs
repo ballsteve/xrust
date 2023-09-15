@@ -13,6 +13,7 @@ use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::{pereference, petextreference};
+use crate::parser::xml::dtd::textexternalid;
 use crate::parser::xml::reference::{reference, textreference};
 
 pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
@@ -22,7 +23,8 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             whitespace1(),
             wellformed(qualname(),|n| !n.to_string().contains(':') ),
             whitespace1(),
-            alt2(
+            alt3(
+                textexternalid(),
                 delimited(tag("'"), take_until("'"), tag("'")),
                 delimited(tag("\""), take_until("\""), tag("\"")),
             ),

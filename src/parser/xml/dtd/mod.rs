@@ -121,11 +121,11 @@ fn textexternalid() -> impl Fn(ParseInput) -> ParseResult<String> {
                     alt2(
                         delimited(
                             tag("'"),
-                            take_while(|c| !is_pubid_char(&c)),
+                            take_while(|c| is_pubid_char(&c)),
                             tag("'")),
                         delimited(
                             tag("\""),
-                            take_while(|c| !is_pubid_charwithapos(&c)),
+                            take_while(|c| is_pubid_charwithapos(&c)),
                             tag("\""),
                         ),
                     ), //PubidLiteral TODO validate chars here (PubidChar from spec).
@@ -135,7 +135,9 @@ fn textexternalid() -> impl Fn(ParseInput) -> ParseResult<String> {
                         delimited(tag("\""), take_until("\""), tag("\"")),
                     ), //SystemLiteral
                 ),
-                |(_, _, pid, _, sid)| (sid, Some(pid)),
+                |(_, _, pid, _, sid)| {
+                    (sid, Some(pid))
+                },
             ),
         )((input, state))
         {
@@ -146,7 +148,7 @@ fn textexternalid() -> impl Fn(ParseInput) -> ParseResult<String> {
                         Err(ParseError::ExtDTDLoadError)
                     }
                     Ok(s) => {
-                        match opt(textdecl())((s.as_str(), state2.clone())){
+                        match opt(textdecl())((s.replace("\r\n", "\n").replace("\r", "\n").as_str(), state2.clone())){
                             Err(_) => {Ok(((input2, state2), s))},
                             Ok(((i3, _), _)) => {
                                 Ok(((input2, state2), i3.to_string()))

@@ -11,7 +11,7 @@ James Clark XMLTEST cases - Standalone
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::non_utf8_file_reader;
+use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 
 #[test]
 fn validsa001() {
@@ -2452,7 +2452,6 @@ fn validsa096() {
 }
 
 #[test]
-#[ignore]
 fn validsa097() {
     /*
         Test ID:valid-sa-097
@@ -2463,8 +2462,8 @@ fn validsa097() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/097.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml").unwrap(),
@@ -2539,8 +2538,8 @@ fn validsa100() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/100.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml").unwrap(),
