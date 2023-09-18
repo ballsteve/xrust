@@ -51,25 +51,21 @@ where
     P3: Fn(ParseInput) -> ParseResult<A>,
     P4: Fn(ParseInput) -> ParseResult<A>,
 {
-    move |mut input| {
-        match parser1(input.clone()) {
-            Ok(parse_result) => Ok(parse_result),
-            Err(ParseError::Combinator) => {
-                match parser2(input.clone()) {
-                    Ok(parse_result2) => Ok(parse_result2),
-                    Err(ParseError::Combinator) => match parser3(input.clone()) {
-                        Ok(parse_result3) => Ok(parse_result3),
-                        Err(ParseError::Combinator) => match parser4(input) {
-                            Ok(parse_result4) => Ok(parse_result4),
-                            Err(err) => Err(err),
-                        },
-                        Err(err) => Err(err),
-                    },
+    move |mut input| match parser1(input.clone()) {
+        Ok(parse_result) => Ok(parse_result),
+        Err(ParseError::Combinator) => match parser2(input.clone()) {
+            Ok(parse_result2) => Ok(parse_result2),
+            Err(ParseError::Combinator) => match parser3(input.clone()) {
+                Ok(parse_result3) => Ok(parse_result3),
+                Err(ParseError::Combinator) => match parser4(input) {
+                    Ok(parse_result4) => Ok(parse_result4),
                     Err(err) => Err(err),
-                }
-            }
+                },
+                Err(err) => Err(err),
+            },
             Err(err) => Err(err),
-        }
+        },
+        Err(err) => Err(err),
     }
 }
 
@@ -108,7 +104,7 @@ where
         Err(err) => Err(err),
     }
 }
-/*
+
 pub(crate) fn alt6<P1, P2, P3, P4, P5, P6, A>(
     parser1: P1,
     parser2: P2,
@@ -150,7 +146,6 @@ where
         Err(err) => Err(err),
     }
 }
- */
 
 pub(crate) fn alt7<P1, P2, P3, P4, P5, P6, P7, A>(
     parser1: P1,

@@ -353,65 +353,42 @@ where
     P9: Fn(ParseInput) -> ParseResult<R9>,
     P10: Fn(ParseInput) -> ParseResult<R10>,
 {
-    move |mut input| {
-        match parser1(input) {
-            Ok((input1, result1)) => {
-                match parser2(input1) {
-                    Ok((input2, result2)) => {
-                        match parser3(input2) {
-                            Ok((input3, result3)) => {
-                                match parser4(input3) {
-                                    Ok((input4, result4)) => {
-                                        match parser5(input4) {
-                                            Ok((input5, result5)) => {
-                                                match parser6(input5) {
-                                                    Ok((input6, result6)) => {
-                                                        match parser7(input6) {
-                                                            Ok((input7, result7)) => {
-                                                                match parser8(input7) {
-                                                                    Ok((input8, result8)) => {
-                                                                        match parser9(input8) {
-                                                                            Ok((
-                                                                                input9,
-                                                                                result9,
-                                                                            )) => {
-                                                                                match parser10(input9) {
-										    Ok((input10, result10)) => Ok((
-											input10,
-											(
-											    result1, result2, result3, result4, result5,
-											    result6, result7, result8, result9, result10,
-											),
-										    )),
-											Err(err) => Err(err),
-										}
-                                                                            }
-                                                                            Err(err) => Err(err),
-                                                                        }
-                                                                    }
-                                                                    Err(err) => Err(err),
-                                                                }
-                                                            }
-                                                            Err(err) => Err(err),
-                                                        }
-                                                    }
-                                                    Err(err) => Err(err),
-                                                }
-                                            }
+    move |mut input| match parser1(input) {
+        Ok((input1, result1)) => match parser2(input1) {
+            Ok((input2, result2)) => match parser3(input2) {
+                Ok((input3, result3)) => match parser4(input3) {
+                    Ok((input4, result4)) => match parser5(input4) {
+                        Ok((input5, result5)) => match parser6(input5) {
+                            Ok((input6, result6)) => match parser7(input6) {
+                                Ok((input7, result7)) => match parser8(input7) {
+                                    Ok((input8, result8)) => match parser9(input8) {
+                                        Ok((input9, result9)) => match parser10(input9) {
+                                            Ok((input10, result10)) => Ok((
+                                                input10,
+                                                (
+                                                    result1, result2, result3, result4, result5,
+                                                    result6, result7, result8, result9, result10,
+                                                ),
+                                            )),
                                             Err(err) => Err(err),
-                                        }
-                                    }
+                                        },
+                                        Err(err) => Err(err),
+                                    },
                                     Err(err) => Err(err),
-                                }
-                            }
+                                },
+                                Err(err) => Err(err),
+                            },
                             Err(err) => Err(err),
-                        }
-                    }
+                        },
+                        Err(err) => Err(err),
+                    },
                     Err(err) => Err(err),
-                }
-            }
+                },
+                Err(err) => Err(err),
+            },
             Err(err) => Err(err),
-        }
+        },
+        Err(err) => Err(err),
     }
 }
 

@@ -48,8 +48,6 @@ We need your help!
 
 */
 
-//#![recursion_limit = "10"]
-
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
@@ -67,7 +65,9 @@ mod parsecommon;
 //pub mod parsexml;
 
 pub mod xpath;
-pub use xpath::parse;
+pub use xpath::expression;
+pub mod pattern;
+pub use pattern::Pattern;
 
 pub mod evaluate;
 pub use evaluate::{Constructor, Evaluator, StaticContext};

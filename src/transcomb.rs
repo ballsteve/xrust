@@ -376,6 +376,27 @@ pub fn root<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResul
     })
 }
 
+/// Returns a sequence with the parent node only if it is the source document's root node
+pub fn parent_root<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+{
+    Box::new(move |ctxt| {
+        if ctxt.seq.len() != 0 {
+            match &*ctxt.seq[0] {
+                Item::Node(n) => match n.parent() {
+                    Some(p) => match n.node_type() {
+                        NodeType::Document => Ok(vec![Rc::new(Item::Node(n.clone()))]),
+                        _ => Ok(vec![]),
+                    },
+                    None => Ok(vec![]),
+                },
+                _ => Ok(vec![]), // could be an error
+            }
+        } else {
+            Ok(vec![])
+        }
+    })
+}
+
 /// Creates a sequence. Each function in the supplied vector creates an item in the sequence. The original context is passed to each function.
 pub fn tc_sequence<'a, F: 'a, N: Node + 'a>(
     items: Vec<F>,
@@ -417,6 +438,24 @@ where
             Ok(r) => Ok(r),
             Err(err) => Err(err),
         }
+    })
+}
+
+/// Each function in the supplied vector is evaluated, and the resulting sequences are combined into a single sequence.
+/// TODO: eliminate duplicates
+pub fn union<'a, F: 'a, N: Node>(
+    branches: Vec<F>,
+) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+where
+    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+{
+    Box::new(move |ctxt| {
+        let mut result = vec![];
+        for b in &branches {
+            let mut c = b(ctxt)?;
+            result.append(&mut c)
+        }
+        Ok(result)
     })
 }
 

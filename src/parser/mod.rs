@@ -18,7 +18,7 @@ pub(crate) mod xml;
 pub(crate) type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
-pub(crate) enum ParseError {
+pub enum ParseError {
     // The "Combinator" error just means a parser hasn't matched, its not serious necessarily.
     // Every other error should get returned.
     Combinator, // Combinator isn't correct, not a serious error.
@@ -38,7 +38,7 @@ pub(crate) enum ParseError {
 }
 
 #[derive(Clone, Debug)]
-pub(crate) struct ParseInput<'a> {
+pub struct ParseInput<'a> {
     entityfeed: Vec<char>,
     input: Chars<'a>,
     dtd: DTD,

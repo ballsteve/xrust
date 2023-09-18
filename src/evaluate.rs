@@ -1887,7 +1887,8 @@ pub enum Axis {
     Attribute,
     SelfAttribute, // a special axis, only for matching an attribute in a a pattern match
     Selfaxis,
-    SelfDocument, // a special axis, only for matching the Document in a pattern match
+    SelfDocument,  // a special axis, only for matching the Document in a pattern match
+    SelfNamespace, // a special axis, only for matching the namespace in a pattern
     Following,
     FollowingSibling,
     Namespace,
@@ -1895,6 +1896,7 @@ pub enum Axis {
     ParentDocument, // a special axis, only for matching in a pattern match. Matches the parent as well as the Document.
     Ancestor,
     AncestorOrSelf,
+    AncestorOrSelfOrRoot, // a special axis for matching in a pattern
     Preceding,
     PrecedingSibling,
     Unknown,

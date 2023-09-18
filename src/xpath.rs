@@ -9,12 +9,12 @@ use crate::evaluate::{ArithmeticOperator, Axis, NameTest, NodeMatch, NodeTest, W
 use crate::item::{Item, Node};
 use crate::transcomb::{
     arithmetic, boolean, ceiling, compose, contains, context, current_date, current_date_time,
-    current_group, current_grouping_key, current_time, declare_variable, empty, floor, format_date,
-    format_date_time, format_time, general_comparison, last, literal as tc_literal, local_name,
-    name, normalize_space, not, not_implemented, number, position, reference_variable, root, round,
-    starts_with, step, string, substring, substring_after, substring_before, sum, switch, tc_and,
-    tc_concat, tc_count, tc_false, tc_loop, tc_or, tc_range, tc_sequence, tc_true, translate,
-    value_comparison, Combinator, Context, TransResult,
+    current_group, current_grouping_key, current_time, declare_variable, empty, filter, floor,
+    format_date, format_date_time, format_time, general_comparison, last, literal as tc_literal,
+    local_name, name, normalize_space, not, not_implemented, number, parent_root, position,
+    reference_variable, root, round, starts_with, step, string, substring, substring_after,
+    substring_before, sum, switch, tc_and, tc_concat, tc_count, tc_false, tc_loop, tc_or, tc_range,
+    tc_sequence, tc_true, translate, union, value_comparison, Combinator, Context, TransResult,
 };
 use crate::value::Value;
 use crate::value::*;
@@ -36,7 +36,7 @@ use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::ncname;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub fn parse<'a, N: Node, F>(e: &'a str) -> Result<Combinator<'a, N>, Error>
+pub fn expression<'a, N: Node, F>(e: &'a str) -> Result<Combinator<'a, N>, Error>
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
@@ -44,7 +44,6 @@ where
         Ok(empty())
     } else {
         let mut input = ParseInput::new(e);
-        //input.set_limit(100);
         match xpath_expr::<N, F>(input) {
             Ok((rem, f)) => {
                 if rem.clone().peekable().peek().is_some() {
@@ -70,16 +69,16 @@ where
 }
 
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
-// Implementation note 2: since XPath is recursice, must lazily evaluate arguments to avoid stack overflow.
+// Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
 fn expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        inspect("expr", separated_list1(
+        separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
             expr_single::<N, F>(),
-        )),
+        ),
         |v| tc_sequence(v),
     ))
 }
@@ -284,13 +283,16 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        inspect("or_expr", separated_list1(
-            map(tuple3(xpwhitespace(), tag("or"), xpwhitespace()), |_| ()),
-            inspect("or_expr: and", and_expr::<N, F>()),
-        )),
+        inspect(
+            "or_expr",
+            separated_list1(
+                map(tuple3(xpwhitespace(), tag("or"), xpwhitespace()), |_| ()),
+                inspect("or_expr: and", and_expr::<N, F>()),
+            ),
+        ),
         |mut v| {
             if v.len() == 1 {
-		v.pop().unwrap()
+                v.pop().unwrap()
             } else {
                 tc_or(v)
             }
@@ -304,10 +306,13 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        inspect("and_expr", separated_list1(
-            map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),
-            comparison_expr::<N, F>(),
-        )),
+        inspect(
+            "and_expr",
+            separated_list1(
+                map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),
+                comparison_expr::<N, F>(),
+            ),
+        ),
         |v| {
             if v.len() == 1 {
                 // TODO: This is inefficient, but Rust is not allowing v[0]
@@ -371,10 +376,13 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        inspect("stringconcat", separated_list1(
-            map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
-            range_expr::<N, F>(),
-        )),
+        inspect(
+            "stringconcat",
+            separated_list1(
+                map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
+                range_expr::<N, F>(),
+            ),
+        ),
         |v| {
             if v.len() == 1 {
                 // TODO: rust doesn't like v[0], see above
@@ -499,13 +507,16 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        inspect("union", separated_list1(
-            map(
-                tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
-                |_| (),
+        inspect(
+            "union",
+            separated_list1(
+                map(
+                    tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
+                    |_| (),
+                ),
+                intersectexcept_expr::<N, F>(),
             ),
-            intersectexcept_expr::<N, F>(),
-        )),
+        ),
         |v| {
             if v.len() == 1 {
                 // TODO: see above
@@ -770,19 +781,22 @@ fn value_expr<'a, N: Node + 'a, F>(
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(inspect("value_expr", map(
-        pair(
-            path_expr::<N, F>(),
-            many0(tuple2(tag("!"), path_expr::<N, F>())),
+    Box::new(inspect(
+        "value_expr",
+        map(
+            pair(
+                path_expr::<N, F>(),
+                many0(tuple2(tag("!"), path_expr::<N, F>())),
+            ),
+            |(u, v)| {
+                if v.is_empty() {
+                    u
+                } else {
+                    not_implemented("value_expr".to_string())
+                }
+            },
         ),
-        |(u, v)| {
-            if v.is_empty() {
-                u
-            } else {
-                not_implemented("value_expr".to_string())
-            }
-        },
-    )))
+    ))
 }
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
@@ -790,11 +804,11 @@ fn path_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Com
 where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
-    Box::new(inspect("path_expr", alt3(
+    Box::new(alt3(
         absolutedescendant_expr::<N, F>(),
         absolutepath_expr::<N, F>(),
         relativepath_expr::<N, F>(),
-    )))
+    ))
 }
 
 // ('//' RelativePathExpr?)
@@ -844,13 +858,13 @@ where
 {
     Box::new(map(
         pair(
-            inspect("relpath: looking for first step", step_expr::<N, F>()),
+            step_expr::<N, F>(),
             many0(tuple2(
-                inspect("relpath: looking for tag separator", alt2(
+                alt2(
                     map(tuple3(xpwhitespace(), tag("//"), xpwhitespace()), |_| "//"),
                     map(tuple3(xpwhitespace(), tag("/"), xpwhitespace()), |_| "/"),
-                )),
-                inspect("relpath: looking for remaining steps", step_expr::<N, F>()),
+                ),
+                step_expr::<N, F>(),
             )),
         ),
         |(a, b)| {
@@ -911,7 +925,7 @@ where
     Box::new(inspect(
         "primary_expr",
         alt5(
-            inspect("literal", literal()),
+            literal(),
             context_item(),
             parenthesized_expr::<N, F>(),
             inspect("function_call", function_call::<N, F>()),
@@ -1262,7 +1276,7 @@ where
 }
 
 // VarRef ::= '$' VarName
-fn variable_reference<'a, N: Node + 'a>(
+pub fn variable_reference<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
     Box::new(map(pair(tag("$"), qname()), |(_, qn)| {
         reference_variable(get_nt_localname(&qn))
@@ -1303,7 +1317,8 @@ fn context_item<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Com
 }
 
 // Literal ::= NumericLiteral | StringLiteral
-fn literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+pub fn literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+{
     Box::new(alt2(numeric_literal(), string_literal()))
 }
 
@@ -1585,9 +1600,33 @@ fn axis_self() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
     Box::new(map(tag("self"), |c| "self"))
 }
 
+// PredicateList ::= Predicate*
+pub fn predicate_list<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+where
+    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+{
+    Box::new(map(many0(predicate::<N, F>()), |v| compose(v)))
+}
+
+// Predicate ::= "[" expr "]"
+fn predicate<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+where
+    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+{
+    Box::new(map(
+        tuple3(
+            map(tuple3(xpwhitespace(), tag("["), xpwhitespace()), |_| ()),
+            expr_wrapper::<N, F>(true),
+            map(tuple3(xpwhitespace(), tag("]"), xpwhitespace()), |_| ()),
+        ),
+        |(_, e, _)| filter(e),
+    ))
+}
+
 // NodeTest ::= KindTest | NameTest
 // NameTest ::= EQName | Wildcard
-fn nodetest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+pub fn nodetest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     //    Box::new(alt2(kindtest(), nametest()))
     Box::new(nametest())
 }
@@ -1615,7 +1654,7 @@ fn wildcard() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     }))
 }
 
-fn qname() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+pub fn qname() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     Box::new(alt2(prefixed_name(), unprefixed_name()))
 }
 fn unprefixed_name() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
@@ -1640,7 +1679,7 @@ fn prefixed_name() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     ))
 }
 
-fn xpwhitespace() -> Box<dyn Fn(ParseInput) -> ParseResult<()>> {
+pub fn xpwhitespace() -> Box<dyn Fn(ParseInput) -> ParseResult<()>> {
     Box::new(inspect(
         "xpwhitespace",
         map(
@@ -1691,50 +1730,50 @@ fn take_until_balanced(
 
         // Assume the open and close phrases are the same length
         loop {
-//            eprintln!(
-//                "TUB: looking for open in \"{}\", bc=={}",
-//                input, bracket_counter
-//            );
+            //            eprintln!(
+            //                "TUB: looking for open in \"{}\", bc=={}",
+            //                input, bracket_counter
+            //            );
             counter += 1;
             if counter > 1000 {
-//                eprintln!("TUB: too many loops");
+                //                eprintln!("TUB: too many loops");
                 return Err(ParseError::Unknown { row: 0, col: 0 });
             }
             match (input.as_str().find(open), input.as_str().find(close)) {
                 (Some(0), _) => {
-//                    eprintln!("TUB: found open, bracket counter=={}", bracket_counter);
+                    //                    eprintln!("TUB: found open, bracket counter=={}", bracket_counter);
                     bracket_counter += 1;
                     let _: Vec<_> = (&mut input).take(open.len()).collect();
-//                    eprintln!("TUB: input now \"{}\"", input);
+                    //                    eprintln!("TUB: input now \"{}\"", input);
                     match (input.as_str().find(&open), input.as_str().find(&close)) {
                         (_, None) => {
                             // Scenario 1
-//                            eprintln!("TUB: scenario 1");
+                            //                            eprintln!("TUB: scenario 1");
                             return Err(ParseError::Unbalanced);
                         }
                         (Some(o), Some(c)) => {
                             // Scenario 3/4
                             if o > c {
                                 // Scenario 3
-//                                eprintln!("TUB: scenario 3");
+                                //                                eprintln!("TUB: scenario 3");
                                 if bracket_counter == 1 {
                                     let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-//                                    eprintln!("TUB: returning, input now \"{}\"", input);
+                                    //                                    eprintln!("TUB: returning, input now \"{}\"", input);
                                     return Ok((input, ()));
                                 } else {
                                     return Err(ParseError::Unbalanced);
                                 }
                             } else {
                                 // Scenario 4
-//                                eprintln!("TUB: scenario 4");
+                                //                                eprintln!("TUB: scenario 4");
                                 bracket_counter += 1;
                                 let _: Vec<_> = (&mut input).take(o + open.len()).collect();
-//                                eprintln!("TUB: input now \"{}\"", input);
+                                //                                eprintln!("TUB: input now \"{}\"", input);
                             }
                         }
                         (_, Some(c)) => {
                             // Scenario 2
-//                            eprintln!("TUB: scenario 2");
+                            //                            eprintln!("TUB: scenario 2");
                             match bracket_counter.cmp(&1) {
                                 Ordering::Greater => {
                                     bracket_counter -= 1;
@@ -1742,7 +1781,7 @@ fn take_until_balanced(
                                 }
                                 Ordering::Equal => {
                                     let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-//                                    eprintln!("TUB: returning, input now \"{}\"", input);
+                                    //                                    eprintln!("TUB: returning, input now \"{}\"", input);
                                     return Ok((input, ()));
                                 }
                                 Ordering::Less => {
@@ -1751,13 +1790,13 @@ fn take_until_balanced(
                             }
                         }
                         _ => {
-//                            eprintln!("TUB: unhandled scenario")
+                            //                            eprintln!("TUB: unhandled scenario")
                         }
                     }
                 }
                 (None, Some(c)) => {
                     // Scenario 2
-//                    eprintln!("TUB: scenario 2/2");
+                    //                    eprintln!("TUB: scenario 2/2");
                     match bracket_counter.cmp(&1) {
                         Ordering::Greater => {
                             bracket_counter -= 1;
@@ -1765,7 +1804,7 @@ fn take_until_balanced(
                         }
                         Ordering::Equal => {
                             let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-//                            eprintln!("TUB: returning, input now \"{}\"", input);
+                            //                            eprintln!("TUB: returning, input now \"{}\"", input);
                             return Ok((input, ()));
                         }
                         Ordering::Less => {

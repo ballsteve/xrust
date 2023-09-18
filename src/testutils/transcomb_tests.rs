@@ -11,7 +11,7 @@ macro_rules! transcomb_tests (
 			       set_attribute,
 			       copy, deep_copy,
 			       context, root,
-			       tc_sequence, compose, step, filter,
+			       tc_sequence, compose, step, filter, union,
 			       tc_or, tc_and,
 			       tc_loop, switch,
 			       general_comparison, value_comparison,
@@ -1538,6 +1538,67 @@ macro_rules! transcomb_tests (
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "foo")
+	}
+
+	#[test]
+	fn tc_union() {
+	    // XPath == child::a|child::b
+	    let ev = union(
+		vec![
+		    step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from("a")))})
+			}
+		    ),
+		    step(
+			NodeMatch {
+			    axis: Axis::Child,
+			    nodetest: NodeTest::Name(NameTest{ns: None, prefix: None, name: Some(WildcardOrName::Name(String::from("b")))})
+			}
+		    ),
+		]
+	    );
+
+	    // Setup a source document
+	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let mut a = sd.new_element(QualifiedName::new(None, None, String::from("a")))
+		.expect("unable to create element");
+	    t.push(a.clone())
+		.expect("unable to append child");
+	    let t_a = sd.new_text(Value::from("first"))
+		.expect("unable to create text node");
+	    a.push(t_a)
+		.expect("unable to append text node");
+	    let mut b = sd.new_element(QualifiedName::new(None, None, String::from("b")))
+		.expect("unable to create element");
+	    t.push(b.clone())
+		.expect("unable to append child");
+	    let t_b = sd.new_text(Value::from("second"))
+		.expect("unable to create text node");
+	    b.push(t_b)
+		.expect("unable to append text node");
+	    let mut c = sd.new_element(QualifiedName::new(None, None, String::from("c")))
+		.expect("unable to create element");
+	    t.push(c.clone())
+		.expect("unable to append child");
+	    let t_c = sd.new_text(Value::from("third"))
+		.expect("unable to create text node");
+	    c.push(t_c)
+		.expect("unable to append text node");
+
+	    // Now evaluate the combinator with the Test element as the context item
+	    let seq = ev(&mut Context::from(
+		vec![
+		    Rc::new(Item::Node(t)),
+		]
+	    )).expect("evaluation failed");
+	    assert_eq!(seq.len(), 2);
+	    assert_eq!(seq.to_xml(), "<a>first</a><b>second</b>");
 	}
 
 	#[test]

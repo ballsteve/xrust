@@ -4,6 +4,7 @@ use xrust::intmuttree::{NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::item_node_tests;
 use xrust::item_value_tests;
+use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
 use xrust::transcomb_tests;
 use xrust::xdmerror::Error;
@@ -50,4 +51,5 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
 item_node_tests!(make_empty_doc, make_doc);
 evaluate_tests!(make_empty_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
+pattern_tests!(RNode, make_empty_doc, make_sd);
 //xslt_tests!(make_from_str, make_empty_doc);
