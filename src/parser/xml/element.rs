@@ -49,7 +49,13 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                                         return Err(ParseError::MissingNameSpace);
                                     }
                                 }
-                                Some(nsuri) => e.set_nsuri(nsuri.clone()),
+                                Some(nsuri) => {
+                                    /* In XML 1.1, you cannot set a namespace alias to empty and then use it. */
+                                    if ns_to_check != *"xmlns" && nsuri == "" && state1.xmlversion == "1.1"{
+                                        return Err(ParseError::NotWellFormed);
+                                    }
+                                    e.set_nsuri(nsuri.clone())
+                                },
                             }
                         }
                     }
@@ -101,7 +107,9 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                                         return Err(ParseError::MissingNameSpace);
                                     }
                                 }
-                                Some(nsuri) => e.set_nsuri(nsuri.clone()),
+                                Some(nsuri) => {
+                                    e.set_nsuri(nsuri.clone())
+                                },
                             }
                         }
                     }

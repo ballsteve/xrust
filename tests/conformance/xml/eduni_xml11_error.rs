@@ -5,6 +5,7 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::non_utf8_file_reader;
 
 #[test]
 fn rmt008() {
@@ -41,7 +42,6 @@ fn rmt009() {
 }
 
 #[test]
-#[ignore]
 fn rmt055() {
     /*
         Test ID:rmt-055
@@ -51,7 +51,7 @@ fn rmt055() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml"),
         None,
         None,
     ));

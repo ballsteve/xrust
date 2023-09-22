@@ -34,10 +34,8 @@ fn non_utf8_file_reader(filedir: &str ) -> String {
     let mut file_in = File::open(filedir).unwrap();
     let mut buffer = [0; 4];
 
-    // read exactly 10 bytes
-    //file_in.read_exact(&mut buffer).expect("Cant read");
+    // read exactly 4 bytes
     let _ = file_in.read_exact(&mut buffer);
-
     let _ = file_in.seek(SeekFrom::Start(0));
 
     let enc = match buffer {

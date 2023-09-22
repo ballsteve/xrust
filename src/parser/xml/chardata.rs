@@ -4,23 +4,36 @@ use crate::parser::combinators::many::many1;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_while};
-use crate::parser::combinators::wellformed::wellformed;
-use crate::parser::common::is_char;
+use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
+use crate::parser::common::{is_char10, is_char11, is_unrestricted_char11};
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use std::str::FromStr;
 
 // CharData ::= [^<&]* - (']]>')
 pub(crate) fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
-    wellformed(
-        map(
-            many1(alt3(
-                chardata_cdata(),
-                chardata_unicode_codepoint(),
-                chardata_literal(),
-            )),
-            |v| v.concat(),
-        ),
-        |s| !s.contains(|c: char| !is_char(&c)),
+    map(
+        many1(
+            alt3(
+                wellformed_ver(
+                    chardata_cdata(),
+                    |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                    |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+                ),
+                wellformed_ver(
+                    chardata_unicode_codepoint(),
+                    |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                    |s| !s.contains(|c: char| !is_char11(&c)), //XML 1.1
+                ),
+                wellformed_ver(
+                    chardata_literal(),
+                    |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                    |s| !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+                ),
+
+               // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
+            )
+        )
+        ,|v| v.concat()
     )
 }
 
@@ -76,7 +89,5 @@ fn parse_decimal() -> impl Fn(ParseInput) -> ParseResult<u32> {
 }
 
 fn chardata_literal() -> impl Fn(ParseInput) -> ParseResult<String> {
-    wellformed(take_while(|c| c != '<' && c != '&'), |s| {
-        !s.contains("]]>") && !s.contains(|c: char| !is_char(&c))
-    })
+    take_while(|c| c != '<' && c != '&')
 }

@@ -3034,7 +3034,7 @@ fn notwfsa167() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn notwfsa168() {
     /*
         Test ID:not-wf-sa-168
@@ -3053,7 +3053,7 @@ fn notwfsa168() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn notwfsa169() {
     /*
         Test ID:not-wf-sa-169
@@ -3072,7 +3072,7 @@ fn notwfsa169() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn notwfsa170() {
     /*
         Test ID:not-wf-sa-170

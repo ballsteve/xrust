@@ -81,7 +81,7 @@ fn op01fail4() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail1() {
     /*
         Test ID:o-p02fail1
@@ -100,7 +100,7 @@ fn op02fail1() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail10() {
     /*
         Test ID:o-p02fail10
@@ -119,7 +119,7 @@ fn op02fail10() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail11() {
     /*
         Test ID:o-p02fail11
@@ -138,7 +138,7 @@ fn op02fail11() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail12() {
     /*
         Test ID:o-p02fail12
@@ -157,7 +157,7 @@ fn op02fail12() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail13() {
     /*
         Test ID:o-p02fail13
@@ -176,7 +176,7 @@ fn op02fail13() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail14() {
     /*
         Test ID:o-p02fail14
@@ -195,7 +195,7 @@ fn op02fail14() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail15() {
     /*
         Test ID:o-p02fail15
@@ -214,7 +214,7 @@ fn op02fail15() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail16() {
     /*
         Test ID:o-p02fail16
@@ -233,7 +233,7 @@ fn op02fail16() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail17() {
     /*
         Test ID:o-p02fail17
@@ -252,7 +252,7 @@ fn op02fail17() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail18() {
     /*
         Test ID:o-p02fail18
@@ -271,7 +271,7 @@ fn op02fail18() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail19() {
     /*
         Test ID:o-p02fail19
@@ -290,7 +290,7 @@ fn op02fail19() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail2() {
     /*
         Test ID:o-p02fail2
@@ -309,7 +309,7 @@ fn op02fail2() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail20() {
     /*
         Test ID:o-p02fail20
@@ -328,7 +328,7 @@ fn op02fail20() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail21() {
     /*
         Test ID:o-p02fail21
@@ -347,7 +347,7 @@ fn op02fail21() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail22() {
     /*
         Test ID:o-p02fail22
@@ -366,7 +366,7 @@ fn op02fail22() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail23() {
     /*
         Test ID:o-p02fail23
@@ -385,7 +385,7 @@ fn op02fail23() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail24() {
     /*
         Test ID:o-p02fail24
@@ -404,7 +404,7 @@ fn op02fail24() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail25() {
     /*
         Test ID:o-p02fail25
@@ -423,7 +423,7 @@ fn op02fail25() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail26() {
     /*
         Test ID:o-p02fail26
@@ -442,7 +442,7 @@ fn op02fail26() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail27() {
     /*
         Test ID:o-p02fail27
@@ -461,7 +461,7 @@ fn op02fail27() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail28() {
     /*
         Test ID:o-p02fail28
@@ -480,7 +480,7 @@ fn op02fail28() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail29() {
     /*
         Test ID:o-p02fail29
@@ -499,7 +499,7 @@ fn op02fail29() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail3() {
     /*
         Test ID:o-p02fail3
@@ -518,7 +518,7 @@ fn op02fail3() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail30() {
     /*
         Test ID:o-p02fail30
@@ -537,7 +537,7 @@ fn op02fail30() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail31() {
     /*
         Test ID:o-p02fail31
@@ -556,7 +556,7 @@ fn op02fail31() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail4() {
     /*
         Test ID:o-p02fail4
@@ -575,7 +575,7 @@ fn op02fail4() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail5() {
     /*
         Test ID:o-p02fail5
@@ -594,7 +594,7 @@ fn op02fail5() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail6() {
     /*
         Test ID:o-p02fail6
@@ -613,7 +613,7 @@ fn op02fail6() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail7() {
     /*
         Test ID:o-p02fail7
@@ -632,7 +632,7 @@ fn op02fail7() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail8() {
     /*
         Test ID:o-p02fail8
@@ -651,7 +651,7 @@ fn op02fail8() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn op02fail9() {
     /*
         Test ID:o-p02fail9

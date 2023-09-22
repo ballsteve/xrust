@@ -36,7 +36,7 @@ pub(crate) fn is_namestartchar(ch: &char) -> bool {
 }
 pub(crate) fn is_ncnamestartchar(ch: &char) -> bool {
     matches!(ch,
-        '\u{0041}'..='\u{005A}' // A-Z
+          '\u{0041}'..='\u{005A}' // A-Z
         | '\u{005F}' // _
         | '\u{0061}'..='\u{007A}' // a-z
         | '\u{00C0}'..='\u{00D6}' //  [#xC0-#xD6]
@@ -54,7 +54,7 @@ pub(crate) fn is_ncnamestartchar(ch: &char) -> bool {
     )
 }
 
-pub fn is_char(ch: &char) -> bool {
+pub fn is_char10(ch: &char) -> bool {
     matches!(ch,
         '\u{0009}' // #x9
         | '\u{000A}' // #xA
@@ -64,6 +64,30 @@ pub fn is_char(ch: &char) -> bool {
         | '\u{10000}'..='\u{10FFFF}' //  [#x10000-#10FFFF]
     )
 }
+
+pub fn is_char11(ch: &char) -> bool {
+     matches!(ch,
+          '\u{0001}'..='\u{D7FF}' //  [#x0001-#xD7FF]
+        | '\u{E000}'..='\u{FFFD}' //  [#xE000-#xFFFD]
+        | '\u{10000}'..='\u{10FFFF}' //  [#x10000-#10FFFF]
+    )
+}
+
+pub fn is_restricted_char11(ch: &char) -> bool {
+    matches!(ch,
+          '\u{0001}'..='\u{0008}' //  [#x0001-#x0008]
+        | '\u{000B}'..='\u{000C}' //  [#x000B-#x000C]
+        | '\u{000E}'..='\u{001F}' //  [#x000E-#x001F]
+        | '\u{007F}'..='\u{0084}' //  [#x007F-#x0084]
+        | '\u{0086}'..='\u{009F}' //  [#x007F-#x0084]
+    )
+}
+
+pub fn is_unrestricted_char11(ch: &char) -> bool {
+    is_char11(ch) && !is_restricted_char11(ch)
+}
+
+
 
 pub(crate) fn is_pubid_charwithapos(ch: &char) -> bool {
     match ch {

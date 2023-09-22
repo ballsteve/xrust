@@ -5,9 +5,9 @@ use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_until_either_or, take_until_either_or_min1, take_until_end};
 use crate::parser::combinators::tuple::{tuple2, tuple7};
-use crate::parser::combinators::wellformed::wellformed;
+use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::common::is_char;
+use crate::parser::common::{is_char10, is_char11, is_restricted_char11, is_unrestricted_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput, ParseResult};
@@ -17,7 +17,7 @@ use crate::parser::xml::dtd::textexternalid;
 use crate::parser::xml::reference::{reference, textreference};
 
 pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |input| match wellformed(
+    move |input| match wellformed_ver(
         tuple7(
             tag("<!ENTITY"),
             whitespace1(),
@@ -31,7 +31,8 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             whitespace0(),
             tag(">"),
         ),
-        |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_char(&c)),
+        |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+        |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
     )(input)
     {
         Ok(((input2, mut state2), (_, _, n, _, s, _, _))) => {
@@ -48,19 +49,15 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                     map(
                         many0(alt4(
                             chardata_unicode_codepoint(),
-
                             petextreference(),
                                 //General entity is ignored.
-                                map(
+                            map(
                                     delimited(tag("&"),
-                                    take_until(";"),
+                                  take_until(";"),
                                     tag(";")
                                     ), |s|
                                     ["&".to_string(), s , ";".to_string()].concat()
                                 ),
-                            //textreference(),
-                            //map(tag("&"), |_| "&".to_string()),
-                            //take_until("&"),
                             take_until_either_or_min1("&","%")
                         )),
                         |ve| ve.concat(),
