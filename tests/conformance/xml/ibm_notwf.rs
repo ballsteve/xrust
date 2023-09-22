@@ -7127,7 +7127,6 @@ fn ibmnotwf_p80ibm80n06xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n01xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n01.xml
@@ -7146,7 +7145,6 @@ fn ibmnotwf_p81ibm81n01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n02xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n02.xml
@@ -7165,7 +7163,6 @@ fn ibmnotwf_p81ibm81n02xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n03xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n03.xml
@@ -7184,7 +7181,6 @@ fn ibmnotwf_p81ibm81n03xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n04xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n04.xml
@@ -7203,7 +7199,6 @@ fn ibmnotwf_p81ibm81n04xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n05xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n05.xml
@@ -7222,7 +7217,6 @@ fn ibmnotwf_p81ibm81n05xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n06xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n06.xml
@@ -7241,7 +7235,6 @@ fn ibmnotwf_p81ibm81n06xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n07xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n07.xml
@@ -7260,7 +7253,6 @@ fn ibmnotwf_p81ibm81n07xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n08xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n08.xml
@@ -7279,7 +7271,6 @@ fn ibmnotwf_p81ibm81n08xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n09xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n09.xml

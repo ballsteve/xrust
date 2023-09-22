@@ -2,13 +2,13 @@ use crate::intmuttree::XMLDecl;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple3, tuple5, tuple6, tuple8};
+use crate::parser::combinators::tuple::{tuple2, tuple3, tuple5, tuple6, tuple8};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::combinators::alt::alt2;
-use crate::parser::combinators::take::take_while;
+use crate::parser::combinators::take::{take_one, take_while};
 
 fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |input| match tuple5(
@@ -75,12 +75,22 @@ pub(crate) fn encodingdecl() -> impl Fn(ParseInput) -> ParseResult<String> {
             alt2(
                 tuple3(
                     tag("'"),
-                    take_while(is_encname_char),
+                    map(
+                    tuple2(
+                        wellformed(take_one(), |c| is_encname_startchar(*c)),
+                        take_while(is_encname_char)
+                    ), |(s,r)| {[s.to_string(),r].concat()}
+                ),
                     tag("'"),
                 ),
                 tuple3(
                     tag("\""),
-                    take_while(is_encname_char),
+                    map(
+                        tuple2(
+                            wellformed(take_one(), |c| is_encname_startchar(*c)),
+                            take_while(is_encname_char)
+                        ), |(s,r)| {[s.to_string(),r].concat()}
+                    ),
                     tag("\""),
                 )
             )
@@ -127,3 +137,12 @@ pub(crate) fn is_encname_char(ch: char) -> bool {
         | '.'
     )
 }
+
+
+pub(crate) fn is_encname_startchar(ch: char) -> bool {
+    matches!(ch,
+          'a'..='z'
+        | 'A'..='Z'
+    )
+}
+

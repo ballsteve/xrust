@@ -5,6 +5,7 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple5, tuple6};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
+use crate::parser::xml::xmldecl::encodingdecl;
 
 fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |(input, state)| match tuple5(
@@ -48,17 +49,7 @@ pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
                 whitespace1(),
                 xmldeclversion()
                     )),
-                opt(map(
-                tuple6(
-                    whitespace1(),
-                    tag("encoding"),
-                    whitespace0(),
-                    tag("="),
-                    whitespace0(),
-                    delimited_string(),
-                ),
-                |(_, _, _, _, _, e)| e,
-            )),
+                opt(encodingdecl()),
             whitespace0(),
             tag("?>"),
             whitespace0(),
