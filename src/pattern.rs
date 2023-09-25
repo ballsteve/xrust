@@ -5,6 +5,8 @@
 
 use std::convert::TryFrom;
 use std::rc::Rc;
+use std::fmt;
+use std::fmt::{Formatter, Write};
 
 use std::marker::PhantomData;
 
@@ -63,6 +65,7 @@ where
     /// Returns whether the given item matches the pattern.
     /// TODO: return dynamic errors
     pub fn matches(&self, i: Rc<Item<N>>) -> bool {
+        eprintln!("Pattern::matches item is a {} named {}", i.item_type(), i.name().to_string());
         match self {
             Pattern::Predicate(p) => {
                 match p(&mut ContextBuilder::new().sequence(vec![i.clone()]).build()) {
@@ -70,19 +73,75 @@ where
                     Err(_) => false, // this is where we would like to propagate the error
                 }
             }
+            Pattern::Selection(p) => {
+                eprintln!("Selection pattern");
+                p.next.clone().map_or_else(
+                    || {
+                        // this is the terminal step
+                        if p.t.as_ref().is_none() {
+                            eprintln!("terminal step, no step data")
+                        } else {
+                            eprintln!("terminal step, have step data")
+                        }
+                        p.t.as_ref().map_or(
+                            false,
+                            |(_, nt)| {
+                                eprintln!("have NodeTest");
+                                nt.matches(i)
+                            }
+                        )
+                    },
+                    |_| {
+                        // this is a non-terminal step
+                        eprintln!("non-terminal step");
+                        false // TODO
+                    }
+                )
+            }
             _ => false, // not yet implemented
         }
     }
 }
 
+impl<'a, N: Node, F> fmt::Debug for Pattern<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+{
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        match self {
+            Pattern::Predicate(_) => f.write_str("Pattern::Predicate"),
+            Pattern::Selection(p) => f.write_str(format!("Pattern::Selection path=\"{:?}\"", p).as_str()),
+            Pattern::Error(e) => f.write_str(format!("Pattern::Error error=\"{:?}\"", e).as_str()),
+            _ => f.write_str("some other Pattern"),
+        }
+    }
+}
+
+#[derive(Clone, Default, Debug)]
 pub struct Path {
     //    steps: Vec<Step>,
-    todo: i32,
+    t: Option<((Axis, Axis), NodeTest)>,
+    next: Option<Rc<Path>>,
 }
 
 impl Path {
-    fn new() -> Self {
-        Path { todo: 0 }
+    pub fn new() -> Self {
+        //Path { t: None, next: None }
+        Default::default()
+    }
+}
+
+pub struct PathBuilder(Path);
+impl PathBuilder {
+    pub fn new() -> Self {
+        PathBuilder(Path::new())
+    }
+    pub fn step(mut self, t: Axis, l: Axis, nt: NodeTest) -> Self {
+        self.0.t = Some(((t, l), nt));
+        self
+    }
+    pub fn build(self) -> Path {
+        self.0
     }
 }
 
@@ -158,7 +217,15 @@ where
             ),
             intersect_except_expr_pattern::<N, F>(),
         ),
-        |_v| Pattern::Selection(Path::new()),
+        |mut v| {
+            if v.len() == 1 {
+                eprintln!("union_expr_pattern: singleton union");
+                v.pop().unwrap()
+            } else {
+                eprintln!("union_expr_pattern: too many union arms, not yet supported");
+                Pattern::Selection(Path::new())
+            }
+        },
     ))
 }
 
@@ -322,15 +389,11 @@ where
                 step_expr_pattern::<N, F>(),
             )),
         ),
-        |(_a, b)| {
+        |(a, b)| {
+            eprintln!("relative_path_expr_pattern");
             if b.is_empty() {
                 // this is the terminal step
-                Pattern::Error(Error::new(
-                    ErrorKind::NotImplemented,
-                    String::from(
-                        "single step in a relative path in a pattern has not been implemented",
-                    ),
-                ))
+                a
             } else {
                 Pattern::Error(Error::new(
                     ErrorKind::NotImplemented,
@@ -403,12 +466,14 @@ where
     F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        tuple2(forward_axis_pattern::<N, F>(), nodetest()),
-        |(_a, _c)| {
-            Pattern::Error(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("forward step in a pattern has not been implemented"),
-            ))
+        tuple2(forward_axis_pattern(), nodetest()),
+        |((a, c), nt)| {
+            eprintln!("forward_step_pattern a=\"{}\" c=\"{}\" nt=\"{}\"", a, c, nt);
+            Pattern::Selection(
+                PathBuilder::new()
+                    .step(a, c, nt)
+                    .build()
+            )
         },
     ))
 }
@@ -416,10 +481,8 @@ where
 // ForwardAxisP ::= ("child" | "descendant" | "attribute" | "self" | "descendant-or-self" | "namespace" ) "::"
 // Returns a pair: the axis to match this step, and the axis for the previous step
 // TODO: abbreviated step
-fn forward_axis_pattern<'a, N: Node, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+fn forward_axis_pattern(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<(Axis, Axis)>>
 {
     Box::new(map(
         tuple2(
@@ -435,12 +498,7 @@ where
             ),
             tag("::"),
         ),
-        |(_, _)| {
-            Pattern::Error(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("forward axis in a pattern has not been implemented"),
-            ))
-        },
+        |(a, _)| a,
     ))
 }
 

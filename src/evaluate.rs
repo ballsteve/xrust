@@ -1743,12 +1743,27 @@ impl fmt::Display for NodeMatch {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum NodeTest {
     Kind(KindTest),
     Name(NameTest),
 }
 
+impl NodeTest {
+    /// Does the Item match the Node Test?
+    pub fn matches<N: Node>(&self, i: Rc<Item<N>>) -> bool {
+        eprintln!("NodeTest::matches");
+        match &*i {
+            Item::Node(n) => {
+                match self {
+                    NodeTest::Kind(k) => k.matches(i),
+                    NodeTest::Name(nm) => nm.matches(i),
+                }
+            }
+            _ => false,
+        }
+    }
+}
 impl TryFrom<&str> for NodeTest {
     type Error = Error;
 
@@ -1820,7 +1835,7 @@ impl fmt::Display for NodeTest {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub enum KindTest {
     DocumentTest,
     ElementTest,
@@ -1835,6 +1850,34 @@ pub enum KindTest {
 }
 
 impl KindTest {
+    /// Does an item match the Kind Test?
+    pub fn matches<N: Node>(&self, i: Rc<Item<N>>) -> bool {
+        eprintln!("KindTest::matches");
+        match &*i {
+            Item::Node(n) => {
+                match (self, n.node_type()) {
+                    (KindTest::DocumentTest, NodeType::Document) => true,
+                    (KindTest::DocumentTest, _) => false,
+                    (KindTest::ElementTest, NodeType::Element) => true,
+                    (KindTest::ElementTest, _) => false,
+                    (KindTest::AttributeTest, NodeType::Attribute) => true,
+                    (KindTest::AttributeTest, _) => false,
+                    (KindTest::SchemaElementTest, _) => false, // not supported
+                    (KindTest::SchemaAttributeTest, _) => false, // not supported
+                    (KindTest::PITest, NodeType::ProcessingInstruction) => true,
+                    (KindTest::PITest, _) => false,
+                    (KindTest::CommentTest, NodeType::Comment) => true,
+                    (KindTest::CommentTest, _) => false,
+                    (KindTest::TextTest, NodeType::Text) => true,
+                    (KindTest::TextTest, _) => false,
+                    (KindTest::NamespaceNodeTest, _) => false, // not yet implemented
+                    (KindTest::AnyKindTest, _) => true,
+                    _ => false,
+                }
+            }
+            _ => false,
+        }
+    }
     pub fn to_string(&self) -> &'static str {
         match self {
             KindTest::DocumentTest => "DocumentTest",
@@ -1851,11 +1894,52 @@ impl KindTest {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct NameTest {
     pub ns: Option<WildcardOrName>,
     pub prefix: Option<String>,
     pub name: Option<WildcardOrName>,
+}
+
+impl NameTest {
+    /// Does an Item match this name test? To match, the item must be a node, have a name,
+    /// have the namespace URI and local name be equal or a wildcard
+    pub fn matches<N: Node>(&self, i: Rc<Item<N>>) -> bool {
+        eprintln!("NameTest::matches");
+        match &*i {
+            Item::Node(n) => {
+                match n.node_type() {
+                    NodeType::Element |
+                    NodeType::ProcessingInstruction |
+                    NodeType::Attribute => {
+                        match (self.ns.as_ref(), self.name.as_ref(), n.name().get_nsuri_ref(), n.name().get_localname().as_str()) {
+                            (None, None, _, _) => false,
+                            (None, Some(WildcardOrName::Wildcard), None, _) => true,
+                            (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
+                            (None, Some(WildcardOrName::Name(wn)), None, "") => false,
+                            (None, Some(WildcardOrName::Name(wn)), None, qn) => {
+                                wn == qn
+                            }
+                            (None, Some(WildcardOrName::Name(wn)), Some(_), _) => false,
+                            (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
+                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard), _, _) => true,
+                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(wn)), _, "") => false,
+                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(wn)), _, qn) => {
+                                wn == qn
+                            }
+                            (Some(WildcardOrName::Name(wnsuri)), Some(_), None, _) => false,
+                            (Some(WildcardOrName::Name(wnsuri)), Some(WildcardOrName::Name(wn)), Some(qnsuri), qn) => {
+                                wnsuri == qnsuri && wn == qn
+                            }
+                            _ => false, // maybe should panic?
+                        }
+                    }
+                    _ => false // all other node types don't have names
+                }
+            }
+            _ => false // other item types don't have names
+        }
+    }
 }
 
 impl fmt::Display for NameTest {
@@ -1872,13 +1956,13 @@ impl fmt::Display for NameTest {
     }
 }
 
-#[derive(Clone)]
+#[derive(Clone, PartialEq, Debug)]
 pub enum WildcardOrName {
     Wildcard,
     Name(String),
 }
 
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, PartialEq, Debug)]
 pub enum Axis {
     Child,
     Descendant,
