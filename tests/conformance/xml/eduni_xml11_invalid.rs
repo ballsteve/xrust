@@ -11,7 +11,7 @@ use xrust::Document;
 fn rmt015() {
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
     /*
         Test ID:rmt-015
@@ -35,7 +35,7 @@ fn rmt015() {
 fn rmt017() {
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
     /*
         Test ID:rmt-017
@@ -59,7 +59,7 @@ fn rmt017() {
 fn rmt018() {
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
     /*
         Test ID:rmt-018

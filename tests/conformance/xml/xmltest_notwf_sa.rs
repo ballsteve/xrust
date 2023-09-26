@@ -2519,8 +2519,8 @@ fn notwfsa139() {
 fn notwfsa140() {
 
     /*
-       This test is deliberately ignored.
-       As this document is now valid in 5th edition, we should not reject as not well formed.
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -2546,7 +2546,7 @@ fn notwfsa141() {
 
     /*
         This test is deliberately ignored.
-       As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*

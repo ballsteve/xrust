@@ -134,7 +134,7 @@ fn rmt014() {
 
     /*
         This test is deliberately ignored.
-        As this character is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
     /*
         Test ID:rmt-014
@@ -158,7 +158,7 @@ fn rmt014() {
 fn rmt016() {
     /*
         This test is deliberately ignored.
-        As this character is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
     /*
         Test ID:rmt-016
@@ -182,7 +182,7 @@ fn rmt016() {
 fn rmt019() {
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
     /*
         Test ID:rmt-019

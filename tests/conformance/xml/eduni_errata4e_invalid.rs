@@ -120,7 +120,7 @@ fn invalidsa140() {
 
     /*
         This test is deliberately ignored.
-       As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -145,7 +145,7 @@ fn invalidsa141() {
 
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -170,7 +170,7 @@ fn xrmt5014() {
 
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -195,7 +195,7 @@ fn xrmt5016() {
 
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -220,7 +220,7 @@ fn xrmt5019() {
 
     /*
         This test is deliberately ignored.
-        As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
