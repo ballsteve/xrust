@@ -43,12 +43,10 @@ pub(crate) fn wellformed_ver<P, F10, F11, A>(
                 } else {
                     Err(ParseError::NotWellFormed)
                 }
+            } else if validate_fn10(&result) {
+                Ok(((input2, state2), result))
             } else {
-                if validate_fn10(&result) {
-                    Ok(((input2, state2), result))
-                } else {
-                    Err(ParseError::NotWellFormed)
-                }
+                Err(ParseError::NotWellFormed)
             }
         }
         Err(err) => Err(err),

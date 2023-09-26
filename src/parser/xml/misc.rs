@@ -8,7 +8,7 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::combinators::tuple::{tuple2, tuple5};
-use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
+use crate::parser::combinators::wellformed::wellformed_ver;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::qname::name;

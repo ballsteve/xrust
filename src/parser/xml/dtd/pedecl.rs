@@ -7,14 +7,13 @@ use crate::parser::combinators::take::{take_until, take_until_either_or_min1, ta
 use crate::parser::combinators::tuple::{tuple2, tuple9};
 use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::common::{is_char10, is_char11, is_unrestricted_char11};
+use crate::parser::common::{is_char10, is_unrestricted_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseInput, ParseError, ParseResult};
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::textexternalid;
-use crate::parser::xml::reference::textreference;
 
 pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match wellformed_ver(
@@ -67,7 +66,7 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                         )),
                         |ve| ve.concat(),
                     ),
-                    wellformed(take_until_end(),|s| !s.contains("&")&&!s.contains("%")),
+                    wellformed(take_until_end(),|s| !s.contains('&')&&!s.contains('%')),
                 ),
                 |(a, b)| [a, b].concat(),
             )((s.as_str(), state2.clone()));

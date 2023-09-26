@@ -140,9 +140,6 @@ pub(crate) fn is_encname_char(ch: char) -> bool {
 
 
 pub(crate) fn is_encname_startchar(ch: char) -> bool {
-    matches!(ch,
-          'a'..='z'
-        | 'A'..='Z'
-    )
+    ch.is_ascii_alphabetic()
 }
 

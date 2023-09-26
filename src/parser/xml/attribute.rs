@@ -182,22 +182,14 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                     .replace(['\n', '\r', '\t', '\n'], " ")
                     .trim().to_string();
                 //NEL character cannot be in attributes.
-                if state1.xmlversion == "1.1" {
-                    if r.find(|c| !is_char11(&c)).is_some() {
-                        Err(ParseError::NotWellFormed)
-                    } else if r.contains('\u{0085}') {
-                        Err(ParseError::NotWellFormed)
-                    } else {
-                        Ok(((input1, state1), r))
-                    }
+                if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
+                    Err(ParseError::NotWellFormed)
+                } else if r.find(|c| !is_char10(&c)).is_some() {
+                    Err(ParseError::NotWellFormed)
+                } else if r.contains('\u{0085}') {
+                    Err(ParseError::NotWellFormed)
                 } else {
-                    if r.find(|c| !is_char10(&c)).is_some() {
-                        Err(ParseError::NotWellFormed)
-                    } else if r.contains('\u{0085}') {
-                        Err(ParseError::NotWellFormed)
-                    } else {
-                        Ok(((input1, state1), r))
-                    }
+                    Ok(((input1, state1), r))
                 }
             }
         }
