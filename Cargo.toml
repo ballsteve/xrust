@@ -35,4 +35,5 @@ regex = "1.6.0"
 
 [dev-dependencies]
 criterion = "0.3"
-
+encoding_rs = "0.8.32"
+encoding_rs_io = "0.1.7"

@@ -1,5 +1,5 @@
 use crate::intmuttree::DTDDecl;
-use crate::parser::combinators::alt::{alt2, alt3, alt7};
+use crate::parser::combinators::alt::{alt2, alt3, alt4, alt7};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::many::many0;
@@ -12,30 +12,34 @@ use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::dtd::enumerated::enumeratedtype;
+use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::reference::textreference;
 use crate::parser::xml::qname::{name, qualname};
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
 pub(crate) fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |input| match tuple6(
-        tag("<!ATTLIST"),
-        whitespace1(),
-        qualname(),
-        many0(attdef()),
-        whitespace0(),
-        tag(">"),
-    )(input)
-    {
-        Ok(((input2, mut state2), (_, _, n, _, _, _))) => {
-            state2
-                .dtd
-                .attlists
-                .insert(n.to_string(), DTDDecl::Attlist(n, "".to_string()));
-            Ok(((input2, state2), ()))
+    move |(input, state)| {
+        match tuple6(
+            tag("<!ATTLIST"),
+            whitespace1(),
+            qualname(),
+            many0(attdef()),
+            whitespace0(),
+            tag(">"),
+        )((input, state))
+        {
+            Ok(((input2, mut state2), (_, _, n, _, _, _))) => {
+                state2
+                    .dtd
+                    .attlists
+                    .insert(n.to_string(), DTDDecl::Attlist(n, "".to_string()));
+                Ok(((input2, state2), ()))
+            }
+            Err(err) => Err(err),
         }
-        Err(err) => Err(err),
     }
 }
+
 
 //AttDef ::= S Name S AttType S DefaultDecl
 fn attdef() -> impl Fn(ParseInput) -> ParseResult<String> {
@@ -54,13 +58,14 @@ fn attdef() -> impl Fn(ParseInput) -> ParseResult<String> {
 
 //AttType ::= StringType | TokenizedType | EnumeratedType
 fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
-    alt3(
+    alt4(
+        map(petextreference(), |_| {  }),  //TODO
         tag("CDATA"), //Stringtype
         alt7(
             //tokenizedtype
-            tag("ID"),
-            tag("IDREF"),
             tag("IDREFS"),
+            tag("IDREF"),
+            tag("ID"),
             tag("ENTITY"),
             tag("ENTITIES"),
             tag("NMTOKENS"),
@@ -72,7 +77,6 @@ fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
 fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
-    move |(input, state)|{
     map(
         alt3(
             value(tag("#REQUIRED"), "#REQUIRED".to_string()),
@@ -98,7 +102,6 @@ fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         ),
         |_x| (),
     )
-        ((input, state))}
 }
 
 //AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"

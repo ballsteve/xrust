@@ -7,7 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore] //Ignored until DTDs validation is built.
+#[ignore]
 fn rmte2e34() {
     /*
         Test ID:rmt-e2e-34

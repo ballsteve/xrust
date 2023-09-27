@@ -5,21 +5,25 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple5, tuple6};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
+use crate::parser::xml::xmldecl::encodingdecl;
 
 fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
-    move |input| match tuple5(
+    move |(input, state)| match tuple5(
         tag("version"),
         whitespace0(),
         tag("="),
         whitespace0(),
         delimited_string(),
-    )(input)
+    )((input, state))
     {
-        Ok((input1, (_, _, _, _, v))) => {
+        Ok(((input1, state1), (_, _, _, _, v))) => {
             if v == *"1.1" {
-                Ok((input1, v))
+                if state1.xmlversion == "1.0"{
+                    return Err(ParseError::NotWellFormed)
+                }
+                Ok(((input1, state1), v))
             } else if v.starts_with("1.") {
-                Ok((input1, "1.0".to_string()))
+                Ok(((input1, state1), "1.0".to_string()))
             } else {
                 Err(ParseError::Notimplemented)
             }
@@ -45,17 +49,7 @@ pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
                 whitespace1(),
                 xmldeclversion()
                     )),
-                opt(map(
-                tuple6(
-                    whitespace1(),
-                    tag("encoding"),
-                    whitespace0(),
-                    tag("="),
-                    whitespace0(),
-                    delimited_string(),
-                ),
-                |(_, _, _, _, _, e)| e,
-            )),
+                opt(encodingdecl()),
             whitespace0(),
             tag("?>"),
             whitespace0(),

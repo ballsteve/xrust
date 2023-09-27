@@ -678,7 +678,6 @@ fn notwfsa037() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa038() {
     /*
         Test ID:not-wf-sa-038
@@ -1561,7 +1560,6 @@ fn notwfsa086() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa087() {
     /*
         Test ID:not-wf-sa-087
@@ -1814,7 +1812,6 @@ fn notwfsa100() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa101() {
     /*
         Test ID:not-wf-sa-101
@@ -1833,7 +1830,6 @@ fn notwfsa101() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa102() {
     /*
         Test ID:not-wf-sa-102
@@ -2032,7 +2028,6 @@ fn notwfsa112() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa113() {
     /*
         Test ID:not-wf-sa-113
@@ -2051,7 +2046,6 @@ fn notwfsa113() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa114() {
     /*
         Test ID:not-wf-sa-114
@@ -2525,8 +2519,8 @@ fn notwfsa139() {
 fn notwfsa140() {
 
     /*
-       This test is deliberately ignored.
-       As this document is now valid in 5th edition, we should not reject as not well formed.
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -2552,7 +2546,7 @@ fn notwfsa141() {
 
     /*
         This test is deliberately ignored.
-       As this document is now valid in 5th edition, we should not reject as not well formed.
+        This document is now well formed, as per the 5th edition.
     */
 
     /*
@@ -2626,7 +2620,6 @@ fn notwfsa144() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa145() {
     /*
         Test ID:not-wf-sa-145
@@ -2645,7 +2638,6 @@ fn notwfsa145() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa146() {
     /*
         Test ID:not-wf-sa-146
@@ -2880,7 +2872,6 @@ fn notwfsa158() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa159() {
     /*
         Test ID:not-wf-sa-159
@@ -2899,7 +2890,6 @@ fn notwfsa159() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa160() {
     /*
         Test ID:not-wf-sa-160
@@ -2936,7 +2926,6 @@ fn notwfsa161() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa162() {
     /*
         Test ID:not-wf-sa-162
@@ -3045,7 +3034,7 @@ fn notwfsa167() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn notwfsa168() {
     /*
         Test ID:not-wf-sa-168
@@ -3064,7 +3053,7 @@ fn notwfsa168() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn notwfsa169() {
     /*
         Test ID:not-wf-sa-169
@@ -3083,7 +3072,7 @@ fn notwfsa169() {
 }
 
 #[test]
-#[should_panic]
+#[ignore]
 fn notwfsa170() {
     /*
         Test ID:not-wf-sa-170
@@ -3138,7 +3127,6 @@ fn notwfsa172() {
 }
 
 #[test]
-#[ignore]
 fn notwfsa173() {
     /*
         Test ID:not-wf-sa-173

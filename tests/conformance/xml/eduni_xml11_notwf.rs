@@ -5,9 +5,9 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::{dtdfileresolve};
 
 #[test]
-#[ignore]
 fn rmt001() {
     /*
         Test ID:rmt-001
@@ -18,8 +18,8 @@ fn rmt001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/001.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string()),
     ));
     assert!(testxml.is_err());
 }
@@ -35,8 +35,8 @@ fn rmt002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/002.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string()),
     ));
     assert!(testxml.is_err());
 }
@@ -52,8 +52,8 @@ fn rmt003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/003.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string()),
     ));
     assert!(testxml.is_err());
 }
@@ -69,8 +69,8 @@ fn rmt004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/004.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string()),
     ));
     assert!(testxml.is_err());
 }
@@ -86,8 +86,8 @@ fn rmt005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/005.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string()),
     ));
     assert!(testxml.is_err());
 }
@@ -111,7 +111,6 @@ fn rmt011() {
 }
 
 #[test]
-#[ignore]
 fn rmt013() {
     /*
         Test ID:rmt-013
@@ -128,9 +127,15 @@ fn rmt013() {
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn rmt014() {
+
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:rmt-014
         Test URI:014.xml
@@ -145,10 +150,16 @@ fn rmt014() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn rmt016() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:rmt-016
         Test URI:016.xml
@@ -163,10 +174,16 @@ fn rmt016() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn rmt019() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:rmt-019
         Test URI:019.xml
@@ -181,6 +198,7 @@ fn rmt019() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn rmt020() {

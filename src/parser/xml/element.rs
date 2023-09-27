@@ -26,7 +26,7 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
     move |input| {
         match tuple5(
             tag("<"),
-            qualname(),
+            wellformed(qualname(),|qn| qn.get_prefix() != Some("xmlns".to_string())),
             attributes(), //many0(attribute),
             whitespace0(),
             tag("/>"),
@@ -49,7 +49,13 @@ fn emptyelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                                         return Err(ParseError::MissingNameSpace);
                                     }
                                 }
-                                Some(nsuri) => e.set_nsuri(nsuri.clone()),
+                                Some(nsuri) => {
+                                    /* In XML 1.1, you cannot set a namespace alias to empty and then use it. */
+                                    if ns_to_check != *"xmlns" && nsuri.is_empty() && state1.xmlversion == "1.1"{
+                                        return Err(ParseError::NotWellFormed);
+                                    }
+                                    e.set_nsuri(nsuri.clone())
+                                },
                             }
                         }
                     }
@@ -71,13 +77,13 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
         match wellformed(
             tuple10(
                 tag("<"),
-                qualname(),
+                wellformed(qualname(),|qn| qn.get_prefix() != Some("xmlns".to_string())),
                 attributes(), //many0(attribute),
                 whitespace0(),
                 tag(">"),
                 content(),
                 tag("</"),
-                qualname(),
+                wellformed(qualname(),|qn| qn.get_prefix() != Some("xmlns".to_string())),
                 whitespace0(),
                 tag(">"),
             ),
@@ -101,7 +107,9 @@ fn taggedelem() -> impl Fn(ParseInput) -> ParseResult<RNode> {
                                         return Err(ParseError::MissingNameSpace);
                                     }
                                 }
-                                Some(nsuri) => e.set_nsuri(nsuri.clone()),
+                                Some(nsuri) => {
+                                    e.set_nsuri(nsuri.clone())
+                                },
                             }
                         }
                     }

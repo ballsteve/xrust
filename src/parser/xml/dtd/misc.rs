@@ -9,10 +9,20 @@ use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseInput, ParseResult};
+use crate::parser::combinators::value::value;
 use crate::parser::xml::dtd::pereference::petextreference;
 
 pub(crate) fn nmtoken() -> impl Fn(ParseInput) -> ParseResult<()> {
     map(many1(take_while(|c| is_namechar(&c))), |_x| ())
+}
+
+pub(crate) fn contentspec() -> impl Fn(ParseInput) -> ParseResult<String> {
+    alt4(
+        value(tag("EMPTY"), "EMPTY".to_string()),
+        value(tag("ANY"), "ANY".to_string()),
+        mixed(),
+        children(),
+    )
 }
 
 //Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'

@@ -11,6 +11,7 @@ James Clark XMLTEST cases - Standalone
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 
 #[test]
 fn validsa001() {
@@ -292,8 +293,10 @@ fn validsa011() {
 #[ignore]
 fn validsa012() {
 
-    /* This test is deliberately ignored. Although these are valid XML documents,
-    XML without namespaces is not something we wish to handle. */
+    /*
+        This test is deliberately ignored. Although these are valid XML documents,
+        XML without namespaces is not something we wish to handle.
+    */
 
     /*
         Test ID:valid-sa-012
@@ -1243,7 +1246,6 @@ fn validsa048() {
 }
 
 #[test]
-#[ignore]
 fn validsa049() {
     /*
         Test ID:valid-sa-049
@@ -1253,7 +1255,8 @@ fn validsa049() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/049.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/xmltest/valid/sa/049.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/049.xml").unwrap(),
         None,
         None,
     ));
@@ -1269,7 +1272,6 @@ fn validsa049() {
 }
 
 #[test]
-#[ignore]
 fn validsa050() {
     /*
         Test ID:valid-sa-050
@@ -1279,7 +1281,8 @@ fn validsa050() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/050.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/xmltest/valid/sa/050.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/050.xml").unwrap(),
         None,
         None,
     ));
@@ -1295,7 +1298,6 @@ fn validsa050() {
 }
 
 #[test]
-#[ignore]
 fn validsa051() {
     /*
         Test ID:valid-sa-051
@@ -1305,7 +1307,8 @@ fn validsa051() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/051.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/xmltest/valid/sa/051.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/051.xml").unwrap(),
         None,
         None,
     ));
@@ -1771,7 +1774,6 @@ fn validsa069() {
 }
 
 #[test]
-#[ignore]
 fn validsa070() {
     /*
         Test ID:valid-sa-070
@@ -1822,7 +1824,6 @@ fn validsa071() {
 }
 
 #[test]
-#[ignore]
 fn validsa072() {
     /*
         Test ID:valid-sa-072
@@ -1848,7 +1849,6 @@ fn validsa072() {
 }
 
 #[test]
-#[ignore]
 fn validsa073() {
     /*
         Test ID:valid-sa-073
@@ -2452,7 +2452,6 @@ fn validsa096() {
 }
 
 #[test]
-#[ignore]
 fn validsa097() {
     /*
         Test ID:valid-sa-097
@@ -2463,8 +2462,8 @@ fn validsa097() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/097.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml").unwrap(),
@@ -2539,8 +2538,8 @@ fn validsa100() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/100.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml").unwrap(),

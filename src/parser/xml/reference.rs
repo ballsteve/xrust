@@ -103,7 +103,6 @@ pub(crate) fn textreference() -> impl Fn(ParseInput) -> ParseResult<String> {
         match e {
             Err(e) => Err(e),
             Ok(((input1, state1), entitykey)) => {
-                //println!("positive-{:?}",entitykey.clone());
                 //if !["lt", "gt", "apos", "amp", "quot"].contains(&entitykey.as_str()){
                 match entitykey.as_str() {
                     "amp" => Ok(((input1, state1), "&".to_string())),

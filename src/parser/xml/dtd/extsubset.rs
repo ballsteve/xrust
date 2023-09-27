@@ -1,12 +1,12 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::parser::combinators::alt::alt11;
+use crate::parser::combinators::alt::alt10;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tuple::tuple2;
 use crate::parser::combinators::whitespace::whitespace1;
 use crate::parser::xml::dtd::attlistdecl::attlistdecl;
-use crate::parser::xml::dtd::conditionals::{ignoresect, includesect};
+use crate::parser::xml::dtd::conditionals::conditionalsect;
 use crate::parser::xml::dtd::elementdecl::elementdecl;
 use crate::parser::xml::dtd::gedecl::gedecl;
 use crate::parser::xml::dtd::notation::ndatadecl;
@@ -42,9 +42,8 @@ pub(crate) fn extsubset() -> impl Fn(ParseInput) -> ParseResult<()> {
 
 
 pub(crate) fn extsubsetdecl() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
-    many0(alt11(
-        includesect(),
-        ignoresect(),
+    many0(alt10(
+        conditionalsect(),
         elementdecl(),
         attlistdecl(),
         pedecl(),

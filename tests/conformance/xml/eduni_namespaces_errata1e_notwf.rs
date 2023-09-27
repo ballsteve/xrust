@@ -7,7 +7,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn rmtnse1013a() {
     /*
         Test ID:rmt-ns-e1.0-13a
@@ -26,7 +25,6 @@ fn rmtnse1013a() {
 }
 
 #[test]
-#[ignore]
 fn rmtnse1013b() {
     /*
         Test ID:rmt-ns-e1.0-13b
@@ -45,7 +43,6 @@ fn rmtnse1013b() {
 }
 
 #[test]
-#[ignore]
 fn rmtnse1013c() {
     /*
         Test ID:rmt-ns-e1.0-13c

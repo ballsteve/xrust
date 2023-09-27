@@ -63,9 +63,14 @@ fn invalidbo9() {
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn xrmt008() {
+    /*
+        This test is deliberately ignored.
+        In 5th edition, any document number other than 1.1 is treated as a 1.0 document.
+    */
     /*
         Test ID:x-rmt-008
         Test URI:008.xml
@@ -80,3 +85,4 @@ fn xrmt008() {
     ));
     assert!(testxml.is_err());
 }
+*/

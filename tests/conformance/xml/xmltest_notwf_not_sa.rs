@@ -10,9 +10,9 @@ James Clark XMLTEST cases - Standalone
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
-#[ignore]
 fn notwfnotsa001() {
     /*
         Test ID:not-wf-not-sa-001
@@ -23,8 +23,8 @@ fn notwfnotsa001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/001.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -41,15 +41,14 @@ fn notwfnotsa002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/002.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa003() {
     /*
         Test ID:not-wf-not-sa-003
@@ -60,15 +59,14 @@ fn notwfnotsa003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/003.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa004() {
     /*
         Test ID:not-wf-not-sa-004
@@ -79,15 +77,14 @@ fn notwfnotsa004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/004.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa005() {
     /*
         Test ID:not-wf-not-sa-005
@@ -98,15 +95,14 @@ fn notwfnotsa005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/005.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa006() {
     /*
         Test ID:not-wf-not-sa-006
@@ -117,15 +113,14 @@ fn notwfnotsa006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/006.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa007() {
     /*
         Test ID:not-wf-not-sa-007
@@ -136,15 +131,14 @@ fn notwfnotsa007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/007.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa008() {
     /*
         Test ID:not-wf-not-sa-008
@@ -155,15 +149,14 @@ fn notwfnotsa008() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/008.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn notwfnotsa009() {
     /*
         Test ID:not-wf-not-sa-009
@@ -174,8 +167,8 @@ fn notwfnotsa009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/009.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());

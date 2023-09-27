@@ -15,6 +15,7 @@ use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::{Node, Value};
 use std::collections::HashMap;
+use crate::parser::common::{is_char10, is_char11};
 
 pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     move |input| match many0(attribute())(input) {
@@ -35,6 +36,41 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 {
                     return Err(ParseError::NotWellFormed);
                 }
+                // http://www.w3.org/XML/1998/namespace must always be bound to xml
+                if (node.name().get_prefix() == Some("xmlns".to_string()))
+                    && (node.name().get_localname() != *"xml")
+                    && (node.to_string() == *"http://www.w3.org/XML/1998/namespace")
+                {
+                    return Err(ParseError::NotWellFormed);
+                }
+                // http://www.w3.org/2000/xmlns/ must always be bound to xmlns
+                if (node.name().get_prefix() == Some("xmlns".to_string()))
+                    && (node.name().get_localname() != *"xmlns")
+                    && (node.to_string() == *"http://www.w3.org/2000/xmlns/")
+                {
+                    return Err(ParseError::NotWellFormed);
+                }
+                // Default namespace cannot be http://www.w3.org/XML/1998/namespace
+                // Default namespace cannot be http://www.w3.org/2000/xmlns/
+                if (node.name().get_prefix().is_none())
+                    && (node.name().get_localname() == *"xmlns")
+                    && (
+                    node.to_string() == *"http://www.w3.org/XML/1998/namespace"
+                    || node.to_string() == *"http://www.w3.org/2000/xmlns/"
+                        )
+                {
+                    return Err(ParseError::NotWellFormed);
+                }
+
+                // XML 1.0 documents cannot redefine an alias to ""
+                if (node.name().get_prefix() == Some("xmlns".to_string()))
+                    && (node.name().get_localname() != "")
+                    && (node.to_string() == *"")
+                    && state1.xmlversion == *"1.0"
+                {
+                    return Err(ParseError::NotWellFormed);
+                }
+
 
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     || (node.name().get_localname() == *"xmlns")
@@ -55,9 +91,10 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 }
             }
             state1.namespace.push(namespaces.clone());
-            //Why loop through the nodes a second time? XML attributes are no in any order, so the
+            //Why loop through the nodes a second time? XML attributes are not in any order, so the
             //namespace declaration can happen after the attribute if it has a namespace prefix.
             let mut resnodes = vec![];
+            let mut resnodenames = vec![];
             for node in nodes {
                 if node.name().get_prefix() != Some("xmlns".to_string())
                     && node.name().get_localname() != *"xmlns"
@@ -72,7 +109,13 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                             }
                         }
                     }
-                    resnodes.push(node);
+                    /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
+                    if resnodenames.contains(&(node.name().get_nsuri(), node.name().get_localname())){
+                        return Err(ParseError::NotWellFormed)
+                    } else {
+                        resnodenames.push((node.name().get_nsuri(), node.name().get_localname()));
+                        resnodes.push(node);
+                    }
                 }
             }
             Ok(((input1, state1), resnodes))
@@ -136,15 +179,15 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                 */
                 let r = rn
                     .concat()
-                    .replace('\n', " ")
-                    .replace('\r', " ")
-                    .replace('\t', " ")
-                    .replace('\n', " ");
+                    .replace(['\n', '\r', '\t', '\n'], " ")
+                    .trim().to_string();
                 //NEL character cannot be in attributes.
-                if r.contains('\u{0085}') {
+                if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
                     Err(ParseError::NotWellFormed)
-                //} else if r.contains('<') {
-                //    Err(ParseError::NotWellFormed)
+                } else if r.find(|c| !is_char10(&c)).is_some() {
+                    Err(ParseError::NotWellFormed)
+                } else if r.contains('\u{0085}') {
+                    Err(ParseError::NotWellFormed)
                 } else {
                     Ok(((input1, state1), r))
                 }

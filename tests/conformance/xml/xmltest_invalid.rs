@@ -9,9 +9,9 @@ James Clark XMLTEST cases
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
-#[ignore]
 fn invalid002() {
     /*
         Test ID:invalid--002
@@ -22,15 +22,14 @@ fn invalid002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/002.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/invalid/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn invalid005() {
     /*
         Test ID:invalid--005
@@ -41,15 +40,14 @@ fn invalid005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/005.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/invalid/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn invalid006() {
     /*
         Test ID:invalid--006
@@ -60,15 +58,14 @@ fn invalid006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/006.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/invalid/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn invalidnotsa022() {
     /*
         Test ID:invalid-not-sa-022
@@ -79,8 +76,8 @@ fn invalidnotsa022() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/022.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/".to_string()),
     ));
 
     assert!(testxml.is_err());

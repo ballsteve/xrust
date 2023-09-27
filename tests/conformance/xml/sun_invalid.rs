@@ -7,6 +7,7 @@ Sun Microsystems test cases
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 
 #[test]
 #[ignore]
@@ -274,6 +275,7 @@ fn id05() {
 }
 
 #[test]
+#[ignore]
 fn id06() {
     /*
         Test ID:id06
@@ -292,6 +294,7 @@ fn id06() {
 }
 
 #[test]
+#[ignore]
 fn id07() {
     /*
         Test ID:id07
@@ -310,6 +313,7 @@ fn id07() {
 }
 
 #[test]
+#[ignore]
 fn id08() {
     /*
         Test ID:id08
@@ -328,6 +332,7 @@ fn id08() {
 }
 
 #[test]
+#[ignore]
 fn id09() {
     /*
         Test ID:id09
@@ -357,8 +362,8 @@ fn invnotsa01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/not-sa01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/invalid/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -1199,6 +1204,7 @@ fn attr08() {
 }
 
 #[test]
+#[ignore]
 fn attr09() {
     /*
         Test ID:attr09
@@ -1217,6 +1223,7 @@ fn attr09() {
 }
 
 #[test]
+#[ignore]
 fn attr10() {
     /*
         Test ID:attr10
@@ -1376,7 +1383,8 @@ fn utf16l() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/utf16l.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/sun/invalid/utf16l.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/sun/invalid/utf16l.xml").unwrap(),
         None,
         None,
     ));

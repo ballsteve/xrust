@@ -361,8 +361,13 @@ fn ibm11valid_p05ibm05v01xml() {
     assert!(testxml.is_ok());
 }
 
+/*
 #[test]
 fn ibm11valid_p05ibm05v02xml() {
+    /*
+        This test is deliberately ignored.
+        We only support namespace aware xml documents, and that means no colons in processing instructions.
+    */
     /*
         Test ID:ibm-1-1-valid-P05-ibm05v02.xml
         Test URI:valid/P05/ibm05v02.xml
@@ -379,6 +384,7 @@ fn ibm11valid_p05ibm05v02xml() {
 
     assert!(testxml.is_ok());
 }
+ */
 
 #[test]
 #[ignore]

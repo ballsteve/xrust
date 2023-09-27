@@ -9,9 +9,9 @@ James Clark XMLTEST cases - Standalone
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
-#[ignore]
 fn validextsa001() {
     /*
         Test ID:valid-ext-sa-001
@@ -22,8 +22,8 @@ fn validextsa001() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/001.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/001.xml")
@@ -38,7 +38,6 @@ fn validextsa001() {
 }
 
 #[test]
-#[ignore]
 fn validextsa002() {
     /*
         Test ID:valid-ext-sa-002
@@ -49,8 +48,8 @@ fn validextsa002() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/002.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/002.xml")
@@ -65,7 +64,6 @@ fn validextsa002() {
 }
 
 #[test]
-#[ignore]
 fn validextsa003() {
     /*
         Test ID:valid-ext-sa-003
@@ -76,8 +74,8 @@ fn validextsa003() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/003.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/003.xml")
@@ -92,7 +90,6 @@ fn validextsa003() {
 }
 
 #[test]
-#[ignore]
 fn validextsa004() {
     /*
         Test ID:valid-ext-sa-004
@@ -103,8 +100,8 @@ fn validextsa004() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/004.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/004.xml")
@@ -119,7 +116,6 @@ fn validextsa004() {
 }
 
 #[test]
-#[ignore]
 fn validextsa005() {
     /*
         Test ID:valid-ext-sa-005
@@ -130,8 +126,8 @@ fn validextsa005() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/005.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/005.xml")
@@ -146,7 +142,6 @@ fn validextsa005() {
 }
 
 #[test]
-#[ignore]
 fn validextsa006() {
     /*
         Test ID:valid-ext-sa-006
@@ -157,8 +152,8 @@ fn validextsa006() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/006.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/006.xml")
@@ -184,8 +179,8 @@ fn validextsa007() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/007.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/007.xml")
@@ -227,7 +222,6 @@ fn validextsa008() {
 }
 
 #[test]
-#[ignore]
 fn validextsa009() {
     /*
         Test ID:valid-ext-sa-009
@@ -238,8 +232,8 @@ fn validextsa009() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/009.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/009.xml")
@@ -254,7 +248,6 @@ fn validextsa009() {
 }
 
 #[test]
-#[ignore]
 fn validextsa011() {
     /*
         Test ID:valid-ext-sa-011
@@ -265,8 +258,8 @@ fn validextsa011() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/011.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/011.xml")
@@ -308,7 +301,6 @@ fn validextsa012() {
 }
 
 #[test]
-#[ignore]
 fn validextsa013() {
     /*
         Test ID:valid-ext-sa-013
@@ -319,8 +311,8 @@ fn validextsa013() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/013.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/ext-sa/out/013.xml")

@@ -6,9 +6,13 @@ use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
 
+/*
 #[test]
-#[ignore]
 fn rmt015() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:rmt-015
         Test URI:015.xml
@@ -23,10 +27,16 @@ fn rmt015() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn rmt017() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:rmt-017
         Test URI:017.xml
@@ -41,10 +51,16 @@ fn rmt017() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn rmt018() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:rmt-018
         Test URI:018.xml
@@ -59,6 +75,7 @@ fn rmt018() {
     ));
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 #[ignore]
