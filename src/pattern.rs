@@ -74,32 +74,85 @@ where
                 }
             }
             Pattern::Selection(p) => {
+                // First step is the terminal case,
+                // next steps are non-terminal
                 eprintln!("Selection pattern");
-                p.next.clone().map_or_else(
-                    || {
-                        // this is the terminal step
-                        if p.t.as_ref().is_none() {
-                            eprintln!("terminal step, no step data")
+                p.t.as_ref().map_or(
+                    false,
+                    |((term, nonterm), nt)| {
+                        eprintln!("check terminal step first");
+                        if is_match(term, nt, i.clone()) {
+                            // TODO: select item depending on non-terminal axis
+                            find_node(nonterm, i.clone()).map_or(
+                                false,
+                                |f| nonterminal(p.next.clone(), f)
+                            )
                         } else {
-                            eprintln!("terminal step, have step data")
+                            false
                         }
-                        p.t.as_ref().map_or(
-                            false,
-                            |(_, nt)| {
-                                eprintln!("have NodeTest");
-                                nt.matches(i)
-                            }
-                        )
-                    },
-                    |_| {
-                        // this is a non-terminal step
-                        eprintln!("non-terminal step");
-                        false // TODO
                     }
                 )
             }
             _ => false, // not yet implemented
         }
+    }
+}
+
+fn find_node<N: Node>(a: &Axis, i: Rc<Item<N>>) -> Option<Rc<Item<N>>> {
+    eprintln!("find_node: axis {} item is a {} named {}", a, i.item_type(), i.name().to_string());
+    match a {
+        Axis::Parent => {
+            match &*i {
+                Item::Node(n) => {
+                    n.parent().map(|p| Rc::new(Item::Node(p)))
+                }
+                _ => None,
+            }
+        }
+        _ => None, // todo
+    }
+}
+
+fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: Rc<Item<N>>) -> bool {
+    eprintln!("nonterminal step 1==\"{:?}\"\nitem is a {} named {}", p, i.item_type(), i.name().to_string());
+    p.map_or(
+        true, // all steps have succeeded so far
+        |q| {
+            let ((term, nonterm), nt) = q.t.as_ref().unwrap();
+            if is_match(&term, &nt, i.clone()) {
+                find_node(nonterm, i.clone()).map_or(
+                    false, // couldn't find the next node
+                    |p| nonterminal(q.next.clone(), p)
+                )
+            } else { false }
+        }
+    )
+}
+
+fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: Rc<Item<N>>) -> bool {
+    eprintln!("is_match axis==\"{}\" nt=\"{}\" item is a {} named {}", a, nt, i.item_type(), i.name().to_string());
+    match a {
+        Axis::Selfaxis => {
+            // Select item if it is an element-type node
+            if i.is_element_node() {
+                nt.matches(i)
+            } else {
+                false
+            }
+        }
+        Axis::Parent => {
+            // Select the parent node
+            match &*i {
+                Item::Node(n) => {
+                    n.parent().map_or(
+                        false,
+                        |p| nt.matches(Rc::new(Item::Node(p)))
+                    )
+                }
+                _ => false,
+            }
+        }
+        _ => false // todo
     }
 }
 
@@ -390,17 +443,25 @@ where
             )),
         ),
         |(a, b)| {
-            eprintln!("relative_path_expr_pattern");
+            eprintln!("relativepath_expr_pattern");
             if b.is_empty() {
                 // this is the terminal step
                 a
             } else {
-                Pattern::Error(Error::new(
-                    ErrorKind::NotImplemented,
-                    String::from(
-                        "multiple steps in a relative path in a pattern has not been implemented",
-                    ),
-                ))
+                let mut ap = match a {
+                    Pattern::Selection(p) => p,
+                    _ => panic!("relative path may only contain steps")
+                };
+                for ((_c, d)) in b {
+                    match d {
+                        Pattern::Selection(mut p) => {
+                            p.next = Some(Rc::new(ap));
+                            ap = p.clone();
+                        }
+                        _ => panic!("relative path can only contain steps")
+                    }
+                }
+                Pattern::Selection(ap)
             }
         },
     ))
