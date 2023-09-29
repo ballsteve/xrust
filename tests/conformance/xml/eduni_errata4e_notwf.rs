@@ -5,6 +5,7 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::non_utf8_file_reader;
 
 #[test]
 fn xibm105notwf_p04ibm04n02xml() {
@@ -394,7 +395,8 @@ fn xibm105notwf_p04ibm04n24xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n24.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n24.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04n24.xml").unwrap(),
         None,
         None,
     ));
@@ -813,6 +815,10 @@ fn xibm105notwf_p04aibm04an20xml() {
 #[ignore]
 fn xibm105notwf_p04aibm04an21xml() {
     /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
+    /*
         Test ID:x-ibm-1-0.5-not-wf-P04a-ibm04an21.xml
         Test URI:ibm04an21.xml
         Spec Sections:2.3
@@ -820,7 +826,8 @@ fn xibm105notwf_p04aibm04an21xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an21.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an21.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an21.xml").unwrap(),
         None,
         None,
     ));
@@ -838,12 +845,14 @@ fn xibm105notwf_p04aibm04an22xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an22.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an22.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an22.xml").unwrap(),
         None,
         None,
     ));
     assert!(testxml.is_err());
 }
+
 
 #[test]
 #[ignore]
@@ -856,7 +865,8 @@ fn xibm105notwf_p04aibm04an23xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an23.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an23.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an23.xml").unwrap(),
         None,
         None,
     ));
@@ -874,7 +884,8 @@ fn xibm105notwf_p04aibm04an24xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an24.xml").unwrap(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an24.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm04an24.xml").unwrap(),
         None,
         None,
     ));

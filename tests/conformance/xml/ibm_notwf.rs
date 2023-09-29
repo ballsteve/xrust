@@ -12552,9 +12552,14 @@ fn ibmnotwf_p86ibm86n04xml() {
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n01xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n01.xml
         Test URI:not-wf/P87/ibm87n01.xml
@@ -12570,10 +12575,16 @@ fn ibmnotwf_p87ibm87n01xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n02xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n02.xml
         Test URI:not-wf/P87/ibm87n02.xml
@@ -12589,10 +12600,16 @@ fn ibmnotwf_p87ibm87n02xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n03.xml
         Test URI:not-wf/P87/ibm87n03.xml
@@ -12608,10 +12625,16 @@ fn ibmnotwf_p87ibm87n03xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n04.xml
         Test URI:not-wf/P87/ibm87n04.xml
@@ -12627,10 +12650,16 @@ fn ibmnotwf_p87ibm87n04xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n05.xml
         Test URI:not-wf/P87/ibm87n05.xml
@@ -12646,10 +12675,16 @@ fn ibmnotwf_p87ibm87n05xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n06xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n06.xml
         Test URI:not-wf/P87/ibm87n06.xml
@@ -12665,10 +12700,16 @@ fn ibmnotwf_p87ibm87n06xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n07xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n07.xml
         Test URI:not-wf/P87/ibm87n07.xml
@@ -12684,10 +12725,16 @@ fn ibmnotwf_p87ibm87n07xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n08xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n08.xml
         Test URI:not-wf/P87/ibm87n08.xml
@@ -12703,10 +12750,16 @@ fn ibmnotwf_p87ibm87n08xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n09xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n09.xml
         Test URI:not-wf/P87/ibm87n09.xml
@@ -12722,10 +12775,16 @@ fn ibmnotwf_p87ibm87n09xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n10xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n10.xml
         Test URI:not-wf/P87/ibm87n10.xml
@@ -12741,10 +12800,16 @@ fn ibmnotwf_p87ibm87n10xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n11xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n11.xml
         Test URI:not-wf/P87/ibm87n11.xml
@@ -12760,10 +12825,16 @@ fn ibmnotwf_p87ibm87n11xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n12xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n12.xml
         Test URI:not-wf/P87/ibm87n12.xml
@@ -12779,10 +12850,16 @@ fn ibmnotwf_p87ibm87n12xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n13xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n13.xml
         Test URI:not-wf/P87/ibm87n13.xml
@@ -12798,10 +12875,16 @@ fn ibmnotwf_p87ibm87n13xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n14xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n14.xml
         Test URI:not-wf/P87/ibm87n14.xml
@@ -12817,10 +12900,16 @@ fn ibmnotwf_p87ibm87n14xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n15xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n15.xml
         Test URI:not-wf/P87/ibm87n15.xml
@@ -12836,10 +12925,16 @@ fn ibmnotwf_p87ibm87n15xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n16xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n16.xml
         Test URI:not-wf/P87/ibm87n16.xml
@@ -12855,10 +12950,16 @@ fn ibmnotwf_p87ibm87n16xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n17xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n17.xml
         Test URI:not-wf/P87/ibm87n17.xml
@@ -12874,10 +12975,16 @@ fn ibmnotwf_p87ibm87n17xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n18xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n18.xml
         Test URI:not-wf/P87/ibm87n18.xml
@@ -12893,10 +13000,16 @@ fn ibmnotwf_p87ibm87n18xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n19xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n19.xml
         Test URI:not-wf/P87/ibm87n19.xml
@@ -12912,10 +13025,16 @@ fn ibmnotwf_p87ibm87n19xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n20xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n20.xml
         Test URI:not-wf/P87/ibm87n20.xml
@@ -12931,10 +13050,16 @@ fn ibmnotwf_p87ibm87n20xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n21xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n21.xml
         Test URI:not-wf/P87/ibm87n21.xml
@@ -12950,10 +13075,16 @@ fn ibmnotwf_p87ibm87n21xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n22xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n22.xml
         Test URI:not-wf/P87/ibm87n22.xml
@@ -12969,10 +13100,16 @@ fn ibmnotwf_p87ibm87n22xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n23xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n23.xml
         Test URI:not-wf/P87/ibm87n23.xml
@@ -12988,10 +13125,16 @@ fn ibmnotwf_p87ibm87n23xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n24xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n24.xml
         Test URI:not-wf/P87/ibm87n24.xml
@@ -13007,10 +13150,16 @@ fn ibmnotwf_p87ibm87n24xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n25xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n25.xml
         Test URI:not-wf/P87/ibm87n25.xml
@@ -13026,10 +13175,16 @@ fn ibmnotwf_p87ibm87n25xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n26xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n26.xml
         Test URI:not-wf/P87/ibm87n26.xml
@@ -13045,10 +13200,16 @@ fn ibmnotwf_p87ibm87n26xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n27xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n27.xml
         Test URI:not-wf/P87/ibm87n27.xml
@@ -13064,10 +13225,16 @@ fn ibmnotwf_p87ibm87n27xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n28xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n28.xml
         Test URI:not-wf/P87/ibm87n28.xml
@@ -13083,10 +13250,16 @@ fn ibmnotwf_p87ibm87n28xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n29xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n29.xml
         Test URI:not-wf/P87/ibm87n29.xml
@@ -13102,10 +13275,16 @@ fn ibmnotwf_p87ibm87n29xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n30xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n30.xml
         Test URI:not-wf/P87/ibm87n30.xml
@@ -13121,10 +13300,16 @@ fn ibmnotwf_p87ibm87n30xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n31xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n31.xml
         Test URI:not-wf/P87/ibm87n31.xml
@@ -13140,10 +13325,16 @@ fn ibmnotwf_p87ibm87n31xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n32xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n32.xml
         Test URI:not-wf/P87/ibm87n32.xml
@@ -13159,10 +13350,16 @@ fn ibmnotwf_p87ibm87n32xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n33xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n33.xml
         Test URI:not-wf/P87/ibm87n33.xml
@@ -13178,10 +13375,16 @@ fn ibmnotwf_p87ibm87n33xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n34xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n34.xml
         Test URI:not-wf/P87/ibm87n34.xml
@@ -13197,10 +13400,16 @@ fn ibmnotwf_p87ibm87n34xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n35xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n35.xml
         Test URI:not-wf/P87/ibm87n35.xml
@@ -13216,10 +13425,16 @@ fn ibmnotwf_p87ibm87n35xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n36xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n36.xml
         Test URI:not-wf/P87/ibm87n36.xml
@@ -13235,10 +13450,16 @@ fn ibmnotwf_p87ibm87n36xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n37xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n37.xml
         Test URI:not-wf/P87/ibm87n37.xml
@@ -13254,10 +13475,16 @@ fn ibmnotwf_p87ibm87n37xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n38xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n38.xml
         Test URI:not-wf/P87/ibm87n38.xml
@@ -13273,10 +13500,16 @@ fn ibmnotwf_p87ibm87n38xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n39xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n39.xml
         Test URI:not-wf/P87/ibm87n39.xml
@@ -13292,10 +13525,16 @@ fn ibmnotwf_p87ibm87n39xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n40xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n40.xml
         Test URI:not-wf/P87/ibm87n40.xml
@@ -13311,10 +13550,16 @@ fn ibmnotwf_p87ibm87n40xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n41xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n41.xml
         Test URI:not-wf/P87/ibm87n41.xml
@@ -13330,10 +13575,16 @@ fn ibmnotwf_p87ibm87n41xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n42xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n42.xml
         Test URI:not-wf/P87/ibm87n42.xml
@@ -13349,10 +13600,16 @@ fn ibmnotwf_p87ibm87n42xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n43xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n43.xml
         Test URI:not-wf/P87/ibm87n43.xml
@@ -13368,10 +13625,16 @@ fn ibmnotwf_p87ibm87n43xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n44xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n44.xml
         Test URI:not-wf/P87/ibm87n44.xml
@@ -13387,10 +13650,16 @@ fn ibmnotwf_p87ibm87n44xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n45xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n45.xml
         Test URI:not-wf/P87/ibm87n45.xml
@@ -13406,10 +13675,16 @@ fn ibmnotwf_p87ibm87n45xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n46xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n46.xml
         Test URI:not-wf/P87/ibm87n46.xml
@@ -13425,10 +13700,16 @@ fn ibmnotwf_p87ibm87n46xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n47xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n47.xml
         Test URI:not-wf/P87/ibm87n47.xml
@@ -13444,10 +13725,16 @@ fn ibmnotwf_p87ibm87n47xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n48xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n48.xml
         Test URI:not-wf/P87/ibm87n48.xml
@@ -13463,10 +13750,16 @@ fn ibmnotwf_p87ibm87n48xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n49xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n49.xml
         Test URI:not-wf/P87/ibm87n49.xml
@@ -13482,10 +13775,16 @@ fn ibmnotwf_p87ibm87n49xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n50xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n50.xml
         Test URI:not-wf/P87/ibm87n50.xml
@@ -13501,10 +13800,16 @@ fn ibmnotwf_p87ibm87n50xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n51xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n51.xml
         Test URI:not-wf/P87/ibm87n51.xml
@@ -13520,10 +13825,16 @@ fn ibmnotwf_p87ibm87n51xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n52xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n52.xml
         Test URI:not-wf/P87/ibm87n52.xml
@@ -13539,10 +13850,16 @@ fn ibmnotwf_p87ibm87n52xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n53xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n53.xml
         Test URI:not-wf/P87/ibm87n53.xml
@@ -13558,10 +13875,16 @@ fn ibmnotwf_p87ibm87n53xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n54xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n54.xml
         Test URI:not-wf/P87/ibm87n54.xml
@@ -13577,10 +13900,16 @@ fn ibmnotwf_p87ibm87n54xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n55xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n55.xml
         Test URI:not-wf/P87/ibm87n55.xml
@@ -13596,10 +13925,16 @@ fn ibmnotwf_p87ibm87n55xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n56xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n56.xml
         Test URI:not-wf/P87/ibm87n56.xml
@@ -13615,10 +13950,16 @@ fn ibmnotwf_p87ibm87n56xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n57xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n57.xml
         Test URI:not-wf/P87/ibm87n57.xml
@@ -13634,10 +13975,16 @@ fn ibmnotwf_p87ibm87n57xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n58xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n58.xml
         Test URI:not-wf/P87/ibm87n58.xml
@@ -13653,10 +14000,16 @@ fn ibmnotwf_p87ibm87n58xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n59xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n59.xml
         Test URI:not-wf/P87/ibm87n59.xml
@@ -13672,10 +14025,16 @@ fn ibmnotwf_p87ibm87n59xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n60xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n60.xml
         Test URI:not-wf/P87/ibm87n60.xml
@@ -13691,10 +14050,16 @@ fn ibmnotwf_p87ibm87n60xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n61xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n61.xml
         Test URI:not-wf/P87/ibm87n61.xml
@@ -13710,10 +14075,16 @@ fn ibmnotwf_p87ibm87n61xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n62xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n62.xml
         Test URI:not-wf/P87/ibm87n62.xml
@@ -13729,10 +14100,16 @@ fn ibmnotwf_p87ibm87n62xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n63xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n63.xml
         Test URI:not-wf/P87/ibm87n63.xml
@@ -13748,10 +14125,16 @@ fn ibmnotwf_p87ibm87n63xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n64xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n64.xml
         Test URI:not-wf/P87/ibm87n64.xml
@@ -13767,10 +14150,16 @@ fn ibmnotwf_p87ibm87n64xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n66xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n66.xml
         Test URI:not-wf/P87/ibm87n66.xml
@@ -13786,10 +14175,16 @@ fn ibmnotwf_p87ibm87n66xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n67xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n67.xml
         Test URI:not-wf/P87/ibm87n67.xml
@@ -13805,10 +14200,16 @@ fn ibmnotwf_p87ibm87n67xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n68xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n68.xml
         Test URI:not-wf/P87/ibm87n68.xml
@@ -13824,10 +14225,16 @@ fn ibmnotwf_p87ibm87n68xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n69xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n69.xml
         Test URI:not-wf/P87/ibm87n69.xml
@@ -13843,10 +14250,16 @@ fn ibmnotwf_p87ibm87n69xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n70xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n70.xml
         Test URI:not-wf/P87/ibm87n70.xml
@@ -13862,10 +14275,16 @@ fn ibmnotwf_p87ibm87n70xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n71xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n71.xml
         Test URI:not-wf/P87/ibm87n71.xml
@@ -13881,10 +14300,16 @@ fn ibmnotwf_p87ibm87n71xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n72xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n72.xml
         Test URI:not-wf/P87/ibm87n72.xml
@@ -13900,10 +14325,16 @@ fn ibmnotwf_p87ibm87n72xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n73xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n73.xml
         Test URI:not-wf/P87/ibm87n73.xml
@@ -13919,10 +14350,16 @@ fn ibmnotwf_p87ibm87n73xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n74xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n74.xml
         Test URI:not-wf/P87/ibm87n74.xml
@@ -13938,10 +14375,16 @@ fn ibmnotwf_p87ibm87n74xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n75xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n75.xml
         Test URI:not-wf/P87/ibm87n75.xml
@@ -13957,10 +14400,16 @@ fn ibmnotwf_p87ibm87n75xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n76xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n76.xml
         Test URI:not-wf/P87/ibm87n76.xml
@@ -13976,10 +14425,16 @@ fn ibmnotwf_p87ibm87n76xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n77xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n77.xml
         Test URI:not-wf/P87/ibm87n77.xml
@@ -13995,10 +14450,16 @@ fn ibmnotwf_p87ibm87n77xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n78xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n78.xml
         Test URI:not-wf/P87/ibm87n78.xml
@@ -14014,10 +14475,16 @@ fn ibmnotwf_p87ibm87n78xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n79xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n79.xml
         Test URI:not-wf/P87/ibm87n79.xml
@@ -14033,10 +14500,16 @@ fn ibmnotwf_p87ibm87n79xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n80xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n80.xml
         Test URI:not-wf/P87/ibm87n80.xml
@@ -14052,10 +14525,16 @@ fn ibmnotwf_p87ibm87n80xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n81xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n81.xml
         Test URI:not-wf/P87/ibm87n81.xml
@@ -14071,10 +14550,16 @@ fn ibmnotwf_p87ibm87n81xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n82xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n82.xml
         Test URI:not-wf/P87/ibm87n82.xml
@@ -14090,10 +14575,16 @@ fn ibmnotwf_p87ibm87n82xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n83xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n83.xml
         Test URI:not-wf/P87/ibm87n83.xml
@@ -14109,10 +14600,16 @@ fn ibmnotwf_p87ibm87n83xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n84xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n84.xml
         Test URI:not-wf/P87/ibm87n84.xml
@@ -14128,10 +14625,16 @@ fn ibmnotwf_p87ibm87n84xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n85xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n85.xml
         Test URI:not-wf/P87/ibm87n85.xml
@@ -14147,6 +14650,7 @@ fn ibmnotwf_p87ibm87n85xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn ibmnotwf_p88ibm88n01xml() {
@@ -14184,9 +14688,14 @@ fn ibmnotwf_p88ibm88n02xml() {
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n03.xml
         Test URI:not-wf/P88/ibm88n03.xml
@@ -14202,10 +14711,16 @@ fn ibmnotwf_p88ibm88n03xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n04.xml
         Test URI:not-wf/P88/ibm88n04.xml
@@ -14221,10 +14736,16 @@ fn ibmnotwf_p88ibm88n04xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n05.xml
         Test URI:not-wf/P88/ibm88n05.xml
@@ -14240,10 +14761,16 @@ fn ibmnotwf_p88ibm88n05xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n06xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n06.xml
         Test URI:not-wf/P88/ibm88n06.xml
@@ -14259,10 +14786,16 @@ fn ibmnotwf_p88ibm88n06xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n08xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n08.xml
         Test URI:not-wf/P88/ibm88n08.xml
@@ -14278,10 +14811,16 @@ fn ibmnotwf_p88ibm88n08xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n09xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n09.xml
         Test URI:not-wf/P88/ibm88n09.xml
@@ -14297,10 +14836,16 @@ fn ibmnotwf_p88ibm88n09xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n10xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n10.xml
         Test URI:not-wf/P88/ibm88n10.xml
@@ -14316,10 +14861,16 @@ fn ibmnotwf_p88ibm88n10xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n11xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n11.xml
         Test URI:not-wf/P88/ibm88n11.xml
@@ -14335,10 +14886,16 @@ fn ibmnotwf_p88ibm88n11xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n12xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n12.xml
         Test URI:not-wf/P88/ibm88n12.xml
@@ -14354,10 +14911,16 @@ fn ibmnotwf_p88ibm88n12xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n13xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n13.xml
         Test URI:not-wf/P88/ibm88n13.xml
@@ -14373,10 +14936,16 @@ fn ibmnotwf_p88ibm88n13xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n14xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n14.xml
         Test URI:not-wf/P88/ibm88n14.xml
@@ -14392,10 +14961,16 @@ fn ibmnotwf_p88ibm88n14xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n15xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n15.xml
         Test URI:not-wf/P88/ibm88n15.xml
@@ -14411,10 +14986,16 @@ fn ibmnotwf_p88ibm88n15xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n16xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n16.xml
         Test URI:not-wf/P88/ibm88n16.xml
@@ -14430,6 +15011,7 @@ fn ibmnotwf_p88ibm88n16xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn ibmnotwf_p89ibm89n01xml() {
@@ -14467,9 +15049,14 @@ fn ibmnotwf_p89ibm89n02xml() {
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p89ibm89n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P89-ibm89n03.xml
         Test URI:not-wf/P89/ibm89n03.xml
@@ -14485,10 +15072,16 @@ fn ibmnotwf_p89ibm89n03xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p89ibm89n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P89-ibm89n04.xml
         Test URI:not-wf/P89/ibm89n04.xml
@@ -14504,10 +15097,16 @@ fn ibmnotwf_p89ibm89n04xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p89ibm89n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P89-ibm89n05.xml
         Test URI:not-wf/P89/ibm89n05.xml
@@ -14523,6 +15122,7 @@ fn ibmnotwf_p89ibm89n05xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn ibmnotwf_p89ibm89n06xml() {
