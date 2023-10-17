@@ -36,9 +36,9 @@ use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::ncname;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub fn expression<'a, N: Node, F>(e: &'a str) -> Result<Combinator<'a, N>, Error>
+pub fn expression<'a, N: Node, F>(e: &'a str) -> Result<Combinator<'a, N, F>, Error>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     if e == "" {
         Ok(empty())
@@ -61,18 +61,18 @@ where
 }
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
-fn xpath_expr<'a, N: Node + 'a, F>(input: ParseInput) -> ParseResult<Combinator<'a, N>>
+fn xpath_expr<'a, N: Node + 'a, F>(input: ParseInput) -> ParseResult<Combinator<'a, N, F>>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     expr::<N, F>()(input)
 }
 
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-fn expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         separated_list1(
@@ -85,9 +85,9 @@ where
 
 fn expr_wrapper<'a, N: Node + 'a, F>(
     b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a
+) -> impl Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     move |input| {
         if b {
@@ -100,9 +100,9 @@ where
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
 fn expr_single<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(inspect(
         "expr_single",
@@ -117,9 +117,9 @@ where
 
 fn expr_single_wrapper<'a, N: Node + 'a, F>(
     b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a
+) -> impl Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     move |input| {
         if b {
@@ -131,9 +131,9 @@ where
 }
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-fn if_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn if_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -163,9 +163,9 @@ where
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-fn for_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn for_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -180,9 +180,9 @@ where
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
 fn simple_for_clause<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Combinator<'a, N>)>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Combinator<'a, N, F>)>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -208,9 +208,9 @@ where
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-fn let_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn let_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -239,9 +239,9 @@ where
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
 fn simple_let_clause<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Combinator<'a, N>)>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Combinator<'a, N, F>)>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -278,9 +278,9 @@ fn get_nt_localname(nt: &NodeTest) -> String {
 }
 
 // OrExpr ::= AndExpr ('or' AndExpr)*
-fn or_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn or_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         inspect(
@@ -301,9 +301,9 @@ where
 }
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
-fn and_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn and_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         inspect(
@@ -326,9 +326,9 @@ where
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
 fn comparison_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -371,9 +371,9 @@ where
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
 fn stringconcat_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         inspect(
@@ -396,9 +396,9 @@ where
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
 fn range_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -417,9 +417,9 @@ where
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
 fn additive_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -448,7 +448,7 @@ where
                 // The arguments to the constructor are the items to be summed
                 // These are pair-wise items: first is the operator,
                 // second is the combinator for the value
-                let mut r: Vec<(ArithmeticOperator, Combinator<N>)> = Vec::new();
+                let mut r: Vec<(ArithmeticOperator, Combinator<N, F>)> = Vec::new();
 
                 r.append(&mut a);
 
@@ -463,9 +463,9 @@ where
 
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
 fn multiplicative_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(ArithmeticOperator, Combinator<'a, N>)>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(ArithmeticOperator, Combinator<'a, N, F>)>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -487,7 +487,7 @@ where
                 // The arguments to the constructor are the items to be summed
                 // These are pair-wise items: first is the operator,
                 // second is the combinator for the value
-                let mut r: Vec<(ArithmeticOperator, Combinator<N>)> = Vec::new();
+                let mut r: Vec<(ArithmeticOperator, Combinator<N, F>)> = Vec::new();
 
                 r.push((ArithmeticOperator::Noop, a));
 
@@ -502,9 +502,9 @@ where
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
 fn union_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         inspect(
@@ -530,9 +530,9 @@ where
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
 fn intersectexcept_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -558,9 +558,9 @@ where
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
 fn instanceof_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -571,7 +571,7 @@ where
                 xpwhitespace(),
                 tag("of"),
                 xpwhitespace(),
-                sequencetype_expr::<N>(),
+                sequencetype_expr::<N, F>(),
             )),
         ),
         |(v, o)| {
@@ -586,8 +586,11 @@ where
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
 // TODO: Box<dynement this parser fully
-fn sequencetype_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn sequencetype_expr<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(tag("empty-sequence()"), |_| {
         not_implemented("sequencetype_expr".to_string())
     }))
@@ -595,9 +598,9 @@ fn sequencetype_expr<'a, N: Node + 'a>(
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
 fn treat_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -608,7 +611,7 @@ where
                 xpwhitespace(),
                 tag("as"),
                 xpwhitespace(),
-                sequencetype_expr::<N>(),
+                sequencetype_expr::<N, F>(),
             )),
         ),
         |(v, o)| {
@@ -623,9 +626,9 @@ where
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
 fn castable_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -636,7 +639,7 @@ where
                 xpwhitespace(),
                 tag("as"),
                 xpwhitespace(),
-                singletype_expr::<N>(),
+                singletype_expr::<N, F>(),
             )),
         ),
         |(v, o)| {
@@ -662,17 +665,20 @@ where
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
 // TODO: Box<dynement this parser fully
-fn singletype_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn singletype_expr<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(pair(qname(), tag("?")), |_| {
         not_implemented("singletype_expr".to_string())
     }))
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
-fn cast_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn cast_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -683,7 +689,7 @@ where
                 xpwhitespace(),
                 tag("as"),
                 xpwhitespace(),
-                singletype_expr::<N>(),
+                singletype_expr::<N, F>(),
             )),
         ),
         |(v, o)| {
@@ -698,9 +704,9 @@ where
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
 fn arrow_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -711,7 +717,7 @@ where
                 xpwhitespace(),
                 arrowfunctionspecifier::<N, F>(),
                 xpwhitespace(),
-                opt(argumentlist::<N>()),
+                opt(argumentlist::<N, F>()),
             )),
         ),
         |(v, o)| {
@@ -727,16 +733,18 @@ where
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
 fn arrowfunctionspecifier<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
-        alt2(qname_expr::<N>(), parenthesized_expr::<N, F>()),
+        alt2(qname_expr::<N, F>(), parenthesized_expr::<N, F>()),
         |_| not_implemented("arrowfunctionspecifier".to_string()),
     ))
 }
-fn qname_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn qname_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(qname(), |q| match q {
         NodeTest::Name(NameTest {
@@ -750,7 +758,9 @@ fn qname_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combi
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn argumentlist<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(tag("()"), |_| {
         not_implemented("argumentlist".to_string())
@@ -759,9 +769,9 @@ fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Com
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
 fn unary_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N, F>()),
@@ -777,9 +787,9 @@ where
 
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
 fn value_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(inspect(
         "value_expr",
@@ -800,9 +810,9 @@ where
 }
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
-fn path_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn path_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt3(
         absolutedescendant_expr::<N, F>(),
@@ -813,9 +823,9 @@ where
 
 // ('//' RelativePathExpr?)
 fn absolutedescendant_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(tag("//"), relativepath_expr::<N, F>()),
@@ -837,9 +847,9 @@ where
 
 // ('/' RelativePathExpr?)
 fn absolutepath_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(tag("/"), opt(relativepath_expr::<N, F>())),
@@ -852,9 +862,9 @@ where
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
 fn relativepath_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -898,9 +908,9 @@ where
 }
 
 // StepExpr ::= PostfixExpr | AxisStep
-fn step_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn step_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt2(postfix_expr::<N, F>(), axisstep()))
 }
@@ -908,9 +918,9 @@ where
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
 // TODO: predicates, arg list, lookup
 fn postfix_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(primary_expr::<N, F>())
 }
@@ -918,9 +928,9 @@ where
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
 // TODO: finish this parser
 fn primary_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(inspect(
         "primary_expr",
@@ -936,9 +946,9 @@ where
 
 // FunctionCall ::= EQName ArgumentList
 fn function_call<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(qname(), arglist::<N, F>()),
@@ -1243,9 +1253,9 @@ where
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 fn arglist<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Combinator<'a, N>>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Combinator<'a, N, F>>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         inspect(
@@ -1268,16 +1278,19 @@ where
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn argument<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(inspect("argument", expr_single_wrapper::<N, F>(true)))
 }
 
 // VarRef ::= '$' VarName
-pub fn variable_reference<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+pub fn variable_reference<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(pair(tag("$"), qname()), |(_, qn)| {
         reference_variable(get_nt_localname(&qn))
     }))
@@ -1285,23 +1298,26 @@ pub fn variable_reference<'a, N: Node + 'a>(
 
 // ParenthesizedExpr ::= '(' Expr? ')'
 fn parenthesized_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt2(
         parenthesized_expr_empty(),
         parenthesized_expr_nonempty::<N, F>(),
     ))
 }
-fn parenthesized_expr_empty<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn parenthesized_expr_empty<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(tag("()"), |_| empty()))
 }
 fn parenthesized_expr_nonempty<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(delimited(
         tag("("),
@@ -1311,25 +1327,35 @@ where
 }
 
 // ContextItemExpr ::= '.'
-fn context_item<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn context_item<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(tag("."), |_| context()))
 }
 
 // Literal ::= NumericLiteral | StringLiteral
-pub fn literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+pub fn literal<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt2(numeric_literal(), string_literal()))
 }
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
-fn numeric_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn numeric_literal<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(alt3(double_literal(), decimal_literal(), integer_literal()))
 }
 // IntegerLiteral ::= Digits
-fn integer_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn integer_literal<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(digit1(), |s: String| {
         let n = s.parse::<i64>().unwrap();
         tc_literal(Rc::new(Item::Value(Value::Integer(n))))
@@ -1337,12 +1363,18 @@ fn integer_literal<'a, N: Node + 'a>(
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
 // Construct a double, but if that fails fall back to decimal
-fn decimal_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn decimal_literal<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(alt2(decimal_literal_frac(), decimal_literal_comp()))
 }
-fn decimal_literal_frac<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn decimal_literal_frac<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(pair(tag("."), digit1()), |(_, mut f)| {
         f.insert(0, '.');
         let n = f.parse::<f64>();
@@ -1356,8 +1388,11 @@ fn decimal_literal_frac<'a, N: Node + 'a>(
         tc_literal(Rc::new(Item::Value(i)))
     }))
 }
-fn decimal_literal_comp<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn decimal_literal_comp<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(inspect(
         "decimal",
         map(tuple3(digit1(), tag("."), digit0()), |(w, _, f)| {
@@ -1375,13 +1410,19 @@ fn decimal_literal_comp<'a, N: Node + 'a>(
 
 // DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
 // Construct a double
-fn double_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn double_literal<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(alt2(double_literal_frac(), double_literal_comp()))
 }
 
-fn double_literal_frac<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn double_literal_frac<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(
         tuple4(
             pair(tag("."), digit1()),
@@ -1399,8 +1440,11 @@ fn double_literal_frac<'a, N: Node + 'a>(
         },
     ))
 }
-fn double_literal_comp<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn double_literal_comp<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(
         tuple4(
             tuple3(digit1(), tag("."), digit1()),
@@ -1420,8 +1464,11 @@ fn double_literal_comp<'a, N: Node + 'a>(
 }
 
 // StringLiteral ::= double- or single-quote delimited with double-delimiter escape
-fn string_literal_double<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn string_literal_double<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(
         delimited(
             anychar('"'),
@@ -1433,8 +1480,11 @@ fn string_literal_double<'a, N: Node + 'a>(
         |s| tc_literal(Rc::new(Item::Value(Value::from(s)))),
     ))
 }
-fn string_literal_single<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn string_literal_single<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(
         delimited(
             anychar('\''),
@@ -1446,8 +1496,11 @@ fn string_literal_single<'a, N: Node + 'a>(
         |s| tc_literal(Rc::new(Item::Value(Value::from(s)))),
     ))
 }
-fn string_literal<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn string_literal<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(alt2(string_literal_double(), string_literal_single()))
 }
 
@@ -1563,7 +1616,10 @@ fn anytag(s: Vec<(Vec<&str>, bool)>) -> impl Fn(ParseInput) -> ParseResult<Strin
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
-fn axisstep<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn axisstep<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(map(pair(forwardaxis(), nodetest()), |(a, n)| {
         step(NodeMatch {
             axis: Axis::from(a),
@@ -1602,17 +1658,17 @@ fn axis_self() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
 
 // PredicateList ::= Predicate*
 pub fn predicate_list<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(many0(predicate::<N, F>()), |v| compose(v)))
 }
 
 // Predicate ::= "[" expr "]"
-fn predicate<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a>
+fn predicate<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -1818,6 +1874,9 @@ fn take_until_balanced(
     })
 }
 
-fn noop<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N>> + 'a> {
+fn noop<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Err(ParseError::Combinator))
 }

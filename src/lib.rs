@@ -72,8 +72,8 @@ pub use pattern::Pattern;
 pub mod evaluate;
 pub use evaluate::{Constructor, Evaluator, StaticContext};
 
-//#[cfg(feature = "xslt")]
-//pub mod xslt;
+#[cfg(feature = "xslt")]
+pub mod xslt;
 //#[cfg(feature = "xslt")]
 //pub use xslt::from_document;
 

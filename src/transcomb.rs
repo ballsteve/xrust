@@ -6,6 +6,8 @@ use std::fmt;
 use std::marker::PhantomData;
 use std::rc::Rc;
 
+use url::Url;
+
 use crate::parsepicture::parse as picture_parse;
 //use chrono::Utc;
 #[allow(unused_imports)]
@@ -13,37 +15,47 @@ use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::evaluate::{is_node_match, ArithmeticOperator, Axis, NodeMatch};
+use crate::pattern::Pattern;
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::*;
 
 pub type TransResult<'a, N> = Result<Sequence<N>, Error>;
-pub type Combinator<'a, N> = Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>;
+pub type Combinator<'a, N, F> = Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>;
 
 /// The transformation context (i.e. the dynamic context, plus some parts of the static context)
 // Idea: instead of having one dynamic context that is mutable,
 // make the context immutable but with shared components. Then when a new context is required, clone it and add in extra components
-#[derive(Clone)]
-pub struct Context<'a, N: Node + 'a> {
+//#[derive(Clone)]
+pub struct Context<'a, N: Node + 'a, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     seq: Sequence<N>, // The current context
     i: usize,         // Which item in the sequence is the current context
     depth: usize,     // Depth of evaluation
     rd: Option<N>,    // Result document
     // No distinction between built-in and stylesheet-defined templates. Built-in templates have no priority and no document order.
-    templates: Vec<Rc<Template<'a, N>>>,
+    templates: Vec<Rc<Template<'a, N, F>>>,
     //builtin_templates: Vec<Rc<Template<N>>>,
-    current_templates: Vec<Rc<Template<'a, N>>>,
+    current_templates: Vec<Rc<Template<'a, N, F>>>,
     // variables
     vars: HashMap<String, Vec<Sequence<N>>>,
     // grouping
     current_grouping_key: Option<Value>,
     current_group: Sequence<N>,
     // output defn
+    od: OutputDefinition,
     // base URI
+    base_url: Option<Url>,
 }
 
-impl<'a, N: Node + 'a> Context<'a, N> {
+impl<'a, N: Node + 'a, F> Context<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     pub fn new() -> Self {
         Context {
             seq: Sequence::new(),
@@ -55,6 +67,23 @@ impl<'a, N: Node + 'a> Context<'a, N> {
             rd: None,
             current_grouping_key: None,
             current_group: Vec::new(),
+            od: OutputDefinition::new(),
+            base_url: None,
+        }
+    }
+    pub fn make_copy(&self) -> Self {
+        Context {
+            seq: self.seq.clone(),
+            i: self.i.clone(),
+            depth: self.depth.clone(),
+            vars: self.vars.clone(),
+            templates: self.templates.clone(),
+            current_templates: self.current_templates.clone(),
+            rd: self.rd.clone(),
+            current_grouping_key: self.current_grouping_key.clone(),
+            current_group: self.current_group.clone(),
+            od: self.od.clone(),
+            base_url: self.base_url.clone(),
         }
     }
 
@@ -73,9 +102,24 @@ impl<'a, N: Node + 'a> Context<'a, N> {
     fn var_pop(&mut self, name: String) {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
+
+    fn baseurl(&self) -> Option<Url> {
+        self.base_url.clone()
+    }
+    fn set_baseurl(&mut self, url: Url) {
+        self.base_url = Some(url);
+    }
+
+    /// Evaluate finds a match for the sequence and evaluates the body of the template, returning the resulting [Sequence]
+    fn evaluate(&mut self) -> Result<Sequence<N>, Error> {
+        apply_templates(context())(self)
+    }
 }
 
-impl<'a, N: Node + 'a> From<Sequence<N>> for Context<'a, N> {
+impl<'a, N: Node + 'a, F> From<Sequence<N>> for Context<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     fn from(seq: Sequence<N>) -> Self {
         Context {
             seq,
@@ -87,14 +131,20 @@ impl<'a, N: Node + 'a> From<Sequence<N>> for Context<'a, N> {
             current_grouping_key: None,
             current_group: Vec::new(),
             rd: None,
+            od: OutputDefinition::new(),
+            base_url: None,
         }
     }
 }
 
 /// Builder for a [Context]
-pub struct ContextBuilder<'a, N: Node + 'a>(Context<'a, N>);
+pub struct ContextBuilder<'a, N: Node + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>(Context<'a, N, F>);
 
-impl<'a, N: Node + 'a> ContextBuilder<'a, N> {
+impl<'a, N: Node + 'a, F> ContextBuilder<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     pub fn new() -> Self {
         ContextBuilder(Context::new())
     }
@@ -118,11 +168,11 @@ impl<'a, N: Node + 'a> ContextBuilder<'a, N> {
         self.0.rd = Some(rd);
         self
     }
-    pub fn template(mut self, t: Template<'a, N>) -> Self {
+    pub fn template(mut self, t: Template<'a, N, F>) -> Self {
         self.0.templates.push(Rc::new(t));
         self
     }
-    pub fn current_templates(mut self, c: Vec<Rc<Template<'a, N>>>) -> Self {
+    pub fn current_templates(mut self, c: Vec<Rc<Template<'a, N, F>>>) -> Self {
         self.0.current_templates = c;
         self
     }
@@ -134,28 +184,53 @@ impl<'a, N: Node + 'a> ContextBuilder<'a, N> {
         self.0.current_grouping_key = Some(k);
         self
     }
-    pub fn build(self) -> Context<'a, N> {
+    pub fn output_definition(mut self, od: OutputDefinition) -> Self {
+        self.0.od = od;
+        self
+    }
+    pub fn base_url(mut self, b: Url) -> Self {
+        self.0.base_url = Some(b);
+        self
+    }
+    pub fn build(self) -> Context<'a, N, F> {
         self.0
     }
 }
 
-impl<'a, N: Node + 'a> From<Context<'a, N>> for ContextBuilder<'a, N> {
-    fn from(c: Context<'a, N>) -> Self {
-        ContextBuilder(c.clone())
+impl<'a, N: Node + 'a, F> From<Context<'a, N, F>> for ContextBuilder<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
+    fn from(c: Context<'a, N, F>) -> Self {
+        ContextBuilder(c)
+    }
+}
+impl<'a, N: Node + 'a, F> From<&mut Context<'a, N, F>> for ContextBuilder<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
+    fn from(c: &mut Context<'a, N, F>) -> Self {
+        ContextBuilder(c.make_copy())
     }
 }
 
 /// An import tree
 
 /// Creates an empty sequence
-pub fn empty<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N>> {
+pub fn empty<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N>>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Ok(Sequence::new()))
 }
 
 /// Creates a singleton sequence with the given value
-pub fn literal<'a, N: Node + 'a>(
+pub fn literal<'a, N: Node + 'a, F>(
     val: Rc<Item<N>>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Ok(vec![val.clone()]))
 }
 
@@ -163,9 +238,9 @@ pub fn literal<'a, N: Node + 'a>(
 pub fn literal_element<'a, F: 'a, N: Node>(
     qn: QualifiedName,
     c: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         if ctxt.rd.is_none() {
@@ -200,9 +275,9 @@ where
 pub fn literal_attribute<'a, F: 'a, N: Node>(
     qn: QualifiedName,
     v: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         if ctxt.rd.is_none() {
@@ -227,9 +302,9 @@ where
 pub fn set_attribute<'a, F: 'a, N: Node>(
     atname: QualifiedName,
     v: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         if ctxt.rd.is_none() {
@@ -242,7 +317,7 @@ where
             Item::Node(n) => match n.node_type() {
                 NodeType::Element => {
                     let od = n.owner_document();
-                    let attval = v(&mut ctxt.clone())?;
+                    let attval = v(ctxt)?;
                     if attval.len() == 1 {
                         match &*attval[0] {
                             Item::Value(av) => {
@@ -283,9 +358,9 @@ where
 pub fn copy<'a, F: 'a, N: Node>(
     i: Option<F>,
     c: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // If item (i) is None then copy the context item
@@ -325,9 +400,9 @@ where
 /// Deep copy of an item. The first argument selects the items to be copied. If not specified then the context item is copied.
 pub fn deep_copy<'a, F: 'a, N: Node>(
     i: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // If item (i) is None then copy the context item
@@ -345,12 +420,18 @@ where
 }
 
 /// Creates a singleton sequence with the context item as its value
-pub fn context<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn context<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| Ok(vec![ctxt.seq[ctxt.i].clone()]))
 }
 
 /// Returns a sequence with the source document's root node as it's item
-pub fn root<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn root<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| {
         if ctxt.seq.len() != 0 {
             // TODO: check all of the context. If any item is not a Node then error
@@ -377,13 +458,15 @@ pub fn root<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResul
 }
 
 /// Returns a sequence with the parent node only if it is the source document's root node
-pub fn parent_root<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+pub fn parent_root<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         if ctxt.seq.len() != 0 {
             match &*ctxt.seq[0] {
                 Item::Node(n) => match n.parent() {
-                    Some(p) => match n.node_type() {
+                    Some(_) => match n.node_type() {
                         NodeType::Document => Ok(vec![Rc::new(Item::Node(n.clone()))]),
                         _ => Ok(vec![]),
                     },
@@ -400,9 +483,9 @@ pub fn parent_root<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> Tra
 /// Creates a sequence. Each function in the supplied vector creates an item in the sequence. The original context is passed to each function.
 pub fn tc_sequence<'a, F: 'a, N: Node + 'a>(
     items: Vec<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         match items.iter().try_fold(vec![], |mut acc, f| match f(ctxt) {
@@ -421,9 +504,9 @@ where
 /// Each function in the supplied vector is evaluated. The sequence returned by a function is used as the context for the next function.
 pub fn compose<'a, F: 'a, N: Node>(
     steps: Vec<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         match steps
@@ -445,9 +528,9 @@ where
 /// TODO: eliminate duplicates
 pub fn union<'a, F: 'a, N: Node>(
     branches: Vec<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let mut result = vec![];
@@ -460,9 +543,12 @@ where
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
-pub fn step<'a, N: Node + 'a>(
+pub fn step<'a, N: Node + 'a, F>(
     nm: NodeMatch,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| {
         match ctxt.seq.iter().try_fold(vec![], |mut acc, i| {
             match &**i {
@@ -671,9 +757,9 @@ fn get_node<N: Node>(i: &mut Rc<Item<N>>) -> Result<&N, Error> {
 pub fn tc_loop<'a, F: 'a, N: Node>(
     v: (String, F),
     b: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let mut result = vec![];
@@ -698,9 +784,9 @@ where
 pub fn switch<'a, F: 'a, N: Node>(
     v: Vec<(F, F)>,
     o: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let mut candidate = o(ctxt)?;
@@ -718,9 +804,9 @@ where
 /// Remove items that don't match the predicate.
 pub fn filter<'a, F: 'a, N: Node>(
     predicate: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         match ctxt.seq.iter().try_fold(vec![], |mut acc, i| {
@@ -742,9 +828,9 @@ where
 /// Return the disjunction of all of the given functions.
 pub fn tc_or<'a, F: 'a, N: Node>(
     v: Vec<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // Future: Evaluate every operand to check for dynamic errors
@@ -769,9 +855,9 @@ where
 /// Return the conjunction of all of the given functions.
 pub fn tc_and<'a, F: 'a, N: Node>(
     v: Vec<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // Future: Evaluate every operand to check for dynamic errors
@@ -798,9 +884,9 @@ pub fn general_comparison<'a, F: 'a, N: Node>(
     o: Operator,
     l: F,
     r: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let left = l(ctxt)?;
@@ -828,9 +914,9 @@ pub fn value_comparison<'a, F: 'a, N: Node>(
     o: Operator,
     l: F,
     r: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let left = l(ctxt)?;
@@ -858,9 +944,9 @@ where
 pub fn tc_range<'a, F: 'a, N: Node>(
     start: F,
     end: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let s = start(ctxt)?;
@@ -897,9 +983,9 @@ where
 /// Perform an arithmetic operation.
 pub fn arithmetic<'a, F: 'a, N: Node>(
     ops: Vec<(ArithmeticOperator, F)>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     // Type: the result will be a number, but integer or double?
     // If all of the operands are integers, then the result is integer otherwise double
@@ -939,9 +1025,9 @@ pub fn declare_variable<'a, F: 'a, N: Node>(
     name: String,
     value: F,
     f: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| match value(ctxt) {
         Ok(s) => {
@@ -953,9 +1039,12 @@ where
         Err(err) => Err(err),
     })
 }
-pub fn reference_variable<'a, N: Node + 'a>(
+pub fn reference_variable<'a, N: Node + 'a, F>(
     name: String,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| match ctxt.vars.get(name.as_str()) {
         Some(u) => match u.last() {
             Some(t) => Ok(t.clone()),
@@ -975,15 +1064,15 @@ pub fn reference_variable<'a, N: Node + 'a>(
 pub fn for_each<'a, F: 'a, N: Node>(
     s: F,
     body: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let mut result: Sequence<N> = Vec::new();
 
         for i in s(ctxt)? {
-            let mut v = body(&mut ContextBuilder::from(ctxt.clone()).sequence(vec![i]).build())?;
+            let mut v = body(&mut ContextBuilder::from(ctxt).sequence(vec![i]).build())?;
             result.append(&mut v);
         }
         Ok(result)
@@ -995,9 +1084,9 @@ pub fn group_by<'a, F: 'a, N: Node>(
     s: F,
     by: F,
     body: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // Each 'by' expression is evaluated to a string key and stored in the hashmap
@@ -1005,7 +1094,7 @@ where
         s(ctxt)?.iter().try_for_each(|i| {
             // There may be multiple keys returned.
             // For each one, add this item into the group for that key
-            by(&mut ContextBuilder::from(ctxt.clone())
+            by(&mut ContextBuilder::from(ctxt)
                 .sequence(vec![i.clone()])
                 .build())?
             .iter()
@@ -1020,7 +1109,7 @@ where
         groups.iter().try_fold(vec![], |mut result, (k, v)| {
             // Set current-group and current-grouping-key
             let mut r = body(
-                &mut ContextBuilder::from(ctxt.clone())
+                &mut ContextBuilder::from(ctxt)
                     .current_grouping_key(Value::from(k.clone()))
                     .current_group(v.clone())
                     .build(),
@@ -1036,9 +1125,9 @@ pub fn group_adjacent<'a, F: 'a, N: Node>(
     s: F,
     adj: F,
     body: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let mut groups = Vec::new();
@@ -1047,7 +1136,7 @@ where
             return Ok(vec![]);
         } else {
             let mut curgrp = vec![sel[0].clone()];
-            let mut curkey = adj(&mut ContextBuilder::from(ctxt.clone())
+            let mut curkey = adj(&mut ContextBuilder::from(ctxt)
                 .sequence(vec![sel[1].clone()])
                 .build())?;
             if curkey.len() != 1 {
@@ -1057,7 +1146,7 @@ where
                 ));
             }
             sel.iter().skip(1).try_for_each(|i| {
-                let thiskey = adj(&mut ContextBuilder::from(ctxt.clone())
+                let thiskey = adj(&mut ContextBuilder::from(ctxt)
                     .sequence(vec![i.clone()])
                     .build())?;
                 if thiskey.len() == 1 {
@@ -1086,7 +1175,7 @@ where
         groups.iter().try_fold(vec![], |mut result, (k, v)| {
             // Set current-group and current-grouping-key
             let mut r = body(
-                &mut ContextBuilder::from(ctxt.clone())
+                &mut ContextBuilder::from(ctxt)
                     .current_grouping_key(Value::from(k.clone()))
                     .current_group(v.clone())
                     .build(),
@@ -1102,9 +1191,9 @@ pub fn group_starting_with<'a, F: 'a, N: Node>(
     _s: F,
     _body: F,
     _pat: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |_ctxt| {
         Err(Error::new(
@@ -1119,9 +1208,9 @@ pub fn group_ending_with<'a, F: 'a, N: Node>(
     _s: F,
     _body: F,
     _pat: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |_ctxt| {
         Err(Error::new(
@@ -1134,9 +1223,9 @@ where
 /// Apply templates to the select expression.
 pub fn apply_templates<'a, F: 'a, N: Node>(
     s: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // s is the select expression. Evaluate it, and then iterate over it's items.
@@ -1148,7 +1237,7 @@ where
                 if templates[0].priority == templates[1].priority
                     && templates[0].import.len() == templates[1].import.len()
                 {
-                    let mut candidates: Vec<Rc<Template<N>>> = templates
+                    let mut candidates: Vec<Rc<Template<N, F>>> = templates
                         .iter()
                         .take_while(|t| {
                             t.priority == templates[0].priority
@@ -1170,7 +1259,7 @@ where
             };
             // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
             let mut u = (matching.body)(
-                &mut ContextBuilder::from(ctxt.clone())
+                &mut ContextBuilder::from(ctxt)
                     .sequence(vec![i.clone()])
                     .current_templates(templates)
                     .build(),
@@ -1183,15 +1272,15 @@ where
 
 /// Apply template with a higher import precedence.
 pub fn apply_imports<'a, F: 'a, N: Node>(
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // Find the template with the next highest level within the same import tree
         // current_templates[0] is the currently matching template
         let cur = &(ctxt.current_templates[0]);
-        let next: Vec<Rc<Template<N>>> = ctxt
+        let next: Vec<Rc<Template<N, F>>> = ctxt
             .current_templates
             .iter()
             .skip(1)
@@ -1201,7 +1290,7 @@ where
 
         if !next.is_empty() {
             (next[0].body)(
-                &mut ContextBuilder::from(ctxt.clone())
+                &mut ContextBuilder::from(ctxt)
                     .current_templates(next.clone())
                     .build(),
             )
@@ -1212,12 +1301,14 @@ where
 }
 
 /// Apply the next template that matches.
-pub fn next_match<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+pub fn next_match<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         if ctxt.current_templates.len() > 2 {
             (ctxt.current_templates[1].body)(
-                &mut ContextBuilder::from(ctxt.clone())
+                &mut ContextBuilder::from(ctxt)
                     .current_templates(ctxt.current_templates.iter().skip(1).cloned().collect())
                     .build(),
             )
@@ -1229,13 +1320,16 @@ pub fn next_match<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> Tran
 
 // Find all potential templates. Evaluate the match pattern against this item.
 // Sort the result by priority and import precedence.
-fn match_templates<'a, N: Node + 'a>(
-    ctxt: &mut Context<'a, N>,
+fn match_templates<'a, N: Node + 'a, F>(
+    ctxt: &mut Context<'a, N, F>,
     i: &Rc<Item<N>>,
-) -> Result<Vec<Rc<Template<'a, N>>>, Error> {
+) -> Result<Vec<Rc<Template<'a, N, F>>>, Error>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
-        let e = (t.pattern)(&mut Context::from(vec![i.clone()]))?;
-        if !e.is_empty() {
+        let e = t.pattern.matches(i.clone());
+        if e {
             cand.push(t.clone())
         }
         Ok(cand)
@@ -1257,11 +1351,14 @@ fn match_templates<'a, N: Node + 'a>(
 /// The import tree is represented by a vector of usize that is a signature for where the template was imported into the stylesheet. Templates from the primary stylesheet have an import precedence of 0.
 /// Built-in templates have no priority and no document order and are considered to be in the primary stylesheet.
 //#[derive(Clone)]
-pub struct Template<'a, N: Node + 'a> {
+pub struct Template<'a, N: Node + 'a, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     //    pattern: Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N>>,
     //    body: Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N>>,
-    pattern: Combinator<'a, N>,
-    body: Combinator<'a, N>,
+    pattern: Pattern<'a, N, F>,
+    body: Combinator<'a, N, F>,
     priority: Option<f64>,
     import: Vec<usize>,
     document_order: Option<usize>,
@@ -1269,12 +1366,15 @@ pub struct Template<'a, N: Node + 'a> {
     phantom: PhantomData<N>,
 }
 
-impl<'a, N: Node> Template<'a, N> {
+impl<'a, N: Node, F> Template<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     pub fn new(
         //        pattern: Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N>>,
         //        body: Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N>>,
-        pattern: Combinator<'a, N>,
-        body: Combinator<'a, N>,
+        pattern: Pattern<'a, N, F>,
+        body: Combinator<'a, N, F>,
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
@@ -1292,7 +1392,10 @@ impl<'a, N: Node> Template<'a, N> {
     }
 }
 
-impl<'a, N: Node + 'a> fmt::Debug for Template<'a, N> {
+impl<'a, N: Node + 'a, F> fmt::Debug for Template<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         write!(
             f,
@@ -1308,7 +1411,10 @@ impl<'a, N: Node + 'a> fmt::Debug for Template<'a, N> {
 /// Templates are ordered in decreasing order of priority, and increasing order of import precedence.
 /// The length of the import vector indicates the depth of a template in the import tree.
 /// Absent values are always less.
-impl<'a, N: Node + 'a> PartialOrd for Template<'a, N> {
+impl<'a, N: Node + 'a, F> PartialOrd for Template<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
         // An absent priority is always lower
         self.priority.map_or(Some(Ordering::Greater), |v| {
@@ -1324,13 +1430,19 @@ impl<'a, N: Node + 'a> PartialOrd for Template<'a, N> {
         })
     }
 }
-impl<'a, N: Node + 'a> Ord for Template<'a, N> {
+impl<'a, N: Node + 'a, F> Ord for Template<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     fn cmp(&self, other: &Self) -> Ordering {
         self.partial_cmp(other).map_or(Ordering::Equal, |o| o)
     }
 }
 
-impl<'a, N: Node + 'a> PartialEq for Template<'a, N> {
+impl<'a, N: Node + 'a, F> PartialEq for Template<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     fn eq(&self, other: &Self) -> bool {
         self.priority.map_or_else(
             || other.priority.map_or(true, |_| false),
@@ -1346,7 +1458,10 @@ impl<'a, N: Node + 'a> PartialEq for Template<'a, N> {
         )
     }
 }
-impl<'a, N: Node + 'a> Eq for Template<'a, N> {}
+impl<'a, N: Node + 'a, F> Eq for Template<'a, N, F>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{}
 
 /// Currently, these are the functions defined for XPath 1.0:
 ///
@@ -1386,12 +1501,18 @@ impl<'a, N: Node + 'a> Eq for Template<'a, N> {}
 /// * current-grouping-key()
 
 /// XPath position function.
-pub fn position<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn position<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| Ok(vec![Rc::new(Item::Value(Value::from(ctxt.i as i64 + 1)))]))
 }
 
 /// XPath last function.
-pub fn last<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn last<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| {
         Ok(vec![Rc::new(Item::Value(Value::from(
             ctxt.seq.len() as i64
@@ -1402,9 +1523,9 @@ pub fn last<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResul
 /// XPath count function.
 pub fn tc_count<'a, F: 'a, N: Node>(
     s: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         s.as_ref().map_or_else(
@@ -1415,7 +1536,7 @@ where
             },
             |i| {
                 Ok(vec![Rc::new(Item::Value(Value::from(
-                    i(&mut ctxt.clone())?.len() as i64,
+                    i(ctxt)?.len() as i64,
                 )))])
             },
         )
@@ -1425,9 +1546,9 @@ where
 /// XPath local-name function.
 pub fn local_name<'a, F: 'a, N: Node>(
     s: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         s.as_ref().map_or_else(
@@ -1445,7 +1566,7 @@ where
             },
             |t| {
                 // Get the name of the singleton node
-                let n = t(&mut ctxt.clone())?;
+                let n = t(ctxt)?;
                 match n.len() {
                     0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
                     1 => match *n[0] {
@@ -1470,9 +1591,9 @@ where
 /// XPath name function.
 pub fn name<'a, F: 'a, N: Node>(
     s: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         s.as_ref().map_or_else(
@@ -1490,7 +1611,7 @@ where
             },
             |t| {
                 // Get the name of the singleton node
-                let n = t(&mut ctxt.clone())?;
+                let n = t(ctxt)?;
                 match n.len() {
                     0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
                     1 => match *n[0] {
@@ -1515,9 +1636,9 @@ where
 /// XPath string function.
 pub fn string<'a, F: 'a, N: Node>(
     s: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         Ok(vec![Rc::new(Item::Value(Value::from(
@@ -1529,9 +1650,9 @@ where
 /// XPath concat function. All arguments are concatenated into a single string value.
 pub fn tc_concat<'a, F: 'a, N: Node>(
     arguments: Vec<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         match arguments
@@ -1553,9 +1674,9 @@ where
 pub fn starts_with<'a, F: 'a, N: Node>(
     s: F,
     t: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // s is the string to search, t is what to search for
@@ -1571,9 +1692,9 @@ where
 pub fn contains<'a, F: 'a, N: Node>(
     s: F,
     t: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // s is the string to search, t is what to search for
@@ -1588,9 +1709,9 @@ pub fn substring<'a, F: 'a, N: Node>(
     s: F,
     t: F,
     l: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // must have two or three arguments.
@@ -1600,20 +1721,20 @@ where
         l.as_ref().map_or_else(
             || {
                 Ok(vec![Rc::new(Item::Value(Value::from(
-                    s(&mut ctxt.clone())?
+                    s(ctxt)?
                         .to_string()
                         .graphemes(true)
-                        .skip(t(&mut ctxt.clone())?.to_int()? as usize - 1)
+                        .skip(t(ctxt)?.to_int()? as usize - 1)
                         .collect::<String>(),
                 )))])
             },
             |m| {
                 Ok(vec![Rc::new(Item::Value(Value::from(
-                    s(&mut ctxt.clone())?
+                    s(ctxt)?
                         .to_string()
                         .graphemes(true)
-                        .skip(t(&mut ctxt.clone())?.to_int()? as usize - 1)
-                        .take(m(&mut ctxt.clone())?.to_int()? as usize)
+                        .skip(t(ctxt)?.to_int()? as usize - 1)
+                        .take(m(ctxt)?.to_int()? as usize)
                         .collect::<String>(),
                 )))])
             },
@@ -1625,9 +1746,9 @@ where
 pub fn substring_before<'a, F: 'a, N: Node>(
     s: F,
     t: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // s is the string to search,
@@ -1655,9 +1776,9 @@ where
 pub fn substring_after<'a, F: 'a, N: Node>(
     s: F,
     t: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // s is the string to search,
@@ -1685,9 +1806,9 @@ where
 /// XPath normalize-space function.
 pub fn normalize_space<'a, F: 'a, N: Node>(
     n: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let s: Result<String, Error> = n.as_ref().map_or_else(
@@ -1696,7 +1817,7 @@ where
                 Ok(ctxt.seq[ctxt.i].to_string())
             },
             |m| {
-                let t = m(&mut ctxt.clone())?;
+                let t = m(ctxt)?;
                 Ok(t.to_string())
             },
         );
@@ -1714,9 +1835,9 @@ pub fn translate<'a, F: 'a, N: Node>(
     s: F,
     map: F,
     trn: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         // s is the string to search
@@ -1760,9 +1881,9 @@ where
 /// XPath boolean function.
 pub fn boolean<'a, F: 'a, N: Node>(
     b: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         Ok(vec![Rc::new(Item::Value(Value::Boolean(
@@ -1772,9 +1893,9 @@ where
 }
 
 /// XPath not function.
-pub fn not<'a, F: 'a, N: Node>(n: F) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+pub fn not<'a, F: 'a, N: Node>(n: F) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         Ok(vec![Rc::new(Item::Value(Value::Boolean(
@@ -1784,21 +1905,27 @@ where
 }
 
 /// XPath true function.
-pub fn tc_true<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn tc_true<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Ok(vec![Rc::new(Item::Value(Value::Boolean(true)))]))
 }
 
 /// XPath false function.
-pub fn tc_false<'a, N: Node + 'a>() -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn tc_false<'a, N: Node + 'a, F>() -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Ok(vec![Rc::new(Item::Value(Value::Boolean(false)))]))
 }
 
 /// XPath number function.
 pub fn number<'a, F: 'a, N: Node>(
     num: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let n = num(ctxt)?;
@@ -1823,9 +1950,9 @@ where
 }
 
 /// XPath sum function.
-pub fn sum<'a, F: 'a, N: Node>(s: F) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+pub fn sum<'a, F: 'a, N: Node>(s: F) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         Ok(vec![Rc::new(Item::Value(Value::Double(
@@ -1840,9 +1967,9 @@ where
 /// XPath floor function.
 pub fn floor<'a, F: 'a, N: Node>(
     f: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let n = f(ctxt)?;
@@ -1861,9 +1988,9 @@ where
 /// XPath ceiling function.
 pub fn ceiling<'a, F: 'a, N: Node>(
     c: F,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let n = c(ctxt)?;
@@ -1883,15 +2010,15 @@ where
 pub fn round<'a, F: 'a, N: Node>(
     r: F,
     pr: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         pr.as_ref().map_or_else(
             || {
                 // precision is 0, i.e. round to nearest whole number
-                let n = r(&mut ctxt.clone())?;
+                let n = r(ctxt)?;
                 match n.len() {
                     1 => Ok(vec![Rc::new(Item::Value(Value::Double(
                         n[0].to_double().round(),
@@ -1903,8 +2030,8 @@ where
                 }
             },
             |p| {
-                let n = r(&mut ctxt.clone())?;
-                let m = p(&mut ctxt.clone())?;
+                let n = r(ctxt)?;
+                let m = p(ctxt)?;
                 match (n.len(), m.len()) {
                     (1, 1) => Ok(vec![Rc::new(Item::Value(Value::Double(
                         ((n[0].to_double() * (10.0_f64).powi(m[0].to_int().unwrap() as i32))
@@ -1922,14 +2049,20 @@ where
 }
 
 /// XPath current-date-time function.
-pub fn current_date_time<'a, N: Node + 'a>(
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn current_date_time<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Ok(vec![Rc::new(Item::Value(Value::DateTime(Local::now())))]))
 }
 
 /// XPath current-date function.
-pub fn current_date<'a, N: Node + 'a>(
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn current_date<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| {
         Ok(vec![Rc::new(Item::Value(Value::Date(
             Local::now().date_naive(),
@@ -1938,8 +2071,11 @@ pub fn current_date<'a, N: Node + 'a>(
 }
 
 /// XPath current-time function.
-pub fn current_time<'a, N: Node + 'a>(
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn current_time<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_| Ok(vec![Rc::new(Item::Value(Value::Time(Local::now())))]))
 }
 
@@ -1951,9 +2087,9 @@ pub fn format_date_time<'a, F: 'a, N: Node>(
     _language: Option<F>,
     _calendar: Option<F>,
     _place: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let dt = value(ctxt)?;
@@ -1999,9 +2135,9 @@ pub fn format_date<'a, F: 'a, N: Node>(
     _language: Option<F>,
     _calendar: Option<F>,
     _place: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let dt = value(ctxt)?;
@@ -2048,9 +2184,9 @@ pub fn format_time<'a, F: 'a, N: Node>(
     _language: Option<F>,
     _calendar: Option<F>,
     _place: Option<F>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         let dt = value(ctxt)?;
@@ -2090,14 +2226,20 @@ where
 }
 
 /// XSLT current-group function.
-pub fn current_group<'a, N: Node + 'a>(
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn current_group<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| Ok(ctxt.current_group.clone()))
 }
 
 /// XSLT current-grouping-key function.
-pub fn current_grouping_key<'a, N: Node + 'a>(
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+pub fn current_grouping_key<'a, N: Node + 'a, F>(
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |ctxt| {
         ctxt.current_grouping_key.clone().map_or_else(
             || {
@@ -2115,9 +2257,9 @@ pub fn current_grouping_key<'a, N: Node + 'a>(
 pub fn function_user_defined<'a, F: 'a, N: Node + 'a>(
     body: F,
     arguments: Vec<(String, F)>,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a>
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |ctxt| {
         arguments.iter().try_for_each(|(n, a)| match a(ctxt) {
@@ -2134,9 +2276,12 @@ where
 }
 
 /// Not implemented error.
-pub fn not_implemented<'a, N: Node + 'a>(
+pub fn not_implemented<'a, N: Node + 'a, F>(
     msg: String,
-) -> Box<dyn Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a> {
+) -> Box<dyn Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     Box::new(move |_ctxt| {
         Err(Error::new(
             ErrorKind::NotImplemented,

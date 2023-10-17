@@ -1,8 +1,8 @@
 /*! ## An XSLT compiler
 
-Compile an XSLT stylesheet into a Sequence [Constructor].
+Compile an XSLT stylesheet into a transformation [Combinator]].
 
-Once the stylesheet has been compiled, it may then be evaluated by the evaluation module.
+Once the stylesheet has been compiled, it may then be evaluated with an appropriate context.
 
 NB. This module, by default, does not resolve include or import statements. See the xrust-net crate for a helper module to do that.
 
@@ -65,10 +65,23 @@ let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
 
 // Serialise the sequence as XML
 assert_eq!(seq.to_xml(), "<html><head><title>XSLT in Rust</title></head><body><p>A simple document.</p></body></html>")
-*/
+ */
 
-use crate::evaluate::*;
-use crate::item::{Node, NodeType};
+use std::rc::Rc;
+
+use crate::transcomb::{Combinator, TransResult,
+                       Context, ContextBuilder,
+                       Template,
+                       empty, not_implemented,
+                       literal as tc_literal, literal_element, literal_attribute, tc_sequence,
+                       context, copy, deep_copy,
+                       for_each, group_by, group_adjacent,
+                    switch,
+                    step,
+                    apply_templates, apply_imports};
+use crate::evaluate::{Axis, NameTest, KindTest, NodeMatch, NodeTest, WildcardOrName};
+use crate::pattern::Pattern;
+use crate::item::{Item, Sequence, SequenceTrait, Node, NodeType};
 use crate::output::*;
 use crate::qname::*;
 use crate::value::*;
@@ -79,50 +92,65 @@ use url::Url;
 
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
-/// Compiles a [Node] into an [Evaluator].
+/// The XSLT trait allows an object to use an XSL Stylesheet to transform a document into a [Sequence].
+pub trait XSLT: Node {
+    /// Interpret the object as an XSL Stylesheet and transform a source document.
+    /// The [Node] that is given as the source document becomes the initial context for the transformation.
+    fn transform<N: Node, F, G>(&self, src: Rc<Item<N>>, b: Option<Url>, f: F, g: G) -> Result<Sequence<N>, Error>
+        where
+            F: Fn(&str) -> Result<N, Error>,
+            G: Fn(&Url) -> Result<String, Error>,
+    {
+        let ctxt = ContextBuilder::from(from_document(self, b, f, g)?);
+        ctxt.sequence(vec![src]).build();
+        ctxt.evaluate()
+    }
+}
+
+/// Compiles a [Node] into a transformation [Context].
 /// NB. Due to whitespace stripping, this is destructive of the stylesheet.
 /// The argument f is a closure that parses a string to a [Node]. The argument g is a closure that resolves a URL to a string. These are used for include and import modules.
-pub fn from_document<N: Node, F, G>(
+pub fn from_document<'a, N: Node + 'a, F, G, H>(
     styledoc: N,
-    sc: &mut StaticContext<N>,
     b: Option<Url>,
-    f: F,
+    f: H,
     g: G,
-) -> Result<Evaluator<N>, Error>
-where
-    F: Fn(&str) -> Result<N, Error>,
-    G: Fn(&Url) -> Result<String, Error>,
+) -> Result<Context<'a, N, F>, Error>
+    where
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+        H: Fn(&str) -> Result<N, Error>,
+        G: Fn(&Url) -> Result<String, Error>,
 {
-    let mut ev = Evaluator::new();
-    if let Some(c) = b {
-        ev.set_baseurl(c)
-    }
+    let mut cb = ContextBuilder::new();
 
     // Check that this is a valid XSLT stylesheet
     // There must be a single element as a child of the root node, and it must be named xsl:stylesheet or xsl:transform
     let mut rnit = styledoc.child_iter();
-    let stylenode = match rnit.next() {
-        Some(root) => {
+    let stylenode = rnit.next().map_or_else(
+        return Result::Err(Error::new(
+            ErrorKind::TypeError,
+            String::from("document does not have document element"),
+        )),
+        |root| {
             if !(root.name().get_nsuri_ref() == Some(XSLTNS)
                 && (root.name().get_localname() == "stylesheet"
-                    || root.name().get_localname() == "transform"))
+                || root.name().get_localname() == "transform"))
             {
                 return Result::Err(Error::new(
                     ErrorKind::TypeError,
-                    "not an XSLT stylesheet".to_string(),
-                ));
+                    String::from("not an XSLT stylesheet"),
+                ))
             } else {
                 root
             }
-        }
-        None => {
-            return Result::Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("document does not have document element"),
-            ))
-        }
-    };
-    // TODO: rnit.next() should == None
+        },
+    );
+    if rnit.next().is_some() {
+        return Result::Err(Error::new(
+            ErrorKind::TypeError,
+            String::from("extra element: not an XSLT stylesheet"),
+        ))
+    }
 
     // TODO: check version attribute
 
@@ -147,45 +175,35 @@ where
     // TODO: Support deep-copy, shallow-copy, deep-skin, shallow-skip and fail
 
     // This matches "/" and processes the root element
-    let bi1pat = to_pattern(vec![Constructor::Path(vec![vec![Constructor::Root]])])?;
-    let bi1bod = vec![Constructor::ApplyTemplates(vec![Constructor::Step(
-        NodeMatch {
-            axis: Axis::Child,
-            nodetest: NodeTest::Kind(KindTest::AnyKindTest),
-        },
-        vec![],
-    )])];
-    ev.add_builtin_template(bi1pat, bi1bod, None, -1.0, 0);
+    cb.template(Template::new(
+        Pattern::try_from("/")?,
+        apply_templates(step(
+            NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::AnyKindTest),
+            }
+        )),
+        None, vec![0], None, None,
+    ));
+
     // This matches "*" and applies templates to all children
-    let bi2pat = to_pattern(vec![Constructor::Path(vec![vec![Constructor::Step(
-        NodeMatch {
-            axis: Axis::Child,
-            nodetest: NodeTest::Name(NameTest {
-                ns: None,
-                prefix: None,
-                name: Some(WildcardOrName::Wildcard),
-            }),
-        },
-        vec![],
-    )]])])?;
-    let bi2bod = vec![Constructor::ApplyTemplates(vec![Constructor::Step(
-        NodeMatch {
-            axis: Axis::Child,
-            nodetest: NodeTest::Kind(KindTest::AnyKindTest),
-        },
-        vec![],
-    )])];
-    ev.add_builtin_template(bi2pat, bi2bod, None, -1.0, 0);
+    cb.template(Template::new(
+        Pattern::try_from("child::*")?,
+        apply_templates(step(
+            NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::AnyKindTest),
+            }
+        )),
+        None, vec![0], None, None,
+    ));
+
     // This matches "text()" and copies content
-    let bi3pat = to_pattern(vec![Constructor::Path(vec![vec![Constructor::Step(
-        NodeMatch {
-            axis: Axis::Child,
-            nodetest: NodeTest::Kind(KindTest::TextTest),
-        },
-        vec![],
-    )]])])?;
-    let bi3bod = vec![Constructor::ContextItem];
-    ev.add_builtin_template(bi3pat, bi3bod, None, -1.0, 0);
+    cb.template(Template::new(
+        Pattern::try_from("child::text()")?,
+        context(),
+        None, vec![0], None, None,
+    ));
 
     // Setup the serialization of the primary result document
     if let Some(c) = stylenode.child_iter().find(|c| {
@@ -202,7 +220,7 @@ where
 
         let mut od = OutputDefinition::new();
         od.set_indent(b);
-        ev.set_output_definition(od);
+        cb.output_definition(od);
     };
 
     // Iterate over children, looking for includes
@@ -219,7 +237,7 @@ where
         })
         .try_for_each(|mut c| {
             let h = c.get_attribute(&QualifiedName::new(None, None, "href".to_string()));
-            let url = match ev.baseurl().map_or_else(
+            let url = match cb.baseurl().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |base| base.join(h.to_string().as_str()),
             ) {
@@ -230,10 +248,10 @@ where
                         message: format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
                             h,
-                            ev.baseurl()
+                            cb.baseurl()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
-                    })
+                    });
                 }
             };
             let xml = g(&url)?;
@@ -265,7 +283,7 @@ where
         })
         .try_for_each(|mut c| {
             let h = c.get_attribute(&QualifiedName::new(None, None, "href".to_string()));
-            let url = match ev.baseurl().map_or_else(
+            let url = match cb.baseurl().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |base| base.join(h.to_string().as_str()),
             ) {
@@ -276,10 +294,10 @@ where
                         message: format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
                             h,
-                            ev.baseurl()
+                            cb.baseurl()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
-                    })
+                    });
                 }
             };
             let xml = g(&url)?;
@@ -327,16 +345,14 @@ where
         })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
-            let n = m.to_string();
-            let a = parse(&n).expect("failed to parse match expression");
-            let mut pat = to_pattern(a).expect("failed to compile match pattern");
+            let mut pat = Pattern::try_from(m.to_string())?;
             let mut body = vec![];
             c.child_iter().try_for_each(|d| {
-                body.push(to_constructor(d)?);
+                body.push(to_combinator(d)?);
                 Ok::<(), Error>(())
             })?;
-            sc.static_analysis(&mut pat);
-            sc.static_analysis(&mut body);
+            //sc.static_analysis(&mut pat);
+            //sc.static_analysis(&mut body);
             // Determine the priority of the template
             let prio;
             let pr = c.get_attribute(&QualifiedName::new(None, None, "priority".to_string()));
@@ -344,44 +360,36 @@ where
                 "" => {
                     // Calculate the default priority
                     // TODO: more work to be done interpreting XSLT 6.5
-                    if pat.len() <= 1 {
-                        match &pat[0] {
-                            Constructor::Root => prio = -0.5,
-                            Constructor::Path(_) => prio = -0.5,
-                            Constructor::Step(nm, _pred) => match &nm.nodetest {
-                                NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
-                                    (
-                                        Some(WildcardOrName::Wildcard),
-                                        Some(WildcardOrName::Wildcard),
-                                    ) => prio = -0.5,
-                                    (
-                                        Some(WildcardOrName::Wildcard),
-                                        Some(WildcardOrName::Name(_)),
-                                    )
-                                    | (
-                                        Some(WildcardOrName::Name(_)),
-                                        Some(WildcardOrName::Wildcard),
-                                    ) => prio = -0.25,
-                                    (None, Some(WildcardOrName::Wildcard)) => prio = -0.25,
-                                    (
-                                        Some(WildcardOrName::Name(_)),
-                                        Some(WildcardOrName::Name(_)),
-                                    ) => prio = 0.0,
-                                    (None, Some(WildcardOrName::Name(_))) => prio = 0.0,
-                                    _ => prio = 0.5,
-                                },
-                                NodeTest::Kind(kt) => match kt {
-                                    KindTest::DocumentTest
-                                    | KindTest::ElementTest
-                                    | KindTest::AttributeTest => prio = -0.5,
-                                    _ => prio = 0.5,
-                                },
-                            },
-                            _ => prio = 0.5,
+                    match &pat {
+                        Pattern::Predicate(p) => {
+                            if p.is_empty() {
+                                -1
+                            } else {
+                                1
+                            }
                         }
-                    } else {
-                        // TODO: calculate the priority of each branch of the pattern
-                        prio = 0.5
+                        Pattern::Selection(s) => {
+                            let ((t, nt), q) = s.t.unwrap();
+                            // If "/" then -0.5
+                            match (t, nt) {
+                                (Axis::SelfAttribute, _) => -0.5,
+                                (Axis::Selfaxis, Axis::Parent) |
+                                (Axis::Selfaxis, Axis::Ancestor) |
+                                (Axis::Selfaxis, Axis::AncestorOrSelf) => {
+                                    match nt {
+                                        NodeTest::Name(nm) => {
+                                            match nm.name {
+                                                Some(WildcardOrName::Wildcard) => -0.5,
+                                                Some(_) => 0,
+                                                _ => -0.5,
+                                            }
+                                        }
+                                        NodeTest::Kind(kt) => -0.5,
+                                    }
+                                }
+                                _ => 0.5,
+                            }
+                        }
                     }
                 }
                 _ => prio = pr.to_string().parse::<f64>().unwrap(), // TODO: better error handling
@@ -396,17 +404,26 @@ where
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
-            ev.add_template(pat, body, None, prio, import);
+            cb.template(
+                Template::new(pat,
+                              tc_sequence(body),
+                              Some(prio),
+                              vec![import],
+                              None,
+                              None));
             Ok::<(), Error>(())
         })?;
 
-    Ok(ev)
+    Ok(cb.build())
 }
 
-/// Compile a node in a template to a sequence constructor
-fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
+/// Compile a node in a template to a sequence [Combinator]
+fn to_combinator<'a, N: Node + 'a, F>(n: N) -> Result<Combinator<'a, N, F>, Error>
+where
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+{
     match n.node_type() {
-        NodeType::Text => Ok(Constructor::Literal(Value::String(n.to_string()))),
+        NodeType::Text => Ok(tc_literal(Rc::new(Item::Value(Value::String(n.to_string()))))),
         NodeType::Element => {
             match (n.name().get_nsuri_ref(), n.name().get_localname().as_str()) {
                 (Some(XSLTNS), "text") => {
@@ -417,7 +434,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                     ));
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
-                            "yes" => Ok(Constructor::Literal(Value::String(n.to_string()))),
+                            "yes" => Ok(tc_literal(Rc::new(Item::Value(Value::String(n.to_string()))))),
                             "no" => {
                                 let text = n
                                     .to_string()
@@ -426,7 +443,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                                     .replace('<', "&lt;")
                                     .replace('\'', "&apos;")
                                     .replace('\"', "&quot;");
-                                Ok(Constructor::Literal(Value::from(text)))
+                                Ok(tc_literal(Rc::new(Item::Value(Value::from(text)))))
                             }
                             _ => Result::Err(Error {
                                 kind: ErrorKind::TypeError,
@@ -442,38 +459,28 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                             .replace('<', "&lt;")
                             .replace('\'', "&apos;")
                             .replace('\"', "&quot;");
-                        Ok(Constructor::Literal(Value::from(text)))
+                        Ok(tc_literal(Rc::new(Item::Value(Value::from(text)))))
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {
                     let sel =
                         n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !sel.to_string().is_empty() {
-                        Ok(Constructor::ApplyTemplates(parse(&sel.to_string())?))
+                        Ok(apply_templates(expression(&sel.to_string())?))
                     } else {
                         // If there is no select attribute, then default is "child::node()"
-                        Ok(Constructor::ApplyTemplates(vec![Constructor::Step(
+                        Ok(apply_templates(step(
                             NodeMatch {
                                 axis: Axis::Child,
                                 nodetest: NodeTest::Kind(KindTest::AnyKindTest),
-                            },
-                            vec![],
-                        )]))
+                            })))
                     }
                 }
-                (Some(XSLTNS), "apply-imports") => Ok(Constructor::ApplyImports),
+                (Some(XSLTNS), "apply-imports") => Ok(apply_imports()),
                 (Some(XSLTNS), "sequence") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
-                        let cons = parse(&s.to_string())?;
-                        if cons.len() > 1 {
-                            return Result::Err(Error {
-                                kind: ErrorKind::TypeError,
-                                message: "select attribute has more than one sequence constructor"
-                                    .to_string(),
-                            });
-                        }
-                        Ok(cons[0].clone())
+                        Ok(expression(&s.to_string())?)
                     } else {
                         Result::Err(Error {
                             kind: ErrorKind::TypeError,
@@ -484,15 +491,15 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                 (Some(XSLTNS), "if") => {
                     let t = n.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
                     if !t.to_string().is_empty() {
-                        Ok(Constructor::Switch(
+                        Ok(switch(
                             vec![
-                                parse(&t.to_string())?,
+                                expression(&t.to_string())?,
                                 n.child_iter().try_fold(vec![], |mut body, e| {
-                                    body.push(to_constructor(e)?);
+                                    body.push(to_combinator(e)?);
                                     Ok(body)
                                 })?,
                             ],
-                            vec![],
+                            empty(),
                         ))
                     } else {
                         Result::Err(Error {
@@ -502,85 +509,89 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                     }
                 }
                 (Some(XSLTNS), "choose") => {
-                    let mut when: Vec<Vec<Constructor<N>>> = Vec::new();
-                    let mut otherwise: Vec<Constructor<N>> = Vec::new();
+                    let mut clauses: Vec<(Combinator<N, F>, Combinator<N, F>)> = Vec::new();
+                    let mut otherwise: Option<Combinator<N, F>> = None;
                     let mut status: Option<Error> = None;
                     n.child_iter()
-			.try_for_each(|m| {
-			    // look for when elements
-	      		    // then find an otherwise
-	      		    // fail on anything else (apart from whitespace, comments, PIs)
-			    match m.node_type() {
-				NodeType::Element => {
-      				    match (m.name().get_nsuri_ref(), m.name().get_localname().as_str()) {
-        				(Some(XSLTNS), "when") => {
-					    if otherwise.is_empty() {
-						let t = m.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
-						if !t.to_string().is_empty() {
-						    when.push(
-		    					parse(&t.to_string())?
-						    );
-						    when.push(
-							m.child_iter()
-							    .try_fold(
-								vec![],
-								|mut body, e| {
-								    body.push(to_constructor(e)?);
-								    Ok(body)
-								}
-							    )?
-						    );
-						} else {
-	      					    status.replace(Error{kind: ErrorKind::TypeError, message: "missing test attribute".to_string()});
-						}
-					    } else {
-						status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: when follows otherwise".to_string()});
-					    }
-					}
-        				(Some(XSLTNS), "otherwise") => {
-					    if !when.is_empty() {
-						m.child_iter()
-						    .try_for_each(|e| {
-							otherwise.push(to_constructor(e)?);
-							Ok::<(), Error>(())
-						    })?;
-					    } else {
-						status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element: no when elements".to_string()});
-					    }
-					}
-					_ => {
-					    status.replace(Error{kind: ErrorKind::TypeError, message: "invalid element content in choose element".to_string()});
-					}
-				    }
-				}
-				NodeType::Text => {
-				    if !n.to_string().trim().is_empty() {
-					status.replace(Error{kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string()});
-				    }
-				}
-				NodeType::Comment |
-				NodeType::ProcessingInstruction => {}
-				_ => {
-				    status.replace(Error{kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string()});
-				}
-			    }
-			    Ok::<(), Error>(())
-			})?;
+                        .try_for_each(|m| {
+                            // look for when elements
+                            // then find an otherwise
+                            // fail on anything else (apart from whitespace, comments, PIs)
+                            match m.node_type() {
+                                NodeType::Element => {
+                                    match (m.name().get_nsuri_ref(), m.name().get_localname().as_str()) {
+                                        (Some(XSLTNS), "when") => {
+                                            if otherwise.is_none() {
+                                                let t = m.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
+                                                if !t.to_string().is_empty() {
+                                                    clauses.push((
+                                                        expression(&t.to_string())?,
+                                                        tc_sequence(
+                                                            m.child_iter()
+                                                                .try_fold(
+                                                                    vec![],
+                                                                    |mut body, e| {
+                                                                        body.push(to_combinator(e)?);
+                                                                        Ok(body)
+                                                                    },
+                                                                )?
+                                                        )
+                                                    ));
+                                                } else {
+                                                    status.replace(Error { kind: ErrorKind::TypeError, message: "missing test attribute".to_string() });
+                                                }
+                                            } else {
+                                                status.replace(Error { kind: ErrorKind::TypeError, message: "invalid content in choose element: when follows otherwise".to_string() });
+                                            }
+                                        }
+                                        (Some(XSLTNS), "otherwise") => {
+                                            if !clauses.is_empty() {
+                                                otherwise = Some(m.child_iter()
+                                                    .try_fold(
+                                                        vec![],
+                                                        |o, e| {
+                                                            o.push(to_combinator(e)?);
+                                                            Ok(o)
+                                                        },
+                                                    )?);
+                                            } else {
+                                                status.replace(Error { kind: ErrorKind::TypeError, message: "invalid content in choose element: no when elements".to_string() });
+                                            }
+                                        }
+                                        _ => {
+                                            status.replace(Error { kind: ErrorKind::TypeError, message: "invalid element content in choose element".to_string() });
+                                        }
+                                    }
+                                }
+                                NodeType::Text => {
+                                    if !n.to_string().trim().is_empty() {
+                                        status.replace(Error { kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string() });
+                                    }
+                                }
+                                NodeType::Comment |
+                                NodeType::ProcessingInstruction => {}
+                                _ => {
+                                    status.replace(Error { kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string() });
+                                }
+                            }
+                            Ok::<(), Error>(())
+                        })?;
                     match status {
                         Some(e) => Result::Err(e),
-                        None => Ok(Constructor::Switch(when, otherwise)),
+                        None => Ok(switch(clauses, otherwise)),
                     }
                 }
                 (Some(XSLTNS), "for-each") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
-                        Ok(Constructor::ForEach(
-                            parse(&s.to_string())?,
-                            n.child_iter().try_fold(vec![], |mut body, e| {
-                                body.push(to_constructor(e)?);
-                                Ok(body)
-                            })?,
-                            None,
+                        Ok(for_each(
+                            expression(&s.to_string())?,
+                            tc_sequence(
+                                n.child_iter().try_fold(vec![], |mut body, e| {
+                                    body.push(to_combinator(e)?);
+                                    Ok(body)
+                                })?,
+                            ),
                         ))
                     } else {
                         Result::Err(Error {
@@ -598,45 +609,49 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                                 None,
                                 "group-by".to_string(),
                             ))
-                            .to_string()
-                            .as_str(),
+                                .to_string()
+                                .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
                                 "group-adjacent".to_string(),
                             ))
-                            .to_string()
-                            .as_str(),
+                                .to_string()
+                                .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
                                 "group-starting-with".to_string(),
                             ))
-                            .to_string()
-                            .as_str(),
+                                .to_string()
+                                .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
                                 "group-ending-with".to_string(),
                             ))
-                            .to_string()
-                            .as_str(),
+                                .to_string()
+                                .as_str(),
                         ) {
-                            (by, "", "", "") => Ok(Constructor::ForEach(
-                                parse(&s.to_string())?,
-                                n.child_iter().try_fold(vec![], |mut body, e| {
-                                    body.push(to_constructor(e)?);
-                                    Ok(body)
-                                })?,
-                                Some(Grouping::By(parse(by)?)),
+                            (by, "", "", "") => Ok(group_by(
+                                expression(&s.to_string())?,
+                                expression(by)?,
+                                tc_sequence(
+                                    n.child_iter().try_fold(vec![], |mut body, e| {
+                                        body.push(to_combinator(e)?);
+                                        Ok(body)
+                                    })?
+                                ),
                             )),
-                            ("", adj, "", "") => Ok(Constructor::ForEach(
-                                parse(&s.to_string())?,
-                                n.child_iter().try_fold(vec![], |mut body, e| {
-                                    body.push(to_constructor(e)?);
-                                    Ok(body)
-                                })?,
-                                Some(Grouping::Adjacent(parse(adj)?)),
+                            ("", adj, "", "") => Ok(group_adjacent(
+                                expression(&s.to_string())?,
+                                expression(adj)?,
+                                tc_sequence(
+                                    n.child_iter().try_fold(vec![], |mut body, e| {
+                                        body.push(to_combinator(e)?);
+                                        Ok(body)
+                                    })?
+                                ),
                             )),
                             // TODO: group-starting-with and group-ending-with
                             _ => Result::Err(Error {
@@ -653,35 +668,35 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                 }
                 (Some(XSLTNS), "copy") => {
                     // TODO: handle select attribute
-                    Ok(Constructor::Copy(
-                        vec![],
+                    let content: Vec<Combinator<N, F>> = n.child_iter().try_fold(vec![], |mut body, e| {
+                        body.push(to_combinator(e)?);
+                        Ok(body)
+                    })?;
+                    Ok(copy(
+                        None, // TODO: this is where the select attribute would go
                         // The content of this element is a template for the content of the new item
-                        n.child_iter().try_fold(vec![], |mut body, e| {
-                            body.push(to_constructor(e)?);
-                            Ok(body)
-                        })?,
+                        if content.is_empty() { None } else { tc_sequence(content) },
                     ))
                 }
                 (Some(XSLTNS), "copy-of") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
-                        Ok(Constructor::DeepCopy(parse(&s.to_string())?))
+                        Ok(deep_copy(Some(expression(&s.to_string())?)))
                     } else {
-                        Result::Err(Error {
-                            kind: ErrorKind::TypeError,
-                            message: "missing select attribute".to_string(),
-                        })
+                        Ok(deep_copy(None))
                     }
                 }
                 (Some(XSLTNS), "attribute") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
                     if !m.to_string().is_empty() {
-                        Ok(Constructor::LiteralAttribute(
+                        Ok(literal_attribute(
                             QualifiedName::new(None, None, m.to_string()),
-                            n.child_iter().try_fold(vec![], |mut body, e| {
-                                body.push(to_constructor(e)?);
-                                Ok(body)
-                            })?,
+                            tc_sequence(
+                                n.child_iter().try_fold(vec![], |mut body, e| {
+                                    body.push(to_combinator(e)?);
+                                    Ok(body)
+                                })?
+                            ),
                         ))
                     } else {
                         Result::Err(Error {
@@ -690,7 +705,7 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                         })
                     }
                 }
-                (Some(XSLTNS), u) => Ok(Constructor::NotImplemented(format!(
+                (Some(XSLTNS), u) => Ok(not_implemented(format!(
                     "unsupported XSL element \"{}\"",
                     u
                 ))),
@@ -698,31 +713,31 @@ fn to_constructor<N: Node>(n: N) -> Result<Constructor<N>, Error> {
                     // TODO: Handle qualified element name
                     let mut content = vec![];
                     n.attribute_iter().try_for_each(|e| {
-                        content.push(to_constructor(e)?);
+                        content.push(to_combinator(e)?);
                         Ok::<(), Error>(())
                     })?;
                     n.child_iter().try_for_each(|e| {
-                        content.push(to_constructor(e)?);
+                        content.push(to_combinator(e)?);
                         Ok::<(), Error>(())
                     })?;
-                    Ok(Constructor::LiteralElement(
+                    Ok(literal_element(
                         QualifiedName::new(None, None, a.to_string()),
-                        content,
+                        tc_sequence(content),
                     ))
                 }
             }
         }
         NodeType::Attribute => {
             // Get value as a Value
-            Ok(Constructor::LiteralAttribute(
+            Ok(literal_attribute(
                 n.name(),
-                vec![Constructor::Literal(Value::String(n.to_string()))],
+                tc_literal(Rc::new(Item::Value(Value::String(n.to_string())))),
             ))
         }
         _ => {
             // TODO: literal elements, etc, pretty much everything in the XSLT spec
             println!("found a strange element");
-            Ok(Constructor::NotImplemented(
+            Ok(not_implemented(
                 "other template content".to_string(),
             ))
         }

@@ -6,7 +6,7 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 use std::fmt;
-use std::fmt::{Formatter, Write};
+use std::fmt::Formatter;
 
 use std::marker::PhantomData;
 
@@ -50,9 +50,9 @@ use crate::parser::{ParseError, ParseInput, ParseResult};
 /// A selection pattern is subset of XPath path expressions.
 pub enum Pattern<'a, N: Node, F>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
-    Predicate(Combinator<'a, N>),
+    Predicate(Combinator<'a, N, F>),
     Selection(Path),
     Error(Error),
     Unused(PhantomData<F>),
@@ -60,7 +60,7 @@ where
 
 impl<'a, N: Node, F> Pattern<'a, N, F>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     /// Returns whether the given item matches the pattern.
     /// TODO: return dynamic errors
@@ -158,7 +158,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: Rc<Item<N>>) -> bool {
 
 impl<'a, N: Node, F> fmt::Debug for Pattern<'a, N, F>
     where
-        F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
@@ -173,8 +173,8 @@ impl<'a, N: Node, F> fmt::Debug for Pattern<'a, N, F>
 #[derive(Clone, Default, Debug)]
 pub struct Path {
     //    steps: Vec<Step>,
-    t: Option<((Axis, Axis), NodeTest)>,
-    next: Option<Rc<Path>>,
+    pub t: Option<((Axis, Axis), NodeTest)>,
+    pub next: Option<Rc<Path>>,
 }
 
 impl Path {
@@ -201,7 +201,7 @@ impl PathBuilder {
 /// Compile an XPath pattern.
 impl<'a, N: Node, F> TryFrom<&str> for Pattern<'a, N, F>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     type Error = Error;
     fn try_from(
@@ -234,7 +234,7 @@ where
 // Pattern30 ::= PredicatePattern | UnionExprP ;
 fn pattern<'a, N: Node, F>(input: ParseInput) -> ParseResult<Pattern<'a, N, F>>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     alt2(predicate_pattern::<N, F>(), union_expr_pattern())(input)
 }
@@ -244,7 +244,7 @@ where
 fn predicate_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -260,7 +260,7 @@ where
 fn union_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         separated_list1(
@@ -286,7 +286,7 @@ fn union_expr_wrapper<'a, N: Node, F>(
     b: bool,
 ) -> impl Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     move |input| {
         if b {
@@ -299,7 +299,7 @@ where
 
 fn noop<'a, N: Node, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(move |_| Err(ParseError::Combinator))
 }
@@ -309,7 +309,7 @@ where
 fn intersect_except_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         separated_list1(
@@ -341,7 +341,7 @@ where
 fn path_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt4(
         rooted_path_pattern(),
@@ -355,7 +355,7 @@ where
 fn rooted_path_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -382,7 +382,7 @@ where
 fn variable_reference_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(variable_reference(), |r| Pattern::Predicate(r)))
 }
@@ -391,7 +391,7 @@ where
 fn absolutedescendant_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(tag("//"), relativepath_expr_pattern::<N, F>()),
@@ -408,7 +408,7 @@ where
 fn absolutepath_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(tag("/"), opt(relativepath_expr_pattern::<N, F>())),
@@ -429,7 +429,7 @@ where
 fn relativepath_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         pair(
@@ -452,7 +452,7 @@ where
                     Pattern::Selection(p) => p,
                     _ => panic!("relative path may only contain steps")
                 };
-                for ((_c, d)) in b {
+                for (_c, d) in b {
                     match d {
                         Pattern::Selection(mut p) => {
                             p.next = Some(Rc::new(ap));
@@ -471,7 +471,7 @@ where
 fn step_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt2(postfix_expr_pattern(), axis_step_pattern()))
 }
@@ -481,7 +481,7 @@ where
 fn postfix_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple2(paren_expr_pattern(), predicate_list::<N, F>()),
@@ -493,7 +493,7 @@ where
 fn paren_expr_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -510,7 +510,7 @@ where
 fn axis_step_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple2(forward_step_pattern(), predicate_list::<N, F>()),
@@ -524,7 +524,7 @@ where
 fn forward_step_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple2(forward_axis_pattern(), nodetest()),
@@ -567,7 +567,7 @@ fn forward_axis_pattern(
 fn function_call_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple2(outer_function_name(), argument_list_pattern::<N, F>()),
@@ -585,7 +585,7 @@ where
 fn argument_list_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(
         tuple3(
@@ -610,7 +610,7 @@ where
 fn argument_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(alt2(variable_reference_pattern(), literal_pattern()))
 }
@@ -619,7 +619,7 @@ where
 fn literal_pattern<'a, N: Node, F>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<'a, N, F>> + 'a>
 where
-    F: Fn(&mut Context<'a, N>) -> TransResult<'a, N> + 'a,
+    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
 {
     Box::new(map(literal(), |l| Pattern::Predicate(l)))
 }
