@@ -131,7 +131,6 @@ fn rmt013() {
 #[test]
 #[ignore]
 fn rmt014() {
-
     /*
         This test is deliberately ignored.
         This document is now well formed, as per the 5th edition.

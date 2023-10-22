@@ -363,7 +363,7 @@ fn validnotsa014() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/014.xml").unwrap(),
-                Some(dtdfileresolve()),
+        Some(dtdfileresolve()),
         Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string()),
     ));
     let canonicalxml = Document::try_from((
