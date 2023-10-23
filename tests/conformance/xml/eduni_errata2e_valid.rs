@@ -5,6 +5,7 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
+use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore]
@@ -285,7 +286,6 @@ fn rmte2e50() {
 }
 
 #[test]
-#[ignore] //Need to build external DTD support
 fn rmte2e60() {
     /*
         Test ID:rmt-e2e-60
@@ -296,8 +296,8 @@ fn rmte2e60() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E60.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string()),
     ));
     assert!(testxml.is_ok());
 }

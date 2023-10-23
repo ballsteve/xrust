@@ -6,7 +6,7 @@ mod gedecl;
 mod misc;
 mod notation;
 mod pedecl;
-mod extsubset;
+pub(crate) mod extsubset;
 mod textdecl;
 pub(crate) mod pereference;
 mod conditionals;
@@ -25,6 +25,7 @@ use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::dtd::textdecl::textdecl;
+use crate::parser::xml::reference::reference;
 
 pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match tuple8(
@@ -38,12 +39,43 @@ pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         tag(">"),
     )(input)
     {
-        Ok((d, (_, _, _n, _, _e, _, _inss, _))) => Ok((d, ())),
+        Ok(((input1, state1), (_, _, _n, _, _, _, _inss, _))) => {
+            /*  We're doing nothing with the below, just evaluating the external entity to check its well formed */
+            let exdtd = state1.ext_entities_to_parse.clone().pop();
+            match exdtd {
+                None => {}
+                Some(s) => {
+                    match state1.clone().resolve(state1.docloc.clone(), s) {
+                        Err(_) => {
+                            return Err(ParseError::ExtDTDLoadError)
+                        }
+                        Ok(s) => {
+                            match extsubset()
+                                ((s.as_str(), state1.clone())){
+                                Err(e) => { return Err(e)}
+                                _ => {}
+                            }
+                        }
+                    }
+                }
+            }
+            /*
+             Same again, with Internal subset */
+            for (k, (v, _)) in state1.clone().dtd.generalentities {
+                if v != "<".to_string(){ /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
+                    match reference()((["&".to_string(), k, ";".to_string()].join("").as_str(), state1.clone())){
+                        Err(ParseError::NotWellFormed) => { return Err(ParseError::NotWellFormed)}
+                        _ => {}
+                    }
+                }
+            }
+            Ok(((input1, state1), ()))
+        }
         Err(err) => Err(err),
     }
 }
 
-fn externalid() -> impl Fn(ParseInput) -> ParseResult<(String, Option<String>)> {
+fn externalid() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |(input, state)| {
         match alt2(
             map(
@@ -80,17 +112,22 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<(String, Option<String>)> 
         )((input, state))
         {
             Err(e) => Err(e),
-            Ok(((input2, state2), (sid, pid))) => {
-                match state2.clone().resolve(state2.docloc.clone(), sid.clone()) {
-                    Err(_) => {
-                        Err(ParseError::ExtDTDLoadError)
-                    }
-                    Ok(s) => {
-                        match extsubset()
-                        ((s.as_str(), state2)){
-                            Err(e) => {Err(e)}
-                            Ok(((_, state3), _)) => {
-                                Ok(((input2, state3), (sid, pid)))
+            Ok(((input2, mut state2), (sid, _))) => {
+                if !state2.currentlyexternal{
+                    state2.ext_entities_to_parse.push(sid);
+                    Ok(((input2, state2), ()))
+                } else {
+                    match state2.clone().resolve(state2.docloc.clone(), sid.clone()) {
+                        Err(_) => {
+                            Err(ParseError::ExtDTDLoadError)
+                        }
+                        Ok(s) => {
+                            match extsubset()
+                                ((s.as_str(), state2)){
+                                Err(e) => {Err(e)}
+                                Ok(((_, state3), _)) => {
+                                    Ok(((input2, state3), ()))
+                                }
                             }
                         }
                     }

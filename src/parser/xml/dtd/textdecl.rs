@@ -1,3 +1,4 @@
+use crate::intmuttree::XMLDecl;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -32,12 +33,6 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 
-#[derive(Clone, PartialEq)]
-pub struct XMLDecl {
-    pub(crate) version: String,
-    pub(crate) encoding: Option<String>,
-}
-
 pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
     //This is NOT the same as the XML declaration in XML documents.
     //There is no standalone, and the version is optional.
@@ -49,7 +44,7 @@ pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
                 whitespace1(),
                 xmldeclversion()
                     )),
-                opt(encodingdecl()),
+                encodingdecl(),
             whitespace0(),
             tag("?>"),
             whitespace0(),
@@ -58,12 +53,14 @@ pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
             if ver == Some(((), "1.1".to_string())){
                 XMLDecl {
                     version: "1.1".to_string(),
-                    encoding: enc
+                    encoding: Some(enc),
+                    standalone: None,
                 }
             } else {
                 XMLDecl {
                     version: "1.0".to_string(),
-                    encoding: enc
+                    encoding: Some(enc),
+                    standalone: None,
                 }
             }
         }

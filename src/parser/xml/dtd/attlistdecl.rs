@@ -112,7 +112,7 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
             map(
                 many0(
                     alt3(
-                    chardata_unicode_codepoint(),
+                    map(chardata_unicode_codepoint(), |c| c.to_string()),
                     take_while(|c| !"&\'<".contains(c)),
                     textreference()
                     )
@@ -128,7 +128,7 @@ fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
             map(
                 many0(
                     alt3(
-                        chardata_unicode_codepoint(),
+                        map(chardata_unicode_codepoint(), |c| c.to_string()),
                         take_while(|c| !"&\"<".contains(c)),
                         textreference()
                     )

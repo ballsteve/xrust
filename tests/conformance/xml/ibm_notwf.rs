@@ -5556,7 +5556,6 @@ fn ibmnotwf_p65ibm65n02xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n01xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n01.xml
@@ -5593,7 +5592,6 @@ fn ibmnotwf_p66ibm66n02xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n03xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n03.xml
@@ -5630,7 +5628,6 @@ fn ibmnotwf_p66ibm66n04xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n05xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n05.xml
@@ -5667,7 +5664,6 @@ fn ibmnotwf_p66ibm66n06xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n07xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n07.xml
@@ -5704,7 +5700,6 @@ fn ibmnotwf_p66ibm66n08xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n09xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n09.xml
@@ -5741,7 +5736,6 @@ fn ibmnotwf_p66ibm66n10xml() {
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n11xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n11.xml
@@ -12476,9 +12470,14 @@ fn ibmnotwf_p85ibm85n99xml() {
 }
  */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n01xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n01.xml
         Test URI:not-wf/P86/ibm86n01.xml
@@ -12494,10 +12493,16 @@ fn ibmnotwf_p86ibm86n01xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n02xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n02.xml
         Test URI:not-wf/P86/ibm86n02.xml
@@ -12513,10 +12518,16 @@ fn ibmnotwf_p86ibm86n02xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n03.xml
         Test URI:not-wf/P86/ibm86n03.xml
@@ -12532,10 +12543,16 @@ fn ibmnotwf_p86ibm86n03xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n04.xml
         Test URI:not-wf/P86/ibm86n04.xml
@@ -12551,6 +12568,7 @@ fn ibmnotwf_p86ibm86n04xml() {
 
     assert!(testxml.is_err());
 }
+ */
 
 /*
 #[test]

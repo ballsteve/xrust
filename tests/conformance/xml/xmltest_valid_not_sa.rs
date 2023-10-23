@@ -352,7 +352,6 @@ fn validnotsa013() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa014() {
     /*
         Test ID:valid-not-sa-014
@@ -379,7 +378,6 @@ fn validnotsa014() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa015() {
     /*
         Test ID:valid-not-sa-015
@@ -406,7 +404,6 @@ fn validnotsa015() {
 }
 
 #[test]
-#[ignore]
 fn validnotsa016() {
     /*
         Test ID:valid-not-sa-016

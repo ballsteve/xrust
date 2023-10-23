@@ -149,7 +149,7 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
             delimited(
                 tag("'"),
                 many0(alt3(
-                    wellformed(chardata_unicode_codepoint(), |c| !c.contains('<')),
+                    map(wellformed(chardata_unicode_codepoint(), |c| c != &'<'), |c| c.to_string()),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\''), |c| !c.contains('<')),
                 )),
@@ -158,7 +158,7 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
             delimited(
                 tag("\""),
                 many0(alt3(
-                    wellformed(chardata_unicode_codepoint(), |c| !c.contains('<')),
+                    map(wellformed(chardata_unicode_codepoint(), |c| c != &'<'), |c| c.to_string()),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\"'), |c| !c.contains('<')),
                 )),

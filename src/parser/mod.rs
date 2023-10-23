@@ -58,6 +58,7 @@ pub(crate) struct ParserState {
     currentrow: usize,
     /* entity downloader function */
     ext_dtd_resolver: Option<ExtDTDresolver>,
+    ext_entities_to_parse: Vec<String>,
     docloc: Option<String>,
     /*
     ParamEntities are not allowed in internal subsets, but they are allowed in external DTDs,
@@ -84,6 +85,7 @@ impl ParserState {
             currentcol: 1,
             currentrow: 1,
             ext_dtd_resolver: resolver,
+            ext_entities_to_parse: vec![],
             docloc,
             currentlyexternal:false
         }

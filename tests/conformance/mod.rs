@@ -8,6 +8,7 @@ mod xml;
 use encoding_rs::UTF_16BE;
 use encoding_rs::UTF_16LE;
 use encoding_rs::UTF_8;
+use encoding_rs::WINDOWS_1252;
 use encoding_rs_io::DecodeReaderBytesBuilder;
 
 fn dtdfileresolve() -> fn(Option<String>, String) -> Result<String, Error> {
@@ -46,6 +47,7 @@ fn non_utf8_file_reader(filedir: &str ) -> String {
         [254, 255, _, _] => {Some(UTF_16BE)} //UTF-16, big-endian
         [255, 254, _, _] => {Some(UTF_16LE)} //UTF-16, little-endian
         [239, 187, 191, _] => {Some(UTF_8)} //UTF-8
+        [60, 63, 120, 109] => {Some(WINDOWS_1252)} //UTF-8
         _ => {Some(UTF_8)} //Other
     };
 

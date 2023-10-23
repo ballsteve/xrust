@@ -7,7 +7,7 @@ use crate::parser::combinators::take::{take_until, take_until_either_or_min1, ta
 use crate::parser::combinators::tuple::{tuple2, tuple7};
 use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::common::{is_char10, is_unrestricted_char11};
+use crate::parser::common::{is_char10, is_char11, is_unrestricted_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput, ParseResult};
@@ -47,7 +47,9 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                 tuple2(
                     map(
                         many0(alt4(
-                            chardata_unicode_codepoint(),
+                            map(wellformed_ver(
+                                chardata_unicode_codepoint(),
+                                |c| is_char10(c),|c| is_char11(c)),|c| c.to_string()),
                             petextreference(),
                                 //General entity is ignored.
                             map(
