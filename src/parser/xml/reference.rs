@@ -90,7 +90,7 @@ pub(crate) fn reference() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                                         row: state1.currentrow,
                                     }),
                                     Some(sid) => {
-                                        match state1.clone().resolve(state1.docloc.clone(), sid.clone()) {
+                                        match state1.clone().resolve(state1.docloc.clone(), sid) {
                                             Err(_) => {
                                                 Err(ParseError::ExtDTDLoadError)
                                             },

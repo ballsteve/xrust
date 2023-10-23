@@ -21,8 +21,8 @@ pub(crate) fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
                 ),
                 map(wellformed_ver(
                     chardata_unicode_codepoint(),
-                    |c| is_char10(c), //XML 1.0
-                    |c| is_char11(c)) //XML 1.1
+                    is_char10, //XML 1.0
+                    is_char11) //XML 1.1
                 ,|c|c.to_string()),
                 wellformed_ver(
                     chardata_literal(),

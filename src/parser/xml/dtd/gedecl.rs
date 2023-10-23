@@ -49,7 +49,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                         many0(alt4(
                             map(wellformed_ver(
                                 chardata_unicode_codepoint(),
-                                |c| is_char10(c),|c| is_char11(c)),|c| c.to_string()),
+                                 is_char10, is_char11),|c| c.to_string()),
                             petextreference(),
                                 //General entity is ignored.
                             map(

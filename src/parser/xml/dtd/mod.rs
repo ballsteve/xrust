@@ -50,11 +50,7 @@ pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                             return Err(ParseError::ExtDTDLoadError)
                         }
                         Ok(s) => {
-                            match extsubset()
-                                ((s.as_str(), state1.clone())){
-                                Err(e) => { return Err(e)}
-                                _ => {}
-                            }
+                            if let Err(e) = extsubset()((s.as_str(), state1.clone())) { return Err(e)}
                         }
                     }
                 }
@@ -62,11 +58,10 @@ pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             /*
              Same again, with Internal subset */
             for (k, (v, _)) in state1.clone().dtd.generalentities {
-                if v != "<".to_string(){ /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
-                    match reference()((["&".to_string(), k, ";".to_string()].join("").as_str(), state1.clone())){
-                        Err(ParseError::NotWellFormed) => { return Err(ParseError::NotWellFormed)}
-                        _ => {}
-                    }
+                if v != *"<"{ /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
+                    if let Err(ParseError::NotWellFormed) = reference()((["&".to_string(), k, ";".to_string()].join("").as_str(), state1.clone())) {
+                    return Err(ParseError::NotWellFormed)
+                }
                 }
             }
             Ok(((input1, state1), ()))
@@ -117,7 +112,7 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<()> {
                     state2.ext_entities_to_parse.push(sid);
                     Ok(((input2, state2), ()))
                 } else {
-                    match state2.clone().resolve(state2.docloc.clone(), sid.clone()) {
+                    match state2.clone().resolve(state2.docloc.clone(), sid) {
                         Err(_) => {
                             Err(ParseError::ExtDTDLoadError)
                         }
