@@ -1318,7 +1318,6 @@ fn op05fail5() {
 }
 
 #[test]
-#[ignore]
 fn op09fail1() {
     /*
         Test ID:o-p09fail1
@@ -1337,7 +1336,6 @@ fn op09fail1() {
 }
 
 #[test]
-#[ignore]
 fn op09fail2() {
     /*
         Test ID:o-p09fail2
@@ -1356,7 +1354,6 @@ fn op09fail2() {
 }
 
 #[test]
-#[ignore]
 fn op09fail3() {
     /*
         Test ID:o-p09fail3

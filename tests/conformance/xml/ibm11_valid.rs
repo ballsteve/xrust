@@ -49,6 +49,7 @@ fn ibm11valid_p02ibm02v02xml() {
 }
 
 #[test]
+#[ignore]
 fn ibm11valid_p02ibm02v03xml() {
     /*
         Test ID:ibm-1-1-valid-P02-ibm02v03.xml

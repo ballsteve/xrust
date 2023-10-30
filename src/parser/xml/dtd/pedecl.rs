@@ -48,7 +48,7 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                 tuple2(
                     map(
                         many0(alt4(
-                            chardata_unicode_codepoint(),
+                            map(chardata_unicode_codepoint(),|c| c.to_string()),
 
                             petextreference(),
                             //General entity is ignored.

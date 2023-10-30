@@ -225,7 +225,6 @@ fn attlist11() {
 }
 
 #[test]
-#[ignore]
 fn cond01() {
     /*
         Test ID:cond01
@@ -236,15 +235,14 @@ fn cond01() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond01.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string()),
     ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn cond02() {
     /*
         Test ID:cond02
@@ -255,8 +253,8 @@ fn cond02() {
 
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond02.xml").unwrap(),
-        None,
-        None,
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -443,7 +441,6 @@ fn dtd05() {
 }
 
 #[test]
-#[ignore]
 fn dtd07() {
     /*
         Test ID:dtd07
