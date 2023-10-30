@@ -78,3 +78,65 @@ pub(crate) fn literal_attribute<N: Node>(
             .new_attribute(qn.clone(), Value::from(ctxt.dispatch(t)?.to_string()))?;
         Ok(vec![Rc::new(Item::Node(a))])
 }
+
+/// Construct a [Sequence] of items
+pub(crate) fn make_sequence<N: Node>(
+    ctxt: &Context<N>,
+    items: &Vec<Transform<N>>,
+) -> Result<Sequence<N>, Error> {
+    items.iter().try_fold(
+        vec![],
+        |mut acc, i| {
+            let mut r = ctxt.dispatch(i)?;
+            acc.append(&mut r);
+            Ok(acc)
+        }
+    )
+}
+/// Shallow copy of an item.
+/// The first argument selects the items to be copied.
+/// The second argument creates the content of the target item.
+pub(crate) fn copy<N: Node>(
+    ctxt: &Context<N>,
+    s: &Transform<N>,
+    c: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    let sel = ctxt.dispatch(s)?;
+    let mut result: Sequence<N> = Vec::new();
+    for k in sel {
+        let cp = k.shallow_copy()?;
+        result.push(Rc::new(cp.clone()));
+        match cp {
+            Item::Node(mut im) => {
+                for j in ctxt.dispatch(c)? {
+                    match &*j {
+                        Item::Value(v) => im.push(im.new_text(v.clone())?)?,
+                        Item::Node(n) => im.push(n.clone())?,
+                        _ => {
+                            return Err(Error::new(
+                                        ErrorKind::NotImplemented,
+                                        String::from("not yet implemented"),
+                                    ))
+                        }
+                    }
+                }
+            }
+            _ => {}
+        }
+    }
+    Ok(result)
+}
+
+/// Deep copy of an item.
+/// The first argument selects the items to be copied. If not specified then the context item is copied.
+pub(crate) fn deep_copy<N: Node>(
+    ctxt: &Context<N>,
+    s: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    let sel = ctxt.dispatch(s)?;
+    let mut result: Sequence<N> = Vec::new();
+    for k in sel {
+        result.push(Rc::new(k.deep_copy()?));
+    }
+    Ok(result)
+}

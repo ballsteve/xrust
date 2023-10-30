@@ -159,6 +159,9 @@ impl<N: Node> Context<N> {
             Transform::Literal(v) => literal(self, v),
             Transform::LiteralElement(qn, t) => literal_element(self, qn, t),
             Transform::LiteralAttribute(qn, t) => literal_attribute(self, qn, t),
+            Transform::SequenceItems(v) => make_sequence(self, v),
+            Transform::Copy(f, t) => copy(self, f, t),
+            Transform::DeepCopy(d) => deep_copy(self, d),
             Transform::NotImplemented(s) => not_implemented(self, s),
             _ => Err(Error::new(ErrorKind::NotImplemented, "not implemented".to_string()))
         }

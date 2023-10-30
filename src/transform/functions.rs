@@ -21,7 +21,7 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 }
 
 /// XPath count function.
-pub fn tc_count<N: Node>(
+pub fn tr_count<N: Node>(
     ctxt: &Context<N>,
     s: Option<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
