@@ -69,8 +69,8 @@ pub use xpath::expression;
 pub mod pattern;
 pub use pattern::Pattern;
 
-pub mod evaluate;
-pub use evaluate::{Constructor, Evaluator, StaticContext};
+//pub mod evaluate;
+//pub use evaluate::{Constructor, Evaluator, StaticContext};
 
 #[cfg(feature = "xslt")]
 pub mod xslt;
@@ -83,4 +83,5 @@ pub use intmuttree::Document;
 pub mod parser;
 pub mod testutils;
 
-pub mod transcomb;
+//pub mod transcomb;
+pub mod transform;

@@ -1,4 +1,4 @@
-use xrust::evaluate_tests;
+//use xrust::evaluate_tests;
 use xrust::intmuttree::Document;
 use xrust::intmuttree::{NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
@@ -6,14 +6,10 @@ use xrust::item_node_tests;
 use xrust::item_value_tests;
 use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
-use xrust::transcomb_tests;
+use xrust::transform_tests;
 use xrust::xdmerror::Error;
 use xrust::xpath_tests;
 //use xrust::xslt_tests;
-
-// Run the generic Item/Value tests
-item_value_tests!(RNode);
-transcomb_tests!(RNode, make_empty_doc);
 
 fn make_empty_doc() -> RNode {
     NodeBuilder::new(NodeType::Document).build()
@@ -47,9 +43,16 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
     d.push(e).expect("unable to append node");
     Ok(d)
 }
+fn get_node<N: Node>(i: &Rc<Item<N>>) -> N {
+    match &**i {
+        Item::Node(n) => n.clone(),
+        _ => panic!("not a node"),
+    }
+}
 
+item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc);
-evaluate_tests!(make_empty_doc);
+transform_tests!(RNode, make_empty_doc, make_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
 pattern_tests!(RNode, make_empty_doc, make_sd);
 //xslt_tests!(make_from_str, make_empty_doc);

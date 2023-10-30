@@ -2,25 +2,20 @@
 //!
 //! An XPath parser using the xrust parser combinator that produces a xrust transformation combinator.
 
-use std::cmp::Ordering;
 use std::rc::Rc;
-
-use crate::evaluate::{ArithmeticOperator, Axis, NameTest, NodeMatch, NodeTest, WildcardOrName};
-use crate::item::{Item, Node};
-use crate::transcomb::{
-    arithmetic, boolean, ceiling, compose, contains, context, current_date, current_date_time,
-    current_group, current_grouping_key, current_time, declare_variable, empty, filter, floor,
-    format_date, format_date_time, format_time, general_comparison, last, literal as tc_literal,
-    local_name, name, normalize_space, not, not_implemented, number, parent_root, position,
-    reference_variable, root, round, starts_with, step, string, substring, substring_after,
-    substring_before, sum, switch, tc_and, tc_concat, tc_count, tc_false, tc_loop, tc_or, tc_range,
-    tc_sequence, tc_true, translate, union, value_comparison, Combinator, Context, TransResult,
-};
-use crate::value::Value;
-use crate::value::*;
-use crate::xdmerror::*;
-use rust_decimal::Decimal;
+use std::cmp::Ordering;
 use std::str::FromStr;
+
+use crate::xdmerror::*;
+use crate::value::{Value, Operator};
+use crate::item::Node;
+use crate::transform::{Transform,
+                       NodeMatch, NodeTest,
+                       NameTest, WildcardOrName,
+                       ArithmeticOperator, ArithmeticOperand,
+Axis};
+use rust_decimal::Decimal;
+use crate::Item;
 
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
 use crate::parser::combinators::debug::inspect;
@@ -36,15 +31,12 @@ use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::ncname;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub fn expression<'a, N: Node, F>(e: &'a str) -> Result<Combinator<'a, N, F>, Error>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+pub fn expression<N: Node>(e: &str) -> Result<Transform<N>, Error> {
     if e == "" {
-        Ok(empty())
+        Ok(Transform::Empty)
     } else {
-        let mut input = ParseInput::new(e);
-        match xpath_expr::<N, F>(input) {
+        let input = ParseInput::new(e);
+        match xpath_expr::<N>(input) {
             Ok((rem, f)) => {
                 if rem.clone().peekable().peek().is_some() {
                     Err(Error::new(
@@ -61,80 +53,62 @@ where
 }
 
 // Expr ::= ExprSingle (',' ExprSingle)* ;
-fn xpath_expr<'a, N: Node + 'a, F>(input: ParseInput) -> ParseResult<Combinator<'a, N, F>>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    expr::<N, F>()(input)
+fn xpath_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
+    expr::<N>()(input)
 }
 
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-fn expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-            expr_single::<N, F>(),
+            expr_single::<N>(),
         ),
-        |v| tc_sequence(v),
+        |v| Transform::SequenceItems(v),
     ))
 }
 
-fn expr_wrapper<'a, N: Node + 'a, F>(
+fn expr_wrapper<N: Node>(
     b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> {
     move |input| {
         if b {
-            expr::<N, F>()(input)
+            expr::<N>()(input)
         } else {
-            noop()(input)
+            noop::<N>()(input)
         }
     }
 }
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
-fn expr_single<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn expr_single<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(inspect(
         "expr_single",
         alt4(
-            or_expr::<N, F>(),
-            let_expr::<N, F>(),
-            for_expr::<N, F>(),
-            if_expr::<N, F>(),
+            or_expr::<N>(),
+            let_expr::<N>(),
+            for_expr::<N>(),
+            if_expr::<N>(),
         ),
     ))
 }
 
-fn expr_single_wrapper<'a, N: Node + 'a, F>(
+fn expr_single_wrapper<N: Node>(
     b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
+) -> impl Fn(ParseInput) -> ParseResult<Transform<N>>
 {
     move |input| {
         if b {
-            expr_single::<N, F>()(input)
+            expr_single::<N>()(input)
         } else {
-            noop()(input)
+            noop::<N>()(input)
         }
     }
 }
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-fn if_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn if_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
             // need tuple15
@@ -143,7 +117,7 @@ where
                 xpwhitespace(),
                 tag("("),
                 xpwhitespace(),
-                expr_wrapper::<N, F>(true),
+                expr_wrapper::<N>(true),
                 xpwhitespace(),
                 tag(")"),
                 xpwhitespace(),
@@ -151,39 +125,32 @@ where
                 xpwhitespace(),
             ),
             tuple5(
-                expr_single_wrapper::<N, F>(true),
+                expr_single_wrapper::<N>(true),
                 xpwhitespace(),
                 tag("else"),
                 xpwhitespace(),
-                expr_single_wrapper::<N, F>(true),
+                expr_single_wrapper::<N>(true),
             ),
         ),
-        |((_, _, _, _, i, _, _, _, _, _), (t, _, _, _, e))| switch(vec![(i, t)], e),
+        |((_, _, _, _, i, _, _, _, _, _), (t, _, _, _, e))| Transform::Switch(vec![(i, t)], Box::new(e)),
     ))
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-fn for_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn for_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         tuple3(
-            simple_for_clause::<N, F>(),
+            simple_for_clause::<N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
-            expr_single_wrapper::<N, F>(true),
+            expr_single_wrapper::<N>(true),
         ),
-        |(mut f, _, e)| tc_loop(f.pop().unwrap(), e), // tc_loop does not yet support multiple variable bindings
+        |(f, _, e)| Transform::Loop(f, Box::new(e)), // tc_loop does not yet support multiple variable bindings
     ))
 }
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Combinator<'a, N, F>)>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn simple_for_clause<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Transform<N>>> + 'a> {
     Box::new(map(
         tuple3(
             tag("for"),
@@ -197,9 +164,9 @@ where
                         xpwhitespace(),
                         tag("in"),
                         xpwhitespace(),
-                        expr_single_wrapper::<N, F>(true),
+                        expr_single_wrapper::<N>(true),
                     ),
-                    |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
+                    |(_, qn, _, _, _, e)| Transform::VariableDeclaration(get_nt_localname(&qn), Box::new(e), Box::new(Transform::Empty)),
                 ),
             ),
         ),
@@ -208,25 +175,22 @@ where
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-fn let_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn let_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>>+ 'a> {
     Box::new(map(
         tuple3(
-            simple_let_clause::<N, F>(),
+            simple_let_clause::<N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
-            expr_single_wrapper::<N, F>(true),
+            expr_single_wrapper::<N>(true),
         ),
         |(mut v, _, e)| {
             let (qn, f) = v.pop().unwrap();
-            let mut result = declare_variable(qn, f, e);
+            let mut result = Transform::VariableDeclaration(qn, Box::new(f), Box::new(e));
             loop {
                 if v.is_empty() {
                     break;
                 } else {
                     let (qn, f) = v.pop().unwrap();
-                    let inter = declare_variable(qn, f, result);
+                    let inter = Transform::VariableDeclaration(qn, Box::new(f), Box::new(result));
                     result = inter;
                 }
             }
@@ -238,11 +202,7 @@ where
 // SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
-fn simple_let_clause<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Combinator<'a, N, F>)>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn simple_let_clause<'a, N: Node + 'a>()-> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a> {
     Box::new(map(
         tuple3(
             tag("let"),
@@ -256,7 +216,7 @@ where
                         xpwhitespace(),
                         tag(":="),
                         xpwhitespace(),
-                        expr_single_wrapper::<N, F>(true),
+                        expr_single_wrapper::<N>(true),
                     ),
                     |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
                 ),
@@ -278,61 +238,44 @@ fn get_nt_localname(nt: &NodeTest) -> String {
 }
 
 // OrExpr ::= AndExpr ('or' AndExpr)*
-fn or_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn or_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        inspect(
-            "or_expr",
-            separated_list1(
+        separated_list1(
                 map(tuple3(xpwhitespace(), tag("or"), xpwhitespace()), |_| ()),
-                inspect("or_expr: and", and_expr::<N, F>()),
-            ),
+                 and_expr::<N>(),
         ),
         |mut v| {
             if v.len() == 1 {
                 v.pop().unwrap()
             } else {
-                tc_or(v)
+                Transform::Or(v)
             }
         },
     ))
 }
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
-fn and_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn and_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        inspect(
-            "and_expr",
-            separated_list1(
+        separated_list1(
                 map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),
-                comparison_expr::<N, F>(),
-            ),
+                comparison_expr::<N>(),
         ),
-        |v| {
+        |mut v| {
             if v.len() == 1 {
-                // TODO: This is inefficient, but Rust is not allowing v[0]
-                tc_sequence(v)
+                v.pop().unwrap()
             } else {
-                tc_and(v)
+                Transform::And(v)
             }
         },
     ))
 }
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-fn comparison_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn comparison_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            stringconcat_expr::<N, F>(),
+            stringconcat_expr::<N>(),
             opt(pair(
                 tuple3(
                     xpwhitespace(),
@@ -349,7 +292,7 @@ where
                     ]),
                     xpwhitespace(),
                 ),
-                stringconcat_expr::<N, F>(),
+                stringconcat_expr::<N>(),
             )),
         ),
         |(v, o)| match o {
@@ -357,12 +300,12 @@ where
             Some(((_, b, _), t)) => {
                 match b.as_str() {
                     "=" | "!=" | "<" | "<=" | ">" | ">=" => {
-                        general_comparison(Operator::from(b), v, t)
+                        Transform::GeneralComparison(Operator::from(b), Box::new(v), Box::new(t))
                     }
                     "eq" | "ne" | "lt" | "le" | "gt" | "ge" | "is" | "<<" | ">>" => {
-                        value_comparison(Operator::from(b), v, t)
+                        Transform::ValueComparison(Operator::from(b), Box::new(v), Box::new(t))
                     }
-                    _ => empty(), // error
+                    _ => Transform::Empty, // error
                 }
             }
         },
@@ -370,106 +313,78 @@ where
 }
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
-fn stringconcat_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn stringconcat_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         inspect(
             "stringconcat",
             separated_list1(
                 map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
-                range_expr::<N, F>(),
+                range_expr::<N>(),
             ),
         ),
-        |v| {
+        |mut v| {
             if v.len() == 1 {
-                // TODO: rust doesn't like v[0], see above
-                tc_sequence(v)
+                v.pop().unwrap()
             } else {
-                tc_concat(v)
+                Transform::Concat(v)
             }
         },
     ))
 }
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-fn range_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn range_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            additive_expr::<N, F>(),
+            additive_expr::<N>(),
             opt(tuple2(
                 tuple3(xpwhitespace(), tag("to"), xpwhitespace()),
-                additive_expr::<N, F>(),
+                additive_expr::<N>(),
             )),
         ),
         |(v, o)| match o {
             None => v,
-            Some((_, u)) => tc_range(v, u),
+            Some((_, u)) => Transform::Range(Box::new(v), Box::new(u)),
         },
     ))
 }
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
-fn additive_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn additive_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            multiplicative_expr::<N, F>(),
+            multiplicative_expr::<N>(),
             many0(tuple2(
                 alt2(
-                    tuple3(xpwhitespace(), map(tag("+"), |_| "+"), xpwhitespace()),
-                    tuple3(xpwhitespace(), map(tag("-"), |_| "-"), xpwhitespace()),
+                    map(tuple3(xpwhitespace(), map(tag("+"), |_| ArithmeticOperator::Add), xpwhitespace()), |(_, x, _)| x),
+                    map(tuple3(xpwhitespace(), map(tag("-"), |_| ArithmeticOperator::Subtract), xpwhitespace()), |(_, x, _)| x),
                 ),
-                multiplicative_expr::<N, F>(),
+                multiplicative_expr::<N>(),
             )),
         ),
         |(mut a, b)| {
             if b.is_empty() {
                 if a.len() == 1 {
-                    // TODO: see above
-                    let mut r = Vec::new();
-                    for (_, c) in a {
-                        r.push(c);
-                    }
-                    tc_sequence(r)
+                    let c: ArithmeticOperand<N> = a.pop().unwrap();
+                    c.operand
                 } else {
-                    arithmetic(a)
+                    Transform::Arithmetic(a)
                 }
             } else {
-                // The arguments to the constructor are the items to be summed
-                // These are pair-wise items: first is the operator,
-                // second is the combinator for the value
-                let mut r: Vec<(ArithmeticOperator, Combinator<N, F>)> = Vec::new();
+                let mut e: Vec<ArithmeticOperand<N>> = b.iter().map(|(c, d)| ArithmeticOperand::new(c.clone(), Transform::Arithmetic(d.clone()))).collect();
+                a.append(&mut e);
 
-                r.append(&mut a);
-
-                for ((_, c, _), d) in b {
-                    r.push((ArithmeticOperator::from(c), arithmetic(d)))
-                }
-                arithmetic(r)
+                Transform::Arithmetic(a)
             }
         },
     ))
 }
 
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
-fn multiplicative_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(ArithmeticOperator, Combinator<'a, N, F>)>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn multiplicative_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<ArithmeticOperand<N>>> + 'a> {
     Box::new(map(
         pair(
-            union_expr::<N, F>(),
+            union_expr::<N>(),
             many0(tuple2(
                 alt4(
                     tuple3(xpwhitespace(), map(tag("*"), |_| "*"), xpwhitespace()),
@@ -477,22 +392,22 @@ where
                     tuple3(xpwhitespace(), map(tag("idiv"), |_| "idiv"), xpwhitespace()),
                     tuple3(xpwhitespace(), map(tag("mod"), |_| "mod"), xpwhitespace()),
                 ),
-                union_expr::<N, F>(),
+                union_expr::<N>(),
             )),
         ),
         |(a, b)| {
             if b.is_empty() {
-                vec![(ArithmeticOperator::Noop, a)]
+                vec![ArithmeticOperand::new(ArithmeticOperator::Noop, a)]
             } else {
                 // The arguments to the constructor are the items to be summed
                 // These are pair-wise items: first is the operator,
                 // second is the combinator for the value
-                let mut r: Vec<(ArithmeticOperator, Combinator<N, F>)> = Vec::new();
+                let mut r: Vec<ArithmeticOperand<N>> = Vec::new();
 
-                r.push((ArithmeticOperator::Noop, a));
+                r.push(ArithmeticOperand::new(ArithmeticOperator::Noop, a));
 
                 for ((_, c, _), d) in b {
-                    r.push((ArithmeticOperator::from(c), d))
+                    r.push(ArithmeticOperand::new(ArithmeticOperator::from(c), d))
                 }
                 r
             }
@@ -501,11 +416,7 @@ where
 }
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
-fn union_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn union_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         inspect(
             "union",
@@ -514,139 +425,118 @@ where
                     tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
                     |_| (),
                 ),
-                intersectexcept_expr::<N, F>(),
+                intersectexcept_expr::<N>(),
             ),
         ),
-        |v| {
+        |mut v| {
             if v.len() == 1 {
-                // TODO: see above
-                tc_sequence(v)
+                v.pop().unwrap()
             } else {
-                not_implemented("union_expr".to_string())
+                Transform::NotImplemented("union_expr".to_string())
             }
         },
     ))
 }
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
-fn intersectexcept_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn intersectexcept_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            instanceof_expr::<N, F>(),
+            instanceof_expr::<N>(),
             many0(tuple2(
                 tuple3(
                     xpwhitespace(),
                     alt2(tag("intersect"), tag("except")),
                     xpwhitespace(),
                 ),
-                instanceof_expr::<N, F>(),
+                instanceof_expr::<N>(),
             )),
         ),
         |(v, o)| {
             if o.is_empty() {
                 v
             } else {
-                not_implemented("intersectexcept_expr".to_string())
+                Transform::NotImplemented("intersectexcept_expr".to_string())
             }
         },
     ))
 }
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
-fn instanceof_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn instanceof_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            treat_expr::<N, F>(),
+            treat_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),
                 tag("instance"),
                 xpwhitespace(),
                 tag("of"),
                 xpwhitespace(),
-                sequencetype_expr::<N, F>(),
+                sequencetype_expr::<N>(),
             )),
         ),
         |(v, o)| {
             if o.is_none() {
                 v
             } else {
-                not_implemented("instanceof_expr".to_string())
+                Transform::NotImplemented("instanceof_expr".to_string())
             }
         },
     ))
 }
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
-// TODO: Box<dynement this parser fully
-fn sequencetype_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+// TODO: implement this parser fully
+fn sequencetype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(tag("empty-sequence()"), |_| {
-        not_implemented("sequencetype_expr".to_string())
+        Transform::NotImplemented("sequencetype_expr".to_string())
     }))
 }
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
-fn treat_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn treat_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            castable_expr::<N, F>(),
+            castable_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),
                 tag("treat"),
                 xpwhitespace(),
                 tag("as"),
                 xpwhitespace(),
-                sequencetype_expr::<N, F>(),
+                sequencetype_expr::<N>(),
             )),
         ),
         |(v, o)| {
             if o.is_none() {
                 v
             } else {
-                not_implemented("treat_expr".to_string())
+                Transform::NotImplemented("treat_expr".to_string())
             }
         },
     ))
 }
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
-fn castable_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn castable_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            cast_expr::<N, F>(),
+            cast_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),
                 tag("castable"),
                 xpwhitespace(),
                 tag("as"),
                 xpwhitespace(),
-                singletype_expr::<N, F>(),
+                singletype_expr::<N>(),
             )),
         ),
         |(v, o)| {
             if o.is_none() {
                 v
             } else {
-                not_implemented("castable_expr".to_string())
+                Transform::NotImplemented("castable_expr".to_string())
             }
         },
     ))
@@ -664,67 +554,56 @@ where
 // LocalPart ::= NCName
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
-// TODO: Box<dynement this parser fully
-fn singletype_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+// TODO: implement this parser fully
+fn singletype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(pair(qname(), tag("?")), |_| {
-        not_implemented("singletype_expr".to_string())
+        Transform::NotImplemented("singletype_expr".to_string())
     }))
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
-fn cast_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn cast_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            arrow_expr::<N, F>(),
+            arrow_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),
                 tag("cast"),
                 xpwhitespace(),
                 tag("as"),
                 xpwhitespace(),
-                singletype_expr::<N, F>(),
+                singletype_expr::<N>(),
             )),
         ),
         |(v, o)| {
             if o.is_none() {
                 v
             } else {
-                not_implemented("cast_expr".to_string())
+                Transform::NotImplemented("cast_expr".to_string())
             }
         },
     ))
 }
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
-fn arrow_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn arrow_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            unary_expr::<N, F>(),
+            unary_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),
                 tag("=>"),
                 xpwhitespace(),
-                arrowfunctionspecifier::<N, F>(),
+                arrowfunctionspecifier::<N>(),
                 xpwhitespace(),
-                opt(argumentlist::<N, F>()),
+                opt(argumentlist::<N>()),
             )),
         ),
         |(v, o)| {
             if o.is_none() {
                 v
             } else {
-                not_implemented("arrow_expr".to_string())
+                Transform::NotImplemented("arrow_expr".to_string())
             }
         },
     ))
@@ -732,77 +611,59 @@ where
 
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
-fn arrowfunctionspecifier<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn arrowfunctionspecifier<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        alt2(qname_expr::<N, F>(), parenthesized_expr::<N, F>()),
-        |_| not_implemented("arrowfunctionspecifier".to_string()),
+        alt2(qname_expr(), parenthesized_expr::<N>()),
+        |_| Transform::NotImplemented("arrowfunctionspecifier".to_string()),
     ))
 }
-fn qname_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn qname_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(qname(), |q| match q {
         NodeTest::Name(NameTest {
             name: Some(WildcardOrName::Name(localpart)),
             ns: None,
             prefix: None,
-        }) => tc_literal(Rc::new(Item::Value(Value::from(localpart)))),
-        _ => tc_literal(Rc::new(Item::Value(Value::from("invalid qname")))),
+        }) => Transform::Literal(Rc::new(Item::Value(Value::from(localpart)))),
+        _ => Transform::Literal(Rc::new(Item::Value(Value::from("invalid qname")))),
     }))
 }
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(tag("()"), |_| {
-        not_implemented("argumentlist".to_string())
+        Transform::NotImplemented("argumentlist".to_string())
     }))
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-fn unary_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn unary_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N, F>()),
+        pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N>()),
         |(u, v)| {
             if u.is_empty() {
                 v
             } else {
-                not_implemented("unary_expr".to_string())
+                Transform::NotImplemented("unary_expr".to_string())
             }
         },
     ))
 }
 
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
-fn value_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn value_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(inspect(
         "value_expr",
         map(
             pair(
-                path_expr::<N, F>(),
-                many0(tuple2(tag("!"), path_expr::<N, F>())),
+                path_expr::<N>(),
+                many0(tuple2(tag("!"), path_expr::<N>())),
             ),
             |(u, v)| {
                 if v.is_empty() {
                     u
                 } else {
-                    not_implemented("value_expr".to_string())
+                    Transform::NotImplemented("value_expr".to_string())
                 }
             },
         ),
@@ -810,28 +671,21 @@ where
 }
 
 // PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
-fn path_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn path_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(alt3(
-        absolutedescendant_expr::<N, F>(),
-        absolutepath_expr::<N, F>(),
-        relativepath_expr::<N, F>(),
+        absolutedescendant_expr::<N>(),
+        absolutepath_expr::<N>(),
+        relativepath_expr::<N>(),
     ))
 }
 
 // ('//' RelativePathExpr?)
-fn absolutedescendant_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn absolutedescendant_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        pair(tag("//"), relativepath_expr::<N, F>()),
+        pair(tag("//"), relativepath_expr::<N>()),
         |(_, r)| {
-            compose(vec![
-                step(NodeMatch {
+            Transform::Compose(vec![
+                Transform::Step(NodeMatch {
                     axis: Axis::DescendantOrSelfOrRoot,
                     nodetest: NodeTest::Name(NameTest {
                         ns: None,
@@ -846,35 +700,27 @@ where
 }
 
 // ('/' RelativePathExpr?)
-fn absolutepath_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        pair(tag("/"), opt(relativepath_expr::<N, F>())),
+        pair(tag("/"), opt(relativepath_expr::<N>())),
         |(_, r)| match r {
-            Some(a) => compose(vec![root(), a]),
-            None => root(),
+            Some(a) => Transform::Compose(vec![Transform::Root, a]),
+            None => Transform::Root,
         },
     ))
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
-            step_expr::<N, F>(),
+            step_expr::<N>(),
             many0(tuple2(
                 alt2(
                     map(tuple3(xpwhitespace(), tag("//"), xpwhitespace()), |_| "//"),
                     map(tuple3(xpwhitespace(), tag("/"), xpwhitespace()), |_| "/"),
                 ),
-                step_expr::<N, F>(),
+                step_expr::<N>(),
             )),
         ),
         |(a, b)| {
@@ -888,7 +734,7 @@ where
                         "/" => r.push(c),
                         "//" => {
                             // Insert a descendant-or-self::* step
-                            r.push(step(NodeMatch {
+                            r.push(Transform::Step(NodeMatch {
                                 axis: Axis::DescendantOrSelf,
                                 nodetest: NodeTest::Name(NameTest {
                                     ns: None,
@@ -901,167 +747,152 @@ where
                         _ => panic!("unexpected"),
                     }
                 }
-                compose(r)
+                Transform::Compose(r)
             }
         },
     ))
 }
 
 // StepExpr ::= PostfixExpr | AxisStep
-fn step_expr<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(alt2(postfix_expr::<N, F>(), axisstep()))
+fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt2(postfix_expr::<N>(), axisstep::<N>()))
 }
 
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
 // TODO: predicates, arg list, lookup
-fn postfix_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(primary_expr::<N, F>())
+fn postfix_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(primary_expr::<N>())
 }
 
 // PrimaryExpr ::= Literal | VarRef | ParenthesizedExpr | ContextItemExpr | FunctionCall | FunctionItemExpr | MapConstructor | ArrayConstructor | UnaryLookup
 // TODO: finish this parser
-fn primary_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn primary_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(inspect(
         "primary_expr",
         alt5(
-            literal(),
-            context_item(),
-            parenthesized_expr::<N, F>(),
-            inspect("function_call", function_call::<N, F>()),
-            variable_reference(),
+            literal::<N>(),
+            context_item::<N>(),
+            parenthesized_expr::<N>(),
+            function_call::<N>(),
+            variable_reference::<N>(),
         ),
     ))
 }
 
 // FunctionCall ::= EQName ArgumentList
-fn function_call<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
-        pair(qname(), arglist::<N, F>()),
+        pair(qname(), arglist::<N>()),
         |(qn, mut a)| match qn {
             NodeTest::Name(NameTest {
                 name: Some(WildcardOrName::Name(localpart)),
                 ns: None,
                 prefix: None,
             }) => match localpart.as_str() {
-                "position" => position(),
-                "last" => last(),
+                "position" => Transform::Position,
+                "last" => Transform::Last,
                 "count" => {
                     if a.len() == 0 {
-                        tc_count::<F, N>(None)
+                        Transform::Count(None)
                     } else if a.len() == 1 {
-                        tc_count(Some(a.pop().unwrap()))
+                        Transform::Count(Some(Box::new(a.pop().unwrap())))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "local-name" => {
                     if a.len() == 0 {
-                        local_name::<F, N>(None)
+                        Transform::LocalName(None)
                     } else if a.len() == 1 {
-                        local_name(Some(a.pop().unwrap()))
+                        Transform::LocalName(Some(Box::new(a.pop().unwrap())))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "name" => {
                     if a.len() == 0 {
-                        name::<F, N>(None)
+                        Transform::Name(None)
                     } else if a.len() == 1 {
-                        name(Some(a.pop().unwrap()))
+                        Transform::Name(Some(Box::new(a.pop().unwrap())))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "string" => {
                     if a.len() == 1 {
-                        string(a.pop().unwrap())
+                        Transform::String(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
-                "concat" => tc_concat(a),
+                "concat" => Transform::Concat(a),
                 "starts-with" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        starts_with(c, b)
+                        Transform::StartsWith(Box::new(c), Box::new(b))
                     } else {
                         // Incorrect arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("incorrect arguments"))
                     }
                 }
                 "contains" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        contains(c, b)
+                        Transform::Contains(Box::new(c), Box::new(b))
                     } else {
                         // Incorrect arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("incorrect arguments"))
                     }
                 }
                 "substring" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        substring(c, b, None)
+                        Transform::Substring(Box::new(c), Box::new(b), None)
                     } else if a.len() == 3 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
                         let d = a.pop().unwrap();
-                        substring(d, c, Some(b))
+                        Transform::Substring(Box::new(d), Box::new(c), Some(Box::new(b)))
                     } else {
                         // Wrong number of arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
                     }
                 }
                 "substring-before" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        substring_before(c, b)
+                        Transform::SubstringBefore(Box::new(c), Box::new(b))
                     } else {
                         // Incorrect arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("incorrect arguments"))
                     }
                 }
                 "substring-after" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        substring_after(c, b)
+                        Transform::SubstringAfter(Box::new(c), Box::new(b))
                     } else {
                         // Incorrect arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("incorrect arguments"))
                     }
                 }
                 "normalize-space" => {
                     if a.len() == 0 {
-                        normalize_space::<F, N>(None)
+                        Transform::NormalizeSpace(None)
                     } else if a.len() == 1 {
-                        normalize_space(Some(a.pop().unwrap()))
+                        Transform::NormalizeSpace(Some(Box::new(a.pop().unwrap())))
                     } else {
                         // Wrong number of arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
                     }
                 }
                 "translate" => {
@@ -1069,208 +900,197 @@ where
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
                         let d = a.pop().unwrap();
-                        translate(d, c, b)
+                        Transform::Translate(Box::new(d), Box::new(c), Box::new(b))
                     } else {
                         // Wrong number of arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
                     }
                 }
                 "boolean" => {
                     if a.len() == 1 {
-                        boolean(a.pop().unwrap())
+                        Transform::Boolean(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "not" => {
                     if a.len() == 1 {
-                        not(a.pop().unwrap())
+                        Transform::Not(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "true" => {
                     if a.len() == 0 {
-                        tc_true()
+                        Transform::True
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "false" => {
                     if a.len() == 0 {
-                        tc_false()
+                        Transform::False
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "number" => {
                     if a.len() == 1 {
-                        number(a.pop().unwrap())
+                        Transform::Number(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "sum" => {
                     if a.len() == 1 {
-                        sum(a.pop().unwrap())
+                        Transform::Sum(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "floor" => {
                     if a.len() == 1 {
-                        floor(a.pop().unwrap())
+                        Transform::Floor(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "ceiling" => {
-                    eprintln!("ceiling function");
                     if a.len() == 1 {
-                        ceiling(a.pop().unwrap())
+                        Transform::Ceiling(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "round" => {
                     if a.len() == 1 {
                         let b = a.pop().unwrap();
-                        round(b, None)
+                        Transform::Round(Box::new(b), None)
                     } else if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        round(c, Some(b))
+                        Transform::Round(Box::new(c), Some(Box::new(b)))
                     } else {
                         // Wrong number of arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
                     }
                 }
                 "current-date-time" => {
                     if a.len() == 0 {
-                        current_date_time()
+                        Transform::CurrentDateTime
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "current-date" => {
                     if a.len() == 0 {
-                        current_date()
+                        Transform::CurrentDate
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "current-time" => {
                     if a.len() == 0 {
-                        current_time()
+                        Transform::CurrentTime
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "format-date-time" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        format_date_time(c, b, None, None, None)
+                        Transform::FormatDateTime(Box::new(c), Box::new(b), None, None, None)
                     } else if a.len() == 5 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
                         let d = a.pop().unwrap();
                         let e = a.pop().unwrap();
                         let f = a.pop().unwrap();
-                        format_date_time(f, e, Some(d), Some(c), Some(b))
+                        Transform::FormatDateTime(Box::new(f), Box::new(e), Some(Box::new(d)), Some(Box::new(c)), Some(Box::new(b)))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "format-date" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        format_date(c, b, None, None, None)
+                        Transform::FormatDate(Box::new(c), Box::new(b), None, None, None)
                     } else if a.len() == 5 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
                         let d = a.pop().unwrap();
                         let e = a.pop().unwrap();
                         let f = a.pop().unwrap();
-                        format_date(f, e, Some(d), Some(c), Some(b))
+                        Transform::FormatDate(Box::new(f), Box::new(e), Some(Box::new(d)), Some(Box::new(c)), Some(Box::new(b)))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "format-time" => {
                     if a.len() == 2 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
-                        format_time(c, b, None, None, None)
+                        Transform::FormatTime(Box::new(c), Box::new(b), None, None, None)
                     } else if a.len() == 5 {
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
                         let d = a.pop().unwrap();
                         let e = a.pop().unwrap();
                         let f = a.pop().unwrap();
-                        format_time(f, e, Some(d), Some(c), Some(b))
+                        Transform::FormatTime(Box::new(f), Box::new(e), Some(Box::new(d)), Some(Box::new(c)), Some(Box::new(b)))
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "current-group" => {
                     if a.len() == 0 {
-                        current_group()
+                        Transform::CurrentGroup
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
                 "current-grouping-key" => {
                     if a.len() == 0 {
-                        current_grouping_key()
+                        Transform::CurrentGroupingKey
                     } else {
                         // Too many arguments
-                        empty()
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
-                _ => empty(), // TODO: user-defined functions
+                _ => Transform::Error(ErrorKind::ParseError, String::from("undefined function")), // TODO: user-defined functions
             },
-            _ => empty(),
+            _ => Transform::Error(ErrorKind::ParseError, String::from("unknown function")),
         },
     ))
 }
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
-fn arglist<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Combinator<'a, N, F>>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn arglist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Transform<N>>> + 'a> {
     Box::new(map(
-        inspect(
-            "arglist",
-            tuple3(
-                inspect("arglist open", tag("(")),
-                inspect(
-                    "sep0",
-                    separated_list0(
+        tuple3(
+                tag("("),
+                separated_list0(
                         map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-                        argument::<N, F>(),
-                    ),
+                        argument::<N>(),
                 ),
-                inspect("arglist closed", tag(")")),
-            ),
+                tag(")"),
         ),
         |(_, a, _)| a,
     ))
@@ -1278,103 +1098,62 @@ where
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(inspect("argument", expr_single_wrapper::<N, F>(true)))
+fn argument<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(inspect("argument", expr_single_wrapper::<N>(true)))
 }
 
 // VarRef ::= '$' VarName
-pub fn variable_reference<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+pub fn variable_reference<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(pair(tag("$"), qname()), |(_, qn)| {
-        reference_variable(get_nt_localname(&qn))
+        Transform::VariableReference(get_nt_localname(&qn))
     }))
 }
 
 // ParenthesizedExpr ::= '(' Expr? ')'
-fn parenthesized_expr<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn parenthesized_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(alt2(
-        parenthesized_expr_empty(),
-        parenthesized_expr_nonempty::<N, F>(),
+        parenthesized_expr_empty::<N>(),
+        parenthesized_expr_nonempty::<N>(),
     ))
 }
-fn parenthesized_expr_empty<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(map(tag("()"), |_| empty()))
+fn parenthesized_expr_empty<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(tag("()"), |_| Transform::Empty))
 }
-fn parenthesized_expr_nonempty<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn parenthesized_expr_nonempty<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(delimited(
         tag("("),
-        map(expr_wrapper::<N, F>(true), |e| e),
+        map(expr_wrapper::<N>(true), |e| e),
         tag(")"),
     ))
 }
 
 // ContextItemExpr ::= '.'
-fn context_item<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(map(tag("."), |_| context()))
+fn context_item<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(tag("."), |_| Transform::ContextItem))
 }
 
 // Literal ::= NumericLiteral | StringLiteral
-pub fn literal<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(alt2(numeric_literal(), string_literal()))
+pub(crate) fn literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt2(numeric_literal::<N>(), string_literal::<N>()))
 }
 
 // NumericLiteral ::= IntegerLiteral | DecimalLiteral | DoubleLiteral
-fn numeric_literal<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(alt3(double_literal(), decimal_literal(), integer_literal()))
+fn numeric_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt3(double_literal::<N>(), decimal_literal::<N>(), integer_literal::<N>()))
 }
 // IntegerLiteral ::= Digits
-fn integer_literal<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn integer_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(digit1(), |s: String| {
         let n = s.parse::<i64>().unwrap();
-        tc_literal(Rc::new(Item::Value(Value::Integer(n))))
+        Transform::Literal(Rc::new(Item::Value(Value::Integer(n))))
     }))
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
 // Construct a double, but if that fails fall back to decimal
-fn decimal_literal<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(alt2(decimal_literal_frac(), decimal_literal_comp()))
+fn decimal_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt2(decimal_literal_frac::<N>(), decimal_literal_comp::<N>()))
 }
-fn decimal_literal_frac<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn decimal_literal_frac<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(pair(tag("."), digit1()), |(_, mut f)| {
         f.insert(0, '.');
         let n = f.parse::<f64>();
@@ -1385,44 +1164,29 @@ fn decimal_literal_frac<'a, N: Node + 'a, F>(
                 Value::Decimal(Decimal::from_str(&f).unwrap())
             }
         };
-        tc_literal(Rc::new(Item::Value(i)))
+        Transform::Literal(Rc::new(Item::Value(i)))
     }))
 }
-fn decimal_literal_comp<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(inspect(
-        "decimal",
-        map(tuple3(digit1(), tag("."), digit0()), |(w, _, f)| {
+fn decimal_literal_comp<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(tuple3(digit1(), tag("."), digit0()), |(w, _, f)| {
             let s = format!("{}.{}", w, f);
             let n = s.parse::<f64>();
             let i = match n {
                 Ok(m) => Value::Double(m),
                 Err(_) => Value::Decimal(Decimal::from_str(&s).unwrap()),
             };
-            eprintln!("decimal found \"{}\"", i);
-            tc_literal(Rc::new(Item::Value(i)))
+            Transform::Literal(Rc::new(Item::Value(i)))
         }),
-    ))
+    )
 }
 
 // DoubleLiteral ::= (('.' Digits) | (Digits ('.' [0-9]*)?)) [eE] [+-]? Digits
 // Construct a double
-fn double_literal<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(alt2(double_literal_frac(), double_literal_comp()))
+fn double_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt2(double_literal_frac::<N>(), double_literal_comp::<N>()))
 }
 
-fn double_literal_frac<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn double_literal_frac<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         tuple4(
             pair(tag("."), digit1()),
@@ -1436,15 +1200,11 @@ fn double_literal_frac<'a, N: Node + 'a, F>(
                 Ok(m) => Value::Double(m),
                 Err(_) => panic!("unable to convert to double"),
             };
-            tc_literal(Rc::new(Item::Value(Value::from(i))))
+            Transform::Literal(Rc::new(Item::Value(Value::from(i))))
         },
     ))
 }
-fn double_literal_comp<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn double_literal_comp<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         tuple4(
             tuple3(digit1(), tag("."), digit1()),
@@ -1458,17 +1218,13 @@ fn double_literal_comp<'a, N: Node + 'a, F>(
                 Ok(m) => Value::Double(m),
                 Err(_) => panic!("unable to convert to double"),
             };
-            tc_literal(Rc::new(Item::Value(Value::from(i))))
+            Transform::Literal(Rc::new(Item::Value(Value::from(i))))
         },
     ))
 }
 
 // StringLiteral ::= double- or single-quote delimited with double-delimiter escape
-fn string_literal_double<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn string_literal_double<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         delimited(
             anychar('"'),
@@ -1477,14 +1233,10 @@ fn string_literal_double<'a, N: Node + 'a, F>(
             }),
             anychar('"'),
         ),
-        |s| tc_literal(Rc::new(Item::Value(Value::from(s)))),
+        |s| Transform::Literal(Rc::new(Item::Value(Value::from(s))))
     ))
 }
-fn string_literal_single<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn string_literal_single<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         delimited(
             anychar('\''),
@@ -1493,33 +1245,25 @@ fn string_literal_single<'a, N: Node + 'a, F>(
             }),
             anychar('\''),
         ),
-        |s| tc_literal(Rc::new(Item::Value(Value::from(s)))),
+        |s| Transform::Literal(Rc::new(Item::Value(Value::from(s))))
     ))
 }
-fn string_literal<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(alt2(string_literal_double(), string_literal_single()))
+fn string_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt2(string_literal_double::<N>(), string_literal_single::<N>()))
 }
 
 /// Return zero or more digits from the input stream. Be careful not to consume non-digit input.
 fn digit0() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |mut input| {
-        eprintln!("digit0: input \"{}\"", input);
         match input.clone().position(|c| !(c >= '0' && c <= '9')) {
             Some(0) => {
-                eprintln!("digit0: non-digit at pos 0");
                 Err(ParseError::Combinator)
             }
             Some(pos) => {
                 let result = (&mut input).take(pos).collect::<String>();
-                eprintln!("digit0: got digits \"{}\" input now \"{}\"", result, input);
                 Ok((input, result))
             }
             None => {
-                eprintln!("digit0: no non-digits");
                 match input.clone().peekable().peek() {
                     Some(_) => {
                         let result = (&mut input).collect::<String>();
@@ -1580,7 +1324,7 @@ fn anytag(s: Vec<(Vec<&str>, bool)>) -> impl Fn(ParseInput) -> ParseResult<Strin
         match input.clone().peekable().peek() {
             Some(ch) => {
                 s.iter().for_each(|t| {
-                    let (u, v) = t;
+                    let (u, _) = t;
                     if u[0].chars().nth(0).unwrap() == *ch {
                         candidate = Some(t.clone());
                     }
@@ -1616,12 +1360,9 @@ fn anytag(s: Vec<(Vec<&str>, bool)>) -> impl Fn(ParseInput) -> ParseResult<Strin
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
-fn axisstep<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn axisstep<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(pair(forwardaxis(), nodetest()), |(a, n)| {
-        step(NodeMatch {
+        Transform::Step(NodeMatch {
             axis: Axis::from(a),
             nodetest: n,
         })
@@ -1650,33 +1391,26 @@ fn forwardaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
 }
 
 fn axis_child() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
-    Box::new(map(tag("child"), |c| "child"))
+    Box::new(map(tag("child"), |_| "child"))
 }
 fn axis_self() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
-    Box::new(map(tag("self"), |c| "self"))
+    Box::new(map(tag("self"), |_| "self"))
 }
 
 // PredicateList ::= Predicate*
-pub fn predicate_list<'a, N: Node + 'a, F>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
-    Box::new(map(many0(predicate::<N, F>()), |v| compose(v)))
+pub fn predicate_list<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(many0(predicate::<N>()), |v| Transform::Compose(v)))
 }
 
 // Predicate ::= "[" expr "]"
-fn predicate<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-where
-    F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn predicate<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         tuple3(
             map(tuple3(xpwhitespace(), tag("["), xpwhitespace()), |_| ()),
-            expr_wrapper::<N, F>(true),
+            expr_wrapper::<N>(true),
             map(tuple3(xpwhitespace(), tag("]"), xpwhitespace()), |_| ()),
         ),
-        |(_, e, _)| filter(e),
+        |(_, e, _)| Transform::Filter(Box::new(e)),
     ))
 }
 
@@ -1748,20 +1482,6 @@ pub fn xpwhitespace() -> Box<dyn Fn(ParseInput) -> ParseResult<()>> {
         ),
     ))
 }
-/*
-fn xpwhitespace_wrapper(
-    b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<()>
-{
-    move |input| {
-        if b {
-            xpwhitespace()(input)
-        } else {
-            Ok((input, ()))
-        }
-    }
-}
- */
 
 /// Parse nested input.
 ///
@@ -1770,7 +1490,8 @@ fn xpwhitespace_wrapper(
 /// Also, this function does not need to consider escaped brackets.
 ///
 /// This function consumes the delimiters.
-/// The start delimiter must be the first token in the input. Finding this sets the bracket count to 1. After that there are 4 scenarios:
+/// The start delimiter must be the first token in the input. Finding this sets the bracket count to 1.
+/// After that there are 4 scenarios:
 ///
 /// * The close delimiter is not found. This is an error.
 /// * There is no open delimiter. In this case, consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
@@ -1786,50 +1507,37 @@ fn take_until_balanced(
 
         // Assume the open and close phrases are the same length
         loop {
-            //            eprintln!(
-            //                "TUB: looking for open in \"{}\", bc=={}",
-            //                input, bracket_counter
-            //            );
             counter += 1;
             if counter > 1000 {
-                //                eprintln!("TUB: too many loops");
                 return Err(ParseError::Unknown { row: 0, col: 0 });
             }
             match (input.as_str().find(open), input.as_str().find(close)) {
                 (Some(0), _) => {
-                    //                    eprintln!("TUB: found open, bracket counter=={}", bracket_counter);
                     bracket_counter += 1;
                     let _: Vec<_> = (&mut input).take(open.len()).collect();
-                    //                    eprintln!("TUB: input now \"{}\"", input);
                     match (input.as_str().find(&open), input.as_str().find(&close)) {
                         (_, None) => {
                             // Scenario 1
-                            //                            eprintln!("TUB: scenario 1");
                             return Err(ParseError::Unbalanced);
                         }
                         (Some(o), Some(c)) => {
                             // Scenario 3/4
                             if o > c {
                                 // Scenario 3
-                                //                                eprintln!("TUB: scenario 3");
                                 if bracket_counter == 1 {
                                     let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-                                    //                                    eprintln!("TUB: returning, input now \"{}\"", input);
                                     return Ok((input, ()));
                                 } else {
                                     return Err(ParseError::Unbalanced);
                                 }
                             } else {
                                 // Scenario 4
-                                //                                eprintln!("TUB: scenario 4");
                                 bracket_counter += 1;
                                 let _: Vec<_> = (&mut input).take(o + open.len()).collect();
-                                //                                eprintln!("TUB: input now \"{}\"", input);
                             }
                         }
                         (_, Some(c)) => {
                             // Scenario 2
-                            //                            eprintln!("TUB: scenario 2");
                             match bracket_counter.cmp(&1) {
                                 Ordering::Greater => {
                                     bracket_counter -= 1;
@@ -1837,7 +1545,6 @@ fn take_until_balanced(
                                 }
                                 Ordering::Equal => {
                                     let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-                                    //                                    eprintln!("TUB: returning, input now \"{}\"", input);
                                     return Ok((input, ()));
                                 }
                                 Ordering::Less => {
@@ -1845,14 +1552,10 @@ fn take_until_balanced(
                                 }
                             }
                         }
-                        _ => {
-                            //                            eprintln!("TUB: unhandled scenario")
-                        }
                     }
                 }
                 (None, Some(c)) => {
                     // Scenario 2
-                    //                    eprintln!("TUB: scenario 2/2");
                     match bracket_counter.cmp(&1) {
                         Ordering::Greater => {
                             bracket_counter -= 1;
@@ -1860,7 +1563,6 @@ fn take_until_balanced(
                         }
                         Ordering::Equal => {
                             let _: Vec<_> = (&mut input).take(c + close.len()).collect();
-                            //                            eprintln!("TUB: returning, input now \"{}\"", input);
                             return Ok((input, ()));
                         }
                         Ordering::Less => {
@@ -1874,9 +1576,6 @@ fn take_until_balanced(
     })
 }
 
-fn noop<'a, N: Node + 'a, F>() -> Box<dyn Fn(ParseInput) -> ParseResult<Combinator<'a, N, F>> + 'a>
-    where
-        F: Fn(&mut Context<'a, N, F>) -> TransResult<'a, N> + 'a,
-{
+fn noop<N: Node>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>>> {
     Box::new(move |_| Err(ParseError::Combinator))
 }

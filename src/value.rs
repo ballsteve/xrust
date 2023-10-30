@@ -13,7 +13,7 @@ use std::convert::TryFrom;
 use std::fmt::Formatter;
 
 /// Comparison operators for values
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Operator {
     Equal,
     NotEqual,
@@ -61,6 +61,12 @@ impl From<&str> for Operator {
             ">>" => Operator::After,
             _ => Operator::After, // TODO: add error value
         }
+    }
+}
+
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_string())
     }
 }
 

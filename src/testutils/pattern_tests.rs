@@ -6,12 +6,12 @@ macro_rules! pattern_tests (
 	#[test]
 	#[should_panic]
 	fn pattern_empty() {
-    	let p: Pattern<$t, Combinator<$t>> = Pattern::try_from("").expect("unable to parse empty string");
+    	let p: Pattern<$t> = Pattern::try_from("").expect("unable to parse empty string");
 	}
 
 	#[test]
 	fn pattern_predicate_1_pos() {
-            let p: Pattern<$t, Combinator<$t>> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
+            let p: Pattern<$t> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
@@ -36,11 +36,11 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(Rc::new(Item::Node(a))), true);
+	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), true);
 	}
 	#[test]
 	fn pattern_predicate_1_neg() {
-            let p: Pattern<$t, Combinator<$t>> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
+            let p: Pattern<$t> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
@@ -65,13 +65,11 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(Rc::new(Item::Node(b))), false);
+	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(b))), false);
 	}
 	#[test]
 	fn pattern_sel_1_pos() {
-            let p: Pattern<$t, Combinator<$t>> = Pattern::try_from("child::a").expect("unable to parse \"child::a\"");
-
-			eprintln!("\nparsed pattern: {:?}\n", p);
+            let p: Pattern<$t> = Pattern::try_from("child::a").expect("unable to parse \"child::a\"");
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
@@ -96,11 +94,11 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(Rc::new(Item::Node(a))), true);
+	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), true);
 	}
 	#[test]
 	fn pattern_sel_1_neg() {
-            let p: Pattern<$t, Combinator<$t>> = Pattern::try_from("child::a").expect("unable to parse \"child::a\"");
+            let p: Pattern<$t> = Pattern::try_from("child::a").expect("unable to parse \"child::a\"");
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
@@ -125,13 +123,12 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(Rc::new(Item::Node(b))), false);
+	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(b))), false);
 	}
 	#[test]
 	fn pattern_sel_2_pos() {
-            let p: Pattern<$t, Combinator<$t>> = Pattern::try_from("child::Test/child::a")
+            let p: Pattern<$t> = Pattern::try_from("child::Test/child::a")
 			.expect("unable to parse \"child::Test/child::a\"");
-			eprintln!("\npattern_sel_2_pos XPath parsed OK:\n{:?}\n", p);
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
@@ -156,11 +153,11 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(Rc::new(Item::Node(a))), true);
+	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), true);
 	}
 	#[test]
 	fn pattern_sel_2_neg() {
-            let p: Pattern<$t, Combinator<$t>> = Pattern::try_from("child::Test/child::a").expect("unable to parse \"child::Test/child::a\"");
+            let p: Pattern<$t> = Pattern::try_from("child::Test/child::a").expect("unable to parse \"child::Test/child::a\"");
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
@@ -185,7 +182,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(Rc::new(Item::Node(a))), false);
+	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), false);
 	}
 	}
 );
