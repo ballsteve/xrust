@@ -8,7 +8,7 @@ use crate::xdmerror::Error;
 use crate::item::{Sequence, SequenceTrait, Node};
 use crate::output::OutputDefinition;
 use crate::transform::Transform;
-use crate::transform::template::Template;
+use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
 use crate::transform::navigate::*;
 use crate::transform::construct::*;
 use crate::transform::booleans::*;
@@ -174,6 +174,9 @@ impl<N: Node> Context<N> {
             Transform::Loop(v, b) => tr_loop(self, v, b),
             Transform::Switch(c, o) => switch(self, c, o),
             Transform::ForEach(g, s, b) => for_each(self, g, s, b),
+            Transform::ApplyTemplates(s) => apply_templates(self, s),
+            Transform::ApplyImports => apply_imports(self),
+            Transform::NextMatch => next_match(self),
             Transform::NotImplemented(s) => not_implemented(self, s),
             _ => Err(Error::new(ErrorKind::NotImplemented, "not implemented".to_string()))
         }
