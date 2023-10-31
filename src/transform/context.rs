@@ -17,6 +17,8 @@ use crate::transform::functions::*;
 use crate::transform::grouping::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
+use crate::transform::logic::*;
+use crate::transform::controlflow::*;
 use crate::{ErrorKind, Item, Value};
 
 /// The transformation context. This is the dynamic context, plus some parts of the static context.
@@ -162,6 +164,16 @@ impl<N: Node> Context<N> {
             Transform::SequenceItems(v) => make_sequence(self, v),
             Transform::Copy(f, t) => copy(self, f, t),
             Transform::DeepCopy(d) => deep_copy(self, d),
+            Transform::Or(v) => tr_or(self, v),
+            Transform::And(v) => tr_and(self, v),
+            Transform::GeneralComparison(o, l, r) => general_comparison(self, o, l, r),
+            Transform::ValueComparison(o, l, r) => value_comparison(self, o, l, r),
+            Transform::Concat(v) => tr_concat(self, v),
+            Transform::Range(s, e) => tr_range(self, s, e),
+            Transform::Arithmetic(v) => arithmetic(self, v),
+            Transform::Loop(v, b) => tr_loop(self, v, b),
+            Transform::Switch(c, o) => switch(self, c, o),
+            Transform::ForEach(g, s, b) => for_each(self, g, s, b),
             Transform::NotImplemented(s) => not_implemented(self, s),
             _ => Err(Error::new(ErrorKind::NotImplemented, "not implemented".to_string()))
         }

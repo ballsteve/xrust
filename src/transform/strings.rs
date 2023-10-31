@@ -299,3 +299,22 @@ pub fn translate<N: Node>(
         }
         Ok(vec![Rc::new(Item::Value(Value::from(result)))])
 }
+
+/// XPath concat function. All arguments are concatenated into a single string value.
+pub(crate) fn tr_concat<N: Node>(
+    ctxt: &Context<N>,
+    arguments: &Vec<Transform<N>>,
+) -> Result<Sequence<N>, Error> {
+        match arguments
+            .iter()
+            .try_fold(String::new(), |mut acc, a| match ctxt.dispatch(a) {
+                Ok(b) => {
+                    acc.push_str(b.to_string().as_str());
+                    Ok(acc)
+                }
+                Err(err) => Err(err),
+            }) {
+            Ok(r) => Ok(vec![Rc::new(Item::Value(Value::from(r)))]),
+            Err(err) => Err(err),
+        }
+}

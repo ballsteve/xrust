@@ -150,7 +150,7 @@ fn for_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transfo
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Transform<N>>> + 'a> {
+fn simple_for_clause<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a> {
     Box::new(map(
         tuple3(
             tag("for"),
@@ -166,7 +166,7 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
                         xpwhitespace(),
                         expr_single_wrapper::<N>(true),
                     ),
-                    |(_, qn, _, _, _, e)| Transform::VariableDeclaration(get_nt_localname(&qn), Box::new(e), Box::new(Transform::Empty)),
+                    |(_, qn, _, _, _, e)| (get_nt_localname(&qn), e),
                 ),
             ),
         ),

@@ -14,6 +14,8 @@ pub(crate) mod booleans;
 pub(crate) mod numbers;
 pub(crate) mod datetime;
 pub(crate) mod grouping;
+pub(crate) mod logic;
+pub(crate) mod controlflow;
 
 use std::rc::Rc;
 use std::fmt;
@@ -83,7 +85,7 @@ pub enum Transform<N: Node> {
     Arithmetic(Vec<ArithmeticOperand<N>>),
 
     /// A repeating transformation. Consists of variable declarations and the loop body.
-    Loop(Vec<Transform<N>>, Box<Transform<N>>),
+    Loop(Vec<(String, Transform<N>)>, Box<Transform<N>>),
     /// A branching transformation. Consists of (test, body) clauses and an otherwise clause.
     Switch(Vec<(Transform<N>, Transform<N>)>, Box<Transform<N>>),
 

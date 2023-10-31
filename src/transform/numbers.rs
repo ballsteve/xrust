@@ -5,7 +5,7 @@ use std::rc::Rc;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::Value;
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
-use crate::transform::Transform;
+use crate::transform::{Transform, ArithmeticOperand, ArithmeticOperator};
 use crate::transform::context::{Context, ContextBuilder};
 
 /// XPath number function.
@@ -116,4 +116,76 @@ pub fn round<N: Node>(
                 }
             },
         )
+}
+
+/// Generate a sequence with a range of integers.
+pub(crate) fn tr_range<N: Node>(
+    ctxt: &Context<N>,
+    start: &Transform<N>,
+    end: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+        let s = ctxt.dispatch(start)?;
+        let e = ctxt.dispatch(end)?;
+        if s.len() == 0 || e.len() == 0 {
+            // Empty sequence is the result
+            return Ok(vec![]);
+        }
+        if s.len() != 1 || e.len() != 1 {
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("operands must be singleton sequence"),
+            ));
+        }
+        let i = s[0].to_int()?;
+        let j = e[0].to_int()?;
+        if i > j {
+            // empty sequence result
+            Ok(vec![])
+        } else if i == j {
+            let mut seq = Sequence::new();
+            seq.push_value(Value::Integer(i));
+            Ok(seq)
+        } else {
+            let mut result = Sequence::new();
+            for k in i..=j {
+                result.push_value(Value::from(k))
+            }
+            Ok(result)
+        }
+}
+
+/// Perform an arithmetic operation.
+pub(crate) fn arithmetic<N: Node>(
+    ctxt: &Context<N>,
+    ops: &Vec<ArithmeticOperand<N>>,
+) -> Result<Sequence<N>, Error> {
+    // Type: the result will be a number, but integer or double?
+    // If all of the operands are integers, then the result is integer otherwise double
+    // TODO: check the type of all operands to determine type of result (can probably do this in static analysis phase)
+    // In the meantime, let's assume the result will be double and convert any integers
+        let mut acc = 0.0;
+        for o in ops {
+            let j = match ctxt.dispatch(&o.operand) {
+                Ok(s) => s,
+                Err(_) => {
+                    acc = f64::NAN;
+                    break;
+                }
+            };
+            if j.len() != 1 {
+                acc = f64::NAN;
+                break;
+            }
+            let u = j[0].to_double();
+            match o.op {
+                ArithmeticOperator::Noop => acc = u,
+                ArithmeticOperator::Add => acc += u,
+                ArithmeticOperator::Subtract => acc -= u,
+                ArithmeticOperator::Multiply => acc *= u,
+                ArithmeticOperator::Divide => acc /= u,
+                ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
+                ArithmeticOperator::Modulo => acc = acc % u,
+            }
+        }
+        Ok(vec![Rc::new(Item::Value(Value::from(acc)))])
 }

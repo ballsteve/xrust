@@ -273,15 +273,12 @@ macro_rules! transform_tests (
 	fn tr_loop_lit() {
 	    let x = Transform::Loop(
 		vec![
-			Transform::VariableDeclaration(
-				String::from("x"),
-				Box::new(Transform::SequenceItems(vec![
+			(String::from("x"),
+			Transform::SequenceItems(vec![
 					Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("one")))),
 					Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("two")))),
 					Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("three")))),
-		    	])),
-				Box::new(Transform::<$x>::Empty),
-			)
+			]))
 		],
 		Box::new(Transform::Concat(vec![
 		    Transform::VariableReference(String::from("x")),
