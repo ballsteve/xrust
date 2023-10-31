@@ -23,7 +23,7 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 /// XPath count function.
 pub fn tr_count<N: Node>(
     ctxt: &Context<N>,
-    s: Option<Transform<N>>,
+    s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         s.as_ref().map_or_else(
             || {
@@ -33,7 +33,7 @@ pub fn tr_count<N: Node>(
             },
             |i| {
                 Ok(vec![Rc::new(Item::Value(Value::from(
-                    ctxt.dispatch(i)?.len() as i64,
+                    ctxt.dispatch(&i)?.len() as i64,
                 )))])
             },
         )
@@ -44,8 +44,8 @@ pub fn tr_count<N: Node>(
 /// The body of the function is then evaluated and it's result is returned.
 pub fn user_defined<N: Node>(
     ctxt: &Context<N>,
+    arguments: &Vec<(String, Transform<N>)>,
     body: &Transform<N>,
-    arguments: Vec<(String, &Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     let mut new_ctxt = ctxt.clone();
         arguments.iter().try_for_each(|(n, a)| match ctxt.dispatch(a) {

@@ -79,6 +79,62 @@ pub(crate) fn literal_attribute<N: Node>(
         Ok(vec![Rc::new(Item::Node(a))])
 }
 
+/// Set an attribute on the context item, which must be an element-type node.
+/// (TODO: use an expression to select the element)
+/// If the element does not have an attribute with the given name, create it.
+/// Otherwise replace the attribute's value with the supplied value.
+/// Returns an empty sequence.
+pub(crate) fn set_attribute<N: Node>(
+    ctxt: &Context<N>,
+    atname: &QualifiedName,
+    v: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+        if ctxt.rd.is_none() {
+            return Err(Error::new(
+                ErrorKind::Unknown,
+                String::from("context has no result document"),
+            ));
+        }
+        match &*ctxt.cur[ctxt.i] {
+            Item::Node(n) => match n.node_type() {
+                NodeType::Element => {
+                    let od = n.owner_document();
+                    let attval = ctxt.dispatch(v)?;
+                    if attval.len() == 1 {
+                        match &*attval[0] {
+                            Item::Value(av) => {
+                                n.add_attribute(od.new_attribute(atname.clone(), av.clone())?)?;
+                            }
+                            _ => {
+                                n.add_attribute(od.new_attribute(
+                                    atname.clone(),
+                                    Value::from(attval.to_string()),
+                                )?)?;
+                            }
+                        }
+                    } else {
+                        n.add_attribute(
+                            od.new_attribute(atname.clone(), Value::from(attval.to_string()))?,
+                        )?;
+                    }
+                }
+                _ => {
+                    return Err(Error::new(
+                        ErrorKind::Unknown,
+                        String::from("context item is not an element-type node"),
+                    ))
+                }
+            },
+            _ => {
+                return Err(Error::new(
+                    ErrorKind::Unknown,
+                    String::from("context item is not a node"),
+                ))
+            }
+        }
+        Ok(vec![])
+}
+
 /// Construct a [Sequence] of items
 pub(crate) fn make_sequence<N: Node>(
     ctxt: &Context<N>,
