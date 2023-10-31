@@ -20,6 +20,7 @@ use crate::transform::strings::*;
 use crate::transform::logic::*;
 use crate::transform::controlflow::*;
 use crate::{ErrorKind, Item, Value};
+use crate::transform::variables::{declare_variable, reference_variable};
 
 /// The transformation context. This is the dynamic context, plus some parts of the static context.
 /// Contexts are immutable, but frequently are cloned to provide a new context.
@@ -166,6 +167,7 @@ impl<N: Node> Context<N> {
             Transform::DeepCopy(d) => deep_copy(self, d),
             Transform::Or(v) => tr_or(self, v),
             Transform::And(v) => tr_and(self, v),
+            Transform::Union(b) => union(self, b),
             Transform::GeneralComparison(o, l, r) => general_comparison(self, o, l, r),
             Transform::ValueComparison(o, l, r) => value_comparison(self, o, l, r),
             Transform::Concat(v) => tr_concat(self, v),
@@ -177,6 +179,8 @@ impl<N: Node> Context<N> {
             Transform::ApplyTemplates(s) => apply_templates(self, s),
             Transform::ApplyImports => apply_imports(self),
             Transform::NextMatch => next_match(self),
+            Transform::VariableDeclaration(n, v, f) => declare_variable(self, n.clone(), v, f),
+            Transform::VariableReference(n) => reference_variable(self, n),
             Transform::NotImplemented(s) => not_implemented(self, s),
             _ => Err(Error::new(ErrorKind::NotImplemented, "not implemented".to_string()))
         }
@@ -218,6 +222,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn depth(mut self, d: usize) -> Self {
         self.0.depth = d;
+        self
+    }
+    pub fn variable(mut self, n: String, v: Sequence<N>) -> Self {
+        self.0.var_push(n, v);
         self
     }
     pub fn variables(mut self, v: HashMap<String, Vec<Sequence<N>>>) -> Self {

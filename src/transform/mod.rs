@@ -16,6 +16,7 @@ pub(crate) mod datetime;
 pub(crate) mod grouping;
 pub(crate) mod logic;
 pub(crate) mod controlflow;
+pub(crate) mod variables;
 
 use std::rc::Rc;
 use std::fmt;

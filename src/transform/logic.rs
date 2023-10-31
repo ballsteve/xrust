@@ -106,3 +106,17 @@ pub(crate) fn value_comparison<N: Node>(
             left[0].compare(&*right[0], *o)?,
         )))])
 }
+
+/// Each function in the supplied vector is evaluated, and the resulting sequences are combined into a single sequence.
+/// TODO: eliminate duplicates
+pub(crate) fn union<N: Node>(
+    ctxt: &Context<N>,
+    branches: &Vec<Transform<N>>,
+) -> Result<Sequence<N>, Error> {
+        let mut result = vec![];
+        for b in branches {
+            let mut c = ctxt.dispatch(b)?;
+            result.append(&mut c)
+        }
+        Ok(result)
+}
