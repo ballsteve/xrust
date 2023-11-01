@@ -13,7 +13,7 @@ use crate::transform::context::Context;
 /// XPath local-name function.
 pub fn local_name<N: Node>(
     ctxt: &Context<N>,
-    s: Option<Transform<N>>,
+    s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
         || {
@@ -55,7 +55,7 @@ pub fn local_name<N: Node>(
 /// XPath name function.
 pub fn name<N: Node>(
     ctxt: &Context<N>,
-    s: Option<Transform<N>>,
+    s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
         || {
@@ -151,7 +151,7 @@ pub fn substring<N: Node>(
     ctxt: &Context<N>,
     s: &Transform<N>,
     t: &Transform<N>,
-    l: Option<Transform<N>>,
+    l: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         // must have two or three arguments.
         // s is the string to search,
@@ -236,7 +236,7 @@ pub fn substring_after<N: Node>(
 /// XPath normalize-space function.
 pub fn normalize_space<N: Node>(
     ctxt: &Context<N>,
-    n: Option<Transform<N>>,
+    n: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         let s: Result<String, Error> = n.as_ref().map_or_else(
             || {
