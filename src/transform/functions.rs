@@ -58,6 +58,14 @@ pub fn user_defined<N: Node>(
     new_ctxt.dispatch(body)
 }
 
+pub(crate) fn tr_error<N : Node>(
+    _ctxt: &Context<N>,
+    kind: &ErrorKind,
+    msg: &String,
+) -> Result<Sequence<N>, Error> {
+    Err(Error::new(kind.clone(), msg.clone()))
+}
+
 pub(crate) fn not_implemented<N : Node>(
     _ctxt: &Context<N>,
     msg: &String,

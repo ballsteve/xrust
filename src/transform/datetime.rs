@@ -41,9 +41,9 @@ pub fn format_date_time<N: Node>(
     ctxt: &Context<N>,
     value: &Transform<N>,
     picture: &Transform<N>,
-    _language: Option<&Transform<N>>,
-    _calendar: Option<&Transform<N>>,
-    _place: Option<&Transform<N>>,
+    _language: &Option<Box<Transform<N>>>,
+    _calendar: &Option<Box<Transform<N>>>,
+    _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         let dt = ctxt.dispatch(value)?;
         let pic = picture_parse(&ctxt.dispatch(picture)?.to_string())?;
@@ -85,9 +85,9 @@ pub fn format_date<N: Node>(
     ctxt: &Context<N>,
     value: &Transform<N>,
     picture: &Transform<N>,
-    _language: Option<&Transform<N>>,
-    _calendar: Option<&Transform<N>>,
-    _place: Option<&Transform<N>>,
+    _language: &Option<Box<Transform<N>>>,
+    _calendar: &Option<Box<Transform<N>>>,
+    _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         let dt = ctxt.dispatch(value)?;
         let pic = picture_parse(&ctxt.dispatch(picture)?.to_string())?;
@@ -130,9 +130,9 @@ pub fn format_time<N: Node>(
     ctxt: &Context<N>,
     value: &Transform<N>,
     picture: &Transform<N>,
-    _language: Option<&Transform<N>>,
-    _calendar: Option<&Transform<N>>,
-    _place: Option<&Transform<N>>,
+    _language: &Option<Box<Transform<N>>>,
+    _calendar: &Option<Box<Transform<N>>>,
+    _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         let dt = ctxt.dispatch(value)?;
         let pic = picture_parse(&ctxt.dispatch(picture)?.to_string())?;

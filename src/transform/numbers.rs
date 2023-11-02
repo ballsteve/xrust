@@ -84,7 +84,7 @@ pub fn ceiling<N: Node>(
 pub fn round<N: Node>(
     ctxt: &Context<N>,
     r: &Transform<N>,
-    pr: Option<&Transform<N>>,
+    pr: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
         pr.as_ref().map_or_else(
             || {
