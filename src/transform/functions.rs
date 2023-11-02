@@ -23,20 +23,11 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 /// XPath count function.
 pub fn tr_count<N: Node>(
     ctxt: &Context<N>,
-    s: &Option<Box<Transform<N>>>,
+    s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-        s.as_ref().map_or_else(
-            || {
-                Ok(vec![Rc::new(Item::Value(Value::from(
-                    ctxt.cur.len() as i64
-                )))])
-            },
-            |i| {
-                Ok(vec![Rc::new(Item::Value(Value::from(
-                    ctxt.dispatch(&i)?.len() as i64,
-                )))])
-            },
-        )
+        Ok(vec![Rc::new(Item::Value(Value::from(
+            ctxt.dispatch(s)?.len() as i64,
+        )))])
 }
 
 /// A user defined function.

@@ -793,9 +793,9 @@ fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Tr
                 "last" => Transform::Last,
                 "count" => {
                     if a.len() == 0 {
-                        Transform::Count(None)
+                        Transform::Count(Box::new(Transform::Empty))
                     } else if a.len() == 1 {
-                        Transform::Count(Some(Box::new(a.pop().unwrap())))
+                        Transform::Count(Box::new(a.pop().unwrap()))
                     } else {
                         // Too many arguments
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))

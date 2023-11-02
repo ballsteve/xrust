@@ -1706,7 +1706,7 @@ macro_rules! transform_tests (
 			Transform::Literal(Rc::new(Item::Value(Value::from("key ")))),
 			Transform::CurrentGroupingKey,
 			Transform::Literal(Rc::new(Item::Value(Value::from(" #members ")))),
-			Transform::Count(Some(Box::new(Transform::CurrentGroup))),
+			Transform::Count(Box::new(Transform::CurrentGroup)),
 		    ]))
 		))
 	    );
@@ -1741,7 +1741,7 @@ macro_rules! transform_tests (
 			Transform::Literal(Rc::new(Item::Value(Value::from("key ")))),
 			Transform::CurrentGroupingKey,
 			Transform::Literal(Rc::new(Item::Value(Value::from(" #members ")))),
-			Transform::Count(Some(Box::new(Transform::CurrentGroup))),
+			Transform::Count(Box::new(Transform::CurrentGroup)),
 		    ]))
 		))
 	    );
@@ -2144,7 +2144,7 @@ macro_rules! transform_tests (
 	fn tr_count_0() {
 	    // XPath == count()
 
-	    let x = Transform::Count(Some(Box::new(Transform::ContextItem)));
+	    let x = Transform::Count(Box::new(Transform::Empty));
 	    let seq = ContextBuilder::new()
 		    .current(vec![
 			Rc::new(Item::<$x>::Value(Value::from("one"))),
@@ -2152,23 +2152,22 @@ macro_rules! transform_tests (
 			Rc::new(Item::<$x>::Value(Value::from("three"))),
 			Rc::new(Item::<$x>::Value(Value::from("four"))),
 		    ])
-		    .index(2)
 		    .build()
 		.dispatch(&x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
-	    assert_eq!(seq.to_string(), "4")
+	    assert_eq!(seq.to_string(), "0")
 	}
 
 	#[test]
 	fn tr_count_1() {
 	    // XPath == count()
 
-	    let x = Transform::Count(Some(Box::new(Transform::SequenceItems(vec![
+	    let x = Transform::Count(Box::new(Transform::SequenceItems(vec![
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
-		]))));
+		])));
 	    let seq = ContextBuilder::new()
 		    .current(vec![
 			Rc::new(Item::<$x>::Value(Value::from("one"))),

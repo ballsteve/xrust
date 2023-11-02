@@ -120,7 +120,7 @@ pub enum Transform<N: Node> {
     /// XPath functions
     Position,
     Last,
-    Count(Option<Box<Transform<N>>>),
+    Count(Box<Transform<N>>),
     LocalName(Option<Box<Transform<N>>>),
     Name(Option<Box<Transform<N>>>),
     String(Box<Transform<N>>),
