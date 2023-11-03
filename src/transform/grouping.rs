@@ -3,10 +3,8 @@
 use std::rc::Rc;
 
 use crate::xdmerror::{Error, ErrorKind};
-use crate::value::Value;
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
-use crate::transform::Transform;
-use crate::transform::context::{Context, ContextBuilder};
+use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::transform::context::Context;
 
 /// XSLT current-group function.
 pub fn current_group<N: Node>(

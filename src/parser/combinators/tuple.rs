@@ -353,7 +353,7 @@ where
     P9: Fn(ParseInput) -> ParseResult<R9>,
     P10: Fn(ParseInput) -> ParseResult<R10>,
 {
-    move |mut input| match parser1(input) {
+    move |input| match parser1(input) {
         Ok((input1, result1)) => match parser2(input1) {
             Ok((input2, result2)) => match parser3(input2) {
                 Ok((input3, result3)) => match parser4(input3) {

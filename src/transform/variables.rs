@@ -1,10 +1,7 @@
 //! Support for variables.
 
-use std::rc::Rc;
-
 use crate::xdmerror::{Error, ErrorKind};
-use crate::value::{Value, Operator};
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::item::{Node, Sequence, SequenceTrait};
 use crate::transform::Transform;
 use crate::transform::context::{Context, ContextBuilder};
 

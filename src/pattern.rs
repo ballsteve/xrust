@@ -7,9 +7,8 @@
 use std::convert::TryFrom;
 use std::rc::Rc;
 use std::fmt;
-//use std::marker::PhantomData;
 
-use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::item::{Item, Node, SequenceTrait};
 use crate::transform::{Transform, Axis, NodeTest, NameTest, WildcardOrName};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::xpath::{literal, nodetest, predicate_list, qname, variable_reference, xpwhitespace};
@@ -23,8 +22,8 @@ use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
-use crate::parser::combinators::tag::{anychar, tag};
-use crate::parser::combinators::tuple::{tuple10, tuple2, tuple3, tuple4, tuple5, tuple6};
+use crate::parser::combinators::tag::tag;
+use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
 /// An XPath pattern. A pattern most frequently appears as the value of a match attribute.

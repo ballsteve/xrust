@@ -43,12 +43,6 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
     d.push(e).expect("unable to append node");
     Ok(d)
 }
-fn get_node<N: Node>(i: &Rc<Item<N>>) -> N {
-    match &**i {
-        Item::Node(n) => n.clone(),
-        _ => panic!("not a node"),
-    }
-}
 
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc);

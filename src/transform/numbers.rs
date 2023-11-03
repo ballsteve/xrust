@@ -4,9 +4,9 @@ use std::rc::Rc;
 
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::Value;
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::{Transform, ArithmeticOperand, ArithmeticOperator};
-use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::context::Context;
 
 /// XPath number function.
 pub fn number<N: Node>(

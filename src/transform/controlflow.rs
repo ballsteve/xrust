@@ -5,7 +5,7 @@ use std::collections::HashMap;
 
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::{Value, Operator};
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::{Grouping, Transform};
 use crate::transform::context::{Context, ContextBuilder};
 
@@ -16,15 +16,22 @@ pub(crate) fn tr_loop<N: Node>(
     v: &Vec<(String, Transform<N>)>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    // Define a new context with all of the variables declared
-    let mut lctxt = ctxt.clone();
-    v.iter()
-        .try_for_each(|(n, d)| {
-            lctxt.var_push(n.clone(), ctxt.dispatch(d)?);
-            Ok::<(), Error>(())
-        });
-    // Now dispatch the body of the loop with the new context
-    lctxt.dispatch(b)
+    if v.is_empty() {
+        return Ok(vec![])
+    }
+    // This implementation only supports one variable
+
+    let mut result = vec![];
+
+    for i in ctxt.dispatch(&v[0].1)? {
+        // Define a new context with all of the variables declared
+        let lctxt = ContextBuilder::from(ctxt)
+            .variable(v[0].0.clone(), vec![i.clone()])
+            .build();
+        let mut t = lctxt.dispatch(b)?;
+        result.append(&mut t);
+    }
+    Ok(result)
 }
 
 /// Choose a sequence to return.

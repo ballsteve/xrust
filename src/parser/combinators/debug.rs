@@ -1,7 +1,7 @@
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseResult};
 
 pub(crate) fn inspect<'a, P1, A>(
-    msg: &'a str,
+    _msg: &'a str,
     parser: P1,
 ) -> impl Fn(ParseInput) -> ParseResult<A> + '_
 where

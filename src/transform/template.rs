@@ -15,7 +15,7 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    mode: Option<String>,
+    mode: Option<String>,  // Not implemented (yet)
 }
 
 impl<N: Node> Template<N> {
@@ -43,7 +43,7 @@ impl<N: Node> Ord for Template<N> {
         self.priority.map_or_else(
             || other.priority.map_or_else(
                 || Ordering::Equal,
-                |t| Ordering::Greater
+                |_| Ordering::Greater
             ),
             |s| other.priority.map_or_else(
                 || Ordering::Less,

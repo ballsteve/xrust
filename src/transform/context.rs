@@ -213,7 +213,7 @@ impl<N: Node> Context<N> {
             Transform::FormatDateTime(t, p, l, c, q) => format_date_time(self, t, p, l, c, q),
             Transform::FormatDate(t, p, l, c, q) => format_date(self, t, p, l, c, q),
             Transform::FormatTime(t, p, l, c, q) => format_time(self, t, p, l, c, q),
-            Transform::UserDefined(qn, a, b) => user_defined(self, a, b),
+            Transform::UserDefined(_qn, a, b) => user_defined(self, a, b),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
             _ => Err(Error::new(ErrorKind::NotImplemented, "not implemented".to_string()))

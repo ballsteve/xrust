@@ -856,6 +856,7 @@ macro_rules! xpath_tests (
 	fn xpath_for_1() {
 	    let mut e = expression::<$t>("for $x in ('a', 'b', 'c') return ($x, $x)")
 		.expect("failed to parse for expression");
+		eprintln!("xpath_for_1 have expr {}", e);
 		let s = Context::new()
 			.dispatch(&e)
 			.expect("evaluation failed");

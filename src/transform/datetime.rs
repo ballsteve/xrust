@@ -8,9 +8,9 @@ use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::parsepicture::parse as picture_parse;
 use crate::value::Value;
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::Transform;
-use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::context::Context;
 
 /// XPath current-date-time function.
 pub fn current_date_time<N: Node>(

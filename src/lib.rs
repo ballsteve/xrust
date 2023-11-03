@@ -60,10 +60,6 @@ pub use value::Value;
 pub mod item;
 pub use item::{Item, Node, Sequence, SequenceTrait};
 
-mod parsecommon;
-
-//pub mod parsexml;
-
 pub mod xpath;
 pub use xpath::expression;
 pub mod pattern;

@@ -24,8 +24,8 @@ use std::fmt::Formatter;
 use std::convert::TryFrom;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::qname::QualifiedName;
-use crate::value::{Value, Operator};
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::value::Operator;
+use crate::item::{Item, Node, NodeType};
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone, Debug)]
@@ -185,7 +185,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Or(o) => write!(f, "OR {} operands", o.len()),
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
-            Transform::ForEach(g, _, _) => write!(f, "for-each"),
+            Transform::ForEach(_g, _, _) => write!(f, "for-each"),
             Transform::Union(v) => write!(f, "union of {} operands", v.len()),
             Transform::ApplyTemplates(_) => write!(f, "Apply templates"),
             Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
@@ -196,17 +196,17 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::SetAttribute(n, _) => write!(f, "set attribute named \"{}\"", n),
             Transform::Position => write!(f, "position"),
             Transform::Last => write!(f, "last"),
-            Transform::Count(s) => write!(f, "count()"),
-            Transform::Name(n) => write!(f, "name()"),
-            Transform::LocalName(n) => write!(f, "local-name()"),
+            Transform::Count(_s) => write!(f, "count()"),
+            Transform::Name(_n) => write!(f, "name()"),
+            Transform::LocalName(_n) => write!(f, "local-name()"),
             Transform::String(s) => write!(f, "string({})", s),
             Transform::StartsWith(s, t) => write!(f, "starts-with({}, {})", s, t),
             Transform::EndsWith(s, t) => write!(f, "ends-with({}, {})", s, t),
             Transform::Contains(s, t) => write!(f, "contains({}, {})", s, t),
-            Transform::Substring(s, t, l) => write!(f, "substring({}, {}, ...)", s, t),
+            Transform::Substring(s, t, _l) => write!(f, "substring({}, {}, ...)", s, t),
             Transform::SubstringBefore(s, t) => write!(f, "substring-before({}, {})", s, t),
             Transform::SubstringAfter(s, t) => write!(f, "substring-after({}, {})", s, t),
-            Transform::NormalizeSpace(s) => write!(f, "normalize-space()"),
+            Transform::NormalizeSpace(_s) => write!(f, "normalize-space()"),
             Transform::Translate(s, t, u) => write!(f, "translate({}, {}, {})", s, t, u),
             Transform::Boolean(b) => write!(f, "boolean({})", b),
             Transform::Not(b) => write!(f, "not({})", b),
@@ -216,7 +216,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Sum(n) => write!(f, "sum({})", n),
             Transform::Floor(n) => write!(f, "floor({})", n),
             Transform::Ceiling(n) => write!(f, "ceiling({})", n),
-            Transform::Round(n, p) => write!(f, "round({},...)", n),
+            Transform::Round(n, _p) => write!(f, "round({},...)", n),
             Transform::CurrentDateTime => write!(f, "current-date-time"),
             Transform::CurrentDate => write!(f, "current-date"),
             Transform::CurrentTime => write!(f, "current-time"),
@@ -225,7 +225,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({}, {}, ...)", p, q),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
-            Transform::UserDefined(qn, a, b) => write!(f, "user-defined \"{}\"", qn),
+            Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
@@ -329,7 +329,7 @@ pub enum NodeTest {
 impl NodeTest {
     pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
         match &**i {
-            Item::Node(n) => {
+            Item::Node(_) => {
                 match self {
                     NodeTest::Kind(k) => k.matches(i),
                     NodeTest::Name(nm) => nm.matches(i),
@@ -463,7 +463,6 @@ impl KindTest {
                     (KindTest::Text, _) => false,
                     (KindTest::Namespace, _) => false, // not yet implemented
                     (KindTest::Any, _) => true,
-                    _ => false,
                 }
             }
             _ => false,
@@ -509,18 +508,18 @@ impl NameTest {
                             (None, None, _, _) => false,
                             (None, Some(WildcardOrName::Wildcard), None, _) => true,
                             (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
-                            (None, Some(WildcardOrName::Name(wn)), None, "") => false,
+                            (None, Some(WildcardOrName::Name(_)), None, "") => false,
                             (None, Some(WildcardOrName::Name(wn)), None, qn) => {
                                 wn == qn
                             }
-                            (None, Some(WildcardOrName::Name(wn)), Some(_), _) => false,
+                            (None, Some(WildcardOrName::Name(_)), Some(_), _) => false,
                             (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
                             (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard), _, _) => true,
-                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(wn)), _, "") => false,
+                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_)), _, "") => false,
                             (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(wn)), _, qn) => {
                                 wn == qn
                             }
-                            (Some(WildcardOrName::Name(wnsuri)), Some(_), None, _) => false,
+                            (Some(WildcardOrName::Name(_)), Some(_), None, _) => false,
                             (Some(WildcardOrName::Name(wnsuri)), Some(WildcardOrName::Name(wn)), Some(qnsuri), qn) => {
                                 wnsuri == qnsuri && wn == qn
                             }
@@ -595,29 +594,6 @@ impl From<&str> for Axis {
             "ancestor-or-self" => Axis::AncestorOrSelf,
             "preceding" => Axis::Preceding,
             "preceding-sibling" => Axis::PrecedingSibling,
-            _ => Axis::Unknown,
-        }
-    }
-}
-
-impl Axis {
-    fn opposite(&self) -> Axis {
-        // SelfDocument opposite is undefined
-        match self {
-            Axis::Child => Axis::Parent,
-            Axis::Descendant => Axis::Ancestor,
-            Axis::DescendantOrSelf => Axis::AncestorOrSelf,
-            Axis::DescendantOrSelfOrRoot => Axis::AncestorOrSelf,
-            Axis::Attribute => Axis::SelfAttribute,
-            Axis::SelfAxis => Axis::SelfAxis,
-            Axis::Following => Axis::Preceding,
-            Axis::FollowingSibling => Axis::PrecedingSibling,
-            Axis::Namespace => Axis::Parent,
-            Axis::Parent => Axis::Child,
-            Axis::Ancestor => Axis::Descendant,
-            Axis::AncestorOrSelf => Axis::DescendantOrSelf,
-            Axis::Preceding => Axis::Following,
-            Axis::PrecedingSibling => Axis::FollowingSibling,
             _ => Axis::Unknown,
         }
     }

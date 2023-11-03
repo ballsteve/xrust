@@ -2,11 +2,11 @@
 
 use std::rc::Rc;
 
-use crate::xdmerror::{Error, ErrorKind};
+use crate::xdmerror::Error;
 use crate::value::Value;
-use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::Transform;
-use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::context::Context;
 
 /// XPath boolean function.
 pub fn boolean<N: Node>(
@@ -29,11 +29,11 @@ pub fn not<N: Node>(
 }
 
 /// XPath true function.
-pub fn tr_true<N: Node>(ctxt: &Context<N>, ) -> Result<Sequence<N>, Error> {
+pub fn tr_true<N: Node>(_ctxt: &Context<N>, ) -> Result<Sequence<N>, Error> {
     Ok(vec![Rc::new(Item::Value(Value::Boolean(true)))])
 }
 
 /// XPath false function.
-pub fn tr_false<N: Node>(ctxt: &Context<N>, ) -> Result<Sequence<N>, Error> {
+pub fn tr_false<N: Node>(_ctxt: &Context<N>, ) -> Result<Sequence<N>, Error> {
     Ok(vec![Rc::new(Item::Value(Value::Boolean(false)))])
 }

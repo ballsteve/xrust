@@ -1,4 +1,4 @@
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseInput, ParseResult};
 
 pub(crate) fn pair<P1, P2, A, B>(
     parser1: P1,

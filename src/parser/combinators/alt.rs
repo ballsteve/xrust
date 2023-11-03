@@ -51,7 +51,7 @@ where
     P3: Fn(ParseInput) -> ParseResult<A>,
     P4: Fn(ParseInput) -> ParseResult<A>,
 {
-    move |mut input| match parser1(input.clone()) {
+    move |input| match parser1(input.clone()) {
         Ok(parse_result) => Ok(parse_result),
         Err(ParseError::Combinator) => match parser2(input.clone()) {
             Ok(parse_result2) => Ok(parse_result2),

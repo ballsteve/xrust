@@ -12,12 +12,10 @@ where
         let mut res = Vec::new();
 
         match f(input.clone()) {
-            Err(e) => {
-                eprintln!("sep0: error finding first element");
+            Err(_e) => {
                 return Ok((input, res));
             }
             Ok((i1, o)) => {
-                eprintln!("sep0: found first element");
                 res.push(o);
                 input = i1;
             }
