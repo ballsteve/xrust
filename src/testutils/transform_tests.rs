@@ -286,7 +286,7 @@ macro_rules! transform_tests (
 		]))
 	    );
 	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
-	    assert_eq!(seq.to_string(), "onetwothreeonetwothree")
+	    assert_eq!(seq.to_string(), "oneonetwotwothreethree")
 	}
 
 	#[test]
