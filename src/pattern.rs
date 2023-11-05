@@ -37,7 +37,6 @@ pub enum Pattern<N: Node> {
     Predicate(Transform<N>),
     Selection(Path),
     Error(Error),
-    //Phantom(PhantomData<N>),
 }
 
 impl<N: Node> Pattern<N> {
@@ -109,11 +108,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Rc<Item<N>>) -> bool {
     match a {
         Axis::SelfAxis => {
             // Select item if it is an element-type node
-            if i.is_element_node() {
-                nt.matches(i)
-            } else {
-                false
-            }
+            nt.matches(i)
         }
         Axis::Parent => {
             // Select the parent node

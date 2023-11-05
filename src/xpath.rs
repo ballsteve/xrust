@@ -9,11 +9,7 @@ use std::str::FromStr;
 use crate::xdmerror::*;
 use crate::value::{Value, Operator};
 use crate::item::Node;
-use crate::transform::{Transform,
-                       NodeMatch, NodeTest,
-                       NameTest, WildcardOrName,
-                       ArithmeticOperator, ArithmeticOperand,
-Axis};
+use crate::transform::{Transform, NodeMatch, NodeTest, NameTest, WildcardOrName, ArithmeticOperator, ArithmeticOperand, Axis, KindTest};
 use rust_decimal::Decimal;
 use crate::Item;
 
@@ -1417,14 +1413,97 @@ fn predicate<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transf
 // NodeTest ::= KindTest | NameTest
 // NameTest ::= EQName | Wildcard
 pub fn nodetest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
-    //    Box::new(alt2(kindtest(), nametest()))
-    Box::new(nametest())
+    Box::new(alt2(kindtest(), nametest()))
+    //Box::new(nametest())
 }
 
 // KindTest ::= DocumentTest | ElementTest | AttributeTest | SchemaElementTest | SchemaAttributeTest | PITest | CommentTest | TextTest | NamespaceNodeTest | AnyKindTest
-//fn kindtest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
-//    Box::new(map(tag("not implemented"), |_| not_implemented))
-//}
+fn kindtest() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    // Need alt10
+    Box::new(alt2(
+        alt5(document_test(), element_test(), attribute_test(), schema_element_test(), schema_attribute_test()),
+        alt5(pi_test(), comment_test(), text_test(), namespace_node_test(), any_kind_test()),
+    ))
+}
+// DocumentTest ::= "document-node" "(" ElementTest | SchemaElementTest ")"
+fn document_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    // TODO: ElementTest|SchemaElementTest
+    Box::new(map(tag("document-node()"), |_| NodeTest::Kind(KindTest::Document)))
+}
+// ElementTest ::= "element" "(" (ElementNameOrWildcard ("," TypeName)?)? ")"
+fn element_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    // TODO: ElementTest|SchemaElementTest
+    Box::new(map(
+        tuple3(
+        tag("element("),
+        opt(map(alt2(
+            map(qname(), |_| ()),
+            map(tag("*"), |_| ())
+        ), |_| ())),
+        tag(")")
+    ),
+    |_| NodeTest::Kind(KindTest::Element)))
+}
+// SchemaElementTest ::= "schema-element" "(" ElementNameDeclaration ")"
+fn schema_element_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    // TODO: ElementTest|SchemaElementTest
+    Box::new(map(
+        tuple3(
+        tag("schema-element("),
+        qname(),
+        tag(")")
+    ),
+    |_| NodeTest::Kind(KindTest::SchemaElement)))
+}
+// AttributeTest ::= "attribute" "(" (AttribNameOrWildcard ("," TypeName))? ")"
+fn attribute_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(map(
+        tuple3(
+        tag("attribute("),
+        opt(map(alt2(
+            map(qname(), |_| ()),
+            map(tag("*"), |_| ())
+        ), |_| ())),
+        tag(")")
+    ),
+    |_| NodeTest::Kind(KindTest::Attribute)))
+}
+// SchemaAttributeTest ::= "attribute" "(" AttributeDeclaration ")"
+fn schema_attribute_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    // TODO: AttributeDeclaration
+    Box::new(map(tuple3(
+        tag("schema-attribute("),
+        qname(),
+        tag(")")
+    ),
+    |_| NodeTest::Kind(KindTest::SchemaAttribute)))
+}
+// PITest ::= "processing-instruction" "(" (NCName | StringLiteral)? ")"
+fn pi_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    // TODO: NCName | StringLiteral
+    Box::new(map(tag("processing-instruction()"),
+    |_| NodeTest::Kind(KindTest::PI)))
+}
+// CommentTest ::= "comment" "(" ")"
+fn comment_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(map(tag("comment()"),
+    |_| NodeTest::Kind(KindTest::Comment)))
+}
+// TextTest ::= "text" "(" ")"
+fn text_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(map(tag("text()"),
+    |_| NodeTest::Kind(KindTest::Text)))
+}
+// NamespaceNodeTest ::= "namespace-node" "(" ")"
+fn namespace_node_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(map(tag("namespace-node()"),
+    |_| NodeTest::Kind(KindTest::Namespace)))
+}
+// NamespaceNodeTest ::= "namespace-node" "(" ")"
+fn any_kind_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
+    Box::new(map(tag("node()"),
+                 |_| NodeTest::Kind(KindTest::Any)))
+}
 
 // NameTest ::= EQName | Wildcard
 // TODO: allow EQName rather than QName
