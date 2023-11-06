@@ -128,7 +128,7 @@ impl<N: Node> Context<N> {
     }
 
     /// Find a template with a matching [Pattern]
-    fn find_templates(&self, i: &Rc<Item<N>>) -> Result<Vec<Rc<Template<N>>>, Error> {
+    pub fn find_templates(&self, i: &Rc<Item<N>>) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates = self.templates.iter()
             .try_fold(vec![], |mut cand, t| {
             let e = t.pattern.matches(self, i);

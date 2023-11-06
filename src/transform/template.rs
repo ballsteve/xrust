@@ -2,13 +2,14 @@
 
 use std::rc::Rc;
 use std::cmp::Ordering;
+use std::fmt::{Debug, Formatter};
 
 use crate::xdmerror::{Error, ErrorKind};
 use crate::{Node, Pattern, Sequence, Item};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::Transform;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Template<N: Node> {
     pub(crate) pattern: Pattern<N>,
     pub(crate) body: Transform<N>,
@@ -47,9 +48,15 @@ impl<N: Node> Ord for Template<N> {
             ),
             |s| other.priority.map_or_else(
                 || Ordering::Less,
-                |t| if s < t {Ordering::Less} else {Ordering::Greater},
+                |t| if s < t {Ordering::Greater} else {Ordering::Less},
             )
         )
+    }
+}
+
+impl<N: Node> Debug for Template<N> {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        write!(f, "template match \"{}\" priority {:?}", self.pattern, self.priority)
     }
 }
 
@@ -61,7 +68,7 @@ pub(crate) fn apply_templates<N: Node>(
         // s is the select expression. Evaluate it, and then iterate over it's items.
         // Each iteration becomes an item in the result sequence.
         ctxt.dispatch(s)?.iter().try_fold(vec![], |mut result, i| {
-            let templates = match_templates(ctxt, i)?;
+            let templates = ctxt.find_templates(i)?;
             // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
             let matching = if templates.len() > 1 {
                 if templates[0].priority == templates[1].priority
@@ -135,30 +142,4 @@ pub(crate) fn next_match<N: Node>(
         } else {
             Ok(vec![])
         }
-}
-
-// Find all potential templates. Evaluate the match pattern against this item.
-// Sort the result by priority and import precedence.
-fn match_templates<N: Node>(
-    ctxt: &Context<N>,
-    i: &Rc<Item<N>>,
-) -> Result<Vec<Rc<Template<N>>>, Error> {
-    let mut candidates = ctxt.templates.iter().try_fold(vec![], |mut cand, t| {
-        let e = t.pattern.matches(ctxt, i);
-        if e {
-            cand.push(t.clone())
-        }
-        Ok(cand)
-    })?;
-    if candidates.len() != 0 {
-        // Find the template(s) with the lowest priority.
-
-        candidates.sort_unstable_by(|a, b| (*a).cmp(&*b));
-        Ok(candidates)
-    } else {
-        Err(Error::new(
-            ErrorKind::Unknown,
-            String::from("no matching template"),
-        ))
-    }
 }

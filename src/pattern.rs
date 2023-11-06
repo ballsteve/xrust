@@ -8,8 +8,8 @@ use std::convert::TryFrom;
 use std::rc::Rc;
 use std::fmt;
 
-use crate::item::{Item, Node, SequenceTrait};
-use crate::transform::{Transform, Axis, NodeTest, NameTest, WildcardOrName};
+use crate::item::{Item, Node, NodeType, SequenceTrait};
+use crate::transform::{Transform, Axis, NodeTest, NameTest, WildcardOrName, KindTest};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::xpath::{literal, nodetest, predicate_list, qname, variable_reference, xpwhitespace};
 use crate::value::Value;
@@ -77,6 +77,18 @@ impl<N: Node> Pattern<N> {
 
 fn find_node<N: Node>(a: &Axis, i: Rc<Item<N>>) -> Option<Rc<Item<N>>> {
     match a {
+        Axis::SelfDocument => {
+            match &*i {
+                Item::Node(n) => {
+                    if n.node_type() == NodeType::Document {
+                        Some(i)
+                    } else {
+                        None
+                    }
+                }
+                _ => None,
+            }
+        }
         Axis::Parent => {
             match &*i {
                 Item::Node(n) => {
@@ -106,6 +118,20 @@ fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Rc<Item<N>>) -> bool {
 
 fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Rc<Item<N>>) -> bool {
     match a {
+        Axis::SelfDocument => {
+            // Select item only if it is a document-type node
+            match &**i {
+                Item::Node(n) => {
+                    if n.node_type() == NodeType::Document {
+                        //eprintln!("item is a document-type node, nt.matches=={}", nt.matches(i));
+                        nt.matches(i)
+                    } else {
+                        false
+                    }
+                }
+                _ => false,
+            }
+        }
         Axis::SelfAxis => {
             // Select item if it is an element-type node
             nt.matches(i)
@@ -349,11 +375,12 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Pa
                 ErrorKind::NotImplemented,
                 String::from("absolute path in a pattern has not been implemented"),
             )),
-            None => Pattern::Error(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("root path in a pattern has not been implemented"),
-            )),
-        },
+            None => {
+                Pattern::Selection(PathBuilder::new()
+                    .step(Axis::SelfDocument, Axis::SelfDocument, NodeTest::Kind(KindTest::Document))
+                    .build())
+            }
+        }
     ))
 }
 
