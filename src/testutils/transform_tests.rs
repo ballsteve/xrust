@@ -1,12 +1,9 @@
-use crate::transform::{Axis, Grouping, Transform};
 #[macro_export]
 macro_rules! transform_tests (
     ( $x:ty, $y:expr, $z:expr ) => {
-	//use std::rc::Rc;
 	#[allow(unused_imports)]
 	use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 	use xrust::value::Operator;
-	//use xrust::item::{Sequence, SequenceTrait, Item};
 	use xrust::transform::{Transform, Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName, ArithmeticOperand, ArithmeticOperator, Grouping};
 	use xrust::transform::context::{Context, ContextBuilder};
 	use xrust::transform::template::Template;

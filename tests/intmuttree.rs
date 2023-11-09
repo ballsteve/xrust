@@ -1,4 +1,3 @@
-//use xrust::evaluate_tests;
 use xrust::intmuttree::Document;
 use xrust::intmuttree::{NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
@@ -7,7 +6,6 @@ use xrust::item_value_tests;
 use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
 use xrust::transform_tests;
-use xrust::xdmerror::Error;
 use xrust::xpath_tests;
 //use xrust::xslt_tests;
 
@@ -37,15 +35,15 @@ fn make_sd() -> Rc<Item<RNode>> {
     Rc::new(Item::Node(d))
 }
 
-fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from((s, None, None))
-        .expect("failed to parse XML")
-        .content[0]
-        .clone();
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    d.push(e).expect("unable to append node");
-    Ok(d)
-}
+//fn make_from_str(s: &str) -> Result<RNode, Error> {
+//    let e = Document::try_from((s, None, None))
+//        .expect("failed to parse XML")
+//        .content[0]
+//        .clone();
+//    let mut d = NodeBuilder::new(NodeType::Document).build();
+//    d.push(e).expect("unable to append node");
+//    Ok(d)
+//}
 
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc);

@@ -43,7 +43,7 @@ impl QualifiedName {
 impl fmt::Display for QualifiedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
-        self.prefix.as_ref().map_or((), |p| {
+        let _ = self.prefix.as_ref().map_or((), |p| {
             result.push_str(p.as_str());
             result.push(':');
         });

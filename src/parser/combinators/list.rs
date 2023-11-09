@@ -102,7 +102,7 @@ mod tests {
     use crate::parser::combinators::list::{separated_list0, separated_list1};
     use crate::parser::combinators::map::map;
     use crate::parser::combinators::tag::tag;
-    use crate::parser::{ParseInput, ParserState};
+    use crate::parser::ParserState;
 
     #[test]
     fn parser_separated_list0_test1() {
