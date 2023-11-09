@@ -5,7 +5,8 @@ IBM test cases
 */
 use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use xrust::{Document};
+use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 
 #[test]
 fn ibmnotwf_p01ibm01n01xml() {
@@ -16,9 +17,11 @@ fn ibmnotwf_p01ibm01n01xml() {
         Description:Tests a document with no element. A well-formed document should have at lease one elements.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -32,9 +35,11 @@ fn ibmnotwf_p01ibm01n02xml() {
         Description:Tests a document with wrong ordering of its prolog and element. The element occurs before the xml declaration and the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -48,9 +53,11 @@ fn ibmnotwf_p01ibm01n03xml() {
         Description:Tests a document with wrong combination of misc and element. One PI occurs between two elements.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P01/ibm01n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -64,9 +71,11 @@ fn ibmnotwf_p02ibm02n01xml() {
         Description:Tests a comment which contains an illegal Char: #x00
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -80,9 +89,11 @@ fn ibmnotwf_p02ibm02n02xml() {
         Description:Tests a comment which contains an illegal Char: #x01
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -96,9 +107,11 @@ fn ibmnotwf_p02ibm02n03xml() {
         Description:Tests a comment which contains an illegal Char: #x02
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -112,9 +125,11 @@ fn ibmnotwf_p02ibm02n04xml() {
         Description:Tests a comment which contains an illegal Char: #x03
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -128,9 +143,11 @@ fn ibmnotwf_p02ibm02n05xml() {
         Description:Tests a comment which contains an illegal Char: #x04
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -144,9 +161,11 @@ fn ibmnotwf_p02ibm02n06xml() {
         Description:Tests a comment which contains an illegal Char: #x05
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -160,9 +179,11 @@ fn ibmnotwf_p02ibm02n07xml() {
         Description:Tests a comment which contains an illegal Char: #x06
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -176,9 +197,11 @@ fn ibmnotwf_p02ibm02n08xml() {
         Description:Tests a comment which contains an illegal Char: #x07
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -192,9 +215,11 @@ fn ibmnotwf_p02ibm02n09xml() {
         Description:Tests a comment which contains an illegal Char: #x08
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -208,9 +233,11 @@ fn ibmnotwf_p02ibm02n10xml() {
         Description:Tests a comment which contains an illegal Char: #x0B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -224,9 +251,11 @@ fn ibmnotwf_p02ibm02n11xml() {
         Description:Tests a comment which contains an illegal Char: #x0C
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -240,9 +269,11 @@ fn ibmnotwf_p02ibm02n12xml() {
         Description:Tests a comment which contains an illegal Char: #x0E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -256,9 +287,11 @@ fn ibmnotwf_p02ibm02n13xml() {
         Description:Tests a comment which contains an illegal Char: #x0F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -272,9 +305,11 @@ fn ibmnotwf_p02ibm02n14xml() {
         Description:Tests a comment which contains an illegal Char: #x10
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -288,9 +323,11 @@ fn ibmnotwf_p02ibm02n15xml() {
         Description:Tests a comment which contains an illegal Char: #x11
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n15.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -304,9 +341,11 @@ fn ibmnotwf_p02ibm02n16xml() {
         Description:Tests a comment which contains an illegal Char: #x12
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n16.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -320,9 +359,11 @@ fn ibmnotwf_p02ibm02n17xml() {
         Description:Tests a comment which contains an illegal Char: #x13
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n17.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -336,9 +377,11 @@ fn ibmnotwf_p02ibm02n18xml() {
         Description:Tests a comment which contains an illegal Char: #x14
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n18.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -352,9 +395,11 @@ fn ibmnotwf_p02ibm02n19xml() {
         Description:Tests a comment which contains an illegal Char: #x15
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n19.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -368,9 +413,11 @@ fn ibmnotwf_p02ibm02n20xml() {
         Description:Tests a comment which contains an illegal Char: #x16
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n20.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -384,9 +431,11 @@ fn ibmnotwf_p02ibm02n21xml() {
         Description:Tests a comment which contains an illegal Char: #x17
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n21.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -400,9 +449,11 @@ fn ibmnotwf_p02ibm02n22xml() {
         Description:Tests a comment which contains an illegal Char: #x18
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n22.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -416,9 +467,11 @@ fn ibmnotwf_p02ibm02n23xml() {
         Description:Tests a comment which contains an illegal Char: #x19
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n23.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -432,9 +485,11 @@ fn ibmnotwf_p02ibm02n24xml() {
         Description:Tests a comment which contains an illegal Char: #x1A
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n24.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -448,9 +503,11 @@ fn ibmnotwf_p02ibm02n25xml() {
         Description:Tests a comment which contains an illegal Char: #x1B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n25.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -464,9 +521,11 @@ fn ibmnotwf_p02ibm02n26xml() {
         Description:Tests a comment which contains an illegal Char: #x1C
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n26.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -480,9 +539,11 @@ fn ibmnotwf_p02ibm02n27xml() {
         Description:Tests a comment which contains an illegal Char: #x1D
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n27.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -496,9 +557,11 @@ fn ibmnotwf_p02ibm02n28xml() {
         Description:Tests a comment which contains an illegal Char: #x1E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n28.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -512,9 +575,11 @@ fn ibmnotwf_p02ibm02n29xml() {
         Description:Tests a comment which contains an illegal Char: #x1F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n29.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -529,9 +594,12 @@ fn ibmnotwf_p02ibm02n30xml() {
         Description:Tests a comment which contains an illegal Char: #xD800
     */
 
-    let testxml = Document::try_from(
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml").unwrap(),
-    );
+    let testxml = Document::try_from((
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml"),
+        //fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml").unwrap(),
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -546,9 +614,11 @@ fn ibmnotwf_p02ibm02n31xml() {
         Description:Tests a comment which contains an illegal Char: #xDFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n31.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -562,9 +632,11 @@ fn ibmnotwf_p02ibm02n32xml() {
         Description:Tests a comment which contains an illegal Char: #xFFFE
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n32.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -578,9 +650,11 @@ fn ibmnotwf_p02ibm02n33xml() {
         Description:Tests a comment which contains an illegal Char: #xFFFF
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n33.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -594,9 +668,11 @@ fn ibmnotwf_p03ibm03n01xml() {
         Description:Tests an end tag which contains an illegal space character #x3000 which follows the element name "book".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P03/ibm03n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -610,9 +686,11 @@ fn ibmnotwf_p04ibm04n01xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x21
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -626,9 +704,11 @@ fn ibmnotwf_p04ibm04n02xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x28
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -642,9 +722,11 @@ fn ibmnotwf_p04ibm04n03xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x29
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -658,9 +740,11 @@ fn ibmnotwf_p04ibm04n04xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x2B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -674,9 +758,11 @@ fn ibmnotwf_p04ibm04n05xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x2C
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -690,9 +776,11 @@ fn ibmnotwf_p04ibm04n06xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x2F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -706,9 +794,11 @@ fn ibmnotwf_p04ibm04n07xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -722,9 +812,11 @@ fn ibmnotwf_p04ibm04n08xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3C
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -738,9 +830,11 @@ fn ibmnotwf_p04ibm04n09xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3D
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -754,9 +848,11 @@ fn ibmnotwf_p04ibm04n10xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x3F
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -770,9 +866,11 @@ fn ibmnotwf_p04ibm04n11xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -786,9 +884,11 @@ fn ibmnotwf_p04ibm04n12xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5C
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -802,9 +902,11 @@ fn ibmnotwf_p04ibm04n13xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5D
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -818,9 +920,11 @@ fn ibmnotwf_p04ibm04n14xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x5E
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -834,9 +938,11 @@ fn ibmnotwf_p04ibm04n15xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x60
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n15.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -850,9 +956,11 @@ fn ibmnotwf_p04ibm04n16xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x7B
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n16.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -866,9 +974,11 @@ fn ibmnotwf_p04ibm04n17xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x7C
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n17.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -882,9 +992,11 @@ fn ibmnotwf_p04ibm04n18xml() {
         Description:Tests an element name which contains an illegal ASCII NameChar. "IllegalNameChar" is followed by #x7D
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P04/ibm04n18.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -898,9 +1010,11 @@ fn ibmnotwf_p05ibm05n01xml() {
         Description:Tests an element name which has an illegal first character. An illegal first character "." is followed by "A_name-starts_with.".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -914,9 +1028,11 @@ fn ibmnotwf_p05ibm05n02xml() {
         Description:Tests an element name which has an illegal first character. An illegal first character "-" is followed by "A_name-starts_with-".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -930,15 +1046,16 @@ fn ibmnotwf_p05ibm05n03xml() {
         Description:Tests an element name which has an illegal first character. An illegal first character "5" is followed by "A_name-starts_with_digit".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P05/ibm05n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p09ibm09n01xml() {
     /*
         Test ID:ibm-not-wf-P09-ibm09n01.xml
@@ -947,9 +1064,11 @@ fn ibmnotwf_p09ibm09n01xml() {
         Description:Tests an internal general entity with an invalid value. The entity "Fullname" contains "%".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -963,9 +1082,11 @@ fn ibmnotwf_p09ibm09n02xml() {
         Description:Tests an internal general entity with an invalid value. The entity "Fullname" contains the ampersand character.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -979,9 +1100,11 @@ fn ibmnotwf_p09ibm09n03xml() {
         Description:Tests an internal general entity with an invalid value. The entity "Fullname" contains the double quote character in the middle.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -995,9 +1118,11 @@ fn ibmnotwf_p09ibm09n04xml() {
         Description:Tests an internal general entity with an invalid value. The closing bracket (double quote) is missing with the value of the entity "FullName".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P09/ibm09n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1011,9 +1136,11 @@ fn ibmnotwf_p10ibm10n01xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character "less than".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1027,9 +1154,11 @@ fn ibmnotwf_p10ibm10n02xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character ampersand.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1043,9 +1172,11 @@ fn ibmnotwf_p10ibm10n03xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the double quote character in the middle.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1059,9 +1190,11 @@ fn ibmnotwf_p10ibm10n04xml() {
         Description:Tests an attribute with an invalid value. The closing bracket (double quote) is missing with The value of the attribute "first".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1075,9 +1208,11 @@ fn ibmnotwf_p10ibm10n05xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character "less than".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1091,9 +1226,11 @@ fn ibmnotwf_p10ibm10n06xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the character ampersand.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1107,9 +1244,11 @@ fn ibmnotwf_p10ibm10n07xml() {
         Description:Tests an attribute with an invalid value. The value of the attribute "first" contains the double quote character in the middle.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1123,9 +1262,11 @@ fn ibmnotwf_p10ibm10n08xml() {
         Description:Tests an attribute with an invalid value. The closing bracket (single quote) is missing with the value of the attribute "first".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P10/ibm10n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1139,9 +1280,11 @@ fn ibmnotwf_p11ibm11n01xml() {
         Description:Tests SystemLiteral. The systemLiteral for the element "student" has a double quote character in the middle.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1155,9 +1298,11 @@ fn ibmnotwf_p11ibm11n02xml() {
         Description:Tests SystemLiteral. The systemLiteral for the element "student" has a single quote character in the middle.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1171,9 +1316,11 @@ fn ibmnotwf_p11ibm11n03xml() {
         Description:Tests SystemLiteral. The closing bracket (double quote) is missing with the systemLiteral for the element "student".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1187,9 +1334,11 @@ fn ibmnotwf_p11ibm11n04xml() {
         Description:Tests SystemLiteral. The closing bracket (single quote) is missing with the systemLiteral for the element "student".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P11/ibm11n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1203,9 +1352,11 @@ fn ibmnotwf_p12ibm12n01xml() {
         Description:Tests PubidLiteral. The closing bracket (double quote) is missing with the value of the PubidLiteral for the entity "info".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1219,9 +1370,11 @@ fn ibmnotwf_p12ibm12n02xml() {
         Description:Tests PubidLiteral. The value of the PubidLiteral for the entity "info" has a single quote character in the middle..
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1235,9 +1388,11 @@ fn ibmnotwf_p12ibm12n03xml() {
         Description:Tests PubidLiteral. The closing bracket (single quote) is missing with the value of the PubidLiteral for the entity "info".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P12/ibm12n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1251,9 +1406,11 @@ fn ibmnotwf_p13ibm13n01xml() {
         Description:Tests PubidChar. The pubidChar of the PubidLiteral for the entity "info" contains the character "{".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1267,9 +1424,11 @@ fn ibmnotwf_p13ibm13n02xml() {
         Description:Tests PubidChar. The pubidChar of the PubidLiteral for the entity "info" contains the character "~".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1283,9 +1442,11 @@ fn ibmnotwf_p13ibm13n03xml() {
         Description:Tests PubidChar. The pubidChar of the PubidLiteral for the entity "info" contains the character double quote in the middle.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P13/ibm13n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1299,9 +1460,11 @@ fn ibmnotwf_p14ibm14n01xml() {
         Description:Tests CharData. The content of the element "student" contains the sequence close-bracket close-bracket greater-than.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1315,9 +1478,11 @@ fn ibmnotwf_p14ibm14n02xml() {
         Description:Tests CharData. The content of the element "student" contains the character "less than".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1331,9 +1496,11 @@ fn ibmnotwf_p14ibm14n03xml() {
         Description:Tests CharData. The content of the element "student" contains the character ampersand.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P14/ibm14n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1347,9 +1514,11 @@ fn ibmnotwf_p15ibm15n01xml() {
         Description:Tests comment. The text of the second comment contains the character "-".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1363,9 +1532,11 @@ fn ibmnotwf_p15ibm15n02xml() {
         Description:Tests comment. The second comment has a wrong closing sequence "-(greater than)".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1379,9 +1550,11 @@ fn ibmnotwf_p15ibm15n03xml() {
         Description:Tests comment. The second comment has a wrong beginning sequence "(less than)!-".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1395,9 +1568,11 @@ fn ibmnotwf_p15ibm15n04xml() {
         Description:Tests comment. The closing sequence is missing with the second comment.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P15/ibm15n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1411,9 +1586,11 @@ fn ibmnotwf_p16ibm16n01xml() {
         Description:Tests PI. The content of the PI includes the sequence "?(greater than)?".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1427,9 +1604,11 @@ fn ibmnotwf_p16ibm16n02xml() {
         Description:Tests PI. The PITarget is missing in the PI.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1443,9 +1622,11 @@ fn ibmnotwf_p16ibm16n03xml() {
         Description:Tests PI. The PI has a wrong closing sequence ">".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1459,9 +1640,11 @@ fn ibmnotwf_p16ibm16n04xml() {
         Description:Tests PI. The closing sequence is missing in the PI.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P16/ibm16n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1475,9 +1658,11 @@ fn ibmnotwf_p17ibm17n01xml() {
         Description:Tests PITarget. The PITarget contains the string "XML".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1491,9 +1676,11 @@ fn ibmnotwf_p17ibm17n02xml() {
         Description:Tests PITarget. The PITarget contains the string "xML".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1507,9 +1694,11 @@ fn ibmnotwf_p17ibm17n03xml() {
         Description:Tests PITarget. The PITarget contains the string "xml".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1523,9 +1712,11 @@ fn ibmnotwf_p17ibm17n04xml() {
         Description:Tests PITarget. The PITarget contains the string "xmL".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P17/ibm17n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1539,9 +1730,11 @@ fn ibmnotwf_p18ibm18n01xml() {
         Description:Tests CDSect. The CDStart is missing in the CDSect in the content of element "student".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1555,9 +1748,11 @@ fn ibmnotwf_p18ibm18n02xml() {
         Description:Tests CDSect. The CDEnd is missing in the CDSect in the content of element "student".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P18/ibm18n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1571,9 +1766,11 @@ fn ibmnotwf_p19ibm19n01xml() {
         Description:Tests CDStart. The CDStart contains a lower case string "cdata".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1587,9 +1784,11 @@ fn ibmnotwf_p19ibm19n02xml() {
         Description:Tests CDStart. The CDStart contains an extra character "[".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1603,9 +1802,11 @@ fn ibmnotwf_p19ibm19n03xml() {
         Description:Tests CDStart. The CDStart contains a wrong character "?".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P19/ibm19n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1619,9 +1820,11 @@ fn ibmnotwf_p20ibm20n01xml() {
         Description:Tests CDATA with an illegal sequence. The CDATA contains the sequence close-bracket close-bracket greater-than.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P20/ibm20n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1635,9 +1838,11 @@ fn ibmnotwf_p21ibm21n01xml() {
         Description:Tests CDEnd. One "]" is missing in the CDEnd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1651,9 +1856,11 @@ fn ibmnotwf_p21ibm21n02xml() {
         Description:Tests CDEnd. An extra "]" is placed in the CDEnd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1667,9 +1874,11 @@ fn ibmnotwf_p21ibm21n03xml() {
         Description:Tests CDEnd. A wrong character ")" is placed in the CDEnd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P21/ibm21n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1683,9 +1892,11 @@ fn ibmnotwf_p22ibm22n01xml() {
         Description:Tests prolog with wrong field ordering. The XMLDecl occurs after the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1699,9 +1910,11 @@ fn ibmnotwf_p22ibm22n02xml() {
         Description:Tests prolog with wrong field ordering. The Misc (comment) occurs before the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1715,9 +1928,11 @@ fn ibmnotwf_p22ibm22n03xml() {
         Description:Tests prolog with wrong field ordering. The XMLDecl occurs after the DTD and a comment. The other comment occurs before the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P22/ibm22n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1731,9 +1946,11 @@ fn ibmnotwf_p23ibm23n01xml() {
         Description:Tests XMLDecl with a required field missing. The Versioninfo is missing in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1747,9 +1964,11 @@ fn ibmnotwf_p23ibm23n02xml() {
         Description:Tests XMLDecl with wrong field ordering. The VersionInfo occurs after the EncodingDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1763,9 +1982,11 @@ fn ibmnotwf_p23ibm23n03xml() {
         Description:Tests XMLDecl with wrong field ordering. The VersionInfo occurs after the SDDecl and the SDDecl occurs after the VersionInfo.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1779,9 +2000,11 @@ fn ibmnotwf_p23ibm23n04xml() {
         Description:Tests XMLDecl with wrong key word. An upper case string "XML" is used as the key word in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1795,9 +2018,11 @@ fn ibmnotwf_p23ibm23n05xml() {
         Description:Tests XMLDecl with a wrong closing sequence ">".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1811,9 +2036,11 @@ fn ibmnotwf_p23ibm23n06xml() {
         Description:Tests XMLDecl with a wrong opening sequence "(less than)!".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P23/ibm23n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1827,9 +2054,11 @@ fn ibmnotwf_p24ibm24n01xml() {
         Description:Tests VersionInfo with a required field missing. The VersionNum is missing in the VersionInfo in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1843,9 +2072,11 @@ fn ibmnotwf_p24ibm24n02xml() {
         Description:Tests VersionInfo with a required field missing. The white space is missing between the key word "xml" and the VersionInfo in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1859,9 +2090,11 @@ fn ibmnotwf_p24ibm24n03xml() {
         Description:Tests VersionInfo with a required field missing. The "=" (equal sign) is missing between the key word "version" and the VersionNum.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1875,9 +2108,11 @@ fn ibmnotwf_p24ibm24n04xml() {
         Description:Tests VersionInfo with wrong field ordering. The VersionNum occurs before "=" and "version".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1891,9 +2126,11 @@ fn ibmnotwf_p24ibm24n05xml() {
         Description:Tests VersionInfo with wrong field ordering. The "=" occurs after "version" and the VersionNum.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1907,9 +2144,11 @@ fn ibmnotwf_p24ibm24n06xml() {
         Description:Tests VersionInfo with the wrong key word "Version".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1923,9 +2162,11 @@ fn ibmnotwf_p24ibm24n07xml() {
         Description:Tests VersionInfo with the wrong key word "versioN".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1939,9 +2180,11 @@ fn ibmnotwf_p24ibm24n08xml() {
         Description:Tests VersionInfo with mismatched quotes around the VersionNum. version = '1.0" is used as the VersionInfo.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1955,9 +2198,11 @@ fn ibmnotwf_p24ibm24n09xml() {
         Description:Tests VersionInfo with mismatched quotes around the VersionNum. The closing bracket for the VersionNum is missing.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P24/ibm24n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1971,9 +2216,11 @@ fn ibmnotwf_p25ibm25n01xml() {
         Description:Tests eq with a wrong key word "==".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -1987,9 +2234,11 @@ fn ibmnotwf_p25ibm25n02xml() {
         Description:Tests eq with a wrong key word "eq".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P25/ibm25n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2003,9 +2252,11 @@ fn ibmnotwf_p26ibm26n01xml() {
         Description:Tests VersionNum with an illegal character "#".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P26/ibm26n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2019,9 +2270,11 @@ fn ibmnotwf_p27ibm27n01xml() {
         Description:Tests type of Misc. An element declaration is used as a type of Misc After the element "animal".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P27/ibm27n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2035,9 +2288,11 @@ fn ibmnotwf_p28ibm28n01xml() {
         Description:Tests doctypedecl with a required field missing. The Name "animal" is missing in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2051,9 +2306,11 @@ fn ibmnotwf_p28ibm28n02xml() {
         Description:Tests doctypedecl with wrong field ordering. The Name "animal" occurs after the markup declarations inside the "[]".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2067,9 +2324,11 @@ fn ibmnotwf_p28ibm28n03xml() {
         Description:Tests doctypedecl with wrong field ordering. The Name "animal" occurs after the markup declarations inside the "[]".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2083,9 +2342,11 @@ fn ibmnotwf_p28ibm28n04xml() {
         Description:Tests doctypedecl with general entity reference.The "(ampersand)generalE" occurs in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2099,9 +2360,11 @@ fn ibmnotwf_p28ibm28n05xml() {
         Description:Tests doctypedecl with wrong key word. A wrong key word "DOCtYPE" occurs on line 2.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2115,9 +2378,11 @@ fn ibmnotwf_p28ibm28n06xml() {
         Description:Tests doctypedecl with mismatched brackets. The closing bracket "]" of the DTD is missing.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2131,9 +2396,11 @@ fn ibmnotwf_p28ibm28n07xml() {
         Description:Tests doctypedecl with wrong bracket. The opening bracket "{" occurs in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2147,15 +2414,16 @@ fn ibmnotwf_p28ibm28n08xml() {
         Description:Tests doctypedecl with wrong opening sequence. The opening sequence "(less than)?DOCTYPE" occurs in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P28/ibm28n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p28aibm28an01xml() {
     /*
         Test ID:ibm-not-wf-p28a-ibm28an01.xml
@@ -2164,9 +2432,11 @@ fn ibmnotwf_p28aibm28an01xml() {
         Description:This test violates WFC:PE Between Declarations in Production 28a. The last character of a markup declaration is not contained in the same parameter-entity text replacement.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/p28a/ibm28an01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/p28a/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2180,9 +2450,11 @@ fn ibmnotwf_p29ibm29n01xml() {
         Description:Tests markupdecl with an illegal markup declaration. A XMLDecl occurs inside the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2196,9 +2468,11 @@ fn ibmnotwf_p29ibm29n02xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside an elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2212,15 +2486,16 @@ fn ibmnotwf_p29ibm29n03xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside an ATTlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p29ibm29n04xml() {
     /*
         Test ID:ibm-not-wf-P29-ibm29n04.xml
@@ -2229,9 +2504,11 @@ fn ibmnotwf_p29ibm29n04xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside an EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2245,9 +2522,11 @@ fn ibmnotwf_p29ibm29n05xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside a PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2261,9 +2540,11 @@ fn ibmnotwf_p29ibm29n06xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside a comment in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2277,15 +2558,16 @@ fn ibmnotwf_p29ibm29n07xml() {
         Description:Tests WFC "PEs in Internal Subset". A PE reference occurs inside a NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P29/ibm29n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p30ibm30n01xml() {
     /*
         Test ID:ibm-not-wf-P30-ibm30n01.xml
@@ -2294,15 +2576,16 @@ fn ibmnotwf_p30ibm30n01xml() {
         Description:Tests extSubset with wrong field ordering. In the file "ibm30n01.dtd", the TextDecl occurs after the extSubsetDecl (the element declaration).
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P30/ibm30n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P30/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p31ibm31n01xml() {
     /*
         Test ID:ibm-not-wf-P31-ibm31n01.xml
@@ -2311,9 +2594,11 @@ fn ibmnotwf_p31ibm31n01xml() {
         Description:Tests extSubsetDecl with an illegal field. A general entity reference occurs in file "ibm31n01.dtd".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P31/ibm31n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P31/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2327,9 +2612,11 @@ fn ibmnotwf_p32ibm32n01xml() {
         Description:Tests SDDecl with a required field missing. The leading white space is missing with the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2343,9 +2630,11 @@ fn ibmnotwf_p32ibm32n02xml() {
         Description:Tests SDDecl with a required field missing. The "=" sign is missing in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2359,9 +2648,11 @@ fn ibmnotwf_p32ibm32n03xml() {
         Description:Tests SDDecl with wrong key word. The word "Standalone" occurs in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2375,9 +2666,11 @@ fn ibmnotwf_p32ibm32n04xml() {
         Description:Tests SDDecl with wrong key word. The word "Yes" occurs in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2391,9 +2684,11 @@ fn ibmnotwf_p32ibm32n05xml() {
         Description:Tests SDDecl with wrong key word. The word "YES" occurs in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2407,9 +2702,11 @@ fn ibmnotwf_p32ibm32n06xml() {
         Description:Tests SDDecl with wrong key word. The word "No" occurs in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2423,9 +2720,11 @@ fn ibmnotwf_p32ibm32n07xml() {
         Description:Tests SDDecl with wrong key word. The word "NO" occurs in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2439,9 +2738,11 @@ fn ibmnotwf_p32ibm32n08xml() {
         Description:Tests SDDecl with wrong field ordering. The "=" sign occurs after the key word "yes" in the SDDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2455,9 +2756,11 @@ fn ibmnotwf_p32ibm32n09xml() {
         Description:This is test violates WFC: Entity Declared in P68. The standalone document declaration has the value yes, BUT there is an external markup declaration of an entity (other than amp, lt, gt, apos, quot), and references to this entity appear in the document.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P32/ibm32n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2471,9 +2774,11 @@ fn ibmnotwf_p39ibm39n01xml() {
         Description:Tests element with a required field missing. The ETag is missing for the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2487,9 +2792,11 @@ fn ibmnotwf_p39ibm39n02xml() {
         Description:Tests element with a required field missing. The STag is missing for the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2503,9 +2810,11 @@ fn ibmnotwf_p39ibm39n03xml() {
         Description:Tests element with required fields missing. Both the content and the ETag are missing in the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2519,9 +2828,11 @@ fn ibmnotwf_p39ibm39n04xml() {
         Description:Tests element with required fields missing. Both the content and the STag are missing in the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2535,9 +2846,11 @@ fn ibmnotwf_p39ibm39n05xml() {
         Description:Tests element with wrong field ordering. The STag and the ETag are swapped in the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2551,9 +2864,11 @@ fn ibmnotwf_p39ibm39n06xml() {
         Description:Tests element with wrong field ordering. The content occurs after the ETag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P39/ibm39n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2567,9 +2882,11 @@ fn ibmnotwf_p40ibm40n01xml() {
         Description:Tests STag with a required field missing. The Name "root" is in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2583,9 +2900,11 @@ fn ibmnotwf_p40ibm40n02xml() {
         Description:Tests STag with a required field missing. The white space between the Name "root" and the attribute "attr1" is missing in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2599,9 +2918,11 @@ fn ibmnotwf_p40ibm40n03xml() {
         Description:Tests STag with wrong field ordering. The Name "root" occurs after the attribute "attr1" in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2615,15 +2936,16 @@ fn ibmnotwf_p40ibm40n04xml() {
         Description:Tests STag with a wrong opening sequence. The string "(less than)!" is used as the opening sequence for the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p40ibm40n05xml() {
     /*
         Test ID:ibm-not-wf-P40-ibm40n05.xml
@@ -2632,9 +2954,11 @@ fn ibmnotwf_p40ibm40n05xml() {
         Description:Tests STag with duplicate attribute names. The attribute name "attr1" occurs twice in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P40/ibm40n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2648,9 +2972,11 @@ fn ibmnotwf_p41ibm41n01xml() {
         Description:Tests Attribute with a required field missing. The attribute name is missing in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2664,9 +2990,11 @@ fn ibmnotwf_p41ibm41n02xml() {
         Description:Tests Attribute with a required field missing. The "=" is missing between the attribute name and the attribute value in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2680,9 +3008,11 @@ fn ibmnotwf_p41ibm41n03xml() {
         Description:Tests Attribute with a required field missing. The AttValue is missing in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2696,9 +3026,11 @@ fn ibmnotwf_p41ibm41n04xml() {
         Description:Tests Attribute with a required field missing. The Name and the "=" are missing in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2712,9 +3044,11 @@ fn ibmnotwf_p41ibm41n05xml() {
         Description:Tests Attribute with a required field missing. The "=" and the AttValue are missing in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2728,9 +3062,11 @@ fn ibmnotwf_p41ibm41n06xml() {
         Description:Tests Attribute with a required field missing. The Name and the AttValue are missing in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2744,9 +3080,11 @@ fn ibmnotwf_p41ibm41n07xml() {
         Description:Tests Attribute with wrong field ordering. The "=" occurs after the Name and the AttValue in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2760,9 +3098,11 @@ fn ibmnotwf_p41ibm41n08xml() {
         Description:Tests Attribute with wrong field ordering. The Name and the AttValue are swapped in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2776,9 +3116,11 @@ fn ibmnotwf_p41ibm41n09xml() {
         Description:Tests Attribute with wrong field ordering. The "=" occurs before the Name and the AttValue in the Attribute in the STag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2792,9 +3134,11 @@ fn ibmnotwf_p41ibm41n10xml() {
         Description:Tests Attribute against WFC "no external entity references". A direct reference to the external entity "aExternal" is contained in the value of the attribute "attr1".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2808,9 +3152,11 @@ fn ibmnotwf_p41ibm41n11xml() {
         Description:Tests Attribute against WFC "no external entity references". A indirect reference to the external entity "aExternal" is contained in the value of the attribute "attr1".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2824,9 +3170,11 @@ fn ibmnotwf_p41ibm41n12xml() {
         Description:Tests Attribute against WFC "no external entity references". A direct reference to the external unparsed entity "aImage" is contained in the value of the attribute "attr1".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2840,9 +3188,11 @@ fn ibmnotwf_p41ibm41n13xml() {
         Description:Tests Attribute against WFC "No (less than) character in Attribute Values". The character "less than" is contained in the value of the attribute "attr1".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2856,9 +3206,11 @@ fn ibmnotwf_p41ibm41n14xml() {
         Description:Tests Attribute against WFC "No (less than) in Attribute Values". The character "less than" is contained in the value of the attribute "attr1" through indirect internal entity reference.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P41/ibm41n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2872,9 +3224,11 @@ fn ibmnotwf_p42ibm42n01xml() {
         Description:Tests ETag with a required field missing. The Name is missing in the ETag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2888,9 +3242,11 @@ fn ibmnotwf_p42ibm42n02xml() {
         Description:Tests ETag with a wrong beginning sequence. The string "(less than)\" is used as a beginning sequence of the ETag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2904,9 +3260,11 @@ fn ibmnotwf_p42ibm42n03xml() {
         Description:Tests ETag with a wrong beginning sequence. The string "less than" is used as a beginning sequence of the ETag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2920,9 +3278,11 @@ fn ibmnotwf_p42ibm42n04xml() {
         Description:Tests ETag with a wrong structure. An white space occurs between The beginning sequence and the Name of the ETag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2936,9 +3296,11 @@ fn ibmnotwf_p42ibm42n05xml() {
         Description:Tests ETag with a wrong structure. The ETag of the element "root" contains an Attribute (attr1="any").
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P42/ibm42n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2952,9 +3314,11 @@ fn ibmnotwf_p43ibm43n01xml() {
         Description:Tests element content with a wrong option. A NotationDecl is used as the content of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2968,9 +3332,11 @@ fn ibmnotwf_p43ibm43n02xml() {
         Description:Tests element content with a wrong option. An elementdecl is used as the content of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -2984,9 +3350,11 @@ fn ibmnotwf_p43ibm43n04xml() {
         Description:Tests element content with a wrong option. An entitydecl is used as the content of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3000,9 +3368,11 @@ fn ibmnotwf_p43ibm43n05xml() {
         Description:Tests element content with a wrong option. An AttlistDecl is used as the content of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P43/ibm43n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3016,9 +3386,11 @@ fn ibmnotwf_p44ibm44n01xml() {
         Description:Tests EmptyElemTag with a required field missing. The Name "root" is missing in the EmptyElemTag.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3032,9 +3404,11 @@ fn ibmnotwf_p44ibm44n02xml() {
         Description:Tests EmptyElemTag with wrong field ordering. The Attribute (attri1 = "any") occurs before the name of the element "root" in the EmptyElemTag.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3048,15 +3422,16 @@ fn ibmnotwf_p44ibm44n03xml() {
         Description:Tests EmptyElemTag with wrong closing sequence. The string "\>" is used as the closing sequence in the EmptyElemtag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p44ibm44n04xml() {
     /*
         Test ID:ibm-not-wf-P44-ibm44n04.xml
@@ -3065,9 +3440,11 @@ fn ibmnotwf_p44ibm44n04xml() {
         Description:Tests EmptyElemTag which against the WFC "Unique Att Spec". The attribute name "attr1" occurs twice in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P44/ibm44n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3081,9 +3458,11 @@ fn ibmnotwf_p45ibm45n01xml() {
         Description:Tests elementdecl with a required field missing. The Name is missing in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3097,9 +3476,11 @@ fn ibmnotwf_p45ibm45n02xml() {
         Description:Tests elementdecl with a required field missing. The white space is missing between "aEle" and "(#PCDATA)" in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3113,9 +3494,11 @@ fn ibmnotwf_p45ibm45n03xml() {
         Description:Tests elementdecl with a required field missing. The contentspec is missing in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3129,9 +3512,11 @@ fn ibmnotwf_p45ibm45n04xml() {
         Description:Tests elementdecl with a required field missing. The contentspec and the white space is missing in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3145,9 +3530,11 @@ fn ibmnotwf_p45ibm45n05xml() {
         Description:Tests elementdecl with a required field missing. The Name, the white space, and the contentspec are missing in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3161,9 +3548,11 @@ fn ibmnotwf_p45ibm45n06xml() {
         Description:Tests elementdecl with wrong field ordering. The Name occurs after the contentspec in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3177,9 +3566,11 @@ fn ibmnotwf_p45ibm45n07xml() {
         Description:Tests elementdecl with wrong beginning sequence. The string "(less than)ELEMENT" is used as the beginning sequence in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3193,9 +3584,11 @@ fn ibmnotwf_p45ibm45n08xml() {
         Description:Tests elementdecl with wrong key word. The string "Element" is used as the key word in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3209,9 +3602,11 @@ fn ibmnotwf_p45ibm45n09xml() {
         Description:Tests elementdecl with wrong key word. The string "element" is used as the key word in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P45/ibm45n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3225,9 +3620,11 @@ fn ibmnotwf_p46ibm46n01xml() {
         Description:Tests contentspec with wrong key word. the string "empty" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3241,9 +3638,11 @@ fn ibmnotwf_p46ibm46n02xml() {
         Description:Tests contentspec with wrong key word. the string "Empty" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3257,9 +3656,11 @@ fn ibmnotwf_p46ibm46n03xml() {
         Description:Tests contentspec with wrong key word. the string "Any" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3273,9 +3674,11 @@ fn ibmnotwf_p46ibm46n04xml() {
         Description:Tests contentspec with wrong key word. the string "any" is used as the key word in the contentspec of the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3289,9 +3692,11 @@ fn ibmnotwf_p46ibm46n05xml() {
         Description:Tests contentspec with a wrong option. The string "#CDATA" is used as the contentspec in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P46/ibm46n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3305,9 +3710,11 @@ fn ibmnotwf_p47ibm47n01xml() {
         Description:Tests children with a required field missing. The "+" is used as the choice or seq field in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3321,9 +3728,11 @@ fn ibmnotwf_p47ibm47n02xml() {
         Description:Tests children with a required field missing. The "*" is used as the choice or seq field in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3337,9 +3746,11 @@ fn ibmnotwf_p47ibm47n03xml() {
         Description:Tests children with a required field missing. The "?" is used as the choice or seq field in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3353,9 +3764,11 @@ fn ibmnotwf_p47ibm47n04xml() {
         Description:Tests children with wrong field ordering. The "*" occurs before the seq field (a,a) in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3369,9 +3782,11 @@ fn ibmnotwf_p47ibm47n05xml() {
         Description:Tests children with wrong field ordering. The "+" occurs before the choice field (a|a) in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3385,9 +3800,11 @@ fn ibmnotwf_p47ibm47n06xml() {
         Description:Tests children with wrong key word. The "^" occurs after the seq field in the second elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P47/ibm47n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3401,9 +3818,11 @@ fn ibmnotwf_p48ibm48n01xml() {
         Description:Tests cp with a required fields missing. The field Name|choice|seq is missing in the second cp in the choice field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3417,9 +3836,11 @@ fn ibmnotwf_p48ibm48n02xml() {
         Description:Tests cp with a required fields missing. The field Name|choice|seq is missing in the cp in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3433,9 +3854,11 @@ fn ibmnotwf_p48ibm48n03xml() {
         Description:Tests cp with a required fields missing. The field Name|choice|seq is missing in the first cp in the choice field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3449,9 +3872,11 @@ fn ibmnotwf_p48ibm48n04xml() {
         Description:Tests cp with wrong field ordering. The "+" occurs before the seq (a,a) in the first cp in the choice field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3465,9 +3890,11 @@ fn ibmnotwf_p48ibm48n05xml() {
         Description:Tests cp with wrong field ordering. The "*" occurs before the choice (a|b) in the first cp in the seq field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3481,9 +3908,11 @@ fn ibmnotwf_p48ibm48n06xml() {
         Description:Tests cp with wrong field ordering. The "?" occurs before the Name "a" in the second cp in the seq field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3497,9 +3926,11 @@ fn ibmnotwf_p48ibm48n07xml() {
         Description:Tests cp with wrong key word. The "^" occurs after the Name "a" in the first cp in the choice field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P48/ibm48n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3513,9 +3944,11 @@ fn ibmnotwf_p49ibm49n01xml() {
         Description:Tests choice with a required field missing. The two cps are missing in the choice field in the third elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3529,9 +3962,11 @@ fn ibmnotwf_p49ibm49n02xml() {
         Description:Tests choice with a required field missing. The third cp is missing in the choice field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3545,9 +3980,11 @@ fn ibmnotwf_p49ibm49n03xml() {
         Description:Tests choice with a wrong separator. The "!" is used as the separator in the choice field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3561,9 +3998,11 @@ fn ibmnotwf_p49ibm49n04xml() {
         Description:Tests choice with a required field missing. The separator "|" is missing in the choice field (a b)+ in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3577,9 +4016,11 @@ fn ibmnotwf_p49ibm49n05xml() {
         Description:Tests choice with an extra separator. An extra "|" occurs between a and b in the choice field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3593,9 +4034,11 @@ fn ibmnotwf_p49ibm49n06xml() {
         Description:Tests choice with a required field missing. The closing bracket ")" is missing in the choice field (a |b * in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P49/ibm49n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3609,9 +4052,11 @@ fn ibmnotwf_p50ibm50n01xml() {
         Description:Tests seq with a required field missing. The two cps are missing in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3625,9 +4070,11 @@ fn ibmnotwf_p50ibm50n02xml() {
         Description:Tests seq with a required field missing. The third cp is missing in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3641,9 +4088,11 @@ fn ibmnotwf_p50ibm50n03xml() {
         Description:Tests seq with a wrong separator. The "|" is used as the separator between a and b in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3657,9 +4106,11 @@ fn ibmnotwf_p50ibm50n04xml() {
         Description:Tests seq with a wrong separator. The "." is used as the separator between a and b in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3673,9 +4124,11 @@ fn ibmnotwf_p50ibm50n05xml() {
         Description:Tests seq with an extra separator. An extra "," occurs between (a|b) and a in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3689,9 +4142,11 @@ fn ibmnotwf_p50ibm50n06xml() {
         Description:Tests seq with a required field missing. The separator between (a|b) and (b|a) is missing in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3705,9 +4160,11 @@ fn ibmnotwf_p50ibm50n07xml() {
         Description:Tests seq with wrong closing bracket. The "]" is used as the closing bracket in the seq field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P50/ibm50n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3721,9 +4178,11 @@ fn ibmnotwf_p51ibm51n01xml() {
         Description:Tests Mixed with a wrong key word. The string "#pcdata" is used as the key word in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3737,9 +4196,11 @@ fn ibmnotwf_p51ibm51n02xml() {
         Description:Tests Mixed with wrong field ordering. The field #PCDATA does not occur as the first component in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3753,9 +4214,11 @@ fn ibmnotwf_p51ibm51n03xml() {
         Description:Tests Mixed with a separator missing. The separator "|" is missing in between #PCDATA and a in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3769,9 +4232,11 @@ fn ibmnotwf_p51ibm51n04xml() {
         Description:Tests Mixed with a wrong key word. The string "#CDATA" is used as the key word in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3785,9 +4250,11 @@ fn ibmnotwf_p51ibm51n05xml() {
         Description:Tests Mixed with a required field missing. The "*" is missing after the ")" in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3801,9 +4268,11 @@ fn ibmnotwf_p51ibm51n06xml() {
         Description:Tests Mixed with wrong closing bracket. The "]" is used as the closing bracket in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3817,9 +4286,11 @@ fn ibmnotwf_p51ibm51n07xml() {
         Description:Tests Mixed with a required field missing. The closing bracket ")" is missing after (#PCDATA in the Mixed field in the fourth elementdecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P51/ibm51n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3833,9 +4304,11 @@ fn ibmnotwf_p52ibm52n01xml() {
         Description:Tests AttlistDecl with a required field missing. The Name is missing in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3849,9 +4322,11 @@ fn ibmnotwf_p52ibm52n02xml() {
         Description:Tests AttlistDecl with a required field missing. The white space is missing between the beginning sequence and the name in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3865,9 +4340,11 @@ fn ibmnotwf_p52ibm52n03xml() {
         Description:Tests AttlistDecl with wrong field ordering. The Name "a" occurs after the first AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3881,9 +4358,11 @@ fn ibmnotwf_p52ibm52n04xml() {
         Description:Tests AttlistDecl with wrong key word. The string "Attlist" is used as the key word in the beginning sequence in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3897,9 +4376,11 @@ fn ibmnotwf_p52ibm52n05xml() {
         Description:Tests AttlistDecl with a required field missing. The closing bracket "greater than" is missing in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3913,9 +4394,11 @@ fn ibmnotwf_p52ibm52n06xml() {
         Description:Tests AttlistDecl with wrong beginning sequence. The string "(less than)ATTLIST" is used as the beginning sequence in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P52/ibm52n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3929,9 +4412,11 @@ fn ibmnotwf_p53ibm53n01xml() {
         Description:Tests AttDef with a required field missing. The DefaultDecl is missing in the AttDef for the name "attr1" in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3945,9 +4430,11 @@ fn ibmnotwf_p53ibm53n02xml() {
         Description:Tests AttDef with a required field missing. The white space is missing between (abc|def) and "def" in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3961,9 +4448,11 @@ fn ibmnotwf_p53ibm53n03xml() {
         Description:Tests AttDef with a required field missing. The AttType is missing for "attr1" in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3977,9 +4466,11 @@ fn ibmnotwf_p53ibm53n04xml() {
         Description:Tests AttDef with a required field missing. The white space is missing between "attr1" and (abc|def) in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -3993,9 +4484,11 @@ fn ibmnotwf_p53ibm53n05xml() {
         Description:Tests AttDef with a required field missing. The Name is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4009,9 +4502,11 @@ fn ibmnotwf_p53ibm53n06xml() {
         Description:Tests AttDef with a required field missing. The white space before the name "attr2" is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4025,9 +4520,11 @@ fn ibmnotwf_p53ibm53n07xml() {
         Description:Tests AttDef with wrong field ordering. The Name "attr1" occurs after the AttType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4041,9 +4538,11 @@ fn ibmnotwf_p53ibm53n08xml() {
         Description:Tests AttDef with wrong field ordering. The Name "attr1" occurs after the AttType and "default" occurs before the AttType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P53/ibm53n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4057,9 +4556,11 @@ fn ibmnotwf_p54ibm54n01xml() {
         Description:Tests AttType with a wrong option. The string "BOGUSATTR" is used as the AttType in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4073,9 +4574,11 @@ fn ibmnotwf_p54ibm54n02xml() {
         Description:Tests AttType with a wrong option. The string "PCDATA" is used as the AttType in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P54/ibm54n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4089,9 +4592,11 @@ fn ibmnotwf_p55ibm55n01xml() {
         Description:Tests StringType with a wrong key word. The lower case string "cdata" is used as the StringType in the AttType in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4105,9 +4610,11 @@ fn ibmnotwf_p55ibm55n02xml() {
         Description:Tests StringType with a wrong key word. The string "#CDATA" is used as the StringType in the AttType in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4121,9 +4628,11 @@ fn ibmnotwf_p55ibm55n03xml() {
         Description:Tests StringType with a wrong key word. The string "CData" is used as the StringType in the AttType in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P55/ibm55n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4137,9 +4646,11 @@ fn ibmnotwf_p56ibm56n01xml() {
         Description:Tests TokenizedType with wrong key word. The type "id" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4153,9 +4664,11 @@ fn ibmnotwf_p56ibm56n02xml() {
         Description:Tests TokenizedType with wrong key word. The type "Idref" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4169,9 +4682,11 @@ fn ibmnotwf_p56ibm56n03xml() {
         Description:Tests TokenizedType with wrong key word. The type"Idrefs" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4185,9 +4700,11 @@ fn ibmnotwf_p56ibm56n04xml() {
         Description:Tests TokenizedType with wrong key word. The type "EntitY" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4201,9 +4718,11 @@ fn ibmnotwf_p56ibm56n05xml() {
         Description:Tests TokenizedType with wrong key word. The type "nmTOKEN" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4217,9 +4736,11 @@ fn ibmnotwf_p56ibm56n06xml() {
         Description:Tests TokenizedType with wrong key word. The type "NMtokens" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4233,9 +4754,11 @@ fn ibmnotwf_p56ibm56n07xml() {
         Description:Tests TokenizedType with wrong key word. The type "#ID" is used in the TokenizedType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P56/ibm56n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4249,9 +4772,11 @@ fn ibmnotwf_p57ibm57n01xml() {
         Description:Tests EnumeratedType with an illegal option. The string "NMTOKEN (a|b)" is used in the EnumeratedType in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P57/ibm57n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4265,9 +4790,11 @@ fn ibmnotwf_p58ibm58n01xml() {
         Description:Tests NotationType with wrong key word. The lower case "notation" is used as the key word in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4281,9 +4808,11 @@ fn ibmnotwf_p58ibm58n02xml() {
         Description:Tests NotationType with a required field missing. The beginning bracket "(" is missing in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4297,9 +4826,11 @@ fn ibmnotwf_p58ibm58n03xml() {
         Description:Tests NotationType with a required field missing. The Name is missing in the "()" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4313,9 +4844,11 @@ fn ibmnotwf_p58ibm58n04xml() {
         Description:Tests NotationType with a required field missing. The closing bracket is missing in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4329,9 +4862,11 @@ fn ibmnotwf_p58ibm58n05xml() {
         Description:Tests NotationType with wrong field ordering. The key word "NOTATION" occurs after "(this)" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4345,9 +4880,11 @@ fn ibmnotwf_p58ibm58n06xml() {
         Description:Tests NotationType with wrong separator. The "," is used as a separator between "this" and "that" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4361,9 +4898,11 @@ fn ibmnotwf_p58ibm58n07xml() {
         Description:Tests NotationType with a required field missing. The white space is missing between "NOTATION" and "(this)" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4377,9 +4916,11 @@ fn ibmnotwf_p58ibm58n08xml() {
         Description:Tests NotationType with extra wrong characters. The double quote character occurs after "(" and before ")" in the NotationType in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P58/ibm58n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4393,9 +4934,11 @@ fn ibmnotwf_p59ibm59n01xml() {
         Description:Tests Enumeration with required fields missing. The Nmtokens and "|"s are missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4409,9 +4952,11 @@ fn ibmnotwf_p59ibm59n02xml() {
         Description:Tests Enumeration with a required field missing. The closing bracket ")" is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4425,9 +4970,11 @@ fn ibmnotwf_p59ibm59n03xml() {
         Description:Tests Enumeration with wrong separator. The "," is used as the separator in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4441,9 +4988,11 @@ fn ibmnotwf_p59ibm59n04xml() {
         Description:Tests Enumeration with illegal presence. The double quotes occur around the Enumeration value in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4457,9 +5006,11 @@ fn ibmnotwf_p59ibm59n05xml() {
         Description:Tests Enumeration with a required field missing. The white space is missing between in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4473,9 +5024,11 @@ fn ibmnotwf_p59ibm59n06xml() {
         Description:Tests Enumeration with a required field missing. The beginning bracket "(" is missing in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P59/ibm59n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4489,9 +5042,11 @@ fn ibmnotwf_p60ibm60n01xml() {
         Description:Tests DefaultDecl with wrong key word. The string "#required" is used as the key word in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4505,9 +5060,11 @@ fn ibmnotwf_p60ibm60n02xml() {
         Description:Tests DefaultDecl with wrong key word. The string "Implied" is used as the key word in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4521,9 +5078,11 @@ fn ibmnotwf_p60ibm60n03xml() {
         Description:Tests DefaultDecl with wrong key word. The string "!IMPLIED" is used as the key word in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4537,9 +5096,11 @@ fn ibmnotwf_p60ibm60n04xml() {
         Description:Tests DefaultDecl with a required field missing. There is no attribute value specified after the key word "#FIXED" in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4553,9 +5114,11 @@ fn ibmnotwf_p60ibm60n05xml() {
         Description:Tests DefaultDecl with a required field missing. The white space is missing between the key word "#FIXED" and the attribute value in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4569,9 +5132,11 @@ fn ibmnotwf_p60ibm60n06xml() {
         Description:Tests DefaultDecl with wrong field ordering. The key word "#FIXED" occurs after the attribute value "introduction" in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4585,9 +5150,11 @@ fn ibmnotwf_p60ibm60n07xml() {
         Description:Tests DefaultDecl against WFC of P60. The text replacement of the entity "avalue" contains the "less than" character in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4601,15 +5168,16 @@ fn ibmnotwf_p60ibm60n08xml() {
         Description:Tests DefaultDecl with more than one key word. The "#REQUIRED" and the "#IMPLIED" are used as the key words in the DefaultDecl in the AttDef in the AttlistDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P60/ibm60n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p61ibm61n01xml() {
     /*
         Test ID:ibm-not-wf-P61-ibm61n01.xml
@@ -4618,15 +5186,16 @@ fn ibmnotwf_p61ibm61n01xml() {
         Description:Tests conditionalSect with a wrong option. The word "NOTINCLUDE" is used as part of an option which is wrong in the coditionalSect.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P61/ibm61n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P61/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n01xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n01.xml
@@ -4635,15 +5204,16 @@ fn ibmnotwf_p62ibm62n01xml() {
         Description:Tests includeSect with wrong key word. The string "include" is used as a key word in the beginning sequence in the includeSect in the file ibm62n01.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n02xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n02.xml
@@ -4652,15 +5222,16 @@ fn ibmnotwf_p62ibm62n02xml() {
         Description:Tests includeSect with wrong beginning sequence. An extra "[" occurs in the beginning sequence in the includeSect in the file ibm62n02.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n02.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n03xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n03.xml
@@ -4669,15 +5240,16 @@ fn ibmnotwf_p62ibm62n03xml() {
         Description:Tests includeSect with wrong beginning sequence. A wrong character "?" occurs in the beginning sequence in the includeSect in the file ibm62n03.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n03.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n04xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n04.xml
@@ -4686,15 +5258,16 @@ fn ibmnotwf_p62ibm62n04xml() {
         Description:Tests includeSect with a required field missing. The key word "INCLUDE" is missing in the includeSect in the file ibm62n04.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n04.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n05xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n05.xml
@@ -4703,15 +5276,16 @@ fn ibmnotwf_p62ibm62n05xml() {
         Description:Tests includeSect with a required field missing. The "[" is missing after the key word "INCLUDE" in the includeSect in the file ibm62n05.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n05.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n06xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n06.xml
@@ -4720,15 +5294,16 @@ fn ibmnotwf_p62ibm62n06xml() {
         Description:Tests includeSect with wrong field ordering. The two external subset declarations occur before the key word "INCLUDE" in the includeSect in the file ibm62n06.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n06.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n07xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n07.xml
@@ -4737,15 +5312,16 @@ fn ibmnotwf_p62ibm62n07xml() {
         Description:Tests includeSect with a required field missing. The closing sequence "]](greater than)" is missing in the includeSect in the file ibm62n07.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n07.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P62/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p62ibm62n08xml() {
     /*
         Test ID:ibm-not-wf-P62-ibm62n08.xml
@@ -4754,15 +5330,16 @@ fn ibmnotwf_p62ibm62n08xml() {
         Description:Tests includeSect with a required field missing. One "]" is missing in the closing sequence in the includeSect in the file ibm62n08.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P62/ibm62n08.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P61/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n01xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n01.xml
@@ -4771,15 +5348,16 @@ fn ibmnotwf_p63ibm63n01xml() {
         Description:Tests ignoreSect with wrong key word. The string "ignore" is used as a key word in the beginning sequence in the ignoreSect in the file ibm63n01.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n02xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n02.xml
@@ -4788,15 +5366,16 @@ fn ibmnotwf_p63ibm63n02xml() {
         Description:Tests ignoreSect with wrong beginning sequence. An extra "[" occurs in the beginning sequence in the ignoreSect in the file ibm63n02.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n02.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n03xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n03.xml
@@ -4805,15 +5384,16 @@ fn ibmnotwf_p63ibm63n03xml() {
         Description:Tests ignoreSect with wrong beginning sequence. A wrong character "?" occurs in the beginning sequence in the ignoreSect in the file ibm63n03.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n03.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n04xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n04.xml
@@ -4822,15 +5402,16 @@ fn ibmnotwf_p63ibm63n04xml() {
         Description:Tests ignoreSect with a required field missing. The key word "IGNORE" is missing in the ignoreSect in the file ibm63n04.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n04.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n05xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n05.xml
@@ -4839,15 +5420,16 @@ fn ibmnotwf_p63ibm63n05xml() {
         Description:Tests ignoreSect with a required field missing. The "[" is missing after the key word "IGNORE" in the ignoreSect in the file ibm63n05.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n05.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n06xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n06.xml
@@ -4856,15 +5438,16 @@ fn ibmnotwf_p63ibm63n06xml() {
         Description:Tests includeSect with wrong field ordering. The two external subset declarations occur before the key word "IGNORE" in the ignoreSect in the file ibm63n06.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n06.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p63ibm63n07xml() {
     /*
         Test ID:ibm-not-wf-P63-ibm63n07.xml
@@ -4873,15 +5456,16 @@ fn ibmnotwf_p63ibm63n07xml() {
         Description:Tests ignoreSect with a required field missing. The closing sequence "]](greater than)" is missing in the ignoreSect in the file ibm63n07.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P63/ibm63n07.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P63/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p64ibm64n01xml() {
     /*
         Test ID:ibm-not-wf-P64-ibm64n01.xml
@@ -4890,15 +5474,16 @@ fn ibmnotwf_p64ibm64n01xml() {
         Description:Tests ignoreSectContents with wrong beginning sequence. The "?" occurs in beginning sequence the ignoreSectContents in the file ibm64n01.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P64/ibm64n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P64/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p64ibm64n02xml() {
     /*
         Test ID:ibm-not-wf-P64-ibm64n02.xml
@@ -4907,15 +5492,16 @@ fn ibmnotwf_p64ibm64n02xml() {
         Description:Tests ignoreSectContents with a required field missing.The closing sequence is missing in the ignoreSectContents in the file ibm64n02.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P64/ibm64n02.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P64/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p64ibm64n03xml() {
     /*
         Test ID:ibm-not-wf-P64-ibm64n03.xml
@@ -4924,15 +5510,16 @@ fn ibmnotwf_p64ibm64n03xml() {
         Description:Tests ignoreSectContents with a required field missing.The beginning sequence is missing in the ignoreSectContents in the file ibm64n03.dtd.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P64/ibm64n03.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P64/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p65ibm65n01xml() {
     /*
         Test ID:ibm-not-wf-P65-ibm65n01.xml
@@ -4941,15 +5528,16 @@ fn ibmnotwf_p65ibm65n01xml() {
         Description:Tests Ignore with illegal string included. The string "]](greater than)" is contained before "this" in the Ignore in the ignoreSectContents in the file ibm65n01.dtd
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P65/ibm65n01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P65/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p65ibm65n02xml() {
     /*
         Test ID:ibm-not-wf-P65-ibm65n02.xml
@@ -4958,15 +5546,16 @@ fn ibmnotwf_p65ibm65n02xml() {
         Description:Tests Ignore with illegal string included. The string "(less than)![" is contained before "this" in the Ignore in the ignoreSectContents in the file ibm65n02.dtd
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P65/ibm65n02.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/not-wf/P65/".to_string())
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n01xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n01.xml
@@ -4975,9 +5564,11 @@ fn ibmnotwf_p66ibm66n01xml() {
         Description:Tests CharRef with an illegal character referred to. The "#002f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -4991,15 +5582,16 @@ fn ibmnotwf_p66ibm66n02xml() {
         Description:Tests CharRef with the semicolon character missing. The semicolon character is missing at the end of the CharRef in the attribute value in the STag of element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n03xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n03.xml
@@ -5008,9 +5600,11 @@ fn ibmnotwf_p66ibm66n03xml() {
         Description:Tests CharRef with an illegal character referred to. The "49" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5024,15 +5618,16 @@ fn ibmnotwf_p66ibm66n04xml() {
         Description:Tests CharRef with an illegal character referred to. The "#5~0" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n05xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n05.xml
@@ -5041,9 +5636,11 @@ fn ibmnotwf_p66ibm66n05xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x002g" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5057,15 +5654,16 @@ fn ibmnotwf_p66ibm66n06xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x006G" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n07xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n07.xml
@@ -5074,9 +5672,11 @@ fn ibmnotwf_p66ibm66n07xml() {
         Description:Tests CharRef with an illegal character referred to. The "#0=2f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5090,15 +5690,16 @@ fn ibmnotwf_p66ibm66n08xml() {
         Description:Tests CharRef with an illegal character referred to. The "#56.0" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n09xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n09.xml
@@ -5107,9 +5708,11 @@ fn ibmnotwf_p66ibm66n09xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x00/2f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5123,15 +5726,16 @@ fn ibmnotwf_p66ibm66n10xml() {
         Description:Tests CharRef with an illegal character referred to. The "#51)" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n11xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n11.xml
@@ -5140,15 +5744,16 @@ fn ibmnotwf_p66ibm66n11xml() {
         Description:Tests CharRef with an illegal character referred to. The "#00 2f" is used as the referred character in the CharRef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n12xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n12.xml
@@ -5157,15 +5762,16 @@ fn ibmnotwf_p66ibm66n12xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x0000" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n13xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n13.xml
@@ -5174,15 +5780,16 @@ fn ibmnotwf_p66ibm66n13xml() {
         Description:Tests CharRef with an illegal character referred to. The "#x001f" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n14xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n14.xml
@@ -5191,15 +5798,16 @@ fn ibmnotwf_p66ibm66n14xml() {
         Description:Tests CharRef with an illegal character referred to. The "#xfffe" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p66ibm66n15xml() {
     /*
         Test ID:ibm-not-wf-P66-ibm66n15.xml
@@ -5208,9 +5816,11 @@ fn ibmnotwf_p66ibm66n15xml() {
         Description:Tests CharRef with an illegal character referred to. The "#xffff" is used as the referred character in the attribute value in the EmptyElemTag of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P66/ibm66n15.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5224,9 +5834,11 @@ fn ibmnotwf_p68ibm68n01xml() {
         Description:Tests EntityRef with a required field missing. The Name is missing in the EntityRef in the content of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5240,9 +5852,11 @@ fn ibmnotwf_p68ibm68n02xml() {
         Description:Tests EntityRef with a required field missing. The semicolon is missing in the EntityRef in the attribute value in the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5256,9 +5870,11 @@ fn ibmnotwf_p68ibm68n03xml() {
         Description:Tests EntityRef with an extra white space. A white space occurs after the ampersand in the EntityRef in the content of the element "root".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5272,9 +5888,11 @@ fn ibmnotwf_p68ibm68n04xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The name "aAa" in the EntityRef in the AttValue in the STage of the element "root" does not match the Name of any declared entity in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5288,9 +5906,11 @@ fn ibmnotwf_p68ibm68n05xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The entity with the name "aaa" in the EntityRef in the AttValue in the STag of the element "root" is not declared.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5304,9 +5924,11 @@ fn ibmnotwf_p68ibm68n06xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The entity with the name "aaa" in the EntityRef in the AttValue in the STag of the element "root" is externally declared, but standalone is "yes".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5320,9 +5942,11 @@ fn ibmnotwf_p68ibm68n07xml() {
         Description:Tests EntityRef which is against P68 WFC: Entity Declared. The entity with the name "aaa" in the EntityRef in the AttValue in the STag of the element "root" is referred before declared.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5336,9 +5960,11 @@ fn ibmnotwf_p68ibm68n08xml() {
         Description:Tests EntityRef which is against P68 WFC: Parsed Entity. The EntityRef in the AttValue in the STag of the element "root" contains the name "aImage" of an unparsed entity.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5352,9 +5978,11 @@ fn ibmnotwf_p68ibm68n09xml() {
         Description:Tests EntityRef which is against P68 WFC: No Recursion. The recursive entity reference occurs with the entity declarations for "aaa" and "bbb" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5368,9 +5996,11 @@ fn ibmnotwf_p68ibm68n10xml() {
         Description:Tests EntityRef which is against P68 WFC: No Recursion. The indirect recursive entity reference occurs with the entity declarations for "aaa", "bbb", "ccc", "ddd", and "eee" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P68/ibm68n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5384,9 +6014,11 @@ fn ibmnotwf_p69ibm69n01xml() {
         Description:Tests PEReference with a required field missing. The Name "paaa" is missing in the PEReference in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5400,9 +6032,11 @@ fn ibmnotwf_p69ibm69n02xml() {
         Description:Tests PEReference with a required field missing. The semicolon is missing in the PEReference "%paaa" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5416,9 +6050,11 @@ fn ibmnotwf_p69ibm69n03xml() {
         Description:Tests PEReference with an extra white space. There is an extra white space occurs before ";" in the PEReference in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5432,9 +6068,11 @@ fn ibmnotwf_p69ibm69n04xml() {
         Description:Tests PEReference with an extra white space. There is an extra white space occurs after "%" in the PEReference in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5448,15 +6086,16 @@ fn ibmnotwf_p69ibm69n05xml() {
         Description:Based on E29 substantial source: minutes XML-Syntax 1999-02-24 E38 in XML 1.0 Errata, this WFC does not apply to P69, but the VC Entity declared still apply. Tests PEReference which is against P69 WFC: Entity Declared. The PE with the name "paaa" is referred before declared in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p69ibm69n06xml() {
     /*
         Test ID:ibm-not-wf-P69-ibm69n06.xml
@@ -5465,15 +6104,15 @@ fn ibmnotwf_p69ibm69n06xml() {
         Description:Tests PEReference which is against P69 WFC: No Recursion. The recursive PE reference occurs with the entity declarations for "paaa" and "bbb" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n06.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p69ibm69n07xml() {
     /*
         Test ID:ibm-not-wf-P69-ibm69n07.xml
@@ -5482,9 +6121,11 @@ fn ibmnotwf_p69ibm69n07xml() {
         Description:Tests PEReference which is against P69 WFC: No Recursion. The indirect recursive PE reference occurs with the entity declarations for "paaa", "bbb", "ccc", "ddd", and "eee" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P69/ibm69n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5498,9 +6139,11 @@ fn ibmnotwf_p71ibm70n01xml() {
         Description:Tests
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm70n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5514,9 +6157,11 @@ fn ibmnotwf_p71ibm71n01xml() {
         Description:Tests EntityDecl with a required field missing. The white space is missing between the beginning sequence and the Name "aaa" in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5530,9 +6175,11 @@ fn ibmnotwf_p71ibm71n02xml() {
         Description:Tests EntityDecl with a required field missing. The white space is missing between the Name "aaa" and the EntityDef "aString" in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5546,9 +6193,11 @@ fn ibmnotwf_p71ibm71n03xml() {
         Description:Tests EntityDecl with a required field missing. The EntityDef is missing in the EntityDecl with the Name "aaa" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5562,9 +6211,11 @@ fn ibmnotwf_p71ibm71n04xml() {
         Description:Tests EntityDecl with a required field missing. The Name is missing in the EntityDecl with the EntityDef "aString" in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5578,9 +6229,11 @@ fn ibmnotwf_p71ibm71n05xml() {
         Description:Tests EntityDecl with wrong ordering. The Name "aaa" occurs after the EntityDef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5594,9 +6247,11 @@ fn ibmnotwf_p71ibm71n06xml() {
         Description:Tests EntityDecl with wrong key word. The string "entity" is used as the key word in the beginning sequence in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5610,9 +6265,11 @@ fn ibmnotwf_p71ibm71n07xml() {
         Description:Tests EntityDecl with a required field missing. The closing bracket (greater than) is missing in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5626,9 +6283,11 @@ fn ibmnotwf_p71ibm71n08xml() {
         Description:Tests EntityDecl with a required field missing. The exclamation mark is missing in the beginning sequence in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P71/ibm71n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5642,9 +6301,11 @@ fn ibmnotwf_p72ibm72n01xml() {
         Description:Tests PEdecl with a required field missing. The white space is missing between the beginning sequence and the "%" in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5658,9 +6319,11 @@ fn ibmnotwf_p72ibm72n02xml() {
         Description:Tests PEdecl with a required field missing. The Name is missing in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5674,9 +6337,11 @@ fn ibmnotwf_p72ibm72n03xml() {
         Description:Tests PEdecl with a required field missing. The white space is missing between the Name and the PEDef in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5690,9 +6355,11 @@ fn ibmnotwf_p72ibm72n04xml() {
         Description:Tests PEdecl with a required field missing. The PEDef is missing after the Name "paaa" in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5706,9 +6373,11 @@ fn ibmnotwf_p72ibm72n05xml() {
         Description:Tests PEdecl with wrong field ordering. The Name "paaa" occurs after the PEDef in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5722,9 +6391,11 @@ fn ibmnotwf_p72ibm72n06xml() {
         Description:Tests PEdecl with wrong field ordering. The "%" and the Name "paaa" occurs after the PEDef in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5738,9 +6409,11 @@ fn ibmnotwf_p72ibm72n07xml() {
         Description:Tests PEdecl with wrong key word. The string "entity" is used as the key word in the beginning sequence in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5754,9 +6427,11 @@ fn ibmnotwf_p72ibm72n08xml() {
         Description:Tests PEdecl with a required field missing. The closing bracket (greater than) is missing in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5770,9 +6445,11 @@ fn ibmnotwf_p72ibm72n09xml() {
         Description:Tests PEdecl with wrong closing sequence. The string "!(greater than)" is used as the closing sequence in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P72/ibm72n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5786,9 +6463,11 @@ fn ibmnotwf_p73ibm73n01xml() {
         Description:Tests EntityDef with wrong field ordering. The NDataDecl "NDATA JPGformat" occurs before the ExternalID in the EntityDef in the EntityDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5802,9 +6481,11 @@ fn ibmnotwf_p73ibm73n03xml() {
         Description:Tests EntityDef with a required field missing. The ExternalID is missing before the NDataDecl in the EntityDef in the EntityDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P73/ibm73n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5818,9 +6499,11 @@ fn ibmnotwf_p74ibm74n01xml() {
         Description:Tests PEDef with extra fields. The NDataDecl occurs after the ExternalID in the PEDef in the PEDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P74/ibm74n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5834,9 +6517,11 @@ fn ibmnotwf_p75ibm75n01xml() {
         Description:Tests ExternalID with wrong key word. The string "system" is used as the key word in the ExternalID in the EntityDef in the EntityDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5850,9 +6535,11 @@ fn ibmnotwf_p75ibm75n02xml() {
         Description:Tests ExternalID with wrong key word. The string "public" is used as the key word in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5866,9 +6553,11 @@ fn ibmnotwf_p75ibm75n03xml() {
         Description:Tests ExternalID with wrong key word. The string "Public" is used as the key word in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5882,9 +6571,11 @@ fn ibmnotwf_p75ibm75n04xml() {
         Description:Tests ExternalID with wrong field ordering. The key word "PUBLIC" occurs after the PublicLiteral and the SystemLiteral in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5898,9 +6589,11 @@ fn ibmnotwf_p75ibm75n05xml() {
         Description:Tests ExternalID with a required field missing. The white space between "SYSTEM" and the Systemliteral is missing in the ExternalID in the EntityDef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5914,9 +6607,11 @@ fn ibmnotwf_p75ibm75n06xml() {
         Description:Tests ExternalID with a required field missing. The Systemliteral is missing after "SYSTEM" in the ExternalID in the EntityDef in the EntityDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5930,9 +6625,11 @@ fn ibmnotwf_p75ibm75n07xml() {
         Description:Tests ExternalID with a required field missing. The white space between the PublicLiteral and the Systemliteral is missing in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5946,9 +6643,11 @@ fn ibmnotwf_p75ibm75n08xml() {
         Description:Tests ExternalID with a required field missing. The key word "PUBLIC" is missing in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5962,9 +6661,11 @@ fn ibmnotwf_p75ibm75n09xml() {
         Description:Tests ExternalID with a required field missing. The white space between "PUBLIC" and the PublicLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5978,9 +6679,11 @@ fn ibmnotwf_p75ibm75n10xml() {
         Description:Tests ExternalID with a required field missing. The PublicLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -5994,9 +6697,11 @@ fn ibmnotwf_p75ibm75n11xml() {
         Description:Tests ExternalID with a required field missing. The PublicLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6010,9 +6715,11 @@ fn ibmnotwf_p75ibm75n12xml() {
         Description:Tests ExternalID with a required field missing. The SystemLiteral is missing in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6026,9 +6733,11 @@ fn ibmnotwf_p75ibm75n13xml() {
         Description:Tests ExternalID with wrong field ordering. The key word "PUBLIC" occurs after the PublicLiteral in the ExternalID in the doctypedecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P75/ibm75n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6042,9 +6751,11 @@ fn ibmnotwf_p76ibm76n01xml() {
         Description:Tests NDataDecl with wrong key word. The string "ndata" is used as the key word in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6058,9 +6769,11 @@ fn ibmnotwf_p76ibm76n02xml() {
         Description:Tests NDataDecl with wrong key word. The string "NData" is used as the key word in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6074,9 +6787,11 @@ fn ibmnotwf_p76ibm76n03xml() {
         Description:Tests NDataDecl with a required field missing. The leading white space is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6090,9 +6805,11 @@ fn ibmnotwf_p76ibm76n04xml() {
         Description:Tests NDataDecl with a required field missing. The key word "NDATA" is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6106,9 +6823,11 @@ fn ibmnotwf_p76ibm76n05xml() {
         Description:Tests NDataDecl with a required field missing. The Name after the key word "NDATA" is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6122,9 +6841,11 @@ fn ibmnotwf_p76ibm76n06xml() {
         Description:Tests NDataDecl with a required field missing. The white space between "NDATA" and the Name is missing in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6138,9 +6859,11 @@ fn ibmnotwf_p76ibm76n07xml() {
         Description:Tests NDataDecl with wrong field ordering. The key word "NDATA" occurs after the Name in the NDataDecl in the EntityDef in the GEDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P76/ibm76n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6154,9 +6877,11 @@ fn ibmnotwf_p77ibm77n01xml() {
         Description:Tests TextDecl with wrong field ordering. The VersionInfo occurs after the EncodingDecl in the TextDecl in the file "ibm77n01.ent".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6170,9 +6895,11 @@ fn ibmnotwf_p77ibm77n02xml() {
         Description:Tests TextDecl with wrong key word. The string "XML" is used in the beginning sequence in the TextDecl in the file "ibm77n02.ent".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6186,9 +6913,11 @@ fn ibmnotwf_p77ibm77n03xml() {
         Description:Tests TextDecl with wrong closing sequence. The character "greater than" is used as the closing sequence in the TextDecl in the file "ibm77n03.ent".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6202,9 +6931,11 @@ fn ibmnotwf_p77ibm77n04xml() {
         Description:Tests TextDecl with a required field missing. The closing sequence is missing in the TextDecl in the file "ibm77n04.ent".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P77/ibm77n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6218,9 +6949,11 @@ fn ibmnotwf_p78ibm78n01xml() {
         Description:Tests extParsedEnt with wrong field ordering. The TextDecl occurs after the content in the file ibm78n01.ent.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6234,9 +6967,11 @@ fn ibmnotwf_p78ibm78n02xml() {
         Description:Tests extParsedEnt with extra field. A blank line occurs before the TextDecl in the file ibm78n02.ent.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P78/ibm78n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6250,9 +6985,11 @@ fn ibmnotwf_p79ibm79n01xml() {
         Description:Tests extPE with wrong field ordering. The TextDecl occurs after the extSubsetDecl (the white space and the comment) in the file ibm79n01.ent.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6266,9 +7003,11 @@ fn ibmnotwf_p79ibm79n02xml() {
         Description:Tests extPE with extra field. A blank line occurs before the TextDecl in the file ibm78n02.ent.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P79/ibm79n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6282,9 +7021,11 @@ fn ibmnotwf_p80ibm80n01xml() {
         Description:Tests EncodingDecl with a required field missing. The leading white space is missing in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6298,9 +7039,11 @@ fn ibmnotwf_p80ibm80n02xml() {
         Description:Tests EncodingDecl with a required field missing. The "=" sign is missing in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6314,9 +7057,11 @@ fn ibmnotwf_p80ibm80n03xml() {
         Description:Tests EncodingDecl with a required field missing. The double quoted EncName are missing in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6330,9 +7075,11 @@ fn ibmnotwf_p80ibm80n04xml() {
         Description:Tests EncodingDecl with wrong field ordering. The string "encoding=" occurs after the double quoted EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6346,9 +7093,11 @@ fn ibmnotwf_p80ibm80n05xml() {
         Description:Tests EncodingDecl with wrong field ordering. The "encoding" occurs after the double quoted EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6362,15 +7111,16 @@ fn ibmnotwf_p80ibm80n06xml() {
         Description:Tests EncodingDecl with wrong key word. The string "Encoding" is used as the key word in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P80/ibm80n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n01xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n01.xml
@@ -6379,15 +7129,16 @@ fn ibmnotwf_p81ibm81n01xml() {
         Description:Tests EncName with an illegal character. The "_" is used as the first character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n02xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n02.xml
@@ -6396,15 +7147,16 @@ fn ibmnotwf_p81ibm81n02xml() {
         Description:Tests EncName with an illegal character. The "-" is used as the first character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n03xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n03.xml
@@ -6413,15 +7165,16 @@ fn ibmnotwf_p81ibm81n03xml() {
         Description:Tests EncName with an illegal character. The "." is used as the first character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n04xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n04.xml
@@ -6430,15 +7183,16 @@ fn ibmnotwf_p81ibm81n04xml() {
         Description:Tests EncName with illegal characters. The "8-" is used as the initial characters in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n05xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n05.xml
@@ -6447,15 +7201,16 @@ fn ibmnotwf_p81ibm81n05xml() {
         Description:Tests EncName with an illegal character. The "~" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n06xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n06.xml
@@ -6464,15 +7219,16 @@ fn ibmnotwf_p81ibm81n06xml() {
         Description:Tests EncName with an illegal character. The "#" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n07xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n07.xml
@@ -6481,15 +7237,16 @@ fn ibmnotwf_p81ibm81n07xml() {
         Description:Tests EncName with an illegal character. The ":" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n08xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n08.xml
@@ -6498,15 +7255,16 @@ fn ibmnotwf_p81ibm81n08xml() {
         Description:Tests EncName with an illegal character. The "/" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p81ibm81n09xml() {
     /*
         Test ID:ibm-not-wf-P81-ibm81n09.xml
@@ -6515,9 +7273,11 @@ fn ibmnotwf_p81ibm81n09xml() {
         Description:Tests EncName with an illegal character. The ";" is used as one character in the EncName in the EncodingDecl in the XMLDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P81/ibm81n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6531,9 +7291,11 @@ fn ibmnotwf_p82ibm82n01xml() {
         Description:Tests NotationDecl with a required field missing. The white space after the beginning sequence of the NotationDecl is missing in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6547,9 +7309,11 @@ fn ibmnotwf_p82ibm82n02xml() {
         Description:Tests NotationDecl with a required field missing. The Name in the NotationDecl is missing in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6563,9 +7327,11 @@ fn ibmnotwf_p82ibm82n03xml() {
         Description:Tests NotationDecl with a required field missing. The externalID or the PublicID is missing in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6579,9 +7345,11 @@ fn ibmnotwf_p82ibm82n04xml() {
         Description:Tests NotationDecl with wrong field ordering. The Name occurs after the "SYSTEM" and the externalID in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6595,15 +7363,16 @@ fn ibmnotwf_p82ibm82n05xml() {
         Description:Tests NotationDecl with wrong key word. The string "notation" is used as a key word in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn ibmnotwf_p82ibm82n06xml() {
     /*
         Test ID:ibm-not-wf-P82-ibm82n06.xml
@@ -6612,9 +7381,11 @@ fn ibmnotwf_p82ibm82n06xml() {
         Description:Tests NotationDecl with a required field missing. The closing bracket (the greater than character) is missing in the NotationDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6628,9 +7399,11 @@ fn ibmnotwf_p82ibm82n07xml() {
         Description:Tests NotationDecl with wrong beginning sequence. The "!" is missing in the beginning sequence in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6644,9 +7417,11 @@ fn ibmnotwf_p82ibm82n08xml() {
         Description:Tests NotationDecl with wrong closing sequence. The extra "!" occurs in the closing sequence in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P82/ibm82n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6660,9 +7435,11 @@ fn ibmnotwf_p83ibm83n01xml() {
         Description:Tests PublicID with wrong key word. The string "public" is used as the key word in the PublicID in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6676,9 +7453,11 @@ fn ibmnotwf_p83ibm83n02xml() {
         Description:Tests PublicID with wrong key word. The string "Public" is used as the key word in the PublicID in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6692,9 +7471,11 @@ fn ibmnotwf_p83ibm83n03xml() {
         Description:Tests PublicID with a required field missing. The key word "PUBLIC" is missing in the PublicID in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6708,9 +7489,11 @@ fn ibmnotwf_p83ibm83n04xml() {
         Description:Tests PublicID with a required field missing. The white space between the "PUBLIC" and the PubidLiteral is missing in the PublicID in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6724,9 +7507,11 @@ fn ibmnotwf_p83ibm83n05xml() {
         Description:Tests PublicID with a required field missing. The PubidLiteral is missing in the PublicID in the NotationDecl in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6740,9 +7525,11 @@ fn ibmnotwf_p83ibm83n06xml() {
         Description:Tests PublicID with wrong field ordering. The key word "PUBLIC" occurs after the PubidLiteral in the PublicID in the NotationDecl.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P83/ibm83n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6756,9 +7543,11 @@ fn ibmnotwf_p85ibm85n01xml() {
         Description:Tests BaseChar with an illegal character. The character #x00D7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -6772,16 +7561,23 @@ fn ibmnotwf_p85ibm85n02xml() {
         Description:Tests BaseChar with an illegal character. The character #x00F7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n03.xml
         Test URI:not-wf/P85/ibm85n03.xml
@@ -6789,16 +7585,24 @@ fn ibmnotwf_p85ibm85n03xml() {
         Description:Tests BaseChar with an illegal character. The character #x0132 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n04.xml
         Test URI:not-wf/P85/ibm85n04.xml
@@ -6806,16 +7610,24 @@ fn ibmnotwf_p85ibm85n04xml() {
         Description:Tests BaseChar with an illegal character. The character #x0133 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n05.xml
         Test URI:not-wf/P85/ibm85n05.xml
@@ -6823,16 +7635,24 @@ fn ibmnotwf_p85ibm85n05xml() {
         Description:Tests BaseChar with an illegal character. The character #x013F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n06xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n06.xml
         Test URI:not-wf/P85/ibm85n06.xml
@@ -6840,16 +7660,24 @@ fn ibmnotwf_p85ibm85n06xml() {
         Description:Tests BaseChar with an illegal character. The character #x0140 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n07xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n07.xml
         Test URI:not-wf/P85/ibm85n07.xml
@@ -6857,16 +7685,24 @@ fn ibmnotwf_p85ibm85n07xml() {
         Description:Tests BaseChar with an illegal character. The character #x0149 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n08xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n08.xml
         Test URI:not-wf/P85/ibm85n08.xml
@@ -6874,16 +7710,24 @@ fn ibmnotwf_p85ibm85n08xml() {
         Description:Tests BaseChar with an illegal character. The character #x017F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n09xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n09.xml
         Test URI:not-wf/P85/ibm85n09.xml
@@ -6891,16 +7735,24 @@ fn ibmnotwf_p85ibm85n09xml() {
         Description:Tests BaseChar with an illegal character. The character #x01c4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n10xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n10.xml
         Test URI:not-wf/P85/ibm85n10.xml
@@ -6908,16 +7760,24 @@ fn ibmnotwf_p85ibm85n10xml() {
         Description:Tests BaseChar with an illegal character. The character #x01CC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n100xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n100.xml
         Test URI:not-wf/P85/ibm85n100.xml
@@ -6925,16 +7785,24 @@ fn ibmnotwf_p85ibm85n100xml() {
         Description:Tests BaseChar with an illegal character. The character #x0BB6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n100.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n101xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n101.xml
         Test URI:not-wf/P85/ibm85n101.xml
@@ -6942,16 +7810,24 @@ fn ibmnotwf_p85ibm85n101xml() {
         Description:Tests BaseChar with an illegal character. The character #x0BBA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n101.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n102xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n102.xml
         Test URI:not-wf/P85/ibm85n102.xml
@@ -6959,16 +7835,24 @@ fn ibmnotwf_p85ibm85n102xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C0D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n102.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n103xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n103.xml
         Test URI:not-wf/P85/ibm85n103.xml
@@ -6976,16 +7860,24 @@ fn ibmnotwf_p85ibm85n103xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n103.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n104xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n104.xml
         Test URI:not-wf/P85/ibm85n104.xml
@@ -6993,16 +7885,24 @@ fn ibmnotwf_p85ibm85n104xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n104.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n105xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n105.xml
         Test URI:not-wf/P85/ibm85n105.xml
@@ -7010,16 +7910,24 @@ fn ibmnotwf_p85ibm85n105xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n105.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n106xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n106.xml
         Test URI:not-wf/P85/ibm85n106.xml
@@ -7027,16 +7935,24 @@ fn ibmnotwf_p85ibm85n106xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C5F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n106.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n107xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n107.xml
         Test URI:not-wf/P85/ibm85n107.xml
@@ -7044,16 +7960,24 @@ fn ibmnotwf_p85ibm85n107xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C62 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n107.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n108xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n108.xml
         Test URI:not-wf/P85/ibm85n108.xml
@@ -7061,16 +7985,24 @@ fn ibmnotwf_p85ibm85n108xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C8D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n108.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n109xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n109.xml
         Test URI:not-wf/P85/ibm85n109.xml
@@ -7078,16 +8010,24 @@ fn ibmnotwf_p85ibm85n109xml() {
         Description:Tests BaseChar with an illegal character. The character #x0C91 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n109.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n11xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n11.xml
         Test URI:not-wf/P85/ibm85n11.xml
@@ -7095,16 +8035,24 @@ fn ibmnotwf_p85ibm85n11xml() {
         Description:Tests BaseChar with an illegal character. The character #x01F1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n110xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n110.xml
         Test URI:not-wf/P85/ibm85n110.xml
@@ -7112,16 +8060,24 @@ fn ibmnotwf_p85ibm85n110xml() {
         Description:Tests BaseChar with an illegal character. The character #x0CA9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n110.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n111xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n111.xml
         Test URI:not-wf/P85/ibm85n111.xml
@@ -7129,16 +8085,24 @@ fn ibmnotwf_p85ibm85n111xml() {
         Description:Tests BaseChar with an illegal character. The character #x0CB4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n111.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n112xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n112.xml
         Test URI:not-wf/P85/ibm85n112.xml
@@ -7146,16 +8110,24 @@ fn ibmnotwf_p85ibm85n112xml() {
         Description:Tests BaseChar with an illegal character. The character #x0CBA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n112.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n113xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n113.xml
         Test URI:not-wf/P85/ibm85n113.xml
@@ -7163,16 +8135,24 @@ fn ibmnotwf_p85ibm85n113xml() {
         Description:Tests BaseChar with an illegal character. The character #x0CDF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n113.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n114xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n114.xml
         Test URI:not-wf/P85/ibm85n114.xml
@@ -7180,16 +8160,24 @@ fn ibmnotwf_p85ibm85n114xml() {
         Description:Tests BaseChar with an illegal character. The character #x0CE2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n114.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n115xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n115.xml
         Test URI:not-wf/P85/ibm85n115.xml
@@ -7197,16 +8185,24 @@ fn ibmnotwf_p85ibm85n115xml() {
         Description:Tests BaseChar with an illegal character. The character #x0D0D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n115.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n116xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n116.xml
         Test URI:not-wf/P85/ibm85n116.xml
@@ -7214,16 +8210,24 @@ fn ibmnotwf_p85ibm85n116xml() {
         Description:Tests BaseChar with an illegal character. The character #x0D11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n116.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n117xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n117.xml
         Test URI:not-wf/P85/ibm85n117.xml
@@ -7231,16 +8235,24 @@ fn ibmnotwf_p85ibm85n117xml() {
         Description:Tests BaseChar with an illegal character. The character #x0D29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n117.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n118xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n118.xml
         Test URI:not-wf/P85/ibm85n118.xml
@@ -7248,16 +8260,24 @@ fn ibmnotwf_p85ibm85n118xml() {
         Description:Tests BaseChar with an illegal character. The character #x0D3A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n118.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n119xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n119.xml
         Test URI:not-wf/P85/ibm85n119.xml
@@ -7265,16 +8285,24 @@ fn ibmnotwf_p85ibm85n119xml() {
         Description:Tests BaseChar with an illegal character. The character #x0D62 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n119.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n12xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n12.xml
         Test URI:not-wf/P85/ibm85n12.xml
@@ -7282,16 +8310,24 @@ fn ibmnotwf_p85ibm85n12xml() {
         Description:Tests BaseChar with an illegal character. The character #x01F3 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n120xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n120.xml
         Test URI:not-wf/P85/ibm85n120.xml
@@ -7299,16 +8335,24 @@ fn ibmnotwf_p85ibm85n120xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E2F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n120.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n121xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n121.xml
         Test URI:not-wf/P85/ibm85n121.xml
@@ -7316,16 +8360,24 @@ fn ibmnotwf_p85ibm85n121xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E31 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n121.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n122xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n122.xml
         Test URI:not-wf/P85/ibm85n122.xml
@@ -7333,16 +8385,24 @@ fn ibmnotwf_p85ibm85n122xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n122.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n123xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n123.xml
         Test URI:not-wf/P85/ibm85n123.xml
@@ -7350,16 +8410,24 @@ fn ibmnotwf_p85ibm85n123xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E46 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n123.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n124xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n124.xml
         Test URI:not-wf/P85/ibm85n124.xml
@@ -7367,16 +8435,24 @@ fn ibmnotwf_p85ibm85n124xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E83 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n124.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n125xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n125.xml
         Test URI:not-wf/P85/ibm85n125.xml
@@ -7384,16 +8460,24 @@ fn ibmnotwf_p85ibm85n125xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E85 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n125.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n126xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n126.xml
         Test URI:not-wf/P85/ibm85n126.xml
@@ -7401,16 +8485,24 @@ fn ibmnotwf_p85ibm85n126xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E89 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n126.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n127xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n127.xml
         Test URI:not-wf/P85/ibm85n127.xml
@@ -7418,16 +8510,24 @@ fn ibmnotwf_p85ibm85n127xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E8B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n127.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n128xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n128.xml
         Test URI:not-wf/P85/ibm85n128.xml
@@ -7435,16 +8535,24 @@ fn ibmnotwf_p85ibm85n128xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E8E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n128.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n129xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n129.xml
         Test URI:not-wf/P85/ibm85n129.xml
@@ -7452,16 +8560,24 @@ fn ibmnotwf_p85ibm85n129xml() {
         Description:Tests BaseChar with an illegal character. The character #x0E98 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n129.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n13xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n13.xml
         Test URI:not-wf/P85/ibm85n13.xml
@@ -7469,16 +8585,24 @@ fn ibmnotwf_p85ibm85n13xml() {
         Description:Tests BaseChar with an illegal character. The character #x01F6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n130xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n130.xml
         Test URI:not-wf/P85/ibm85n130.xml
@@ -7486,16 +8610,24 @@ fn ibmnotwf_p85ibm85n130xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EA0 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n130.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n131xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n131.xml
         Test URI:not-wf/P85/ibm85n131.xml
@@ -7503,16 +8635,24 @@ fn ibmnotwf_p85ibm85n131xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EA4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n131.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n132xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n132.xml
         Test URI:not-wf/P85/ibm85n132.xml
@@ -7520,16 +8660,24 @@ fn ibmnotwf_p85ibm85n132xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EA6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n132.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n133xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n133.xml
         Test URI:not-wf/P85/ibm85n133.xml
@@ -7537,16 +8685,24 @@ fn ibmnotwf_p85ibm85n133xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EA8 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n133.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n134xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n134.xml
         Test URI:not-wf/P85/ibm85n134.xml
@@ -7554,16 +8710,24 @@ fn ibmnotwf_p85ibm85n134xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EAC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n134.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n135xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n135.xml
         Test URI:not-wf/P85/ibm85n135.xml
@@ -7571,16 +8735,24 @@ fn ibmnotwf_p85ibm85n135xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EAF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n135.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n136xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n136.xml
         Test URI:not-wf/P85/ibm85n136.xml
@@ -7588,16 +8760,24 @@ fn ibmnotwf_p85ibm85n136xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EB1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n136.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n137xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n137.xml
         Test URI:not-wf/P85/ibm85n137.xml
@@ -7605,16 +8785,24 @@ fn ibmnotwf_p85ibm85n137xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EB4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n137.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n138xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n138.xml
         Test URI:not-wf/P85/ibm85n138.xml
@@ -7622,16 +8810,24 @@ fn ibmnotwf_p85ibm85n138xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EBE occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n138.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n139xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n139.xml
         Test URI:not-wf/P85/ibm85n139.xml
@@ -7639,16 +8835,24 @@ fn ibmnotwf_p85ibm85n139xml() {
         Description:Tests BaseChar with an illegal character. The character #x0EC5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n139.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n14xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n14.xml
         Test URI:not-wf/P85/ibm85n14.xml
@@ -7656,16 +8860,24 @@ fn ibmnotwf_p85ibm85n14xml() {
         Description:Tests BaseChar with an illegal character. The character #x01F9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n140xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n140.xml
         Test URI:not-wf/P85/ibm85n140.xml
@@ -7673,16 +8885,24 @@ fn ibmnotwf_p85ibm85n140xml() {
         Description:Tests BaseChar with an illegal character. The character #x0F48 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n140.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n141xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n141.xml
         Test URI:not-wf/P85/ibm85n141.xml
@@ -7690,16 +8910,24 @@ fn ibmnotwf_p85ibm85n141xml() {
         Description:Tests BaseChar with an illegal character. The character #x0F6A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n141.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n142xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n142.xml
         Test URI:not-wf/P85/ibm85n142.xml
@@ -7707,16 +8935,24 @@ fn ibmnotwf_p85ibm85n142xml() {
         Description:Tests BaseChar with an illegal character. The character #x10C6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n142.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n143xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n143.xml
         Test URI:not-wf/P85/ibm85n143.xml
@@ -7724,16 +8960,24 @@ fn ibmnotwf_p85ibm85n143xml() {
         Description:Tests BaseChar with an illegal character. The character #x10F7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n143.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n144xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n144.xml
         Test URI:not-wf/P85/ibm85n144.xml
@@ -7741,16 +8985,24 @@ fn ibmnotwf_p85ibm85n144xml() {
         Description:Tests BaseChar with an illegal character. The character #x1011 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n144.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n145xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n145.xml
         Test URI:not-wf/P85/ibm85n145.xml
@@ -7758,16 +9010,24 @@ fn ibmnotwf_p85ibm85n145xml() {
         Description:Tests BaseChar with an illegal character. The character #x1104 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n145.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n146xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n146.xml
         Test URI:not-wf/P85/ibm85n146.xml
@@ -7775,16 +9035,24 @@ fn ibmnotwf_p85ibm85n146xml() {
         Description:Tests BaseChar with an illegal character. The character #x1108 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n146.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n147xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n147.xml
         Test URI:not-wf/P85/ibm85n147.xml
@@ -7792,16 +9060,24 @@ fn ibmnotwf_p85ibm85n147xml() {
         Description:Tests BaseChar with an illegal character. The character #x110A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n147.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n148xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n148.xml
         Test URI:not-wf/P85/ibm85n148.xml
@@ -7809,16 +9085,24 @@ fn ibmnotwf_p85ibm85n148xml() {
         Description:Tests BaseChar with an illegal character. The character #x110D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n148.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n149xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n149.xml
         Test URI:not-wf/P85/ibm85n149.xml
@@ -7826,16 +9110,24 @@ fn ibmnotwf_p85ibm85n149xml() {
         Description:Tests BaseChar with an illegal character. The character #x113B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n149.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n15xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n15.xml
         Test URI:not-wf/P85/ibm85n15.xml
@@ -7843,16 +9135,24 @@ fn ibmnotwf_p85ibm85n15xml() {
         Description:Tests BaseChar with an illegal character. The character #x01F9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n15.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n150xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n150.xml
         Test URI:not-wf/P85/ibm85n150.xml
@@ -7860,16 +9160,24 @@ fn ibmnotwf_p85ibm85n150xml() {
         Description:Tests BaseChar with an illegal character. The character #x113F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n150.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n151xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n151.xml
         Test URI:not-wf/P85/ibm85n151.xml
@@ -7877,16 +9185,24 @@ fn ibmnotwf_p85ibm85n151xml() {
         Description:Tests BaseChar with an illegal character. The character #x1141 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n151.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n152xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n152.xml
         Test URI:not-wf/P85/ibm85n152.xml
@@ -7894,16 +9210,24 @@ fn ibmnotwf_p85ibm85n152xml() {
         Description:Tests BaseChar with an illegal character. The character #x114D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n152.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n153xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n153.xml
         Test URI:not-wf/P85/ibm85n153.xml
@@ -7911,16 +9235,24 @@ fn ibmnotwf_p85ibm85n153xml() {
         Description:Tests BaseChar with an illegal character. The character #x114f occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n153.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n154xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n154.xml
         Test URI:not-wf/P85/ibm85n154.xml
@@ -7928,16 +9260,24 @@ fn ibmnotwf_p85ibm85n154xml() {
         Description:Tests BaseChar with an illegal character. The character #x1151 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n154.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n155xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n155.xml
         Test URI:not-wf/P85/ibm85n155.xml
@@ -7945,16 +9285,24 @@ fn ibmnotwf_p85ibm85n155xml() {
         Description:Tests BaseChar with an illegal character. The character #x1156 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n155.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n156xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n156.xml
         Test URI:not-wf/P85/ibm85n156.xml
@@ -7962,16 +9310,24 @@ fn ibmnotwf_p85ibm85n156xml() {
         Description:Tests BaseChar with an illegal character. The character #x115A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n156.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n157xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n157.xml
         Test URI:not-wf/P85/ibm85n157.xml
@@ -7979,16 +9335,24 @@ fn ibmnotwf_p85ibm85n157xml() {
         Description:Tests BaseChar with an illegal character. The character #x1162 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n157.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n158xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n158.xml
         Test URI:not-wf/P85/ibm85n158.xml
@@ -7996,16 +9360,24 @@ fn ibmnotwf_p85ibm85n158xml() {
         Description:Tests BaseChar with an illegal character. The character #x1164 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n158.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n159xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n159.xml
         Test URI:not-wf/P85/ibm85n159.xml
@@ -8013,16 +9385,24 @@ fn ibmnotwf_p85ibm85n159xml() {
         Description:Tests BaseChar with an illegal character. The character #x1166 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n159.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n16xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n16.xml
         Test URI:not-wf/P85/ibm85n16.xml
@@ -8030,16 +9410,24 @@ fn ibmnotwf_p85ibm85n16xml() {
         Description:Tests BaseChar with an illegal character. The character #x0230 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n16.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n160xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n160.xml
         Test URI:not-wf/P85/ibm85n160.xml
@@ -8047,16 +9435,24 @@ fn ibmnotwf_p85ibm85n160xml() {
         Description:Tests BaseChar with an illegal character. The character #x116B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n160.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n161xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n161.xml
         Test URI:not-wf/P85/ibm85n161.xml
@@ -8064,16 +9460,24 @@ fn ibmnotwf_p85ibm85n161xml() {
         Description:Tests BaseChar with an illegal character. The character #x116F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n161.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n162xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n162.xml
         Test URI:not-wf/P85/ibm85n162.xml
@@ -8081,16 +9485,24 @@ fn ibmnotwf_p85ibm85n162xml() {
         Description:Tests BaseChar with an illegal character. The character #x1174 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n162.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n163xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n163.xml
         Test URI:not-wf/P85/ibm85n163.xml
@@ -8098,16 +9510,24 @@ fn ibmnotwf_p85ibm85n163xml() {
         Description:Tests BaseChar with an illegal character. The character #x119F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n163.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n164xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n164.xml
         Test URI:not-wf/P85/ibm85n164.xml
@@ -8115,16 +9535,24 @@ fn ibmnotwf_p85ibm85n164xml() {
         Description:Tests BaseChar with an illegal character. The character #x11AC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n164.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n165xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n165.xml
         Test URI:not-wf/P85/ibm85n165.xml
@@ -8132,16 +9560,24 @@ fn ibmnotwf_p85ibm85n165xml() {
         Description:Tests BaseChar with an illegal character. The character #x11B6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n165.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n166xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n166.xml
         Test URI:not-wf/P85/ibm85n166.xml
@@ -8149,16 +9585,24 @@ fn ibmnotwf_p85ibm85n166xml() {
         Description:Tests BaseChar with an illegal character. The character #x11B9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n166.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n167xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n167.xml
         Test URI:not-wf/P85/ibm85n167.xml
@@ -8166,16 +9610,24 @@ fn ibmnotwf_p85ibm85n167xml() {
         Description:Tests BaseChar with an illegal character. The character #x11BB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n167.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n168xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n168.xml
         Test URI:not-wf/P85/ibm85n168.xml
@@ -8183,16 +9635,24 @@ fn ibmnotwf_p85ibm85n168xml() {
         Description:Tests BaseChar with an illegal character. The character #x11C3 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n168.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n169xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n169.xml
         Test URI:not-wf/P85/ibm85n169.xml
@@ -8200,16 +9660,24 @@ fn ibmnotwf_p85ibm85n169xml() {
         Description:Tests BaseChar with an illegal character. The character #x11F1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n169.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n17xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n17.xml
         Test URI:not-wf/P85/ibm85n17.xml
@@ -8217,16 +9685,24 @@ fn ibmnotwf_p85ibm85n17xml() {
         Description:Tests BaseChar with an illegal character. The character #x02AF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n17.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n170xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n170.xml
         Test URI:not-wf/P85/ibm85n170.xml
@@ -8234,16 +9710,24 @@ fn ibmnotwf_p85ibm85n170xml() {
         Description:Tests BaseChar with an illegal character. The character #x11FA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n170.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n171xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n171.xml
         Test URI:not-wf/P85/ibm85n171.xml
@@ -8251,16 +9735,24 @@ fn ibmnotwf_p85ibm85n171xml() {
         Description:Tests BaseChar with an illegal character. The character #x1E9C occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n171.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n172xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n172.xml
         Test URI:not-wf/P85/ibm85n172.xml
@@ -8268,16 +9760,24 @@ fn ibmnotwf_p85ibm85n172xml() {
         Description:Tests BaseChar with an illegal character. The character #x1EFA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n172.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n173xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n173.xml
         Test URI:not-wf/P85/ibm85n173.xml
@@ -8285,16 +9785,24 @@ fn ibmnotwf_p85ibm85n173xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F16 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n173.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n174xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n174.xml
         Test URI:not-wf/P85/ibm85n174.xml
@@ -8302,16 +9810,24 @@ fn ibmnotwf_p85ibm85n174xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F1E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n174.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n175xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n175.xml
         Test URI:not-wf/P85/ibm85n175.xml
@@ -8319,16 +9835,24 @@ fn ibmnotwf_p85ibm85n175xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F46 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n175.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n176xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n176.xml
         Test URI:not-wf/P85/ibm85n176.xml
@@ -8336,16 +9860,24 @@ fn ibmnotwf_p85ibm85n176xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F4F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n176.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n177xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n177.xml
         Test URI:not-wf/P85/ibm85n177.xml
@@ -8353,16 +9885,24 @@ fn ibmnotwf_p85ibm85n177xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F58 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n177.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n178xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n178.xml
         Test URI:not-wf/P85/ibm85n178.xml
@@ -8370,16 +9910,24 @@ fn ibmnotwf_p85ibm85n178xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F5A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n178.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n179xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n179.xml
         Test URI:not-wf/P85/ibm85n179.xml
@@ -8387,16 +9935,24 @@ fn ibmnotwf_p85ibm85n179xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F5C occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n179.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n18xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n18.xml
         Test URI:not-wf/P85/ibm85n18.xml
@@ -8404,16 +9960,24 @@ fn ibmnotwf_p85ibm85n18xml() {
         Description:Tests BaseChar with an illegal character. The character #x02CF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n18.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n180xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n180.xml
         Test URI:not-wf/P85/ibm85n180.xml
@@ -8421,16 +9985,24 @@ fn ibmnotwf_p85ibm85n180xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F5E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n180.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n181xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n181.xml
         Test URI:not-wf/P85/ibm85n181.xml
@@ -8438,16 +10010,24 @@ fn ibmnotwf_p85ibm85n181xml() {
         Description:Tests BaseChar with an illegal character. The character #x1F7E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n181.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n182xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n182.xml
         Test URI:not-wf/P85/ibm85n182.xml
@@ -8455,16 +10035,24 @@ fn ibmnotwf_p85ibm85n182xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FB5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n182.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n183xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n183.xml
         Test URI:not-wf/P85/ibm85n183.xml
@@ -8472,16 +10060,24 @@ fn ibmnotwf_p85ibm85n183xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FBD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n183.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n184xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n184.xml
         Test URI:not-wf/P85/ibm85n184.xml
@@ -8489,16 +10085,24 @@ fn ibmnotwf_p85ibm85n184xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FBF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n184.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n185xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n185.xml
         Test URI:not-wf/P85/ibm85n185.xml
@@ -8506,16 +10110,24 @@ fn ibmnotwf_p85ibm85n185xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FC5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n185.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n186xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n186.xml
         Test URI:not-wf/P85/ibm85n186.xml
@@ -8523,16 +10135,24 @@ fn ibmnotwf_p85ibm85n186xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FCD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n186.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n187xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n187.xml
         Test URI:not-wf/P85/ibm85n187.xml
@@ -8540,16 +10160,24 @@ fn ibmnotwf_p85ibm85n187xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FD5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n187.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n188xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n188.xml
         Test URI:not-wf/P85/ibm85n188.xml
@@ -8557,16 +10185,24 @@ fn ibmnotwf_p85ibm85n188xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FDC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n188.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n189xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n189.xml
         Test URI:not-wf/P85/ibm85n189.xml
@@ -8574,16 +10210,24 @@ fn ibmnotwf_p85ibm85n189xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FED occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n189.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n19xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n19.xml
         Test URI:not-wf/P85/ibm85n19.xml
@@ -8591,16 +10235,24 @@ fn ibmnotwf_p85ibm85n19xml() {
         Description:Tests BaseChar with an illegal character. The character #x0387 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n19.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n190xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n190.xml
         Test URI:not-wf/P85/ibm85n190.xml
@@ -8608,16 +10260,24 @@ fn ibmnotwf_p85ibm85n190xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FF5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n190.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n191xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n191.xml
         Test URI:not-wf/P85/ibm85n191.xml
@@ -8625,16 +10285,24 @@ fn ibmnotwf_p85ibm85n191xml() {
         Description:Tests BaseChar with an illegal character. The character #x1FFD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n191.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n192xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n192.xml
         Test URI:not-wf/P85/ibm85n192.xml
@@ -8642,16 +10310,24 @@ fn ibmnotwf_p85ibm85n192xml() {
         Description:Tests BaseChar with an illegal character. The character #x2127 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n192.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n193xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n193.xml
         Test URI:not-wf/P85/ibm85n193.xml
@@ -8659,16 +10335,24 @@ fn ibmnotwf_p85ibm85n193xml() {
         Description:Tests BaseChar with an illegal character. The character #x212F occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n193.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n194xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n194.xml
         Test URI:not-wf/P85/ibm85n194.xml
@@ -8676,16 +10360,24 @@ fn ibmnotwf_p85ibm85n194xml() {
         Description:Tests BaseChar with an illegal character. The character #x2183 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n194.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n195xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n195.xml
         Test URI:not-wf/P85/ibm85n195.xml
@@ -8693,16 +10385,24 @@ fn ibmnotwf_p85ibm85n195xml() {
         Description:Tests BaseChar with an illegal character. The character #x3095 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n195.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n196xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n196.xml
         Test URI:not-wf/P85/ibm85n196.xml
@@ -8710,16 +10410,24 @@ fn ibmnotwf_p85ibm85n196xml() {
         Description:Tests BaseChar with an illegal character. The character #x30FB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n196.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n197xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n197.xml
         Test URI:not-wf/P85/ibm85n197.xml
@@ -8727,16 +10435,24 @@ fn ibmnotwf_p85ibm85n197xml() {
         Description:Tests BaseChar with an illegal character. The character #x312D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n197.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n198xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n198.xml
         Test URI:not-wf/P85/ibm85n198.xml
@@ -8744,16 +10460,24 @@ fn ibmnotwf_p85ibm85n198xml() {
         Description:Tests BaseChar with an illegal character. The character #xD7A4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n198.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n20xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n20.xml
         Test URI:not-wf/P85/ibm85n20.xml
@@ -8761,16 +10485,24 @@ fn ibmnotwf_p85ibm85n20xml() {
         Description:Tests BaseChar with an illegal character. The character #x038B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n20.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n21xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n21.xml
         Test URI:not-wf/P85/ibm85n21.xml
@@ -8778,16 +10510,24 @@ fn ibmnotwf_p85ibm85n21xml() {
         Description:Tests BaseChar with an illegal character. The character #x03A2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n21.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n22xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n22.xml
         Test URI:not-wf/P85/ibm85n22.xml
@@ -8795,16 +10535,24 @@ fn ibmnotwf_p85ibm85n22xml() {
         Description:Tests BaseChar with an illegal character. The character #x03CF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n22.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n23xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n23.xml
         Test URI:not-wf/P85/ibm85n23.xml
@@ -8812,16 +10560,24 @@ fn ibmnotwf_p85ibm85n23xml() {
         Description:Tests BaseChar with an illegal character. The character #x03D7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n23.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n24xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n24.xml
         Test URI:not-wf/P85/ibm85n24.xml
@@ -8829,16 +10585,24 @@ fn ibmnotwf_p85ibm85n24xml() {
         Description:Tests BaseChar with an illegal character. The character #x03DD occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n24.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n25xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n25.xml
         Test URI:not-wf/P85/ibm85n25.xml
@@ -8846,16 +10610,24 @@ fn ibmnotwf_p85ibm85n25xml() {
         Description:Tests BaseChar with an illegal character. The character #x03E1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n25.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n26xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n26.xml
         Test URI:not-wf/P85/ibm85n26.xml
@@ -8863,16 +10635,24 @@ fn ibmnotwf_p85ibm85n26xml() {
         Description:Tests BaseChar with an illegal character. The character #x03F4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n26.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n27xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n27.xml
         Test URI:not-wf/P85/ibm85n27.xml
@@ -8880,16 +10660,24 @@ fn ibmnotwf_p85ibm85n27xml() {
         Description:Tests BaseChar with an illegal character. The character #x040D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n27.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n28xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n28.xml
         Test URI:not-wf/P85/ibm85n28.xml
@@ -8897,16 +10685,24 @@ fn ibmnotwf_p85ibm85n28xml() {
         Description:Tests BaseChar with an illegal character. The character #x0450 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n28.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n29xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n29.xml
         Test URI:not-wf/P85/ibm85n29.xml
@@ -8914,16 +10710,24 @@ fn ibmnotwf_p85ibm85n29xml() {
         Description:Tests BaseChar with an illegal character. The character #x045D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n29.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n30xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n30.xml
         Test URI:not-wf/P85/ibm85n30.xml
@@ -8931,16 +10735,24 @@ fn ibmnotwf_p85ibm85n30xml() {
         Description:Tests BaseChar with an illegal character. The character #x0482 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n30.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n31xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n31.xml
         Test URI:not-wf/P85/ibm85n31.xml
@@ -8948,16 +10760,24 @@ fn ibmnotwf_p85ibm85n31xml() {
         Description:Tests BaseChar with an illegal character. The character #x04C5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n31.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n32xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n32.xml
         Test URI:not-wf/P85/ibm85n32.xml
@@ -8965,16 +10785,24 @@ fn ibmnotwf_p85ibm85n32xml() {
         Description:Tests BaseChar with an illegal character. The character #x04C6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n32.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n33xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n33.xml
         Test URI:not-wf/P85/ibm85n33.xml
@@ -8982,16 +10810,24 @@ fn ibmnotwf_p85ibm85n33xml() {
         Description:Tests BaseChar with an illegal character. The character #x04C9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n33.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n34xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n34.xml
         Test URI:not-wf/P85/ibm85n34.xml
@@ -8999,16 +10835,24 @@ fn ibmnotwf_p85ibm85n34xml() {
         Description:Tests BaseChar with an illegal character. The character #x04EC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n34.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n35xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n35.xml
         Test URI:not-wf/P85/ibm85n35.xml
@@ -9016,16 +10860,24 @@ fn ibmnotwf_p85ibm85n35xml() {
         Description:Tests BaseChar with an illegal character. The character #x04ED occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n35.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n36xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n36.xml
         Test URI:not-wf/P85/ibm85n36.xml
@@ -9033,16 +10885,24 @@ fn ibmnotwf_p85ibm85n36xml() {
         Description:Tests BaseChar with an illegal character. The character #x04F6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n36.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n37xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n37.xml
         Test URI:not-wf/P85/ibm85n37.xml
@@ -9050,16 +10910,24 @@ fn ibmnotwf_p85ibm85n37xml() {
         Description:Tests BaseChar with an illegal character. The character #x04FA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n37.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n38xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n38.xml
         Test URI:not-wf/P85/ibm85n38.xml
@@ -9067,16 +10935,24 @@ fn ibmnotwf_p85ibm85n38xml() {
         Description:Tests BaseChar with an illegal character. The character #x0557 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n38.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n39xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n39.xml
         Test URI:not-wf/P85/ibm85n39.xml
@@ -9084,16 +10960,24 @@ fn ibmnotwf_p85ibm85n39xml() {
         Description:Tests BaseChar with an illegal character. The character #x0558 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n39.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n40xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n40.xml
         Test URI:not-wf/P85/ibm85n40.xml
@@ -9101,16 +10985,24 @@ fn ibmnotwf_p85ibm85n40xml() {
         Description:Tests BaseChar with an illegal character. The character #x0587 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n40.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n41xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n41.xml
         Test URI:not-wf/P85/ibm85n41.xml
@@ -9118,16 +11010,24 @@ fn ibmnotwf_p85ibm85n41xml() {
         Description:Tests BaseChar with an illegal character. The character #x05EB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n41.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n42xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n42.xml
         Test URI:not-wf/P85/ibm85n42.xml
@@ -9135,16 +11035,24 @@ fn ibmnotwf_p85ibm85n42xml() {
         Description:Tests BaseChar with an illegal character. The character #x05F3 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n42.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n43xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n43.xml
         Test URI:not-wf/P85/ibm85n43.xml
@@ -9152,16 +11060,24 @@ fn ibmnotwf_p85ibm85n43xml() {
         Description:Tests BaseChar with an illegal character. The character #x0620 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n43.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n44xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n44.xml
         Test URI:not-wf/P85/ibm85n44.xml
@@ -9169,16 +11085,24 @@ fn ibmnotwf_p85ibm85n44xml() {
         Description:Tests BaseChar with an illegal character. The character #x063B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n44.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n45xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n45.xml
         Test URI:not-wf/P85/ibm85n45.xml
@@ -9186,16 +11110,24 @@ fn ibmnotwf_p85ibm85n45xml() {
         Description:Tests BaseChar with an illegal character. The character #x064B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n45.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n46xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n46.xml
         Test URI:not-wf/P85/ibm85n46.xml
@@ -9203,16 +11135,24 @@ fn ibmnotwf_p85ibm85n46xml() {
         Description:Tests BaseChar with an illegal character. The character #x06B8 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n46.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n47xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n47.xml
         Test URI:not-wf/P85/ibm85n47.xml
@@ -9220,16 +11160,24 @@ fn ibmnotwf_p85ibm85n47xml() {
         Description:Tests BaseChar with an illegal character. The character #x06BF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n47.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n48xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n48.xml
         Test URI:not-wf/P85/ibm85n48.xml
@@ -9237,16 +11185,24 @@ fn ibmnotwf_p85ibm85n48xml() {
         Description:Tests BaseChar with an illegal character. The character #x06CF occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n48.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n49xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n49.xml
         Test URI:not-wf/P85/ibm85n49.xml
@@ -9254,16 +11210,24 @@ fn ibmnotwf_p85ibm85n49xml() {
         Description:Tests BaseChar with an illegal character. The character #x06D4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n49.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n50xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n50.xml
         Test URI:not-wf/P85/ibm85n50.xml
@@ -9271,16 +11235,24 @@ fn ibmnotwf_p85ibm85n50xml() {
         Description:Tests BaseChar with an illegal character. The character #x06D6 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n50.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n51xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n51.xml
         Test URI:not-wf/P85/ibm85n51.xml
@@ -9288,16 +11260,24 @@ fn ibmnotwf_p85ibm85n51xml() {
         Description:Tests BaseChar with an illegal character. The character #x06E7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n51.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n52xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n52.xml
         Test URI:not-wf/P85/ibm85n52.xml
@@ -9305,16 +11285,24 @@ fn ibmnotwf_p85ibm85n52xml() {
         Description:Tests BaseChar with an illegal character. The character #x093A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n52.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n53xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n53.xml
         Test URI:not-wf/P85/ibm85n53.xml
@@ -9322,16 +11310,24 @@ fn ibmnotwf_p85ibm85n53xml() {
         Description:Tests BaseChar with an illegal character. The character #x093E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n53.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n54xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n54.xml
         Test URI:not-wf/P85/ibm85n54.xml
@@ -9339,16 +11335,24 @@ fn ibmnotwf_p85ibm85n54xml() {
         Description:Tests BaseChar with an illegal character. The character #x0962 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n54.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n55xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n55.xml
         Test URI:not-wf/P85/ibm85n55.xml
@@ -9356,16 +11360,24 @@ fn ibmnotwf_p85ibm85n55xml() {
         Description:Tests BaseChar with an illegal character. The character #x098D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n55.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n56xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n56.xml
         Test URI:not-wf/P85/ibm85n56.xml
@@ -9373,16 +11385,24 @@ fn ibmnotwf_p85ibm85n56xml() {
         Description:Tests BaseChar with an illegal character. The character #x0991 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n56.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n57xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n57.xml
         Test URI:not-wf/P85/ibm85n57.xml
@@ -9390,16 +11410,24 @@ fn ibmnotwf_p85ibm85n57xml() {
         Description:Tests BaseChar with an illegal character. The character #x0992 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n57.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n58xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n58.xml
         Test URI:not-wf/P85/ibm85n58.xml
@@ -9407,16 +11435,24 @@ fn ibmnotwf_p85ibm85n58xml() {
         Description:Tests BaseChar with an illegal character. The character #x09A9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n58.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n59xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n59.xml
         Test URI:not-wf/P85/ibm85n59.xml
@@ -9424,16 +11460,24 @@ fn ibmnotwf_p85ibm85n59xml() {
         Description:Tests BaseChar with an illegal character. The character #x09B1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n59.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n60xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n60.xml
         Test URI:not-wf/P85/ibm85n60.xml
@@ -9441,16 +11485,24 @@ fn ibmnotwf_p85ibm85n60xml() {
         Description:Tests BaseChar with an illegal character. The character #x09B5 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n60.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n61xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n61.xml
         Test URI:not-wf/P85/ibm85n61.xml
@@ -9458,16 +11510,24 @@ fn ibmnotwf_p85ibm85n61xml() {
         Description:Tests BaseChar with an illegal character. The character #x09BA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n61.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n62xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n62.xml
         Test URI:not-wf/P85/ibm85n62.xml
@@ -9475,16 +11535,24 @@ fn ibmnotwf_p85ibm85n62xml() {
         Description:Tests BaseChar with an illegal character. The character #x09DE occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n62.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n63xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n63.xml
         Test URI:not-wf/P85/ibm85n63.xml
@@ -9492,16 +11560,24 @@ fn ibmnotwf_p85ibm85n63xml() {
         Description:Tests BaseChar with an illegal character. The character #x09E2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n63.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n64xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n64.xml
         Test URI:not-wf/P85/ibm85n64.xml
@@ -9509,16 +11585,24 @@ fn ibmnotwf_p85ibm85n64xml() {
         Description:Tests BaseChar with an illegal character. The character #x09F2 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n64.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n65xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n65.xml
         Test URI:not-wf/P85/ibm85n65.xml
@@ -9526,16 +11610,24 @@ fn ibmnotwf_p85ibm85n65xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A0B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n65.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n66xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n66.xml
         Test URI:not-wf/P85/ibm85n66.xml
@@ -9543,16 +11635,24 @@ fn ibmnotwf_p85ibm85n66xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n66.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n67xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n67.xml
         Test URI:not-wf/P85/ibm85n67.xml
@@ -9560,16 +11660,24 @@ fn ibmnotwf_p85ibm85n67xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n67.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n68xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n68.xml
         Test URI:not-wf/P85/ibm85n68.xml
@@ -9577,16 +11685,24 @@ fn ibmnotwf_p85ibm85n68xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A31 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n68.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n69xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n69.xml
         Test URI:not-wf/P85/ibm85n69.xml
@@ -9594,16 +11710,24 @@ fn ibmnotwf_p85ibm85n69xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n69.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n70xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n70.xml
         Test URI:not-wf/P85/ibm85n70.xml
@@ -9611,16 +11735,24 @@ fn ibmnotwf_p85ibm85n70xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A37 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n70.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n71xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n71.xml
         Test URI:not-wf/P85/ibm85n71.xml
@@ -9628,16 +11760,24 @@ fn ibmnotwf_p85ibm85n71xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A3A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n71.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n72xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n72.xml
         Test URI:not-wf/P85/ibm85n72.xml
@@ -9645,16 +11785,24 @@ fn ibmnotwf_p85ibm85n72xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A5D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n72.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n73xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n73.xml
         Test URI:not-wf/P85/ibm85n73.xml
@@ -9662,16 +11810,24 @@ fn ibmnotwf_p85ibm85n73xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A70 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n73.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n74xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n74.xml
         Test URI:not-wf/P85/ibm85n74.xml
@@ -9679,16 +11835,24 @@ fn ibmnotwf_p85ibm85n74xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A75 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n74.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n75xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n75.xml
         Test URI:not-wf/P85/ibm85n75.xml
@@ -9696,16 +11860,24 @@ fn ibmnotwf_p85ibm85n75xml() {
         Description:Tests BaseChar with an illegal character. The character #xA84 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n75.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n76xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n76.xml
         Test URI:not-wf/P85/ibm85n76.xml
@@ -9713,16 +11885,24 @@ fn ibmnotwf_p85ibm85n76xml() {
         Description:Tests BaseChar with an illegal character. The character #x0ABC occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n76.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n77xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n77.xml
         Test URI:not-wf/P85/ibm85n77.xml
@@ -9730,16 +11910,24 @@ fn ibmnotwf_p85ibm85n77xml() {
         Description:Tests BaseChar with an illegal character. The character #x0A92 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n77.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n78xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n78.xml
         Test URI:not-wf/P85/ibm85n78.xml
@@ -9747,16 +11935,24 @@ fn ibmnotwf_p85ibm85n78xml() {
         Description:Tests BaseChar with an illegal character. The character #x0AA9 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n78.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n79xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n79.xml
         Test URI:not-wf/P85/ibm85n79.xml
@@ -9764,16 +11960,24 @@ fn ibmnotwf_p85ibm85n79xml() {
         Description:Tests BaseChar with an illegal character. The character #x0AB1 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n79.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n80xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n80.xml
         Test URI:not-wf/P85/ibm85n80.xml
@@ -9781,16 +11985,24 @@ fn ibmnotwf_p85ibm85n80xml() {
         Description:Tests BaseChar with an illegal character. The character #x0AB4 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n80.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n81xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n81.xml
         Test URI:not-wf/P85/ibm85n81.xml
@@ -9798,16 +12010,24 @@ fn ibmnotwf_p85ibm85n81xml() {
         Description:Tests BaseChar with an illegal character. The character #x0ABA occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n81.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n82xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n82.xml
         Test URI:not-wf/P85/ibm85n82.xml
@@ -9815,16 +12035,24 @@ fn ibmnotwf_p85ibm85n82xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B04 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n82.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n83xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n83.xml
         Test URI:not-wf/P85/ibm85n83.xml
@@ -9832,16 +12060,24 @@ fn ibmnotwf_p85ibm85n83xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B0D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n83.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n84xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n84.xml
         Test URI:not-wf/P85/ibm85n84.xml
@@ -9849,16 +12085,24 @@ fn ibmnotwf_p85ibm85n84xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B11 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n84.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n85xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n85.xml
         Test URI:not-wf/P85/ibm85n85.xml
@@ -9866,16 +12110,24 @@ fn ibmnotwf_p85ibm85n85xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B29 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n85.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n86xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n86.xml
         Test URI:not-wf/P85/ibm85n86.xml
@@ -9883,16 +12135,24 @@ fn ibmnotwf_p85ibm85n86xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B31 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n86.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n87xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n87.xml
         Test URI:not-wf/P85/ibm85n87.xml
@@ -9900,16 +12160,24 @@ fn ibmnotwf_p85ibm85n87xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B34 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n87.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n88xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n88.xml
         Test URI:not-wf/P85/ibm85n88.xml
@@ -9917,16 +12185,24 @@ fn ibmnotwf_p85ibm85n88xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B3A occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n88.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n89xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n89.xml
         Test URI:not-wf/P85/ibm85n89.xml
@@ -9934,16 +12210,24 @@ fn ibmnotwf_p85ibm85n89xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B3E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n89.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n90xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n90.xml
         Test URI:not-wf/P85/ibm85n90.xml
@@ -9951,16 +12235,24 @@ fn ibmnotwf_p85ibm85n90xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B5E occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n90.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n91xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n91.xml
         Test URI:not-wf/P85/ibm85n91.xml
@@ -9968,16 +12260,24 @@ fn ibmnotwf_p85ibm85n91xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B62 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n91.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n92xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n92.xml
         Test URI:not-wf/P85/ibm85n92.xml
@@ -9985,16 +12285,24 @@ fn ibmnotwf_p85ibm85n92xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B8B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n92.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n93xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n93.xml
         Test URI:not-wf/P85/ibm85n93.xml
@@ -10002,16 +12310,24 @@ fn ibmnotwf_p85ibm85n93xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B91 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n93.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n94xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n94.xml
         Test URI:not-wf/P85/ibm85n94.xml
@@ -10019,16 +12335,24 @@ fn ibmnotwf_p85ibm85n94xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B98 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n94.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n95xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n95.xml
         Test URI:not-wf/P85/ibm85n95.xml
@@ -10036,16 +12360,24 @@ fn ibmnotwf_p85ibm85n95xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B9B occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n95.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n96xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n96.xml
         Test URI:not-wf/P85/ibm85n96.xml
@@ -10053,16 +12385,24 @@ fn ibmnotwf_p85ibm85n96xml() {
         Description:Tests BaseChar with an illegal character. The character #x0B9D occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n96.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n97xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n97.xml
         Test URI:not-wf/P85/ibm85n97.xml
@@ -10070,16 +12410,24 @@ fn ibmnotwf_p85ibm85n97xml() {
         Description:Tests BaseChar with an illegal character. The character #x0BA0 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n97.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n98xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n98.xml
         Test URI:not-wf/P85/ibm85n98.xml
@@ -10087,16 +12435,24 @@ fn ibmnotwf_p85ibm85n98xml() {
         Description:Tests BaseChar with an illegal character. The character #x0BA7 occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n98.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p85ibm85n99xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P85-ibm85n99.xml
         Test URI:not-wf/P85/ibm85n99.xml
@@ -10104,16 +12460,24 @@ fn ibmnotwf_p85ibm85n99xml() {
         Description:Tests BaseChar with an illegal character. The character #x0BAB occurs as the first character of the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P85/ibm85n99.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n01xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n01.xml
         Test URI:not-wf/P86/ibm86n01.xml
@@ -10121,16 +12485,24 @@ fn ibmnotwf_p86ibm86n01xml() {
         Description:Tests Ideographic with an illegal character. The character #x4CFF occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n02xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n02.xml
         Test URI:not-wf/P86/ibm86n02.xml
@@ -10138,16 +12510,24 @@ fn ibmnotwf_p86ibm86n02xml() {
         Description:Tests Ideographic with an illegal character. The character #x9FA6 occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n03.xml
         Test URI:not-wf/P86/ibm86n03.xml
@@ -10155,16 +12535,24 @@ fn ibmnotwf_p86ibm86n03xml() {
         Description:Tests Ideographic with an illegal character. The character #x3008 occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p86ibm86n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P86-ibm86n04.xml
         Test URI:not-wf/P86/ibm86n04.xml
@@ -10172,16 +12560,24 @@ fn ibmnotwf_p86ibm86n04xml() {
         Description:Tests Ideographic with an illegal character. The character #x302A occurs as the first character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P86/ibm86n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n01xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n01.xml
         Test URI:not-wf/P87/ibm87n01.xml
@@ -10189,16 +12585,24 @@ fn ibmnotwf_p87ibm87n01xml() {
         Description:Tests CombiningChar with an illegal character. The character #x02FF occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n02xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n02.xml
         Test URI:not-wf/P87/ibm87n02.xml
@@ -10206,16 +12610,24 @@ fn ibmnotwf_p87ibm87n02xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0346 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n03.xml
         Test URI:not-wf/P87/ibm87n03.xml
@@ -10223,16 +12635,24 @@ fn ibmnotwf_p87ibm87n03xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0362 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n04.xml
         Test URI:not-wf/P87/ibm87n04.xml
@@ -10240,16 +12660,24 @@ fn ibmnotwf_p87ibm87n04xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0487 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n05.xml
         Test URI:not-wf/P87/ibm87n05.xml
@@ -10257,16 +12685,24 @@ fn ibmnotwf_p87ibm87n05xml() {
         Description:Tests CombiningChar with an illegal character. The character #x05A2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n06xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n06.xml
         Test URI:not-wf/P87/ibm87n06.xml
@@ -10274,16 +12710,24 @@ fn ibmnotwf_p87ibm87n06xml() {
         Description:Tests CombiningChar with an illegal character. The character #x05BA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n07xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n07.xml
         Test URI:not-wf/P87/ibm87n07.xml
@@ -10291,16 +12735,24 @@ fn ibmnotwf_p87ibm87n07xml() {
         Description:Tests CombiningChar with an illegal character. The character #x05BE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n08xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n08.xml
         Test URI:not-wf/P87/ibm87n08.xml
@@ -10308,16 +12760,24 @@ fn ibmnotwf_p87ibm87n08xml() {
         Description:Tests CombiningChar with an illegal character. The character #x05C0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n09xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n09.xml
         Test URI:not-wf/P87/ibm87n09.xml
@@ -10325,16 +12785,24 @@ fn ibmnotwf_p87ibm87n09xml() {
         Description:Tests CombiningChar with an illegal character. The character #x05C3 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n10xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n10.xml
         Test URI:not-wf/P87/ibm87n10.xml
@@ -10342,16 +12810,24 @@ fn ibmnotwf_p87ibm87n10xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0653 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n11xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n11.xml
         Test URI:not-wf/P87/ibm87n11.xml
@@ -10359,16 +12835,24 @@ fn ibmnotwf_p87ibm87n11xml() {
         Description:Tests CombiningChar with an illegal character. The character #x06B8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n12xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n12.xml
         Test URI:not-wf/P87/ibm87n12.xml
@@ -10376,16 +12860,24 @@ fn ibmnotwf_p87ibm87n12xml() {
         Description:Tests CombiningChar with an illegal character. The character #x06B9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n13xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n13.xml
         Test URI:not-wf/P87/ibm87n13.xml
@@ -10393,16 +12885,24 @@ fn ibmnotwf_p87ibm87n13xml() {
         Description:Tests CombiningChar with an illegal character. The character #x06E9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n14xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n14.xml
         Test URI:not-wf/P87/ibm87n14.xml
@@ -10410,16 +12910,24 @@ fn ibmnotwf_p87ibm87n14xml() {
         Description:Tests CombiningChar with an illegal character. The character #x06EE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n15xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n15.xml
         Test URI:not-wf/P87/ibm87n15.xml
@@ -10427,16 +12935,24 @@ fn ibmnotwf_p87ibm87n15xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0904 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n15.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n16xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n16.xml
         Test URI:not-wf/P87/ibm87n16.xml
@@ -10444,16 +12960,24 @@ fn ibmnotwf_p87ibm87n16xml() {
         Description:Tests CombiningChar with an illegal character. The character #x093B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n16.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n17xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n17.xml
         Test URI:not-wf/P87/ibm87n17.xml
@@ -10461,16 +12985,24 @@ fn ibmnotwf_p87ibm87n17xml() {
         Description:Tests CombiningChar with an illegal character. The character #x094E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n17.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n18xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n18.xml
         Test URI:not-wf/P87/ibm87n18.xml
@@ -10478,16 +13010,24 @@ fn ibmnotwf_p87ibm87n18xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0955 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n18.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n19xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n19.xml
         Test URI:not-wf/P87/ibm87n19.xml
@@ -10495,16 +13035,24 @@ fn ibmnotwf_p87ibm87n19xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0964 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n19.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n20xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n20.xml
         Test URI:not-wf/P87/ibm87n20.xml
@@ -10512,16 +13060,24 @@ fn ibmnotwf_p87ibm87n20xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0984 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n20.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n21xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n21.xml
         Test URI:not-wf/P87/ibm87n21.xml
@@ -10529,16 +13085,24 @@ fn ibmnotwf_p87ibm87n21xml() {
         Description:Tests CombiningChar with an illegal character. The character #x09C5 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n21.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n22xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n22.xml
         Test URI:not-wf/P87/ibm87n22.xml
@@ -10546,16 +13110,24 @@ fn ibmnotwf_p87ibm87n22xml() {
         Description:Tests CombiningChar with an illegal character. The character #x09C9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n22.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n23xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n23.xml
         Test URI:not-wf/P87/ibm87n23.xml
@@ -10563,16 +13135,24 @@ fn ibmnotwf_p87ibm87n23xml() {
         Description:Tests CombiningChar with an illegal character. The character #x09CE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n23.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n24xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n24.xml
         Test URI:not-wf/P87/ibm87n24.xml
@@ -10580,16 +13160,24 @@ fn ibmnotwf_p87ibm87n24xml() {
         Description:Tests CombiningChar with an illegal character. The character #x09D8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n24.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n25xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n25.xml
         Test URI:not-wf/P87/ibm87n25.xml
@@ -10597,16 +13185,24 @@ fn ibmnotwf_p87ibm87n25xml() {
         Description:Tests CombiningChar with an illegal character. The character #x09E4 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n25.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n26xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n26.xml
         Test URI:not-wf/P87/ibm87n26.xml
@@ -10614,16 +13210,24 @@ fn ibmnotwf_p87ibm87n26xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A03 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n26.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n27xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n27.xml
         Test URI:not-wf/P87/ibm87n27.xml
@@ -10631,16 +13235,24 @@ fn ibmnotwf_p87ibm87n27xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A3D occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n27.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n28xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n28.xml
         Test URI:not-wf/P87/ibm87n28.xml
@@ -10648,16 +13260,24 @@ fn ibmnotwf_p87ibm87n28xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A46 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n28.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n29xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n29.xml
         Test URI:not-wf/P87/ibm87n29.xml
@@ -10665,16 +13285,24 @@ fn ibmnotwf_p87ibm87n29xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A49 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n29.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n30xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n30.xml
         Test URI:not-wf/P87/ibm87n30.xml
@@ -10682,16 +13310,24 @@ fn ibmnotwf_p87ibm87n30xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A4E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n30.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n31xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n31.xml
         Test URI:not-wf/P87/ibm87n31.xml
@@ -10699,16 +13335,24 @@ fn ibmnotwf_p87ibm87n31xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A80 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n31.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n32xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n32.xml
         Test URI:not-wf/P87/ibm87n32.xml
@@ -10716,16 +13360,24 @@ fn ibmnotwf_p87ibm87n32xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0A84 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n32.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n33xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n33.xml
         Test URI:not-wf/P87/ibm87n33.xml
@@ -10733,16 +13385,24 @@ fn ibmnotwf_p87ibm87n33xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0ABB occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n33.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n34xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n34.xml
         Test URI:not-wf/P87/ibm87n34.xml
@@ -10750,16 +13410,24 @@ fn ibmnotwf_p87ibm87n34xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0AC6 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n34.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n35xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n35.xml
         Test URI:not-wf/P87/ibm87n35.xml
@@ -10767,16 +13435,24 @@ fn ibmnotwf_p87ibm87n35xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0ACA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n35.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n36xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n36.xml
         Test URI:not-wf/P87/ibm87n36.xml
@@ -10784,16 +13460,24 @@ fn ibmnotwf_p87ibm87n36xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0ACE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n36.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n37xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n37.xml
         Test URI:not-wf/P87/ibm87n37.xml
@@ -10801,16 +13485,24 @@ fn ibmnotwf_p87ibm87n37xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B04 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n37.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n38xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n38.xml
         Test URI:not-wf/P87/ibm87n38.xml
@@ -10818,16 +13510,24 @@ fn ibmnotwf_p87ibm87n38xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B3B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n38.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n39xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n39.xml
         Test URI:not-wf/P87/ibm87n39.xml
@@ -10835,16 +13535,24 @@ fn ibmnotwf_p87ibm87n39xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B44 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n39.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n40xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n40.xml
         Test URI:not-wf/P87/ibm87n40.xml
@@ -10852,16 +13560,24 @@ fn ibmnotwf_p87ibm87n40xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B4A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n40.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n41xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n41.xml
         Test URI:not-wf/P87/ibm87n41.xml
@@ -10869,16 +13585,24 @@ fn ibmnotwf_p87ibm87n41xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B4E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n41.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n42xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n42.xml
         Test URI:not-wf/P87/ibm87n42.xml
@@ -10886,16 +13610,24 @@ fn ibmnotwf_p87ibm87n42xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B58 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n42.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n43xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n43.xml
         Test URI:not-wf/P87/ibm87n43.xml
@@ -10903,16 +13635,24 @@ fn ibmnotwf_p87ibm87n43xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0B84 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n43.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n44xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n44.xml
         Test URI:not-wf/P87/ibm87n44.xml
@@ -10920,16 +13660,24 @@ fn ibmnotwf_p87ibm87n44xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0BC3 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n44.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n45xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n45.xml
         Test URI:not-wf/P87/ibm87n45.xml
@@ -10937,16 +13685,24 @@ fn ibmnotwf_p87ibm87n45xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0BC9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n45.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n46xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n46.xml
         Test URI:not-wf/P87/ibm87n46.xml
@@ -10954,16 +13710,24 @@ fn ibmnotwf_p87ibm87n46xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0BD6 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n46.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n47xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n47.xml
         Test URI:not-wf/P87/ibm87n47.xml
@@ -10971,16 +13735,24 @@ fn ibmnotwf_p87ibm87n47xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0C0D occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n47.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n48xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n48.xml
         Test URI:not-wf/P87/ibm87n48.xml
@@ -10988,16 +13760,24 @@ fn ibmnotwf_p87ibm87n48xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0C45 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n48.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n49xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n49.xml
         Test URI:not-wf/P87/ibm87n49.xml
@@ -11005,16 +13785,24 @@ fn ibmnotwf_p87ibm87n49xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0C49 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n49.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n50xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n50.xml
         Test URI:not-wf/P87/ibm87n50.xml
@@ -11022,16 +13810,24 @@ fn ibmnotwf_p87ibm87n50xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0C54 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n50.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n51xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n51.xml
         Test URI:not-wf/P87/ibm87n51.xml
@@ -11039,16 +13835,24 @@ fn ibmnotwf_p87ibm87n51xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0C81 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n51.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n52xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n52.xml
         Test URI:not-wf/P87/ibm87n52.xml
@@ -11056,16 +13860,24 @@ fn ibmnotwf_p87ibm87n52xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0C84 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n52.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n53xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n53.xml
         Test URI:not-wf/P87/ibm87n53.xml
@@ -11073,16 +13885,24 @@ fn ibmnotwf_p87ibm87n53xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0CC5 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n53.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n54xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n54.xml
         Test URI:not-wf/P87/ibm87n54.xml
@@ -11090,16 +13910,24 @@ fn ibmnotwf_p87ibm87n54xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0CC9 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n54.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n55xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n55.xml
         Test URI:not-wf/P87/ibm87n55.xml
@@ -11107,16 +13935,24 @@ fn ibmnotwf_p87ibm87n55xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0CD4 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n55.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n56xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n56.xml
         Test URI:not-wf/P87/ibm87n56.xml
@@ -11124,16 +13960,24 @@ fn ibmnotwf_p87ibm87n56xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0CD7 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n56.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n57xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n57.xml
         Test URI:not-wf/P87/ibm87n57.xml
@@ -11141,16 +13985,24 @@ fn ibmnotwf_p87ibm87n57xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0D04 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n57.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n58xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n58.xml
         Test URI:not-wf/P87/ibm87n58.xml
@@ -11158,16 +14010,24 @@ fn ibmnotwf_p87ibm87n58xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0D45 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n58.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n59xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n59.xml
         Test URI:not-wf/P87/ibm87n59.xml
@@ -11175,16 +14035,24 @@ fn ibmnotwf_p87ibm87n59xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0D49 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n59.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n60xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n60.xml
         Test URI:not-wf/P87/ibm87n60.xml
@@ -11192,16 +14060,24 @@ fn ibmnotwf_p87ibm87n60xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0D4E occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n60.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n61xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n61.xml
         Test URI:not-wf/P87/ibm87n61.xml
@@ -11209,16 +14085,24 @@ fn ibmnotwf_p87ibm87n61xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0D58 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n61.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n62xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n62.xml
         Test URI:not-wf/P87/ibm87n62.xml
@@ -11226,16 +14110,24 @@ fn ibmnotwf_p87ibm87n62xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0E3F occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n62.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n63xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n63.xml
         Test URI:not-wf/P87/ibm87n63.xml
@@ -11243,16 +14135,24 @@ fn ibmnotwf_p87ibm87n63xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0E3B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n63.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n64xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n64.xml
         Test URI:not-wf/P87/ibm87n64.xml
@@ -11260,16 +14160,24 @@ fn ibmnotwf_p87ibm87n64xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0E4F occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n64.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n66xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n66.xml
         Test URI:not-wf/P87/ibm87n66.xml
@@ -11277,16 +14185,24 @@ fn ibmnotwf_p87ibm87n66xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0EBA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n66.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n67xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n67.xml
         Test URI:not-wf/P87/ibm87n67.xml
@@ -11294,16 +14210,24 @@ fn ibmnotwf_p87ibm87n67xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0EBE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n67.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n68xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n68.xml
         Test URI:not-wf/P87/ibm87n68.xml
@@ -11311,16 +14235,24 @@ fn ibmnotwf_p87ibm87n68xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0ECE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n68.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n69xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n69.xml
         Test URI:not-wf/P87/ibm87n69.xml
@@ -11328,16 +14260,24 @@ fn ibmnotwf_p87ibm87n69xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F1A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n69.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n70xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n70.xml
         Test URI:not-wf/P87/ibm87n70.xml
@@ -11345,16 +14285,24 @@ fn ibmnotwf_p87ibm87n70xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F36 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n70.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n71xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n71.xml
         Test URI:not-wf/P87/ibm87n71.xml
@@ -11362,16 +14310,24 @@ fn ibmnotwf_p87ibm87n71xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F38 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n71.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n72xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n72.xml
         Test URI:not-wf/P87/ibm87n72.xml
@@ -11379,16 +14335,24 @@ fn ibmnotwf_p87ibm87n72xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F3B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n72.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n73xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n73.xml
         Test URI:not-wf/P87/ibm87n73.xml
@@ -11396,16 +14360,24 @@ fn ibmnotwf_p87ibm87n73xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F3A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n73.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n74xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n74.xml
         Test URI:not-wf/P87/ibm87n74.xml
@@ -11413,16 +14385,24 @@ fn ibmnotwf_p87ibm87n74xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F70 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n74.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n75xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n75.xml
         Test URI:not-wf/P87/ibm87n75.xml
@@ -11430,16 +14410,24 @@ fn ibmnotwf_p87ibm87n75xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F85 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n75.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n76xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n76.xml
         Test URI:not-wf/P87/ibm87n76.xml
@@ -11447,16 +14435,24 @@ fn ibmnotwf_p87ibm87n76xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F8C occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n76.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n77xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n77.xml
         Test URI:not-wf/P87/ibm87n77.xml
@@ -11464,16 +14460,24 @@ fn ibmnotwf_p87ibm87n77xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F96 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n77.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n78xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n78.xml
         Test URI:not-wf/P87/ibm87n78.xml
@@ -11481,16 +14485,24 @@ fn ibmnotwf_p87ibm87n78xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0F98 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n78.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n79xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n79.xml
         Test URI:not-wf/P87/ibm87n79.xml
@@ -11498,16 +14510,24 @@ fn ibmnotwf_p87ibm87n79xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0FB0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n79.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n80xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n80.xml
         Test URI:not-wf/P87/ibm87n80.xml
@@ -11515,16 +14535,24 @@ fn ibmnotwf_p87ibm87n80xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0FB8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n80.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n81xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n81.xml
         Test URI:not-wf/P87/ibm87n81.xml
@@ -11532,16 +14560,24 @@ fn ibmnotwf_p87ibm87n81xml() {
         Description:Tests CombiningChar with an illegal character. The character #x0FBA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n81.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n82xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n82.xml
         Test URI:not-wf/P87/ibm87n82.xml
@@ -11549,16 +14585,24 @@ fn ibmnotwf_p87ibm87n82xml() {
         Description:Tests CombiningChar with an illegal character. The character #x20DD occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n82.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n83xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n83.xml
         Test URI:not-wf/P87/ibm87n83.xml
@@ -11566,16 +14610,24 @@ fn ibmnotwf_p87ibm87n83xml() {
         Description:Tests CombiningChar with an illegal character. The character #x20E2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n83.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n84xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n84.xml
         Test URI:not-wf/P87/ibm87n84.xml
@@ -11583,16 +14635,24 @@ fn ibmnotwf_p87ibm87n84xml() {
         Description:Tests CombiningChar with an illegal character. The character #x3030 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n84.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p87ibm87n85xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P87-ibm87n85.xml
         Test URI:not-wf/P87/ibm87n85.xml
@@ -11600,12 +14660,15 @@ fn ibmnotwf_p87ibm87n85xml() {
         Description:Tests CombiningChar with an illegal character. The character #x309B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P87/ibm87n85.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn ibmnotwf_p88ibm88n01xml() {
@@ -11616,9 +14679,11 @@ fn ibmnotwf_p88ibm88n01xml() {
         Description:Tests Digit with an illegal character. The character #x0029 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -11632,16 +14697,23 @@ fn ibmnotwf_p88ibm88n02xml() {
         Description:Tests Digit with an illegal character. The character #x003B occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n03.xml
         Test URI:not-wf/P88/ibm88n03.xml
@@ -11649,16 +14721,24 @@ fn ibmnotwf_p88ibm88n03xml() {
         Description:Tests Digit with an illegal character. The character #x066A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n04.xml
         Test URI:not-wf/P88/ibm88n04.xml
@@ -11666,16 +14746,24 @@ fn ibmnotwf_p88ibm88n04xml() {
         Description:Tests Digit with an illegal character. The character #x06FA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n05.xml
         Test URI:not-wf/P88/ibm88n05.xml
@@ -11683,16 +14771,24 @@ fn ibmnotwf_p88ibm88n05xml() {
         Description:Tests Digit with an illegal character. The character #x0970 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n06xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n06.xml
         Test URI:not-wf/P88/ibm88n06.xml
@@ -11700,16 +14796,24 @@ fn ibmnotwf_p88ibm88n06xml() {
         Description:Tests Digit with an illegal character. The character #x09F2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n08xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n08.xml
         Test URI:not-wf/P88/ibm88n08.xml
@@ -11717,16 +14821,24 @@ fn ibmnotwf_p88ibm88n08xml() {
         Description:Tests Digit with an illegal character. The character #x0AF0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n09xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n09.xml
         Test URI:not-wf/P88/ibm88n09.xml
@@ -11734,16 +14846,24 @@ fn ibmnotwf_p88ibm88n09xml() {
         Description:Tests Digit with an illegal character. The character #x0B70 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n10xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n10.xml
         Test URI:not-wf/P88/ibm88n10.xml
@@ -11751,16 +14871,24 @@ fn ibmnotwf_p88ibm88n10xml() {
         Description:Tests Digit with an illegal character. The character #x0C65 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n11xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n11.xml
         Test URI:not-wf/P88/ibm88n11.xml
@@ -11768,16 +14896,24 @@ fn ibmnotwf_p88ibm88n11xml() {
         Description:Tests Digit with an illegal character. The character #x0CE5 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n12xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n12.xml
         Test URI:not-wf/P88/ibm88n12.xml
@@ -11785,16 +14921,24 @@ fn ibmnotwf_p88ibm88n12xml() {
         Description:Tests Digit with an illegal character. The character #x0CF0 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n13xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n13.xml
         Test URI:not-wf/P88/ibm88n13.xml
@@ -11802,16 +14946,24 @@ fn ibmnotwf_p88ibm88n13xml() {
         Description:Tests Digit with an illegal character. The character #x0D70 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n14xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n14.xml
         Test URI:not-wf/P88/ibm88n14.xml
@@ -11819,16 +14971,24 @@ fn ibmnotwf_p88ibm88n14xml() {
         Description:Tests Digit with an illegal character. The character #x0E5A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n14.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n15xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n15.xml
         Test URI:not-wf/P88/ibm88n15.xml
@@ -11836,16 +14996,24 @@ fn ibmnotwf_p88ibm88n15xml() {
         Description:Tests Digit with an illegal character. The character #x0EDA occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n15.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p88ibm88n16xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P88-ibm88n16.xml
         Test URI:not-wf/P88/ibm88n16.xml
@@ -11853,12 +15021,15 @@ fn ibmnotwf_p88ibm88n16xml() {
         Description:Tests Digit with an illegal character. The character #x0F2A occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P88/ibm88n16.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn ibmnotwf_p89ibm89n01xml() {
@@ -11869,9 +15040,11 @@ fn ibmnotwf_p89ibm89n01xml() {
         Description:Tests Extender with an illegal character. The character #x00B6 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -11885,16 +15058,23 @@ fn ibmnotwf_p89ibm89n02xml() {
         Description:Tests Extender with an illegal character. The character #x00B8 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p89ibm89n03xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P89-ibm89n03.xml
         Test URI:not-wf/P89/ibm89n03.xml
@@ -11902,16 +15082,24 @@ fn ibmnotwf_p89ibm89n03xml() {
         Description:Tests Extender with an illegal character. The character #x02D2 occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p89ibm89n04xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P89-ibm89n04.xml
         Test URI:not-wf/P89/ibm89n04.xml
@@ -11919,16 +15107,24 @@ fn ibmnotwf_p89ibm89n04xml() {
         Description:Tests Extender with an illegal character. The character #x03FE occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
+/*
 #[test]
 #[ignore]
 fn ibmnotwf_p89ibm89n05xml() {
+    /*
+        This test is deliberately ignored.
+        This document is now well formed, as per the 5th edition.
+    */
     /*
         Test ID:ibm-not-wf-P89-ibm89n05.xml
         Test URI:not-wf/P89/ibm89n05.xml
@@ -11936,12 +15132,15 @@ fn ibmnotwf_p89ibm89n05xml() {
         Description:Tests Extender with an illegal character. The character #x065F occurs as the second character in the PITarget in the PI in the DTD.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
+ */
 
 #[test]
 fn ibmnotwf_p89ibm89n06xml() {
@@ -11952,9 +15151,11 @@ fn ibmnotwf_p89ibm89n06xml() {
         Description:Tests Extender with an illegal character. The character #x0EC7 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -11968,9 +15169,11 @@ fn ibmnotwf_p89ibm89n07xml() {
         Description:Tests Extender with an illegal character. The character #x3006 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -11984,9 +15187,11 @@ fn ibmnotwf_p89ibm89n08xml() {
         Description:Tests Extender with an illegal character. The character #x3030 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -12000,9 +15205,11 @@ fn ibmnotwf_p89ibm89n09xml() {
         Description:Tests Extender with an illegal character. The character #x3036 occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -12016,9 +15223,11 @@ fn ibmnotwf_p89ibm89n10xml() {
         Description:Tests Extender with an illegal character. The character #x309C occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -12032,9 +15241,11 @@ fn ibmnotwf_p89ibm89n11xml() {
         Description:Tests Extender with an illegal character. The character #x309F occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -12048,9 +15259,11 @@ fn ibmnotwf_p89ibm89n12xml() {
         Description:Tests Extender with an illegal character. The character #x30FF occurs as the second character in the PITarget in the PI in the DTD. [Also contains two top-level elements -- one should be removed]
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/not-wf/P89/ibm89n12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }

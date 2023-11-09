@@ -13,6 +13,10 @@ use xrust::intmuttree::{Document, NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
+use xrust::xdmerror::Error;
+
+pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+
 
 // A document always has a NodeType::Document node as the toplevel node.
 let mut doc = NodeBuilder::new(NodeType::Document).build();
@@ -46,6 +50,8 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::{Rc, Weak};
+
+pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -160,16 +166,40 @@ impl Document {
      */
 }
 
-impl TryFrom<&str> for Document {
+impl
+    TryFrom<(
+        String,
+        Option<ExtDTDresolver>,
+        Option<String>,
+    )> for Document
+{
     type Error = Error;
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        Document::try_from(s.to_string())
+    fn try_from(
+        s: (
+            String,
+            Option<ExtDTDresolver>,
+            Option<String>,
+        ),
+    ) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0.as_str(), s.1, s.2)
     }
 }
-impl TryFrom<String> for Document {
+impl
+    TryFrom<(
+        &str,
+        Option<ExtDTDresolver>,
+        Option<String>,
+    )> for Document
+{
     type Error = Error;
-    fn try_from(s: String) -> Result<Self, Self::Error> {
-        parser::xml::parse(s)
+    fn try_from(
+        s: (
+            &str,
+            Option<ExtDTDresolver>,
+            Option<String>,
+        ),
+    ) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0, s.1, s.2)
     }
 }
 
@@ -861,13 +891,13 @@ impl XMLDeclBuilder {
 /// Only general entities are supported, so far.
 /// TODO: element, attribute declarations
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq)]
 pub struct DTD {
     pub(crate) elements: HashMap<String, DTDDecl>,
     pub(crate) attlists: HashMap<String, DTDDecl>,
     pub(crate) notations: HashMap<String, DTDDecl>,
-    pub(crate) generalentities: HashMap<String, DTDDecl>,
-    pub(crate) paramentities: HashMap<String, DTDDecl>,
+    pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
+    pub(crate) paramentities: HashMap<String, (String, bool)>,
     publicid: Option<String>,
     systemid: Option<String>,
     name: Option<String>,
@@ -875,12 +905,19 @@ pub struct DTD {
 
 impl DTD {
     pub fn new() -> DTD {
+        let default_entities = vec![
+            ("amp".to_string(), ("&".to_string(), false)),
+            ("gt".to_string(), (">".to_string(), false)),
+            ("lt".to_string(), ("<".to_string(), false)),
+            ("apos".to_string(), ("'".to_string(), false)),
+            ("quot".to_string(), ("\"".to_string(), false)),
+        ];
         DTD {
             elements: Default::default(),
             attlists: Default::default(),
             notations: Default::default(),
-            generalentities: Default::default(),
-            paramentities: Default::default(),
+            generalentities: default_entities.into_iter().collect(),
+            paramentities: HashMap::new(),
             publicid: None,
             systemid: None,
             name: None,

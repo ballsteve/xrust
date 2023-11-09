@@ -11,12 +11,15 @@ use std::fmt;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::transform::{Transform, Axis, NodeTest, NameTest, WildcardOrName, KindTest};
 use crate::transform::context::{Context, ContextBuilder};
-use crate::xpath::{literal, nodetest, predicate_list, qname, variable_reference, xpwhitespace};
+use crate::parser::combinators::whitespace::xpwhitespace;
+use crate::parser::xpath::literals::literal;
+use crate::parser::xpath::nodetests::{nodetest, qualname_test};
+use crate::parser::xpath::predicates::predicate_list;
+use crate::parser::xpath::variables::variable_reference;
 use crate::value::Value;
 use crate::xdmerror::*;
 
 use crate::parser::combinators::alt::{alt2, alt4, alt6};
-//use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::{separated_list0, separated_list1};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -24,7 +27,7 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
 
 /// An XPath pattern. A pattern most frequently appears as the value of a match attribute.
 /// A pattern is either a predicate pattern or a selection pattern.
@@ -204,16 +207,16 @@ impl<N: Node> TryFrom<&str> for Pattern<N> {
                 String::from("empty string is not allowed as an XPath pattern"),
             ))
         } else {
-            let input = ParseInput::new(e);
-            match pattern::<N>(input) {
-                Ok((rem, f)) => {
-                    if rem.clone().peekable().peek().is_some() {
+            let state = ParserState::new(None, None);
+            match pattern::<N>((e, state)) {
+                Ok(((rem, _), f)) => {
+                    if rem.is_empty() {
+                        Ok(f)
+                    } else {
                         Err(Error::new(
                             ErrorKind::Unknown,
-                            format!("extra characters found: \"{}\"", rem),
+                            format!("extra characters found: \"{:?}\"", rem),
                         ))
-                    } else {
-                        Ok(f)
                     }
                 }
                 Err(err) => Err(Error::new(ErrorKind::Unknown, format!("{:?}", err))),
@@ -579,6 +582,6 @@ fn outer_function_name() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
                 name: Some(WildcardOrName::Name(String::from("root"))),
             })
         }),
-        map(qname(), |q| q),
+        map(qualname_test(), |q| q),
     ))
 }

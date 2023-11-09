@@ -24,8 +24,8 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::{anychar, tag};
 use crate::parser::combinators::tuple::{tuple10, tuple2, tuple3, tuple4, tuple5, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
-use crate::parser::common::ncname;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::xml::qname::ncname;
+use crate::parser::{ParseError, ParserState, ParseResult};
 
 pub fn expression<N: Node>(e: &str) -> Result<Transform<N>, Error> {
     if e == "" {
@@ -1522,7 +1522,6 @@ fn wildcard() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
         })
     }))
 }
-
 pub fn qname() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     Box::new(alt2(prefixed_name(), unprefixed_name()))
 }
@@ -1547,6 +1546,7 @@ fn prefixed_name() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
         },
     ))
 }
+
 
 pub fn xpwhitespace() -> Box<dyn Fn(ParseInput) -> ParseResult<()>> {
     Box::new(inspect(

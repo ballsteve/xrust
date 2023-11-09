@@ -7,7 +7,7 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore] //Ignored until DTDs validation is built.
+#[ignore]
 fn rmte2e34() {
     /*
         Test ID:rmt-e2e-34
@@ -16,9 +16,11 @@ fn rmte2e34() {
         Description:A non-deterministic content model is an error even if the element type is not used.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E34.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -32,10 +34,11 @@ fn rmte2e55() {
         Description:A reference to an unparsed entity in an entity value is an error rather than forbidden (unless the entity is referenced, of course)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E55.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -48,9 +51,10 @@ fn rmte2e57() {
         Description:A value other than preserve or default for xml:space is an error
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E57.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

@@ -80,8 +80,7 @@ where
     P4: Fn(ParseInput) -> ParseResult<R4>,
     P5: Fn(ParseInput) -> ParseResult<R5>,
 {
-    move |mut input| {
-        input.stack_push(format!("tuple5 - input=\"{}\"", input));
+    move |input| {
         match parser1(input) {
             Ok((input1, result1)) => match parser2(input1) {
                 Ok((input2, result2)) => match parser3(input2) {
@@ -268,8 +267,7 @@ where
     P8: Fn(ParseInput) -> ParseResult<R8>,
     P9: Fn(ParseInput) -> ParseResult<R9>,
 {
-    move |mut input| {
-        input.stack_push(format!("tuple9 - input=\"{}\"", input));
+    move |input| {
         match parser1(input) {
             Ok((input1, result1)) => match parser2(input1) {
                 Ok((input2, result2)) => match parser3(input2) {
@@ -396,15 +394,16 @@ where
 mod tests {
     use crate::parser::combinators::tag::tag;
     use crate::parser::combinators::tuple::tuple3;
-    use crate::parser::ParseInput;
+    use crate::parser::ParserState;
 
     #[test]
-    fn parser_delimited_test1() {
-        let testdoc = ParseInput::new("<doc>");
+    fn parser_tuple3_test1() {
+        let testdoc = "<doc>";
+        let teststate = ParserState::new(None, None);
         let parse_doc = tuple3(tag("<"), tag("doc"), tag(">"));
         assert_eq!(
-            Ok((ParseInput::new("<doc>"), ((), (), ()))),
-            parse_doc(testdoc)
+            Ok((("", ParserState::new(None, None)), ((), (), ()))),
+            parse_doc((testdoc, teststate))
         );
     }
 }

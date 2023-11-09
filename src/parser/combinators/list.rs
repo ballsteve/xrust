@@ -24,7 +24,6 @@ where
         loop {
             match sep(input.clone()) {
                 Err(ParseError::Combinator) => {
-                    eprintln!("sep0: didn't find any more seps, returning");
                     return Ok((input, res));
                 }
                 Err(e) => return Err(e),
@@ -60,7 +59,6 @@ where
     move |mut input| {
         let mut res = Vec::new();
 
-        //        eprintln!("sep1: find first element");
         match f(input.clone()) {
             Err(e) => return Err(e),
             Ok((i1, o)) => {
@@ -69,11 +67,9 @@ where
             }
         }
 
-        //        eprintln!("sep1: got first element");
         loop {
             match sep(input.clone()) {
                 Err(ParseError::Combinator) => {
-                    //                    eprintln!("sep1 return due to end of input 1");
                     return Ok((input, res));
                 }
                 Err(e) => return Err(e),
@@ -86,7 +82,6 @@ where
 
                     match f(i1) {
                         Err(ParseError::Combinator) => {
-                            //                            eprintln!("sep1: return due to end of input 2");
                             return Ok((input, res));
                         }
                         Err(e) => return Err(e),
@@ -107,30 +102,36 @@ mod tests {
     use crate::parser::combinators::list::{separated_list0, separated_list1};
     use crate::parser::combinators::map::map;
     use crate::parser::combinators::tag::tag;
-    use crate::parser::ParseInput;
+    use crate::parser::{ParseInput, ParserState};
 
     #[test]
     fn parser_separated_list0_test1() {
-        let testdoc = ParseInput::new("b");
+        let testdoc = "b";
+        let teststate = ParserState::new(None, None);
         let parse_doc = separated_list0(tag(","), map(tag("a"), |_| "a"));
-        let (remainder, result) = parse_doc(testdoc).expect("parse failed");
-        assert_eq!(remainder, ParseInput::new("b"));
-        assert_eq!(result.len(), 0);
+
+        assert_eq!(
+            Ok((("b", ParserState::new(None, None)), vec![])),
+            parse_doc((testdoc, teststate))
+        );
     }
 
     #[test]
     fn parser_separated_list0_test2() {
-        let testdoc = ParseInput::new("a");
+        let testdoc = "a";
+        let teststate = ParserState::new(None, None);
         let parse_doc = separated_list0(tag(","), map(tag("a"), |_| "a"));
-        let (remainder, result) = parse_doc(testdoc).expect("parse failed");
-        assert_eq!(remainder, ParseInput::new(""));
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0], "a");
+
+        assert_eq!(
+            Ok((("", ParserState::new(None, None)), vec!["a"])),
+            parse_doc((testdoc, teststate))
+        );
     }
 
     #[test]
     fn parser_separated_list0_test3() {
-        let testdoc = ParseInput::new("a,b,c,d");
+        let testdoc = "a,b,c,d";
+        let teststate = ParserState::new(None, None);
         let parse_doc = separated_list1(
             tag(","),
             alt4(
@@ -140,28 +141,29 @@ mod tests {
                 map(tag("d"), |_| "4"),
             ),
         );
-        let (remainder, result) = parse_doc(testdoc).expect("parse failed");
-        assert_eq!(remainder, ParseInput::new(""));
-        assert_eq!(result.len(), 4);
-        assert_eq!(result[0], "1");
-        assert_eq!(result[1], "2");
-        assert_eq!(result[2], "3");
-        assert_eq!(result[3], "4");
+
+        assert_eq!(
+            Ok((("", ParserState::new(None, None)), vec!["1", "2", "3", "4"])),
+            parse_doc((testdoc, teststate))
+        );
     }
 
     #[test]
     fn parser_separated_list1_test1() {
-        let testdoc = ParseInput::new("a");
+        let testdoc = "a";
+        let teststate = ParserState::new(None, None);
         let parse_doc = separated_list1(tag(","), map(tag("a"), |_| "a"));
-        let (remainder, result) = parse_doc(testdoc).expect("parse failed");
-        assert_eq!(remainder, ParseInput::new(""));
-        assert_eq!(result.len(), 1);
-        assert_eq!(result[0], "a");
+
+        assert_eq!(
+            Ok((("", ParserState::new(None, None)), vec!["a"])),
+            parse_doc((testdoc, teststate))
+        );
     }
 
     #[test]
     fn parser_separated_list1_test2() {
-        let testdoc = ParseInput::new("a,b,c,d");
+        let testdoc = "a,b,c,d";
+        let teststate = ParserState::new(None, None);
         let parse_doc = separated_list1(
             tag(","),
             alt4(
@@ -171,12 +173,10 @@ mod tests {
                 map(tag("d"), |_| "4"),
             ),
         );
-        let (remainder, result) = parse_doc(testdoc).expect("parse failed");
-        assert_eq!(remainder, ParseInput::new(""));
-        assert_eq!(result.len(), 4);
-        assert_eq!(result[0], "1");
-        assert_eq!(result[1], "2");
-        assert_eq!(result[2], "3");
-        assert_eq!(result[3], "4");
+
+        assert_eq!(
+            Ok((("", ParserState::new(None, None)), vec!["1", "2", "3", "4"])),
+            parse_doc((testdoc, teststate))
+        );
     }
 }

@@ -16,7 +16,7 @@ use xrust::intmuttree::{Document, RNode, NodeBuilder};
 
 // A little helper function that wraps the toplevel node in a Document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from(s).expect("failed to parse XML").content[0].clone();
+    let e = Document::try_from((s, None, None)).expect("failed to parse XML").content[0].clone();
     let mut d = NodeBuilder::new(NodeType::Document).build();
     d.push(e).expect("unable to append node");
     Ok(d)
@@ -77,7 +77,7 @@ use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::template::Template;
 use crate::pattern::Pattern;
 use crate::item::{Item, Sequence, SequenceTrait, Node, NodeType};
-use crate::xpath::*;
+use crate::parser::xpath::parse;
 use std::convert::TryFrom;
 use url::Url;
 
@@ -460,7 +460,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     let sel =
                         n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !sel.to_string().is_empty() {
-                        Ok(Transform::ApplyTemplates(Box::new(expression::<N>(&sel.to_string())?)))
+                        Ok(Transform::ApplyTemplates(Box::new(parse::<N>(&sel.to_string())?)))
                     } else {
                         // If there is no select attribute, then default is "child::node()"
                         Ok(Transform::ApplyTemplates(Box::new(Transform::Step(
@@ -475,7 +475,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                 (Some(XSLTNS), "sequence") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
-                        Ok(expression::<N>(&s.to_string())?)
+                        Ok(parse::<N>(&s.to_string())?)
                     } else {
                         Result::Err(Error {
                             kind: ErrorKind::TypeError,
@@ -488,7 +488,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     if !t.to_string().is_empty() {
                         Ok(Transform::Switch(
                             vec![
-                                (expression::<N>(&t.to_string())?,
+                                (parse::<N>(&t.to_string())?,
                                 Transform::SequenceItems(
                                     n.child_iter()
                                         .try_fold(vec![],
@@ -524,7 +524,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                                 let t = m.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
                                                 if !t.to_string().is_empty() {
                                                     clauses.push((
-                                                        expression::<N>(&t.to_string())?,
+                                                        parse::<N>(&t.to_string())?,
                                                         Transform::SequenceItems(
                                                             m.child_iter()
                                                                 .try_fold(
@@ -585,7 +585,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     if !s.to_string().is_empty() {
                         Ok(Transform::ForEach(
                             None,
-                            Box::new(expression::<N>(&s.to_string())?),
+                            Box::new(parse::<N>(&s.to_string())?),
                             Box::new(Transform::SequenceItems(
                                 n.child_iter().try_fold(vec![], |mut body, e| {
                                     body.push(to_transform(e)?);
@@ -634,8 +634,8 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 .as_str(),
                         ) {
                             (by, "", "", "") => Ok(Transform::ForEach(
-                                Some(Grouping::By(vec![expression::<N>(by)?])),
-                                Box::new(expression::<N>(&s.to_string())?),
+                                Some(Grouping::By(vec![parse::<N>(by)?])),
+                                Box::new(parse::<N>(&s.to_string())?),
                                 Box::new(Transform::SequenceItems(
                                     n.child_iter().try_fold(vec![], |mut body, e| {
                                         body.push(to_transform(e)?);
@@ -644,8 +644,8 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 )),
                             )),
                             ("", adj, "", "") => Ok(Transform::ForEach(
-                                Some(Grouping::Adjacent(vec![expression::<N>(adj)?])),
-                                Box::new(expression::<N>(&s.to_string())?),
+                                Some(Grouping::Adjacent(vec![parse::<N>(adj)?])),
+                                Box::new(parse::<N>(&s.to_string())?),
                                          Box::new(Transform::SequenceItems(
                                     n.child_iter().try_fold(vec![], |mut body, e| {
                                         body.push(to_transform(e)?);
@@ -681,7 +681,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                 (Some(XSLTNS), "copy-of") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
-                        Ok(Transform::DeepCopy(Box::new(expression::<N>(&s.to_string())?)))
+                        Ok(Transform::DeepCopy(Box::new(parse::<N>(&s.to_string())?)))
                     } else {
                         Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
                     }
