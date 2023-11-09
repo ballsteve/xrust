@@ -1,7 +1,7 @@
 //! Functions that produce tests for nodes.
 
 use crate::transform::{NameTest, NodeTest, WildcardOrName, KindTest};
-use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::alt::{alt2, alt5};
 use crate::parser::combinators::opt::opt;

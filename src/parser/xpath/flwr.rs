@@ -1,17 +1,15 @@
 //! XPath FLWR expressions.
 
-use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::pair::pair;
-use crate::parser::xml::qname::qualname;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple3, tuple5, tuple6, tuple10};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::{expr_wrapper, expr_single_wrapper};
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
-use crate::xdmerror;
 use crate::item::Node;
 use crate::transform::Transform;
 

@@ -76,7 +76,7 @@ use crate::transform::{Transform, NodeMatch, NodeTest, KindTest, NameTest, Wildc
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::template::Template;
 use crate::pattern::Pattern;
-use crate::item::{Item, Sequence, SequenceTrait, Node, NodeType};
+use crate::item::{Item, Sequence, Node, NodeType};
 use crate::parser::xpath::parse;
 use std::convert::TryFrom;
 use url::Url;

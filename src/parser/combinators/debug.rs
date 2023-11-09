@@ -1,5 +1,6 @@
 use crate::parser::{ParseInput, ParseResult};
 
+#[allow(dead_code)]
 pub(crate) fn inspect<'a, P1, A>(
     _msg: &'a str,
     parser: P1,

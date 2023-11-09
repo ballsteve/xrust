@@ -8,7 +8,6 @@ use crate::intmuttree::{DTD, ExtDTDresolver};
 use crate::xdmerror::{Error, ErrorKind};
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::Formatter;
 
 pub(crate) mod combinators;
 pub(crate) mod common;
@@ -61,8 +60,8 @@ pub(crate) struct ParserState {
     currentcol: usize,
     currentrow: usize,
     /* For tracking down stack overflows */
-    stack: Vec<String>,
-    limit: Option<usize>,
+    //stack: Vec<String>,
+    //limit: Option<usize>,
     /* entity downloader function */
     ext_dtd_resolver: Option<ExtDTDresolver>,
     ext_entities_to_parse: Vec<String>,
@@ -91,28 +90,28 @@ impl ParserState {
             currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,
-            stack: vec![],
-            limit: None,
+            //stack: vec![],
+            //limit: None,
             ext_dtd_resolver: resolver,
             ext_entities_to_parse: vec![],
             docloc,
             currentlyexternal:false
         }
     }
-    pub fn stack_push(&mut self, msg: String) {
-        self.stack.push(msg);
-        if self.limit.is_some() {
-            if self.limit.unwrap() < self.stack.len() {
-                panic!("stack depth exceeded")
-            }
-        }
-    }
-    pub fn stack_depth(&self) -> usize {
-        self.stack.len()
-    }
-    pub fn set_limit(&mut self, l: usize) {
-        self.limit = Some(l)
-    }
+    //pub fn stack_push(&mut self, msg: String) {
+    //    self.stack.push(msg);
+    //    if self.limit.is_some() {
+    //        if self.limit.unwrap() < self.stack.len() {
+    //            panic!("stack depth exceeded")
+    //        }
+    //    }
+    //}
+    //pub fn stack_depth(&self) -> usize {
+    //    self.stack.len()
+    //}
+    //pub fn set_limit(&mut self, l: usize) {
+    //    self.limit = Some(l)
+    //}
 
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
         match self.ext_dtd_resolver {

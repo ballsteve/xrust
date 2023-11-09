@@ -1,7 +1,7 @@
 //! Support for variables.
 
 use crate::xdmerror::{Error, ErrorKind};
-use crate::item::{Node, Sequence, SequenceTrait};
+use crate::item::{Node, Sequence};
 use crate::transform::Transform;
 use crate::transform::context::{Context, ContextBuilder};
 

@@ -5,7 +5,7 @@ use std::rc::Rc;
 use std::cmp::Ordering;
 use url::Url;
 use crate::xdmerror::Error;
-use crate::item::{Sequence, SequenceTrait, Node};
+use crate::item::{Sequence, Node};
 use crate::output::OutputDefinition;
 use crate::transform::Transform;
 use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
@@ -72,13 +72,16 @@ impl<N: Node> Context<N> {
             }
         }
     }
+    #[allow(dead_code)]
     fn var_pop(&mut self, name: String) {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
 
+    #[allow(dead_code)]
     fn baseurl(&self) -> Option<Url> {
         self.base_url.clone()
     }
+    #[allow(dead_code)]
     fn set_baseurl(&mut self, url: Url) {
         self.base_url = Some(url);
     }

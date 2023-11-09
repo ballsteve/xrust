@@ -1,6 +1,4 @@
-use nom::character::complete::char;
 use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::transform::strings::starts_with;
 
 pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
     move |(input, state)|{

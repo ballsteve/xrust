@@ -4,8 +4,8 @@ use std::rc::Rc;
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 
-use crate::xdmerror::{Error, ErrorKind};
-use crate::{Node, Pattern, Sequence, Item};
+use crate::xdmerror::Error;
+use crate::{Node, Pattern, Sequence};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::Transform;
 
@@ -16,6 +16,7 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
+    #[allow(dead_code)]
     mode: Option<String>,  // Not implemented (yet)
 }
 

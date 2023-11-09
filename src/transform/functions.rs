@@ -4,7 +4,7 @@ use std::rc::Rc;
 
 use crate::xdmerror::{Error, ErrorKind};
 use crate::value::Value;
-use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence};
 use crate::transform::Transform;
 use crate::transform::context::Context;
 

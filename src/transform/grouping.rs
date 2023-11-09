@@ -3,7 +3,7 @@
 use std::rc::Rc;
 
 use crate::xdmerror::{Error, ErrorKind};
-use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence};
 use crate::transform::context::Context;
 
 /// XSLT current-group function.

@@ -96,6 +96,7 @@ where
 /// If there is no character that fails the condition,
 /// then if the input is empty returns ParseError::Combinator (i.e. no match),
 /// otherwise returns the input.
+#[allow(dead_code)]
 pub(crate) fn take_while_m_n<F>(
     min: usize,
     max: usize,
