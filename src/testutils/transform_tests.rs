@@ -5,7 +5,7 @@ macro_rules! transform_tests (
 	use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 	use xrust::value::Operator;
 	use xrust::transform::{Transform, Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName, ArithmeticOperand, ArithmeticOperator, Grouping};
-	use xrust::transform::context::{Context, ContextBuilder};
+	//use xrust::transform::context::{Context, ContextBuilder};
 	use xrust::transform::template::Template;
 
 	#[test]

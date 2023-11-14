@@ -72,6 +72,7 @@ fn treat_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transfor
 fn castable_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(
         pair(
+
             cast_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),

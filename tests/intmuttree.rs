@@ -47,7 +47,7 @@ fn make_sd() -> Rc<Item<RNode>> {
 
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc);
-transform_tests!(RNode, make_empty_doc, make_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
 pattern_tests!(RNode, make_empty_doc, make_sd);
+transform_tests!(RNode, make_empty_doc, make_doc);
 //xslt_tests!(make_from_str, make_empty_doc);

@@ -28,6 +28,7 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+//use crate::parser::combinators::tag;
 
 /// An XPath pattern. A pattern most frequently appears as the value of a match attribute.
 /// A pattern is either a predicate pattern or a selection pattern.
@@ -272,6 +273,7 @@ fn union_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResu
     ))
 }
 
+// NB. Rust *really* doesn't like recursive types, so we must force it to lazily evaluate arguments to avoid stack overflow.
 fn union_expr_wrapper<N: Node>(
     b: bool,
 ) -> impl Fn(ParseInput) -> ParseResult<Pattern<N>>
@@ -426,7 +428,8 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Pa
 
 // StepExprP ::= PostfixExprExpr | AxisStepP
 fn step_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
-    Box::new(alt2(postfix_expr_pattern::<N>(), axis_step_pattern::<N>()))
+    //Box::new(alt2(postfix_expr_pattern::<N>(), axis_step_pattern::<N>()))
+    Box::new(postfix_expr_pattern::<N>())
 }
 
 // PostfixExprP ::= ParenthesizedExprP PredicateList

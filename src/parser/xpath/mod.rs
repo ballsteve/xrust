@@ -81,7 +81,7 @@ fn xpath_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
 }
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-fn expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
@@ -99,35 +99,35 @@ fn expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> 
 
 pub(crate) fn expr_wrapper<N: Node>(
     b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> {
-    move |input| {
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>>> {
+    Box::new(move |input| {
         if b {
             expr::<N>()(input)
         } else {
             noop::<N>()(input)
         }
-    }
+    })
 }
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
-fn expr_single<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    alt4(
-        or_expr::<N>(),
-        let_expr::<N>(),
-        for_expr::<N>(),
-        if_expr::<N>(),
-    )
+fn expr_single<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt4(
+        or_expr(),
+        let_expr(),
+        for_expr(),
+        if_expr(),
+    ))
 }
 
 pub(crate) fn expr_single_wrapper<N: Node>(
     b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Transform<N>>
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>>>
 {
-    move |input| {
+    Box::new(move |input| {
         if b {
             expr_single::<N>()(input)
         } else {
             noop::<N>()(input)
         }
-    }
+    })
 }

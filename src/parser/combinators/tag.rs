@@ -103,7 +103,7 @@ mod tests {
         let parse_doc = anychar('<');
         assert_eq!(
             Ok((
-                ("<doc>", ParserState::new(None, None)),
+                ("doc>", ParserState::new(None, None)),
                 ()
             )),
             parse_doc((testdoc, teststate))

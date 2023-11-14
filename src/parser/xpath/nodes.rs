@@ -60,7 +60,6 @@ fn intersectexcept_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResul
     )
 }
 
-// PathExpr ::= ('/' RelativePathExpr?) | ('//' RelativePathExpr) | RelativePathExpr
 pub(crate) fn path_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     alt3(
         absolutedescendant_expr::<N>(),
@@ -143,7 +142,6 @@ fn relativepath_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<T
     )
 }
 
-// StepExpr ::= PostfixExpr | AxisStep
 fn step_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     alt2(postfix_expr::<N>(), axisstep::<N>())
 }

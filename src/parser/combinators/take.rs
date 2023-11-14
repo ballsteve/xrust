@@ -145,18 +145,18 @@ mod tests {
         );
     }
     #[test]
-    fn parser_take_until1_test2() {
+    fn parser_take_until_test2() {
         let testdoc = "<document";
         let teststate = ParserState::new(None, None);
         let parse_doc = take_until(">");
         assert_eq!(
-            Ok((("<document", ParserState::new(None, None)), "<document".to_string())),
+            Err(ParseError::Combinator),
             parse_doc((testdoc, teststate))
         );
     }
 
     #[test]
-    fn parser_take_until_test2() {
+    fn parser_take_until_test3() {
         let testdoc = "<doc>";
         let teststate = ParserState::new(None, None);
         let parse_doc = take_until("oc");
@@ -167,7 +167,7 @@ mod tests {
     }
 
     #[test]
-    fn parser_take_until_test3() {
+    fn parser_take_until_test4() {
         let testdoc = "<doc>";
         let teststate = ParserState::new(None, None);
         let parse_doc = take_until("doc");

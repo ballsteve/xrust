@@ -14,9 +14,9 @@ use crate::transform::Transform;
 pub(crate) fn stringconcat_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(
         separated_list1(
-                map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
-                range_expr::<N>(),
-            ),
+            map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
+            range_expr::<N>(),
+        ),
         |mut v| {
             if v.len() == 1 {
                 v.pop().unwrap()

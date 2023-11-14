@@ -113,16 +113,16 @@ pub(crate) fn unary_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
 fn value_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(
-            pair(
-                path_expr::<N>(),
-                many0(tuple2(tag("!"), path_expr::<N>())),
-            ),
-            |(u, v)| {
-                if v.is_empty() {
-                    u
-                } else {
-                    Transform::NotImplemented("value_expr".to_string())
-                }
-            },
+        pair(
+            path_expr::<N>(),
+            many0(tuple2(tag("!"), path_expr::<N>())),
+        ),
+        |(u, v)| {
+            if v.is_empty() {
+                u
+            } else {
+                Transform::NotImplemented("value_expr".to_string())
+            }
+        },
     )
 }
