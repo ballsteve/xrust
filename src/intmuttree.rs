@@ -166,39 +166,15 @@ impl Document {
      */
 }
 
-impl
-    TryFrom<(
-        String,
-        Option<ExtDTDresolver>,
-        Option<String>,
-    )> for Document
-{
+impl TryFrom<(String, Option<ExtDTDresolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(
-        s: (
-            String,
-            Option<ExtDTDresolver>,
-            Option<String>,
-        ),
-    ) -> Result<Self, Self::Error> {
+    fn try_from(s: (String, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
         parser::xml::parse(s.0.as_str(), s.1, s.2)
     }
 }
-impl
-    TryFrom<(
-        &str,
-        Option<ExtDTDresolver>,
-        Option<String>,
-    )> for Document
-{
+impl TryFrom<(&str, Option<ExtDTDresolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(
-        s: (
-            &str,
-            Option<ExtDTDresolver>,
-            Option<String>,
-        ),
-    ) -> Result<Self, Self::Error> {
+    fn try_from(s: (&str, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
         parser::xml::parse(s.0, s.1, s.2)
     }
 }

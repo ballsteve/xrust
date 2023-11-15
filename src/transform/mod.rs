@@ -4,28 +4,28 @@ The transformation engine.
 Describes a transformation and provides an interpreter that produces a [Sequence], given an initial context.
 */
 
-pub mod context;
-pub mod template;
-pub(crate) mod navigate;
-pub(crate) mod construct;
-pub(crate) mod functions;
-pub(crate) mod strings;
 pub(crate) mod booleans;
-pub(crate) mod numbers;
+pub(crate) mod construct;
+pub mod context;
+pub(crate) mod controlflow;
 pub(crate) mod datetime;
+pub(crate) mod functions;
 pub(crate) mod grouping;
 pub(crate) mod logic;
-pub(crate) mod controlflow;
+pub(crate) mod navigate;
+pub(crate) mod numbers;
+pub(crate) mod strings;
+pub mod template;
 pub(crate) mod variables;
 
-use std::rc::Rc;
-use std::fmt;
-use std::fmt::Formatter;
-use std::convert::TryFrom;
-use crate::xdmerror::{Error, ErrorKind};
+use crate::item::{Item, Node, NodeType};
 use crate::qname::QualifiedName;
 use crate::value::Operator;
-use crate::item::{Item, Node, NodeType};
+use crate::xdmerror::{Error, ErrorKind};
+use std::convert::TryFrom;
+use std::fmt;
+use std::fmt::Formatter;
+use std::rc::Rc;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone, Debug)]
@@ -127,7 +127,11 @@ pub enum Transform<N: Node> {
     StartsWith(Box<Transform<N>>, Box<Transform<N>>),
     EndsWith(Box<Transform<N>>, Box<Transform<N>>),
     Contains(Box<Transform<N>>, Box<Transform<N>>),
-    Substring(Box<Transform<N>>, Box<Transform<N>>, Option<Box<Transform<N>>>),
+    Substring(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+    ),
     SubstringBefore(Box<Transform<N>>, Box<Transform<N>>),
     SubstringAfter(Box<Transform<N>>, Box<Transform<N>>),
     NormalizeSpace(Option<Box<Transform<N>>>),
@@ -144,14 +148,36 @@ pub enum Transform<N: Node> {
     CurrentDateTime,
     CurrentDate,
     CurrentTime,
-    FormatDateTime(Box<Transform<N>>, Box<Transform<N>>, Option<Box<Transform<N>>>, Option<Box<Transform<N>>>, Option<Box<Transform<N>>>),
-    FormatDate(Box<Transform<N>>, Box<Transform<N>>, Option<Box<Transform<N>>>, Option<Box<Transform<N>>>, Option<Box<Transform<N>>>),
-    FormatTime(Box<Transform<N>>, Box<Transform<N>>, Option<Box<Transform<N>>>, Option<Box<Transform<N>>>, Option<Box<Transform<N>>>),
+    FormatDateTime(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+        Option<Box<Transform<N>>>,
+        Option<Box<Transform<N>>>,
+    ),
+    FormatDate(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+        Option<Box<Transform<N>>>,
+        Option<Box<Transform<N>>>,
+    ),
+    FormatTime(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+        Option<Box<Transform<N>>>,
+        Option<Box<Transform<N>>>,
+    ),
     CurrentGroup,
     CurrentGroupingKey,
     /// A user-defined callable. Consists of a name, an argument list, and a body.
     /// TODO: merge with Call?
-    UserDefined(QualifiedName, Vec<(String, Transform<N>)>, Box<Transform<N>>),
+    UserDefined(
+        QualifiedName,
+        Vec<(String, Transform<N>)>,
+        Box<Transform<N>>,
+    ),
 
     /// For things that are not yet implemented, such as:
     /// Union, IntersectExcept, InstanceOf, Treat, Castable, Cast, Arrow, Unary, SimpleMap, Is, Before, After.
@@ -176,8 +202,12 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
-            Transform::GeneralComparison(o, v, u) => write!(f, "general comparison {} of {} and {}", o, v, u),
-            Transform::ValueComparison(o, v, u) => write!(f, "value comparison {} of {} and {}", o, v, u),
+            Transform::GeneralComparison(o, v, u) => {
+                write!(f, "general comparison {} of {} and {}", o, v, u)
+            }
+            Transform::ValueComparison(o, v, u) => {
+                write!(f, "value comparison {} of {} and {}", o, v, u)
+            }
             Transform::Concat(o) => write!(f, "Concatenate {} operands", o.len()),
             Transform::Range(_, _) => write!(f, "range"),
             Transform::Arithmetic(o) => write!(f, "Arithmetic {} operands", o.len()),
@@ -220,7 +250,9 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::CurrentDateTime => write!(f, "current-date-time"),
             Transform::CurrentDate => write!(f, "current-date"),
             Transform::CurrentTime => write!(f, "current-time"),
-            Transform::FormatDateTime(p, q, _, _, _) => write!(f, "format-date-time({}, {}, ...)", p, q),
+            Transform::FormatDateTime(p, q, _, _, _) => {
+                write!(f, "format-date-time({}, {}, ...)", p, q)
+            }
             Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({}, {}, ...)", p, q),
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({}, {}, ...)", p, q),
             Transform::CurrentGroup => write!(f, "current-group"),
@@ -268,7 +300,7 @@ pub struct NodeMatch {
 
 impl NodeMatch {
     pub fn new(axis: Axis, nodetest: NodeTest) -> Self {
-        NodeMatch {axis, nodetest}
+        NodeMatch { axis, nodetest }
     }
     pub fn matches_item<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
         match &**i {
@@ -277,40 +309,40 @@ impl NodeMatch {
         }
     }
     pub fn matches<N: Node>(&self, n: &N) -> bool {
-                match &self.nodetest {
-                    NodeTest::Name(t) => {
-                        match n.node_type() {
-                            NodeType::Element | NodeType::Attribute => {
-                                // TODO: namespaces
-                                match &t.name {
-                                    Some(a) => match a {
-                                        WildcardOrName::Wildcard => true,
-                                        WildcardOrName::Name(s) => *s == n.name().get_localname(),
-                                    },
-                                    None => false,
-                                }
-                            }
-                            _ => false,
-                        }
-                    }
-                    NodeTest::Kind(k) => {
-                        match k {
-                            KindTest::Document => matches!(n.node_type(), NodeType::Document),
-                            KindTest::Element => matches!(n.node_type(), NodeType::Element),
-                            KindTest::PI => matches!(n.node_type(), NodeType::ProcessingInstruction),
-                            KindTest::Comment => matches!(n.node_type(), NodeType::Comment),
-                            KindTest::Text => matches!(n.node_type(), NodeType::Text),
-                            KindTest::Any => match n.node_type() {
-                                NodeType::Document => false,
-                                _ => true,
+        match &self.nodetest {
+            NodeTest::Name(t) => {
+                match n.node_type() {
+                    NodeType::Element | NodeType::Attribute => {
+                        // TODO: namespaces
+                        match &t.name {
+                            Some(a) => match a {
+                                WildcardOrName::Wildcard => true,
+                                WildcardOrName::Name(s) => *s == n.name().get_localname(),
                             },
-                            KindTest::Attribute
-                            | KindTest::SchemaElement
-                            | KindTest::SchemaAttribute
-                            | KindTest::Namespace => false, // TODO: not yet implemented
+                            None => false,
                         }
                     }
+                    _ => false,
                 }
+            }
+            NodeTest::Kind(k) => {
+                match k {
+                    KindTest::Document => matches!(n.node_type(), NodeType::Document),
+                    KindTest::Element => matches!(n.node_type(), NodeType::Element),
+                    KindTest::PI => matches!(n.node_type(), NodeType::ProcessingInstruction),
+                    KindTest::Comment => matches!(n.node_type(), NodeType::Comment),
+                    KindTest::Text => matches!(n.node_type(), NodeType::Text),
+                    KindTest::Any => match n.node_type() {
+                        NodeType::Document => false,
+                        _ => true,
+                    },
+                    KindTest::Attribute
+                    | KindTest::SchemaElement
+                    | KindTest::SchemaAttribute
+                    | KindTest::Namespace => false, // TODO: not yet implemented
+                }
+            }
+        }
     }
 }
 
@@ -329,12 +361,10 @@ pub enum NodeTest {
 impl NodeTest {
     pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
         match &**i {
-            Item::Node(_) => {
-                match self {
-                    NodeTest::Kind(k) => k.matches(i),
-                    NodeTest::Name(nm) => nm.matches(i),
-                }
-            }
+            Item::Node(_) => match self {
+                NodeTest::Kind(k) => k.matches(i),
+                NodeTest::Name(nm) => nm.matches(i),
+            },
             _ => false,
         }
     }
@@ -492,8 +522,12 @@ pub struct NameTest {
 }
 
 impl NameTest {
-    pub fn new(ns: Option<WildcardOrName>, prefix: Option<String>, name: Option<WildcardOrName>) -> Self {
-        NameTest{ns, prefix, name}
+    pub fn new(
+        ns: Option<WildcardOrName>,
+        prefix: Option<String>,
+        name: Option<WildcardOrName>,
+    ) -> Self {
+        NameTest { ns, prefix, name }
     }
     /// Does an Item match this name test? To match, the item must be a node, have a name,
     /// have the namespace URI and local name be equal or a wildcard
@@ -501,35 +535,52 @@ impl NameTest {
         match &**i {
             Item::Node(n) => {
                 match n.node_type() {
-                    NodeType::Element |
-                    NodeType::ProcessingInstruction |
-                    NodeType::Attribute => {
-                        match (self.ns.as_ref(), self.name.as_ref(), n.name().get_nsuri_ref(), n.name().get_localname().as_str()) {
+                    NodeType::Element | NodeType::ProcessingInstruction | NodeType::Attribute => {
+                        match (
+                            self.ns.as_ref(),
+                            self.name.as_ref(),
+                            n.name().get_nsuri_ref(),
+                            n.name().get_localname().as_str(),
+                        ) {
                             (None, None, _, _) => false,
                             (None, Some(WildcardOrName::Wildcard), None, _) => true,
                             (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
                             (None, Some(WildcardOrName::Name(_)), None, "") => false,
-                            (None, Some(WildcardOrName::Name(wn)), None, qn) => {
-                                wn == qn
-                            }
+                            (None, Some(WildcardOrName::Name(wn)), None, qn) => wn == qn,
                             (None, Some(WildcardOrName::Name(_)), Some(_), _) => false,
                             (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
-                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Wildcard), _, _) => true,
-                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(_)), _, "") => false,
-                            (Some(WildcardOrName::Wildcard), Some(WildcardOrName::Name(wn)), _, qn) => {
-                                wn == qn
-                            }
+                            (
+                                Some(WildcardOrName::Wildcard),
+                                Some(WildcardOrName::Wildcard),
+                                _,
+                                _,
+                            ) => true,
+                            (
+                                Some(WildcardOrName::Wildcard),
+                                Some(WildcardOrName::Name(_)),
+                                _,
+                                "",
+                            ) => false,
+                            (
+                                Some(WildcardOrName::Wildcard),
+                                Some(WildcardOrName::Name(wn)),
+                                _,
+                                qn,
+                            ) => wn == qn,
                             (Some(WildcardOrName::Name(_)), Some(_), None, _) => false,
-                            (Some(WildcardOrName::Name(wnsuri)), Some(WildcardOrName::Name(wn)), Some(qnsuri), qn) => {
-                                wnsuri == qnsuri && wn == qn
-                            }
+                            (
+                                Some(WildcardOrName::Name(wnsuri)),
+                                Some(WildcardOrName::Name(wn)),
+                                Some(qnsuri),
+                                qn,
+                            ) => wnsuri == qnsuri && wn == qn,
                             _ => false, // maybe should panic?
                         }
                     }
-                    _ => false // all other node types don't have names
+                    _ => false, // all other node types don't have names
                 }
             }
-            _ => false // other item types don't have names
+            _ => false, // other item types don't have names
         }
     }
 }
@@ -633,7 +684,7 @@ pub struct ArithmeticOperand<N: Node> {
 
 impl<N: Node> ArithmeticOperand<N> {
     pub fn new(op: ArithmeticOperator, operand: Transform<N>) -> Self {
-        ArithmeticOperand{op, operand}
+        ArithmeticOperand { op, operand }
     }
 }
 

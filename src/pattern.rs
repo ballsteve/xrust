@@ -5,17 +5,17 @@
 //! Patterns are defined in XSLT 3.0 5.5.2
 
 use std::convert::TryFrom;
-use std::rc::Rc;
 use std::fmt;
+use std::rc::Rc;
 
 use crate::item::{Item, Node, NodeType, SequenceTrait};
-use crate::transform::{Transform, Axis, NodeTest, NameTest, WildcardOrName, KindTest};
-use crate::transform::context::{Context, ContextBuilder};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::nodetests::{nodetest, qualname_test};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::variables::variable_reference;
+use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::{Axis, KindTest, NameTest, NodeTest, Transform, WildcardOrName};
 use crate::value::Value;
 use crate::xdmerror::*;
 
@@ -48,31 +48,24 @@ impl<N: Node> Pattern<N> {
     /// TODO: return dynamic errors
     pub fn matches(&self, ctxt: &Context<N>, i: &Rc<Item<N>>) -> bool {
         match self {
-            Pattern::Predicate(t) => {
-                ContextBuilder::from(ctxt)
-                    .current(vec![i.clone()])
-                    .build()
-                    .dispatch(t)
-                    .unwrap_or(vec![Rc::new(Item::Value(Value::from(false)))])
-                    .to_bool()
-            }
+            Pattern::Predicate(t) => ContextBuilder::from(ctxt)
+                .current(vec![i.clone()])
+                .build()
+                .dispatch(t)
+                .unwrap_or(vec![Rc::new(Item::Value(Value::from(false)))])
+                .to_bool(),
             Pattern::Selection(p) => {
                 // First step is the terminal case,
                 // next steps are non-terminal
-                p.t.as_ref().map_or(
-                    false,
-                    |((term, nonterm), nt)| {
-                        if is_match(term, nt, i) {
-                            // TODO: select item depending on non-terminal axis
-                            find_node(nonterm, i.clone()).map_or(
-                                false,
-                                |f| nonterminal(p.next.clone(), &f)
-                            )
-                        } else {
-                            false
-                        }
+                p.t.as_ref().map_or(false, |((term, nonterm), nt)| {
+                    if is_match(term, nt, i) {
+                        // TODO: select item depending on non-terminal axis
+                        find_node(nonterm, i.clone())
+                            .map_or(false, |f| nonterminal(p.next.clone(), &f))
+                    } else {
+                        false
                     }
-                )
+                })
             }
             _ => false, // not yet implemented
         }
@@ -81,26 +74,20 @@ impl<N: Node> Pattern<N> {
 
 fn find_node<N: Node>(a: &Axis, i: Rc<Item<N>>) -> Option<Rc<Item<N>>> {
     match a {
-        Axis::SelfDocument => {
-            match &*i {
-                Item::Node(n) => {
-                    if n.node_type() == NodeType::Document {
-                        Some(i)
-                    } else {
-                        None
-                    }
+        Axis::SelfDocument => match &*i {
+            Item::Node(n) => {
+                if n.node_type() == NodeType::Document {
+                    Some(i)
+                } else {
+                    None
                 }
-                _ => None,
             }
-        }
-        Axis::Parent => {
-            match &*i {
-                Item::Node(n) => {
-                    n.parent().map(|p| Rc::new(Item::Node(p)))
-                }
-                _ => None,
-            }
-        }
+            _ => None,
+        },
+        Axis::Parent => match &*i {
+            Item::Node(n) => n.parent().map(|p| Rc::new(Item::Node(p))),
+            _ => None,
+        },
         _ => None, // todo
     }
 }
@@ -113,10 +100,12 @@ fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Rc<Item<N>>) -> bool {
             if is_match(&term, &nt, i) {
                 find_node(nonterm, i.clone()).map_or(
                     false, // couldn't find the next node
-                    |p| nonterminal(q.next.clone(), &p)
+                    |p| nonterminal(q.next.clone(), &p),
                 )
-            } else { false }
-        }
+            } else {
+                false
+            }
+        },
     )
 }
 
@@ -143,16 +132,13 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Rc<Item<N>>) -> bool {
         Axis::Parent => {
             // Select the parent node
             match &**i {
-                Item::Node(n) => {
-                    n.parent().map_or(
-                        false,
-                        |p| nt.matches(&Rc::new(Item::Node(p)))
-                    )
-                }
+                Item::Node(n) => n
+                    .parent()
+                    .map_or(false, |p| nt.matches(&Rc::new(Item::Node(p)))),
                 _ => false,
             }
         }
-        _ => false // todo
+        _ => false, // todo
     }
 }
 
@@ -199,9 +185,7 @@ impl PathBuilder {
 /// Compile an XPath pattern.
 impl<N: Node> TryFrom<&str> for Pattern<N> {
     type Error = Error;
-    fn try_from(
-        e: &str,
-    ) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
+    fn try_from(e: &str) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
         if e == "" {
             Err(Error::new(
                 ErrorKind::TypeError,
@@ -242,7 +226,8 @@ fn pattern<N: Node>(input: ParseInput) -> ParseResult<Pattern<N>> {
 
 // PredicatePattern ::= "." PredicateList
 // Context must match all predicates
-fn predicate_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> +'a> {
+fn predicate_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
     Box::new(map(
         pair(
             map(tuple3(xpwhitespace(), tag("."), xpwhitespace()), |_| ()),
@@ -254,7 +239,8 @@ fn predicate_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
 
 // UnionExprP ::= IntersectExceptExprP (("union" | "|") IntersectExceptExprP)*
 // A union expression matches if any of its components is a match. This creates a branching structure in the compilation of the Pattern<N>.
-fn union_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn union_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
     Box::new(map(
         separated_list1(
             map(
@@ -274,17 +260,14 @@ fn union_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResu
 }
 
 // NB. Rust *really* doesn't like recursive types, so we must force it to lazily evaluate arguments to avoid stack overflow.
-fn union_expr_wrapper<N: Node>(
-    b: bool,
-) -> impl Fn(ParseInput) -> ParseResult<Pattern<N>>
-{
-    move |input| {
+fn union_expr_wrapper<N: Node>(b: bool) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>>> {
+    Box::new(move |input| {
         if b {
             union_expr_pattern::<N>()(input)
         } else {
             noop()(input)
         }
-    }
+    })
 }
 
 fn noop<N: Node>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>>> {
@@ -293,7 +276,8 @@ fn noop<N: Node>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>>> {
 
 // IntersectExceptExprP ::= PathExprP (("intersect" | "except") PathExprP)*
 // intersect and except not yet supported
-fn intersect_except_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn intersect_except_expr_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         separated_list1(
             map(
@@ -321,7 +305,8 @@ fn intersect_except_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -
 }
 
 // PathExprP ::= RootedPath | ("/" RelativePathExprP) | ("//" RelativePathExprP) | RelativePathExprP
-fn path_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn path_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
     Box::new(alt4(
         rooted_path_pattern::<N>(),
         absolutedescendant_expr_pattern(),
@@ -331,13 +316,11 @@ fn path_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
 }
 
 // RootedPath ::= (VarRef | FunctionCallP) PredicateList (("/" | "//") RelativePathExprP)?
-fn rooted_path_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn rooted_path_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
     Box::new(map(
         tuple3(
-            alt2(
-                variable_reference_pattern::<N>(),
-                function_call_pattern(),
-            ),
+            alt2(variable_reference_pattern::<N>(), function_call_pattern()),
             predicate_list::<N>(),
             alt2(
                 absolutedescendant_expr_pattern::<N>(),
@@ -354,12 +337,14 @@ fn rooted_path_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseRes
 }
 
 // Variable Reference
-fn variable_reference_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn variable_reference_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(variable_reference::<N>(), |r| Pattern::Predicate(r)))
 }
 
 // ('//' RelativePathExpr?)
-fn absolutedescendant_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         pair(tag("//"), relativepath_expr_pattern::<N>()),
         |(_, _r)| {
@@ -372,7 +357,8 @@ fn absolutedescendant_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput)
 }
 
 // ('/' RelativePathExpr?)
-fn absolutepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn absolutepath_expr_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         pair(tag("/"), opt(relativepath_expr_pattern::<N>())),
         |(_, r)| match r {
@@ -380,17 +366,22 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Pa
                 ErrorKind::NotImplemented,
                 String::from("absolute path in a pattern has not been implemented"),
             )),
-            None => {
-                Pattern::Selection(PathBuilder::new()
-                    .step(Axis::SelfDocument, Axis::SelfDocument, NodeTest::Kind(KindTest::Document))
-                    .build())
-            }
-        }
+            None => Pattern::Selection(
+                PathBuilder::new()
+                    .step(
+                        Axis::SelfDocument,
+                        Axis::SelfDocument,
+                        NodeTest::Kind(KindTest::Document),
+                    )
+                    .build(),
+            ),
+        },
     ))
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn relativepath_expr_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         pair(
             step_expr_pattern::<N>(),
@@ -409,7 +400,7 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Pa
             } else {
                 let mut ap = match a {
                     Pattern::Selection(p) => p,
-                    _ => panic!("relative path may only contain steps")
+                    _ => panic!("relative path may only contain steps"),
                 };
                 for (_c, d) in b {
                     match d {
@@ -417,7 +408,7 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Pa
                             p.next = Some(Rc::new(ap));
                             ap = p.clone();
                         }
-                        _ => panic!("relative path can only contain steps")
+                        _ => panic!("relative path can only contain steps"),
                     }
                 }
                 Pattern::Selection(ap)
@@ -427,14 +418,15 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Pa
 }
 
 // StepExprP ::= PostfixExprExpr | AxisStepP
-fn step_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
-    //Box::new(alt2(postfix_expr_pattern::<N>(), axis_step_pattern::<N>()))
-    Box::new(postfix_expr_pattern::<N>())
+fn step_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
+    Box::new(alt2(postfix_expr_pattern::<N>(), axis_step_pattern::<N>()))
 }
 
 // PostfixExprP ::= ParenthesizedExprP PredicateList
 // TODO: predicates
-fn postfix_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn postfix_expr_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         tuple2(paren_expr_pattern(), predicate_list::<N>()),
         |(p, _)| p,
@@ -442,7 +434,8 @@ fn postfix_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseRe
 }
 
 // ParenthesizedExprP ::= "(" UnionExprP ")"
-fn paren_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn paren_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
     Box::new(map(
         tuple3(
             tuple3(xpwhitespace(), tag("("), xpwhitespace()),
@@ -455,7 +448,8 @@ fn paren_expr_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResu
 
 // AxisStepP ::= ForwardStepP PredicateList
 // TODO: predicate
-fn axis_step_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn axis_step_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a>
+{
     Box::new(map(
         tuple2(forward_step_pattern(), predicate_list::<N>()),
         |(f, _p)| f, // TODO: pass predicate back to caller
@@ -465,25 +459,18 @@ fn axis_step_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
 // ForwardStepP ::= (ForwardAxisP NodeTest) | AbbrevForwardStep
 // Returns the node test, the terminal axis and the non-terminal axis
 // TODO: abbreviated step
-fn forward_step_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn forward_step_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         tuple2(forward_axis_pattern(), nodetest()),
-        |((a, c), nt)| {
-            Pattern::Selection(
-                PathBuilder::new()
-                    .step(a, c, nt)
-                    .build()
-            )
-        },
+        |((a, c), nt)| Pattern::Selection(PathBuilder::new().step(a, c, nt).build()),
     ))
 }
 
 // ForwardAxisP ::= ("child" | "descendant" | "attribute" | "self" | "descendant-or-self" | "namespace" ) "::"
 // Returns a pair: the axis to match this step, and the axis for the previous step
 // TODO: abbreviated step
-fn forward_axis_pattern(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<(Axis, Axis)>>
-{
+fn forward_axis_pattern() -> Box<dyn Fn(ParseInput) -> ParseResult<(Axis, Axis)>> {
     Box::new(map(
         tuple2(
             alt6(
@@ -503,7 +490,8 @@ fn forward_axis_pattern(
 }
 
 // FunctionCallP ::= OuterFunctionName ArgumentListP
-fn function_call_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn function_call_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         tuple2(outer_function_name(), argument_list_pattern::<N>()),
         |(_n, _a)| {
@@ -517,7 +505,8 @@ fn function_call_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseR
 }
 
 // ArgumentListP ::= "(" (ArgumentP ("," ArgumentP)*)? ")"
-fn argument_list_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
+fn argument_list_pattern<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
         tuple3(
             map(tuple3(xpwhitespace(), tag("("), xpwhitespace()), |_| ()),
@@ -539,7 +528,10 @@ fn argument_list_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseR
 
 // ArgumentP ::= VarRef | Literal
 fn argument_pattern<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
-    Box::new(alt2(variable_reference_pattern::<N>(), literal_pattern::<N>()))
+    Box::new(alt2(
+        variable_reference_pattern::<N>(),
+        literal_pattern::<N>(),
+    ))
 }
 
 // literal

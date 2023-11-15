@@ -1,8 +1,6 @@
 //! Functions that produce comparisons.
 
-use crate::value::Operator;
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
@@ -10,10 +8,13 @@ use crate::parser::combinators::tag::anytag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::strings::stringconcat_expr;
+use crate::parser::{ParseInput, ParseResult};
 use crate::transform::Transform;
+use crate::value::Operator;
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
-pub(crate) fn comparison_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+pub(crate) fn comparison_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
             stringconcat_expr::<N>(),
@@ -21,7 +22,8 @@ pub(crate) fn comparison_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> P
                 tuple3(
                     xpwhitespace(),
                     anytag(vec![
-                        "=", "!=", "<", "<=", "<<", ">", ">=", ">>", "eq", "ne", "lt", "le", "gt", "ge", "is"
+                        "=", "!=", "<", "<=", "<<", ">", ">=", ">>", "eq", "ne", "lt", "le", "gt",
+                        "ge", "is",
                     ]),
                     xpwhitespace(),
                 ),

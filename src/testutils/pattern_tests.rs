@@ -1,4 +1,3 @@
-
 #[macro_export]
 macro_rules! pattern_tests (
     ( $t:ty , $x:expr , $y:expr ) => {

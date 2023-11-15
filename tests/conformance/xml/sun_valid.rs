@@ -4,10 +4,10 @@ Sun Microsystems test cases
 
 */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore] //Requires external DTDs

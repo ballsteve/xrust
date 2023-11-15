@@ -5,12 +5,12 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_while;
 use crate::parser::combinators::tuple::{tuple2, tuple4, tuple5, tuple6};
+use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::common::is_namechar;
+use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::value::value;
-use crate::parser::xml::dtd::pereference::petextreference;
 
 pub(crate) fn nmtoken() -> impl Fn(ParseInput) -> ParseResult<()> {
     map(many1(take_while(|c| is_namechar(&c))), |_x| ())
@@ -33,17 +33,12 @@ pub(crate) fn mixed() -> impl Fn(ParseInput) -> ParseResult<String> {
                 tag("("),
                 whitespace0(),
                 tag("#PCDATA"),
-                many0(
-                    tuple4(
-                        whitespace0(),
-                        tag("|"),
-                        whitespace0(),
-                        alt2(
-                            petextreference(),
-                            name()
-                        )
-                    )
-                ),
+                many0(tuple4(
+                    whitespace0(),
+                    tag("|"),
+                    whitespace0(),
+                    alt2(petextreference(), name()),
+                )),
                 whitespace0(),
                 tag(")*"),
             ),
@@ -66,11 +61,7 @@ pub(crate) fn mixed() -> impl Fn(ParseInput) -> ParseResult<String> {
 pub(crate) fn children() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
         tuple2(
-            alt3(
-                petextreference(),
-                choice(),
-                seq()
-            ),
+            alt3(petextreference(), choice(), seq()),
             opt(alt3(tag("?"), tag("*"), tag("+"))),
         ),
         |_x| "".to_string(),
@@ -82,12 +73,7 @@ fn cp() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |input| {
         map(
             tuple2(
-                alt4(
-                    petextreference(),
-                    name(),
-                    choice(),
-                    seq()
-                ),
+                alt4(petextreference(), name(), choice(), seq()),
                 opt(alt3(tag("?"), tag("*"), tag("+"))),
             ),
             |_x| "".to_string(),
@@ -102,12 +88,10 @@ fn choice() -> impl Fn(ParseInput) -> ParseResult<String> {
                 tag("("),
                 whitespace0(),
                 cp(),
-                many0(
-                    alt2(
-                        map(petextreference(), |x| ((),(),(),x)),
-                        tuple4(whitespace0(), tag("|"), whitespace0(), cp())
-                    )
-                ),
+                many0(alt2(
+                    map(petextreference(), |x| ((), (), (), x)),
+                    tuple4(whitespace0(), tag("|"), whitespace0(), cp()),
+                )),
                 whitespace0(),
                 tag(")"),
             ),

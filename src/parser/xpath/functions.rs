@@ -1,12 +1,10 @@
 //! Functions for functions.
 
-use crate::xdmerror::ErrorKind;
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::map::map;
 use crate::parser::combinators::alt::alt2;
-use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::list::separated_list0;
+use crate::parser::combinators::map::map;
+use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple3, tuple6};
@@ -16,11 +14,14 @@ use crate::parser::xpath::expr_single_wrapper;
 use crate::parser::xpath::expressions::parenthesized_expr;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::numbers::unary_expr;
-use crate::transform::{Transform, NodeTest, NameTest, WildcardOrName};
+use crate::parser::{ParseInput, ParseResult};
+use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
+use crate::xdmerror::ErrorKind;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
-pub(crate) fn arrow_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+pub(crate) fn arrow_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             unary_expr::<N>(),
             opt(tuple6(
@@ -39,31 +40,33 @@ pub(crate) fn arrow_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
                 Transform::NotImplemented("arrow_expr".to_string())
             }
         },
-    )
+    ))
 }
 
 // ArrowFunctionSpecifier ::= EQName | VarRef | ParenthesizedExpr
 // TODO: finish this parser with EQName and VarRef
-fn arrowfunctionspecifier<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn arrowfunctionspecifier<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         alt2(
             map(qualname(), |_| ()),
-            map(parenthesized_expr::<N>(), |_| ())
+            map(parenthesized_expr::<N>(), |_| ()),
         ),
         |_| Transform::NotImplemented("arrowfunctionspecifier".to_string()),
-    )
+    ))
 }
 
 // FunctionCall ::= EQName ArgumentList
-pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+pub(crate) fn function_call<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(qualname_test(), argumentlist::<N>()),
         |(qn, mut a)| match qn {
             NodeTest::Name(NameTest {
-                               name: Some(WildcardOrName::Name(localpart)),
-                               ns: None,
-                               prefix: None,
-                           }) => match localpart.as_str() {
+                name: Some(WildcardOrName::Name(localpart)),
+                ns: None,
+                prefix: None,
+            }) => match localpart.as_str() {
                 "position" => Transform::Position,
                 "last" => Transform::Last,
                 "count" => {
@@ -137,7 +140,10 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         Transform::Substring(Box::new(d), Box::new(c), Some(Box::new(b)))
                     } else {
                         // Wrong number of arguments
-                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
                     }
                 }
                 "substring-before" => {
@@ -167,7 +173,10 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         Transform::NormalizeSpace(Some(Box::new(a.pop().unwrap())))
                     } else {
                         // Wrong number of arguments
-                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
                     }
                 }
                 "translate" => {
@@ -178,7 +187,10 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         Transform::Translate(Box::new(d), Box::new(c), Box::new(b))
                     } else {
                         // Wrong number of arguments
-                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
                     }
                 }
                 "boolean" => {
@@ -255,7 +267,10 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         Transform::Round(Box::new(c), Some(Box::new(b)))
                     } else {
                         // Wrong number of arguments
-                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
                     }
                 }
                 "current-date-time" => {
@@ -293,7 +308,13 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         let d = a.pop().unwrap();
                         let e = a.pop().unwrap();
                         let f = a.pop().unwrap();
-                        Transform::FormatDateTime(Box::new(f), Box::new(e), Some(Box::new(d)), Some(Box::new(c)), Some(Box::new(b)))
+                        Transform::FormatDateTime(
+                            Box::new(f),
+                            Box::new(e),
+                            Some(Box::new(d)),
+                            Some(Box::new(c)),
+                            Some(Box::new(b)),
+                        )
                     } else {
                         // Too many arguments
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
@@ -310,7 +331,13 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         let d = a.pop().unwrap();
                         let e = a.pop().unwrap();
                         let f = a.pop().unwrap();
-                        Transform::FormatDate(Box::new(f), Box::new(e), Some(Box::new(d)), Some(Box::new(c)), Some(Box::new(b)))
+                        Transform::FormatDate(
+                            Box::new(f),
+                            Box::new(e),
+                            Some(Box::new(d)),
+                            Some(Box::new(c)),
+                            Some(Box::new(b)),
+                        )
                     } else {
                         // Too many arguments
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
@@ -327,7 +354,13 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
                         let d = a.pop().unwrap();
                         let e = a.pop().unwrap();
                         let f = a.pop().unwrap();
-                        Transform::FormatTime(Box::new(f), Box::new(e), Some(Box::new(d)), Some(Box::new(c)), Some(Box::new(b)))
+                        Transform::FormatTime(
+                            Box::new(f),
+                            Box::new(e),
+                            Some(Box::new(d)),
+                            Some(Box::new(c)),
+                            Some(Box::new(b)),
+                        )
                     } else {
                         // Too many arguments
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
@@ -358,8 +391,9 @@ pub(crate) fn function_call<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> Par
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Vec<Transform<N>>> + 'a {
-    map(
+fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<Transform<N>>> + 'a>
+{
+    Box::new(map(
         tuple3(
             tag("("),
             separated_list0(
@@ -369,11 +403,11 @@ fn argumentlist<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Vec<Tr
             tag(")"),
         ),
         |(_, a, _)| a,
-    )
+    ))
 }
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-     expr_single_wrapper::<N>(true)
+fn argument<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(expr_single_wrapper::<N>(true))
 }

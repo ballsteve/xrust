@@ -1,16 +1,16 @@
 //! Supporting functions.
 
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult, ParseError};
-use crate::transform::{Transform, NameTest, NodeTest, WildcardOrName};
+use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 
 pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
     match nt {
         NodeTest::Name(NameTest {
-                           name: Some(WildcardOrName::Name(localpart)),
-                           ns: None,
-                           prefix: None,
-                       }) => localpart.to_string(),
+            name: Some(WildcardOrName::Name(localpart)),
+            ns: None,
+            prefix: None,
+        }) => localpart.to_string(),
         _ => String::from("invalid qname"),
     }
 }
@@ -19,9 +19,7 @@ pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
 pub(crate) fn digit0() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |(input, state)| {
         match input.find(|c| !(c >= '0' && c <= '9')) {
-            Some(0) => {
-                Err(ParseError::Combinator)
-            }
+            Some(0) => Err(ParseError::Combinator),
             Some(pos) => {
                 //let result = (&mut input).take(pos).collect::<String>();
                 Ok(((&input[pos..], state), input[..pos].to_string()))
@@ -41,15 +39,9 @@ pub(crate) fn digit1() -> impl Fn(ParseInput) -> ParseResult<String> {
     move |(input, state)| {
         if input.starts_with(|c| (c >= '0' && c <= '9')) {
             match input.find(|c| !(c >= '0' && c <= '9')) {
-                Some(0) => {
-                    Ok(((&input[1..], state), input[..1].to_string()))
-                }
-                Some(pos) => {
-                    Ok(((&input[pos..], state), input[..pos].to_string()))
-                }
-                None => {
-                    Ok((("", state), input.to_string()))
-                }
+                Some(0) => Ok(((&input[1..], state), input[..1].to_string())),
+                Some(pos) => Ok(((&input[pos..], state), input[..pos].to_string())),
+                None => Ok((("", state), input.to_string())),
             }
         } else {
             Err(ParseError::Combinator)
@@ -66,9 +58,7 @@ pub(crate) fn none_of(s: &str) -> impl Fn(ParseInput) -> ParseResult<char> + '_ 
             let a = input.chars().next().unwrap();
             match s.find(|b| a == b) {
                 Some(_) => Err(ParseError::Combinator),
-                None => {
-                    Ok(((&input[1..], state), a))
-                }
+                None => Ok(((&input[1..], state), a)),
             }
         }
     }
@@ -77,4 +67,3 @@ pub(crate) fn none_of(s: &str) -> impl Fn(ParseInput) -> ParseResult<char> + '_ 
 pub(crate) fn noop<N: Node>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> {
     move |_| Err(ParseError::Combinator)
 }
-

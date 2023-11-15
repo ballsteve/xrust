@@ -4,7 +4,7 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
-use crate::intmuttree::{DTD, ExtDTDresolver};
+use crate::intmuttree::{ExtDTDresolver, DTD};
 use crate::xdmerror::{Error, ErrorKind};
 use std::collections::HashMap;
 use std::fmt;
@@ -70,14 +70,11 @@ pub(crate) struct ParserState {
     ParamEntities are not allowed in internal subsets, but they are allowed in external DTDs,
     so we need to track when we are currently in the main document or outside it.
      */
-    currentlyexternal: bool
+    currentlyexternal: bool,
 }
 
 impl ParserState {
-    pub fn new(
-        resolver: Option<ExtDTDresolver>,
-        docloc: Option<String>,
-    ) -> Self {
+    pub fn new(resolver: Option<ExtDTDresolver>, docloc: Option<String>) -> Self {
         ParserState {
             dtd: DTD::new(),
             standalone: false,
@@ -95,7 +92,7 @@ impl ParserState {
             ext_dtd_resolver: resolver,
             ext_entities_to_parse: vec![],
             docloc,
-            currentlyexternal:false
+            currentlyexternal: false,
         }
     }
     //pub fn stack_push(&mut self, msg: String) {
@@ -135,4 +132,3 @@ impl fmt::Debug for ParserState {
         f.debug_struct("ParserState").finish()
     }
 }
-

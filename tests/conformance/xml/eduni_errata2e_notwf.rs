@@ -2,10 +2,10 @@
 Richard Tobin's XML 1.0 2nd edition errata test suite.
 */
 
+use crate::conformance::non_utf8_file_reader;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::non_utf8_file_reader;
 
 #[test]
 #[ignore]

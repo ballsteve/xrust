@@ -2,20 +2,20 @@ use crate::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
-use crate::parser::combinators::many::{many0};
+use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_while;
 use crate::parser::combinators::tuple::tuple6;
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
-use crate::parser::xml::chardata:: chardata_unicode_codepoint;
+use crate::parser::common::{is_char10, is_char11};
+use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::{Node, Value};
 use std::collections::HashMap;
-use crate::parser::common::{is_char10, is_char11};
 
 pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     move |input| match many0(attribute())(input) {
@@ -54,10 +54,8 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 // Default namespace cannot be http://www.w3.org/2000/xmlns/
                 if (node.name().get_prefix().is_none())
                     && (node.name().get_localname() == *"xmlns")
-                    && (
-                    node.to_string() == *"http://www.w3.org/XML/1998/namespace"
-                    || node.to_string() == *"http://www.w3.org/2000/xmlns/"
-                        )
+                    && (node.to_string() == *"http://www.w3.org/XML/1998/namespace"
+                        || node.to_string() == *"http://www.w3.org/2000/xmlns/")
                 {
                     return Err(ParseError::NotWellFormed);
                 }
@@ -70,7 +68,6 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                 {
                     return Err(ParseError::NotWellFormed);
                 }
-
 
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     || (node.name().get_localname() == *"xmlns")
@@ -110,8 +107,10 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                         }
                     }
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
-                    if resnodenames.contains(&(node.name().get_nsuri(), node.name().get_localname())){
-                        return Err(ParseError::NotWellFormed)
+                    if resnodenames
+                        .contains(&(node.name().get_nsuri(), node.name().get_localname()))
+                    {
+                        return Err(ParseError::NotWellFormed);
                     } else {
                         resnodenames.push((node.name().get_nsuri(), node.name().get_localname()));
                         resnodes.push(node);
@@ -149,7 +148,10 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
             delimited(
                 tag("'"),
                 many0(alt3(
-                    map(wellformed(chardata_unicode_codepoint(), |c| c != &'<'), |c| c.to_string()),
+                    map(
+                        wellformed(chardata_unicode_codepoint(), |c| c != &'<'),
+                        |c| c.to_string(),
+                    ),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\''), |c| !c.contains('<')),
                 )),
@@ -158,7 +160,10 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
             delimited(
                 tag("\""),
                 many0(alt3(
-                    map(wellformed(chardata_unicode_codepoint(), |c| c != &'<'), |c| c.to_string()),
+                    map(
+                        wellformed(chardata_unicode_codepoint(), |c| c != &'<'),
+                        |c| c.to_string(),
+                    ),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\"'), |c| !c.contains('<')),
                 )),
@@ -180,7 +185,8 @@ fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
                 let r = rn
                     .concat()
                     .replace(['\n', '\r', '\t', '\n'], " ")
-                    .trim().to_string();
+                    .trim()
+                    .to_string();
                 //NEL character cannot be in attributes.
                 if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
                     Err(ParseError::NotWellFormed)

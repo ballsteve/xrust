@@ -1,19 +1,20 @@
 //! Functions that manipulate type information
 
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple6;
 use crate::parser::combinators::whitespace::xpwhitespace;
-use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::functions::arrow_expr;
+use crate::parser::xpath::nodetests::qualname_test;
+use crate::parser::{ParseInput, ParseResult};
 use crate::transform::Transform;
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
-pub(crate) fn instanceof_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+pub(crate) fn instanceof_expr<'a, N: Node + 'a>(
+) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(
         pair(
             treat_expr::<N>(),
@@ -32,7 +33,7 @@ pub(crate) fn instanceof_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> Pars
             } else {
                 Transform::NotImplemented("instanceof_expr".to_string())
             }
-        }
+        },
     )
 }
 
@@ -72,7 +73,6 @@ fn treat_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transfor
 fn castable_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(
         pair(
-
             cast_expr::<N>(),
             opt(tuple6(
                 xpwhitespace(),

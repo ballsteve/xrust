@@ -5,7 +5,7 @@ use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
-use crate::parser::{ParseInput, ParseResult, ParseError};
+use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn whitespace0() -> impl Fn(ParseInput) -> ParseResult<()> {
     //TODO add support for xml:space
@@ -26,11 +26,11 @@ pub(crate) fn whitespace1() -> impl Fn(ParseInput) -> ParseResult<()> {
 pub(crate) fn xpwhitespace() -> impl Fn(ParseInput) -> ParseResult<()> {
     map(
         tuple3(
-                whitespace0(),
-                take_until_balanced("(:", ":)"),
-                whitespace0(),
-            ),
-            |_| (),
+            whitespace0(),
+            take_until_balanced("(:", ":)"),
+            whitespace0(),
+        ),
+        |_| (),
     )
 }
 
@@ -61,7 +61,10 @@ fn take_until_balanced(
         loop {
             counter += 1;
             if counter > 1000 {
-                return Err(ParseError::EntityDepth { row: 0, col: counter });
+                return Err(ParseError::EntityDepth {
+                    row: 0,
+                    col: counter,
+                });
             }
             match (input[pos..].find(&open), input[pos..].find(&close)) {
                 (Some(0), _) => {

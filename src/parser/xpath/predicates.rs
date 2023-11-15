@@ -1,17 +1,19 @@
 //! Support for predicates
 
 use crate::item::Node;
-use crate::transform::Transform;
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::map::map;
 use crate::parser::combinators::many::many0;
-use crate::parser::combinators::tuple::tuple3;
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
+use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
+use crate::parser::{ParseInput, ParseResult};
+use crate::transform::Transform;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::expr_wrapper;
 
 // PredicateList ::= Predicate*
-pub(crate) fn predicate_list<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+pub(crate) fn predicate_list<'a, N: Node + 'a>(
+) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(many0(predicate::<N>()), |v| Transform::Compose(v))
 }
 

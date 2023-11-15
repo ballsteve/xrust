@@ -1,35 +1,35 @@
 //! # Dynamic context for a transformation
 
-use std::collections::HashMap;
-use std::rc::Rc;
-use std::cmp::Ordering;
-use url::Url;
-use crate::xdmerror::Error;
-use crate::item::{Sequence, Node};
+use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
-use crate::transform::Transform;
-use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
-use crate::transform::navigate::*;
-use crate::transform::construct::*;
 use crate::transform::booleans::*;
+use crate::transform::construct::*;
+use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
 use crate::transform::functions::*;
 use crate::transform::grouping::*;
+use crate::transform::logic::*;
+use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
-use crate::transform::logic::*;
-use crate::transform::controlflow::*;
-use crate::{ErrorKind, Item, Value};
+use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
 use crate::transform::variables::{declare_variable, reference_variable};
+use crate::transform::Transform;
+use crate::xdmerror::Error;
+use crate::{ErrorKind, Item, Value};
+use std::cmp::Ordering;
+use std::collections::HashMap;
+use std::rc::Rc;
+use url::Url;
 
 /// The transformation context. This is the dynamic context, plus some parts of the static context.
 /// Contexts are immutable, but frequently are cloned to provide a new context.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
-    pub(crate) cur: Sequence<N>,   // The current context
-    pub(crate) i: usize,           // The index to the item that is the current context item
-    pub(crate) depth: usize,       // Depth of evaluation
-    pub(crate) rd: Option<N>,      // Result document
+    pub(crate) cur: Sequence<N>, // The current context
+    pub(crate) i: usize,         // The index to the item that is the current context item
+    pub(crate) depth: usize,     // Depth of evaluation
+    pub(crate) rd: Option<N>,    // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
@@ -46,7 +46,7 @@ pub struct Context<N: Node> {
 
 impl<N: Node> Context<N> {
     pub fn new() -> Self {
-        Context{
+        Context {
             cur: Sequence::new(),
             i: 0,
             depth: 0,
@@ -93,15 +93,23 @@ impl<N: Node> Context<N> {
             Ok(Sequence::new())
         } else {
             self.cur.get(self.i).map_or_else(
-                || Err(Error::new(ErrorKind::DynamicAbsent, String::from("bad index into current sequence"))),
+                || {
+                    Err(Error::new(
+                        ErrorKind::DynamicAbsent,
+                        String::from("bad index into current sequence"),
+                    ))
+                },
                 |i| {
                     // There may be 0, 1, or more matching templates.
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
                     let templates = self.find_templates(i)?;
                     match templates.len() {
-                        0 => Err(Error::new(ErrorKind::DynamicAbsent, String::from("no matching template"))),
-                        1 => {self.dispatch(&templates[0].body)}
+                        0 => Err(Error::new(
+                            ErrorKind::DynamicAbsent,
+                            String::from("no matching template"),
+                        )),
+                        1 => self.dispatch(&templates[0].body),
                         _ => {
                             if templates[0].priority == templates[1].priority
                                 && templates[0].import.len() == templates[1].import.len()
@@ -125,15 +133,14 @@ impl<N: Node> Context<N> {
                             }
                         }
                     }
-                }
+                },
             )
         }
     }
 
     /// Find a template with a matching [Pattern]
     pub fn find_templates(&self, i: &Rc<Item<N>>) -> Result<Vec<Rc<Template<N>>>, Error> {
-        let mut candidates = self.templates.iter()
-            .try_fold(vec![], |mut cand, t| {
+        let mut candidates = self.templates.iter().try_fold(vec![], |mut cand, t| {
             let e = t.pattern.matches(self, i);
             if e {
                 cand.push(t.clone())
@@ -219,14 +226,17 @@ impl<N: Node> Context<N> {
             Transform::UserDefined(_qn, a, b) => user_defined(self, a, b),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
-            _ => Err(Error::new(ErrorKind::NotImplemented, "not implemented".to_string()))
+            _ => Err(Error::new(
+                ErrorKind::NotImplemented,
+                "not implemented".to_string(),
+            )),
         }
     }
 }
 
 impl<N: Node> From<Sequence<N>> for Context<N> {
     fn from(value: Sequence<N>) -> Self {
-        Context{
+        Context {
             cur: value,
             i: 0,
             depth: 0,

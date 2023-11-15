@@ -2,10 +2,10 @@
 University of Edinburgh XML 1.0 4th edition errata test suite.
 */
 
+use crate::conformance::non_utf8_file_reader;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::non_utf8_file_reader;
 
 #[test]
 fn xibm105notwf_p04ibm04n02xml() {
@@ -852,7 +852,6 @@ fn xibm105notwf_p04aibm04an22xml() {
     ));
     assert!(testxml.is_err());
 }
-
 
 #[test]
 #[ignore]

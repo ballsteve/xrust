@@ -1,15 +1,13 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
-    move |(input, state)|{
-        match input.get(0..expected.len()) {
-            None => Err(ParseError::Combinator),
-            Some(chars) => {
-                if chars == expected {
-                    Ok(((&input[expected.len()..], state), ()))
-                } else {
-                    Err(ParseError::Combinator)
-                }
+    move |(input, state)| match input.get(0..expected.len()) {
+        None => Err(ParseError::Combinator),
+        Some(chars) => {
+            if chars == expected {
+                Ok(((&input[expected.len()..], state), ()))
+            } else {
+                Err(ParseError::Combinator)
             }
         }
     }
@@ -20,26 +18,23 @@ pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_
 pub(crate) fn anytag(s: Vec<&str>) -> impl Fn(ParseInput) -> ParseResult<String> + '_ {
     move |(input, state)| {
         // NB. this algorithm could probably be optimised
-        let u = s.iter().fold(
-            "",
-            |result, t| {
-                if t.len() > result.len() {
-                    // Since this tag is longer, it is a candidate
-                    match input.get(0..t.len()) {
-                        None => result,
-                        Some(chars) => {
-                            if chars == *t {
-                                t
-                            } else {
-                                result
-                            }
+        let u = s.iter().fold("", |result, t| {
+            if t.len() > result.len() {
+                // Since this tag is longer, it is a candidate
+                match input.get(0..t.len()) {
+                    None => result,
+                    Some(chars) => {
+                        if chars == *t {
+                            t
+                        } else {
+                            result
                         }
                     }
-                } else {
-                    result
                 }
+            } else {
+                result
             }
-        );
+        });
         if u == "" {
             Err(ParseError::Combinator)
         } else {
@@ -60,7 +55,7 @@ pub(crate) fn anychar(expected: char) -> impl Fn(ParseInput) -> ParseResult<()> 
 
 #[cfg(test)]
 mod tests {
-    use crate::parser::combinators::tag::{tag, anychar, anytag};
+    use crate::parser::combinators::tag::{anychar, anytag, tag};
     use crate::parser::{ParseError, ParserState};
 
     #[test]
@@ -102,10 +97,7 @@ mod tests {
         let teststate = ParserState::new(None, None);
         let parse_doc = anychar('<');
         assert_eq!(
-            Ok((
-                ("doc>", ParserState::new(None, None)),
-                ()
-            )),
+            Ok((("doc>", ParserState::new(None, None)), ())),
             parse_doc((testdoc, teststate))
         )
     }
@@ -114,10 +106,7 @@ mod tests {
         let testdoc = "<doc>";
         let teststate = ParserState::new(None, None);
         let parse_doc = anychar('>');
-        assert_eq!(
-            Err(ParseError::Combinator),
-            parse_doc((testdoc, teststate))
-        )
+        assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)))
     }
     #[test]
     fn parser_anytag_test1() {
@@ -125,10 +114,7 @@ mod tests {
         let teststate = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
-            Ok((
-                ("doc>", ParserState::new(None, None)),
-                "<".to_string()
-            )),
+            Ok((("doc>", ParserState::new(None, None)), "<".to_string())),
             parse_doc((testdoc, teststate))
         )
     }
@@ -138,10 +124,7 @@ mod tests {
         let teststate = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
-            Ok((
-                (">", ParserState::new(None, None)),
-                "<=".to_string()
-            )),
+            Ok(((">", ParserState::new(None, None)), "<=".to_string())),
             parse_doc((testdoc, teststate))
         )
     }

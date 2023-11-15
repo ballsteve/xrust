@@ -1,21 +1,22 @@
 //! XPath FLWR expressions.
 
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::map::map;
+use crate::item::Node;
 use crate::parser::combinators::list::separated_list1;
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple3, tuple5, tuple6, tuple10};
+use crate::parser::combinators::tuple::{tuple10, tuple3, tuple5, tuple6};
 use crate::parser::combinators::whitespace::xpwhitespace;
-use crate::parser::xpath::{expr_wrapper, expr_single_wrapper};
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
-use crate::item::Node;
+use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};
+use crate::parser::{ParseInput, ParseResult};
 use crate::transform::Transform;
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
-pub(crate) fn if_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+pub(crate) fn if_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             // need tuple15
             tuple10(
@@ -38,26 +39,30 @@ pub(crate) fn if_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<
                 expr_single_wrapper::<N>(true),
             ),
         ),
-        |((_, _, _, _, i, _, _, _, _, _), (t, _, _, _, e))| Transform::Switch(vec![(i, t)], Box::new(e)),
-    )
+        |((_, _, _, _, i, _, _, _, _, _), (t, _, _, _, e))| {
+            Transform::Switch(vec![(i, t)], Box::new(e))
+        },
+    ))
 }
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
-pub(crate) fn for_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+pub(crate) fn for_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         tuple3(
             simple_for_clause::<N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
             expr_single_wrapper::<N>(true),
         ),
         |(f, _, e)| Transform::Loop(f, Box::new(e)), // tc_loop does not yet support multiple variable bindings
-    )
+    ))
 }
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a {
-    map(
+fn simple_for_clause<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a> {
+    Box::new(map(
         tuple3(
             tag("for"),
             xpwhitespace(),
@@ -77,12 +82,13 @@ fn simple_for_clause<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<V
             ),
         ),
         |(_, _, v)| v,
-    )
+    ))
 }
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
-pub(crate) fn let_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>>+ 'a {
-    map(
+pub(crate) fn let_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         tuple3(
             simple_let_clause::<N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
@@ -102,14 +108,15 @@ pub(crate) fn let_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult
             }
             result
         },
-    )
+    ))
 }
 
 // SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
-fn simple_let_clause<'a, N: Node + 'a>()-> impl Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a {
-    map(
+fn simple_let_clause<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a> {
+    Box::new(map(
         tuple3(
             tag("let"),
             xpwhitespace(),
@@ -129,6 +136,5 @@ fn simple_let_clause<'a, N: Node + 'a>()-> impl Fn(ParseInput) -> ParseResult<Ve
             ),
         ),
         |(_, _, v)| v,
-    )
+    ))
 }
-

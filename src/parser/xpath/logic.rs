@@ -1,13 +1,13 @@
 //! Logic expressions in XPath.
 
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::map::map;
 use crate::parser::combinators::list::separated_list1;
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::compare::comparison_expr;
+use crate::parser::{ParseInput, ParseResult};
 use crate::transform::Transform;
 
 // OrExpr ::= AndExpr ('or' AndExpr)*

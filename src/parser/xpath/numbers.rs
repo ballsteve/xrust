@@ -1,20 +1,21 @@
 //! Functions that produce numbers.
 
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::map::map;
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::nodes::{path_expr, union_expr};
-use crate::transform::{Transform, ArithmeticOperator, ArithmeticOperand};
+use crate::parser::{ParseInput, ParseResult};
+use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-pub(crate) fn range_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+pub(crate) fn range_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+{
     map(
         pair(
             additive_expr::<N>(),
@@ -37,8 +38,22 @@ fn additive_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Trans
             multiplicative_expr::<N>(),
             many0(tuple2(
                 alt2(
-                    map(tuple3(xpwhitespace(), map(tag("+"), |_| ArithmeticOperator::Add), xpwhitespace()), |(_, x, _)| x),
-                    map(tuple3(xpwhitespace(), map(tag("-"), |_| ArithmeticOperator::Subtract), xpwhitespace()), |(_, x, _)| x),
+                    map(
+                        tuple3(
+                            xpwhitespace(),
+                            map(tag("+"), |_| ArithmeticOperator::Add),
+                            xpwhitespace(),
+                        ),
+                        |(_, x, _)| x,
+                    ),
+                    map(
+                        tuple3(
+                            xpwhitespace(),
+                            map(tag("-"), |_| ArithmeticOperator::Subtract),
+                            xpwhitespace(),
+                        ),
+                        |(_, x, _)| x,
+                    ),
                 ),
                 multiplicative_expr::<N>(),
             )),
@@ -52,7 +67,12 @@ fn additive_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Trans
                     Transform::Arithmetic(a)
                 }
             } else {
-                let mut e: Vec<ArithmeticOperand<N>> = b.iter().map(|(c, d)| ArithmeticOperand::new(c.clone(), Transform::Arithmetic(d.clone()))).collect();
+                let mut e: Vec<ArithmeticOperand<N>> = b
+                    .iter()
+                    .map(|(c, d)| {
+                        ArithmeticOperand::new(c.clone(), Transform::Arithmetic(d.clone()))
+                    })
+                    .collect();
                 a.append(&mut e);
 
                 Transform::Arithmetic(a)
@@ -62,7 +82,8 @@ fn additive_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Trans
 }
 
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
-fn multiplicative_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Vec<ArithmeticOperand<N>>> + 'a {
+fn multiplicative_expr<'a, N: Node + 'a>(
+) -> impl Fn(ParseInput) -> ParseResult<Vec<ArithmeticOperand<N>>> + 'a {
     map(
         pair(
             union_expr::<N>(),
@@ -97,7 +118,8 @@ fn multiplicative_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-pub(crate) fn unary_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+pub(crate) fn unary_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+{
     map(
         pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N>()),
         |(u, v)| {
@@ -113,10 +135,7 @@ pub(crate) fn unary_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
 fn value_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
     map(
-        pair(
-            path_expr::<N>(),
-            many0(tuple2(tag("!"), path_expr::<N>())),
-        ),
+        pair(path_expr::<N>(), many0(tuple2(tag("!"), path_expr::<N>()))),
         |(u, v)| {
             if v.is_empty() {
                 u

@@ -1,9 +1,9 @@
 //! Support for variables.
 
-use crate::xdmerror::{Error, ErrorKind};
 use crate::item::{Node, Sequence};
-use crate::transform::Transform;
 use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::Transform;
+use crate::xdmerror::{Error, ErrorKind};
 
 /// Declare a variable in a new scope and then evaluate the given transformation.
 /// Returns the result of the transformation.
@@ -18,10 +18,7 @@ pub fn declare_variable<N: Node>(
         .build()
         .dispatch(f)
 }
-pub fn reference_variable<N: Node>(
-    ctxt: &Context<N>,
-    name: &String,
-) -> Result<Sequence<N>, Error> {
+pub fn reference_variable<N: Node>(ctxt: &Context<N>, name: &String) -> Result<Sequence<N>, Error> {
     match ctxt.vars.get(name) {
         Some(u) => match u.last() {
             Some(t) => Ok(t.clone()),

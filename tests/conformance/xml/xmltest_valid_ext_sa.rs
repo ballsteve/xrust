@@ -6,10 +6,10 @@ James Clark XMLTEST cases - Standalone
     This contains case that are standalone and have references to external general entities .
 */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 fn validextsa001() {

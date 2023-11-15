@@ -1,31 +1,33 @@
 //! Functions that produces nodes, or sets of nodes.
 
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseResult};
-use crate::parser::combinators::map::map;
 use crate::parser::combinators::alt::{alt2, alt3, alt4};
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::whitespace::xpwhitespace;
+use crate::parser::{ParseInput, ParseResult};
+//use crate::parser::combinators::debug::inspect;
+use crate::parser::xpath::expressions::postfix_expr;
 use crate::parser::xpath::nodetests::nodetest;
 use crate::parser::xpath::types::instanceof_expr;
-use crate::parser::xpath::expressions::postfix_expr;
-use crate::transform::{Transform, NodeTest, NodeMatch, NameTest, Axis, WildcardOrName};
+use crate::transform::{Axis, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
-pub(crate) fn union_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+pub(crate) fn union_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+{
     map(
         separated_list1(
-                map(
-                    tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
-                    |_| (),
-                ),
-                intersectexcept_expr::<N>(),
+            map(
+                tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
+                |_| (),
             ),
+            intersectexcept_expr::<N>(),
+        ),
         |mut v| {
             if v.len() == 1 {
                 v.pop().unwrap()
@@ -37,7 +39,8 @@ pub(crate) fn union_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
 }
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
-fn intersectexcept_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+fn intersectexcept_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+{
     map(
         pair(
             instanceof_expr::<N>(),
@@ -60,7 +63,8 @@ fn intersectexcept_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResul
     )
 }
 
-pub(crate) fn path_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+pub(crate) fn path_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+{
     alt3(
         absolutedescendant_expr::<N>(),
         absolutepath_expr::<N>(),
@@ -69,23 +73,21 @@ pub(crate) fn path_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResul
 }
 
 // ('//' RelativePathExpr?)
-fn absolutedescendant_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
-        pair(tag("//"), relativepath_expr::<N>()),
-        |(_, r)| {
-            Transform::Compose(vec![
-                Transform::Step(NodeMatch {
-                    axis: Axis::DescendantOrSelfOrRoot,
-                    nodetest: NodeTest::Name(NameTest {
-                        ns: None,
-                        prefix: None,
-                        name: Some(WildcardOrName::Wildcard),
-                    }),
+fn absolutedescendant_expr<'a, N: Node + 'a>(
+) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
+    map(pair(tag("//"), relativepath_expr::<N>()), |(_, r)| {
+        Transform::Compose(vec![
+            Transform::Step(NodeMatch {
+                axis: Axis::DescendantOrSelfOrRoot,
+                nodetest: NodeTest::Name(NameTest {
+                    ns: None,
+                    prefix: None,
+                    name: Some(WildcardOrName::Wildcard),
                 }),
-                r,
-            ])
-        },
-    )
+            }),
+            r,
+        ])
+    })
 }
 
 // ('/' RelativePathExpr?)

@@ -900,4 +900,3 @@ macro_rules! xpath_tests (
 	}
 
 );
-

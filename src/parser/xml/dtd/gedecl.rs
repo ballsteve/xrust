@@ -9,18 +9,18 @@ use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11, is_unrestricted_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
-use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::textexternalid;
+use crate::parser::xml::qname::qualname;
+use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match wellformed_ver(
         tuple7(
             tag("<!ENTITY"),
             whitespace1(),
-            wellformed(qualname(),|n| !n.to_string().contains(':') ),
+            wellformed(qualname(), |n| !n.to_string().contains(':')),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -39,31 +39,28 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             Numeric and other entities expanded immediately, since there'll be namespaces and the like to
             deal with later, after that we just store the entity as a string and parse again when called.
              */
-            if !state2.currentlyexternal && s.contains('%'){
-                return Err(ParseError::NotWellFormed)
+            if !state2.currentlyexternal && s.contains('%') {
+                return Err(ParseError::NotWellFormed);
             }
 
             let entityparse = map(
                 tuple2(
                     map(
                         many0(alt4(
-                            map(wellformed_ver(
-                                chardata_unicode_codepoint(),
-                                 is_char10, is_char11),|c| c.to_string()),
-                            petextreference(),
-                                //General entity is ignored.
                             map(
-                                    delimited(tag("&"),
-                                  take_until(";"),
-                                    tag(";")
-                                    ), |s|
-                                    ["&".to_string(), s , ";".to_string()].concat()
-                                ),
-                            take_until_either_or_min1("&","%")
+                                wellformed_ver(chardata_unicode_codepoint(), is_char10, is_char11),
+                                |c| c.to_string(),
+                            ),
+                            petextreference(),
+                            //General entity is ignored.
+                            map(delimited(tag("&"), take_until(";"), tag(";")), |s| {
+                                ["&".to_string(), s, ";".to_string()].concat()
+                            }),
+                            take_until_either_or_min1("&", "%"),
                         )),
                         |ve| ve.concat(),
                     ),
-                    wellformed(take_until_end(),|s| !s.contains('&')&&!s.contains('%')),
+                    wellformed(take_until_end(), |s| !s.contains('&') && !s.contains('%')),
                 ),
                 |(a, b)| [a, b].concat(),
             )((s.as_str(), state2.clone()));
@@ -71,14 +68,11 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             match entityparse {
                 Ok(((_, _), res)) => {
                     if !state2.currentlyexternal {
-                        match intsubset()((res.as_str(), state2.clone())){
+                        match intsubset()((res.as_str(), state2.clone())) {
                             Ok(_) => {}
-                            Err(_) => {
-                                return Err(ParseError::NotWellFormed)
-                            }
+                            Err(_) => return Err(ParseError::NotWellFormed),
                         }
                     };
-
 
                     /* Entities should always bind to the first value */
                     let replaceable = state2.currentlyexternal;

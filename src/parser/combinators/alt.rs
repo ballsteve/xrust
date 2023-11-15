@@ -7,10 +7,12 @@ where
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
-        Err(ParseError::Combinator) => match parser2((input, state)) {
-            Ok(parse_result2) => Ok(parse_result2),
-            Err(err) => Err(err),
-        },
+        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+            match parser2((input, state)) {
+                Ok(parse_result2) => Ok(parse_result2),
+                Err(err) => Err(err),
+            }
+        }
         Err(err) => Err(err),
     }
 }
@@ -264,16 +266,16 @@ pub(crate) fn alt9<P1, P2, P3, P4, P5, P6, P7, P8, P9, A>(
     parser8: P8,
     parser9: P9,
 ) -> impl Fn(ParseInput) -> ParseResult<A>
-    where
-        P1: Fn(ParseInput) -> ParseResult<A>,
-        P2: Fn(ParseInput) -> ParseResult<A>,
-        P3: Fn(ParseInput) -> ParseResult<A>,
-        P4: Fn(ParseInput) -> ParseResult<A>,
-        P5: Fn(ParseInput) -> ParseResult<A>,
-        P6: Fn(ParseInput) -> ParseResult<A>,
-        P7: Fn(ParseInput) -> ParseResult<A>,
-        P8: Fn(ParseInput) -> ParseResult<A>,
-        P9: Fn(ParseInput) -> ParseResult<A>,
+where
+    P1: Fn(ParseInput) -> ParseResult<A>,
+    P2: Fn(ParseInput) -> ParseResult<A>,
+    P3: Fn(ParseInput) -> ParseResult<A>,
+    P4: Fn(ParseInput) -> ParseResult<A>,
+    P5: Fn(ParseInput) -> ParseResult<A>,
+    P6: Fn(ParseInput) -> ParseResult<A>,
+    P7: Fn(ParseInput) -> ParseResult<A>,
+    P8: Fn(ParseInput) -> ParseResult<A>,
+    P9: Fn(ParseInput) -> ParseResult<A>,
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
@@ -289,14 +291,18 @@ pub(crate) fn alt9<P1, P2, P3, P4, P5, P6, P7, P8, P9, A>(
                             Ok(parse_result6) => Ok(parse_result6),
                             Err(ParseError::Combinator) => match parser7((input, state.clone())) {
                                 Ok(parse_result7) => Ok(parse_result7),
-                                Err(ParseError::Combinator) => match parser8((input, state.clone())) {
-                                    Ok(parse_result8) => Ok(parse_result8),
-                                    Err(ParseError::Combinator) => match parser9((input, state)) {
-                                        Ok(parse_result9) => Ok(parse_result9),
+                                Err(ParseError::Combinator) => {
+                                    match parser8((input, state.clone())) {
+                                        Ok(parse_result8) => Ok(parse_result8),
+                                        Err(ParseError::Combinator) => {
+                                            match parser9((input, state)) {
+                                                Ok(parse_result9) => Ok(parse_result9),
+                                                Err(err) => Err(err),
+                                            }
+                                        }
                                         Err(err) => Err(err),
-                                    },
-                                    Err(err) => Err(err),
-                                },
+                                    }
+                                }
                                 Err(err) => Err(err),
                             },
                             Err(err) => Err(err),
@@ -324,19 +330,19 @@ pub(crate) fn alt10<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, A>(
     parser7: P7,
     parser8: P8,
     parser9: P9,
-    parser10: P10
+    parser10: P10,
 ) -> impl Fn(ParseInput) -> ParseResult<A>
-    where
-        P1: Fn(ParseInput) -> ParseResult<A>,
-        P2: Fn(ParseInput) -> ParseResult<A>,
-        P3: Fn(ParseInput) -> ParseResult<A>,
-        P4: Fn(ParseInput) -> ParseResult<A>,
-        P5: Fn(ParseInput) -> ParseResult<A>,
-        P6: Fn(ParseInput) -> ParseResult<A>,
-        P7: Fn(ParseInput) -> ParseResult<A>,
-        P8: Fn(ParseInput) -> ParseResult<A>,
-        P9: Fn(ParseInput) -> ParseResult<A>,
-        P10: Fn(ParseInput) -> ParseResult<A>
+where
+    P1: Fn(ParseInput) -> ParseResult<A>,
+    P2: Fn(ParseInput) -> ParseResult<A>,
+    P3: Fn(ParseInput) -> ParseResult<A>,
+    P4: Fn(ParseInput) -> ParseResult<A>,
+    P5: Fn(ParseInput) -> ParseResult<A>,
+    P6: Fn(ParseInput) -> ParseResult<A>,
+    P7: Fn(ParseInput) -> ParseResult<A>,
+    P8: Fn(ParseInput) -> ParseResult<A>,
+    P9: Fn(ParseInput) -> ParseResult<A>,
+    P10: Fn(ParseInput) -> ParseResult<A>,
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
@@ -352,18 +358,24 @@ pub(crate) fn alt10<P1, P2, P3, P4, P5, P6, P7, P8, P9, P10, A>(
                             Ok(parse_result6) => Ok(parse_result6),
                             Err(ParseError::Combinator) => match parser7((input, state.clone())) {
                                 Ok(parse_result7) => Ok(parse_result7),
-                                Err(ParseError::Combinator) => match parser8((input, state.clone())) {
-                                    Ok(parse_result8) => Ok(parse_result8),
-                                    Err(ParseError::Combinator) => match parser9((input, state.clone())) {
-                                        Ok(parse_result9) => Ok(parse_result9),
-                                        Err(ParseError::Combinator) => match parser10((input, state)) {
-                                            Ok(parse_result10) => Ok(parse_result10),
-                                            Err(err) => Err(err)
-                                        },
+                                Err(ParseError::Combinator) => {
+                                    match parser8((input, state.clone())) {
+                                        Ok(parse_result8) => Ok(parse_result8),
+                                        Err(ParseError::Combinator) => {
+                                            match parser9((input, state.clone())) {
+                                                Ok(parse_result9) => Ok(parse_result9),
+                                                Err(ParseError::Combinator) => {
+                                                    match parser10((input, state)) {
+                                                        Ok(parse_result10) => Ok(parse_result10),
+                                                        Err(err) => Err(err),
+                                                    }
+                                                }
+                                                Err(err) => Err(err),
+                                            }
+                                        }
                                         Err(err) => Err(err),
-                                    },
-                                    Err(err) => Err(err),
-                                },
+                                    }
+                                }
                                 Err(err) => Err(err),
                             },
                             Err(err) => Err(err),

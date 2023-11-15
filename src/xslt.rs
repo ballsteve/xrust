@@ -68,16 +68,18 @@ assert_eq!(seq.to_xml(), "<html><head><title>XSLT in Rust</title></head><body><p
 
 use std::rc::Rc;
 
-use crate::xdmerror::*;
-use crate::qname::*;
-use crate::value::*;
+use crate::item::{Item, Node, NodeType, Sequence};
 use crate::output::*;
-use crate::transform::{Transform, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName, Axis, Grouping};
+use crate::parser::xpath::parse;
+use crate::pattern::Pattern;
+use crate::qname::*;
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::template::Template;
-use crate::pattern::Pattern;
-use crate::item::{Item, Sequence, Node, NodeType};
-use crate::parser::xpath::parse;
+use crate::transform::{
+    Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName,
+};
+use crate::value::*;
+use crate::xdmerror::*;
 use std::convert::TryFrom;
 use url::Url;
 
@@ -87,17 +89,23 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 pub trait XSLT: Node {
     /// Interpret the object as an XSL Stylesheet and transform a source document.
     /// The [Node] that is given as the source document becomes the initial context for the transformation.
-    fn transform<N: Node, F, G>(&self, src: Rc<Item<N>>, b: Option<Url>, f: F, g: G) -> Result<Sequence<N>, Error>
-        where
-            F: Fn(&str) -> Result<N, Error>,
-            G: Fn(&Url) -> Result<String, Error>;
-//    {
-//        let sc = from_document(self.clone(), b, f, g)?;
-//        let ctxt = ContextBuilder::from(&sc)
-//            .current(vec![src])
-//            .build();
-//        ctxt.evaluate()
-//    }
+    fn transform<N: Node, F, G>(
+        &self,
+        src: Rc<Item<N>>,
+        b: Option<Url>,
+        f: F,
+        g: G,
+    ) -> Result<Sequence<N>, Error>
+    where
+        F: Fn(&str) -> Result<N, Error>,
+        G: Fn(&Url) -> Result<String, Error>;
+    //    {
+    //        let sc = from_document(self.clone(), b, f, g)?;
+    //        let ctxt = ContextBuilder::from(&sc)
+    //            .current(vec![src])
+    //            .build();
+    //        ctxt.evaluate()
+    //    }
 }
 
 /// Compiles a [Node] into a transformation [Context].
@@ -112,9 +120,9 @@ pub fn from_document<N: Node, F, G>(
     f: F,
     g: G,
 ) -> Result<Context<N>, Error>
-    where
-        F: Fn(&str) -> Result<N, Error>,
-        G: Fn(&Url) -> Result<String, Error>,
+where
+    F: Fn(&str) -> Result<N, Error>,
+    G: Fn(&Url) -> Result<String, Error>,
 {
     // Check that this is a valid XSLT stylesheet
     // There must be a single element as a child of the root node, and it must be named xsl:stylesheet or xsl:transform
@@ -123,26 +131,28 @@ pub fn from_document<N: Node, F, G>(
         Some(root) => {
             if !(root.name().get_nsuri_ref() == Some(XSLTNS)
                 && (root.name().get_localname() == "stylesheet"
-                || root.name().get_localname() == "transform"))
+                    || root.name().get_localname() == "transform"))
             {
                 return Result::Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("not an XSLT stylesheet"),
-                ))
+                ));
             } else {
                 root
             }
         }
-        None => return Result::Err(Error::new(
-            ErrorKind::TypeError,
-            String::from("document does not have document element"),
-        )),
+        None => {
+            return Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("document does not have document element"),
+            ))
+        }
     };
     if rnit.next().is_some() {
         return Result::Err(Error::new(
             ErrorKind::TypeError,
             String::from("extra element: not an XSLT stylesheet"),
-        ))
+        ));
     }
 
     // TODO: check version attribute
@@ -318,31 +328,25 @@ pub fn from_document<N: Node, F, G>(
                     // Calculate the default priority
                     // TODO: more work to be done interpreting XSLT 6.5
                     match &pat {
-                        Pattern::Predicate(p) => {
-                            match p {
-                                Transform::Empty => -1.0,
-                                _ => 1.0
-                            }
-                        }
+                        Pattern::Predicate(p) => match p {
+                            Transform::Empty => -1.0,
+                            _ => 1.0,
+                        },
                         Pattern::Selection(s) => {
                             let ((t, nt), q) = s.clone().t.unwrap();
                             // If "/" then -0.5
                             match (t, nt) {
                                 (Axis::SelfAttribute, _) => -0.5,
-                                (Axis::SelfAxis, Axis::Parent) |
-                                (Axis::SelfAxis, Axis::Ancestor) |
-                                (Axis::SelfAxis, Axis::AncestorOrSelf) => {
-                                    match q {
-                                        NodeTest::Name(nm) => {
-                                            match nm.name {
-                                                Some(WildcardOrName::Wildcard) => -0.5,
-                                                Some(_) => 0.0,
-                                                _ => -0.5,
-                                            }
-                                        }
-                                        NodeTest::Kind(_kt) => -0.5,
-                                    }
-                                }
+                                (Axis::SelfAxis, Axis::Parent)
+                                | (Axis::SelfAxis, Axis::Ancestor)
+                                | (Axis::SelfAxis, Axis::AncestorOrSelf) => match q {
+                                    NodeTest::Name(nm) => match nm.name {
+                                        Some(WildcardOrName::Wildcard) => -0.5,
+                                        Some(_) => 0.0,
+                                        _ => -0.5,
+                                    },
+                                    NodeTest::Kind(_kt) => -0.5,
+                                },
                                 _ => 0.5,
                             }
                         }
@@ -361,63 +365,65 @@ pub fn from_document<N: Node, F, G>(
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
-            templates.push(
-                Template::new(pat,
-                              Transform::SequenceItems(body),
-                              Some(prio),
-                              vec![import],
-                              None,
-                              None));
+            templates.push(Template::new(
+                pat,
+                Transform::SequenceItems(body),
+                Some(prio),
+                vec![import],
+                None,
+                None,
+            ));
             Ok::<(), Error>(())
         })?;
 
     Ok(ContextBuilder::new()
-
-    // Define the builtin templates
-    // See XSLT 6.7. This implements text-only-copy.
-    // TODO: Support deep-copy, shallow-copy, deep-skin, shallow-skip and fail
-
-    // This matches "/" and processes the root element
-    .template(Template::new(
-        Pattern::try_from("/")?,
-        Transform::ApplyTemplates(
-            Box::new(Transform::Step(
-                NodeMatch::new(Axis::Child, NodeTest::Kind(KindTest::Any))
-            ))
-        ),
-        None, vec![0], None, None,
-    ))
-
+        // Define the builtin templates
+        // See XSLT 6.7. This implements text-only-copy.
+        // TODO: Support deep-copy, shallow-copy, deep-skin, shallow-skip and fail
+        // This matches "/" and processes the root element
+        .template(Template::new(
+            Pattern::try_from("/")?,
+            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
+                Axis::Child,
+                NodeTest::Kind(KindTest::Any),
+            )))),
+            None,
+            vec![0],
+            None,
+            None,
+        ))
         // This matches "*" and applies templates to all children
         .template(Template::new(
             Pattern::try_from("child::*")?,
-            Transform::ApplyTemplates(
-                Box::new(Transform::Step(
-                    NodeMatch::new(
-                        Axis::Child,
-                        NodeTest::Kind(KindTest::Any)
-                    )
-                ))
-            ),
-            None, vec![0], None, None,
+            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
+                Axis::Child,
+                NodeTest::Kind(KindTest::Any),
+            )))),
+            None,
+            vec![0],
+            None,
+            None,
         ))
-
         // This matches "text()" and copies content
         .template(Template::new(
             Pattern::try_from("child::text()")?,
             Transform::ContextItem,
-            None, vec![0], None, None,
+            None,
+            vec![0],
+            None,
+            None,
         ))
         .template_all(templates)
-    .output_definition(od)
-        .build()
-    )
+        .output_definition(od)
+        .build())
 }
 
 /// Compile a node in a template to a sequence [Combinator]
 fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
     match n.node_type() {
-        NodeType::Text => Ok(Transform::Literal(Rc::new(Item::Value(Value::String(n.to_string()))))),
+        NodeType::Text => Ok(Transform::Literal(Rc::new(Item::Value(Value::String(
+            n.to_string(),
+        ))))),
         NodeType::Element => {
             match (n.name().get_nsuri_ref(), n.name().get_localname().as_str()) {
                 (Some(XSLTNS), "text") => {
@@ -428,7 +434,9 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     ));
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::Literal(Rc::new(Item::Value(Value::String(n.to_string()))))),
+                            "yes" => Ok(Transform::Literal(Rc::new(Item::Value(Value::String(
+                                n.to_string(),
+                            ))))),
                             "no" => {
                                 let text = n
                                     .to_string()
@@ -460,14 +468,13 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     let sel =
                         n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !sel.to_string().is_empty() {
-                        Ok(Transform::ApplyTemplates(Box::new(parse::<N>(&sel.to_string())?)))
+                        Ok(Transform::ApplyTemplates(Box::new(parse::<N>(
+                            &sel.to_string(),
+                        )?)))
                     } else {
                         // If there is no select attribute, then default is "child::node()"
                         Ok(Transform::ApplyTemplates(Box::new(Transform::Step(
-                            NodeMatch::new(
-                                Axis::Child,
-                                NodeTest::Kind(KindTest::Any)
-                            )
+                            NodeMatch::new(Axis::Child, NodeTest::Kind(KindTest::Any)),
                         ))))
                     }
                 }
@@ -487,17 +494,16 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     let t = n.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
                     if !t.to_string().is_empty() {
                         Ok(Transform::Switch(
-                            vec![
-                                (parse::<N>(&t.to_string())?,
-                                Transform::SequenceItems(
-                                    n.child_iter()
-                                        .try_fold(vec![],
-                                                  |mut body, e| {
-                                                        body.push(to_transform(e)?);
-                                                        Ok(body)
-                                                    })?
-                                ))
-                            ],
+                            vec![(
+                                parse::<N>(&t.to_string())?,
+                                Transform::SequenceItems(n.child_iter().try_fold(
+                                    vec![],
+                                    |mut body, e| {
+                                        body.push(to_transform(e)?);
+                                        Ok(body)
+                                    },
+                                )?),
+                            )],
                             Box::new(Transform::Empty),
                         ))
                     } else {
@@ -577,7 +583,10 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         })?;
                     match status {
                         Some(e) => Result::Err(e),
-                        None => Ok(Transform::Switch(clauses, otherwise.map_or(Box::new(Transform::Empty), |o| Box::new(o)))),
+                        None => Ok(Transform::Switch(
+                            clauses,
+                            otherwise.map_or(Box::new(Transform::Empty), |o| Box::new(o)),
+                        )),
                     }
                 }
                 (Some(XSLTNS), "for-each") => {
@@ -586,12 +595,13 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Ok(Transform::ForEach(
                             None,
                             Box::new(parse::<N>(&s.to_string())?),
-                            Box::new(Transform::SequenceItems(
-                                n.child_iter().try_fold(vec![], |mut body, e| {
+                            Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                vec![],
+                                |mut body, e| {
                                     body.push(to_transform(e)?);
                                     Ok(body)
-                                })?,
-                            )),
+                                },
+                            )?)),
                         ))
                     } else {
                         Result::Err(Error {
@@ -609,49 +619,51 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 None,
                                 "group-by".to_string(),
                             ))
-                                .to_string()
-                                .as_str(),
+                            .to_string()
+                            .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
                                 "group-adjacent".to_string(),
                             ))
-                                .to_string()
-                                .as_str(),
+                            .to_string()
+                            .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
                                 "group-starting-with".to_string(),
                             ))
-                                .to_string()
-                                .as_str(),
+                            .to_string()
+                            .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
                                 "group-ending-with".to_string(),
                             ))
-                                .to_string()
-                                .as_str(),
+                            .to_string()
+                            .as_str(),
                         ) {
                             (by, "", "", "") => Ok(Transform::ForEach(
                                 Some(Grouping::By(vec![parse::<N>(by)?])),
                                 Box::new(parse::<N>(&s.to_string())?),
-                                Box::new(Transform::SequenceItems(
-                                    n.child_iter().try_fold(vec![], |mut body, e| {
+                                Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                    vec![],
+                                    |mut body, e| {
                                         body.push(to_transform(e)?);
                                         Ok(body)
-                                    })?
-                                )),
+                                    },
+                                )?)),
                             )),
                             ("", adj, "", "") => Ok(Transform::ForEach(
                                 Some(Grouping::Adjacent(vec![parse::<N>(adj)?])),
                                 Box::new(parse::<N>(&s.to_string())?),
-                                         Box::new(Transform::SequenceItems(
-                                    n.child_iter().try_fold(vec![], |mut body, e| {
+                                Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                    vec![],
+                                    |mut body, e| {
                                         body.push(to_transform(e)?);
                                         Ok(body)
-                                    })?
-                                )),
+                                    },
+                                )?)),
                             )),
                             // TODO: group-starting-with and group-ending-with
                             _ => Result::Err(Error {
@@ -668,14 +680,19 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                 }
                 (Some(XSLTNS), "copy") => {
                     // TODO: handle select attribute
-                    let content: Vec<Transform<N>> = n.child_iter().try_fold(vec![], |mut body, e| {
-                        body.push(to_transform(e)?);
-                        Ok(body)
-                    })?;
+                    let content: Vec<Transform<N>> =
+                        n.child_iter().try_fold(vec![], |mut body, e| {
+                            body.push(to_transform(e)?);
+                            Ok(body)
+                        })?;
                     Ok(Transform::Copy(
                         Box::new(Transform::ContextItem), // TODO: this is where the select attribute would go
                         // The content of this element is a template for the content of the new item
-                        Box::new(if content.is_empty() { Transform::Empty } else { Transform::SequenceItems(content) }),
+                        Box::new(if content.is_empty() {
+                            Transform::Empty
+                        } else {
+                            Transform::SequenceItems(content)
+                        }),
                     ))
                 }
                 (Some(XSLTNS), "copy-of") => {
@@ -691,12 +708,13 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     if !m.to_string().is_empty() {
                         Ok(Transform::LiteralAttribute(
                             QualifiedName::new(None, None, m.to_string()),
-                            Box::new(Transform::SequenceItems(
-                                n.child_iter().try_fold(vec![], |mut body, e| {
+                            Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                                vec![],
+                                |mut body, e| {
                                     body.push(to_transform(e)?);
                                     Ok(body)
-                                })?
-                            )),
+                                },
+                            )?)),
                         ))
                     } else {
                         Result::Err(Error {
@@ -731,7 +749,9 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
             // Get value as a Value
             Ok(Transform::LiteralAttribute(
                 n.name(),
-                Box::new(Transform::Literal(Rc::new(Item::Value(Value::String(n.to_string())))))
+                Box::new(Transform::Literal(Rc::new(Item::Value(Value::String(
+                    n.to_string(),
+                ))))),
             ))
         }
         _ => {
@@ -838,9 +858,7 @@ fn strip_whitespace_node<N: Node>(
             let mut ss = -1.0;
             let mut ps = -1.0;
             strip.iter().for_each(|t| match t {
-                NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => {
-                    ss = -0.5
-                }
+                NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ss = -0.5,
                 NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
                     (None, Some(WildcardOrName::Wildcard)) => {
                         ss = -0.25;
@@ -883,9 +901,7 @@ fn strip_whitespace_node<N: Node>(
                 _ => {}
             });
             preserve.iter().for_each(|t| match t {
-                NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => {
-                    ps = -0.5
-                }
+                NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ps = -0.5,
                 NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
                     (None, Some(WildcardOrName::Name(name))) => {
                         match (n.name().get_nsuri(), n.name().get_localname()) {
