@@ -71,7 +71,6 @@ macro_rules! pattern_tests (
 	#[test]
 	fn pattern_sel_root_pos() {
 		let p: Pattern<$t> = Pattern::try_from("/").expect("unable to parse \"/\"");
-		eprintln!("root pattern == {}", p);
 
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();

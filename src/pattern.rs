@@ -28,7 +28,7 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
-//use crate::parser::combinators::tag;
+//use crate::parser::combinators::debug::inspect;
 
 /// An XPath pattern. A pattern most frequently appears as the value of a match attribute.
 /// A pattern is either a predicate pattern or a selection pattern.
@@ -360,21 +360,26 @@ fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
 fn absolutepath_expr_pattern<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
-        pair(tag("/"), opt(relativepath_expr_pattern::<N>())),
-        |(_, r)| match r {
-            Some(_a) => Pattern::Error(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("absolute path in a pattern has not been implemented"),
-            )),
-            None => Pattern::Selection(
-                PathBuilder::new()
+        pair(map(tag("/"), |_| "/"), opt(relativepath_expr_pattern::<N>())),
+        |(d, r)| match (d, r) {
+            ("/", None) => {
+                // Matches the root node
+                Pattern::Selection(PathBuilder::new()
                     .step(
                         Axis::SelfDocument,
                         Axis::SelfDocument,
                         NodeTest::Kind(KindTest::Document),
                     )
-                    .build(),
-            ),
+                    .build())
+            }
+            ("/", Some(_a)) => Pattern::Error(Error::new(
+                ErrorKind::NotImplemented,
+                String::from("absolute path in a pattern has not been implemented"),
+            )),
+            _ => Pattern::Error(Error::new(
+                ErrorKind::Unknown,
+                String::from("unable to parse pattern")
+            ))
         },
     ))
 }
