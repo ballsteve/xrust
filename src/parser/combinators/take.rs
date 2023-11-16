@@ -87,7 +87,13 @@ where
     F: Fn(char) -> bool,
 {
     move |(input, state)| match input.find(|c| !condition(c)) {
-        None => Err(ParseError::Combinator),
+        None => {
+            if input.is_empty() {
+                Err(ParseError::Combinator)
+            } else {
+                Ok((("", state), input.to_string()))
+            }
+        },
         Some(0) => Err(ParseError::Combinator),
         Some(pos) => Ok(((&input[pos..], state), input[0..pos].to_string())),
     }

@@ -7,7 +7,7 @@ use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
 use xrust::transform_tests;
 use xrust::xpath_tests;
-//use xrust::xslt_tests;
+use xrust::xslt_tests;
 
 fn make_empty_doc() -> RNode {
     NodeBuilder::new(NodeType::Document).build()
@@ -50,4 +50,4 @@ item_node_tests!(make_empty_doc, make_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
 pattern_tests!(RNode, make_empty_doc, make_sd);
 transform_tests!(RNode, make_empty_doc, make_doc);
-//xslt_tests!(make_from_str, make_empty_doc);
+xslt_tests!(make_from_str, make_empty_doc);

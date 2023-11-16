@@ -8,9 +8,8 @@ macro_rules! xpath_tests (
 	#[test]
 	fn xpath_empty() {
 		let ev = parse::<$t>("").expect("not an XPath expression");
-		assert!(true)
-	    //let seq = Context::new().dispatch(&ev).expect("evaluation failed");
-	    //assert_eq!(seq.len(), 0);
+	    let seq = Context::new().dispatch(&ev).expect("evaluation failed");
+	    assert_eq!(seq.len(), 0);
 	}
 
 	#[test]
@@ -858,7 +857,6 @@ macro_rules! xpath_tests (
 	fn xpath_for_1() {
 	    let mut e = parse::<$t>("for $x in ('a', 'b', 'c') return ($x, $x)")
 		.expect("failed to parse for expression");
-		eprintln!("xpath_for_1 have expr {}", e);
 		let s = Context::new()
 			.dispatch(&e)
 			.expect("evaluation failed");

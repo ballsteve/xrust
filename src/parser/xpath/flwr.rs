@@ -7,6 +7,7 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple10, tuple3, tuple5, tuple6};
 use crate::parser::combinators::whitespace::xpwhitespace;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};

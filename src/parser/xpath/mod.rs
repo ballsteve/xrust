@@ -24,6 +24,7 @@ use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::flwr::{for_expr, if_expr, let_expr};
 use crate::parser::xpath::logic::or_expr;
 use crate::parser::xpath::support::noop;
@@ -34,6 +35,11 @@ use crate::transform::Transform;
 use crate::xdmerror;
 
 pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
+    // Shortcut for empty
+    if input.is_empty() {
+        return Ok(Transform::Empty)
+    }
+
     let state = ParserState::new(None, None);
     match xpath_expr((input, state)) {
         Ok((_, x)) => Result::Ok(x),
@@ -107,7 +113,12 @@ pub(crate) fn expr_wrapper<N: Node>(
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
 fn expr_single<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
-    Box::new(alt4(or_expr(), let_expr(), for_expr(), if_expr()))
+    Box::new(alt4(
+        or_expr(),
+        let_expr(),
+        for_expr(),
+         if_expr(),
+    ))
 }
 
 pub(crate) fn expr_single_wrapper<N: Node>(

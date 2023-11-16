@@ -1,5 +1,5 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
-use std::fmt::Debug;
+//use std::fmt::Debug;
 
 /// Emits a message to stderr from within the parser combinator. This can be useful for debugging.
 #[allow(dead_code)]

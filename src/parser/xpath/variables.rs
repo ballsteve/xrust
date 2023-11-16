@@ -4,6 +4,7 @@ use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::{ParseInput, ParseResult};

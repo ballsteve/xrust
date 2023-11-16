@@ -11,7 +11,7 @@ use crate::transform::{KindTest, NameTest, NodeTest, WildcardOrName};
 use crate::parser::xml::qname::{ncname, qualname};
 
 pub(crate) fn qualname_test() -> impl Fn(ParseInput) -> ParseResult<NodeTest> {
-    alt2(unprefixed_name(), prefixed_name())
+     alt2(prefixed_name(), unprefixed_name())
 }
 fn unprefixed_name() -> impl Fn(ParseInput) -> ParseResult<NodeTest> {
     map(ncname(), |localpart| {
