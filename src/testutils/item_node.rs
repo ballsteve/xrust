@@ -424,5 +424,22 @@ macro_rules! item_node_tests (
 		_ => panic!("iterator should have no more items")
 	    }
 	}
+
+	#[test]
+	fn item_node_shallow_copy_element() {
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let l = sd.new_element(QualifiedName::new(None, None, String::from("content")))
+		.expect("unable to create element");
+	    t.push(l)
+		.expect("unable to append child");
+	    let it = Item::Node(t.clone());
+	    let u = it.shallow_copy().expect("unable to shallow copy element");
+	    assert_eq!(t.to_xml(), "<Test><content></content></Test>");
+	    assert_eq!(u.to_xml(), "<Test></Test>");
+	}
     }
 );

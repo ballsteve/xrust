@@ -9,11 +9,11 @@ use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_unrestricted_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
-use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseInput, ParseError, ParseResult};
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::textexternalid;
+use crate::parser::xml::qname::qualname;
+use crate::parser::{ParseError, ParseInput, ParseResult};
 
 pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     move |input| match wellformed_ver(
@@ -22,7 +22,7 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             whitespace1(),
             tag("%"),
             whitespace1(),
-            wellformed(qualname(),|n| !n.to_string().contains(':') ),
+            wellformed(qualname(), |n| !n.to_string().contains(':')),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -41,56 +41,49 @@ pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             Numeric entities expanded immediately, since there'll be namespaces and the like to
             deal with later, after that we just store the entity as a string and parse again when called.
              */
-            if !state2.currentlyexternal && s.contains('%'){
-                return Err(ParseError::NotWellFormed)
+            if !state2.currentlyexternal && s.contains('%') {
+                return Err(ParseError::NotWellFormed);
             }
             let entityparse = map(
                 tuple2(
                     map(
                         many0(alt4(
-                            map(chardata_unicode_codepoint(),|c| c.to_string()),
-
+                            map(chardata_unicode_codepoint(), |c| c.to_string()),
                             petextreference(),
                             //General entity is ignored.
-                            map(
-                                delimited(tag("&"),
-                                          take_until(";"),
-                                          tag(";")
-                                ), |s|
-                                ["&".to_string(), s , ";".to_string()].concat()
-                            ),
+                            map(delimited(tag("&"), take_until(";"), tag(";")), |s| {
+                                ["&".to_string(), s, ";".to_string()].concat()
+                            }),
                             //textreference(),
                             //map(tag("&"), |_| "&".to_string()),
                             //take_until("&"),
-                            take_until_either_or_min1("&","%")
+                            take_until_either_or_min1("&", "%"),
                         )),
                         |ve| ve.concat(),
                     ),
-                    wellformed(take_until_end(),|s| !s.contains('&')&&!s.contains('%')),
+                    wellformed(take_until_end(), |s| !s.contains('&') && !s.contains('%')),
                 ),
                 |(a, b)| [a, b].concat(),
             )((s.as_str(), state2.clone()));
 
-
             match entityparse {
                 Ok(((_, _), res)) => {
                     if !state2.currentlyexternal {
-                        match intsubset()((res.as_str(), state2.clone())){
-                            Ok(((_i, _s), _)) => {
-                            }
-                            Err(_) => {
-                                return Err(ParseError::NotWellFormed)
-                            }
+                        match intsubset()((res.as_str(), state2.clone())) {
+                            Ok(((_i, _s), _)) => {}
+                            Err(_) => return Err(ParseError::NotWellFormed),
                         }
                     };
-
 
                     /* Entities should always bind to the first value */
                     let replaceable = state2.currentlyexternal;
 
                     match state2.dtd.paramentities.get(n.to_string().as_str()) {
                         None => {
-                            state2.dtd.paramentities.insert(n.to_string(), (res, replaceable));
+                            state2
+                                .dtd
+                                .paramentities
+                                .insert(n.to_string(), (res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         Some((_, true)) => {

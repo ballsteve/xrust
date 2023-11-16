@@ -28,7 +28,3 @@ pub(crate) fn elementdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
         Err(err) => Err(err),
     }
 }
-
-
-
-

@@ -3,7 +3,7 @@ mod chardata;
 mod dtd;
 mod element;
 mod misc;
-mod qname;
+pub mod qname;
 mod reference;
 mod strings;
 mod xmldecl;
@@ -75,6 +75,10 @@ pub fn parse(
                 ParseError::Notimplemented => Result::Err(xdmerror::Error {
                     kind: xdmerror::ErrorKind::ParseError,
                     message: "Unimplemented feature.".to_string(),
+                }),
+                _ => Result::Err(xdmerror::Error {
+                    kind: xdmerror::ErrorKind::Unknown,
+                    message: "Unknown error.".to_string(),
                 }),
             }
         }

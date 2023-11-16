@@ -4,10 +4,10 @@ Sun Microsystems test cases
 
 */
 
+use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 
 #[test]
 #[ignore]

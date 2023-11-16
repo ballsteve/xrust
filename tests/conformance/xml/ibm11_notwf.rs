@@ -4,10 +4,10 @@ IBM XML 1.1 test cases
 
 */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 fn ibm11notwf_p02ibm02n01xml() {
@@ -589,7 +589,8 @@ fn ibm11notwf_p02ibm02n32xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n32.xml").unwrap(),
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n32.xml")
+            .unwrap(),
         Some(dtdfileresolve()),
         Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string()),
     ));
@@ -1200,7 +1201,7 @@ fn ibm11notwf_p02ibm02n64xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n64.xml")
             .unwrap(),
         Some(dtdfileresolve()),
-        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string())
+        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -1219,7 +1220,7 @@ fn ibm11notwf_p02ibm02n65xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n65.xml")
             .unwrap(),
         Some(dtdfileresolve()),
-        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string())
+        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -1238,7 +1239,7 @@ fn ibm11notwf_p02ibm02n66xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/ibm02n66.xml")
             .unwrap(),
         Some(dtdfileresolve()),
-        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string())
+        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P02/".to_string()),
     ));
 
     assert!(testxml.is_err());
@@ -2556,7 +2557,8 @@ fn ibm11notwf_p77ibm77n02xml() {
     */
 
     let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n02.xml").unwrap(),
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/ibm77n02.xml")
+            .unwrap(),
         Some(dtdfileresolve()),
         Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/not-wf/P77/".to_string()),
     ));

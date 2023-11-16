@@ -2,10 +2,10 @@
 Richard Tobin's XML 1.0 2nd edition errata test suite.
 */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore]

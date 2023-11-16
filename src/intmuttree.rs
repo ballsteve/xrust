@@ -166,39 +166,15 @@ impl Document {
      */
 }
 
-impl
-    TryFrom<(
-        String,
-        Option<ExtDTDresolver>,
-        Option<String>,
-    )> for Document
-{
+impl TryFrom<(String, Option<ExtDTDresolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(
-        s: (
-            String,
-            Option<ExtDTDresolver>,
-            Option<String>,
-        ),
-    ) -> Result<Self, Self::Error> {
+    fn try_from(s: (String, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
         parser::xml::parse(s.0.as_str(), s.1, s.2)
     }
 }
-impl
-    TryFrom<(
-        &str,
-        Option<ExtDTDresolver>,
-        Option<String>,
-    )> for Document
-{
+impl TryFrom<(&str, Option<ExtDTDresolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(
-        s: (
-            &str,
-            Option<ExtDTDresolver>,
-            Option<String>,
-        ),
-    ) -> Result<Self, Self::Error> {
+    fn try_from(s: (&str, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
         parser::xml::parse(s.0, s.1, s.2)
     }
 }
@@ -513,6 +489,14 @@ impl ItemNode for RNode {
         Ok(())
     }
 
+    /// Shallow copy the node. Returned node is unattached.
+    fn shallow_copy(&self) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(self.node_type())
+            .name(self.name())
+            .value(self.value())
+            .build())
+    }
+
     /// Deep copy the node. Returned node is unattached.
     fn deep_copy(&self) -> Result<Self, Error> {
         let mut result = NodeBuilder::new(self.node_type())
@@ -702,15 +686,22 @@ impl Iterator for Descendants {
 pub struct Siblings(RNode, usize, i32);
 impl Siblings {
     fn new(n: &RNode, dir: i32) -> Self {
-        let p = n.parent().unwrap();
-        let (j, _) = p
-            .children
-            .borrow()
-            .iter()
-            .enumerate()
-            .find(|&(_, j)| Rc::ptr_eq(j, n))
-            .unwrap();
-        Siblings(p, j, dir)
+        match n.parent() {
+            Some(p) => {
+                let (j, _) = p
+                    .children
+                    .borrow()
+                    .iter()
+                    .enumerate()
+                    .find(|&(_, j)| Rc::ptr_eq(j, n))
+                    .unwrap();
+                Siblings(p.clone(), j, dir)
+            }
+            None => {
+                // Document nodes don't have siblings
+                Siblings(n.clone(), 0, -1)
+            }
+        }
     }
 }
 impl Iterator for Siblings {

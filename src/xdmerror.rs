@@ -2,10 +2,12 @@
 //!
 //! XDM, XPath, XQuery and XSLT errors.
 
-use core::{fmt, str};
+use core::str;
+use std::fmt;
+use std::fmt::Formatter;
 
 /// Errors defined in XPath
-#[derive(Copy, Clone, Debug)]
+#[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ErrorKind {
     StaticAbsent,
     /// XPST0001
@@ -33,7 +35,6 @@ pub enum ErrorKind {
     ParseError,
     Unknown,
 }
-
 impl ErrorKind {
     /// String representation of error
     pub fn to_string(&self) -> &'static str {
@@ -53,6 +54,12 @@ impl ErrorKind {
             ErrorKind::Unknown => "unknown",
             ErrorKind::ParseError => "XML Parse error",
         }
+    }
+}
+
+impl fmt::Display for ErrorKind {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_string())
     }
 }
 

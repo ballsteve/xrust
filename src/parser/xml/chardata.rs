@@ -12,28 +12,28 @@ use std::str::FromStr;
 // CharData ::= [^<&]* - (']]>')
 pub(crate) fn chardata() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
-        many1(
-            alt3(
+        many1(alt3(
+            wellformed_ver(
+                chardata_cdata(),
+                |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+            ),
+            map(
                 wellformed_ver(
-                    chardata_cdata(),
-                    |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
-                    |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
-                ),
-                map(wellformed_ver(
                     chardata_unicode_codepoint(),
                     is_char10, //XML 1.0
-                    is_char11) //XML 1.1
-                ,|c|c.to_string()),
-                wellformed_ver(
-                    chardata_literal(),
-                    |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
-                    |s| !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
-                ),
-
-               // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
-            )
-        )
-        ,|v| v.concat()
+                    is_char11,
+                ), //XML 1.1
+                |c| c.to_string(),
+            ),
+            wellformed_ver(
+                chardata_literal(),
+                |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                |s| !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+            ),
+            // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
+        )),
+        |v| v.concat(),
     )
 }
 
@@ -61,7 +61,7 @@ pub(crate) fn chardata_unicode_codepoint() -> impl Fn(ParseInput) -> ParseResult
                 //    None => false,
                 //    _ => true
                 //}
-            }
+            },
         ),
         |value| std::char::from_u32(value).unwrap(),
     )
@@ -70,9 +70,7 @@ pub(crate) fn chardata_unicode_codepoint() -> impl Fn(ParseInput) -> ParseResult
 fn parse_hex() -> impl Fn(ParseInput) -> ParseResult<u32> {
     move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
         Ok((input1, hex)) => match u32::from_str_radix(&hex, 16) {
-            Ok(r) => {
-                Ok((input1, r))
-            },
+            Ok(r) => Ok((input1, r)),
             Err(_) => Err(ParseError::NotWellFormed),
         },
         Err(e) => Err(e),

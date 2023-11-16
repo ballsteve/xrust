@@ -7,10 +7,10 @@ use crate::parser::xml::dtd::elementdecl::elementdecl;
 use crate::parser::xml::dtd::gedecl::gedecl;
 use crate::parser::xml::dtd::notation::ndatadecl;
 use crate::parser::xml::dtd::pedecl::pedecl;
+use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::misc::comment;
 use crate::parser::xml::misc::processing_instruction;
 use crate::parser::{ParseInput, ParseResult};
-use crate::parser::xml::dtd::pereference::pereference;
 
 pub(crate) fn intsubset() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
     many0(alt9(
@@ -22,6 +22,6 @@ pub(crate) fn intsubset() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
         whitespace1(),
         map(comment(), |_| ()),
         map(processing_instruction(), |_| ()),
-        pereference()
+        pereference(),
     ))
 }

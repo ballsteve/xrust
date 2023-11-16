@@ -75,7 +75,6 @@ fn xibm105valid_p04ibm04av01xml() {
     assert!(testxml.is_ok());
 }
 
-
 #[test]
 #[ignore]
 fn xibm105valid_p05ibm05v01xml() {

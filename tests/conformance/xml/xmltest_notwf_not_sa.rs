@@ -7,10 +7,10 @@ James Clark XMLTEST cases - Standalone
 
 */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 fn notwfnotsa001() {

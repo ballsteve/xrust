@@ -2,10 +2,10 @@
 Richard Tobin's XML 1.1 test suite 13 Feb 2003
  */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::{dtdfileresolve};
 
 #[test]
 fn rmt001() {

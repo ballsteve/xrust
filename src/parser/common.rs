@@ -66,7 +66,7 @@ pub fn is_char10(ch: &char) -> bool {
 }
 
 pub fn is_char11(ch: &char) -> bool {
-     matches!(ch,
+    matches!(ch,
           '\u{0001}'..='\u{D7FF}' //  [#x0001-#xD7FF]
         | '\u{E000}'..='\u{FFFD}' //  [#xE000-#xFFFD]
         | '\u{10000}'..='\u{10FFFF}' //  [#x10000-#10FFFF]
@@ -86,8 +86,6 @@ pub fn is_restricted_char11(ch: &char) -> bool {
 pub fn is_unrestricted_char11(ch: &char) -> bool {
     is_char11(ch) && !is_restricted_char11(ch)
 }
-
-
 
 pub(crate) fn is_pubid_charwithapos(ch: &char) -> bool {
     match ch {

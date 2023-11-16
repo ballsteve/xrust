@@ -13,7 +13,7 @@ use std::convert::TryFrom;
 use std::fmt::Formatter;
 
 /// Comparison operators for values
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub enum Operator {
     Equal,
     NotEqual,
@@ -39,6 +39,34 @@ impl Operator {
             Operator::Before => "<<",
             Operator::After => ">>",
         }
+    }
+}
+
+impl From<String> for Operator {
+    fn from(s: String) -> Self {
+        Operator::from(s.as_str())
+    }
+}
+impl From<&str> for Operator {
+    fn from(s: &str) -> Self {
+        match s {
+            "=" | "eq" => Operator::Equal,
+            "!=" | "ne" => Operator::NotEqual,
+            "<" | "lt" => Operator::LessThan,
+            "<=" | "le" => Operator::LessThanEqual,
+            ">" | "gt" => Operator::GreaterThan,
+            ">=" | "ge" => Operator::GreaterThanEqual,
+            "is" => Operator::Is,
+            "<<" => Operator::Before,
+            ">>" => Operator::After,
+            _ => Operator::After, // TODO: add error value
+        }
+    }
+}
+
+impl fmt::Display for Operator {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "{}", self.to_string())
     }
 }
 
@@ -175,6 +203,7 @@ impl Value {
                 Err(_) => f64::NAN,
             },
             Value::Integer(i) => (*i) as f64,
+            Value::Int(i) => (*i) as f64,
             Value::Double(d) => *d,
             _ => f64::NAN,
         }
@@ -242,6 +271,20 @@ impl Value {
             }
             Value::Integer(i) => {
                 let c = other.to_int()?;
+                match op {
+                    Operator::Equal => Ok(*i == c),
+                    Operator::NotEqual => Ok(*i != c),
+                    Operator::LessThan => Ok(*i < c),
+                    Operator::LessThanEqual => Ok(*i <= c),
+                    Operator::GreaterThan => Ok(*i > c),
+                    Operator::GreaterThanEqual => Ok(*i >= c),
+                    Operator::Is | Operator::Before | Operator::After => {
+                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                    }
+                }
+            }
+            Value::Int(i) => {
+                let c = other.to_int()? as i32;
                 match op {
                     Operator::Equal => Ok(*i == c),
                     Operator::NotEqual => Ok(*i != c),

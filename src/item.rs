@@ -164,6 +164,12 @@ impl NodeType {
     }
 }
 
+impl fmt::Display for NodeType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.to_string())
+    }
+}
+
 /// An Item in a [Sequence]. Can be a node, function or [Value].
 ///
 /// Functions are not yet implemented.
@@ -318,6 +324,29 @@ impl<N: Node> Item<N> {
             Item::Value(v) => v.value_type(),
         }
     }
+    /// Make a shallow copy of an item.
+    /// That is, the item is duplicated but not it's content, including attributes.
+    pub fn shallow_copy(&self) -> Result<Self, Error> {
+        match self {
+            Item::Value(v) => Ok(Item::Value(v.clone())),
+            Item::Node(n) => Ok(Item::Node(n.shallow_copy()?)),
+            _ => Result::Err(Error {
+                kind: ErrorKind::NotImplemented,
+                message: "not implemented".to_string(),
+            }),
+        }
+    }
+    /// Make a deep copy of an item.
+    pub fn deep_copy(&self) -> Result<Self, Error> {
+        match self {
+            Item::Value(v) => Ok(Item::Value(v.clone())),
+            Item::Node(n) => Ok(Item::Node(n.deep_copy()?)),
+            _ => Result::Err(Error {
+                kind: ErrorKind::NotImplemented,
+                message: "not implemented".to_string(),
+            }),
+        }
+    }
 }
 
 impl<N: Node> fmt::Debug for Item<N> {
@@ -420,6 +449,8 @@ pub trait Node: Clone {
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
 
+    /// Shallow copy the node, i.e. copy only the node, but not it's attributes or content.
+    fn shallow_copy(&self) -> Result<Self, Error>;
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
     /// Canonical XML representation of the node

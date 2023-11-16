@@ -60,15 +60,13 @@ pub use value::Value;
 pub mod item;
 pub use item::{Item, Node, Sequence, SequenceTrait};
 
-mod parsecommon;
+//pub mod xpath;
+//pub use xpath::expression;
+pub mod pattern;
+pub use pattern::Pattern;
 
-//pub mod parsexml;
-
-pub mod xpath;
-pub use xpath::parse;
-
-pub mod evaluate;
-pub use evaluate::{Constructor, Evaluator, StaticContext};
+//pub mod evaluate;
+//pub use evaluate::{Constructor, Evaluator, StaticContext};
 
 #[cfg(feature = "xslt")]
 pub mod xslt;
@@ -80,3 +78,6 @@ pub use intmuttree::Document;
 
 pub mod parser;
 pub mod testutils;
+
+//pub mod transcomb;
+pub mod transform;

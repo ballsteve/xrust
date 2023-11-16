@@ -15,7 +15,7 @@ fn dtdfileresolve() -> fn(Option<String>, String) -> Result<String, Error> {
     move |locdir, uri| {
         let u = match locdir {
             None => uri,
-            Some(ld) => ld + uri.as_str()
+            Some(ld) => ld + uri.as_str(),
         };
         match fs::read_to_string(u) {
             Err(_) => Err(Error {
@@ -27,11 +27,11 @@ fn dtdfileresolve() -> fn(Option<String>, String) -> Result<String, Error> {
     }
 }
 
-fn non_utf8_file_reader(filedir: &str ) -> String {
+fn non_utf8_file_reader(filedir: &str) -> String {
     /*
-        xRust itself will most likely be UTF-8 only, but there are UTF-16 files in the conformance
-        suite. I could change them, but best leave as-is in case we do try to support later.
-     */
+       xRust itself will most likely be UTF-8 only, but there are UTF-16 files in the conformance
+       suite. I could change them, but best leave as-is in case we do try to support later.
+    */
     let mut file_in = File::open(filedir).unwrap();
     let mut buffer = [0; 4];
 
@@ -44,17 +44,14 @@ fn non_utf8_file_reader(filedir: &str ) -> String {
         //[255, 254, 0, 0] => {} //UCS-4, little-endian machine (4321 order)
         //[0, 0, 255, 254] => {} //UCS-4, unusual octet order (2143)
         //[254, 255, 0, 0] => {} //UCS-4, unusual octet order (3412)
-        [254, 255, _, _] => {Some(UTF_16BE)} //UTF-16, big-endian
-        [255, 254, _, _] => {Some(UTF_16LE)} //UTF-16, little-endian
-        [239, 187, 191, _] => {Some(UTF_8)} //UTF-8
-        [60, 63, 120, 109] => {Some(WINDOWS_1252)} //UTF-8
-        _ => {Some(UTF_8)} //Other
+        [254, 255, _, _] => Some(UTF_16BE), //UTF-16, big-endian
+        [255, 254, _, _] => Some(UTF_16LE), //UTF-16, little-endian
+        [239, 187, 191, _] => Some(UTF_8),  //UTF-8
+        [60, 63, 120, 109] => Some(WINDOWS_1252), //UTF-8
+        _ => Some(UTF_8),                   //Other
     };
 
-
-    let mut decoded_stream = DecodeReaderBytesBuilder::new()
-        .encoding(enc)
-        .build(file_in);
+    let mut decoded_stream = DecodeReaderBytesBuilder::new().encoding(enc).build(file_in);
 
     let mut dest = String::new();
     let _ = decoded_stream.read_to_string(&mut dest);

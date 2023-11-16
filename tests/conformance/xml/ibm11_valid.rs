@@ -4,10 +4,10 @@ IBM XML 1.1 test cases
 
 */
 
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 fn ibm11valid_p02ibm02v01xml() {
@@ -516,8 +516,8 @@ fn ibm11valid_p77ibm77v03xml() {
     let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v03.xml")
             .unwrap(),
-            Some(dtdfileresolve()),
-            Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/".to_string()),
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/".to_string()),
     ));
 
     assert!(testxml.is_ok());
