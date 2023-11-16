@@ -6,8 +6,6 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_literal_text() {
-	    let mut sc = StaticContext::new_with_xslt_builtins();
-
 	    let src = Rc::new(Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
@@ -17,34 +15,25 @@ macro_rules! xslt_tests (
   <xsl:template match='/'>Found the document</xsl:template>
 </xsl:stylesheet>").expect("unable to parse stylesheet");
 
-	    // Setup dynamic context with result document
-	    let ev = from_document(
-		style,
-		&mut sc,
-		None,
-		|s| $x(s),
-		|url| Ok(String::new()),
-	    )
-		.expect("failed to compile stylesheet");
+	    // Setup context
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
 
-	    let rd = $y();
+		// Add the source document to the context
+		ctxt.context(vec![src], 0);
 
-	    // Prime the stylesheet evaluation by finding the template for the document root
-	    // and making the document root the initial context
-	    let t = ev.find_match(&src, None, &rd)
-		.expect("unable to find match");
-	    assert!(t.len() >= 1);
-
-	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
-		.expect("evaluation failed");
+		// Let 'er rip
+	    let seq = ctxt.evaluate().expect("evaluation failed");
 
 	    assert_eq!(seq.to_string(), "Found the document")
 	}
 
 	#[test]
 	fn xslt_literal_element() {
-	    let mut sc = StaticContext::new_with_xslt_builtins();
-
 	    let src = Rc::new(Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
@@ -55,33 +44,23 @@ macro_rules! xslt_tests (
 </xsl:stylesheet>").expect("unable to parse stylesheet");
 
 	    // Setup dynamic context with result document
-	    let ev = from_document(
-		style,
-		&mut sc,
-		None,
-		|s| $x(s),
-		|url| Ok(String::new()),
-	    )
-		.expect("failed to compile stylesheet");
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
 
-	    let rd = $y();
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
 
-	    // Prime the stylesheet evaluation by finding the template for the document root
-	    // and making the document root the initial context
-	    let t = ev.find_match(&src, None, &rd)
-		.expect("unable to find match");
-	    assert!(t.len() >= 1);
-
-	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
-		.expect("evaluation failed");
+	    let seq = ctxt.evaluate().expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "<answer>Made an element</answer>")
 	}
 
 	#[test]
 	fn xslt_apply_templates_1() {
-	    let mut sc = StaticContext::new_with_xslt_builtins();
-
 	    let src = Rc::new(Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
@@ -94,33 +73,22 @@ macro_rules! xslt_tests (
 </xsl:stylesheet>").expect("unable to parse stylesheet");
 
 	    // Setup dynamic context
-	    let ev = from_document(
-		style,
-		&mut sc,
-		None,
-		|s| $x(s),
-		|url| Ok(String::new()),
-	    )
-		.expect("failed to compile stylesheet");
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
 
-	    let rd = $y();
+	    ctxt.context(vec![src], 0);
 
-	    // Prime the stylesheet evaluation by finding the template for the document root
-	    // and making the document root the initial context
-	    let t = ev.find_match(&src, None, &rd)
-		.expect("unable to find match");
-	    assert!(t.len() >= 1);
-
-	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
-		.expect("evaluation failed");
+	    let seq = ctxt.evaluate().expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "found textfound text")
 	}
 
 	#[test]
 	fn xslt_apply_templates_2() {
-	    let mut sc = StaticContext::new_with_xslt_builtins();
-
 	    let src = Rc::new(Item::Node(
 		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 		    .expect("unable to parse source document")
@@ -134,25 +102,16 @@ macro_rules! xslt_tests (
 </xsl:stylesheet>").expect("unable to parse stylesheet");
 
 	    // Setup dynamic context with result document
-	    let ev = from_document(
-		style,
-		&mut sc,
-		None,
-		|s| $x(s),
-		|url| Ok(String::new()),
-	    )
-		.expect("failed to compile stylesheet");
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
 
-	    let rd = $y();
+	    ctxt.context(vec![src], 0);
 
-	    // Prime the stylesheet evaluation by finding the template for the document root
-	    // and making the document root the initial context
-	    let t = ev.find_match(&src, None, &rd)
-		.expect("unable to find match");
-	    assert!(t.len() >= 1);
-
-	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
-		.expect("evaluation failed");
+	    let seq = ctxt.evaluate().expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onetwothreefour")
 	}
@@ -160,8 +119,6 @@ macro_rules! xslt_tests (
 	#[test]
 	#[should_panic]
 	fn xslt_include() {
-	    let mut sc = StaticContext::new_with_xslt_builtins();
-
 	    let src = Rc::new(Item::Node(
 		$x("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")
 		    .expect("unable to parse source document")
@@ -177,28 +134,20 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let pwd = std::env::current_dir().expect("unable to get current directory");
 	    let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
-	    let ev = from_document(
-		style,
-		&mut sc,
-		Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
-		|s| $x(s),
-		|_| Ok(String::new()),
-	    )
-		.expect("failed to compile stylesheet");
+	    let mut ctxt = from_document(
+			style,
+			Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
+			|s| $x(s),
+			|_| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
 
-	    let rd = $y();
+	    ctxt.context(vec![src], 0);
 
-	    // Prime the stylesheet evaluation by finding the template for the document root
-	    // and making the document root the initial context
-	    let t = ev.find_match(&src, None, &rd)
-		.expect("unable to find match");
-	    assert!(t.len() >= 1);
-
-	    let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
-		.expect("evaluation failed");
+	    let seq = ctxt.evaluate().expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
 	}
+
 /*
 	#[test]
 	fn import_1() {

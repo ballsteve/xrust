@@ -19,31 +19,6 @@ where
         Err(err) => Err(err),
     }
 }
-pub(crate) fn dbg_wellformed<P, F, A>(
-    parser: P,
-    validate_fn: F,
-) -> impl Fn(ParseInput) -> ParseResult<A>
-where
-    P: Fn(ParseInput) -> ParseResult<A>,
-    F: Fn(&A) -> bool,
-{
-    move |input| {
-        let i = parser(input);
-        let ((dbgin, _), a) = i.as_ref().unwrap();
-        eprintln!("wellformed - input \"{}\"", dbgin);
-        match i {
-            Ok(((input2, state2), result)) => {
-                if validate_fn(&result) {
-                    Ok(((input2, state2), result))
-                } else {
-                    Err(ParseError::NotWellFormed)
-                }
-            }
-            Err(err) => Err(err),
-        }
-    }
-}
-
 pub(crate) fn wellformed_ver<P, F10, F11, A>(
     parser: P,
     validate_fn10: F10,

@@ -60,6 +60,13 @@ impl<N: Node> Context<N> {
             base_url: None,
         }
     }
+    pub fn context(&mut self, s: Sequence<N>, i: usize) {
+        self.cur = s;
+        self.i = i;
+    }
+    pub fn result_document(&mut self, rd: N) {
+        self.rd = Some(rd);
+    }
     pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
             Some(u) => {
