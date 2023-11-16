@@ -1,4 +1,4 @@
-use crate::intmuttree::DTDDecl;
+use crate::trees::intmuttree::DTDDecl;
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt7};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;

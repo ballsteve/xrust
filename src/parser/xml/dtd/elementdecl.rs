@@ -1,4 +1,4 @@
-use crate::intmuttree::DTDDecl;
+use crate::trees::intmuttree::DTDDecl;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple7;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};

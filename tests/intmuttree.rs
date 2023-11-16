@@ -1,7 +1,7 @@
 use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
-use xrust::intmuttree::Document;
-use xrust::intmuttree::{NodeBuilder, RNode};
+use xrust::trees::intmuttree::Document;
+use xrust::trees::intmuttree::{NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::item_node_tests;
 use xrust::item_value_tests;
