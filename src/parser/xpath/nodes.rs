@@ -18,9 +18,9 @@ use crate::parser::xpath::types::instanceof_expr;
 use crate::transform::{Axis, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
-pub(crate) fn union_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+pub(crate) fn union_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
 {
-    map(
+    Box::new(map(
         separated_list1(
             map(
                 tuple3(xpwhitespace(), alt2(tag("union"), tag("|")), xpwhitespace()),
@@ -35,13 +35,13 @@ pub(crate) fn union_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
                 Transform::NotImplemented("union_expr".to_string())
             }
         },
-    )
+    ))
 }
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
-fn intersectexcept_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+fn intersectexcept_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
 {
-    map(
+    Box::new(map(
         pair(
             instanceof_expr::<N>(),
             many0(tuple2(
@@ -60,22 +60,22 @@ fn intersectexcept_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResul
                 Transform::NotImplemented("intersectexcept_expr".to_string())
             }
         },
-    )
+    ))
 }
 
-pub(crate) fn path_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+pub(crate) fn path_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
 {
-    alt3(
+    Box::new(alt3(
         absolutedescendant_expr::<N>(),
         absolutepath_expr::<N>(),
         relativepath_expr::<N>(),
-    )
+    ))
 }
 
 // ('//' RelativePathExpr?)
 fn absolutedescendant_expr<'a, N: Node + 'a>(
-) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(pair(tag("//"), relativepath_expr::<N>()), |(_, r)| {
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(pair(tag("//"), relativepath_expr::<N>()), |(_, r)| {
         Transform::Compose(vec![
             Transform::Step(NodeMatch {
                 axis: Axis::DescendantOrSelfOrRoot,
@@ -87,23 +87,23 @@ fn absolutedescendant_expr<'a, N: Node + 'a>(
             }),
             r,
         ])
-    })
+    }))
 }
 
 // ('/' RelativePathExpr?)
-fn absolutepath_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(tag("/"), opt(relativepath_expr::<N>())),
         |(_, r)| match r {
             Some(a) => Transform::Compose(vec![Transform::Root, a]),
             None => Transform::Root,
         },
-    )
+    ))
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             step_expr::<N>(),
             many0(tuple2(
@@ -141,26 +141,26 @@ fn relativepath_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<T
                 Transform::Compose(r)
             }
         },
-    )
+    ))
 }
 
-fn step_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    alt2(postfix_expr::<N>(), axisstep::<N>())
+fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(alt2(postfix_expr::<N>(), axisstep::<N>()))
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
-fn axisstep<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(pair(forwardaxis(), nodetest()), |(a, n)| {
+fn axisstep<'a, N: Node + 'a>() -> Box<dyn  Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(pair(forwardaxis(), nodetest()), |(a, n)| {
         Transform::Step(NodeMatch {
             axis: Axis::from(a),
             nodetest: n,
         })
-    })
+    }))
 }
 
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
-fn forwardaxis() -> impl Fn(ParseInput) -> ParseResult<&'static str> {
-    map(
+fn forwardaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
+    Box::new(map(
         //    alt8(
         pair(
             // need alt8
@@ -181,6 +181,6 @@ fn forwardaxis() -> impl Fn(ParseInput) -> ParseResult<&'static str> {
             tag("::"),
         ),
         |(a, _)| a,
-    )
+    ))
 }
 // TODO: reverse axis

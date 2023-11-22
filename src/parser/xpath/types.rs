@@ -14,8 +14,8 @@ use crate::transform::Transform;
 
 // InstanceOfExpr ::= TreatExpr ( 'instance' 'of' SequenceType)?
 pub(crate) fn instanceof_expr<'a, N: Node + 'a>(
-) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             treat_expr::<N>(),
             opt(tuple6(
@@ -34,20 +34,20 @@ pub(crate) fn instanceof_expr<'a, N: Node + 'a>(
                 Transform::NotImplemented("instanceof_expr".to_string())
             }
         },
-    )
+    ))
 }
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
 // TODO: implement this parser fully
-fn sequencetype_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(tag("empty-sequence()"), |_| {
+fn sequencetype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(tag("empty-sequence()"), |_| {
         Transform::NotImplemented("sequencetype_expr".to_string())
-    })
+    }))
 }
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
-fn treat_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn treat_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             castable_expr::<N>(),
             opt(tuple6(
@@ -66,12 +66,12 @@ fn treat_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transfor
                 Transform::NotImplemented("treat_expr".to_string())
             }
         },
-    )
+    ))
 }
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
-fn castable_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn castable_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             cast_expr::<N>(),
             opt(tuple6(
@@ -90,7 +90,7 @@ fn castable_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Trans
                 Transform::NotImplemented("castable_expr".to_string())
             }
         },
-    )
+    ))
 }
 
 // SingleType ::= SimpleTypeName '?'?
@@ -106,15 +106,15 @@ fn castable_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Trans
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
 // TODO: implement this parser fully
-fn singletype_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(pair(qualname_test(), tag("?")), |_| {
+fn singletype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(pair(qualname_test(), tag("?")), |_| {
         Transform::NotImplemented("singletype_expr".to_string())
-    })
+    }))
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
-fn cast_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn cast_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             arrow_expr::<N>(),
             opt(tuple6(
@@ -133,5 +133,5 @@ fn cast_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform
                 Transform::NotImplemented("cast_expr".to_string())
             }
         },
-    )
+    ))
 }

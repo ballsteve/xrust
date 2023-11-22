@@ -12,8 +12,8 @@ use crate::transform::Transform;
 
 // VarRef ::= '$' VarName
 pub(crate) fn variable_reference<'a, N: Node + 'a>(
-) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(pair(tag("$"), qualname_test()), |(_, qn)| {
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(pair(tag("$"), qualname_test()), |(_, qn)| {
         Transform::VariableReference(get_nt_localname(&qn))
-    })
+    }))
 }
