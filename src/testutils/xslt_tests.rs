@@ -168,7 +168,7 @@ macro_rules! xslt_tests (
 
 	    let seq = ctxt.evaluate().expect("evaluation failed");
 
-	    assert_eq!(seq.to_xml(), r#"<dat:dataPack xmlns:dat="http://www.stormware.cz/schema/version_2/data.xsd" xmlns:int="http://www.stormware.cz/schema/version_2/intDoc.xsd">
+	    assert_eq!(seq.to_xml(), r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
     <int:head>XSLT in Rust</int:head>
     <int:body>A simple document.</int:body>
 </dat:dataPack>"#)

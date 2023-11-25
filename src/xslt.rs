@@ -720,8 +720,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     "unsupported XSL element \"{}\"",
                     u
                 ))),
-                (_, a) => {
-                    // TODO: Handle qualified element name
+                (u, a) => {
                     let mut content = vec![];
                     n.attribute_iter().try_for_each(|e| {
                         content.push(to_transform(e)?);
@@ -732,7 +731,11 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Ok::<(), Error>(())
                     })?;
                     Ok(Transform::LiteralElement(
-                        QualifiedName::new(None, None, a.to_string()),
+                        QualifiedName::new(
+                            u.map(|v| v.to_string()),
+                            n.name().get_prefix(),
+                            a.to_string()
+                        ),
                         Box::new(Transform::SequenceItems(content)),
                     ))
                 }
