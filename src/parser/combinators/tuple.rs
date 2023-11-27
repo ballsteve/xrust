@@ -1,6 +1,6 @@
 use crate::parser::{ParseInput, ParseResult};
 
-pub(crate) fn tuple2<P1, P2, R1, R2>(
+pub fn tuple2<P1, P2, R1, R2>(
     parser1: P1,
     parser2: P2,
 ) -> impl Fn(ParseInput) -> ParseResult<(R1, R2)>
@@ -17,7 +17,7 @@ where
     }
 }
 
-pub(crate) fn tuple3<P1, P2, P3, R1, R2, R3>(
+pub fn tuple3<P1, P2, P3, R1, R2, R3>(
     parser1: P1,
     parser2: P2,
     parser3: P3,
@@ -39,7 +39,7 @@ where
     }
 }
 
-pub(crate) fn tuple4<P1, P2, P3, P4, R1, R2, R3, R4>(
+pub fn tuple4<P1, P2, P3, P4, R1, R2, R3, R4>(
     parser1: P1,
     parser2: P2,
     parser3: P3,

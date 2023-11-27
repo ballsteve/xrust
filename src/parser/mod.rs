@@ -9,13 +9,13 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::collections::HashMap;
 use std::fmt;
 
-pub(crate) mod combinators;
+pub mod combinators;
 pub(crate) mod common;
 pub(crate) mod xml;
 pub mod xpath;
 
-pub(crate) type ParseInput<'a> = (&'a str, ParserState);
-pub(crate) type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
+pub type ParseInput<'a> = (&'a str, ParserState);
+pub type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ParseError {
@@ -39,7 +39,7 @@ pub enum ParseError {
 }
 
 #[derive(Clone)]
-pub(crate) struct ParserState {
+pub struct ParserState {
     dtd: DTD,
     /*
     The namespaces are tracked in a hashmap of vectors, each prefix tracking which namespace you

@@ -3,7 +3,7 @@ use crate::parser::{ParseError, ParseInput, ParseResult};
 
 /// Emits a message to stderr from within the parser combinator. This can be useful for debugging.
 #[allow(dead_code)]
-pub(crate) fn inspect<'a, P1, A>(
+pub fn inspect<'a, P1, A>(
     msg: &'a str,
     parser: P1,
 ) -> impl Fn(ParseInput) -> ParseResult<A> + '_

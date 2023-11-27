@@ -7,7 +7,7 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub(crate) fn whitespace0() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub fn whitespace0() -> impl Fn(ParseInput) -> ParseResult<()> {
     //TODO add support for xml:space
     map(
         many0(alt4(tag(" "), tag("\t"), tag("\r"), tag("\n"))),

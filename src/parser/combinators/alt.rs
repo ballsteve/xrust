@@ -1,6 +1,6 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub(crate) fn alt2<P1, P2, A>(parser1: P1, parser2: P2) -> impl Fn(ParseInput) -> ParseResult<A>
+pub fn alt2<P1, P2, A>(parser1: P1, parser2: P2) -> impl Fn(ParseInput) -> ParseResult<A>
 where
     P1: Fn(ParseInput) -> ParseResult<A>,
     P2: Fn(ParseInput) -> ParseResult<A>,
@@ -17,7 +17,7 @@ where
     }
 }
 
-pub(crate) fn alt3<P1, P2, P3, A>(
+pub fn alt3<P1, P2, P3, A>(
     parser1: P1,
     parser2: P2,
     parser3: P3,
@@ -43,7 +43,7 @@ where
     }
 }
 
-pub(crate) fn alt4<P1, P2, P3, P4, A>(
+pub fn alt4<P1, P2, P3, P4, A>(
     parser1: P1,
     parser2: P2,
     parser3: P3,

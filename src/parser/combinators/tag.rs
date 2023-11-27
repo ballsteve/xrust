@@ -1,6 +1,6 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub(crate) fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
+pub fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
     move |(input, state)| match input.get(0..expected.len()) {
         None => Err(ParseError::Combinator),
         Some(chars) => {

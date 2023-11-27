@@ -51,7 +51,7 @@ We need your help!
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
-mod output;
+pub mod output;
 mod parsepicture;
 pub mod qname;
 
