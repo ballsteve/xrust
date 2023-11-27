@@ -336,9 +336,9 @@ impl ItemNode for RNode {
         }
     }
     /// Serialise as XML
-    fn to_xml(&self) -> String {to_xml_int(self, &OutputDefinition::new(), &mut HashMap::new(), 0)}
+    fn to_xml(&self) -> String {to_xml_int(self, &OutputDefinition::new(), vec![], 0)}
     /// Serialise the node as XML, with options such as indentation.
-    fn to_xml_with_options(&self, od: &OutputDefinition) -> String { to_xml_int(self, od, &mut HashMap::new(), 0) }
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String { to_xml_int(self, od, vec![], 0) }
 
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
@@ -520,16 +520,16 @@ impl Debug for Node {
 }
 
 // This handles the XML serialisation of the document.
-// "ns" is the list of XML Namespaces that have been declared in an ancestor.
+// "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
 // "indent" is the current level of identation.
-fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: &mut HashMap<String, Option<String>>, indent: usize) -> String {
+fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<String>)>, indent: usize) -> String {
     match node.node_type {
         NodeType::Document => {
             node.children
                 .borrow()
                 .iter()
                 .fold(String::new(), |mut result, c| {
-                    result.push_str(to_xml_int(c, od, ns, indent + 2).as_str());
+                    result.push_str(to_xml_int(c, od, ns.clone(), indent + 2).as_str());
                     result
                 })
         }
@@ -545,20 +545,37 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: &mut HashMap<String, Opti
 
             // Check if any XML Namespaces need to be declared
             // newns is a vector of (prefix, namespace URI) pairs
-            let mut newns: Vec<(Option<String>, String)> = vec![];
-            if let Some(qnuri) = qn.get_nsuri_ref() {
-                // Has this namespace already been declared?
-                // NB. must be careful borrowing the hashmap, as it may need to be mutated later
-                if ns.contains_key(qnuri) {
-                    // Namespace has been declared, but with the same prefix?
-                    // TODO: see forest.rs for example implementation
-                } else {
-                    // Namespace has not been declared, so this element must declare it
-                    ns.insert(qnuri.to_string(), qn.get_prefix());
-                    newns.push((qn.get_prefix(), qnuri.to_string()))
-                }
-            }
-            newns.iter().for_each(|(p, u)| {
+            let mut declared = ns.clone();
+            let mut newns: Vec<(String, Option<String>)> = vec![];
+            // First, the element itself
+            namespace_check(&qn, &declared).iter()
+                .for_each(|m| {
+                    newns.push(m.clone());
+                    declared.push(m.clone())
+                });
+            // Next, it's attributes
+            node.attributes
+                .borrow()
+                .iter()
+                .for_each(|(k, _)| {
+                    namespace_check(k, &declared).iter()
+                        .for_each(|m| {
+                            newns.push(m.clone());
+                            declared.push(m.clone())
+                        })
+                });
+            // Finally, it's child elements
+            node.child_iter()
+                .filter(|c| c.node_type == NodeType::Element)
+                .for_each(|c| {
+                c.name.borrow().as_ref().map(|d| namespace_check(d, &declared).iter()
+                    .for_each(|m| {
+                        newns.push(m.clone());
+                        declared.push(m.clone())
+                    })
+                );
+            });
+            newns.iter().for_each(|(u, p)| {
                 result.push_str(" xmlns");
                 if let Some(q) = p {
                     result.push(':');
@@ -594,7 +611,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: &mut HashMap<String, Opti
                         result.push('\n');
                         (0..indent).for_each(|_| result.push(' '))
                     }
-                    result.push_str(to_xml_int(c, od, ns, indent + 2).as_str())
+                    result.push_str(to_xml_int(c, od, newns.clone(), indent + 2).as_str())
                 });
             if do_indent && indent > 1 {
                 result.push('\n');
@@ -631,6 +648,23 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: &mut HashMap<String, Opti
         }
         _ => String::new(),
     }
+}
+
+// Checks if this node's name is in a namespace that has already been declared.
+// Returns a namespace to be declared if required, (URI, prefix).
+fn namespace_check(qn: &QualifiedName, ns: &Vec<(String, Option<String>)>) -> Option<(String, Option<String>)> {
+    let mut result = None;
+    if let Some(qnuri) = qn.get_nsuri_ref() {
+        // Has this namespace already been declared?
+        if ns.iter().find(|(u, _)| u == qnuri).is_some() {
+            // Namespace has been declared, but with the same prefix?
+            // TODO: see forest.rs for example implementation
+        } else {
+            // Namespace has not been declared, so this element must declare it
+            result = Some((qnuri.to_string(), qn.get_prefix()))
+        }
+    }
+    result
 }
 
 // Find the position of this node in the parent's child list.
