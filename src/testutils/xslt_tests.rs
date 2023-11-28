@@ -118,6 +118,36 @@ macro_rules! xslt_tests (
 	    assert_eq!(seq.to_xml(), "onetwothreefour")
 	}
 
+	#[test]
+	fn xslt_comment() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:comment> this is a level 1 element </xsl:comment></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate().expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->")
+	}
+
 	// Although we have the source and stylesheet in files,
 	// they are inlined here to avoid dependency on I/O libraries
 	#[test]

@@ -388,6 +388,11 @@ impl ItemNode for RNode {
             .value(v)
             .build())
     }
+    fn new_comment(&self, v: Value) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(NodeType::Comment)
+            .value(v)
+            .build())
+    }
 
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {
@@ -631,7 +636,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<Strin
         NodeType::Text => node.value().to_string(),
         NodeType::Comment => {
             let mut result = String::from("<!--");
-            let s = node.name.borrow().as_ref().map_or("".to_string(), |n| n.to_string());
+            let s = node.value.as_ref().map_or("".to_string(), |n| n.to_string());
             result.push_str(s.as_str());
             result.push_str("-->");
             result

@@ -78,6 +78,27 @@ pub(crate) fn literal_attribute<N: Node>(
     Ok(vec![Rc::new(Item::Node(a))])
 }
 
+/// Creates a singleton sequence with a new comment node.
+/// The transform is evaluated to create the value of the comment.
+pub(crate) fn literal_comment<N: Node>(
+    ctxt: &Context<N>,
+    t: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+
+    let a = ctxt
+        .rd
+        .clone()
+        .unwrap()
+        .new_comment(Value::from(ctxt.dispatch(t)?.to_string()))?;
+    Ok(vec![Rc::new(Item::Node(a))])
+}
+
 /// Set an attribute on the context item, which must be an element-type node.
 /// (TODO: use an expression to select the element)
 /// If the element does not have an attribute with the given name, create it.

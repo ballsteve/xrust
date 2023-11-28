@@ -179,6 +179,7 @@ impl<N: Node> Context<N> {
             Transform::Literal(v) => literal(self, v),
             Transform::LiteralElement(qn, t) => literal_element(self, qn, t),
             Transform::LiteralAttribute(qn, t) => literal_attribute(self, qn, t),
+            Transform::LiteralComment(t) => literal_comment(self, t),
             Transform::SetAttribute(qn, v) => set_attribute(self, qn, v),
             Transform::SequenceItems(v) => make_sequence(self, v),
             Transform::Copy(f, t) => copy(self, f, t),

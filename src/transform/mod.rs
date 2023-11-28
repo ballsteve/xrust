@@ -56,6 +56,8 @@ pub enum Transform<N: Node> {
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(QualifiedName, Box<Transform<N>>),
+    /// A literal comment. Consists of the value.
+    LiteralComment(Box<Transform<N>>),
     /// Produce a [Sequence]. Each element in the vector becomes one, or more, item in the sequence.
     SequenceItems(Vec<Transform<N>>),
 
@@ -200,6 +202,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
+            Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {

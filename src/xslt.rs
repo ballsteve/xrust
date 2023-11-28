@@ -716,6 +716,17 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         })
                     }
                 }
+                (Some(XSLTNS), "comment") => {
+                    Ok(Transform::LiteralComment(
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            }
+                        )?))
+                    ))
+                }
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(
                     "unsupported XSL element \"{}\"",
                     u

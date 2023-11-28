@@ -438,7 +438,10 @@ pub trait Node: Clone {
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Value) -> Result<Self, Error>;
+    /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
     fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+    /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
+    fn new_comment(&self, v: Value) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;

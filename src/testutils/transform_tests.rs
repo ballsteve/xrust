@@ -72,6 +72,24 @@ macro_rules! transform_tests (
 	    assert_eq!(seq.to_xml(), "<Test foo='bar'>content</Test>")
 	}
 	#[test]
+	fn tr_literal_comment() {
+	    let x = Transform::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		Box::new(Transform::SequenceItems(vec![
+		    Transform::LiteralComment(
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar")))))
+		    ),
+		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		]))
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+		.result_document(mydoc)
+		.build();
+	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test><!--bar-->content</Test>")
+	}
+	#[test]
 	fn tr_set_attribute() {
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();

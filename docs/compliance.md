@@ -189,8 +189,8 @@ xsl:assert|no|
 xsl:assert/@test|no|
 xsl:assert/@select|no|
 xsl:assert/@error-code|no|
-xsl:attribute|no|
-xsl:attribute/@name|no|
+xsl:attribute|yes|
+xsl:attribute/@name|yes|
 xsl:attribute/@namespace|no|
 xsl:attribute/@select|no|
 xsl:attribute/@separator|no|
@@ -212,7 +212,7 @@ xsl:character-map|no|
 xsl:character-map/@name|no|
 xsl:character-map/@use-character-maps|no|
 xsl:choose|yes|
-xsl:comment|no|
+xsl:comment|yes|
 xsl:comment/@select|no|
 xsl:context-item|no|
 xsl:context-item/@as|no|
