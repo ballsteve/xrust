@@ -98,10 +98,8 @@ pub fn parse(e: &str) -> Result<String, Error> {
             if rem.is_empty() {
                 Ok(value)
             } else {
-                Err(Error {
-                    kind: ErrorKind::Unknown,
-                    message: format!("extra characters after expression: \"{}\"", rem),
-                })
+                Err(Error::new(ErrorKind::Unknown,
+                               format!("extra characters after expression: \"{}\"", rem)))
             }
         }
         Err(_) => Err(Error::new(ErrorKind::ParseError, String::from("unable to parse picture"))),

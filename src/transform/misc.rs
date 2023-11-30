@@ -1,6 +1,8 @@
 //! Miscellaneous support functions.
 
+use crate::ErrorKind;
 use crate::item::{Node, Sequence, SequenceTrait};
+use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
@@ -10,11 +12,28 @@ use crate::xdmerror::Error;
 pub(crate) fn message<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    t: &Transform<N>,
+    body: &Transform<N>,
+    _sel: &Option<Box<Transform<N>>>,    // select expression, an alternative to body
+    _e: &Transform<N>,      // error code
+    t: &Transform<N>,      // terminate
 ) -> Result<Sequence<N>, Error> {
-    let msg = ctxt.dispatch(stctxt, t)?.to_string();
+    let msg = ctxt.dispatch(stctxt, body)?.to_string();
     if let Some(f) =  &mut stctxt.message {
         f(msg.as_str())?
     }
-    Ok(vec![])
+    match ctxt.dispatch(stctxt, t)?.to_string().trim() {
+        "yes" => {
+            // TODO: return error code
+            Err(Error {
+                kind: ErrorKind::Terminated,
+                message: msg,
+                code: Some(QualifiedName::new(
+                    Some(String::from("http://www.w3.org/2005/xqt-errors")),
+                    None,
+                    String::from("XTMM9000")
+                ))
+            })
+        }
+        _ => Ok(vec![])
+    }
 }

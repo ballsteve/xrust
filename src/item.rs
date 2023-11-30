@@ -113,10 +113,10 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         if self.len() == 1 {
             self[0].to_int()
         } else {
-            Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error: sequence is not a singleton"),
-            })
+            Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error: sequence is not a singleton"),
+            ))
         }
     }
 }
@@ -236,14 +236,14 @@ impl<N: Node> Item<N> {
     /// Gives the integer value of the item, if possible.
     pub fn to_int(&self) -> Result<i64, Error> {
         match self {
-            Item::Node(..) => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error: item is a node"),
-            }),
-            Item::Function => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error: item is a function"),
-            }),
+            Item::Node(..) => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error: item is a node"),
+            )),
+            Item::Function => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error: item is a function"),
+            )),
             Item::Value(v) => match v.to_int() {
                 Ok(i) => Ok(i),
                 Err(e) => Result::Err(e),
@@ -277,16 +277,16 @@ impl<N: Node> Item<N> {
             Item::Value(v) => match other {
                 Item::Value(w) => v.compare(w, op),
                 Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
-                _ => Result::Err(Error {
-                    kind: ErrorKind::TypeError,
-                    message: String::from("type error"),
-                }),
+                _ => Result::Err(Error::new(
+                    ErrorKind::TypeError,
+                    String::from("type error"),
+                )),
             },
             Item::Node(..) => other.compare(&Item::Value(Value::String(self.to_string())), op),
-            _ => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error"),
-            }),
+            _ => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error"),
+            )),
         }
     }
 
@@ -330,10 +330,10 @@ impl<N: Node> Item<N> {
         match self {
             Item::Value(v) => Ok(Item::Value(v.clone())),
             Item::Node(n) => Ok(Item::Node(n.shallow_copy()?)),
-            _ => Result::Err(Error {
-                kind: ErrorKind::NotImplemented,
-                message: "not implemented".to_string(),
-            }),
+            _ => Result::Err(Error::new(
+                ErrorKind::NotImplemented,
+                "not implemented".to_string(),
+            )),
         }
     }
     /// Make a deep copy of an item.
@@ -341,10 +341,10 @@ impl<N: Node> Item<N> {
         match self {
             Item::Value(v) => Ok(Item::Value(v.clone())),
             Item::Node(n) => Ok(Item::Node(n.deep_copy()?)),
-            _ => Result::Err(Error {
-                kind: ErrorKind::NotImplemented,
-                message: "not implemented".to_string(),
-            }),
+            _ => Result::Err(Error::new(
+                ErrorKind::NotImplemented,
+                "not implemented".to_string(),
+            )),
         }
     }
 }

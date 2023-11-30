@@ -112,10 +112,10 @@ impl ParserState {
 
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
         match self.ext_dtd_resolver {
-            None => Err(Error {
-                kind: ErrorKind::Unknown,
-                message: "No external DTD resolver provided.".to_string(),
-            }),
+            None => Err(Error::new(
+                ErrorKind::Unknown,
+                "No external DTD resolver provided.".to_string(),
+            )),
             Some(e) => e(locdir, uri),
         }
     }

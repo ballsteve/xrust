@@ -32,10 +32,10 @@ pub fn parse(
         Ok((_, xmldoc)) => Result::Ok(xmldoc),
         Err(err) => {
             match err {
-                ParseError::Combinator => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Unrecoverable parser error.".to_string(),
-                }),
+                ParseError::Combinator => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Unrecoverable parser error.".to_string(),
+                )),
                 /*
                 ParseError::InvalidChar { row, col } => {
                     Result::Err(Error {
@@ -44,42 +44,42 @@ pub fn parse(
                     })
                 }
                  */
-                ParseError::MissingGenEntity { .. } => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Missing Gen Entity.".to_string(),
-                }),
-                ParseError::MissingParamEntity { .. } => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Missing Param Entity.".to_string(),
-                }),
-                ParseError::EntityDepth { .. } => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Entity depth limit exceeded".to_string(),
-                }),
-                ParseError::Validation { .. } => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Validation error.".to_string(),
-                }),
-                ParseError::MissingNameSpace => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Missing namespace declaration.".to_string(),
-                }),
-                ParseError::NotWellFormed => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "XML document not well formed.".to_string(),
-                }),
-                ParseError::ExtDTDLoadError => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Unable to open external DTD.".to_string(),
-                }),
-                ParseError::Notimplemented => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::ParseError,
-                    message: "Unimplemented feature.".to_string(),
-                }),
-                _ => Result::Err(xdmerror::Error {
-                    kind: xdmerror::ErrorKind::Unknown,
-                    message: "Unknown error.".to_string(),
-                }),
+                ParseError::MissingGenEntity { .. } => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Missing Gen Entity.".to_string(),
+                )),
+                ParseError::MissingParamEntity { .. } => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Missing Param Entity.".to_string(),
+                )),
+                ParseError::EntityDepth { .. } => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Entity depth limit exceeded".to_string(),
+                )),
+                ParseError::Validation { .. } => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Validation error.".to_string(),
+                )),
+                ParseError::MissingNameSpace => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Missing namespace declaration.".to_string(),
+                )),
+                ParseError::NotWellFormed => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "XML document not well formed.".to_string(),
+                )),
+                ParseError::ExtDTDLoadError => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Unable to open external DTD.".to_string(),
+                )),
+                ParseError::Notimplemented => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::ParseError,
+                    "Unimplemented feature.".to_string(),
+                )),
+                _ => Result::Err(xdmerror::Error::new(
+                    xdmerror::ErrorKind::Unknown,
+                    "Unknown error.".to_string(),
+                )),
             }
         }
     }

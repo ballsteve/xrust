@@ -188,10 +188,10 @@ impl Value {
             Value::Integer(i) => Ok(*i),
             _ => match self.to_string().parse::<i64>() {
                 Ok(i) => Ok(i),
-                Err(e) => Result::Err(Error {
-                    kind: ErrorKind::Unknown,
-                    message: format!("type conversion error: {}", e),
-                }),
+                Err(e) => Result::Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!("type conversion error: {}", e)
+                )),
             },
         }
     }

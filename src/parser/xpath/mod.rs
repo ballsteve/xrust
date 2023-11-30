@@ -44,26 +44,26 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
     match xpath_expr((input, state)) {
         Ok((_, x)) => Result::Ok(x),
         Err(err) => match err {
-            ParseError::Combinator => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Unrecoverable parser error.".to_string(),
-            }),
-            ParseError::NotWellFormed => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Unrecognised extra characters.".to_string(),
-            }),
-            ParseError::MissingNameSpace => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Missing namespace declaration.".to_string(),
-            }),
-            ParseError::Notimplemented => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Unimplemented feature.".to_string(),
-            }),
-            _ => Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::Unknown,
-                message: "Unknown error".to_string(),
-            }),
+            ParseError::Combinator => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Unrecoverable parser error.".to_string(),
+            )),
+            ParseError::NotWellFormed => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Unrecognised extra characters.".to_string(),
+            )),
+            ParseError::MissingNameSpace => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Missing namespace declaration.".to_string(),
+            )),
+            ParseError::Notimplemented => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Unimplemented feature.".to_string(),
+            )),
+            _ => Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::Unknown,
+                "Unknown error".to_string(),
+            )),
         },
     }
 }

@@ -243,7 +243,7 @@ impl<N: Node> Context<N> {
             Transform::FormatDate(t, p, l, c, q) => format_date(self, stctxt, t, p, l, c, q),
             Transform::FormatTime(t, p, l, c, q) => format_time(self, stctxt, t, p, l, c, q),
             Transform::UserDefined(_qn, a, b) => user_defined(self, stctxt, a, b),
-            Transform::Message(m) => message(self, stctxt, m),
+            Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
             _ => Err(Error::new(

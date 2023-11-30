@@ -479,10 +479,10 @@ impl ItemNode for RNode {
 
     fn get_canonical(&self) -> Result<Self, Error> {
         match self.node_type() {
-            NodeType::Comment => Err(Error {
-                kind: ErrorKind::TypeError,
-                message: "".to_string(),
-            }),
+            NodeType::Comment => Err(Error::new(
+                ErrorKind::TypeError,
+                "".to_string(),
+            )),
             NodeType::Text => {
                 let v = match self.value() {
                     Value::String(s) => {

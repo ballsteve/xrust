@@ -182,8 +182,8 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
     ),
 
-    /// Emit a message
-    Message(Box<Transform<N>>),
+    /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
+    Message(Box<Transform<N>>, Option<Box<Transform<N>>>, Box<Transform<N>>, Box<Transform<N>>),
 
     /// For things that are not yet implemented, such as:
     /// Union, IntersectExcept, InstanceOf, Treat, Castable, Cast, Arrow, Unary, SimpleMap, Is, Before, After.
@@ -265,7 +265,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
-            Transform::Message(_m) => write!(f, "message"),
+            Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
@@ -440,10 +440,10 @@ impl TryFrom<&str> for NodeTest {
                     }))
                 }
             }
-            _ => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: "invalid NodeTest".to_string(),
-            }),
+            _ => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                "invalid NodeTest".to_string(),
+            )),
         }
     }
 }

@@ -95,7 +95,10 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar")))))
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))),
+				None,
+				Box::new(Transform::Empty),
+				Box::new(Transform::Empty),
 		    ),
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
 		]))
@@ -118,11 +121,17 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("first message")))))
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("first message"))))),
+				None,
+				Box::new(Transform::Empty),
+				Box::new(Transform::Empty),
 		    ),
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("second message")))))
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("second message"))))),
+				None,
+				Box::new(Transform::Empty),
+				Box::new(Transform::Empty),
 		    ),
 		]))
 	    );
@@ -138,6 +147,37 @@ macro_rules! transform_tests (
 		assert_eq!(messages.len(), 2);
 		assert_eq!(messages[0], "first message");
 		assert_eq!(messages[1], "second message");
+	}
+	#[test]
+	fn tr_message_term_1() {
+		let mut receiver = String::from("no message received");
+	    let x = Transform::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		Box::new(Transform::SequenceItems(vec![
+		    Transform::Message(
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))),
+				None,
+				Box::new(Transform::Empty),
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("yes"))))),
+		    ),
+		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		]))
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+		let mut stctxt = StaticContextBuilder::new()
+		.message(|m| {receiver = String::from(m); Ok(())})
+		.build();
+	    match ctxt.dispatch(&mut stctxt, &x) {
+			Ok(seq) => panic!("evaluation succeeded when it should have failed"),
+			Err(e) => {
+				assert_eq!(e.kind, ErrorKind::Terminated);
+				assert_eq!(e.message, "bar");
+				assert_eq!(e.code.unwrap().to_string(), "XTMM9000")
+			}
+		}
 	}
 	#[test]
 	fn tr_set_attribute() {
