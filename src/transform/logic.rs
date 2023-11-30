@@ -3,14 +3,15 @@
 use std::rc::Rc;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::Context;
+use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
 /// Return the disjunction of all of the given functions.
-pub(crate) fn tr_or<N: Node>(
+pub(crate) fn tr_or<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -19,7 +20,7 @@ pub(crate) fn tr_or<N: Node>(
     loop {
         match v.get(i) {
             Some(a) => {
-                if ctxt.dispatch(a)?.to_bool() {
+                if ctxt.dispatch(stctxt, a)?.to_bool() {
                     b = true;
                     break;
                 }
@@ -32,8 +33,9 @@ pub(crate) fn tr_or<N: Node>(
 }
 
 /// Return the conjunction of all of the given functions.
-pub(crate) fn tr_and<N: Node>(
+pub(crate) fn tr_and<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -42,7 +44,7 @@ pub(crate) fn tr_and<N: Node>(
     loop {
         match v.get(i) {
             Some(a) => {
-                if !ctxt.dispatch(a)?.to_bool() {
+                if !ctxt.dispatch(stctxt, a)?.to_bool() {
                     b = false;
                     break;
                 }
@@ -55,14 +57,15 @@ pub(crate) fn tr_and<N: Node>(
 }
 
 /// General comparison of two sequences.
-pub(crate) fn general_comparison<N: Node>(
+pub(crate) fn general_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    let left = ctxt.dispatch(l)?;
-    let right = ctxt.dispatch(r)?;
+    let left = ctxt.dispatch(stctxt, l)?;
+    let right = ctxt.dispatch(stctxt, r)?;
 
     let mut b = false;
     for i in left {
@@ -81,20 +84,21 @@ pub(crate) fn general_comparison<N: Node>(
 }
 
 /// Value comparison of two singelton sequences.
-pub(crate) fn value_comparison<N: Node>(
+pub(crate) fn value_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    let left = ctxt.dispatch(l)?;
+    let left = ctxt.dispatch(stctxt, l)?;
     if left.len() != 1 {
         return Err(Error::new(
             ErrorKind::TypeError,
             String::from("left-hand sequence is not a singleton sequence"),
         ));
     }
-    let right = ctxt.dispatch(r)?;
+    let right = ctxt.dispatch(stctxt, r)?;
     if right.len() != 1 {
         return Err(Error::new(
             ErrorKind::TypeError,
@@ -109,13 +113,14 @@ pub(crate) fn value_comparison<N: Node>(
 
 /// Each function in the supplied vector is evaluated, and the resulting sequences are combined into a single sequence.
 /// TODO: eliminate duplicates
-pub(crate) fn union<N: Node>(
+pub(crate) fn union<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     branches: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut result = vec![];
     for b in branches {
-        let mut c = ctxt.dispatch(b)?;
+        let mut c = ctxt.dispatch(stctxt, b)?;
         result.append(&mut c)
     }
     Ok(result)

@@ -12,8 +12,12 @@ use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
+use xrust::transform::context::StaticContext;
 use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
 use xrust::xslt::from_document;
+
+// This is for the callback in the static context
+type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 // A little helper function that wraps the toplevel node in a Document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
@@ -52,7 +56,7 @@ ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
 
 // Let 'er rip!
 // Evaluate the transformation
-let seq = ctxt.evaluate()
+let seq = ctxt.evaluate(&mut StaticContext::<F>::new())
     .expect("evaluation failed");
 
 // Serialise the sequence as XML

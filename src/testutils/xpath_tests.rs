@@ -3,12 +3,11 @@ macro_rules! xpath_tests (
     ( $t:ty , $x:expr , $y:expr ) => {
 	use xrust::parser::xpath::parse;
 	use xrust::xdmerror::ErrorKind;
-	use xrust::transform::context::{Context, ContextBuilder};
 
 	#[test]
 	fn xpath_empty() {
 		let ev = parse::<$t>("").expect("not an XPath expression");
-	    let seq = Context::new().dispatch(&ev).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);
 	}
 
@@ -20,7 +19,7 @@ macro_rules! xpath_tests (
 		.current(vec![$y()])
 		.result_document(rd)
 		.build();
-	    let seq = ctxt.dispatch(&ev).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq[0].name().to_string(), "a");
 	}
@@ -32,7 +31,7 @@ macro_rules! xpath_tests (
 		.current(vec![$y()])
 		.result_document(rd)
 		.build();
-	    let seq = ctxt.dispatch(&ev).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	}
 	#[test]
@@ -43,7 +42,7 @@ macro_rules! xpath_tests (
 		.current(vec![$y()])
 		.result_document(rd)
 		.build();
-	    let seq = ctxt.dispatch(&ev).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    if seq.len() != 0 {
 		match &*seq[0] {
 		    Item::Node(n) => {
@@ -62,62 +61,62 @@ macro_rules! xpath_tests (
 		.current(vec![$y()])
 		.result_document(rd)
 		.build();
-	    let seq = ctxt.dispatch(&ev).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	}
 
 	#[test]
 	fn xpath_parse_union() {
             let e = parse::<$t>("'a' | 'b'").expect("failed to parse expression \"'a' | 'b'\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_intersectexcept() {
             let e = parse::<$t>("'a' intersect 'b' except 'c'").expect("failed to parse expression \"'a' intersect 'b' except 'c'\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_instanceof() {
             let e = parse::<$t>("'a' instance of empty-sequence()").expect("failed to parse expression \"'a' instance of empty-sequence()\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_treat() {
             let e = parse::<$t>("'a' treat as empty-sequence()").expect("failed to parse expression \"'a' treat as empty-sequence()\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_castable() {
             let e = parse::<$t>("'a' castable as type?").expect("failed to parse expression \"'a' castable as type\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_cast() {
             let e = parse::<$t>("'a' cast as type?").expect("failed to parse expression \"'a' cast as type\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_arrow() {
             let e = parse::<$t>("'a' => spec()").expect("failed to parse expression \"'a' => spec()\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_unary() {
             let e = parse::<$t>("+'a'").expect("failed to parse expression \"+'a'\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
 	fn xpath_parse_simplemap() {
             let e = parse::<$t>("'a'!'b'").expect("failed to parse expression \"'a'!'b'\"");
-	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&e).expect_err("is implemented").kind)
+	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	// Parses to a singleton integer sequence constructor
@@ -129,7 +128,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_int().unwrap(), 1);
@@ -143,7 +142,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_double(), 1.2);
@@ -157,7 +156,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_double(), 120.0);
@@ -171,7 +170,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_string(), "abc");
@@ -185,7 +184,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_string(), "abc'def");
@@ -199,7 +198,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_string(), "abc");
@@ -213,7 +212,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_string(), r#"abc"def"#);
@@ -228,7 +227,7 @@ macro_rules! xpath_tests (
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 3);
 	    assert_eq!(s[0].to_int().unwrap(), 1);
@@ -243,7 +242,7 @@ macro_rules! xpath_tests (
 		let s = ContextBuilder::new()
 			.result_document(rd)
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 3);
 	    assert_eq!(s[0].to_int().unwrap(), 1);
@@ -260,7 +259,7 @@ macro_rules! xpath_tests (
 		let s = ContextBuilder::new()
 			.result_document(rd)
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 3);
 	    assert_eq!(s[0].to_int().unwrap(), 1);
@@ -278,7 +277,7 @@ macro_rules! xpath_tests (
 		      .current(vec![Rc::new(Item::Value(Value::from("foobar")))])
 		      .result_document(rd)
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_string(), "foobar");
@@ -293,7 +292,7 @@ macro_rules! xpath_tests (
 		let s = ContextBuilder::new()
 			.result_document(rd)
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s[0].to_int().unwrap(), 1);
@@ -310,7 +309,7 @@ macro_rules! xpath_tests (
 		      .result_document(rd.clone())
 		      .current(vec![$y()])
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match &*s[0] {
@@ -330,7 +329,7 @@ macro_rules! xpath_tests (
 		      .result_document(rd)
 		      .current(vec![$y()])
 	    	      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 2);
 	    match &*s[0] {
@@ -358,7 +357,7 @@ macro_rules! xpath_tests (
 		      .result_document(rd)
 		      .current(vec![$y()])
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 5);
 	    for t in s {
@@ -380,7 +379,7 @@ macro_rules! xpath_tests (
 		      .result_document(rd)
 		      .current(vec![$y()])
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
@@ -402,7 +401,7 @@ macro_rules! xpath_tests (
 		      .result_document(rd)
 		      .current(vec![$y()])
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    for i in 0..s.len() {
 		match &*s[i] {
@@ -432,7 +431,7 @@ macro_rules! xpath_tests (
 		      .result_document(rd)
 		      .current(vec![$y()])
 		      .build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 2);
 	    for t in s {
@@ -454,7 +453,7 @@ macro_rules! xpath_tests (
 			.result_document(rd)
 			.current(vec![$y()])
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
@@ -476,7 +475,7 @@ macro_rules! xpath_tests (
 			.result_document(rd)
 			.current(vec![$y()])
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    for t in s {
@@ -498,7 +497,7 @@ macro_rules! xpath_tests (
 			.result_document(rd)
 			.current(vec![$y()])
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 0);
 	}
@@ -511,7 +510,7 @@ macro_rules! xpath_tests (
 			.result_document(rd)
 			.current(vec![$y()])
 			.build()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    for t in s {
@@ -531,7 +530,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("string(('a', 'b', 'c'))")
 		.expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
 	    let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "abc")
 	}
@@ -540,7 +539,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("concat('a', 'b', 'c')")
 		.expect("failed to parse expression \"concat('a', 'b', 'c')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "abc")
 	}
@@ -549,7 +548,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("starts-with('abc', 'a')")
 		.expect("failed to parse expression \"starts-with('abc', 'a')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_bool(), true)
 	}
@@ -558,7 +557,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("starts-with('abc', 'b')")
 		.expect("failed to parse expression \"starts-with('abc', 'a')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_bool(), false)
 	}
@@ -567,7 +566,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("contains('abc', 'b')")
 		.expect("failed to parse expression \"contains('abc', 'b')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_bool(), true)
 	}
@@ -576,7 +575,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("contains('abc', 'd')")
 		.expect("failed to parse expression \"contains('abc', 'd')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_bool(), false)
 	}
@@ -585,7 +584,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring('abcdefg', 4)")
 		.expect("failed to parse expression \"substring('abcdefg', 4)\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "defg")
 	}
@@ -594,7 +593,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring('abcdefg', 4, 2)")
 		.expect("failed to parse expression \"substring('abcdefg', 4, 2)\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "de")
 	}
@@ -603,7 +602,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring-before('abc', 'b')")
 		.expect("failed to parse expression \"substring-before('abc', 'b')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "a")
 	}
@@ -612,7 +611,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring-before('abc', 'd')")
 		.expect("failed to parse expression \"substring-before('abc', 'd')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "")
 	}
@@ -621,7 +620,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring-after('abc', 'b')")
 		.expect("failed to parse expression \"substring-after('abc', 'b')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "c")
 	}
@@ -630,7 +629,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring-after('abc', 'c')")
 		.expect("failed to parse expression \"substring-after('abc', 'b')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "")
 	}
@@ -639,7 +638,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("substring-after('abc', 'd')")
 		.expect("failed to parse expression \"substring-after('abc', 'd')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "")
 	}
@@ -648,7 +647,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("normalize-space('	a  b\nc 	')")
 		.expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "a b c")
 	}
@@ -657,7 +656,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("translate('abcdeabcde', 'ade', 'XY')")
 		.expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "XbcYXbcY")
 	}
@@ -666,7 +665,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("boolean('abcdeabcde')")
 		.expect("failed to parse expression \"boolean('abcdeabcde')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -679,7 +678,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("boolean('')")
 		.expect("failed to parse expression \"boolean('')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -692,7 +691,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("not('')")
 		.expect("failed to parse expression \"not('')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -705,7 +704,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("not('abc')")
 		.expect("failed to parse expression \"not('abc')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -718,7 +717,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("true()")
 		.expect("failed to parse expression \"true()\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -731,7 +730,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("false()")
 		.expect("failed to parse expression \"false()\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -744,7 +743,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("number('123')")
 		.expect("failed to parse expression \"number('123')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -757,7 +756,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("number('123.456')")
 		.expect("failed to parse expression \"number('123.456')\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -770,7 +769,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("sum(('123.456', 10, 20, '0'))")
 		.expect("failed to parse expression \"sum(('123.456', 10, 20, '0'))\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -783,7 +782,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("floor(123.456)")
 		.expect("failed to parse expression \"floor(123.456)\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -796,7 +795,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("ceiling(123.456)")
 		.expect("failed to parse expression \"ceiling(123.456)\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -809,7 +808,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("round(123.456)")
 		.expect("failed to parse expression \"round(123.456)\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -822,7 +821,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("round(123.654)")
 		.expect("failed to parse expression \"round(123.654)\"");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    match *s[0] {
@@ -837,7 +836,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("let $x := 'a' return ($x, $x)")
 		.expect("failed to parse let expression");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "aa")
 	}
@@ -846,7 +845,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("let $x := 'a', $y := 'b' return ($x, $y)")
 		.expect("failed to parse let expression");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 2);
 	    assert_eq!(s.to_string(), "ab")
@@ -858,7 +857,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("for $x in ('a', 'b', 'c') return ($x, $x)")
 		.expect("failed to parse for expression");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 6);
 	    assert_eq!(s.to_string(), "aabbcc")
@@ -868,7 +867,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("for $x in (1, 2, 3) return $x * 2")
 		.expect("failed to parse for expression");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 3);
 	    assert_eq!(s.to_string(), "246")
@@ -879,7 +878,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("if (1) then 'one' else 'not one'")
 		.expect("failed to parse if expression");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s.to_string(), "one")
@@ -889,7 +888,7 @@ macro_rules! xpath_tests (
 	    let mut e = parse::<$t>("if (0) then 'one' else 'not one'")
 		.expect("failed to parse if expression");
 		let s = Context::new()
-			.dispatch(&e)
+			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s.to_string(), "not one")

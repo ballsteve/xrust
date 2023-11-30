@@ -1,5 +1,3 @@
-use std::rc::Rc;
-use crate::Item;
 #[macro_export]
 macro_rules! xslt_tests (
     ( $x:expr , $y:expr ) => {
@@ -29,7 +27,7 @@ macro_rules! xslt_tests (
 		ctxt.context(vec![src], 0);
 
 		// Let 'er rip
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_string(), "Found the document")
 	}
@@ -56,7 +54,7 @@ macro_rules! xslt_tests (
 	    ctxt.context(vec![src], 0);
 		ctxt.result_document($y());
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "<answer>Made an element</answer>")
 	}
@@ -84,7 +82,7 @@ macro_rules! xslt_tests (
 
 	    ctxt.context(vec![src], 0);
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "found textfound text")
 	}
@@ -113,7 +111,7 @@ macro_rules! xslt_tests (
 
 	    ctxt.context(vec![src], 0);
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onetwothreefour")
 	}
@@ -143,7 +141,7 @@ macro_rules! xslt_tests (
 	    ctxt.context(vec![src], 0);
 		ctxt.result_document($y());
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->")
 	}
@@ -196,7 +194,7 @@ macro_rules! xslt_tests (
 	    ctxt.context(vec![src], 0);
 		ctxt.result_document($y());
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
     <int:head>XSLT in Rust</int:head>
@@ -231,7 +229,7 @@ macro_rules! xslt_tests (
 
 	    ctxt.context(vec![src], 0);
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
 	}

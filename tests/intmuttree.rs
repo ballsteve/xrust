@@ -1,5 +1,6 @@
 use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
+use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 use xrust::trees::intmuttree::Document;
 use xrust::trees::intmuttree::{NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
@@ -9,6 +10,8 @@ use xrust::pattern_tests;
 use xrust::transform_tests;
 use xrust::xpath_tests;
 use xrust::xslt_tests;
+
+type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn make_empty_doc() -> RNode {
     NodeBuilder::new(NodeType::Document).build()

@@ -8,7 +8,6 @@ macro_rules! pattern_tests (
 	fn pattern_empty() {
     	let p: Pattern<$t> = Pattern::try_from("").expect("unable to parse empty string");
 	}
-
 	#[test]
 	fn pattern_predicate_1_pos() {
             let p: Pattern<$t> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
@@ -36,7 +35,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), true);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(a))), true);
 	}
 	#[test]
 	fn pattern_predicate_1_neg() {
@@ -65,7 +64,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(b))), false);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(b))), false);
 	}
 
 	#[test]
@@ -95,7 +94,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(sd))), true);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(sd))), true);
 	}
 	#[test]
 	fn pattern_sel_root_neg() {
@@ -124,7 +123,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), false);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(a))), false);
 	}
 	#[test]
 	fn pattern_sel_1_pos() {
@@ -153,7 +152,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), true);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(a))), true);
 	}
 	#[test]
 	fn pattern_sel_1_neg() {
@@ -182,7 +181,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(b))), false);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(b))), false);
 	}
 	#[test]
 	fn pattern_sel_2_pos() {
@@ -212,7 +211,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), true);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(a))), true);
 	}
 	#[test]
 	fn pattern_sel_2_neg() {
@@ -241,7 +240,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(a))), false);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(a))), false);
 	}
 	#[test]
 	fn pattern_sel_text_kind_1_pos() {
@@ -271,7 +270,7 @@ macro_rules! pattern_tests (
 	    b.push(t_b)
 		.expect("unable to append text node");
 
-	    assert_eq!(p.matches(&Context::new(), &Rc::new(Item::Node(t_a))), true);
+	    assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &Rc::new(Item::Node(t_a))), true);
 	}
 	}
 );

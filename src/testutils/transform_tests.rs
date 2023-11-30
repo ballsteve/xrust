@@ -5,20 +5,19 @@ macro_rules! transform_tests (
 	use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 	use xrust::value::Operator;
 	use xrust::transform::{Transform, Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName, ArithmeticOperand, ArithmeticOperator, Grouping};
-	//use xrust::transform::context::{Context, ContextBuilder};
 	use xrust::transform::template::Template;
 
 	#[test]
 	fn tr_empty() {
 	    let x = Transform::<$x>::Empty;
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 			.expect("evaluation failed");
 	    assert_eq!(seq.len(), 0)
 	}
 	#[test]
 	fn tr_singleton_literal() {
 	    let x = Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("this is a test"))));
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 			.expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "this is a test")
 	}
@@ -32,7 +31,7 @@ macro_rules! transform_tests (
 	    let mut ctxt = ContextBuilder::new()
 			.result_document(mydoc)
 			.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test>content</Test>")
 	}
 
@@ -49,7 +48,7 @@ macro_rules! transform_tests (
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
 		.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test><Level-1>content</Level-1></Test>")
 	}
 	#[test]
@@ -68,7 +67,7 @@ macro_rules! transform_tests (
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
 		.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test foo='bar'>content</Test>")
 	}
 	#[test]
@@ -86,8 +85,59 @@ macro_rules! transform_tests (
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
 		.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test><!--bar-->content</Test>")
+	}
+	#[test]
+	fn tr_message_1() {
+		let mut receiver = String::from("no message received");
+	    let x = Transform::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		Box::new(Transform::SequenceItems(vec![
+		    Transform::Message(
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar")))))
+		    ),
+		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		]))
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+		let mut stctxt = StaticContextBuilder::new()
+		.message(|m| {receiver = String::from(m); Ok(())})
+		.build();
+	    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test>content</Test>");
+		assert_eq!(receiver, "bar")
+	}
+	#[test]
+	fn tr_message_2() {
+		let mut messages: Vec<String> = vec![];
+	    let x = Transform::LiteralElement(
+		QualifiedName::new(None, None, String::from("Test")),
+		Box::new(Transform::SequenceItems(vec![
+		    Transform::Message(
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("first message")))))
+		    ),
+		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Message(
+				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("second message")))))
+		    ),
+		]))
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+		let mut stctxt = StaticContextBuilder::new()
+		.message(|m| {messages.push(String::from(m)); Ok(())})
+		.build();
+	    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test>content</Test>");
+		assert_eq!(messages.len(), 2);
+		assert_eq!(messages[0], "first message");
+		assert_eq!(messages[1], "second message");
 	}
 	#[test]
 	fn tr_set_attribute() {
@@ -107,7 +157,7 @@ macro_rules! transform_tests (
 		.result_document(mydoc)
 		.current(vec![Rc::new(Item::Node(n))])
 		.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(sd.to_xml(), "<Test foo='bar'></Test>")
 	}
 	#[test]
@@ -116,7 +166,7 @@ macro_rules! transform_tests (
 			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("this is the original"))))),
 			Box::new(Transform::<$x>::Empty)
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "this is the original")
 	}
@@ -129,7 +179,7 @@ macro_rules! transform_tests (
 	    let seq = ContextBuilder::new()
 		    .current(vec![Rc::new(Item::<$x>::Value(Value::from("this is the original")))])
 		    .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "this is the original")
@@ -155,7 +205,7 @@ macro_rules! transform_tests (
 		.result_document(mydoc)
 		.current(vec![Rc::new(Item::Node(n))])
 		.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Test>this is the copy</Test>");
@@ -182,7 +232,7 @@ macro_rules! transform_tests (
 	    let mut ctxt = ContextBuilder::new()
 		.current(vec![Rc::new(Item::Node(n))])
 		.build();
-	    let seq = ctxt.dispatch(&x).expect("evaluation failed");
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Test><inner>this is the original</inner></Test>");
@@ -197,7 +247,7 @@ macro_rules! transform_tests (
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("end of test")))),
 		]
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	    assert_eq!(seq.to_string(), "this is a test1end of test")
 	}
@@ -219,7 +269,7 @@ macro_rules! transform_tests (
 		    ),
 		]
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	    assert_eq!(seq.to_string(), "first sequence1second sequence2")
 	}
@@ -252,7 +302,7 @@ macro_rules! transform_tests (
 		],
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("otherwise clause")))))
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "comparison succeeded")
 	}
 	#[test]
@@ -280,7 +330,7 @@ macro_rules! transform_tests (
 		],
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("otherwise clause")))))
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "otherwise clause")
 	}
 
@@ -300,7 +350,7 @@ macro_rules! transform_tests (
 		    Transform::VariableReference(String::from("x")),
 		]))
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "oneonetwotwothreethree")
 	}
 
@@ -308,7 +358,7 @@ macro_rules! transform_tests (
 	fn tr_context_item() {
 	    let x = Transform::ContextItem;
 	    let c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
-	    let seq = c.dispatch(&x).expect("evaluation failed");
+	    let seq = c.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "the context item")
 	}
@@ -319,7 +369,7 @@ macro_rules! transform_tests (
 		vec![Transform::ContextItem, Transform::ContextItem]
 	    );
 	    let c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
-	    let seq = c.dispatch(&x).expect("evaluation failed");
+	    let seq = c.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "the context itemthe context item")
 	}
@@ -341,7 +391,7 @@ macro_rules! transform_tests (
 
 	    // Now evaluate the combinator with <Level-1> as the context item
 	    let seq = Context::from(vec![Rc::new(Item::Node(l1))])
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Test><Level-1></Level-1></Test>");
@@ -355,7 +405,7 @@ macro_rules! transform_tests (
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("step 2"))))
 		]
 	    );
-	    let seq = Context::new().dispatch(&x).expect("evaluation failed");
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "step 2")
 	}
@@ -383,7 +433,7 @@ macro_rules! transform_tests (
 
 	    // Now evaluate the combinator with <Test> as the context item
 	    let seq = Context::from(vec![Rc::new(Item::Node(n))])
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Level-1></Level-1>");
@@ -429,7 +479,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(l1_2)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_xml(), "firstsecond");
@@ -482,7 +532,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(et)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_xml(), "<Level-1></Level-1><Level-1></Level-1>");
@@ -528,7 +578,7 @@ macro_rules! transform_tests (
 	    let seq = Context::from(
 		vec![Rc::new(Item::Node(sd))]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	}
@@ -572,7 +622,7 @@ macro_rules! transform_tests (
 	    let seq = Context::from(
 		vec![Rc::new(Item::Node(n))]
 	    )
-        .dispatch(&x)
+        .dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);
 	}
@@ -624,7 +674,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(et)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq[0].name().to_string(), "Test");
@@ -660,7 +710,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(sd)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	}
@@ -694,7 +744,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-        .dispatch(&x)
+        .dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);
 	}
@@ -737,7 +787,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	}
@@ -780,7 +830,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 5);
 	}
@@ -823,7 +873,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(sd)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 6);
 	}
@@ -866,7 +916,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t2)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	}
@@ -909,7 +959,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t2)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	}
@@ -957,7 +1007,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(l1_1)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	}
@@ -1005,7 +1055,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(et)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	}
@@ -1066,7 +1116,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(seven)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 4);
 	}
@@ -1127,7 +1177,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(six)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 6);
 	}
@@ -1181,7 +1231,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_xml(), "firstsecond");
@@ -1244,7 +1294,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "firstsecond");
@@ -1295,7 +1345,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(a2)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "second");
@@ -1346,7 +1396,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(l1_2)),
 		]
 	    )
-        .dispatch(&x)
+        .dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);
 	}
@@ -1398,7 +1448,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
@@ -1411,7 +1461,7 @@ macro_rules! transform_tests (
 		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
 	    ]);
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -1422,7 +1472,7 @@ macro_rules! transform_tests (
 		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
 	    ]);
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -1435,7 +1485,7 @@ macro_rules! transform_tests (
 		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
 	    ]);
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -1447,7 +1497,7 @@ macro_rules! transform_tests (
 		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
 	    ]);
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -1467,7 +1517,7 @@ macro_rules! transform_tests (
 		])),
 	    );
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -1486,7 +1536,7 @@ macro_rules! transform_tests (
 		])),
 	    );
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -1500,7 +1550,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true"))))),
 	    );
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -1514,7 +1564,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false"))))),
 	    );
 	    let seq = Context::new()
-        .dispatch(&x)
+        .dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -1527,7 +1577,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(10))))),
 	    );
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);
 	}
@@ -1539,7 +1589,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(10))))),
 	    );
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 10);
 	    assert_eq!(seq.to_string(), "12345678910");
@@ -1551,7 +1601,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
 	    );
 	    let seq = Context::new()
-        .dispatch(&x)
+        .dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "5");
@@ -1564,7 +1614,7 @@ macro_rules! transform_tests (
 		ArithmeticOperand::new(ArithmeticOperator::Add, Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
 	    ]);
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "10");
@@ -1578,7 +1628,7 @@ macro_rules! transform_tests (
 			Box::new(Transform::VariableReference("foo".to_string())),
 	    );
 	    let seq = Context::new()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "bar")
@@ -1641,7 +1691,7 @@ macro_rules! transform_tests (
 		    Rc::new(Item::Node(t)),
 		]
 	    )
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_xml(), "<a>first</a><b>second</b>");
@@ -1697,7 +1747,7 @@ macro_rules! transform_tests (
 	    let seq = ContextBuilder::new()
 			 .current(vec![Rc::new(Item::Node(sd))])
 			 .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	    assert_eq!(seq.to_string(), "found a Level-1found a Level-1found a Level-1")
@@ -1730,7 +1780,7 @@ macro_rules! transform_tests (
 	    let seq = ContextBuilder::new()
 			 .result_document(resdoc)
 			 .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 10);
 	    // the groups are not ordered, so it is difficult to test all of the groups are correct
@@ -1765,7 +1815,7 @@ macro_rules! transform_tests (
 	    let seq = ContextBuilder::new()
 			 .result_document(resdoc)
 			 .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	    // the groups are not ordered, so it is difficult to test all of the groups are correct
@@ -1811,7 +1861,7 @@ macro_rules! transform_tests (
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
-	    let seq = ctxt.dispatch(&x)
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "Test")
@@ -1877,7 +1927,7 @@ macro_rules! transform_tests (
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
-	    let seq = ctxt.dispatch(&x)
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 3);
 	    assert_eq!(seq.to_string(), "before content after")
@@ -1944,7 +1994,7 @@ macro_rules! transform_tests (
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
-	    let seq = ctxt.dispatch(&x)
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "priority 1 template")
@@ -2025,7 +2075,7 @@ macro_rules! transform_tests (
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
-	    let seq = ctxt.dispatch(&x)
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "priority 1 template, import level 0")
@@ -2108,7 +2158,7 @@ macro_rules! transform_tests (
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
-	    let seq = ctxt.dispatch(&x)
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "priority 1 templatepriority 0 template")
 	}
@@ -2128,7 +2178,7 @@ macro_rules! transform_tests (
 		    ])
 		    .index(2)
 		    .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "3")
@@ -2149,7 +2199,7 @@ macro_rules! transform_tests (
 		    ])
 		    .index(2)
 		    .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "4")
@@ -2168,7 +2218,7 @@ macro_rules! transform_tests (
 			Rc::new(Item::<$x>::Value(Value::from("four"))),
 		    ])
 		    .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "0")
@@ -2192,7 +2242,7 @@ macro_rules! transform_tests (
 		    ])
 		    .index(2)
 		    .build()
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "3")
@@ -2220,7 +2270,7 @@ macro_rules! transform_tests (
 
 	    // Now evaluate the combinator with <Level-1> as the context item
 	    let seq = Context::from(vec![Rc::new(Item::Node(l1))])
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "Level-1");
@@ -2248,7 +2298,7 @@ macro_rules! transform_tests (
 
 	    // Now evaluate the combinator with <Level-1> as the context item
 	    let seq = Context::from(vec![Rc::new(Item::Node(l1))])
-		.dispatch(&x)
+		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "eg:Level-1");
@@ -2258,7 +2308,7 @@ macro_rules! transform_tests (
 	fn tr_string() {
 	    // XPath == string(1.0)
 	    let x = Transform::String(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.0))))));
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "1")
@@ -2274,7 +2324,7 @@ macro_rules! transform_tests (
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
 		]
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "abc1foo")
@@ -2287,7 +2337,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("ab"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -2299,7 +2349,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("x"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -2312,7 +2362,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bc"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -2324,7 +2374,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("xyz"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -2338,7 +2388,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2))))),
 		None
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "bcd")
@@ -2351,7 +2401,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2))))),
 		Some(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2))))))
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "bc")
@@ -2364,7 +2414,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bc"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "a")
@@ -2376,7 +2426,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bc"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "d")
@@ -2389,7 +2439,7 @@ macro_rules! transform_tests (
 		Some(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(" a b  c	d
 "))))))
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "a b c d")
@@ -2403,7 +2453,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bdc"))))),
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("BD"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "aBD")
@@ -2415,7 +2465,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Boolean(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -2426,7 +2476,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Boolean(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(""))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -2437,7 +2487,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Boolean(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -2448,7 +2498,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Boolean(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -2460,7 +2510,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Not(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -2471,7 +2521,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Not(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -2481,7 +2531,7 @@ macro_rules! transform_tests (
 	fn tr_true_literal() {
 	    // XPath == true()
 	    let x = Transform::<$x>::True;
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), true)
@@ -2490,7 +2540,7 @@ macro_rules! transform_tests (
 	fn tr_false_literal() {
 	    // XPath == false()
 	    let x = Transform::<$x>::False;
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_bool(), false)
@@ -2502,7 +2552,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Number(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("124"))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_int().unwrap(), 124)
@@ -2518,7 +2568,7 @@ macro_rules! transform_tests (
 		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(4)))),
 		]))
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_int().unwrap(), 7)
@@ -2530,7 +2580,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Floor(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.2))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq[0].to_double(), 1.0)
@@ -2542,7 +2592,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Ceiling(
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.2))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq[0].to_double(), 2.0)
@@ -2555,7 +2605,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.23456))))),
 		None,
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq[0].to_double(), 1.0)
@@ -2567,7 +2617,7 @@ macro_rules! transform_tests (
 		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.23456))))),
 		Some(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(4)))))),
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert!(seq[0].to_double() - 1.2346 < 0.000001)
@@ -2577,7 +2627,7 @@ macro_rules! transform_tests (
 	fn tr_current_date_time() {
 	    // XPath == current-date-time()
 	    let x = Transform::<$x>::CurrentDateTime;
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    match &*seq[0] {
@@ -2597,7 +2647,7 @@ macro_rules! transform_tests (
 	fn tr_current_date() {
 	    // XPath == current-date()
 	    let x = Transform::<$x>::CurrentDate;
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    match &*seq[0] {
@@ -2614,7 +2664,7 @@ macro_rules! transform_tests (
 	fn tr_current_time() {
 	    // XPath == current-time()
 	    let x = Transform::<$x>::CurrentTime;
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    match &*seq[0] {
@@ -2637,7 +2687,7 @@ macro_rules! transform_tests (
 		None,
 		None,
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "04:05 03/01/2022")
@@ -2653,7 +2703,7 @@ macro_rules! transform_tests (
 		None,
 		None,
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "03/01/2022")
@@ -2669,7 +2719,7 @@ macro_rules! transform_tests (
 		None,
 		None,
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "04:05:06")
@@ -2690,7 +2740,7 @@ macro_rules! transform_tests (
 		    ]
 		))
 	    );
-	    let seq = Context::new().dispatch(&x)
+	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "this is a test")

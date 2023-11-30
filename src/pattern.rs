@@ -14,10 +14,10 @@ use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::nodetests::{nodetest, qualname_test};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::variables::variable_reference;
-use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, KindTest, NameTest, NodeTest, Transform, WildcardOrName};
 use crate::value::Value;
-use crate::xdmerror::*;
+use crate::xdmerror::{Error, ErrorKind};
 
 use crate::parser::combinators::alt::{alt2, alt4, alt6};
 use crate::parser::combinators::list::{separated_list0, separated_list1};
@@ -36,7 +36,7 @@ use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
 /// A predicate pattern matches the current item if all of the predicates evaluate to true.
 ///
 /// A selection pattern is subset of XPath path expressions.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Pattern<N: Node> {
     Predicate(Transform<N>),
     Selection(Path),
@@ -46,12 +46,16 @@ pub enum Pattern<N: Node> {
 impl<N: Node> Pattern<N> {
     /// Returns whether the given item matches the pattern.
     /// TODO: return dynamic errors
-    pub fn matches(&self, ctxt: &Context<N>, i: &Rc<Item<N>>) -> bool {
+    pub fn matches<F: FnMut(&str) -> Result<(), Error>>(
+        &self,
+        ctxt: &Context<N>,
+        stctxt: &mut StaticContext<F>,
+        i: &Rc<Item<N>>) -> bool {
         match self {
             Pattern::Predicate(t) => ContextBuilder::from(ctxt)
                 .current(vec![i.clone()])
                 .build()
-                .dispatch(t)
+                .dispatch(stctxt, t)
                 .unwrap_or(vec![Rc::new(Item::Value(Value::from(false)))])
                 .to_bool(),
             Pattern::Selection(p) => {

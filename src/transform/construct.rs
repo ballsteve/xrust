@@ -2,7 +2,7 @@
 
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
-use crate::transform::context::Context;
+use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -24,8 +24,9 @@ pub(crate) fn literal<N: Node>(
 
 /// Creates a singleton sequence with a new element node.
 /// The transform is evaluated to create the content of the element.
-pub(crate) fn literal_element<N: Node>(
+pub(crate) fn literal_element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     qn: &QualifiedName,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -38,7 +39,7 @@ pub(crate) fn literal_element<N: Node>(
     let r = ctxt.rd.clone().unwrap();
 
     let mut e = r.new_element(qn.clone())?;
-    ctxt.dispatch(c)?.iter().try_for_each(|i| {
+    ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
         // Item could be a Node or text
         match &**i {
             Item::Node(t) => match t.node_type() {
@@ -58,8 +59,9 @@ pub(crate) fn literal_element<N: Node>(
 /// Creates a singleton sequence with a new attribute node.
 /// The transform is evaluated to create the value of the attribute.
 /// TODO: AVT for attribute name
-pub(crate) fn literal_attribute<N: Node>(
+pub(crate) fn literal_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     qn: &QualifiedName,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -74,14 +76,15 @@ pub(crate) fn literal_attribute<N: Node>(
         .rd
         .clone()
         .unwrap()
-        .new_attribute(qn.clone(), Value::from(ctxt.dispatch(t)?.to_string()))?;
+        .new_attribute(qn.clone(), Value::from(ctxt.dispatch(stctxt, t)?.to_string()))?;
     Ok(vec![Rc::new(Item::Node(a))])
 }
 
 /// Creates a singleton sequence with a new comment node.
 /// The transform is evaluated to create the value of the comment.
-pub(crate) fn literal_comment<N: Node>(
+pub(crate) fn literal_comment<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -95,7 +98,7 @@ pub(crate) fn literal_comment<N: Node>(
         .rd
         .clone()
         .unwrap()
-        .new_comment(Value::from(ctxt.dispatch(t)?.to_string()))?;
+        .new_comment(Value::from(ctxt.dispatch(stctxt, t)?.to_string()))?;
     Ok(vec![Rc::new(Item::Node(a))])
 }
 
@@ -104,8 +107,9 @@ pub(crate) fn literal_comment<N: Node>(
 /// If the element does not have an attribute with the given name, create it.
 /// Otherwise replace the attribute's value with the supplied value.
 /// Returns an empty sequence.
-pub(crate) fn set_attribute<N: Node>(
+pub(crate) fn set_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     atname: &QualifiedName,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -119,7 +123,7 @@ pub(crate) fn set_attribute<N: Node>(
         Item::Node(n) => match n.node_type() {
             NodeType::Element => {
                 let od = n.owner_document();
-                let attval = ctxt.dispatch(v)?;
+                let attval = ctxt.dispatch(stctxt, v)?;
                 if attval.len() == 1 {
                     match &*attval[0] {
                         Item::Value(av) => {
@@ -155,12 +159,13 @@ pub(crate) fn set_attribute<N: Node>(
 }
 
 /// Construct a [Sequence] of items
-pub(crate) fn make_sequence<N: Node>(
+pub(crate) fn make_sequence<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     items: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     items.iter().try_fold(vec![], |mut acc, i| {
-        let mut r = ctxt.dispatch(i)?;
+        let mut r = ctxt.dispatch(stctxt, i)?;
         acc.append(&mut r);
         Ok(acc)
     })
@@ -168,19 +173,20 @@ pub(crate) fn make_sequence<N: Node>(
 /// Shallow copy of an item.
 /// The first argument selects the items to be copied.
 /// The second argument creates the content of the target item.
-pub(crate) fn copy<N: Node>(
+pub(crate) fn copy<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    let sel = ctxt.dispatch(s)?;
+    let sel = ctxt.dispatch(stctxt, s)?;
     let mut result: Sequence<N> = Vec::new();
     for k in sel {
         let cp = k.shallow_copy()?;
         result.push(Rc::new(cp.clone()));
         match cp {
             Item::Node(mut im) => {
-                for j in ctxt.dispatch(c)? {
+                for j in ctxt.dispatch(stctxt, c)? {
                     match &*j {
                         Item::Value(v) => im.push(im.new_text(v.clone())?)?,
                         Item::Node(n) => im.push(n.clone())?,
@@ -201,11 +207,12 @@ pub(crate) fn copy<N: Node>(
 
 /// Deep copy of an item.
 /// The first argument selects the items to be copied. If not specified then the context item is copied.
-pub(crate) fn deep_copy<N: Node>(
+pub(crate) fn deep_copy<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    let sel = ctxt.dispatch(s)?;
+    let sel = ctxt.dispatch(stctxt, s)?;
     let mut result: Sequence<N> = Vec::new();
     for k in sel {
         result.push(Rc::new(k.deep_copy()?));

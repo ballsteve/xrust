@@ -17,6 +17,7 @@ pub(crate) mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
+pub(crate) mod misc;
 
 use crate::item::{Item, Node, NodeType};
 use crate::qname::QualifiedName;
@@ -181,6 +182,9 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
     ),
 
+    /// Emit a message
+    Message(Box<Transform<N>>),
+
     /// For things that are not yet implemented, such as:
     /// Union, IntersectExcept, InstanceOf, Treat, Castable, Cast, Arrow, Unary, SimpleMap, Is, Before, After.
     NotImplemented(String),
@@ -261,6 +265,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
+            Transform::Message(_m) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
