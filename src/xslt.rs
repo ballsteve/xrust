@@ -743,7 +743,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         )?)),
                         None,
                         Box::new(Transform::Empty),
-                        Box::new(if t.to_string().is_empty() {Transform::False} else {parse::<N>(&t.to_string())?})
+                        Box::new(if t.to_string().is_empty() {Transform::False} else {Transform::Literal(Rc::new(Item::Value(Value::from(t.to_string()))))})
                     ))
                 }
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(

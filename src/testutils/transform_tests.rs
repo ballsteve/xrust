@@ -171,7 +171,7 @@ macro_rules! transform_tests (
 		.message(|m| {receiver = String::from(m); Ok(())})
 		.build();
 	    match ctxt.dispatch(&mut stctxt, &x) {
-			Ok(seq) => panic!("evaluation succeeded when it should have failed"),
+			Ok(_) => panic!("evaluation succeeded when it should have failed"),
 			Err(e) => {
 				assert_eq!(e.kind, ErrorKind::Terminated);
 				assert_eq!(e.message, "bar");
