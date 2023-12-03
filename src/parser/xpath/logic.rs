@@ -11,8 +11,8 @@ use crate::parser::{ParseInput, ParseResult};
 use crate::transform::Transform;
 
 // OrExpr ::= AndExpr ('or' AndExpr)*
-pub(crate) fn or_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+pub(crate) fn or_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag("or"), xpwhitespace()), |_| ()),
             and_expr::<N>(),
@@ -24,12 +24,12 @@ pub(crate) fn or_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<
                 Transform::Or(v)
             }
         },
-    )
+    ))
 }
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
-fn and_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn and_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),
             comparison_expr::<N>(),
@@ -41,5 +41,5 @@ fn and_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<
                 Transform::And(v)
             }
         },
-    )
+    ))
 }

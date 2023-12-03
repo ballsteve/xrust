@@ -12,7 +12,8 @@ use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
-use xrust::intmuttree::{Document, RNode, NodeBuilder};
+use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+use xrust::xslt::from_document;
 
 // A little helper function that wraps the toplevel node in a Document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
@@ -21,9 +22,6 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
     d.push(e).expect("unable to append node");
     Ok(d)
 }
-
-// First setup a static context for the evaluator
-let mut sc = StaticContext::new_with_builtins();
 
 // The source document (a tree)
 let src = Rc::new(Item::Node(
@@ -40,26 +38,21 @@ let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL
     .expect("unable to parse stylesheet");
 
 // Compile the stylesheet
-let ev = from_document(
+let mut ctxt = from_document(
     style,
-    &mut sc,
     None,
     make_from_str,
     |_| Ok(String::new())
-)
-    .expect("failed to compile stylesheet");
+).expect("failed to compile stylesheet");
 
+// Set the source document as the context item
+ctxt.context(vec![src], 0);
 // Make an empty result document
-let rd = NodeBuilder::new(NodeType::Document).build();
-
-// Prime the stylesheet evaluation by finding the template for the document root
-// and making the document root the initial context
-let t = ev.find_match(&src, None, &rd)
-    .expect("unable to find match");
+ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
 
 // Let 'er rip!
-// Evaluate the sequence constructor with the source document as the initial context
-let seq = ev.evaluate(Some(vec![Rc::clone(&src)]), Some(0), &t, &rd)
+// Evaluate the transformation
+let seq = ctxt.evaluate()
     .expect("evaluation failed");
 
 // Serialise the sequence as XML

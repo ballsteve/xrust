@@ -14,9 +14,9 @@ use crate::parser::{ParseInput, ParseResult};
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-pub(crate) fn range_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+pub(crate) fn range_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
 {
-    map(
+    Box::new(map(
         pair(
             additive_expr::<N>(),
             opt(tuple2(
@@ -28,12 +28,12 @@ pub(crate) fn range_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
             None => v,
             Some((_, u)) => Transform::Range(Box::new(v), Box::new(u)),
         },
-    )
+    ))
 }
 
 // AdditiveExpr ::= MultiplicativeExpr ( ('+' | '-') MultiplicativeExpr)*
-fn additive_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn additive_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(
             multiplicative_expr::<N>(),
             many0(tuple2(
@@ -78,13 +78,13 @@ fn additive_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Trans
                 Transform::Arithmetic(a)
             }
         },
-    )
+    ))
 }
 
 // MultiplicativeExpr ::= UnionExpr ( ('*' | 'div' | 'idiv' | 'mod') UnionExpr)*
 fn multiplicative_expr<'a, N: Node + 'a>(
-) -> impl Fn(ParseInput) -> ParseResult<Vec<ArithmeticOperand<N>>> + 'a {
-    map(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<ArithmeticOperand<N>>> + 'a> {
+    Box::new(map(
         pair(
             union_expr::<N>(),
             many0(tuple2(
@@ -114,13 +114,13 @@ fn multiplicative_expr<'a, N: Node + 'a>(
                 r
             }
         },
-    )
+    ))
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-pub(crate) fn unary_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a
+pub(crate) fn unary_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
 {
-    map(
+    Box::new(map(
         pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N>()),
         |(u, v)| {
             if u.is_empty() {
@@ -129,12 +129,12 @@ pub(crate) fn unary_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResu
                 Transform::NotImplemented("unary_expr".to_string())
             }
         },
-    )
+    ))
 }
 
 // ValueExpr (SBox<dyneMapExpr) ::= PathExpr ('!' PathExpr)*
-fn value_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+fn value_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         pair(path_expr::<N>(), many0(tuple2(tag("!"), path_expr::<N>()))),
         |(u, v)| {
             if v.is_empty() {
@@ -143,5 +143,5 @@ fn value_expr<'a, N: Node + 'a>() -> impl Fn(ParseInput) -> ParseResult<Transfor
                 Transform::NotImplemented("value_expr".to_string())
             }
         },
-    )
+    ))
 }

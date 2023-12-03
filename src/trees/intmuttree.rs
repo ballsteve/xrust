@@ -1,6 +1,6 @@
 /*! # A tree structure for XDM
 
-This module implements the Item module's [ItemNode] trait.
+This module implements the Item module's [Node] trait.
 
 This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
@@ -9,7 +9,7 @@ To create a tree, use [NodeBuilder] to make a Document-type node. To add a node,
 NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
 
 ```rust
-use xrust::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;

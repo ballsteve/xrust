@@ -1,4 +1,4 @@
-use crate::intmuttree::{NodeBuilder, RNode};
+use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;

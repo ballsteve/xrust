@@ -14,7 +14,7 @@ pub(crate) mod nodetests;
 mod numbers;
 pub(crate) mod predicates;
 mod strings;
-mod support;
+pub(crate) mod support;
 mod types;
 pub(crate) mod variables;
 

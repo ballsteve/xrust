@@ -1,4 +1,4 @@
-use crate::intmuttree::XMLDecl;
+use crate::trees::intmuttree::XMLDecl;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;

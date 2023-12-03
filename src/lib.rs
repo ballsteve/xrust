@@ -60,24 +60,17 @@ pub use value::Value;
 pub mod item;
 pub use item::{Item, Node, Sequence, SequenceTrait};
 
-//pub mod xpath;
-//pub use xpath::expression;
 pub mod pattern;
 pub use pattern::Pattern;
 
-//pub mod evaluate;
-//pub use evaluate::{Constructor, Evaluator, StaticContext};
-
 #[cfg(feature = "xslt")]
 pub mod xslt;
-//#[cfg(feature = "xslt")]
-//pub use xslt::from_document;
-
-pub mod intmuttree;
-pub use intmuttree::Document;
 
 pub mod parser;
-pub mod testutils;
 
-//pub mod transcomb;
 pub mod transform;
+
+pub mod trees;
+pub use trees::intmuttree::Document;
+
+pub mod testutils;

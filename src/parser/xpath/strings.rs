@@ -12,8 +12,8 @@ use crate::transform::Transform;
 
 // StringConcatExpr ::= RangeExpr ( '||' RangeExpr)*
 pub(crate) fn stringconcat_expr<'a, N: Node + 'a>(
-) -> impl Fn(ParseInput) -> ParseResult<Transform<N>> + 'a {
-    map(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag("||"), xpwhitespace()), |_| ()),
             range_expr::<N>(),
@@ -25,5 +25,5 @@ pub(crate) fn stringconcat_expr<'a, N: Node + 'a>(
                 Transform::Concat(v)
             }
         },
-    )
+    ))
 }
