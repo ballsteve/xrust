@@ -1,6 +1,6 @@
 use crate::parser::{ParseError, ParseInput, ParseResult};
 
-pub(crate) fn separated_list0<P1, P2, R1>(
+pub fn separated_list0<P1, P2, R1>(
     sep: P1,
     f: P2,
 ) -> impl Fn(ParseInput) -> ParseResult<Vec<R1>>

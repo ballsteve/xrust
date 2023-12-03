@@ -48,7 +48,7 @@ use std::cell::RefCell;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
 
 pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
@@ -336,54 +336,9 @@ impl ItemNode for RNode {
         }
     }
     /// Serialise as XML
-    fn to_xml(&self) -> String {
-        match self.node_type {
-            NodeType::Document => {
-                self.children
-                    .borrow()
-                    .iter()
-                    .fold(String::new(), |mut result, c| {
-                        result.push_str(c.to_xml().as_str());
-                        result
-                    })
-            }
-            NodeType::Element => {
-                let mut result = String::from("<");
-                result.push_str(
-                    self.name
-                        .borrow()
-                        .as_ref()
-                        .map_or(String::new(), |n| n.to_string())
-                        .as_str(),
-                );
-                self.attributes
-                    .borrow()
-                    .iter()
-                    .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.value()).as_str()));
-                result.push('>');
-                self.children
-                    .borrow()
-                    .iter()
-                    .for_each(|c| result.push_str(c.to_xml().as_str()));
-                result.push_str("</");
-                result.push_str(
-                    self.name
-                        .borrow()
-                        .as_ref()
-                        .map_or(String::new(), |n| n.to_string())
-                        .as_str(),
-                );
-                result.push('>');
-                result
-            }
-            NodeType::Text => self.value().to_string(),
-            _ => String::new(),
-        }
-    }
+    fn to_xml(&self) -> String {to_xml_int(self, &OutputDefinition::new(), vec![], 0)}
     /// Serialise the node as XML, with options such as indentation.
-    fn to_xml_with_options(&self, _od: &OutputDefinition) -> String {
-        String::from("not implemented")
-    }
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String { to_xml_int(self, od, vec![], 0) }
 
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
@@ -556,6 +511,160 @@ impl ItemNode for RNode {
             }
         }
     }
+}
+
+impl Debug for Node {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(f, "type {} name {:?} value {:?}", self.node_type, self.name, self.value)
+    }
+}
+
+// This handles the XML serialisation of the document.
+// "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
+// "indent" is the current level of identation.
+fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<String>)>, indent: usize) -> String {
+    match node.node_type {
+        NodeType::Document => {
+            node.children
+                .borrow()
+                .iter()
+                .fold(String::new(), |mut result, c| {
+                    result.push_str(to_xml_int(c, od, ns.clone(), indent + 2).as_str());
+                    result
+                })
+        }
+        NodeType::Element => {
+            let mut result = String::from("<");
+            // Elements must have a name, so unpack it
+            let qn = node.name
+                .borrow()
+                .as_ref()
+                .unwrap()
+                .clone();
+            result.push_str(qn.to_string().as_str());
+
+            // Check if any XML Namespaces need to be declared
+            // newns is a vector of (prefix, namespace URI) pairs
+            let mut declared = ns.clone();
+            let mut newns: Vec<(String, Option<String>)> = vec![];
+            // First, the element itself
+            namespace_check(&qn, &declared).iter()
+                .for_each(|m| {
+                    newns.push(m.clone());
+                    declared.push(m.clone())
+                });
+            // Next, it's attributes
+            node.attributes
+                .borrow()
+                .iter()
+                .for_each(|(k, _)| {
+                    namespace_check(k, &declared).iter()
+                        .for_each(|m| {
+                            newns.push(m.clone());
+                            declared.push(m.clone())
+                        })
+                });
+            // Finally, it's child elements
+            node.child_iter()
+                .filter(|c| c.node_type == NodeType::Element)
+                .for_each(|c| {
+                c.name.borrow().as_ref().map(|d| namespace_check(d, &declared).iter()
+                    .for_each(|m| {
+                        newns.push(m.clone());
+                        declared.push(m.clone())
+                    })
+                );
+            });
+            newns.iter().for_each(|(u, p)| {
+                result.push_str(" xmlns");
+                if let Some(q) = p {
+                    result.push(':');
+                    result.push_str(q.as_str());
+                }
+                result.push_str("='");
+                result.push_str(u);
+                result.push('\'');
+            });
+
+            node.attributes
+                .borrow()
+                .iter()
+                .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.value()).as_str()));
+            result.push('>');
+
+            // Content of the element.
+            // If the indent option is enabled, then if no child is a text node then add spacing.
+            let do_indent: bool = od.get_indent().then(|| {
+                node.child_iter().fold(true, |mut acc, c| {
+                    if acc && c.node_type == NodeType::Text {
+                        acc = false
+                    }
+                    acc
+                })
+            }).map_or(false, |b| b);
+
+            node.children
+                .borrow()
+                .iter()
+                .for_each(|c| {
+                    if do_indent {
+                        result.push('\n');
+                        (0..indent).for_each(|_| result.push(' '))
+                    }
+                    result.push_str(to_xml_int(c, od, newns.clone(), indent + 2).as_str())
+                });
+            if do_indent && indent > 1 {
+                result.push('\n');
+                (0..(indent - 2)).for_each(|_| result.push(' '))
+            }
+            result.push_str("</");
+            result.push_str(
+                node.name
+                    .borrow()
+                    .as_ref()
+                    .map_or(String::new(), |n| n.to_string())
+                    .as_str(),
+            );
+            result.push('>');
+            result
+        }
+        NodeType::Text => node.value().to_string(),
+        NodeType::Comment => {
+            let mut result = String::from("<!--");
+            let s = node.name.borrow().as_ref().map_or("".to_string(), |n| n.to_string());
+            result.push_str(s.as_str());
+            result.push_str("-->");
+            result
+        }
+        NodeType::ProcessingInstruction => {
+            let mut result = String::from("<?");
+            let s = node.name.borrow().as_ref().map_or("".to_string(), |n| n.to_string());
+            result.push_str(s.as_str());
+            result.push(' ');
+            let t = node.value.clone().map_or("".to_string(), |n| n.to_string());
+            result.push_str(t.as_str());
+            result.push_str("?>");
+            result
+        }
+        _ => String::new(),
+    }
+}
+
+// Checks if this node's name is in a namespace that has already been declared.
+// Returns a namespace to be declared if required, (URI, prefix).
+fn namespace_check(qn: &QualifiedName, ns: &Vec<(String, Option<String>)>) -> Option<(String, Option<String>)> {
+    let mut result = None;
+    if let Some(qnuri) = qn.get_nsuri_ref() {
+        // Has this namespace already been declared?
+        if ns.iter().find(|(u, _)| u == qnuri).is_some() {
+            // Namespace has been declared, but with the same prefix?
+            // TODO: see forest.rs for example implementation
+        } else {
+            // Namespace has not been declared, so this element must declare it
+            result = Some((qnuri.to_string(), qn.get_prefix()))
+        }
+    }
+    result
 }
 
 // Find the position of this node in the parent's child list.
@@ -1051,5 +1160,75 @@ mod tests {
             root.deep_copy().expect("unable to copy").to_xml(),
             "<Test id='foo'>1234</Test>"
         )
+    }
+
+    #[test]
+    fn to_xml() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let mut child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(
+                Some(String::from("http://test.org/")),
+                Some(String::from("eg")),
+                String::from("Test")
+            ))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        child
+            .add_attribute(
+                NodeBuilder::new(NodeType::Attribute)
+                    .name(QualifiedName::new(None, None, String::from("id")))
+                    .value(Value::from("foo"))
+                    .build(),
+            )
+            .expect("unable to add attribute");
+        child
+            .push(
+                NodeBuilder::new(NodeType::Text)
+                    .value(Value::from("1234"))
+                    .build(),
+            )
+            .expect("unable to add text node");
+
+        assert_eq!(root.to_xml(), "<eg:Test xmlns:eg='http://test.org/' id='foo'>1234</eg:Test>")
+    }
+
+    #[test]
+    fn to_xml_with_options() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let mut child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(
+                Some(String::from("http://test.org/")),
+                Some(String::from("eg")),
+                String::from("Test")
+            ))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        child
+            .add_attribute(
+                NodeBuilder::new(NodeType::Attribute)
+                    .name(QualifiedName::new(None, None, String::from("id")))
+                    .value(Value::from("foo"))
+                    .build(),
+            )
+            .expect("unable to add attribute");
+        let mut l1 = root.new_element(QualifiedName::new(
+            Some(String::from("http://test.org/")),
+                 Some(String::from("eg")),
+            String::from("Level-1")
+        )).expect("unable to create element");
+        child.push(l1.clone()).expect("unable to add node");
+        l1
+            .push(
+                NodeBuilder::new(NodeType::Text)
+                    .value(Value::from("1234"))
+                    .build(),
+            )
+            .expect("unable to add text node");
+
+        let mut od = OutputDefinition::new();
+        od.set_indent(true);
+        assert_eq!(root.to_xml_with_options(&od), r#"<eg:Test xmlns:eg='http://test.org/' id='foo'>
+  <eg:Level-1>1234</eg:Level-1>
+</eg:Test>"#)
     }
 }

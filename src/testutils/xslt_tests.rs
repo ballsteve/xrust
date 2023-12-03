@@ -1,3 +1,5 @@
+use std::rc::Rc;
+use crate::Item;
 #[macro_export]
 macro_rules! xslt_tests (
     ( $x:expr , $y:expr ) => {
@@ -114,6 +116,62 @@ macro_rules! xslt_tests (
 	    let seq = ctxt.evaluate().expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onetwothreefour")
+	}
+
+	// Although we have the source and stylesheet in files,
+	// they are inlined here to avoid dependency on I/O libraries
+	#[test]
+	fn xslt_issue_58() {
+		let srcxml = r#"<Example>
+    <Title>XSLT in Rust</Title>
+    <Paragraph>A simple document.</Paragraph>
+</Example>
+"#;
+		let src = Rc::new(Item::Node($x(srcxml).expect("unable to parse source document")));
+		let stylexml = r#"<xsl:stylesheet
+	version="1.0"
+	xmlns:dat="http://www.stormware.cz/schema/version_2/data.xsd"
+	xmlns:int="http://www.stormware.cz/schema/version_2/intDoc.xsd"
+	xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+	<xsl:output method="xml" encoding="utf-8" indent="yes"/>
+
+    <xsl:template match="child::Example">
+        <dat:dataPack>
+            <xsl:apply-templates/>
+        </dat:dataPack>
+    </xsl:template>
+    <xsl:template match="child::Title">
+        <int:head>
+            <xsl:apply-templates/>
+        </int:head>
+    </xsl:template>
+    <xsl:template match="child::Paragraph">
+        <int:body>
+            <xsl:apply-templates/>
+        </int:body>
+    </xsl:template>
+</xsl:stylesheet>
+"#;
+		let style = $x(stylexml).expect("unable to parse stylesheet document");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate().expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
+    <int:head>XSLT in Rust</int:head>
+    <int:body>A simple document.</int:body>
+</dat:dataPack>"#)
 	}
 
 	#[test]
