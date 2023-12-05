@@ -68,6 +68,7 @@ use std::rc::Rc;
 use crate::item::{Item, Node, NodeType, Sequence};
 use crate::output::*;
 use crate::parser::xpath::parse;
+use crate::parser::avt::parse as parse_avt;
 use crate::pattern::Pattern;
 use crate::qname::*;
 use crate::transform::context::{Context, ContextBuilder};
@@ -700,6 +701,25 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
                     }
                 }
+                (Some(XSLTNS), "element") => {
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    if m.to_string().is_empty() {
+                        return Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing name attribute".to_string(),
+                        ))
+                    }
+                    Ok(Transform::Element(
+                        Box::new(parse_avt(m.to_string().as_str())?),
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            },
+                        )?)),
+                    ))
+                }
                 (Some(XSLTNS), "attribute") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
                     if !m.to_string().is_empty() {
@@ -716,7 +736,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     } else {
                         Result::Err(Error::new(
                             ErrorKind::TypeError,
-                            "missing select attribute".to_string(),
+                            "missing name attribute".to_string(),
                         ))
                     }
                 }

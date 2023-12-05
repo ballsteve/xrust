@@ -51,6 +51,21 @@ macro_rules! transform_tests (
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test><Level-1>content</Level-1></Test>")
 	}
+
+	#[test]
+	fn tr_element() {
+	    let x = Transform::Element(
+			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("Test"))))),
+			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))))
+	    );
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "<Test>content</Test>")
+	}
+
 	#[test]
 	fn tr_literal_attribute() {
 	    let x = Transform::LiteralElement(

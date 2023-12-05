@@ -6,6 +6,9 @@ use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
+use crate::xdmerror::{Error, ErrorKind};
+use crate::parser::ParserState;
+use crate::parser::xml::qname::qualname;
 
 #[derive(Clone, Debug)]
 pub struct QualifiedName {
@@ -81,6 +84,21 @@ impl Hash for QualifiedName {
             ns.hash(state)
         }
         self.localname.hash(state);
+    }
+}
+
+/// Parse a string to create a [QualifiedName].
+/// QualifiedName ::= (prefix ":")? local-name
+impl TryFrom<&str> for QualifiedName {
+    type Error = Error;
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        let state = ParserState::new(None, None);
+        match qualname()((s, state)) {
+            Ok((_, qn)) => Ok(qn),
+            Err(_) => {
+                Err(Error::new(ErrorKind::ParseError, String::from("unable to parse qualified name")))
+            }
+        }
     }
 }
 

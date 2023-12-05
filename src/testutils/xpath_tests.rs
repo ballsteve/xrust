@@ -502,7 +502,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.len(), 0);
 	}
 	#[test]
-	fn xpath_step_wild() {
+	fn xpath_step_wild_1() {
 	    let e = parse::<$t>("child::*")
 		.expect("failed to parse expression \"child::*\"");
 	    let rd = $x();
@@ -522,6 +522,26 @@ macro_rules! xpath_tests (
 		    _ => panic!("not a node")
 		}
 	    }
+	}
+	#[test]
+	fn xpath_step_wild_2() {
+	    let e = parse::<$t>("ancestor::*")
+		.expect("failed to parse expression \"ancestor::*\"");
+	    let rd = $x();
+		let sd = $y();
+		match &*sd {
+			Item::Node(c) => {
+				let l = c.descend_iter().last().unwrap();
+				let s = ContextBuilder::new()
+					.result_document(rd)
+					.current(vec![Rc::new(Item::Node(l))])
+					.build()
+					.dispatch(&mut StaticContext::<F>::new(), &e)
+					.expect("evaluation failed");
+				assert_eq!(s.len(), 3);
+			}
+			_ => panic!("unable to unpack node"),
+		}
 	}
 
 	// Functions
@@ -827,6 +847,42 @@ macro_rules! xpath_tests (
 	    match *s[0] {
 		Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
 		_ => panic!("not a singleton double value")
+	    }
+	}
+	#[test]
+	fn xpath_fncall_count_1() {
+	    let mut e = parse::<$t>("count((1, 2, 3, 4))")
+		.expect("failed to parse expression \"count((1, 2, 3, 4))\"");
+		let s = Context::new()
+			.dispatch(&mut StaticContext::<F>::new(), &e)
+			.expect("evaluation failed");
+	    assert_eq!(s.len(), 1);
+	    match *s[0] {
+			Item::Value(Value::Integer(d)) => assert_eq!(d, 4),
+			_ => panic!("not a singleton integer value")
+	    }
+	}
+	#[test]
+	fn xpath_fncall_count_2() {
+	    let mut e = parse::<$t>("count(ancestor::*)")
+		.expect("failed to parse expression \"count(ancestor::*)\"");
+	    let rd = $x();
+		let sd = $y();
+	    match &*sd {
+			Item::Node(c) => {
+				let l = c.descend_iter().last().unwrap();
+	    	    let s = ContextBuilder::new()
+		      		.result_document(rd)
+		      		.current(vec![Rc::new(Item::Node(l))])
+		      		.build()
+					.dispatch(&mut StaticContext::<F>::new(), &e)
+					.expect("evaluation failed");
+	    		assert_eq!(s.len(), 1);
+				assert_eq!(s.to_int().expect("unable to get int from sequence"), 3)
+			}
+			_ => {
+				panic!("unable to unpack node");
+			}
 	    }
 	}
 

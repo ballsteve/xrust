@@ -42,7 +42,7 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
 
     let state = ParserState::new(None, None);
     match xpath_expr((input, state)) {
-        Ok((_, x)) => Result::Ok(x),
+        Ok((_, x)) => Ok(x),
         Err(err) => match err {
             ParseError::Combinator => Result::Err(xdmerror::Error::new(
                 xdmerror::ErrorKind::ParseError,
@@ -83,7 +83,7 @@ fn xpath_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
 }
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+pub fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),

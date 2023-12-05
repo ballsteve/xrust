@@ -58,6 +58,32 @@ macro_rules! xslt_tests (
 
 	    assert_eq!(seq.to_xml(), "<answer>Made an element</answer>")
 	}
+	#[test]
+	fn xslt_element() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:element name='answer{count(ancestor::*)}'>Made an element</xsl:element></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "<answer0>Made an element</answer0>")
+	}
 
 	#[test]
 	fn xslt_apply_templates_1() {

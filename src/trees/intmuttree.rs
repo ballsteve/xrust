@@ -347,9 +347,7 @@ impl ItemNode for RNode {
     fn child_iter(&self) -> Self::NodeIterator {
         Box::new(Children::new(self))
     }
-    fn ancestor_iter(&self) -> Self::NodeIterator {
-        Box::new(Ancestors::new(self))
-    }
+    fn ancestor_iter(&self) -> Self::NodeIterator { Box::new(Ancestors::new(self)) }
     fn owner_document(&self) -> Self {
         if self.node_type() == NodeType::Document {
             self.clone()

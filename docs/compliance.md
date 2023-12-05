@@ -246,8 +246,8 @@ xsl:decimal-format/@pattern-separator|no|
 xsl:document|no|
 xsl:document/@validation|no|
 xsl:document/@type|no|
-xsl:element|no|
-xsl:element/@name|no|
+xsl:element|yes|
+xsl:element/@name|yes|
 xsl:element/@namespace|no|
 xsl:element/@inherit-namespaces|no|
 xsl:element/@use-attribute-sets|no|
@@ -329,9 +329,9 @@ xsl:merge-source/@use-accumulators|no|
 xsl:merge-source/@sort-before-merge|no|
 xsl:merge-source/@validation|no|
 xsl:merge-source/@type|no|
-xsl:message|no|
+xsl:message|yes|
 xsl:message/@select|no|
-xsl:message/@terminate|no|
+xsl:message/@terminate|yes|
 xsl:message/@error-code|no|
 xsl:mode|no|
 xsl:mode/@name|no|

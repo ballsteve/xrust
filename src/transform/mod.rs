@@ -54,6 +54,8 @@ pub enum Transform<N: Node> {
     Literal(Rc<Item<N>>),
     /// A literal element. Consists of the element name and content.
     LiteralElement(QualifiedName, Box<Transform<N>>),
+    /// A constructed element. Consists of the name and content.
+    Element(Box<Transform<N>>, Box<Transform<N>>),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(QualifiedName, Box<Transform<N>>),
@@ -205,6 +207,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Empty => write!(f, "Empty"),
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
+            Transform::Element(_, _) => write!(f, "constructed element"),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::Copy(_, _) => write!(f, "shallow copy"),

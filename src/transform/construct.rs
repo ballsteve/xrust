@@ -56,6 +56,42 @@ pub(crate) fn literal_element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     Ok(vec![Rc::new(Item::Node(e))])
 }
 
+/// Creates a singleton sequence with a new element node.
+/// The name is interpreted as an AVT to determine the element name.
+/// The transform is evaluated to create the content of the element.
+pub(crate) fn element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+    qn: &Transform<N>,
+    c: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+    let r = ctxt.rd.clone().unwrap();
+
+    let qnavt = QualifiedName::try_from(ctxt.dispatch(stctxt, qn)?.to_string().as_str())?;
+    let mut e = r.new_element(qnavt)?;
+    ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
+        // Item could be a Node or text
+        match &**i {
+            Item::Node(t) => match t.node_type() {
+                NodeType::Attribute => e.add_attribute(t.clone()),
+                _ => e.push(t.clone()),
+            },
+            _ => {
+                // Add the Value as a text node
+                let n = r.new_text(Value::from(i.to_string()))?;
+                e.push(n)
+            }
+        }
+    })?;
+    Ok(vec![Rc::new(Item::Node(e))])
+}
+
 /// Creates a singleton sequence with a new attribute node.
 /// The transform is evaluated to create the value of the attribute.
 /// TODO: AVT for attribute name

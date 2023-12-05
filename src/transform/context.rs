@@ -189,6 +189,7 @@ impl<N: Node> Context<N> {
             Transform::Empty => empty(self),
             Transform::Literal(v) => literal(self, v),
             Transform::LiteralElement(qn, t) => literal_element(self, stctxt, qn, t),
+            Transform::Element(qn, t) => element(self, stctxt, qn, t),
             Transform::LiteralAttribute(qn, t) => literal_attribute(self, stctxt, qn, t),
             Transform::LiteralComment(t) => literal_comment(self, stctxt, t),
             Transform::SetAttribute(qn, v) => set_attribute(self, stctxt, qn, v),

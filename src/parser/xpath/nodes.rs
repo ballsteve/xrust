@@ -1,7 +1,7 @@
 //! Functions that produces nodes, or sets of nodes.
 
 use crate::item::Node;
-use crate::parser::combinators::alt::{alt2, alt3, alt4};
+use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -150,7 +150,10 @@ fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transf
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
 fn axisstep<'a, N: Node + 'a>() -> Box<dyn  Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
-    Box::new(map(pair(forwardaxis(), nodetest()), |(a, n)| {
+    Box::new(map(pair(
+        alt2(forwardaxis(), reverseaxis()),
+        nodetest()
+    ), |(a, n)| {
         Transform::Step(NodeMatch {
             axis: Axis::from(a),
             nodetest: n,
@@ -183,4 +186,22 @@ fn forwardaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
         |(a, _)| a,
     ))
 }
-// TODO: reverse axis
+
+// ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding-sibling' | 'preceding' ) '::'
+fn reverseaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
+    Box::new(map(
+        //    alt8(
+        pair(
+            // need alt8
+            alt5(
+                    map(tag("parent"), |_| "parent"),
+                    map(tag("ancestor"), |_| "ancestor"),
+                    map(tag("ancestor-or-self"), |_| "ancestor-or-self"),
+                    map(tag("preceding"), |_| "preceding"),
+                    map(tag("preceding-sibling"), |_| "preceding-sibling"),
+            ),
+            tag("::"),
+        ),
+        |(a, _)| a,
+    ))
+}
