@@ -15,7 +15,7 @@ use crate::parser::xpath::expr_single_wrapper;
 use crate::parser::xpath::expressions::parenthesized_expr;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::numbers::unary_expr;
-use crate::parser::{ParseInput, ParseResult, ParseError};
+use crate::parser::{ParseInput, ParseResult};
 use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 use crate::xdmerror::ErrorKind;
 

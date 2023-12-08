@@ -41,10 +41,11 @@ use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
 use crate::parser;
 use crate::parser::xml::XMLDocument;
-use crate::qname::*;
+use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
 use std::cell::RefCell;
+use std::cmp::Ordering;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::fmt;
@@ -340,8 +341,40 @@ impl ItemNode for RNode {
     /// Serialise the node as XML, with options such as indentation.
     fn to_xml_with_options(&self, od: &OutputDefinition) -> String { to_xml_int(self, od, vec![], 0) }
 
-    fn is_same(&self, other: &Self) -> bool {
-        Rc::ptr_eq(self, other)
+    fn is_same(&self, other: &Self) -> bool { Rc::ptr_eq(self, other) }
+    fn document_order(&self) -> Vec<usize> { doc_order(self) }
+    fn cmp_document_order(&self, other: &Self) -> Ordering {
+        let this_order = self.document_order();
+        let other_order = other.document_order();
+        // zip the two iterators and compare usizes
+//        let mut it = this_order.iter().zip(other_order.iter());
+        // Implementation note: fold seems to be consuming all of the items, so try an explicit loop instead
+//        let m = (&mut it).fold(
+//            Ordering::Equal,
+//            |acc, (t, o)| {
+//                if acc == Ordering::Equal { t.cmp(o) } else { acc }
+//            }
+//        );
+        // and then unzip and compare the remaining vectors, at least one of which should be empty
+        let mut this_it = this_order.iter();
+        let mut other_it = other_order.iter();
+        for _i in 0.. {
+            match (this_it.next(), other_it.next()) {
+                (Some(t), Some(o)) => {
+                    if t < o {
+                        return Ordering::Less
+                    } else if t > o {
+                        return Ordering::Greater
+                    }
+                    // otherwise continue the loop
+                }
+                (Some(_), None) => return Ordering::Greater,
+                (None, Some(_)) => return Ordering::Less,
+                (None, None) => return Ordering::Equal,
+            }
+        }
+        // Will never reach here
+        Ordering::Equal
     }
 
     fn child_iter(&self) -> Self::NodeIterator {
@@ -425,7 +458,8 @@ impl ItemNode for RNode {
                 String::from("must be an attribute node"),
             ));
         }
-        self.attributes.borrow_mut().insert(att.name(), att);
+        self.attributes.borrow_mut().insert(att.name(), att.clone());
+        *att.parent.borrow_mut() = Some(Rc::downgrade(self));
         Ok(())
     }
     /// Insert a node into the child list immediately before this node.
@@ -519,6 +553,40 @@ impl ItemNode for RNode {
 impl Debug for Node {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         write!(f, "type {} name {:?} value {:?}", self.node_type, self.name, self.value)
+    }
+}
+
+// Find the document order of ancestors
+fn doc_order(n: &RNode) -> Vec<usize> {
+    match n.node_type {
+        NodeType::Document => vec![1 as usize],
+        NodeType::Element |
+        NodeType::Text |
+        NodeType::Comment |
+        NodeType::ProcessingInstruction => {
+            let p = n.parent.borrow();
+            match &*p {
+                Some(q) => {
+                    match Weak::upgrade(&q) {
+                        Some(r) => {
+                            let idx = find_index(&r, &n).expect("unable to locate node in parent");
+                            let mut a = doc_order(&r);
+                            a.push(idx + 2);
+                            a
+                        }
+                        None => vec![1 as usize],
+                    }
+                }
+                None => vec![1 as usize],
+            }
+        }
+        NodeType::Attribute => {
+            // Namespace nodes are first, then attributes
+            let mut a = doc_order(&n.parent().unwrap());
+            a.push(2);
+            a
+        }
+        _ => vec![0],
     }
 }
 
@@ -1040,6 +1108,45 @@ mod tests {
             .build();
         root.push(child).expect("unable to append child");
         assert_eq!(root.to_xml(), "<Test></Test>")
+    }
+
+    #[test]
+    fn doc_order() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Test")))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        assert_eq!(child.document_order(), vec![1, 2])
+    }
+
+    #[test]
+    fn cmp_doc_order_1() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child1 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Before")))
+            .build();
+        root.push(child1.clone()).expect("unable to append child");
+        let child2 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("After")))
+            .build();
+        root.push(child2.clone()).expect("unable to append child");
+        assert_eq!(child1.cmp_document_order(&child2), Ordering::Less);
+        assert_eq!(child2.cmp_document_order(&child1), Ordering::Greater);
+    }
+
+    #[test]
+    fn cmp_doc_order_2() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child1 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Before")))
+            .build();
+        root.push(child1.clone()).expect("unable to append child");
+        let child2 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("After")))
+            .build();
+        root.push(child2.clone()).expect("unable to append child");
+        assert_eq!(child1.cmp_document_order(&child1), Ordering::Equal)
     }
 
     #[test]

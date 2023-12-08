@@ -238,6 +238,8 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
         }
     }) {
         Ok(mut r) => {
+            // Sort in document order
+            r.sort_unstable_by(|a, b| get_node_unchecked(a).cmp_document_order(get_node_unchecked(b)));
             // Eliminate duplicates
             r.dedup_by(|a, b| {
                 get_node(a).map_or(false, |aa| get_node(b).map_or(false, |bb| aa.is_same(bb)))
@@ -248,6 +250,12 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
     }
 }
 
+fn get_node_unchecked<N: Node>(i: &Rc<Item<N>>) -> &N {
+    match &**i {
+        Item::Node(n) => n,
+        _ => panic!("not a node"),
+    }
+}
 fn get_node<N: Node>(i: &Rc<Item<N>>) -> Result<&N, Error> {
     match &**i {
         Item::Node(n) => Ok(n),

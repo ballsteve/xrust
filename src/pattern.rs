@@ -120,7 +120,6 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Rc<Item<N>>) -> bool {
             match &**i {
                 Item::Node(n) => {
                     if n.node_type() == NodeType::Document {
-                        //eprintln!("item is a document-type node, nt.matches=={}", nt.matches(i));
                         nt.matches(i)
                     } else {
                         false

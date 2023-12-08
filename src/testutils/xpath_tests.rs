@@ -397,20 +397,13 @@ macro_rules! xpath_tests (
 	    let e = parse::<$t>("//child::a//child::b")
 		.expect("failed to parse expression \"//child::a//child::b\"");
 	    let rd = $x();
+		let sd = $y();
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
-		      .current(vec![$y()])
+		      .current(vec![sd])
 		      .build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
-	    for i in 0..s.len() {
-		match &*s[i] {
-		    Item::Node(n) => {
-			eprintln!("item {} is a {} element with id {}", i, n.name(), n.get_attribute(&QualifiedName::new(None, None, "id".to_string())))
-		    }
-		    _ => eprintln!("item {} not a node", i)
-		}
-	    }
 	    assert_eq!(s.len(), 10);
 	    for t in s {
 		match &*t {

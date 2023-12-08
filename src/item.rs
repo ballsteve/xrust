@@ -5,6 +5,7 @@
 //!
 //! Nodes are implemented as a trait.
 
+use std::cmp::Ordering;
 use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
@@ -398,6 +399,14 @@ pub trait Node: Clone {
 
     /// Check if two Nodes are the same Node
     fn is_same(&self, other: &Self) -> bool;
+
+    /// Get the document order of the node. The value returned is relative to the document containing the node.
+    /// Depending on the implementation, this value may be volatile;
+    /// adding or removing nodes to/from the document may invalidate the ordering.
+    fn document_order(&self) -> Vec<usize>;
+    /// Compare the document order of this node with another node in the same document.
+    fn cmp_document_order(&self, other: &Self) -> Ordering;
+
     /// Check if a node is an element-type
     fn is_element(&self) -> bool {
         self.node_type() == NodeType::Element
