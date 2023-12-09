@@ -61,6 +61,8 @@ pub enum Transform<N: Node> {
     LiteralAttribute(QualifiedName, Box<Transform<N>>),
     /// A literal comment. Consists of the value.
     LiteralComment(Box<Transform<N>>),
+    /// A literal processing instruction. Consists of the name and value.
+    LiteralProcessingInstruction(Box<Transform<N>>, Box<Transform<N>>),
     /// Produce a [Sequence]. Each element in the vector becomes one, or more, item in the sequence.
     SequenceItems(Vec<Transform<N>>),
 
@@ -210,6 +212,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Element(_, _) => write!(f, "constructed element"),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
+            Transform::LiteralProcessingInstruction(_, _) => write!(f, "literal processing-instruction"),
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {

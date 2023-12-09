@@ -138,6 +138,32 @@ pub(crate) fn literal_comment<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     Ok(vec![Rc::new(Item::Node(a))])
 }
 
+/// Creates a singleton sequence with a new processing instruction node.
+/// The transform is evaluated to create the value of the PI.
+pub(crate) fn literal_processing_instruction<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+    name: &Transform<N>,
+    t: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+
+    let pi = ctxt
+        .rd
+        .clone()
+        .unwrap()
+        .new_processing_instruction(
+            QualifiedName::new(None, None, ctxt.dispatch(stctxt, name)?.to_string()),
+            Value::from(ctxt.dispatch(stctxt, t)?.to_string())
+        )?;
+    Ok(vec![Rc::new(Item::Node(pi))])
+}
+
 /// Set an attribute on the context item, which must be an element-type node.
 /// (TODO: use an expression to select the element)
 /// If the element does not have an attribute with the given name, create it.

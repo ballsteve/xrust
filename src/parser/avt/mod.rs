@@ -12,14 +12,13 @@ use crate::parser::{ParserState, ParseInput, ParseResult, ParseError};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::{many0, many1};
-use crate::parser::combinators::debug::inspect;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::expr;
 use crate::parser::xpath::support::none_of;
 use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*
 pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
-    eprintln!("avt_parse \"{}\"", input);
     let state = ParserState::new(None, None);
     match avt_expr((input, state)) {
         Ok((_, x)) => Ok(x),
@@ -49,7 +48,6 @@ fn avt_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
         Err(err) => Err(err),
         Ok(((input1, state1), e)) => {
             //Check nothing remaining in iterator, nothing after the end of the AVT.
-            eprintln!("avt_expr: parse succeeded, extra \"{}\"", input1);
             if input1.is_empty() {
                 Ok(((input1, state1), e))
             } else {
@@ -63,9 +61,9 @@ fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>
     Box::new(map(
         many0(
             alt2(
-                inspect("text",map(many1(none_of("{")),
-                               |v| Transform::Literal(Rc::new(Item::Value(Value::from(v.iter().collect::<String>())))))),
-                inspect("braced", braced_expr()),
+                map(many1(none_of("{")),
+                               |v| Transform::Literal(Rc::new(Item::Value(Value::from(v.iter().collect::<String>()))))),
+                braced_expr(),
             )
         ),
         |mut v| {
@@ -91,17 +89,13 @@ fn braced_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Tran
 //        |(_, e, _)| e
 //    ))
     Box::new(move |(input, state)| {
-        eprintln!("braced_expr: input \"{}\"", input);
         match input.get(0..1) {
             Some("{") => {
-                eprintln!("got open brace");
                 match input.find("}") {
                     None => Err(ParseError::Combinator),
                     Some(ind) => {
-                        eprintln!("found close brace. calling expr on \"{}\"", input.get(1..ind).unwrap());
                         match expr()((input.get(1..ind).unwrap(), state.clone())) {
                             Ok((_, result)) => {
-                                eprintln!("expr completed OK");
                                 Ok(((input.get(ind..).map_or("", |r| r), state), result))
                             }
                             Err(e) => Err(e),

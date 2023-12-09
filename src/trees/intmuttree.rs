@@ -424,6 +424,12 @@ impl ItemNode for RNode {
             .value(v)
             .build())
     }
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(NodeType::ProcessingInstruction)
+            .name(qn)
+            .value(v)
+            .build())
+    }
 
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {

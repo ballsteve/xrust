@@ -751,6 +751,25 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         )?))
                     ))
                 }
+                (Some(XSLTNS), "processing-instruction") => {
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    if m.to_string().is_empty() {
+                        return Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing name attribute".to_string(),
+                        ))
+                    }
+                    Ok(Transform::LiteralProcessingInstruction(
+                        Box::new(parse_avt(m.to_string().as_str())?),
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            }
+                        )?))
+                    ))
+                }
                 (Some(XSLTNS), "message") => {
                     let t = n.get_attribute(&QualifiedName::new(None, None, "terminate".to_string()));
                     Ok(Transform::Message(
