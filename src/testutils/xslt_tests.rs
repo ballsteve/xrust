@@ -1,5 +1,3 @@
-use std::rc::Rc;
-use crate::Item;
 #[macro_export]
 macro_rules! xslt_tests (
     ( $x:expr , $y:expr ) => {
@@ -29,7 +27,7 @@ macro_rules! xslt_tests (
 		ctxt.context(vec![src], 0);
 
 		// Let 'er rip
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_string(), "Found the document")
 	}
@@ -56,9 +54,35 @@ macro_rules! xslt_tests (
 	    ctxt.context(vec![src], 0);
 		ctxt.result_document($y());
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "<answer>Made an element</answer>")
+	}
+	#[test]
+	fn xslt_element() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:element name='answer{count(ancestor::*)}'>Made an element</xsl:element></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "<answer0>Made an element</answer0>")
 	}
 
 	#[test]
@@ -84,7 +108,7 @@ macro_rules! xslt_tests (
 
 	    ctxt.context(vec![src], 0);
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "found textfound text")
 	}
@@ -113,9 +137,144 @@ macro_rules! xslt_tests (
 
 	    ctxt.context(vec![src], 0);
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onetwothreefour")
+	}
+
+	#[test]
+	fn xslt_comment() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:comment> this is a level 1 element </xsl:comment></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "one<!-- this is a level 1 element -->two<!-- this is a level 1 element -->three<!-- this is a level 1 element -->four<!-- this is a level 1 element -->")
+	}
+
+	#[test]
+	fn xslt_pi() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:processing-instruction name='piL1'>this is a level 1 element</xsl:processing-instruction></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "one<?piL1 this is a level 1 element?>two<?piL1 this is a level 1 element?>three<?piL1 this is a level 1 element?>four<?piL1 this is a level 1 element?>")
+	}
+
+	#[test]
+	fn xslt_message_1() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:message>here is a level 1 element</xsl:message><L/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+		let mut msgs: Vec<String> = vec![];
+		let mut stctxt = StaticContextBuilder::new()
+			.message(|m| {msgs.push(String::from(m)); Ok(())})
+			.build();
+	    let seq = ctxt.evaluate(&mut stctxt).expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "one<L></L>two<L></L>three<L></L>four<L></L>");
+		assert_eq!(msgs.len(), 4);
+		assert_eq!(msgs[0], "here is a level 1 element")
+	}
+
+	#[test]
+	fn xslt_message_term() {
+	    let src = Rc::new(Item::Node(
+		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
+		    .expect("unable to parse source document")
+	    ));
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Level1'><xsl:message terminate='yes'>here is a level 1 element</xsl:message><L/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+		let mut msgs: Vec<String> = vec![];
+		let mut stctxt = StaticContextBuilder::new()
+			.message(|m| {msgs.push(String::from(m)); Ok(())})
+			.build();
+	    match ctxt.evaluate(&mut stctxt) {
+			Err(e) => {
+				assert_eq!(e.kind, ErrorKind::Terminated);
+				assert_eq!(e.message, "here is a level 1 element");
+				assert_eq!(e.code.unwrap().to_string(), "XTMM9000")
+			}
+			Ok(_) => panic!("evaluation succeeded when it should have failed")
+		}
 	}
 
 	// Although we have the source and stylesheet in files,
@@ -166,7 +325,7 @@ macro_rules! xslt_tests (
 	    ctxt.context(vec![src], 0);
 		ctxt.result_document($y());
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
     <int:head>XSLT in Rust</int:head>
@@ -201,7 +360,7 @@ macro_rules! xslt_tests (
 
 	    ctxt.context(vec![src], 0);
 
-	    let seq = ctxt.evaluate().expect("evaluation failed");
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_xml(), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
 	}

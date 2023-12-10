@@ -5,6 +5,7 @@
 use core::str;
 use std::fmt;
 use std::fmt::Formatter;
+use crate::qname::QualifiedName;
 
 /// Errors defined in XPath
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -31,6 +32,8 @@ pub enum ErrorKind {
     /// XPTY0019
     ContextNotNode,
     /// XPTY0020
+    Terminated,
+    /// XTMM9000^http://www.w3.org/2005/xqt-errors
     NotImplemented,
     ParseError,
     Unknown,
@@ -50,6 +53,7 @@ impl ErrorKind {
             ErrorKind::MixedTypes => "result of path operator contains both nodes and non-nodes",
             ErrorKind::NotNodes => "path expression is not a sequence of nodes",
             ErrorKind::ContextNotNode => "context item is not a node for an axis step",
+            ErrorKind::Terminated => "application has voluntarily terminated processing",
             ErrorKind::NotImplemented => "not implemented",
             ErrorKind::Unknown => "unknown",
             ErrorKind::ParseError => "XML Parse error",
@@ -68,13 +72,14 @@ impl fmt::Display for ErrorKind {
 pub struct Error {
     pub kind: ErrorKind,
     pub message: String,
+    pub code: Option<QualifiedName>
 }
 
 impl std::error::Error for Error {}
 
 impl Error {
     pub fn new(kind: ErrorKind, message: String) -> Self {
-        Error { kind, message }
+        Error { kind, message, code: None }
     }
 }
 

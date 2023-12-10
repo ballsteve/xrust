@@ -5,14 +5,15 @@ use std::rc::Rc;
 use unicode_segmentation::UnicodeSegmentation;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::Context;
+use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// XPath local-name function.
-pub fn local_name<N: Node>(
+pub fn local_name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
@@ -31,7 +32,7 @@ pub fn local_name<N: Node>(
         },
         |t| {
             // Get the name of the singleton node
-            let n = ctxt.dispatch(t)?;
+            let n = ctxt.dispatch(stctxt, t)?;
             match n.len() {
                 0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
                 1 => match *n[0] {
@@ -53,8 +54,9 @@ pub fn local_name<N: Node>(
 }
 
 /// XPath name function.
-pub fn name<N: Node>(
+pub fn name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
@@ -73,7 +75,7 @@ pub fn name<N: Node>(
         },
         |t| {
             // Get the name of the singleton node
-            let n = ctxt.dispatch(t)?;
+            let n = ctxt.dispatch(stctxt, t)?;
             match n.len() {
                 0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
                 1 => match *n[0] {
@@ -95,57 +97,65 @@ pub fn name<N: Node>(
 }
 
 /// XPath string function.
-pub fn string<N: Node>(ctxt: &Context<N>, s: &Transform<N>) -> Result<Sequence<N>, Error> {
+pub fn string<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+    s: &Transform<N>
+) -> Result<Sequence<N>, Error> {
     Ok(vec![Rc::new(Item::Value(Value::from(
-        ctxt.dispatch(s)?.to_string(),
+        ctxt.dispatch(stctxt, s)?.to_string(),
     )))])
 }
 
 /// XPath starts-with function.
-pub fn starts_with<N: Node>(
+pub fn starts_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
     Ok(vec![Rc::new(Item::Value(Value::from(
-        ctxt.dispatch(s)?
+        ctxt.dispatch(stctxt, s)?
             .to_string()
-            .starts_with(ctxt.dispatch(t)?.to_string().as_str()),
+            .starts_with(ctxt.dispatch(stctxt, t)?.to_string().as_str()),
     )))])
 }
 
 /// XPath ends-with function.
-pub fn ends_with<N: Node>(
+pub fn ends_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
     Ok(vec![Rc::new(Item::Value(Value::from(
-        ctxt.dispatch(s)?
+        ctxt.dispatch(stctxt, s)?
             .to_string()
-            .ends_with(ctxt.dispatch(t)?.to_string().as_str()),
+            .ends_with(ctxt.dispatch(stctxt, t)?.to_string().as_str()),
     )))])
 }
 
 /// XPath contains function.
-pub fn contains<N: Node>(
+pub fn contains<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
     Ok(vec![Rc::new(Item::Value(Value::from(
-        ctxt.dispatch(s)?
+        ctxt.dispatch(stctxt, s)?
             .to_string()
-            .contains(ctxt.dispatch(t)?.to_string().as_str()),
+            .contains(ctxt.dispatch(stctxt, t)?.to_string().as_str()),
     )))])
 }
 
 /// XPath substring function.
-pub fn substring<N: Node>(
+pub fn substring<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     t: &Transform<N>,
     l: &Option<Box<Transform<N>>>,
@@ -154,39 +164,40 @@ pub fn substring<N: Node>(
     // s is the string to search,
     // t is the index to start at,
     // l is the length of the substring at extract (or the rest of the string if missing)
-    l.as_ref().map_or_else(
-        || {
+    match l {
+        Some(m) => {
             Ok(vec![Rc::new(Item::Value(Value::from(
-                ctxt.dispatch(s)?
+                ctxt.dispatch(stctxt, s)?
                     .to_string()
                     .graphemes(true)
-                    .skip(ctxt.dispatch(t)?.to_int()? as usize - 1)
+                    .skip(ctxt.dispatch(stctxt, t)?.to_int()? as usize - 1)
+                    .take(ctxt.dispatch(stctxt, m)?.to_int()? as usize)
                     .collect::<String>(),
             )))])
-        },
-        |m| {
+        }
+        None => {
             Ok(vec![Rc::new(Item::Value(Value::from(
-                ctxt.dispatch(s)?
+                ctxt.dispatch(stctxt, s)?
                     .to_string()
                     .graphemes(true)
-                    .skip(ctxt.dispatch(t)?.to_int()? as usize - 1)
-                    .take(ctxt.dispatch(m)?.to_int()? as usize)
+                    .skip(ctxt.dispatch(stctxt, t)?.to_int()? as usize - 1)
                     .collect::<String>(),
             )))])
-        },
-    )
+        }
+    }
 }
 
 /// XPath substring-before function.
-pub fn substring_before<N: Node>(
+pub fn substring_before<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search,
     // t is the string to find.
-    let u = ctxt.dispatch(s)?.to_string();
-    match u.find(ctxt.dispatch(t)?.to_string().as_str()) {
+    let u = ctxt.dispatch(stctxt, s)?.to_string();
+    match u.find(ctxt.dispatch(stctxt, t)?.to_string().as_str()) {
         Some(i) => {
             match u.get(0..i) {
                 Some(v) => Ok(vec![Rc::new(Item::Value(Value::from(v)))]),
@@ -204,15 +215,16 @@ pub fn substring_before<N: Node>(
 }
 
 /// XPath substring-after function.
-pub fn substring_after<N: Node>(
+pub fn substring_after<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search,
     // t is the string to find.
-    let u = ctxt.dispatch(s)?.to_string();
-    let v = ctxt.dispatch(t)?.to_string();
+    let u = ctxt.dispatch(stctxt, s)?.to_string();
+    let v = ctxt.dispatch(stctxt, t)?.to_string();
     match u.find(v.as_str()) {
         Some(i) => {
             match u.get(i + v.len()..u.len()) {
@@ -231,8 +243,9 @@ pub fn substring_after<N: Node>(
 }
 
 /// XPath normalize-space function.
-pub fn normalize_space<N: Node>(
+pub fn normalize_space<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     n: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let s: Result<String, Error> = n.as_ref().map_or_else(
@@ -241,7 +254,7 @@ pub fn normalize_space<N: Node>(
             Ok(ctxt.cur[ctxt.i].to_string())
         },
         |m| {
-            let t = ctxt.dispatch(m)?;
+            let t = ctxt.dispatch(stctxt, m)?;
             Ok(t.to_string())
         },
     );
@@ -254,8 +267,9 @@ pub fn normalize_space<N: Node>(
 }
 
 /// XPath translate function.
-pub fn translate<N: Node>(
+pub fn translate<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     map: &Transform<N>,
     trn: &Transform<N>,
@@ -263,13 +277,13 @@ pub fn translate<N: Node>(
     // s is the string to search
     // map are the map chars
     // trn are the translate chars
-    let o = ctxt.dispatch(map)?.to_string();
+    let o = ctxt.dispatch(stctxt, map)?.to_string();
     let m: Vec<&str> = o.graphemes(true).collect();
-    let u = ctxt.dispatch(trn)?.to_string();
+    let u = ctxt.dispatch(stctxt, trn)?.to_string();
     let t: Vec<&str> = u.graphemes(true).collect();
     let mut result: String = String::new();
 
-    for c in ctxt.dispatch(s)?.to_string().graphemes(true) {
+    for c in ctxt.dispatch(stctxt, s)?.to_string().graphemes(true) {
         let mut a: Option<Option<usize>> = Some(None);
         for (i, _item) in m.iter().enumerate() {
             if c == m[i] {
@@ -298,13 +312,14 @@ pub fn translate<N: Node>(
 }
 
 /// XPath concat function. All arguments are concatenated into a single string value.
-pub(crate) fn tr_concat<N: Node>(
+pub(crate) fn tr_concat<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     arguments: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     match arguments
         .iter()
-        .try_fold(String::new(), |mut acc, a| match ctxt.dispatch(a) {
+        .try_fold(String::new(), |mut acc, a| match ctxt.dispatch(stctxt, a) {
             Ok(b) => {
                 acc.push_str(b.to_string().as_str());
                 Ok(acc)

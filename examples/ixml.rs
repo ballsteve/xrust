@@ -19,11 +19,11 @@ use xrust::qname::QualifiedName;
 use xrust::value::Value;
 use xrust::item::{Item, SequenceTrait, Node, NodeType};
 use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
-//use xrust::transform::context::Context;
+use xrust::transform::context::StaticContext;
 use xrust::xslt::from_document;
 
 //use earleybird::grammar::Grammar;
-use earleybird::ixml_grammar::{ixml_grammar, ixml_tree_to_grammar, ixml_str_to_grammar};
+use earleybird::ixml_grammar::{ixml_grammar, ixml_tree_to_grammar};
 use earleybird::parser::{Content, Parser};
 use indextree::{Arena, NodeId};
 
@@ -79,6 +79,10 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
         }
     }
 }
+
+// This type is for the callback in the static context.
+// We're not using a callback in this example, so make the type as simple as possible.
+type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -181,7 +185,7 @@ para = ~['#'], ~[#a]+, lf.
     ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
 
     // Let 'er rip!
-    let resultdoc = ctxt.evaluate()
+    let resultdoc = ctxt.evaluate(&mut StaticContext::<F>::new())
         .expect("failed to evaluate stylesheet");
 
     // Serialise the result document as XML

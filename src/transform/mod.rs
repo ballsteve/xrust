@@ -17,6 +17,7 @@ pub(crate) mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
+pub(crate) mod misc;
 
 use crate::item::{Item, Node, NodeType};
 use crate::qname::QualifiedName;
@@ -53,9 +54,15 @@ pub enum Transform<N: Node> {
     Literal(Rc<Item<N>>),
     /// A literal element. Consists of the element name and content.
     LiteralElement(QualifiedName, Box<Transform<N>>),
+    /// A constructed element. Consists of the name and content.
+    Element(Box<Transform<N>>, Box<Transform<N>>),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(QualifiedName, Box<Transform<N>>),
+    /// A literal comment. Consists of the value.
+    LiteralComment(Box<Transform<N>>),
+    /// A literal processing instruction. Consists of the name and value.
+    LiteralProcessingInstruction(Box<Transform<N>>, Box<Transform<N>>),
     /// Produce a [Sequence]. Each element in the vector becomes one, or more, item in the sequence.
     SequenceItems(Vec<Transform<N>>),
 
@@ -179,6 +186,9 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
     ),
 
+    /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
+    Message(Box<Transform<N>>, Option<Box<Transform<N>>>, Box<Transform<N>>, Box<Transform<N>>),
+
     /// For things that are not yet implemented, such as:
     /// Union, IntersectExcept, InstanceOf, Treat, Castable, Cast, Arrow, Unary, SimpleMap, Is, Before, After.
     NotImplemented(String),
@@ -199,7 +209,10 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Empty => write!(f, "Empty"),
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
+            Transform::Element(_, _) => write!(f, "constructed element"),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
+            Transform::LiteralComment(_) => write!(f, "literal comment"),
+            Transform::LiteralProcessingInstruction(_, _) => write!(f, "literal processing-instruction"),
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {
@@ -258,6 +271,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
+            Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
@@ -432,10 +446,10 @@ impl TryFrom<&str> for NodeTest {
                     }))
                 }
             }
-            _ => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: "invalid NodeTest".to_string(),
-            }),
+            _ => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                "invalid NodeTest".to_string(),
+            )),
         }
     }
 }

@@ -4,7 +4,7 @@ use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 
-use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
@@ -88,14 +88,15 @@ impl<N: Node> Debug for Template<N> {
 }
 
 /// Apply templates to the select expression.
-pub(crate) fn apply_templates<N: Node>(
+pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over it's items.
     // Each iteration becomes an item in the result sequence.
-    ctxt.dispatch(s)?.iter().try_fold(vec![], |mut result, i| {
-        let templates = ctxt.find_templates(i)?;
+    ctxt.dispatch(stctxt, s)?.iter().try_fold(vec![], |mut result, i| {
+        let templates = ctxt.find_templates(stctxt, i)?;
         // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
         let matching = if templates.len() > 1 {
             if templates[0].priority == templates[1].priority
@@ -126,14 +127,17 @@ pub(crate) fn apply_templates<N: Node>(
             .current(vec![i.clone()])
             .current_templates(templates)
             .build()
-            .dispatch(&matching.body)?;
+            .dispatch(stctxt, &matching.body)?;
         result.append(&mut u);
         Ok(result)
     })
 }
 
 /// Apply template with a higher import precedence.
-pub(crate) fn apply_imports<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub(crate) fn apply_imports<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
     let cur = &(ctxt.current_templates[0]);
@@ -149,19 +153,22 @@ pub(crate) fn apply_imports<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, E
         ContextBuilder::from(ctxt)
             .current_templates(next.clone())
             .build()
-            .dispatch(&next[0].body)
+            .dispatch(stctxt, &next[0].body)
     } else {
         Ok(vec![])
     }
 }
 
 /// Apply the next template that matches.
-pub(crate) fn next_match<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+pub(crate) fn next_match<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+) -> Result<Sequence<N>, Error> {
     if ctxt.current_templates.len() > 2 {
         ContextBuilder::from(ctxt)
             .current_templates(ctxt.current_templates.iter().skip(1).cloned().collect())
             .build()
-            .dispatch(&ctxt.current_templates[1].body)
+            .dispatch(stctxt, &ctxt.current_templates[1].body)
     } else {
         Ok(vec![])
     }

@@ -12,8 +12,12 @@ use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
+use xrust::transform::context::StaticContext;
 use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
 use xrust::xslt::from_document;
+
+// This is for the callback in the static context
+type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 // A little helper function that wraps the toplevel node in a Document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
@@ -52,7 +56,7 @@ ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
 
 // Let 'er rip!
 // Evaluate the transformation
-let seq = ctxt.evaluate()
+let seq = ctxt.evaluate(&mut StaticContext::<F>::new())
     .expect("evaluation failed");
 
 // Serialise the sequence as XML
@@ -64,6 +68,7 @@ use std::rc::Rc;
 use crate::item::{Item, Node, NodeType, Sequence};
 use crate::output::*;
 use crate::parser::xpath::parse;
+use crate::parser::avt::parse as parse_avt;
 use crate::pattern::Pattern;
 use crate::qname::*;
 use crate::transform::context::{Context, ContextBuilder};
@@ -203,15 +208,15 @@ where
             ) {
                 Ok(u) => u,
                 Err(_) => {
-                    return Result::Err(Error {
-                        kind: ErrorKind::Unknown,
-                        message: format!(
+                    return Result::Err(Error::new(
+                        ErrorKind::Unknown,
+                        format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
                             h,
                             base.clone()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
-                    });
+                    ));
                 }
             };
             let xml = g(&url)?;
@@ -249,15 +254,15 @@ where
             ) {
                 Ok(u) => u,
                 Err(_) => {
-                    return Result::Err(Error {
-                        kind: ErrorKind::Unknown,
-                        message: format!(
+                    return Result::Err(Error::new(
+                        ErrorKind::Unknown,
+                        format!(
                             "unable to parse href URL \"{}\" baseurl \"{}\"",
                             h,
                             base.clone()
                                 .map_or(String::from("--no base--"), |b| b.to_string())
                         ),
-                    });
+                    ));
                 }
             };
             let xml = g(&url)?;
@@ -440,11 +445,11 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                     .replace('\"', "&quot;");
                                 Ok(Transform::Literal(Rc::new(Item::Value(Value::from(text)))))
                             }
-                            _ => Result::Err(Error {
-                                kind: ErrorKind::TypeError,
-                                message: "disable-output-escaping only accepts values yes or no."
+                            _ => Result::Err(Error::new(
+                                ErrorKind::TypeError,
+                                "disable-output-escaping only accepts values yes or no."
                                     .to_string(),
-                            }),
+                            )),
                         }
                     } else {
                         let text = n
@@ -477,10 +482,10 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     if !s.to_string().is_empty() {
                         Ok(parse::<N>(&s.to_string())?)
                     } else {
-                        Result::Err(Error {
-                            kind: ErrorKind::TypeError,
-                            message: "missing select attribute".to_string(),
-                        })
+                        Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing select attribute".to_string(),
+                        ))
                     }
                 }
                 (Some(XSLTNS), "if") => {
@@ -500,10 +505,10 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             Box::new(Transform::Empty),
                         ))
                     } else {
-                        Result::Err(Error {
-                            kind: ErrorKind::TypeError,
-                            message: "missing test attribute".to_string(),
-                        })
+                        Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing test attribute".to_string(),
+                        ))
                     }
                 }
                 (Some(XSLTNS), "choose") => {
@@ -536,10 +541,10 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                                         )
                                                     ));
                                                 } else {
-                                                    status.replace(Error { kind: ErrorKind::TypeError, message: "missing test attribute".to_string() });
+                                                    status.replace(Error::new(ErrorKind::TypeError, "missing test attribute".to_string()));
                                                 }
                                             } else {
-                                                status.replace(Error { kind: ErrorKind::TypeError, message: "invalid content in choose element: when follows otherwise".to_string() });
+                                                status.replace(Error::new(ErrorKind::TypeError, "invalid content in choose element: when follows otherwise".to_string()));
                                             }
                                         }
                                         (Some(XSLTNS), "otherwise") => {
@@ -553,23 +558,23 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                                         },
                                                     )?));
                                             } else {
-                                                status.replace(Error { kind: ErrorKind::TypeError, message: "invalid content in choose element: no when elements".to_string() });
+                                                status.replace(Error::new(ErrorKind::TypeError, "invalid content in choose element: no when elements".to_string()));
                                             }
                                         }
                                         _ => {
-                                            status.replace(Error { kind: ErrorKind::TypeError, message: "invalid element content in choose element".to_string() });
+                                            status.replace(Error::new(ErrorKind::TypeError, "invalid element content in choose element".to_string()));
                                         }
                                     }
                                 }
                                 NodeType::Text => {
                                     if !n.to_string().trim().is_empty() {
-                                        status.replace(Error { kind: ErrorKind::TypeError, message: "invalid text content in choose element".to_string() });
+                                        status.replace(Error::new(ErrorKind::TypeError, "invalid text content in choose element".to_string()));
                                     }
                                 }
                                 NodeType::Comment |
                                 NodeType::ProcessingInstruction => {}
                                 _ => {
-                                    status.replace(Error { kind: ErrorKind::TypeError, message: "invalid content in choose element".to_string() });
+                                    status.replace(Error::new(ErrorKind::TypeError, "invalid content in choose element".to_string()));
                                 }
                             }
                             Ok::<(), Error>(())
@@ -597,10 +602,10 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             )?)),
                         ))
                     } else {
-                        Result::Err(Error {
-                            kind: ErrorKind::TypeError,
-                            message: "missing select attribute".to_string(),
-                        })
+                        Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing select attribute".to_string(),
+                        ))
                     }
                 }
                 (Some(XSLTNS), "for-each-group") => {
@@ -659,16 +664,16 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 )?)),
                             )),
                             // TODO: group-starting-with and group-ending-with
-                            _ => Result::Err(Error {
-                                kind: ErrorKind::NotImplemented,
-                                message: "invalid grouping attribute(s) specified".to_string(),
-                            }),
+                            _ => Result::Err(Error::new(
+                                ErrorKind::NotImplemented,
+                                "invalid grouping attribute(s) specified".to_string(),
+                            )),
                         }
                     } else {
-                        Result::Err(Error {
-                            kind: ErrorKind::TypeError,
-                            message: "missing select attribute".to_string(),
-                        })
+                        Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing select attribute".to_string(),
+                        ))
                     }
                 }
                 (Some(XSLTNS), "copy") => {
@@ -696,6 +701,25 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
                     }
                 }
+                (Some(XSLTNS), "element") => {
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    if m.to_string().is_empty() {
+                        return Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing name attribute".to_string(),
+                        ))
+                    }
+                    Ok(Transform::Element(
+                        Box::new(parse_avt(m.to_string().as_str())?),
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            },
+                        )?)),
+                    ))
+                }
                 (Some(XSLTNS), "attribute") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
                     if !m.to_string().is_empty() {
@@ -710,11 +734,56 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             )?)),
                         ))
                     } else {
-                        Result::Err(Error {
-                            kind: ErrorKind::TypeError,
-                            message: "missing select attribute".to_string(),
-                        })
+                        Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing name attribute".to_string(),
+                        ))
                     }
+                }
+                (Some(XSLTNS), "comment") => {
+                    Ok(Transform::LiteralComment(
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            }
+                        )?))
+                    ))
+                }
+                (Some(XSLTNS), "processing-instruction") => {
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    if m.to_string().is_empty() {
+                        return Result::Err(Error::new(
+                            ErrorKind::TypeError,
+                            "missing name attribute".to_string(),
+                        ))
+                    }
+                    Ok(Transform::LiteralProcessingInstruction(
+                        Box::new(parse_avt(m.to_string().as_str())?),
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            }
+                        )?))
+                    ))
+                }
+                (Some(XSLTNS), "message") => {
+                    let t = n.get_attribute(&QualifiedName::new(None, None, "terminate".to_string()));
+                    Ok(Transform::Message(
+                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
+                            vec![],
+                            |mut body, e| {
+                                body.push(to_transform(e)?);
+                                Ok(body)
+                            }
+                        )?)),
+                        None,
+                        Box::new(Transform::Empty),
+                        Box::new(if t.to_string().is_empty() {Transform::False} else {Transform::Literal(Rc::new(Item::Value(Value::from(t.to_string()))))})
+                    ))
                 }
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(
                     "unsupported XSL element \"{}\"",

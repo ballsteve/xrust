@@ -7,7 +7,7 @@ use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::parsepicture::parse as picture_parse;
-use crate::transform::context::Context;
+use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
@@ -31,16 +31,17 @@ pub fn current_time<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 
 /// XPath format-date-time function.
 /// NB. language, calendar, and place are not implemented.
-pub fn format_date_time<N: Node>(
+pub fn format_date_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
     _calendar: &Option<Box<Transform<N>>>,
     _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
-    let dt = ctxt.dispatch(value)?;
-    let pic = picture_parse(&ctxt.dispatch(picture)?.to_string())?;
+    let dt = ctxt.dispatch(stctxt, value)?;
+    let pic = picture_parse(&ctxt.dispatch(stctxt, picture)?.to_string())?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {
@@ -75,16 +76,17 @@ pub fn format_date_time<N: Node>(
 
 /// XPath format-date function.
 /// NB. language, calendar, and place are not implemented.
-pub fn format_date<N: Node>(
+pub fn format_date<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
     _calendar: &Option<Box<Transform<N>>>,
     _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
-    let dt = ctxt.dispatch(value)?;
-    let pic = picture_parse(&ctxt.dispatch(picture)?.to_string())?;
+    let dt = ctxt.dispatch(stctxt, value)?;
+    let pic = picture_parse(&ctxt.dispatch(stctxt, picture)?.to_string())?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {
@@ -120,16 +122,17 @@ pub fn format_date<N: Node>(
 
 /// XPath format-time function.
 /// NB. language, calendar, and place are not implemented.
-pub fn format_time<N: Node>(
+pub fn format_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
     _calendar: &Option<Box<Transform<N>>>,
     _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
-    let dt = ctxt.dispatch(value)?;
-    let pic = picture_parse(&ctxt.dispatch(picture)?.to_string())?;
+    let dt = ctxt.dispatch(stctxt, value)?;
+    let pic = picture_parse(&ctxt.dispatch(stctxt, picture)?.to_string())?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {

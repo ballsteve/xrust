@@ -14,6 +14,8 @@ pub(crate) mod common;
 pub(crate) mod xml;
 pub mod xpath;
 
+pub(crate) mod avt;
+
 pub type ParseInput<'a> = (&'a str, ParserState);
 pub type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
 
@@ -112,10 +114,10 @@ impl ParserState {
 
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
         match self.ext_dtd_resolver {
-            None => Err(Error {
-                kind: ErrorKind::Unknown,
-                message: "No external DTD resolver provided.".to_string(),
-            }),
+            None => Err(Error::new(
+                ErrorKind::Unknown,
+                "No external DTD resolver provided.".to_string(),
+            )),
             Some(e) => e(locdir, uri),
         }
     }

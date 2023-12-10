@@ -377,6 +377,7 @@ dependencies = [
 [[package]]
 name = "earleybird"
 version = "0.1.0"
+source = "git+https://github.com/mdubinko/earleybird.git#68e5bdeccd4f39f024cb68876c2c92d0e6354e6b"
 dependencies = [
  "argh",
  "env_logger",

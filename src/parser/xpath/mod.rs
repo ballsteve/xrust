@@ -42,28 +42,28 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
 
     let state = ParserState::new(None, None);
     match xpath_expr((input, state)) {
-        Ok((_, x)) => Result::Ok(x),
+        Ok((_, x)) => Ok(x),
         Err(err) => match err {
-            ParseError::Combinator => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Unrecoverable parser error.".to_string(),
-            }),
-            ParseError::NotWellFormed => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Unrecognised extra characters.".to_string(),
-            }),
-            ParseError::MissingNameSpace => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Missing namespace declaration.".to_string(),
-            }),
-            ParseError::Notimplemented => Result::Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::ParseError,
-                message: "Unimplemented feature.".to_string(),
-            }),
-            _ => Err(xdmerror::Error {
-                kind: xdmerror::ErrorKind::Unknown,
-                message: "Unknown error".to_string(),
-            }),
+            ParseError::Combinator => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Unrecoverable parser error.".to_string(),
+            )),
+            ParseError::NotWellFormed => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Unrecognised extra characters.".to_string(),
+            )),
+            ParseError::MissingNameSpace => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Missing namespace declaration.".to_string(),
+            )),
+            ParseError::Notimplemented => Result::Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::ParseError,
+                "Unimplemented feature.".to_string(),
+            )),
+            _ => Err(xdmerror::Error::new(
+                xdmerror::ErrorKind::Unknown,
+                "Unknown error".to_string(),
+            )),
         },
     }
 }
@@ -83,7 +83,7 @@ fn xpath_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
 }
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+pub fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),

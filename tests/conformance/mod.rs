@@ -18,10 +18,10 @@ fn dtdfileresolve() -> fn(Option<String>, String) -> Result<String, Error> {
             Some(ld) => ld + uri.as_str(),
         };
         match fs::read_to_string(u) {
-            Err(_) => Err(Error {
-                kind: ErrorKind::Unknown,
-                message: "Unable to read external DTD".to_string(),
-            }),
+            Err(_) => Err(Error::new(
+                ErrorKind::Unknown,
+                "Unable to read external DTD".to_string(),
+            )),
             Ok(s) => Ok(s),
         }
     }

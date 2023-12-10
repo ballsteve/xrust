@@ -1,7 +1,7 @@
 //! Navigation routines
 
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
-use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, NodeMatch, Transform};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
@@ -46,12 +46,13 @@ pub(crate) fn context<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> 
 
 /// Each transform in the supplied vector is evaluated.
 /// The sequence returned by a transform is used as the context for the next transform.
-pub(crate) fn compose<N: Node>(
+pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
-        ContextBuilder::from(ctxt).current(seq).build().dispatch(t)
+        ContextBuilder::from(ctxt).current(seq).build().dispatch(stctxt, t)
     })
 }
 
@@ -237,6 +238,8 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
         }
     }) {
         Ok(mut r) => {
+            // Sort in document order
+            r.sort_unstable_by(|a, b| get_node_unchecked(a).cmp_document_order(get_node_unchecked(b)));
             // Eliminate duplicates
             r.dedup_by(|a, b| {
                 get_node(a).map_or(false, |aa| get_node(b).map_or(false, |bb| aa.is_same(bb)))
@@ -247,6 +250,12 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
     }
 }
 
+fn get_node_unchecked<N: Node>(i: &Rc<Item<N>>) -> &N {
+    match &**i {
+        Item::Node(n) => n,
+        _ => panic!("not a node"),
+    }
+}
 fn get_node<N: Node>(i: &Rc<Item<N>>) -> Result<&N, Error> {
     match &**i {
         Item::Node(n) => Ok(n),
@@ -255,15 +264,16 @@ fn get_node<N: Node>(i: &Rc<Item<N>>) -> Result<&N, Error> {
 }
 
 /// Remove items that don't match the predicate.
-pub(crate) fn filter<N: Node>(
+pub(crate) fn filter<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
         if ContextBuilder::from(ctxt)
             .current(vec![i.clone()])
             .build()
-            .dispatch(predicate)?
+            .dispatch(stctxt, predicate)?
             .to_bool()
         {
             acc.push(i.clone())
