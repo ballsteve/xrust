@@ -1,7 +1,36 @@
-/*!
-The transformation engine.
+/*! The transformation engine.
 
-Describes a transformation and provides an interpreter that produces a [Sequence], given an initial context.
+A [Transform] performs processing, control flow, calculations, navigation, and construction to produce a [Sequence]. It starts with an initial context, the most important component of which is the current [Item]; this is often a [Node] that is the source document.
+
+All functions in the [Transform] operate via the [Node] trait. This makes the transformation engine independent of the syntax of the source, stylesheet, and result documents. Any [Node]s created by the transformation use the context's result document object.
+
+The following transformation implements the expression "1 + 1". The result is (hopefully) "2".
+
+```rust
+# use std::rc::Rc;
+# use xrust::xdmerror::Error;
+# use xrust::trees::intmuttree::RNode;
+use xrust::value::Value;
+use xrust::item::{Item, Node, Sequence, SequenceTrait};
+use xrust::transform::{Transform, ArithmeticOperand, ArithmeticOperator};
+use xrust::transform::context::{Context, StaticContext};
+# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+
+let xform = Transform::Arithmetic(vec![
+        ArithmeticOperand::new(
+            ArithmeticOperator::Noop,
+            Transform::Literal(Rc::new(Item::<RNode>::Value(Value::from(1))))
+        ),
+        ArithmeticOperand::new(
+            ArithmeticOperator::Add,
+            Transform::Literal(Rc::new(Item::<RNode>::Value(Value::from(1))))
+        )
+    ]);
+let sequence = Context::new()
+    .dispatch(&mut StaticContext::<F>::new(), &xform)
+    .expect("evaluation failed");
+assert_eq!(sequence.to_string(), "2")
+```
 */
 
 pub(crate) mod booleans;
@@ -12,16 +41,20 @@ pub(crate) mod datetime;
 pub(crate) mod functions;
 pub(crate) mod grouping;
 pub(crate) mod logic;
+pub(crate) mod misc;
 pub(crate) mod navigate;
 pub(crate) mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
-pub(crate) mod misc;
 
+#[allow(unused_imports)]
+use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType};
 use crate::qname::QualifiedName;
 use crate::value::Operator;
+#[allow(unused_imports)]
+use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use std::convert::TryFrom;
 use std::fmt;
@@ -187,7 +220,12 @@ pub enum Transform<N: Node> {
     ),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
-    Message(Box<Transform<N>>, Option<Box<Transform<N>>>, Box<Transform<N>>, Box<Transform<N>>),
+    Message(
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+    ),
 
     /// For things that are not yet implemented, such as:
     /// Union, IntersectExcept, InstanceOf, Treat, Castable, Cast, Arrow, Unary, SimpleMap, Is, Before, After.
@@ -212,7 +250,9 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Element(_, _) => write!(f, "constructed element"),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
-            Transform::LiteralProcessingInstruction(_, _) => write!(f, "literal processing-instruction"),
+            Transform::LiteralProcessingInstruction(_, _) => {
+                write!(f, "literal processing-instruction")
+            }
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {

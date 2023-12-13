@@ -12,7 +12,7 @@ use crate::xdmerror::{Error, ErrorKind};
 pub fn number<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    num: &Transform<N>
+    num: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, num)?;
     match n.len() {
@@ -38,7 +38,7 @@ pub fn number<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 pub fn sum<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    s: &Transform<N>
+    s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Rc::new(Item::Value(Value::Double(
         ctxt.dispatch(stctxt, s)?.iter().fold(0.0, |mut acc, i| {
@@ -52,7 +52,7 @@ pub fn sum<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 pub fn floor<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    f: &Transform<N>
+    f: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
     match n.len() {
@@ -70,7 +70,7 @@ pub fn floor<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 pub fn ceiling<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    c: &Transform<N>
+    c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
     match n.len() {

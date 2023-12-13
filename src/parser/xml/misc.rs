@@ -1,4 +1,3 @@
-use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::delimited::delimited;
@@ -13,6 +12,7 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseInput, ParseResult};
+use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::{Node, Value};
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'

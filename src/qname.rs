@@ -1,14 +1,12 @@
-//! # xrust::qname
-//!
 //! Support for Qualified Names.
 
+use crate::parser::xml::qname::qualname;
+use crate::parser::ParserState;
+use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::xdmerror::{Error, ErrorKind};
-use crate::parser::ParserState;
-use crate::parser::xml::qname::qualname;
 
 #[derive(Clone, Debug)]
 pub struct QualifiedName {
@@ -95,9 +93,10 @@ impl TryFrom<&str> for QualifiedName {
         let state = ParserState::new(None, None);
         match qualname()((s, state)) {
             Ok((_, qn)) => Ok(qn),
-            Err(_) => {
-                Err(Error::new(ErrorKind::ParseError, String::from("unable to parse qualified name")))
-            }
+            Err(_) => Err(Error::new(
+                ErrorKind::ParseError,
+                String::from("unable to parse qualified name"),
+            )),
         }
     }
 }

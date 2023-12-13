@@ -1,8 +1,53 @@
-//! # xrust::pattern
-//!
-//! Support for XPath patterns. This module provides both a parser to compile a pattern,
-//! and an interpreter to determine if an item matches a compiled pattern.
-//! Patterns are defined in XSLT 3.0 5.5.2
+/*! # Support for XPath patterns.
+
+This module provides both a parser to compile a [Pattern], and an interpreter to determine if an item matches a compiled pattern.
+
+Patterns are defined in XSLT 3.0 5.5.2.
+
+A string can be compiled as [Pattern] by using the ```try_from``` associated function.
+
+```rust
+# use xrust::item::Node;
+use xrust::pattern::Pattern;
+
+# fn compile<N: Node>() {
+let p: Pattern<N> = Pattern::try_from("child::foobar")
+        .expect("unable to compile pattern");
+# ()
+# }
+```
+
+An [Item] can then be tested to see if it matches the [Pattern]. To do that, it is necessary to have a transformation [Context].
+
+```rust
+# use std::rc::Rc;
+# use xrust::xdmerror::Error;
+# use xrust::item::{Item, NodeType};
+# use xrust::pattern::Pattern;
+# use xrust::transform::context::{Context, StaticContext};
+# use xrust::trees::intmuttree::{RNode, NodeBuilder};
+# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+let p = Pattern::try_from("/").expect("unable to compile pattern");
+let n = Rc::new(Item::Node(NodeBuilder::new(NodeType::Document).build()));
+// This pattern matches the root node
+assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), true)
+```
+
+```rust
+# use std::rc::Rc;
+# use xrust::xdmerror::Error;
+# use xrust::item::{Item, NodeType};
+# use xrust::pattern::Pattern;
+# use xrust::transform::context::{Context, StaticContext};
+# use xrust::trees::intmuttree::{RNode, NodeBuilder};
+# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+let p = Pattern::try_from("child::foobar").expect("unable to compile pattern");
+let n = Rc::new(Item::Node(NodeBuilder::new(NodeType::Document).build()));
+// This pattern will not match because "n" is not an element named "foobar"
+assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), false)
+```
+
+*/
 
 use std::convert::TryFrom;
 use std::fmt;
@@ -50,7 +95,8 @@ impl<N: Node> Pattern<N> {
         &self,
         ctxt: &Context<N>,
         stctxt: &mut StaticContext<F>,
-        i: &Rc<Item<N>>) -> bool {
+        i: &Rc<Item<N>>,
+    ) -> bool {
         match self {
             Pattern::Predicate(t) => ContextBuilder::from(ctxt)
                 .current(vec![i.clone()])
@@ -363,17 +409,22 @@ fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
 fn absolutepath_expr_pattern<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput) -> ParseResult<Pattern<N>> + 'a> {
     Box::new(map(
-        pair(map(tag("/"), |_| "/"), opt(relativepath_expr_pattern::<N>())),
+        pair(
+            map(tag("/"), |_| "/"),
+            opt(relativepath_expr_pattern::<N>()),
+        ),
         |(d, r)| match (d, r) {
             ("/", None) => {
                 // Matches the root node
-                Pattern::Selection(PathBuilder::new()
-                    .step(
-                        Axis::SelfDocument,
-                        Axis::SelfDocument,
-                        NodeTest::Kind(KindTest::Document),
-                    )
-                    .build())
+                Pattern::Selection(
+                    PathBuilder::new()
+                        .step(
+                            Axis::SelfDocument,
+                            Axis::SelfDocument,
+                            NodeTest::Kind(KindTest::Document),
+                        )
+                        .build(),
+                )
             }
             ("/", Some(_a)) => Pattern::Error(Error::new(
                 ErrorKind::NotImplemented,
@@ -381,8 +432,8 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
             )),
             _ => Pattern::Error(Error::new(
                 ErrorKind::Unknown,
-                String::from("unable to parse pattern")
-            ))
+                String::from("unable to parse pattern"),
+            )),
         },
     ))
 }

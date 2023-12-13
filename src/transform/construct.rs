@@ -108,11 +108,10 @@ pub(crate) fn literal_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         ));
     }
 
-    let a = ctxt
-        .rd
-        .clone()
-        .unwrap()
-        .new_attribute(qn.clone(), Value::from(ctxt.dispatch(stctxt, t)?.to_string()))?;
+    let a = ctxt.rd.clone().unwrap().new_attribute(
+        qn.clone(),
+        Value::from(ctxt.dispatch(stctxt, t)?.to_string()),
+    )?;
     Ok(vec![Rc::new(Item::Node(a))])
 }
 
@@ -153,14 +152,10 @@ pub(crate) fn literal_processing_instruction<N: Node, F: FnMut(&str) -> Result<(
         ));
     }
 
-    let pi = ctxt
-        .rd
-        .clone()
-        .unwrap()
-        .new_processing_instruction(
-            QualifiedName::new(None, None, ctxt.dispatch(stctxt, name)?.to_string()),
-            Value::from(ctxt.dispatch(stctxt, t)?.to_string())
-        )?;
+    let pi = ctxt.rd.clone().unwrap().new_processing_instruction(
+        QualifiedName::new(None, None, ctxt.dispatch(stctxt, name)?.to_string()),
+        Value::from(ctxt.dispatch(stctxt, t)?.to_string()),
+    )?;
     Ok(vec![Rc::new(Item::Node(pi))])
 }
 

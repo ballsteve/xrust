@@ -1,6 +1,6 @@
-//! # xrust::value
+//! An atomic value.
 //!
-//! An atomic value as an item in a sequence.
+//! An atomic value that is an item in a sequence.
 
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
@@ -190,7 +190,7 @@ impl Value {
                 Ok(i) => Ok(i),
                 Err(e) => Result::Err(Error::new(
                     ErrorKind::Unknown,
-                    format!("type conversion error: {}", e)
+                    format!("type conversion error: {}", e),
                 )),
             },
         }

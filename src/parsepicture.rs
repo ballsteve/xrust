@@ -15,15 +15,15 @@
 //   sequence::tuple,
 //    IResult,
 //};
-use crate::xdmerror::*;
-use crate::parser::{ParseInput, ParseResult, ParserState};
-use crate::parser::combinators::map::map;
 use crate::parser::combinators::alt::alt4;
 use crate::parser::combinators::many::many0;
+use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::anychar;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::xpath::support::none_of;
+use crate::parser::{ParseInput, ParseResult, ParserState};
+use crate::xdmerror::*;
 
 // This implementation translates an XPath picture string to a strftime format
 
@@ -78,17 +78,11 @@ fn marker() -> impl Fn(ParseInput) -> ParseResult<String> {
 
 #[allow(dead_code)]
 fn open_escape() -> impl Fn(ParseInput) -> ParseResult<String> {
-    map(
-        tuple2(anychar('['), anychar('[')),
-        |_| String::from("[")
-    )
+    map(tuple2(anychar('['), anychar('[')), |_| String::from("["))
 }
 #[allow(dead_code)]
 fn close_escape() -> impl Fn(ParseInput) -> ParseResult<String> {
-    map(
-        tuple2(anychar(']'), anychar(']')),
-        |_| String::from("]")
-    )
+    map(tuple2(anychar(']'), anychar(']')), |_| String::from("]"))
 }
 
 pub fn parse(e: &str) -> Result<String, Error> {
@@ -98,11 +92,16 @@ pub fn parse(e: &str) -> Result<String, Error> {
             if rem.is_empty() {
                 Ok(value)
             } else {
-                Err(Error::new(ErrorKind::Unknown,
-                               format!("extra characters after expression: \"{}\"", rem)))
+                Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!("extra characters after expression: \"{}\"", rem),
+                ))
             }
         }
-        Err(_) => Err(Error::new(ErrorKind::ParseError, String::from("unable to parse picture"))),
+        Err(_) => Err(Error::new(
+            ErrorKind::ParseError,
+            String::from("unable to parse picture"),
+        )),
     }
 }
 

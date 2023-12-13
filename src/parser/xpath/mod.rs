@@ -1,6 +1,46 @@
-//! # xrust::parser::xpath
-//!
-//! An XPath parser using the xrust parser combinator that produces a xrust transformation.
+/*! # Parse XPath expressions
+
+An XPath expression parser using the xrust parser combinator that produces a xrust transformation.
+
+```rust
+use xrust::parser::xpath::parse;
+# use xrust::item::Node;
+# fn do_parse<N: Node>() {
+let t = parse::<N>("/child::A/child::B/child::C").expect("unable to parse XPath expression");
+# }
+```
+
+"t" now contains a [Transform] that will return "C" elements that have a "B" parent and an "A" grandparent in the source document.
+
+To evaluate the transformation we need a Context with a source document as its current item.
+
+```rust
+# use std::rc::Rc;
+# use xrust::xdmerror::Error;
+use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
+use xrust::trees::intmuttree::{Document, NodeBuilder};
+use xrust::parser::xpath::parse;
+use xrust::transform::context::{Context, ContextBuilder, StaticContext};
+# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+
+let t = parse("/child::A/child::B/child::C")
+    .expect("unable to parse XPath expression");
+
+let source = Document::try_from(("<A><B><C/></B><B><C/></B></A>".to_string(), None, None))
+    .expect("unable to parse XML")
+    .content[0]
+    .clone();
+let mut doc = NodeBuilder::new(NodeType::Document).build();
+doc.push(source).expect("unable to attach root node");
+let context = ContextBuilder::new()
+    .current(vec![Rc::new(Item::Node(doc))])
+    .build();
+let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t)
+    .expect("evaluation failed");
+assert_eq!(sequence.len(), 2);
+assert_eq!(sequence.to_xml(), "<C></C><C></C>")
+```
+*/
 
 mod compare;
 mod context;
@@ -37,7 +77,7 @@ use crate::xdmerror;
 pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
     // Shortcut for empty
     if input.is_empty() {
-        return Ok(Transform::Empty)
+        return Ok(Transform::Empty);
     }
 
     let state = ParserState::new(None, None);
@@ -113,12 +153,7 @@ pub(crate) fn expr_wrapper<N: Node>(
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
 fn expr_single<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
-    Box::new(alt4(
-        or_expr(),
-        let_expr(),
-        for_expr(),
-         if_expr(),
-    ))
+    Box::new(alt4(or_expr(), let_expr(), for_expr(), if_expr()))
 }
 
 pub(crate) fn expr_single_wrapper<N: Node>(

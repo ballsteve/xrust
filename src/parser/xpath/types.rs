@@ -39,7 +39,8 @@ pub(crate) fn instanceof_expr<'a, N: Node + 'a>(
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
 // TODO: implement this parser fully
-fn sequencetype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn sequencetype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
+{
     Box::new(map(tag("empty-sequence()"), |_| {
         Transform::NotImplemented("sequencetype_expr".to_string())
     }))
@@ -106,7 +107,8 @@ fn castable_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Tr
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
 // TODO: implement this parser fully
-fn singletype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn singletype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
+{
     Box::new(map(pair(qualname_test(), tag("?")), |_| {
         Transform::NotImplemented("singletype_expr".to_string())
     }))

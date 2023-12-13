@@ -1,4 +1,3 @@
-use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
@@ -6,6 +5,7 @@ use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::element::content;
 use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::{Node, Value};
 
 // Reference ::= EntityRef | CharRef

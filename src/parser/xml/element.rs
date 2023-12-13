@@ -1,4 +1,3 @@
-use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;
@@ -14,6 +13,7 @@ use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::{Node, Value};
 
 // Element ::= EmptyElemTag | STag content ETag

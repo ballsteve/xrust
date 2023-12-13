@@ -11,7 +11,7 @@ use crate::transform::{KindTest, NameTest, NodeTest, WildcardOrName};
 use crate::parser::xml::qname::{ncname, qualname};
 
 pub(crate) fn qualname_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
-     Box::new(alt2(prefixed_name(), unprefixed_name()))
+    Box::new(alt2(prefixed_name(), unprefixed_name()))
 }
 fn unprefixed_name() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     Box::new(map(ncname(), |localpart| {
@@ -86,9 +86,10 @@ fn element_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
 // SchemaElementTest ::= "schema-element" "(" ElementNameDeclaration ")"
 fn schema_element_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {
     // TODO: ElementTest|SchemaElementTest
-    Box::new(map(tuple3(tag("schema-element("), qualname(), tag(")")), |_| {
-        NodeTest::Kind(KindTest::SchemaElement)
-    }))
+    Box::new(map(
+        tuple3(tag("schema-element("), qualname(), tag(")")),
+        |_| NodeTest::Kind(KindTest::SchemaElement),
+    ))
 }
 // AttributeTest ::= "attribute" "(" (AttribNameOrWildcard ("," TypeName))? ")"
 fn attribute_test() -> Box<dyn Fn(ParseInput) -> ParseResult<NodeTest>> {

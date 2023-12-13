@@ -9,12 +9,11 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::collections::HashMap;
 use std::fmt;
 
+pub(crate) mod avt;
 pub mod combinators;
 pub(crate) mod common;
-pub(crate) mod xml;
+pub mod xml;
 pub mod xpath;
-
-pub(crate) mod avt;
 
 pub type ParseInput<'a> = (&'a str, ParserState);
 pub type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;

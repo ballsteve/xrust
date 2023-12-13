@@ -100,7 +100,7 @@ pub fn name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 pub fn string<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    s: &Transform<N>
+    s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Rc::new(Item::Value(Value::from(
         ctxt.dispatch(stctxt, s)?.to_string(),
@@ -165,25 +165,21 @@ pub fn substring<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     // t is the index to start at,
     // l is the length of the substring at extract (or the rest of the string if missing)
     match l {
-        Some(m) => {
-            Ok(vec![Rc::new(Item::Value(Value::from(
-                ctxt.dispatch(stctxt, s)?
-                    .to_string()
-                    .graphemes(true)
-                    .skip(ctxt.dispatch(stctxt, t)?.to_int()? as usize - 1)
-                    .take(ctxt.dispatch(stctxt, m)?.to_int()? as usize)
-                    .collect::<String>(),
-            )))])
-        }
-        None => {
-            Ok(vec![Rc::new(Item::Value(Value::from(
-                ctxt.dispatch(stctxt, s)?
-                    .to_string()
-                    .graphemes(true)
-                    .skip(ctxt.dispatch(stctxt, t)?.to_int()? as usize - 1)
-                    .collect::<String>(),
-            )))])
-        }
+        Some(m) => Ok(vec![Rc::new(Item::Value(Value::from(
+            ctxt.dispatch(stctxt, s)?
+                .to_string()
+                .graphemes(true)
+                .skip(ctxt.dispatch(stctxt, t)?.to_int()? as usize - 1)
+                .take(ctxt.dispatch(stctxt, m)?.to_int()? as usize)
+                .collect::<String>(),
+        )))]),
+        None => Ok(vec![Rc::new(Item::Value(Value::from(
+            ctxt.dispatch(stctxt, s)?
+                .to_string()
+                .graphemes(true)
+                .skip(ctxt.dispatch(stctxt, t)?.to_int()? as usize - 1)
+                .collect::<String>(),
+        )))]),
     }
 }
 

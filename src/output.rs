@@ -1,3 +1,6 @@
+/*! How to serialise a tree structure.
+*/
+
 use crate::qname::QualifiedName;
 use core::fmt;
 

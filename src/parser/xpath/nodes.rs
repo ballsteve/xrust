@@ -18,8 +18,8 @@ use crate::parser::xpath::types::instanceof_expr;
 use crate::transform::{Axis, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
-pub(crate) fn union_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+pub(crate) fn union_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         separated_list1(
             map(
@@ -39,8 +39,8 @@ pub(crate) fn union_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseR
 }
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
-fn intersectexcept_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+fn intersectexcept_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
             instanceof_expr::<N>(),
@@ -63,8 +63,8 @@ fn intersectexcept_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseRe
     ))
 }
 
-pub(crate) fn path_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+pub(crate) fn path_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(alt3(
         absolutedescendant_expr::<N>(),
         absolutepath_expr::<N>(),
@@ -91,7 +91,8 @@ fn absolutedescendant_expr<'a, N: Node + 'a>(
 }
 
 // ('/' RelativePathExpr?)
-fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
+{
     Box::new(map(
         pair(tag("/"), opt(relativepath_expr::<N>())),
         |(_, r)| match r {
@@ -102,7 +103,8 @@ fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
+{
     Box::new(map(
         pair(
             step_expr::<N>(),
@@ -149,16 +151,16 @@ fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transf
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
-fn axisstep<'a, N: Node + 'a>() -> Box<dyn  Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
-    Box::new(map(pair(
-        alt2(forwardaxis(), reverseaxis()),
-        nodetest()
-    ), |(a, n)| {
-        Transform::Step(NodeMatch {
-            axis: Axis::from(a),
-            nodetest: n,
-        })
-    }))
+fn axisstep<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+    Box::new(map(
+        pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
+        |(a, n)| {
+            Transform::Step(NodeMatch {
+                axis: Axis::from(a),
+                nodetest: n,
+            })
+        },
+    ))
 }
 
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
@@ -194,11 +196,11 @@ fn reverseaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
         pair(
             // need alt8
             alt5(
-                    map(tag("parent"), |_| "parent"),
-                    map(tag("ancestor"), |_| "ancestor"),
-                    map(tag("ancestor-or-self"), |_| "ancestor-or-self"),
-                    map(tag("preceding"), |_| "preceding"),
-                    map(tag("preceding-sibling"), |_| "preceding-sibling"),
+                map(tag("parent"), |_| "parent"),
+                map(tag("ancestor"), |_| "ancestor"),
+                map(tag("ancestor-or-self"), |_| "ancestor-or-self"),
+                map(tag("preceding"), |_| "preceding"),
+                map(tag("preceding-sibling"), |_| "preceding-sibling"),
             ),
             tag("::"),
         ),

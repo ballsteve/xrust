@@ -52,7 +52,10 @@ pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
-        ContextBuilder::from(ctxt).current(seq).build().dispatch(stctxt, t)
+        ContextBuilder::from(ctxt)
+            .current(seq)
+            .build()
+            .dispatch(stctxt, t)
     })
 }
 
@@ -239,7 +242,9 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
     }) {
         Ok(mut r) => {
             // Sort in document order
-            r.sort_unstable_by(|a, b| get_node_unchecked(a).cmp_document_order(get_node_unchecked(b)));
+            r.sort_unstable_by(|a, b| {
+                get_node_unchecked(a).cmp_document_order(get_node_unchecked(b))
+            });
             // Eliminate duplicates
             r.dedup_by(|a, b| {
                 get_node(a).map_or(false, |aa| get_node(b).map_or(false, |bb| aa.is_same(bb)))

@@ -24,7 +24,7 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 pub fn tr_count<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
-    s: &Transform<N>
+    s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Rc::new(Item::Value(Value::from(
         ctxt.dispatch(stctxt, s)?.len() as i64,

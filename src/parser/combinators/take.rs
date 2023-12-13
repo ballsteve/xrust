@@ -93,7 +93,7 @@ where
             } else {
                 Ok((("", state), input.to_string()))
             }
-        },
+        }
         Some(0) => Err(ParseError::Combinator),
         Some(pos) => Ok(((&input[pos..], state), input[0..pos].to_string())),
     }

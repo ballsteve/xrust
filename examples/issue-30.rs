@@ -4,15 +4,15 @@
 
 use std::env;
 use std::fs::File;
-use std::path::Path;
 use std::io::Read;
+use std::path::Path;
 use std::rc::Rc;
 
-use xrust::xdmerror::Error;
-use xrust::item::{Item, SequenceTrait, Node, NodeType};
-use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+use xrust::item::{Item, Node, NodeType, SequenceTrait};
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{ContextBuilder, StaticContext};
+use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::xdmerror::Error;
 
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
@@ -29,7 +29,10 @@ fn main() {
     let exprpath = Path::new(&args[1]);
     let mut exprfile = match File::open(&exprpath) {
         Err(why) => {
-            panic!("unable to open XPath expression file \"{}\" due to \"{}\"", &args[1], why)
+            panic!(
+                "unable to open XPath expression file \"{}\" due to \"{}\"",
+                &args[1], why
+            )
         }
         Ok(f) => f,
     };
@@ -39,14 +42,16 @@ fn main() {
         Ok(_) => {}
     };
     // Parse the XPath expression
-    let xpath = parse::<RNode>(expr.trim())
-        .expect("XPath expression not recognised");
+    let xpath = parse::<RNode>(expr.trim()).expect("XPath expression not recognised");
 
     // Read the XML file
     let srcpath = Path::new(&args[2]);
     let mut srcfile = match File::open(&srcpath) {
         Err(why) => {
-            panic!("unable to open source document \"{}\" due to \"{}\"", &args[2], why)
+            panic!(
+                "unable to open source document \"{}\" due to \"{}\"",
+                &args[2], why
+            )
         }
         Ok(f) => f,
     };
@@ -70,7 +75,8 @@ fn main() {
         .build();
 
     // Let 'er rip!
-    let result = context.dispatch(&mut StaticContext::<F>::new(), &xpath)
+    let result = context
+        .dispatch(&mut StaticContext::<F>::new(), &xpath)
         .expect("failed to evaluate XPath");
 
     // Serialise the result document as XML

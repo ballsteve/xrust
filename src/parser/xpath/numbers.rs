@@ -14,8 +14,8 @@ use crate::parser::{ParseInput, ParseResult};
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
 
 // RangeExpr ::= AdditiveExpr ( 'to' AdditiveExpr)?
-pub(crate) fn range_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+pub(crate) fn range_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(
             additive_expr::<N>(),
@@ -118,8 +118,8 @@ fn multiplicative_expr<'a, N: Node + 'a>(
 }
 
 // UnaryExpr ::= ('-' | '+')* ValueExpr
-pub(crate) fn unary_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+pub(crate) fn unary_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
     Box::new(map(
         pair(many0(alt2(tag("-"), tag("+"))), value_expr::<N>()),
         |(u, v)| {

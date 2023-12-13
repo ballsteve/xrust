@@ -1,6 +1,6 @@
 /*! ## An XSLT compiler
 
-Compile an XSLT stylesheet into a transformation [Combinator]].
+Compile an XSLT stylesheet into a [Transform]ation.
 
 Once the stylesheet has been compiled, it may then be evaluated with an appropriate context.
 
@@ -67,8 +67,8 @@ use std::rc::Rc;
 
 use crate::item::{Item, Node, NodeType, Sequence};
 use crate::output::*;
-use crate::parser::xpath::parse;
 use crate::parser::avt::parse as parse_avt;
+use crate::parser::xpath::parse;
 use crate::pattern::Pattern;
 use crate::qname::*;
 use crate::transform::context::{Context, ContextBuilder};
@@ -707,7 +707,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         return Result::Err(Error::new(
                             ErrorKind::TypeError,
                             "missing name attribute".to_string(),
-                        ))
+                        ));
                     }
                     Ok(Transform::Element(
                         Box::new(parse_avt(m.to_string().as_str())?),
@@ -740,24 +740,19 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         ))
                     }
                 }
-                (Some(XSLTNS), "comment") => {
-                    Ok(Transform::LiteralComment(
-                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                            vec![],
-                            |mut body, e| {
-                                body.push(to_transform(e)?);
-                                Ok(body)
-                            }
-                        )?))
-                    ))
-                }
+                (Some(XSLTNS), "comment") => Ok(Transform::LiteralComment(Box::new(
+                    Transform::SequenceItems(n.child_iter().try_fold(vec![], |mut body, e| {
+                        body.push(to_transform(e)?);
+                        Ok(body)
+                    })?),
+                ))),
                 (Some(XSLTNS), "processing-instruction") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
                     if m.to_string().is_empty() {
                         return Result::Err(Error::new(
                             ErrorKind::TypeError,
                             "missing name attribute".to_string(),
-                        ))
+                        ));
                     }
                     Ok(Transform::LiteralProcessingInstruction(
                         Box::new(parse_avt(m.to_string().as_str())?),
@@ -766,23 +761,28 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             |mut body, e| {
                                 body.push(to_transform(e)?);
                                 Ok(body)
-                            }
-                        )?))
+                            },
+                        )?)),
                     ))
                 }
                 (Some(XSLTNS), "message") => {
-                    let t = n.get_attribute(&QualifiedName::new(None, None, "terminate".to_string()));
+                    let t =
+                        n.get_attribute(&QualifiedName::new(None, None, "terminate".to_string()));
                     Ok(Transform::Message(
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
                                 body.push(to_transform(e)?);
                                 Ok(body)
-                            }
+                            },
                         )?)),
                         None,
                         Box::new(Transform::Empty),
-                        Box::new(if t.to_string().is_empty() {Transform::False} else {Transform::Literal(Rc::new(Item::Value(Value::from(t.to_string()))))})
+                        Box::new(if t.to_string().is_empty() {
+                            Transform::False
+                        } else {
+                            Transform::Literal(Rc::new(Item::Value(Value::from(t.to_string()))))
+                        }),
                     ))
                 }
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(
@@ -803,7 +803,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         QualifiedName::new(
                             u.map(|v| v.to_string()),
                             n.name().get_prefix(),
-                            a.to_string()
+                            a.to_string(),
                         ),
                         Box::new(Transform::SequenceItems(content)),
                     ))

@@ -1,4 +1,3 @@
-use crate::trees::intmuttree::DTDDecl;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -11,6 +10,7 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::{ParseInput, ParseResult};
+use crate::trees::intmuttree::DTDDecl;
 
 //NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
 pub(crate) fn notationtype() -> impl Fn(ParseInput) -> ParseResult<()> {

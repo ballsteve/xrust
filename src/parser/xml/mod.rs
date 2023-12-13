@@ -8,7 +8,6 @@ mod reference;
 mod strings;
 mod xmldecl;
 
-use crate::trees::intmuttree::{DocumentBuilder, ExtDTDresolver, RNode, XMLDecl};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tuple::{tuple3, tuple4};
@@ -17,6 +16,7 @@ use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
 use crate::parser::xml::xmldecl::xmldecl;
 use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::trees::intmuttree::{DocumentBuilder, ExtDTDresolver, RNode, XMLDecl};
 use crate::{xdmerror, Document};
 
 // For backward compatibility

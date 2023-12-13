@@ -1,4 +1,3 @@
-use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::item::NodeType;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
@@ -14,6 +13,7 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::{Node, Value};
 use std::collections::HashMap;
 

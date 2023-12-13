@@ -1,4 +1,3 @@
-use crate::trees::intmuttree::DTDDecl;
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt7};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -15,6 +14,7 @@ use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseInput, ParseResult};
+use crate::trees::intmuttree::DTDDecl;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
 pub(crate) fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {

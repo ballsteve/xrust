@@ -1,11 +1,9 @@
-//! # xrust::error
-//!
-//! XDM, XPath, XQuery and XSLT errors.
+//! XDM, XPath, XQuery, and XSLT errors.
 
+use crate::qname::QualifiedName;
 use core::str;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::qname::QualifiedName;
 
 /// Errors defined in XPath
 #[derive(Copy, Clone, Debug, PartialEq)]
@@ -33,7 +31,7 @@ pub enum ErrorKind {
     ContextNotNode,
     /// XPTY0020
     Terminated,
-    /// XTMM9000^http://www.w3.org/2005/xqt-errors
+    /// XTMM9000 - (http://)www.w3.org/2005/xqt-errors
     NotImplemented,
     ParseError,
     Unknown,
@@ -72,14 +70,18 @@ impl fmt::Display for ErrorKind {
 pub struct Error {
     pub kind: ErrorKind,
     pub message: String,
-    pub code: Option<QualifiedName>
+    pub code: Option<QualifiedName>,
 }
 
 impl std::error::Error for Error {}
 
 impl Error {
     pub fn new(kind: ErrorKind, message: String) -> Self {
-        Error { kind, message, code: None }
+        Error {
+            kind,
+            message,
+            code: None,
+        }
     }
 }
 

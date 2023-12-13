@@ -1,16 +1,18 @@
-//! # xrust::item
-//!
-//! Sequence Item module.
-//! An Item is a Node, Function or Atomic Value.
-//!
-//! Nodes are implemented as a trait.
+/*! Sequences and Items.
 
-use std::cmp::Ordering;
+A [Sequence] is the fundamental data type in XPath. It is a series of zero or more [Item]s.
+
+An [Item] is a [Node], Function or atomic [Value].
+
+[Node]s are defined as a trait.
+*/
+
 use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
+use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
@@ -278,16 +280,10 @@ impl<N: Node> Item<N> {
             Item::Value(v) => match other {
                 Item::Value(w) => v.compare(w, op),
                 Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
-                _ => Result::Err(Error::new(
-                    ErrorKind::TypeError,
-                    String::from("type error"),
-                )),
+                _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             Item::Node(..) => other.compare(&Item::Value(Value::String(self.to_string())), op),
-            _ => Result::Err(Error::new(
-                ErrorKind::TypeError,
-                String::from("type error"),
-            )),
+            _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
     }
 

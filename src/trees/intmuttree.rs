@@ -337,24 +337,32 @@ impl ItemNode for RNode {
         }
     }
     /// Serialise as XML
-    fn to_xml(&self) -> String {to_xml_int(self, &OutputDefinition::new(), vec![], 0)}
+    fn to_xml(&self) -> String {
+        to_xml_int(self, &OutputDefinition::new(), vec![], 0)
+    }
     /// Serialise the node as XML, with options such as indentation.
-    fn to_xml_with_options(&self, od: &OutputDefinition) -> String { to_xml_int(self, od, vec![], 0) }
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+        to_xml_int(self, od, vec![], 0)
+    }
 
-    fn is_same(&self, other: &Self) -> bool { Rc::ptr_eq(self, other) }
-    fn document_order(&self) -> Vec<usize> { doc_order(self) }
+    fn is_same(&self, other: &Self) -> bool {
+        Rc::ptr_eq(self, other)
+    }
+    fn document_order(&self) -> Vec<usize> {
+        doc_order(self)
+    }
     fn cmp_document_order(&self, other: &Self) -> Ordering {
         let this_order = self.document_order();
         let other_order = other.document_order();
         // zip the two iterators and compare usizes
-//        let mut it = this_order.iter().zip(other_order.iter());
+        //        let mut it = this_order.iter().zip(other_order.iter());
         // Implementation note: fold seems to be consuming all of the items, so try an explicit loop instead
-//        let m = (&mut it).fold(
-//            Ordering::Equal,
-//            |acc, (t, o)| {
-//                if acc == Ordering::Equal { t.cmp(o) } else { acc }
-//            }
-//        );
+        //        let m = (&mut it).fold(
+        //            Ordering::Equal,
+        //            |acc, (t, o)| {
+        //                if acc == Ordering::Equal { t.cmp(o) } else { acc }
+        //            }
+        //        );
         // and then unzip and compare the remaining vectors, at least one of which should be empty
         let mut this_it = this_order.iter();
         let mut other_it = other_order.iter();
@@ -362,9 +370,9 @@ impl ItemNode for RNode {
             match (this_it.next(), other_it.next()) {
                 (Some(t), Some(o)) => {
                     if t < o {
-                        return Ordering::Less
+                        return Ordering::Less;
                     } else if t > o {
-                        return Ordering::Greater
+                        return Ordering::Greater;
                     }
                     // otherwise continue the loop
                 }
@@ -380,7 +388,9 @@ impl ItemNode for RNode {
     fn child_iter(&self) -> Self::NodeIterator {
         Box::new(Children::new(self))
     }
-    fn ancestor_iter(&self) -> Self::NodeIterator { Box::new(Ancestors::new(self)) }
+    fn ancestor_iter(&self) -> Self::NodeIterator {
+        Box::new(Ancestors::new(self))
+    }
     fn owner_document(&self) -> Self {
         if self.node_type() == NodeType::Document {
             self.clone()
@@ -420,9 +430,7 @@ impl ItemNode for RNode {
             .build())
     }
     fn new_comment(&self, v: Value) -> Result<Self, Error> {
-        Ok(NodeBuilder::new(NodeType::Comment)
-            .value(v)
-            .build())
+        Ok(NodeBuilder::new(NodeType::Comment).value(v).build())
     }
     fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::ProcessingInstruction)
@@ -517,10 +525,7 @@ impl ItemNode for RNode {
 
     fn get_canonical(&self) -> Result<Self, Error> {
         match self.node_type() {
-            NodeType::Comment => Err(Error::new(
-                ErrorKind::TypeError,
-                "".to_string(),
-            )),
+            NodeType::Comment => Err(Error::new(ErrorKind::TypeError, "".to_string())),
             NodeType::Text => {
                 let v = match self.value() {
                     Value::String(s) => {
@@ -558,7 +563,11 @@ impl ItemNode for RNode {
 
 impl Debug for Node {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        write!(f, "type {} name {:?} value {:?}", self.node_type, self.name, self.value)
+        write!(
+            f,
+            "type {} name {:?} value {:?}",
+            self.node_type, self.name, self.value
+        )
     }
 }
 
@@ -566,23 +575,21 @@ impl Debug for Node {
 fn doc_order(n: &RNode) -> Vec<usize> {
     match n.node_type {
         NodeType::Document => vec![1 as usize],
-        NodeType::Element |
-        NodeType::Text |
-        NodeType::Comment |
-        NodeType::ProcessingInstruction => {
+        NodeType::Element
+        | NodeType::Text
+        | NodeType::Comment
+        | NodeType::ProcessingInstruction => {
             let p = n.parent.borrow();
             match &*p {
-                Some(q) => {
-                    match Weak::upgrade(&q) {
-                        Some(r) => {
-                            let idx = find_index(&r, &n).expect("unable to locate node in parent");
-                            let mut a = doc_order(&r);
-                            a.push(idx + 2);
-                            a
-                        }
-                        None => vec![1 as usize],
+                Some(q) => match Weak::upgrade(&q) {
+                    Some(r) => {
+                        let idx = find_index(&r, &n).expect("unable to locate node in parent");
+                        let mut a = doc_order(&r);
+                        a.push(idx + 2);
+                        a
                     }
-                }
+                    None => vec![1 as usize],
+                },
                 None => vec![1 as usize],
             }
         }
@@ -599,25 +606,25 @@ fn doc_order(n: &RNode) -> Vec<usize> {
 // This handles the XML serialisation of the document.
 // "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
 // "indent" is the current level of identation.
-fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<String>)>, indent: usize) -> String {
+fn to_xml_int(
+    node: &RNode,
+    od: &OutputDefinition,
+    ns: Vec<(String, Option<String>)>,
+    indent: usize,
+) -> String {
     match node.node_type {
-        NodeType::Document => {
-            node.children
-                .borrow()
-                .iter()
-                .fold(String::new(), |mut result, c| {
-                    result.push_str(to_xml_int(c, od, ns.clone(), indent + 2).as_str());
-                    result
-                })
-        }
+        NodeType::Document => node
+            .children
+            .borrow()
+            .iter()
+            .fold(String::new(), |mut result, c| {
+                result.push_str(to_xml_int(c, od, ns.clone(), indent + 2).as_str());
+                result
+            }),
         NodeType::Element => {
             let mut result = String::from("<");
             // Elements must have a name, so unpack it
-            let qn = node.name
-                .borrow()
-                .as_ref()
-                .unwrap()
-                .clone();
+            let qn = node.name.borrow().as_ref().unwrap().clone();
             result.push_str(qn.to_string().as_str());
 
             // Check if any XML Namespaces need to be declared
@@ -625,33 +632,28 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<Strin
             let mut declared = ns.clone();
             let mut newns: Vec<(String, Option<String>)> = vec![];
             // First, the element itself
-            namespace_check(&qn, &declared).iter()
-                .for_each(|m| {
+            namespace_check(&qn, &declared).iter().for_each(|m| {
+                newns.push(m.clone());
+                declared.push(m.clone())
+            });
+            // Next, it's attributes
+            node.attributes.borrow().iter().for_each(|(k, _)| {
+                namespace_check(k, &declared).iter().for_each(|m| {
                     newns.push(m.clone());
                     declared.push(m.clone())
-                });
-            // Next, it's attributes
-            node.attributes
-                .borrow()
-                .iter()
-                .for_each(|(k, _)| {
-                    namespace_check(k, &declared).iter()
-                        .for_each(|m| {
-                            newns.push(m.clone());
-                            declared.push(m.clone())
-                        })
-                });
+                })
+            });
             // Finally, it's child elements
             node.child_iter()
                 .filter(|c| c.node_type == NodeType::Element)
                 .for_each(|c| {
-                c.name.borrow().as_ref().map(|d| namespace_check(d, &declared).iter()
-                    .for_each(|m| {
-                        newns.push(m.clone());
-                        declared.push(m.clone())
-                    })
-                );
-            });
+                    c.name.borrow().as_ref().map(|d| {
+                        namespace_check(d, &declared).iter().for_each(|m| {
+                            newns.push(m.clone());
+                            declared.push(m.clone())
+                        })
+                    });
+                });
             newns.iter().for_each(|(u, p)| {
                 result.push_str(" xmlns");
                 if let Some(q) = p {
@@ -671,25 +673,25 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<Strin
 
             // Content of the element.
             // If the indent option is enabled, then if no child is a text node then add spacing.
-            let do_indent: bool = od.get_indent().then(|| {
-                node.child_iter().fold(true, |mut acc, c| {
-                    if acc && c.node_type == NodeType::Text {
-                        acc = false
-                    }
-                    acc
+            let do_indent: bool = od
+                .get_indent()
+                .then(|| {
+                    node.child_iter().fold(true, |mut acc, c| {
+                        if acc && c.node_type == NodeType::Text {
+                            acc = false
+                        }
+                        acc
+                    })
                 })
-            }).map_or(false, |b| b);
+                .map_or(false, |b| b);
 
-            node.children
-                .borrow()
-                .iter()
-                .for_each(|c| {
-                    if do_indent {
-                        result.push('\n');
-                        (0..indent).for_each(|_| result.push(' '))
-                    }
-                    result.push_str(to_xml_int(c, od, newns.clone(), indent + 2).as_str())
-                });
+            node.children.borrow().iter().for_each(|c| {
+                if do_indent {
+                    result.push('\n');
+                    (0..indent).for_each(|_| result.push(' '))
+                }
+                result.push_str(to_xml_int(c, od, newns.clone(), indent + 2).as_str())
+            });
             if do_indent && indent > 1 {
                 result.push('\n');
                 (0..(indent - 2)).for_each(|_| result.push(' '))
@@ -708,14 +710,21 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<Strin
         NodeType::Text => node.value().to_string(),
         NodeType::Comment => {
             let mut result = String::from("<!--");
-            let s = node.value.as_ref().map_or("".to_string(), |n| n.to_string());
+            let s = node
+                .value
+                .as_ref()
+                .map_or("".to_string(), |n| n.to_string());
             result.push_str(s.as_str());
             result.push_str("-->");
             result
         }
         NodeType::ProcessingInstruction => {
             let mut result = String::from("<?");
-            let s = node.name.borrow().as_ref().map_or("".to_string(), |n| n.to_string());
+            let s = node
+                .name
+                .borrow()
+                .as_ref()
+                .map_or("".to_string(), |n| n.to_string());
             result.push_str(s.as_str());
             result.push(' ');
             let t = node.value.clone().map_or("".to_string(), |n| n.to_string());
@@ -729,7 +738,10 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, ns: Vec<(String, Option<Strin
 
 // Checks if this node's name is in a namespace that has already been declared.
 // Returns a namespace to be declared if required, (URI, prefix).
-fn namespace_check(qn: &QualifiedName, ns: &Vec<(String, Option<String>)>) -> Option<(String, Option<String>)> {
+fn namespace_check(
+    qn: &QualifiedName,
+    ns: &Vec<(String, Option<String>)>,
+) -> Option<(String, Option<String>)> {
     let mut result = None;
     if let Some(qnuri) = qn.get_nsuri_ref() {
         // Has this namespace already been declared?
@@ -1285,7 +1297,7 @@ mod tests {
             .name(QualifiedName::new(
                 Some(String::from("http://test.org/")),
                 Some(String::from("eg")),
-                String::from("Test")
+                String::from("Test"),
             ))
             .build();
         root.push(child.clone()).expect("unable to append child");
@@ -1305,7 +1317,10 @@ mod tests {
             )
             .expect("unable to add text node");
 
-        assert_eq!(root.to_xml(), "<eg:Test xmlns:eg='http://test.org/' id='foo'>1234</eg:Test>")
+        assert_eq!(
+            root.to_xml(),
+            "<eg:Test xmlns:eg='http://test.org/' id='foo'>1234</eg:Test>"
+        )
     }
 
     #[test]
@@ -1315,7 +1330,7 @@ mod tests {
             .name(QualifiedName::new(
                 Some(String::from("http://test.org/")),
                 Some(String::from("eg")),
-                String::from("Test")
+                String::from("Test"),
             ))
             .build();
         root.push(child.clone()).expect("unable to append child");
@@ -1327,24 +1342,28 @@ mod tests {
                     .build(),
             )
             .expect("unable to add attribute");
-        let mut l1 = root.new_element(QualifiedName::new(
-            Some(String::from("http://test.org/")),
-                 Some(String::from("eg")),
-            String::from("Level-1")
-        )).expect("unable to create element");
+        let mut l1 = root
+            .new_element(QualifiedName::new(
+                Some(String::from("http://test.org/")),
+                Some(String::from("eg")),
+                String::from("Level-1"),
+            ))
+            .expect("unable to create element");
         child.push(l1.clone()).expect("unable to add node");
-        l1
-            .push(
-                NodeBuilder::new(NodeType::Text)
-                    .value(Value::from("1234"))
-                    .build(),
-            )
-            .expect("unable to add text node");
+        l1.push(
+            NodeBuilder::new(NodeType::Text)
+                .value(Value::from("1234"))
+                .build(),
+        )
+        .expect("unable to add text node");
 
         let mut od = OutputDefinition::new();
         od.set_indent(true);
-        assert_eq!(root.to_xml_with_options(&od), r#"<eg:Test xmlns:eg='http://test.org/' id='foo'>
+        assert_eq!(
+            root.to_xml_with_options(&od),
+            r#"<eg:Test xmlns:eg='http://test.org/' id='foo'>
   <eg:Level-1>1234</eg:Level-1>
-</eg:Test>"#)
+</eg:Test>"#
+        )
     }
 }
