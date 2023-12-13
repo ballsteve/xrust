@@ -3,6 +3,7 @@
 Sun Microsystems test cases
 
 */
+use crate::conformance::dtdfileresolve;
 use std::convert::TryFrom;
 use std::fs;
 use xrust::Document;
@@ -16,9 +17,11 @@ fn notwfsa03() {
         Description:Tests the Entity Declared WFC, ensuring that a reference to externally defined entity causes a well-formedness error.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/not-sa03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -32,9 +35,11 @@ fn attlist01() {
         Description:SGML's NUTOKEN is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -48,9 +53,11 @@ fn attlist02() {
         Description:SGML's NUTOKENS attribute type is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -64,9 +71,11 @@ fn attlist03() {
         Description:Comma doesn't separate enumerations, unlike in SGML.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -80,9 +89,11 @@ fn attlist04() {
         Description:SGML's NUMBER attribute type is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -96,9 +107,11 @@ fn attlist05() {
         Description:SGML's NUMBERS attribute type is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -112,9 +125,11 @@ fn attlist06() {
         Description:SGML's NAME attribute type is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -128,9 +143,11 @@ fn attlist07() {
         Description:SGML's NAMES attribute type is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -144,9 +161,11 @@ fn attlist08() {
         Description:SGML's #CURRENT is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -160,9 +179,11 @@ fn attlist09() {
         Description:SGML's #CONREF is not allowed.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -176,9 +197,11 @@ fn attlist10() {
         Description:Whitespace required between attributes
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -192,15 +215,16 @@ fn attlist11() {
         Description:Whitespace required between attributes
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn cond01() {
     /*
         Test ID:cond01
@@ -209,15 +233,16 @@ fn cond01() {
         Description:Only INCLUDE and IGNORE are conditional section keywords
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond01.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn cond02() {
     /*
         Test ID:cond02
@@ -226,9 +251,11 @@ fn cond02() {
         Description:Must have keyword in conditional sections
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond02.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
@@ -242,9 +269,11 @@ fn content01() {
         Description:No whitespace before "?" in content model
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -258,9 +287,11 @@ fn content02() {
         Description:No whitespace before "*" in content model
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -274,9 +305,11 @@ fn content03() {
         Description:No whitespace before "+" in content model
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -290,9 +323,11 @@ fn decl01() {
         Description:External entities may not have standalone decls.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/decl01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -306,9 +341,11 @@ fn nwfdtd00() {
         Description:Comma mandatory in content model
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd00.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -322,9 +359,11 @@ fn nwfdtd01() {
         Description:Can't mix comma and vertical bar in content models
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -338,9 +377,11 @@ fn dtd02() {
         Description:PE name immediately after "%"
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -354,9 +395,11 @@ fn dtd03() {
         Description:PE name immediately followed by ";"
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -370,9 +413,11 @@ fn dtd04() {
         Description:PUBLIC literal must be quoted
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -386,15 +431,16 @@ fn dtd05() {
         Description:SYSTEM identifier must be quoted
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn dtd07() {
     /*
         Test ID:dtd07
@@ -403,9 +449,11 @@ fn dtd07() {
         Description:Text declarations (which optionally begin any external entity)are required to have "encoding=...".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd07.xml").unwrap(),
-    );
+        Some(dtdfileresolve()),
+        Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string()),
+    ));
 
     assert!(testxml.is_err());
 }
@@ -419,9 +467,11 @@ fn element00() {
         Description:EOF in middle of incomplete ETAG
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element00.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -435,9 +485,11 @@ fn element01() {
         Description:EOF in middle of incomplete ETAG
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -451,9 +503,11 @@ fn element02() {
         Description:Illegal markup (<%@ ... %>)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -467,9 +521,11 @@ fn element03() {
         Description:Illegal markup (<% ... %>)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -483,15 +539,16 @@ fn element04() {
         Description:Illegal markup (<!ELEMENT ... >)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn encoding01() {
     /*
         Test ID:encoding01
@@ -500,15 +557,16 @@ fn encoding01() {
         Description:Illegal character " " in encoding name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn encoding02() {
     /*
         Test ID:encoding02
@@ -517,15 +575,16 @@ fn encoding02() {
         Description:Illegal character "/" in encoding name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn encoding03() {
     /*
         Test ID:encoding03
@@ -534,15 +593,16 @@ fn encoding03() {
         Description:Illegal character reference in encoding name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn encoding04() {
     /*
         Test ID:encoding04
@@ -551,15 +611,16 @@ fn encoding04() {
         Description:Illegal character ":" in encoding name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn encoding05() {
     /*
         Test ID:encoding05
@@ -568,15 +629,16 @@ fn encoding05() {
         Description:Illegal character "@" in encoding name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn encoding06() {
     /*
         Test ID:encoding06
@@ -585,9 +647,11 @@ fn encoding06() {
         Description:Illegal character "+" in encoding name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -601,9 +665,11 @@ fn encoding07() {
         Description:Text declarations (which optionally begin any external entity)are required to have "encoding=...".
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -617,9 +683,11 @@ fn pi() {
         Description:No space between PI target name and data
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pi.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -633,9 +701,11 @@ fn pubid01() {
         Description:Illegal entity ref in public ID
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -649,9 +719,11 @@ fn pubid02() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -665,9 +737,11 @@ fn pubid03() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -681,9 +755,11 @@ fn pubid04() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -697,9 +773,11 @@ fn pubid05() {
         Description:SGML-ism: public ID without system ID
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -713,9 +791,11 @@ fn sgml01() {
         Description:SGML-ism: omitted end tag for EMPTY content
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml01.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -729,9 +809,11 @@ fn sgml02() {
         Description:XML declaration must be at the very beginning of a document;it"s not a processing instruction
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml02.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -745,9 +827,11 @@ fn sgml03() {
         Description:Comments may not contain "--"
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml03.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -761,9 +845,11 @@ fn sgml04() {
         Description:ATTLIST declarations apply to only one element, unlike SGML
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml04.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -777,9 +863,11 @@ fn sgml05() {
         Description:ELEMENT declarations apply to only one element, unlike SGML
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml05.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -793,9 +881,11 @@ fn sgml06() {
         Description:ATTLIST declarations are never global, unlike in SGML
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml06.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -809,9 +899,11 @@ fn sgml07() {
         Description:SGML Tag minimization specifications are not allowed
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml07.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -825,9 +917,11 @@ fn sgml08() {
         Description:SGML Tag minimization specifications are not allowed
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml08.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -841,9 +935,11 @@ fn sgml09() {
         Description:SGML Content model exception specifications are not allowed
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml09.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -857,9 +953,11 @@ fn sgml10() {
         Description:SGML Content model exception specifications are not allowed
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml10.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -873,9 +971,11 @@ fn sgml11() {
         Description:CDATA is not a valid content model spec
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml11.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -889,9 +989,11 @@ fn sgml12() {
         Description:RCDATA is not a valid content model spec
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml12.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }
@@ -905,9 +1007,11 @@ fn sgml13() {
         Description:SGML Unordered content models not allowed
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml13.xml").unwrap(),
-    );
+        None,
+        None,
+    ));
 
     assert!(testxml.is_err());
 }

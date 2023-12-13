@@ -1,48 +1,56 @@
 //! # parsepicture
 //!
-//! A parser for XPath format picture strings, as a nom parser combinator.
+//! A parser for XPath format picture strings, as a parser combinator.
 //!
 //! This implementation is a quick-and-dirty translation to strftime format.
 //!
 //! TODO: presentation modifiers, and width modifiers
 
-extern crate nom;
+//extern crate nom;
+//use nom::{
+//    branch::alt,
+//    character::complete::{char, none_of},
+//    combinator::{map, opt},
+//    multi::many0,
+//   sequence::tuple,
+//    IResult,
+//};
+use crate::parser::combinators::alt::alt4;
+use crate::parser::combinators::many::many0;
+use crate::parser::combinators::map::map;
+use crate::parser::combinators::opt::opt;
+use crate::parser::combinators::tag::anychar;
+use crate::parser::combinators::tuple::{tuple2, tuple6};
+use crate::parser::xpath::support::none_of;
+use crate::parser::{ParseInput, ParseResult, ParserState};
 use crate::xdmerror::*;
-use nom::{
-    branch::alt,
-    character::complete::{char, none_of},
-    combinator::{map, opt},
-    multi::many0,
-    sequence::tuple,
-    IResult,
-};
 
 // This implementation translates an XPath picture string to a strftime format
 
 #[allow(dead_code)]
-fn picture(input: &str) -> IResult<&str, String> {
+fn picture() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
-        many0(alt((open_escape, close_escape, literal, marker))),
+        many0(alt4(open_escape(), close_escape(), literal(), marker())),
         |v| v.iter().cloned().collect::<String>(),
-    )(input)
+    )
 }
 
 #[allow(dead_code)]
-fn literal(input: &str) -> IResult<&str, String> {
-    map(none_of("[]"), String::from)(input)
+fn literal() -> impl Fn(ParseInput) -> ParseResult<String> {
+    map(none_of("[]"), |s| String::from(s))
 }
 
 #[allow(dead_code)]
-fn marker(input: &str) -> IResult<&str, String> {
+fn marker() -> impl Fn(ParseInput) -> ParseResult<String> {
     map(
-        tuple((
-            char('['),
+        tuple6(
+            anychar('['),
             none_of("]"),
             opt(none_of(",]")),
             opt(none_of(",]")),
-            opt(tuple((char(','), none_of("]")))),
-            char(']'),
-        )),
+            opt(tuple2(anychar(','), none_of("]"))),
+            anychar(']'),
+        ),
         |(_, c, _p1, _p2, _w, _)| {
             match c {
                 'Y' => String::from("%Y"),
@@ -65,42 +73,35 @@ fn marker(input: &str) -> IResult<&str, String> {
                 _ => String::from(""),      // error
             }
         },
-    )(input)
+    )
 }
 
 #[allow(dead_code)]
-fn open_escape(input: &str) -> IResult<&str, String> {
-    map(tuple((char('['), char('['))), |_| String::from("["))(input)
+fn open_escape() -> impl Fn(ParseInput) -> ParseResult<String> {
+    map(tuple2(anychar('['), anychar('[')), |_| String::from("["))
 }
 #[allow(dead_code)]
-fn close_escape(input: &str) -> IResult<&str, String> {
-    map(tuple((char(']'), char(']'))), |_| String::from("]"))(input)
+fn close_escape() -> impl Fn(ParseInput) -> ParseResult<String> {
+    map(tuple2(anychar(']'), anychar(']')), |_| String::from("]"))
 }
 
 pub fn parse(e: &str) -> Result<String, Error> {
-    match picture(e) {
-        Ok((rest, value)) => {
-            if rest.is_empty() {
-                Result::Ok(value)
+    let state = ParserState::new(None, None);
+    match picture()((e, state)) {
+        Ok(((rem, _), value)) => {
+            if rem.is_empty() {
+                Ok(value)
             } else {
-                Result::Err(Error {
-                    kind: ErrorKind::Unknown,
-                    message: format!("extra characters after expression: \"{}\"", rest),
-                })
+                Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!("extra characters after expression: \"{}\"", rem),
+                ))
             }
         }
-        Err(nom::Err::Error(c)) => Result::Err(Error {
-            kind: ErrorKind::Unknown,
-            message: format!("parser error: {:?}", c),
-        }),
-        Err(nom::Err::Incomplete(_)) => Result::Err(Error {
-            kind: ErrorKind::Unknown,
-            message: String::from("incomplete input"),
-        }),
-        Err(nom::Err::Failure(_)) => Result::Err(Error {
-            kind: ErrorKind::Unknown,
-            message: String::from("unrecoverable parser error"),
-        }),
+        Err(_) => Err(Error::new(
+            ErrorKind::ParseError,
+            String::from("unable to parse picture"),
+        )),
     }
 }
 

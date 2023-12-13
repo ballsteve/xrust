@@ -1,7 +1,8 @@
-//! # xrust::qname
-//!
 //! Support for Qualified Names.
 
+use crate::parser::xml::qname::qualname;
+use crate::parser::ParserState;
+use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::fmt;
@@ -43,7 +44,7 @@ impl QualifiedName {
 impl fmt::Display for QualifiedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
-        self.prefix.as_ref().map_or((), |p| {
+        let _ = self.prefix.as_ref().map_or((), |p| {
             result.push_str(p.as_str());
             result.push(':');
         });
@@ -81,6 +82,22 @@ impl Hash for QualifiedName {
             ns.hash(state)
         }
         self.localname.hash(state);
+    }
+}
+
+/// Parse a string to create a [QualifiedName].
+/// QualifiedName ::= (prefix ":")? local-name
+impl TryFrom<&str> for QualifiedName {
+    type Error = Error;
+    fn try_from(s: &str) -> Result<Self, Self::Error> {
+        let state = ParserState::new(None, None);
+        match qualname()((s, state)) {
+            Ok((_, qn)) => Ok(qn),
+            Err(_) => Err(Error::new(
+                ErrorKind::ParseError,
+                String::from("unable to parse qualified name"),
+            )),
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 /*! # A tree structure for XDM
 
-This module implements the Item module's [ItemNode] trait.
+This module implements the Item module's [Node] trait.
 
 This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
@@ -9,10 +9,14 @@ To create a tree, use [NodeBuilder] to make a Document-type node. To add a node,
 NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
 
 ```rust
-use xrust::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
+use xrust::xdmerror::Error;
+
+pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+
 
 // A document always has a NodeType::Document node as the toplevel node.
 let mut doc = NodeBuilder::new(NodeType::Document).build();
@@ -37,15 +41,18 @@ use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
 use crate::parser;
 use crate::parser::xml::XMLDocument;
-use crate::qname::*;
+use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
 use std::cell::RefCell;
+use std::cmp::Ordering;
 use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
+
+pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -160,16 +167,16 @@ impl Document {
      */
 }
 
-impl TryFrom<&str> for Document {
+impl TryFrom<(String, Option<ExtDTDresolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(s: &str) -> Result<Self, Self::Error> {
-        Document::try_from(s.to_string())
+    fn try_from(s: (String, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0.as_str(), s.1, s.2)
     }
 }
-impl TryFrom<String> for Document {
+impl TryFrom<(&str, Option<ExtDTDresolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(s: String) -> Result<Self, Self::Error> {
-        parser::xml::parse(s)
+    fn try_from(s: (&str, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
+        parser::xml::parse(s.0, s.1, s.2)
     }
 }
 
@@ -331,56 +338,51 @@ impl ItemNode for RNode {
     }
     /// Serialise as XML
     fn to_xml(&self) -> String {
-        match self.node_type {
-            NodeType::Document => {
-                self.children
-                    .borrow()
-                    .iter()
-                    .fold(String::new(), |mut result, c| {
-                        result.push_str(c.to_xml().as_str());
-                        result
-                    })
-            }
-            NodeType::Element => {
-                let mut result = String::from("<");
-                result.push_str(
-                    self.name
-                        .borrow()
-                        .as_ref()
-                        .map_or(String::new(), |n| n.to_string())
-                        .as_str(),
-                );
-                self.attributes
-                    .borrow()
-                    .iter()
-                    .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.value()).as_str()));
-                result.push('>');
-                self.children
-                    .borrow()
-                    .iter()
-                    .for_each(|c| result.push_str(c.to_xml().as_str()));
-                result.push_str("</");
-                result.push_str(
-                    self.name
-                        .borrow()
-                        .as_ref()
-                        .map_or(String::new(), |n| n.to_string())
-                        .as_str(),
-                );
-                result.push('>');
-                result
-            }
-            NodeType::Text => self.value().to_string(),
-            _ => String::new(),
-        }
+        to_xml_int(self, &OutputDefinition::new(), vec![], 0)
     }
     /// Serialise the node as XML, with options such as indentation.
-    fn to_xml_with_options(&self, _od: &OutputDefinition) -> String {
-        String::from("not implemented")
+    fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
+        to_xml_int(self, od, vec![], 0)
     }
 
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
+    }
+    fn document_order(&self) -> Vec<usize> {
+        doc_order(self)
+    }
+    fn cmp_document_order(&self, other: &Self) -> Ordering {
+        let this_order = self.document_order();
+        let other_order = other.document_order();
+        // zip the two iterators and compare usizes
+        //        let mut it = this_order.iter().zip(other_order.iter());
+        // Implementation note: fold seems to be consuming all of the items, so try an explicit loop instead
+        //        let m = (&mut it).fold(
+        //            Ordering::Equal,
+        //            |acc, (t, o)| {
+        //                if acc == Ordering::Equal { t.cmp(o) } else { acc }
+        //            }
+        //        );
+        // and then unzip and compare the remaining vectors, at least one of which should be empty
+        let mut this_it = this_order.iter();
+        let mut other_it = other_order.iter();
+        for _i in 0.. {
+            match (this_it.next(), other_it.next()) {
+                (Some(t), Some(o)) => {
+                    if t < o {
+                        return Ordering::Less;
+                    } else if t > o {
+                        return Ordering::Greater;
+                    }
+                    // otherwise continue the loop
+                }
+                (Some(_), None) => return Ordering::Greater,
+                (None, Some(_)) => return Ordering::Less,
+                (None, None) => return Ordering::Equal,
+            }
+        }
+        // Will never reach here
+        Ordering::Equal
     }
 
     fn child_iter(&self) -> Self::NodeIterator {
@@ -427,6 +429,15 @@ impl ItemNode for RNode {
             .value(v)
             .build())
     }
+    fn new_comment(&self, v: Value) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(NodeType::Comment).value(v).build())
+    }
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(NodeType::ProcessingInstruction)
+            .name(qn)
+            .value(v)
+            .build())
+    }
 
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {
@@ -461,7 +472,8 @@ impl ItemNode for RNode {
                 String::from("must be an attribute node"),
             ));
         }
-        self.attributes.borrow_mut().insert(att.name(), att);
+        self.attributes.borrow_mut().insert(att.name(), att.clone());
+        *att.parent.borrow_mut() = Some(Rc::downgrade(self));
         Ok(())
     }
     /// Insert a node into the child list immediately before this node.
@@ -481,6 +493,14 @@ impl ItemNode for RNode {
         parent.children.borrow_mut().insert(idx, insert);
         // All done
         Ok(())
+    }
+
+    /// Shallow copy the node. Returned node is unattached.
+    fn shallow_copy(&self) -> Result<Self, Error> {
+        Ok(NodeBuilder::new(self.node_type())
+            .name(self.name())
+            .value(self.value())
+            .build())
     }
 
     /// Deep copy the node. Returned node is unattached.
@@ -505,10 +525,7 @@ impl ItemNode for RNode {
 
     fn get_canonical(&self) -> Result<Self, Error> {
         match self.node_type() {
-            NodeType::Comment => Err(Error {
-                kind: ErrorKind::TypeError,
-                message: "".to_string(),
-            }),
+            NodeType::Comment => Err(Error::new(ErrorKind::TypeError, "".to_string())),
             NodeType::Text => {
                 let v = match self.value() {
                     Value::String(s) => {
@@ -542,6 +559,201 @@ impl ItemNode for RNode {
             }
         }
     }
+}
+
+impl Debug for Node {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        write!(
+            f,
+            "type {} name {:?} value {:?}",
+            self.node_type, self.name, self.value
+        )
+    }
+}
+
+// Find the document order of ancestors
+fn doc_order(n: &RNode) -> Vec<usize> {
+    match n.node_type {
+        NodeType::Document => vec![1 as usize],
+        NodeType::Element
+        | NodeType::Text
+        | NodeType::Comment
+        | NodeType::ProcessingInstruction => {
+            let p = n.parent.borrow();
+            match &*p {
+                Some(q) => match Weak::upgrade(&q) {
+                    Some(r) => {
+                        let idx = find_index(&r, &n).expect("unable to locate node in parent");
+                        let mut a = doc_order(&r);
+                        a.push(idx + 2);
+                        a
+                    }
+                    None => vec![1 as usize],
+                },
+                None => vec![1 as usize],
+            }
+        }
+        NodeType::Attribute => {
+            // Namespace nodes are first, then attributes
+            let mut a = doc_order(&n.parent().unwrap());
+            a.push(2);
+            a
+        }
+        _ => vec![0],
+    }
+}
+
+// This handles the XML serialisation of the document.
+// "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
+// "indent" is the current level of identation.
+fn to_xml_int(
+    node: &RNode,
+    od: &OutputDefinition,
+    ns: Vec<(String, Option<String>)>,
+    indent: usize,
+) -> String {
+    match node.node_type {
+        NodeType::Document => node
+            .children
+            .borrow()
+            .iter()
+            .fold(String::new(), |mut result, c| {
+                result.push_str(to_xml_int(c, od, ns.clone(), indent + 2).as_str());
+                result
+            }),
+        NodeType::Element => {
+            let mut result = String::from("<");
+            // Elements must have a name, so unpack it
+            let qn = node.name.borrow().as_ref().unwrap().clone();
+            result.push_str(qn.to_string().as_str());
+
+            // Check if any XML Namespaces need to be declared
+            // newns is a vector of (prefix, namespace URI) pairs
+            let mut declared = ns.clone();
+            let mut newns: Vec<(String, Option<String>)> = vec![];
+            // First, the element itself
+            namespace_check(&qn, &declared).iter().for_each(|m| {
+                newns.push(m.clone());
+                declared.push(m.clone())
+            });
+            // Next, it's attributes
+            node.attributes.borrow().iter().for_each(|(k, _)| {
+                namespace_check(k, &declared).iter().for_each(|m| {
+                    newns.push(m.clone());
+                    declared.push(m.clone())
+                })
+            });
+            // Finally, it's child elements
+            node.child_iter()
+                .filter(|c| c.node_type == NodeType::Element)
+                .for_each(|c| {
+                    c.name.borrow().as_ref().map(|d| {
+                        namespace_check(d, &declared).iter().for_each(|m| {
+                            newns.push(m.clone());
+                            declared.push(m.clone())
+                        })
+                    });
+                });
+            newns.iter().for_each(|(u, p)| {
+                result.push_str(" xmlns");
+                if let Some(q) = p {
+                    result.push(':');
+                    result.push_str(q.as_str());
+                }
+                result.push_str("='");
+                result.push_str(u);
+                result.push('\'');
+            });
+
+            node.attributes
+                .borrow()
+                .iter()
+                .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.value()).as_str()));
+            result.push('>');
+
+            // Content of the element.
+            // If the indent option is enabled, then if no child is a text node then add spacing.
+            let do_indent: bool = od
+                .get_indent()
+                .then(|| {
+                    node.child_iter().fold(true, |mut acc, c| {
+                        if acc && c.node_type == NodeType::Text {
+                            acc = false
+                        }
+                        acc
+                    })
+                })
+                .map_or(false, |b| b);
+
+            node.children.borrow().iter().for_each(|c| {
+                if do_indent {
+                    result.push('\n');
+                    (0..indent).for_each(|_| result.push(' '))
+                }
+                result.push_str(to_xml_int(c, od, newns.clone(), indent + 2).as_str())
+            });
+            if do_indent && indent > 1 {
+                result.push('\n');
+                (0..(indent - 2)).for_each(|_| result.push(' '))
+            }
+            result.push_str("</");
+            result.push_str(
+                node.name
+                    .borrow()
+                    .as_ref()
+                    .map_or(String::new(), |n| n.to_string())
+                    .as_str(),
+            );
+            result.push('>');
+            result
+        }
+        NodeType::Text => node.value().to_string(),
+        NodeType::Comment => {
+            let mut result = String::from("<!--");
+            let s = node
+                .value
+                .as_ref()
+                .map_or("".to_string(), |n| n.to_string());
+            result.push_str(s.as_str());
+            result.push_str("-->");
+            result
+        }
+        NodeType::ProcessingInstruction => {
+            let mut result = String::from("<?");
+            let s = node
+                .name
+                .borrow()
+                .as_ref()
+                .map_or("".to_string(), |n| n.to_string());
+            result.push_str(s.as_str());
+            result.push(' ');
+            let t = node.value.clone().map_or("".to_string(), |n| n.to_string());
+            result.push_str(t.as_str());
+            result.push_str("?>");
+            result
+        }
+        _ => String::new(),
+    }
+}
+
+// Checks if this node's name is in a namespace that has already been declared.
+// Returns a namespace to be declared if required, (URI, prefix).
+fn namespace_check(
+    qn: &QualifiedName,
+    ns: &Vec<(String, Option<String>)>,
+) -> Option<(String, Option<String>)> {
+    let mut result = None;
+    if let Some(qnuri) = qn.get_nsuri_ref() {
+        // Has this namespace already been declared?
+        if ns.iter().find(|(u, _)| u == qnuri).is_some() {
+            // Namespace has been declared, but with the same prefix?
+            // TODO: see forest.rs for example implementation
+        } else {
+            // Namespace has not been declared, so this element must declare it
+            result = Some((qnuri.to_string(), qn.get_prefix()))
+        }
+    }
+    result
 }
 
 // Find the position of this node in the parent's child list.
@@ -672,15 +884,22 @@ impl Iterator for Descendants {
 pub struct Siblings(RNode, usize, i32);
 impl Siblings {
     fn new(n: &RNode, dir: i32) -> Self {
-        let p = n.parent().unwrap();
-        let (j, _) = p
-            .children
-            .borrow()
-            .iter()
-            .enumerate()
-            .find(|&(_, j)| Rc::ptr_eq(j, n))
-            .unwrap();
-        Siblings(p, j, dir)
+        match n.parent() {
+            Some(p) => {
+                let (j, _) = p
+                    .children
+                    .borrow()
+                    .iter()
+                    .enumerate()
+                    .find(|&(_, j)| Rc::ptr_eq(j, n))
+                    .unwrap();
+                Siblings(p.clone(), j, dir)
+            }
+            None => {
+                // Document nodes don't have siblings
+                Siblings(n.clone(), 0, -1)
+            }
+        }
     }
 }
 impl Iterator for Siblings {
@@ -846,13 +1065,13 @@ impl XMLDeclBuilder {
 /// Only general entities are supported, so far.
 /// TODO: element, attribute declarations
 
-#[derive(Clone, Debug, PartialEq, Eq)]
+#[derive(Clone, PartialEq)]
 pub struct DTD {
     pub(crate) elements: HashMap<String, DTDDecl>,
     pub(crate) attlists: HashMap<String, DTDDecl>,
     pub(crate) notations: HashMap<String, DTDDecl>,
-    pub(crate) generalentities: HashMap<String, DTDDecl>,
-    pub(crate) paramentities: HashMap<String, DTDDecl>,
+    pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
+    pub(crate) paramentities: HashMap<String, (String, bool)>,
     publicid: Option<String>,
     systemid: Option<String>,
     name: Option<String>,
@@ -860,12 +1079,19 @@ pub struct DTD {
 
 impl DTD {
     pub fn new() -> DTD {
+        let default_entities = vec![
+            ("amp".to_string(), ("&".to_string(), false)),
+            ("gt".to_string(), (">".to_string(), false)),
+            ("lt".to_string(), ("<".to_string(), false)),
+            ("apos".to_string(), ("'".to_string(), false)),
+            ("quot".to_string(), ("\"".to_string(), false)),
+        ];
         DTD {
             elements: Default::default(),
             attlists: Default::default(),
             notations: Default::default(),
-            generalentities: Default::default(),
-            paramentities: Default::default(),
+            generalentities: default_entities.into_iter().collect(),
+            paramentities: HashMap::new(),
             publicid: None,
             systemid: None,
             name: None,
@@ -900,6 +1126,45 @@ mod tests {
             .build();
         root.push(child).expect("unable to append child");
         assert_eq!(root.to_xml(), "<Test></Test>")
+    }
+
+    #[test]
+    fn doc_order() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Test")))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        assert_eq!(child.document_order(), vec![1, 2])
+    }
+
+    #[test]
+    fn cmp_doc_order_1() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child1 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Before")))
+            .build();
+        root.push(child1.clone()).expect("unable to append child");
+        let child2 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("After")))
+            .build();
+        root.push(child2.clone()).expect("unable to append child");
+        assert_eq!(child1.cmp_document_order(&child2), Ordering::Less);
+        assert_eq!(child2.cmp_document_order(&child1), Ordering::Greater);
+    }
+
+    #[test]
+    fn cmp_doc_order_2() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let child1 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("Before")))
+            .build();
+        root.push(child1.clone()).expect("unable to append child");
+        let child2 = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(None, None, String::from("After")))
+            .build();
+        root.push(child2.clone()).expect("unable to append child");
+        assert_eq!(child1.cmp_document_order(&child1), Ordering::Equal)
     }
 
     #[test]
@@ -1022,6 +1287,83 @@ mod tests {
         assert_eq!(
             root.deep_copy().expect("unable to copy").to_xml(),
             "<Test id='foo'>1234</Test>"
+        )
+    }
+
+    #[test]
+    fn to_xml() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let mut child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(
+                Some(String::from("http://test.org/")),
+                Some(String::from("eg")),
+                String::from("Test"),
+            ))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        child
+            .add_attribute(
+                NodeBuilder::new(NodeType::Attribute)
+                    .name(QualifiedName::new(None, None, String::from("id")))
+                    .value(Value::from("foo"))
+                    .build(),
+            )
+            .expect("unable to add attribute");
+        child
+            .push(
+                NodeBuilder::new(NodeType::Text)
+                    .value(Value::from("1234"))
+                    .build(),
+            )
+            .expect("unable to add text node");
+
+        assert_eq!(
+            root.to_xml(),
+            "<eg:Test xmlns:eg='http://test.org/' id='foo'>1234</eg:Test>"
+        )
+    }
+
+    #[test]
+    fn to_xml_with_options() {
+        let mut root = NodeBuilder::new(NodeType::Document).build();
+        let mut child = NodeBuilder::new(NodeType::Element)
+            .name(QualifiedName::new(
+                Some(String::from("http://test.org/")),
+                Some(String::from("eg")),
+                String::from("Test"),
+            ))
+            .build();
+        root.push(child.clone()).expect("unable to append child");
+        child
+            .add_attribute(
+                NodeBuilder::new(NodeType::Attribute)
+                    .name(QualifiedName::new(None, None, String::from("id")))
+                    .value(Value::from("foo"))
+                    .build(),
+            )
+            .expect("unable to add attribute");
+        let mut l1 = root
+            .new_element(QualifiedName::new(
+                Some(String::from("http://test.org/")),
+                Some(String::from("eg")),
+                String::from("Level-1"),
+            ))
+            .expect("unable to create element");
+        child.push(l1.clone()).expect("unable to add node");
+        l1.push(
+            NodeBuilder::new(NodeType::Text)
+                .value(Value::from("1234"))
+                .build(),
+        )
+        .expect("unable to add text node");
+
+        let mut od = OutputDefinition::new();
+        od.set_indent(true);
+        assert_eq!(
+            root.to_xml_with_options(&od),
+            r#"<eg:Test xmlns:eg='http://test.org/' id='foo'>
+  <eg:Level-1>1234</eg:Level-1>
+</eg:Test>"#
         )
     }
 }

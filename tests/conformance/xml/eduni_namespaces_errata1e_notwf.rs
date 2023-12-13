@@ -7,7 +7,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn rmtnse1013a() {
     /*
         Test ID:rmt-ns-e1.0-13a
@@ -16,16 +15,16 @@ fn rmtnse1013a() {
         Description:The xml namespace must not be declared as the default namespace.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13a.xml")
             .unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtnse1013b() {
     /*
         Test ID:rmt-ns-e1.0-13b
@@ -34,16 +33,16 @@ fn rmtnse1013b() {
         Description:The xmlns namespace must not be declared as the default namespace.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13b.xml")
             .unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtnse1013c() {
     /*
         Test ID:rmt-ns-e1.0-13c
@@ -52,10 +51,11 @@ fn rmtnse1013c() {
         Description:Elements must not have the prefix xmlns.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13c.xml")
             .unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

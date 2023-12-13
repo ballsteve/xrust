@@ -1,6 +1,6 @@
 use crate::parser::{ParseInput, ParseResult};
 
-pub(crate) fn tuple2<P1, P2, R1, R2>(
+pub fn tuple2<P1, P2, R1, R2>(
     parser1: P1,
     parser2: P2,
 ) -> impl Fn(ParseInput) -> ParseResult<(R1, R2)>
@@ -17,7 +17,7 @@ where
     }
 }
 
-pub(crate) fn tuple3<P1, P2, P3, R1, R2, R3>(
+pub fn tuple3<P1, P2, P3, R1, R2, R3>(
     parser1: P1,
     parser2: P2,
     parser3: P3,
@@ -39,7 +39,7 @@ where
     }
 }
 
-pub(crate) fn tuple4<P1, P2, P3, P4, R1, R2, R3, R4>(
+pub fn tuple4<P1, P2, P3, P4, R1, R2, R3, R4>(
     parser1: P1,
     parser2: P2,
     parser3: P3,
@@ -390,15 +390,16 @@ where
 mod tests {
     use crate::parser::combinators::tag::tag;
     use crate::parser::combinators::tuple::tuple3;
-    use crate::parser::ParseInput;
+    use crate::parser::ParserState;
 
     #[test]
-    fn parser_delimited_test1() {
-        let testdoc = ParseInput::new("<doc>");
+    fn parser_tuple3_test1() {
+        let testdoc = "<doc>";
+        let teststate = ParserState::new(None, None);
         let parse_doc = tuple3(tag("<"), tag("doc"), tag(">"));
         assert_eq!(
-            Ok((ParseInput::new("<doc>"), ((), (), ()))),
-            parse_doc(testdoc)
+            Ok((("", ParserState::new(None, None)), ((), (), ()))),
+            parse_doc((testdoc, teststate))
         );
     }
 }

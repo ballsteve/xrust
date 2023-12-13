@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "0.8.0"
+version = "0.9.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"
@@ -23,22 +23,21 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust_decimal = "1.20"
-rust_decimal_macros = "1.20"
-lexers = "0.1.2"
-nom = "7.1.1"
-unicode-segmentation = "1.7.1"
-chrono = "0.4.23"
-url = "2.2.2"
-generational-arena = "0.2"
-regex = "1.6.0"
+rust_decimal = "1.32"
+rust_decimal_macros = "1.32"
+lexers = "0.1.4"
+unicode-segmentation = "1.10.1"
+chrono = "0.4.31"
+url = "2.4.1"
+# This is for the forest tree implementation
+#generational-arena = "0.2"
+regex = "1.10.2"
 
 [dev-dependencies]
-criterion = "0.3"
-# These are for example issue_52
-html_parser = "0.6.3"
-tokio = { version = "1.26.0", features = ["full"] }
-reqwest = "0.11.4"
-log = "0.4.17"
-futures = "0.3.27"
-env_logger = "0.10.0"
+criterion = "0.5.1"
+encoding_rs = "0.8.33"
+encoding_rs_io = "0.1.7"
+#ixml = { package = "earleybird", version = "0.0.1" }
+#earleybird = {path = "../earleybird"}
+earleybird = {git = "https://github.com/mdubinko/earleybird.git"}
+indextree = "4.6.0"

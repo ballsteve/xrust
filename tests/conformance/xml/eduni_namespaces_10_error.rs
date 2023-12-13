@@ -15,10 +15,11 @@ fn rmtns10004() {
         Description:Namespace name test: a relative URI (deprecated)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/004.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -32,10 +33,11 @@ fn rmtns10005() {
         Description:Namespace name test: a same-document relative URI (deprecated)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/005.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -49,9 +51,10 @@ fn rmtns10006() {
         Description:Namespace name test: an http IRI that is not a URI
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/006.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

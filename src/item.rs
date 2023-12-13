@@ -1,15 +1,18 @@
-//! # xrust::item
-//!
-//! Sequence Item module.
-//! An Item is a Node, Function or Atomic Value.
-//!
-//! Nodes are implemented as a trait.
+/*! Sequences and Items.
+
+A [Sequence] is the fundamental data type in XPath. It is a series of zero or more [Item]s.
+
+An [Item] is a [Node], Function or atomic [Value].
+
+[Node]s are defined as a trait.
+*/
 
 use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
+use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
@@ -113,10 +116,10 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         if self.len() == 1 {
             self[0].to_int()
         } else {
-            Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error: sequence is not a singleton"),
-            })
+            Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error: sequence is not a singleton"),
+            ))
         }
     }
 }
@@ -135,7 +138,7 @@ impl<N: Node> From<Item<N>> for Sequence<N> {
 /// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 ///
 /// Every document must have a single node as it's toplevel node that is of type "Document".
-#[derive(Copy, Clone, PartialEq, Debug, Default)]
+#[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub enum NodeType {
     Document,
     Element,
@@ -161,6 +164,12 @@ impl NodeType {
             NodeType::Reference => "Reference",
             NodeType::Unknown => "--None--",
         }
+    }
+}
+
+impl fmt::Display for NodeType {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str(self.to_string())
     }
 }
 
@@ -230,14 +239,14 @@ impl<N: Node> Item<N> {
     /// Gives the integer value of the item, if possible.
     pub fn to_int(&self) -> Result<i64, Error> {
         match self {
-            Item::Node(..) => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error: item is a node"),
-            }),
-            Item::Function => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error: item is a function"),
-            }),
+            Item::Node(..) => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error: item is a node"),
+            )),
+            Item::Function => Result::Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("type error: item is a function"),
+            )),
             Item::Value(v) => match v.to_int() {
                 Ok(i) => Ok(i),
                 Err(e) => Result::Err(e),
@@ -271,16 +280,10 @@ impl<N: Node> Item<N> {
             Item::Value(v) => match other {
                 Item::Value(w) => v.compare(w, op),
                 Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
-                _ => Result::Err(Error {
-                    kind: ErrorKind::TypeError,
-                    message: String::from("type error"),
-                }),
+                _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             Item::Node(..) => other.compare(&Item::Value(Value::String(self.to_string())), op),
-            _ => Result::Err(Error {
-                kind: ErrorKind::TypeError,
-                message: String::from("type error"),
-            }),
+            _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
     }
 
@@ -316,6 +319,29 @@ impl<N: Node> Item<N> {
             Item::Node(..) => "Node",
             Item::Function => "Function",
             Item::Value(v) => v.value_type(),
+        }
+    }
+    /// Make a shallow copy of an item.
+    /// That is, the item is duplicated but not it's content, including attributes.
+    pub fn shallow_copy(&self) -> Result<Self, Error> {
+        match self {
+            Item::Value(v) => Ok(Item::Value(v.clone())),
+            Item::Node(n) => Ok(Item::Node(n.shallow_copy()?)),
+            _ => Result::Err(Error::new(
+                ErrorKind::NotImplemented,
+                "not implemented".to_string(),
+            )),
+        }
+    }
+    /// Make a deep copy of an item.
+    pub fn deep_copy(&self) -> Result<Self, Error> {
+        match self {
+            Item::Value(v) => Ok(Item::Value(v.clone())),
+            Item::Node(n) => Ok(Item::Node(n.deep_copy()?)),
+            _ => Result::Err(Error::new(
+                ErrorKind::NotImplemented,
+                "not implemented".to_string(),
+            )),
         }
     }
 }
@@ -369,6 +395,14 @@ pub trait Node: Clone {
 
     /// Check if two Nodes are the same Node
     fn is_same(&self, other: &Self) -> bool;
+
+    /// Get the document order of the node. The value returned is relative to the document containing the node.
+    /// Depending on the implementation, this value may be volatile;
+    /// adding or removing nodes to/from the document may invalidate the ordering.
+    fn document_order(&self) -> Vec<usize>;
+    /// Compare the document order of this node with another node in the same document.
+    fn cmp_document_order(&self, other: &Self) -> Ordering;
+
     /// Check if a node is an element-type
     fn is_element(&self) -> bool {
         self.node_type() == NodeType::Element
@@ -409,7 +443,12 @@ pub trait Node: Clone {
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Value) -> Result<Self, Error>;
+    /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
     fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+    /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
+    fn new_comment(&self, v: Value) -> Result<Self, Error>;
+    /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;
@@ -420,6 +459,8 @@ pub trait Node: Clone {
     /// Set an attribute. self must be an element-type node. att must be an attribute-type node.
     fn add_attribute(&self, att: Self) -> Result<(), Error>;
 
+    /// Shallow copy the node, i.e. copy only the node, but not it's attributes or content.
+    fn shallow_copy(&self) -> Result<Self, Error>;
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
     /// Canonical XML representation of the node

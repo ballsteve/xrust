@@ -7,7 +7,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn rmtns10009() {
     /*
         Test ID:rmt-ns10-009
@@ -16,15 +15,15 @@ fn rmtns10009() {
         Description:Namespace equality test: plain repetition
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10010() {
     /*
         Test ID:rmt-ns10-010
@@ -33,10 +32,11 @@ fn rmtns10010() {
         Description:Namespace equality test: use of character reference
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -49,15 +49,15 @@ fn rmtns10011() {
         Description:Namespace equality test: use of entity reference
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10012() {
     /*
         Test ID:rmt-ns10-012
@@ -66,10 +66,11 @@ fn rmtns10012() {
         Description:Namespace inequality test: equal after attribute value normalization
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -82,10 +83,11 @@ fn rmtns10013() {
         Description:Bad QName syntax: multiple colons
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -98,10 +100,11 @@ fn rmtns10014() {
         Description:Bad QName syntax: colon at end
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -114,10 +117,11 @@ fn rmtns10015() {
         Description:Bad QName syntax: colon at start
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -130,15 +134,15 @@ fn rmtns10016() {
         Description:Bad QName syntax: xmlns:
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10023() {
     /*
         Test ID:rmt-ns10-023
@@ -147,10 +151,11 @@ fn rmtns10023() {
         Description:Illegal use of 1.1-style prefix unbinding in 1.0 document
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -163,10 +168,11 @@ fn rmtns10025() {
         Description:Unbound element prefix
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -179,10 +185,11 @@ fn rmtns10026() {
         Description:Unbound attribute prefix
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -195,15 +202,15 @@ fn rmtns10029() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix incorrectly
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10030() {
     /*
         Test ID:rmt-ns10-030
@@ -212,10 +219,11 @@ fn rmtns10030() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xml namespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -228,10 +236,11 @@ fn rmtns10031() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with its correct URI (illegal)
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -244,15 +253,15 @@ fn rmtns10032() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with an incorrect URI
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10033() {
     /*
         Test ID:rmt-ns10-033
@@ -261,15 +270,15 @@ fn rmtns10033() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xmlns namespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10035() {
     /*
         Test ID:rmt-ns10-035
@@ -278,15 +287,15 @@ fn rmtns10035() {
         Description:Attribute uniqueness: repeated identical attribute
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10036() {
     /*
         Test ID:rmt-ns10-036
@@ -295,15 +304,15 @@ fn rmtns10036() {
         Description:Attribute uniqueness: repeated attribute with different prefixes
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10042() {
     /*
         Test ID:rmt-ns10-042
@@ -312,15 +321,15 @@ fn rmtns10042() {
         Description:Colon in PI name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10043() {
     /*
         Test ID:rmt-ns10-043
@@ -329,15 +338,15 @@ fn rmtns10043() {
         Description:Colon in entity name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmtns10044() {
     /*
         Test ID:rmt-ns10-044
@@ -346,9 +355,10 @@ fn rmtns10044() {
         Description:Colon in entity name
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

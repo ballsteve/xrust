@@ -15,9 +15,10 @@ fn rmte3e12() {
         Description:Default values for attributes may not contain references to external entities.
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E12.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }

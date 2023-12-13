@@ -1,6 +1,6 @@
 use crate::parser::{ParseInput, ParseResult};
 
-pub(crate) fn many0<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R>>
+pub fn many0<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R>>
 where
     P: Fn(ParseInput) -> ParseResult<R>,
 {
@@ -17,7 +17,7 @@ where
     }
 }
 
-pub(crate) fn many1<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R>>
+pub fn many1<P, R>(parser: P) -> impl Fn(ParseInput) -> ParseResult<Vec<R>>
 where
     P: Fn(ParseInput) -> ParseResult<R>,
 {

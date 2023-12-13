@@ -7,7 +7,6 @@ use std::fs;
 use xrust::Document;
 
 #[test]
-#[ignore]
 fn rmtns11005() {
     /*
         Test ID:rmt-ns11-005
@@ -16,10 +15,11 @@ fn rmtns11005() {
         Description:Illegal use of prefix that has been unbound
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -32,10 +32,11 @@ fn htbhns11007() {
         Description:Attempt to unbind xmlns 'namespace'
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
 
@@ -48,9 +49,10 @@ fn htbhns11008() {
         Description:Attempt to unbind xml namespace
     */
 
-    let testxml = Document::try_from(
+    let testxml = Document::try_from((
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml").unwrap(),
-    );
-
+        None,
+        None,
+    ));
     assert!(testxml.is_err());
 }
