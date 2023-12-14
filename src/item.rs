@@ -22,7 +22,7 @@ use std::rc::Rc;
 /// The Rust impementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
-pub type Sequence<N> = Vec<Rc<Item<N>>>;
+pub type Sequence<N> = Vec<Item<N>>;
 
 pub trait SequenceTrait<N: Node> {
     /// Return the string value of the [Sequence].
@@ -38,11 +38,11 @@ pub trait SequenceTrait<N: Node> {
     /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
     fn to_int(&self) -> Result<i64, Error>;
     /// Push an [Node] to the [Sequence]
-    fn push_node(&mut self, n: N);
+    fn push_node(&mut self, n: &N);
     /// Push a [Value] to the [Sequence]
-    fn push_value(&mut self, v: Value);
-    /// Push an [Item] to the [Sequence]
-    fn push_item(&mut self, i: &Rc<Item<N>>);
+    fn push_value(&mut self, v: &Rc<Value>);
+    /// Push an [Item] to the [Sequence]. This clones the item.
+    fn push_item(&mut self, i: &Item<N>);
 }
 
 impl<N: Node> SequenceTrait<N> for Sequence<N> {
@@ -78,19 +78,19 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         }
         r
     }
-    /// Push a document's [Node] on to the [Sequence]
-    fn push_node(&mut self, n: N) {
-        self.push(Rc::new(Item::Node(n)));
+    /// Push a document's [Node] on to the [Sequence]. This clones the node.
+    fn push_node(&mut self, n: &N) {
+        self.push(Item::Node(n.clone()));
     }
-    /// Push a [Value] on to the [Sequence]
-    fn push_value(&mut self, v: Value) {
-        self.push(Rc::new(Item::Value(v)));
+    /// Push a [Value] on to the [Sequence].
+    fn push_value(&mut self, v: &Rc<Value>) {
+        self.push(Item::Value(Rc::clone(v)));
     }
     //fn new_function(&self, f: Function) -> Sequence {
     //}
     /// Push an [Item] on to the [Sequence]. This clones the Item.
-    fn push_item(&mut self, i: &Rc<Item<N>>) {
-        self.push(Rc::clone(i));
+    fn push_item(&mut self, i: &Item<N>) {
+        self.push(i.clone());
     }
 
     /// Calculate the effective boolean value of the Sequence
@@ -98,11 +98,11 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         if self.is_empty() {
             false
         } else {
-            match *self[0] {
+            match self[0] {
                 Item::Node(..) => true,
                 _ => {
                     if self.len() == 1 {
-                        (*self[0]).to_bool()
+                        self[0].to_bool()
                     } else {
                         false // should be a type error
                     }
@@ -116,7 +116,7 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         if self.len() == 1 {
             self[0].to_int()
         } else {
-            Result::Err(Error::new(
+            Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("type error: sequence is not a singleton"),
             ))
@@ -126,12 +126,12 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
 
 impl<N: Node> From<Value> for Sequence<N> {
     fn from(v: Value) -> Self {
-        vec![Rc::new(Item::Value(v))]
+        vec![Item::Value(Rc::new(v))]
     }
 }
 impl<N: Node> From<Item<N>> for Sequence<N> {
     fn from(i: Item<N>) -> Self {
-        vec![Rc::new(i)]
+        vec![i]
     }
 }
 
@@ -184,8 +184,8 @@ pub enum Item<N: Node> {
     /// Functions are not yet supported
     Function,
 
-    /// A scalar value
-    Value(Value),
+    /// A scalar value. These are in an Rc since they are frequently shared.
+    Value(Rc<Value>),
 }
 
 impl<N: item::Node> fmt::Display for Item<N> {
@@ -282,7 +282,7 @@ impl<N: Node> Item<N> {
                 Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
                 _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
-            Item::Node(..) => other.compare(&Item::Value(Value::String(self.to_string())), op),
+            Item::Node(..) => other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op),
             _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
     }
@@ -380,7 +380,7 @@ pub trait Node: Clone {
     /// Get the name of the node. If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
     fn name(&self) -> QualifiedName;
     /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
-    fn value(&self) -> Value;
+    fn value(&self) -> Rc<Value>;
 
     /// Get the string value of the node. See XPath ???
     fn to_string(&self) -> String;
@@ -437,18 +437,18 @@ pub trait Node: Clone {
     /// An iterator over the attributes of an element
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
-    fn get_attribute(&self, a: &QualifiedName) -> Value;
+    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
-    fn new_text(&self, v: Value) -> Result<Self, Error>;
+    fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
-    fn new_comment(&self, v: Value) -> Result<Self, Error>;
+    fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;

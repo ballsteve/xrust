@@ -95,14 +95,14 @@ impl<N: Node> Pattern<N> {
         &self,
         ctxt: &Context<N>,
         stctxt: &mut StaticContext<F>,
-        i: &Rc<Item<N>>,
+        i: &Item<N>,
     ) -> bool {
         match self {
             Pattern::Predicate(t) => ContextBuilder::from(ctxt)
                 .current(vec![i.clone()])
                 .build()
                 .dispatch(stctxt, t)
-                .unwrap_or(vec![Rc::new(Item::Value(Value::from(false)))])
+                .unwrap_or(vec![Item::Value(Rc::new(Value::from(false)))])
                 .to_bool(),
             Pattern::Selection(p) => {
                 // First step is the terminal case,
@@ -110,7 +110,7 @@ impl<N: Node> Pattern<N> {
                 p.t.as_ref().map_or(false, |((term, nonterm), nt)| {
                     if is_match(term, nt, i) {
                         // TODO: select item depending on non-terminal axis
-                        find_node(nonterm, i.clone())
+                        find_node(nonterm, i)
                             .map_or(false, |f| nonterminal(p.next.clone(), &f))
                     } else {
                         false
@@ -122,12 +122,12 @@ impl<N: Node> Pattern<N> {
     }
 }
 
-fn find_node<N: Node>(a: &Axis, i: Rc<Item<N>>) -> Option<Rc<Item<N>>> {
+fn find_node<N: Node>(a: &Axis, i: &Item<N>) -> Option<Item<N>> {
     match a {
         Axis::SelfDocument => match &*i {
             Item::Node(n) => {
                 if n.node_type() == NodeType::Document {
-                    Some(i)
+                    Some(i.clone())
                 } else {
                     None
                 }
@@ -135,20 +135,20 @@ fn find_node<N: Node>(a: &Axis, i: Rc<Item<N>>) -> Option<Rc<Item<N>>> {
             _ => None,
         },
         Axis::Parent => match &*i {
-            Item::Node(n) => n.parent().map(|p| Rc::new(Item::Node(p))),
+            Item::Node(n) => n.parent().map(|p| Item::Node(p)),
             _ => None,
         },
         _ => None, // todo
     }
 }
 
-fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Rc<Item<N>>) -> bool {
+fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Item<N>) -> bool {
     p.map_or(
         true, // all steps have succeeded so far
         |q| {
             let ((term, nonterm), nt) = q.t.as_ref().unwrap();
             if is_match(&term, &nt, i) {
-                find_node(nonterm, i.clone()).map_or(
+                find_node(nonterm, i).map_or(
                     false, // couldn't find the next node
                     |p| nonterminal(q.next.clone(), &p),
                 )
@@ -159,11 +159,11 @@ fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Rc<Item<N>>) -> bool {
     )
 }
 
-fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Rc<Item<N>>) -> bool {
+fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
     match a {
         Axis::SelfDocument => {
             // Select item only if it is a document-type node
-            match &**i {
+            match &*i {
                 Item::Node(n) => {
                     if n.node_type() == NodeType::Document {
                         nt.matches(i)
@@ -180,10 +180,10 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Rc<Item<N>>) -> bool {
         }
         Axis::Parent => {
             // Select the parent node
-            match &**i {
+            match &*i {
                 Item::Node(n) => n
                     .parent()
-                    .map_or(false, |p| nt.matches(&Rc::new(Item::Node(p)))),
+                    .map_or(false, |p| nt.matches(&Item::Node(p))),
                 _ => false,
             }
         }

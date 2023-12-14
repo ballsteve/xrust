@@ -7,7 +7,6 @@ Once the stylesheet has been compiled, it may then be evaluated with an appropri
 NB. This module, by default, does not resolve include or import statements. See the xrust-net crate for a helper module to do that.
 
 ```rust
-use std::rc::Rc;
 use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
@@ -28,10 +27,10 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
 }
 
 // The source document (a tree)
-let src = Rc::new(Item::Node(
+let src = Item::Node(
     make_from_str("<Example><Title>XSLT in Rust</Title><Paragraph>A simple document.</Paragraph></Example>")
     .expect("unable to parse XML")
-));
+);
 
 // The XSL stylesheet
 let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
@@ -282,7 +281,7 @@ where
                             None,
                             String::from("import"),
                         ),
-                        Value::from(1),
+                        Rc::new(Value::from(1)),
                     )?;
                     newnode.add_attribute(newat)?;
                     c.insert_before(newnode)?;
@@ -419,7 +418,7 @@ where
 /// Compile a node in a template to a sequence [Combinator]
 fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
     match n.node_type() {
-        NodeType::Text => Ok(Transform::Literal(Rc::new(Item::Value(Value::String(
+        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
             n.to_string(),
         ))))),
         NodeType::Element => {
@@ -432,7 +431,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     ));
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::Literal(Rc::new(Item::Value(Value::String(
+                            "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
                                 n.to_string(),
                             ))))),
                             "no" => {
@@ -443,7 +442,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                     .replace('<', "&lt;")
                                     .replace('\'', "&apos;")
                                     .replace('\"', "&quot;");
-                                Ok(Transform::Literal(Rc::new(Item::Value(Value::from(text)))))
+                                Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                             }
                             _ => Result::Err(Error::new(
                                 ErrorKind::TypeError,
@@ -459,7 +458,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             .replace('<', "&lt;")
                             .replace('\'', "&apos;")
                             .replace('\"', "&quot;");
-                        Ok(Transform::Literal(Rc::new(Item::Value(Value::from(text)))))
+                        Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {
@@ -781,7 +780,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Box::new(if t.to_string().is_empty() {
                             Transform::False
                         } else {
-                            Transform::Literal(Rc::new(Item::Value(Value::from(t.to_string()))))
+                            Transform::Literal(Item::Value(Rc::new(Value::from(t.to_string()))))
                         }),
                     ))
                 }
@@ -814,7 +813,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
             // Get value as a Value
             Ok(Transform::LiteralAttribute(
                 n.name(),
-                Box::new(Transform::Literal(Rc::new(Item::Value(Value::String(
+                Box::new(Transform::Literal(Item::Value(Rc::new(Value::String(
                     n.to_string(),
                 ))))),
             ))

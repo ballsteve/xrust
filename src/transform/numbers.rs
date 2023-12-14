@@ -19,11 +19,11 @@ pub fn number<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         1 => {
             // First try converting to an integer
             match n[0].to_int() {
-                Ok(i) => Ok(vec![Rc::new(Item::Value(Value::Integer(i)))]),
+                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::Integer(i)))]),
                 _ => {
                     // Otherwise convert to double.
                     // NB. This can't fail. At worst it returns NaN.
-                    Ok(vec![Rc::new(Item::Value(Value::Double(n[0].to_double())))])
+                    Ok(vec![Item::Value(Rc::new(Value::Double(n[0].to_double())))])
                 }
             }
         }
@@ -40,7 +40,7 @@ pub fn sum<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::Double(
+    Ok(vec![Item::Value(Rc::new(Value::Double(
         ctxt.dispatch(stctxt, s)?.iter().fold(0.0, |mut acc, i| {
             acc += i.to_double();
             acc
@@ -56,7 +56,7 @@ pub fn floor<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
     match n.len() {
-        1 => Ok(vec![Rc::new(Item::Value(Value::Double(
+        1 => Ok(vec![Item::Value(Rc::new(Value::Double(
             n[0].to_double().floor(),
         )))]),
         _ => Err(Error::new(
@@ -74,7 +74,7 @@ pub fn ceiling<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
     match n.len() {
-        1 => Ok(vec![Rc::new(Item::Value(Value::Double(
+        1 => Ok(vec![Item::Value(Rc::new(Value::Double(
             n[0].to_double().ceil(),
         )))]),
         _ => Err(Error::new(
@@ -96,7 +96,7 @@ pub fn round<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             let n = ctxt.dispatch(stctxt, r)?;
             let m = ctxt.dispatch(stctxt, p)?;
             match (n.len(), m.len()) {
-                (1, 1) => Ok(vec![Rc::new(Item::Value(Value::Double(
+                (1, 1) => Ok(vec![Item::Value(Rc::new(Value::Double(
                     ((n[0].to_double() * (10.0_f64).powi(m[0].to_int().unwrap() as i32)).round())
                         * (10.0_f64).powi(-m[0].to_int().unwrap() as i32),
                 )))]),
@@ -110,7 +110,7 @@ pub fn round<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             // precision is 0, i.e. round to nearest whole number
             let n = ctxt.dispatch(stctxt, r)?;
             match n.len() {
-                1 => Ok(vec![Rc::new(Item::Value(Value::Double(
+                1 => Ok(vec![Item::Value(Rc::new(Value::Double(
                     n[0].to_double().round(),
                 )))]),
                 _ => Err(Error::new(
@@ -148,12 +148,12 @@ pub(crate) fn tr_range<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         Ok(vec![])
     } else if i == j {
         let mut seq = Sequence::new();
-        seq.push_value(Value::Integer(i));
+        seq.push_value(&Rc::new(Value::Integer(i)));
         Ok(seq)
     } else {
         let mut result = Sequence::new();
         for k in i..=j {
-            result.push_value(Value::from(k))
+            result.push_value(&Rc::new(Value::from(k)))
         }
         Ok(result)
     }
@@ -193,5 +193,5 @@ pub(crate) fn arithmetic<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             ArithmeticOperator::Modulo => acc = acc % u,
         }
     }
-    Ok(vec![Rc::new(Item::Value(Value::from(acc)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(acc)))])
 }

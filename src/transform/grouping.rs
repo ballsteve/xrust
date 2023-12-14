@@ -1,7 +1,5 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
-use std::rc::Rc;
-
 use crate::item::{Item, Node, Sequence};
 use crate::transform::context::Context;
 use crate::xdmerror::{Error, ErrorKind};
@@ -20,6 +18,6 @@ pub fn current_grouping_key<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, E
                 String::from("no current grouping key"),
             ))
         },
-        |k| Ok(vec![Rc::new(Item::Value(k))]),
+        |k| Ok(vec![Item::Value(k)]),
     )
 }

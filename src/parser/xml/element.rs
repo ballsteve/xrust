@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::item::NodeType;
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;
@@ -163,7 +164,7 @@ pub(crate) fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                                 if !notex.is_empty() {
                                     new.push(
                                         NodeBuilder::new(NodeType::Text)
-                                            .value(Value::String(notex.concat()))
+                                            .value(Rc::new(Value::String(notex.concat())))
                                             .build(),
                                     );
                                     notex.clear();
@@ -180,7 +181,7 @@ pub(crate) fn content() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
             if !notex.is_empty() {
                 new.push(
                     NodeBuilder::new(NodeType::Text)
-                        .value(Value::String(notex.concat()))
+                        .value(Rc::new(Value::String(notex.concat())))
                         .build(),
                 );
             }
