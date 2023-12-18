@@ -6,10 +6,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_literal_text() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'>Found the document</xsl:template>
@@ -34,10 +34,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_literal_element() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><answer>Made an element</answer></xsl:template>
@@ -60,10 +60,10 @@ macro_rules! xslt_tests (
 	}
 	#[test]
 	fn xslt_element() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:element name='answer{count(ancestor::*)}'>Made an element</xsl:element></xsl:template>
@@ -87,10 +87,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_apply_templates_1() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -115,10 +115,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_apply_templates_2() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -144,10 +144,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_comment() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -174,10 +174,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_pi() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -204,10 +204,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_message_1() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -240,10 +240,10 @@ macro_rules! xslt_tests (
 
 	#[test]
 	fn xslt_message_term() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:apply-templates/></xsl:template>
@@ -286,7 +286,7 @@ macro_rules! xslt_tests (
     <Paragraph>A simple document.</Paragraph>
 </Example>
 "#;
-		let src = Rc::new(Item::Node($x(srcxml).expect("unable to parse source document")));
+		let src = Item::Node($x(srcxml).expect("unable to parse source document"));
 		let stylexml = r#"<xsl:stylesheet
 	version="1.0"
 	xmlns:dat="http://www.stormware.cz/schema/version_2/data.xsd"
@@ -336,10 +336,10 @@ macro_rules! xslt_tests (
 	#[test]
 	#[should_panic]
 	fn xslt_include() {
-	    let src = Rc::new(Item::Node(
+	    let src = Item::Node(
 		$x("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")
 		    .expect("unable to parse source document")
-	    ));
+	    );
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:include href='included.xsl'/>
@@ -370,7 +370,7 @@ macro_rules! xslt_tests (
 	fn import_1() {
 	    let mut sc = StaticContext::new_with_xslt_builtins();
 
-	    let src = Rc::new(Item::Node($x("<Test><Level1>one</Level1><Level2>two</Level2><Level3>three</Level3><Level4>four</Level4></Test>")));
+	    let src = Item::Node($x("<Test><Level1>one</Level1><Level2>two</Level2><Level3>three</Level3><Level4>four</Level4></Test>"));
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:import href='imported.xsl'/>
@@ -407,7 +407,7 @@ macro_rules! xslt_tests (
 	fn apply_import() {
 	    let mut sc = StaticContext::new_with_xslt_builtins();
 
-	    let src = Rc::new(Item::Node($x("<Test><Level1>one</Level1><Level2>two</Level2><Level3>three</Level3><Level4>four</Level4></Test>")));
+	    let src = Item::Node($x("<Test><Level1>one</Level1><Level2>two</Level2><Level3>three</Level3><Level4>four</Level4></Test>"));
 
 	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:import href='imported.xsl'/>

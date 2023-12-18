@@ -1,13 +1,13 @@
 use xrust::item::{Node, NodeType};
-use xrust::item_node_tests;
-use xrust::item_value_tests;
-use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
-use xrust::transform_tests;
 use xrust::trees::intmuttree::Document;
 use xrust::trees::intmuttree::{NodeBuilder, RNode};
-use xrust::xdmerror::Error;
+use xrust::xdmerror::{Error, ErrorKind};
+use xrust::item_value_tests;
+use xrust::item_node_tests;
+use xrust::pattern_tests;
+use xrust::transform_tests;
 use xrust::xpath_tests;
 use xrust::xslt_tests;
 
@@ -22,7 +22,7 @@ fn make_doc(n: QualifiedName, v: Value) -> RNode {
     let mut child = NodeBuilder::new(NodeType::Element).name(n).build();
     d.push(child.clone()).expect("unable to append child");
     child
-        .push(NodeBuilder::new(NodeType::Text).value(v).build())
+        .push(NodeBuilder::new(NodeType::Text).value(Rc::new(v)).build())
         .expect("unable to append child");
     d
 }
@@ -34,12 +34,12 @@ fn make_sd_raw() -> RNode {
         .expect("failed to parse XML");
     r.content[0].clone()
 }
-fn make_sd() -> Rc<Item<RNode>> {
+fn make_sd() -> Item<RNode> {
     let r = make_sd_raw();
     let e = r.clone();
     let mut d = NodeBuilder::new(NodeType::Document).build();
     d.push(e).expect("unable to append node");
-    Rc::new(Item::Node(d))
+    Item::Node(d)
 }
 
 fn make_from_str(s: &str) -> Result<RNode, Error> {
@@ -54,7 +54,7 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
 
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc, make_sd_raw);
-xpath_tests!(RNode, make_empty_doc, make_sd);
 pattern_tests!(RNode, make_empty_doc, make_sd);
 transform_tests!(RNode, make_empty_doc, make_doc);
+xpath_tests!(RNode, make_empty_doc, make_sd);
 xslt_tests!(make_from_str, make_empty_doc);

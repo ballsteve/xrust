@@ -150,7 +150,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    l1.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    l2.push(leaf.clone())
 		.expect("unable to append child");
@@ -179,7 +179,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    l1.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    l2.push(leaf.clone())
 		.expect("unable to append child");
@@ -201,7 +201,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    l1.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    l2.push(leaf.clone())
 		.expect("unable to append child");
@@ -224,7 +224,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    t.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    t.push(leaf.clone())
 		.expect("unable to append child");
@@ -253,7 +253,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    t.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    t.push(leaf.clone())
 		.expect("unable to append child");
@@ -284,7 +284,7 @@ macro_rules! item_node_tests (
 	    l1a.push(l2aa.clone())
 		.expect("unable to append child");
 	    l2aa.push(
-		sd.new_text(Value::from("AA"))
+		sd.new_text(Rc::new(Value::from("AA")))
 		    .expect("unable to create text")
 	    ).expect("unable to append text");
 	    let mut l2ab = sd.new_element(QualifiedName::new(None, None, String::from("B")))
@@ -292,7 +292,7 @@ macro_rules! item_node_tests (
 	    l1a.push(l2ab.clone())
 		.expect("unable to append child");
 	    l2ab.push(
-		sd.new_text(Value::from("AB"))
+		sd.new_text(Rc::new(Value::from("AB")))
 		    .expect("unable to create text")
 	    ).expect("unable to append text");
 
@@ -301,7 +301,7 @@ macro_rules! item_node_tests (
 	    l1b.push(l2ba.clone())
 		.expect("unable to append child");
 	    l2ba.push(
-		sd.new_text(Value::from("BA"))
+		sd.new_text(Rc::new(Value::from("BA")))
 		    .expect("unable to create text")
 	    ).expect("unable to append text");
 	    let mut l2bb = sd.new_element(QualifiedName::new(None, None, String::from("B")))
@@ -309,7 +309,7 @@ macro_rules! item_node_tests (
 	    l1b.push(l2bb.clone())
 		.expect("unable to append child");
 	    l2bb.push(
-		sd.new_text(Value::from("BB"))
+		sd.new_text(Rc::new(Value::from("BB")))
 		    .expect("unable to create text")
 	    ).expect("unable to append text");
 
@@ -345,7 +345,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    t.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    t.push(leaf.clone())
 		.expect("unable to append child");
@@ -373,7 +373,7 @@ macro_rules! item_node_tests (
 		.expect("unable to create element");
 	    t.push(l2.clone())
 		.expect("unable to append child");
-	    let leaf = sd.new_text(Value::from("leaf node"))
+	    let leaf = sd.new_text(Rc::new(Value::from("leaf node")))
 		.expect("unable to create text node");
 	    t.push(leaf.clone())
 		.expect("unable to append child");
@@ -395,13 +395,13 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let a1 = sd.new_attribute(
 		QualifiedName::new(None, None, String::from("role")),
-		Value::from("testing")
+		Rc::new(Value::from("testing"))
 	    ).expect("unable to create attribute");
 	    t.add_attribute(a1)
 		.expect("unable to add attribute");
 	    let a2 = sd.new_attribute(
 		QualifiedName::new(None, None, String::from("phase")),
-		Value::from("one")
+		Rc::new(Value::from("one"))
 	    ).expect("unable to create element");
 	    t.add_attribute(a2)
 		.expect("unable to add attribute");

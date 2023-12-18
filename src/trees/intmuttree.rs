@@ -1183,7 +1183,7 @@ mod tests {
 
         assert_eq!(
             child.get_attribute(&QualifiedName::new(None, None, String::from("mode"))),
-            Value::from("testing")
+            Value::from("testing").into()
         )
     }
     #[test]
@@ -1203,7 +1203,7 @@ mod tests {
 
         assert_eq!(
             child.get_attribute(&QualifiedName::new(None, None, String::from("foo"))),
-            Value::from("")
+            Value::from("").into()
         )
     }
 

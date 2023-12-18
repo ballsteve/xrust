@@ -61,7 +61,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                         let new_attr = t
                             .new_attribute(
                                 QualifiedName::new(None, None, attr_name.clone()),
-                                Value::from(attr_value.clone()),
+                                Rc::new(Value::from(attr_value.clone())),
                             )
                             .expect("unable to create attribute node");
                         t.add_attribute(new_attr).expect("unable to append node");
@@ -75,14 +75,14 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                 let new = t
                     .new_attribute(
                         QualifiedName::new(None, None, name.clone()),
-                        Value::from(value.clone()),
+                        Rc::new(Value::from(value.clone())),
                     )
                     .expect("unable to create attribute node");
                 t.add_attribute(new).expect("unable to append node");
             }
             Content::Text(value) => {
                 let new = t
-                    .new_text(Value::from(value.clone()))
+                    .new_text(Rc::new(Value::from(value.clone())))
                     .expect("unable to create text node");
                 t.push(new).expect("unable to append node");
             }
@@ -215,7 +215,7 @@ eol = "X".
     .expect("failed to compile XSL stylesheet");
 
     // Set the Markdown RNode document as the context
-    ctxt.context(vec![Rc::new(Item::Node(md))], 0);
+    ctxt.context(vec![Item::Node(md)], 0);
     // Create a document for the result tree
     ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
 
