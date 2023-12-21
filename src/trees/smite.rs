@@ -52,6 +52,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
+use crate::trees::intmuttree::NodeBuilder;
 
 pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
@@ -364,7 +365,34 @@ impl ItemNode for RNode {
         Ok(new)
     }
     fn get_canonical(&self) -> Result<Self, Error> {
-        Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+        match &self.0 {
+            NodeInner::Document(_, _) |
+            NodeInner::Comment(_, _) |
+            NodeInner::ProcessingInstruction(_, _, _) => Err(Error::new(ErrorKind::TypeError, "invalid node type".to_string())),
+            NodeInner::Text(_, v) => {
+                let mut w = v.clone();
+                if let Value::String(s) = (*v.clone()).clone() {
+                    w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n")))
+                }
+                Ok(self.new_text(w)?)
+            }
+            NodeInner::Attribute(_, _, _) => self.shallow_copy(),
+            NodeInner::Element(_, _, _, _) => {
+                let mut result = self.shallow_copy()?;
+
+                self.attribute_iter().try_for_each(|a| {
+                    result.add_attribute(a.deep_copy()?)?;
+                    Ok::<(), Error>(())
+                })?;
+
+                self.child_iter().try_for_each(|c| {
+                    result.push(c.get_canonical()?)?;
+                    Ok::<(), Error>(())
+                })?;
+
+                Ok(result)
+            }
+        }
     }
 }
 
@@ -449,6 +477,9 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
     )
 }
 
+// This handles the XML serialisation of the document.
+// "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
+// "indent" is the current level of identation.
 fn to_xml_int(
     node: &RNode,
     od: &OutputDefinition,
@@ -456,19 +487,123 @@ fn to_xml_int(
     indent: usize,
 ) -> String {
     match &node.0 {
-        NodeInner::Document(_, c) => c.borrow().iter().fold(String::new(), |mut acc, d| {acc.push_str(d.to_xml().as_str()); acc}),
-        NodeInner::Element(_, qn, _at, c) => {
+        NodeInner::Document(_, _) => node
+            .child_iter()
+            .fold(String::new(), |mut result, c| {
+                result.push_str(to_xml_int(&c, od, ns.clone(), indent + 2).as_str());
+                result
+            }),
+        NodeInner::Element(_, qn, _, _) => {
             let mut result = String::from("<");
             result.push_str(qn.to_string().as_str());
+
+            // Check if any XML Namespaces need to be declared
+            // newns is a vector of (prefix, namespace URI) pairs
+            let mut declared = ns.clone();
+            let mut newns: Vec<(String, Option<String>)> = vec![];
+            // First, the element itself
+            namespace_check(&qn, &declared).iter().for_each(|m| {
+                newns.push(m.clone());
+                declared.push(m.clone())
+            });
+            // Next, it's attributes
+            node.attribute_iter().for_each(|a| {
+                namespace_check(&a.name(), &declared).iter().for_each(|m| {
+                    newns.push(m.clone());
+                    declared.push(m.clone())
+                })
+            });
+            // Finally, it's child elements
+            node.child_iter()
+                .filter(|c| c.node_type() == NodeType::Element)
+                .for_each(|c| {
+                        namespace_check(&c.name(), &declared).iter().for_each(|m| {
+                            newns.push(m.clone());
+                            declared.push(m.clone())
+                        })
+                });
+            newns.iter().for_each(|(u, p)| {
+                result.push_str(" xmlns");
+                if let Some(q) = p {
+                    result.push(':');
+                    result.push_str(q.as_str());
+                }
+                result.push_str("='");
+                result.push_str(u);
+                result.push('\'');
+            });
+
+            node.attribute_iter()
+                .for_each(|a| result.push_str(format!(" {}='{}'", a.name().to_string().as_str(), a.value()).as_str()));
             result.push('>');
-            c.borrow().iter().for_each(|d| result.push_str(d.to_xml().as_str()));
+
+            // Content of the element.
+            // If the indent option is enabled, then if no child is a text node then add spacing.
+            let do_indent: bool = od
+                .get_indent()
+                .then(|| {
+                    node.child_iter().fold(true, |mut acc, c| {
+                        if acc && c.node_type() == NodeType::Text {
+                            acc = false
+                        }
+                        acc
+                    })
+                })
+                .map_or(false, |b| b);
+
+            node.child_iter().for_each(|c| {
+                if do_indent {
+                    result.push('\n');
+                    (0..indent).for_each(|_| result.push(' '))
+                }
+                result.push_str(to_xml_int(&c, od, newns.clone(), indent + 2).as_str())
+            });
+            if do_indent && indent > 1 {
+                result.push('\n');
+                (0..(indent - 2)).for_each(|_| result.push(' '))
+            }
             result.push_str("</");
             result.push_str(qn.to_string().as_str());
             result.push('>');
             result
         }
-        _ => String::new(), // not yet implemented
+        NodeInner::Text(_, v) => v.to_string(),
+        NodeInner::Comment(_, v) => {
+            let mut result = String::from("<!--");
+            result.push_str(v.to_string().as_str());
+            result.push_str("-->");
+            result
+        }
+        NodeInner::ProcessingInstruction(_, qn, v) => {
+            let mut result = String::from("<?");
+            result.push_str(qn.to_string().as_str());
+            result.push(' ');
+            result.push_str(v.to_string().as_str());
+            result.push_str("?>");
+            result
+        }
+        _ => String::new(),
     }
+}
+
+// Checks if this node's name is in a namespace that has already been declared.
+// Returns a namespace to be declared if required, (URI, prefix).
+fn namespace_check(
+    qn: &QualifiedName,
+    ns: &Vec<(String, Option<String>)>,
+) -> Option<(String, Option<String>)> {
+    let mut result = None;
+    if let Some(qnuri) = qn.get_nsuri_ref() {
+        // Has this namespace already been declared?
+        if ns.iter().find(|(u, _)| u == qnuri).is_some() {
+            // Namespace has been declared, but with the same prefix?
+            // TODO: see forest.rs for example implementation
+        } else {
+            // Namespace has not been declared, so this element must declare it
+            result = Some((qnuri.to_string(), qn.get_prefix()))
+        }
+    }
+    result
 }
 
 pub struct Children {
