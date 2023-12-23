@@ -66,6 +66,7 @@ We need your help!
 pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
+pub mod xmldecl;
 pub mod output;
 mod parsepicture;
 pub mod qname;
