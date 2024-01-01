@@ -3,11 +3,12 @@ use crate::parser::combinators::tuple::tuple7;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::dtd::misc::contentspec;
 use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseInput, ParseResult};
-use crate::trees::intmuttree::DTDDecl;
+use crate::parser::{ParseError, ParseInput};
+use crate::xmldecl::DTDDecl;
+use crate::item::Node;
 
 //elementdecl	   ::=   	'<!ELEMENT' S Name S contentspec S? '>'
-pub(crate) fn elementdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn elementdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple7(
         tag("<!ELEMENT"),
         whitespace1(),

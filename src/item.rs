@@ -16,6 +16,7 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
+use crate::xmldecl::XMLDecl;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -463,6 +464,10 @@ pub trait Node: Clone {
     fn shallow_copy(&self) -> Result<Self, Error>;
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
-    /// Canonical XML representation of the node
+    /// Canonical XML representation of the node.
     fn get_canonical(&self) -> Result<Self, Error>;
+    /// Get the XML Declaration for the document.
+    fn xmldecl(&self) -> XMLDecl;
+    /// Set the XML Declaration for the document.
+    fn set_xmldecl(&mut self, d: XMLDecl) -> Result<(), Error>;
 }

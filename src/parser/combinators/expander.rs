@@ -1,4 +1,6 @@
-use crate::intmuttree::DTDDecl;
+use std::string::ParseError;
+use crate::item::Node;
+use crate::xmldecl::DTDDecl;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
@@ -8,7 +10,7 @@ pub(crate) fn geexpander(inp: RNode) -> RNode{
 
 }
 
-pub(crate) fn genentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> + 'static {
+pub(crate) fn genentityexpander<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + 'static {
     move |input| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))(input);
 
@@ -45,7 +47,7 @@ pub(crate) fn genentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> 
     }
 }
 
-pub(crate) fn paramentityexpander() -> impl Fn(ParseInput) -> ParseResult<String> + 'static {
+pub(crate) fn paramentityexpander<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + 'static {
     move |input| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))(input);
 

@@ -10,9 +10,10 @@ use crate::parser::xml::dtd::pedecl::pedecl;
 use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::misc::comment;
 use crate::parser::xml::misc::processing_instruction;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
+use crate::item::Node;
 
-pub(crate) fn intsubset() -> impl Fn(ParseInput) -> ParseResult<Vec<()>> {
+pub(crate) fn intsubset<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
     many0(alt9(
         elementdecl(),
         attlistdecl(),

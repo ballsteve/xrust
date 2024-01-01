@@ -8,13 +8,13 @@ use crate::parser::combinators::tag::anytag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::strings::stringconcat_expr;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 use crate::transform::Transform;
 use crate::value::Operator;
 
 // ComparisonExpr ::= StringConcatExpr ( (ValueComp | GeneralComp | NodeComp) StringConcatExpr)?
 pub(crate) fn comparison_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             stringconcat_expr::<N>(),

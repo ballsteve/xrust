@@ -6,15 +6,16 @@ use crate::parser::combinators::tuple::{tuple4, tuple6};
 use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::dtd::misc::nmtoken;
 use crate::parser::xml::dtd::notation::notationtype;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
+use crate::item::Node;
 
 //EnumeratedType ::= NotationType | Enumeration
-pub(crate) fn enumeratedtype() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn enumeratedtype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     alt2(notationtype(), enumeration())
 }
 
 //Enumeration ::= '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')'
-fn enumeration() -> impl Fn(ParseInput) -> ParseResult<()> {
+fn enumeration<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     map(
         tuple6(
             tag("("),

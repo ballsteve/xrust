@@ -7,6 +7,7 @@ This parser combinator passes a context into the function, which includes the st
 use crate::xmldecl::DTD;
 use crate::externals::URLResolver;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::item::Node;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -16,8 +17,10 @@ pub(crate) mod common;
 pub mod xml;
 pub mod xpath;
 
-pub type ParseInput<'a> = (&'a str, ParserState);
-pub type ParseResult<'a, Output> = Result<(ParseInput<'a>, Output), ParseError>;
+#[allow(type_alias_bounds)]
+pub type ParseInput<'a, N: Node> = (&'a str, ParserState<N>);
+#[allow(type_alias_bounds)]
+pub type ParseResult<'a, N: Node, Output> = Result<(ParseInput<'a, N>, Output), ParseError>;
 
 #[derive(Copy, Clone, Debug, PartialEq)]
 pub enum ParseError {
@@ -41,7 +44,9 @@ pub enum ParseError {
 }
 
 #[derive(Clone)]
-pub struct ParserState {
+pub struct ParserState<N: Node> {
+    doc: Option<N>,
+
     dtd: DTD,
     /*
     The namespaces are tracked in a hashmap of vectors, each prefix tracking which namespace you
@@ -75,9 +80,10 @@ pub struct ParserState {
     currentlyexternal: bool,
 }
 
-impl ParserState {
-    pub fn new(resolver: Option<URLResolver>, docloc: Option<String>) -> Self {
+impl<N: Node> ParserState<N> {
+    pub fn new(doc: Option<N>, resolver: Option<URLResolver>, docloc: Option<String>) -> Self {
         ParserState {
+            doc,
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
@@ -123,13 +129,13 @@ impl ParserState {
     }
 }
 
-impl PartialEq for ParserState {
-    fn eq(&self, _: &ParserState) -> bool {
+impl<N: Node> PartialEq for ParserState<N> {
+    fn eq(&self, _: &ParserState<N>) -> bool {
         true
     }
 }
 
-impl fmt::Debug for ParserState {
+impl<N: Node> fmt::Debug for ParserState<N> {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("ParserState").finish()
     }

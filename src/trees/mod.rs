@@ -6,3 +6,4 @@ pub mod intmuttree;
 /// Interior Mutability Tuple-Struct with Enum.
 /// This tree implementation is an evolution of intmuttree that represents each type of node as variants in an enum, wrapped in a tuple struct.
 pub mod smite;
+pub(crate) mod nullo;

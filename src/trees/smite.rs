@@ -41,8 +41,6 @@ assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
-use crate::parser;
-use crate::parser::xml::XMLDocument;
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
@@ -53,13 +51,12 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
-use crate::trees::intmuttree::NodeBuilder;
 
 /// A node in a tree.
 pub type RNode = Rc<Node>;
 
 enum NodeInner {
-    Document(Option<XMLDecl>, RefCell<Vec<RNode>>), // only one of these can be an element-type node
+    Document(RefCell<Option<XMLDecl>>, RefCell<Vec<RNode>>), // to be well-formed, only one of these can be an element-type node
     Element(
         RefCell<Weak<Node>>, // Parent: must be a Document or an Element
         Rc<QualifiedName>, // name
@@ -76,22 +73,7 @@ pub struct Node(NodeInner);
 impl Node {
     /// Only documents are created new. All other types of nodes are created using new_* methods.
     pub fn new() -> Self {
-        Node(NodeInner::Document(None, RefCell::new(vec![])))
-    }
-    pub fn set_xmldecl(&mut self, decl: XMLDecl) -> Result<(), Error> {
-        match &self.0 {
-            NodeInner::Document(_, c) => {
-                self.0 = NodeInner::Document(Some(decl), c.clone());
-                Ok(())
-            }
-            _ => Err(Error::new(ErrorKind::TypeError, String::from("not a Document node"))),
-        }
-    }
-    pub fn xmldecl(&self) -> Result<Option<XMLDecl>, Error> {
-        match &self.0 {
-            NodeInner::Document(d, _) => Ok(d.clone()),
-            _ => Err(Error::new(ErrorKind::TypeError, String::from("not a Document node"))),
-        }
+        Node(NodeInner::Document(RefCell::new(None), RefCell::new(vec![])))
     }
     pub fn set_nsuri(&mut self, uri: String) -> Result<(), Error>{
         match &self.0 {
@@ -391,6 +373,24 @@ impl ItemNode for RNode {
 
                 Ok(result)
             }
+        }
+    }
+    fn set_xmldecl(&mut self, decl: XMLDecl) -> Result<(), Error> {
+        match &self.0 {
+            NodeInner::Document(x, _) => {
+                *x.borrow_mut() = Some(decl);
+                Ok(())
+            }
+            // TODO: traverse to the document node
+            _ => Err(Error::new(ErrorKind::TypeError, String::from("not a Document node"))),
+        }
+    }
+    fn xmldecl(&self) -> XMLDecl {
+        match &self.0 {
+            NodeInner::Document(d, _) => d.borrow().clone().map_or_else(|| XMLDeclBuilder::new().build(), |x| x.clone()),
+            _ => {
+                self.owner_document().xmldecl()
+            },
         }
     }
 }
@@ -777,6 +777,7 @@ impl Iterator for Attributes {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::xmldecl::XMLDeclBuilder;
 
     #[test]
     fn newnode_new() {
@@ -786,7 +787,7 @@ mod tests {
 
     #[test]
     fn newnode_xmldecl() {
-        let mut d = Node::new();
+        let mut d = Rc::new(Node::new());
         let x = XMLDeclBuilder::new()
             .version(String::from("1.1"))
             .build();

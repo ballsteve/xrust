@@ -1,52 +1,41 @@
 use std::rc::Rc;
-use crate::item::NodeType;
+use crate::item::{Node, NodeType};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::element::content;
-use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::trees::intmuttree::{NodeBuilder, RNode};
-use crate::{Node, Value};
+use crate::parser::{ParseError, ParseInput};
+use crate::value::Value;
 
 // Reference ::= EntityRef | CharRef
 // \Its important to note, we pre-populate the standard char references in the DTD.
-pub(crate) fn reference() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
+pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
     move |(input, state)| {
-        let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state));
+        let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state.clone()));
         match e {
             Err(e) => Err(e),
             Ok(((input1, mut state1), entitykey)) => {
                 match entitykey.as_str() {
                     "amp" => Ok((
                         (input1, state1),
-                        vec![NodeBuilder::new(NodeType::Text)
-                            .value(Rc::new(Value::String("&".to_string())))
-                            .build()],
+                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("&".to_string()))).expect("unable to create text node")],
                     )),
                     "gt" => Ok((
                         (input1, state1),
-                        vec![NodeBuilder::new(NodeType::Text)
-                            .value(Rc::new(Value::String(">".to_string())))
-                            .build()],
+                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String(">".to_string()))).expect("unable to create text node")],
                     )),
                     "lt" => Ok((
                         (input1, state1),
-                        vec![NodeBuilder::new(NodeType::Text)
-                            .value(Rc::new(Value::String("<".to_string())))
-                            .build()],
+                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("<".to_string()))).expect("unable to create text node")],
                     )),
                     "quot" => Ok((
                         (input1, state1),
-                        vec![NodeBuilder::new(NodeType::Text)
-                            .value(Rc::new(Value::String("\"".to_string())))
-                            .build()],
+                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("\"".to_string()))).expect("unable to create text node")],
                     )),
                     "apos" => Ok((
                         (input1, state1),
-                        vec![NodeBuilder::new(NodeType::Text)
-                            .value(Rc::new(Value::String("'".to_string())))
-                            .build()],
+                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("'".to_string()))).expect("unable to create text node")],
                     )),
                     _ => {
                         match state1.clone().dtd.generalentities.get(&entitykey as &str) {
@@ -162,7 +151,7 @@ pub(crate) fn reference() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     }
 }
 
-pub(crate) fn textreference() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn textreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state));
         match e {

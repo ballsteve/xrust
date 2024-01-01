@@ -1,4 +1,4 @@
-use crate::item::NodeType;
+use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -12,13 +12,12 @@ use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::textreference;
-use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::trees::intmuttree::{NodeBuilder, RNode};
-use crate::{Node, Value};
+use crate::parser::{ParseError, ParseInput};
+use crate::value::Value;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
+pub(crate) fn attributes<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
             let n: HashMap<String, String> = HashMap::new();
@@ -91,22 +90,24 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
             state1.namespace.push(namespaces.clone());
             //Why loop through the nodes a second time? XML attributes are not in any order, so the
             //namespace declaration can happen after the attribute if it has a namespace prefix.
+            // SRB: TODO: partition the nodes vector based on whether the attribute has a prefix (and is not a namespace declaration)
+            // Then loop through the prefixed attributes after the namespaces have been processed
             let mut resnodes = vec![];
             let mut resnodenames = vec![];
             for node in nodes {
                 if node.name().get_prefix() != Some("xmlns".to_string())
                     && node.name().get_localname() != *"xmlns"
                 {
-                    if let Some(ns) = node.name().get_prefix() {
-                        if ns == *"xml" {
-                            node.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
-                        } else {
-                            match namespaces.get(&*ns) {
-                                None => return Err(ParseError::MissingNameSpace),
-                                Some(nsuri) => node.set_nsuri(nsuri.clone()),
-                            }
-                        }
-                    }
+                    //if let Some(ns) = node.name().get_prefix() {
+                    //    if ns == *"xml" {
+                    //        node.set_nsuri("http://www.w3.org/XML/1998/namespace".to_string())
+                    //    } else {
+                    //        match namespaces.get(&*ns) {
+                    //            None => return Err(ParseError::MissingNameSpace),
+                    //            Some(nsuri) => node.set_nsuri(nsuri.clone()),
+                    //        }
+                    //    }
+                    //}
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
                     if resnodenames
                         .contains(&(node.name().get_nsuri(), node.name().get_localname()))
@@ -124,26 +125,23 @@ pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     }
 }
 // Attribute ::= Name '=' AttValue
-fn attribute() -> impl Fn(ParseInput) -> ParseResult<RNode> {
-    map(
-        tuple6(
+fn attribute<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
+    move |(input, state)| match tuple6(
             whitespace1(),
             qualname(),
             whitespace0(),
             tag("="),
             whitespace0(),
             attribute_value(),
-        ),
-        |(_, n, _, _, _, s)| {
-            NodeBuilder::new(NodeType::Attribute)
-                .name(n)
-                .value(Rc::new(Value::String(s)))
-                .build()
-        },
-    )
+        )((input, state)) {
+        Ok(((input1, state1), (_, n, _, _, _, s))) => {
+            Ok(((input1, state1.clone()), state1.doc.unwrap().new_attribute(n, Rc::new(Value::String(s))).expect("unable to create attribute")))
+        }
+        Err(e) => Err(e)
+    }
 }
 
-fn attribute_value() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn attribute_value<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let parse = alt2(
             delimited(

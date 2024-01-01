@@ -13,9 +13,10 @@ use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::textexternalid;
 use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
+use crate::item::Node;
 
-pub(crate) fn pedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match wellformed_ver(
         tuple9(
             tag("<!ENTITY"),

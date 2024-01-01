@@ -5,10 +5,11 @@ use crate::parser::combinators::tuple::{tuple2, tuple5, tuple6};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
 use crate::parser::xml::xmldecl::encodingdecl;
-use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::trees::intmuttree::XMLDecl;
+use crate::parser::{ParseError, ParseInput};
+use crate::xmldecl::XMLDecl;
+use crate::item::Node;
 
-fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| match tuple5(
         tag("version"),
         whitespace0(),
@@ -33,7 +34,7 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 
-pub(crate) fn textdecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
+pub(crate) fn textdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
     //This is NOT the same as the XML declaration in XML documents.
     //There is no standalone, and the version is optional.
     map(

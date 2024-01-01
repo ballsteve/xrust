@@ -22,13 +22,14 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::anychar;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::xpath::support::none_of;
-use crate::parser::{ParseInput, ParseResult, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserState};
+use crate::item::Node;
 use crate::xdmerror::*;
 
 // This implementation translates an XPath picture string to a strftime format
 
 #[allow(dead_code)]
-fn picture() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn picture<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         many0(alt4(open_escape(), close_escape(), literal(), marker())),
         |v| v.iter().cloned().collect::<String>(),
@@ -36,12 +37,12 @@ fn picture() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 #[allow(dead_code)]
-fn literal() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn literal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(none_of("[]"), |s| String::from(s))
 }
 
 #[allow(dead_code)]
-fn marker() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn marker<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple6(
             anychar('['),
@@ -77,16 +78,16 @@ fn marker() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 #[allow(dead_code)]
-fn open_escape() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn open_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(tuple2(anychar('['), anychar('[')), |_| String::from("["))
 }
 #[allow(dead_code)]
-fn close_escape() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn close_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(tuple2(anychar(']'), anychar(']')), |_| String::from("]"))
 }
 
-pub fn parse(e: &str) -> Result<String, Error> {
-    let state = ParserState::new(None, None);
+pub fn parse<N: Node>(e: &str) -> Result<String, Error> {
+    let state: ParserState<N> = ParserState::new(None, None, None);
     match picture()((e, state)) {
         Ok(((rem, _), value)) => {
             if rem.is_empty() {
@@ -108,36 +109,37 @@ pub fn parse(e: &str) -> Result<String, Error> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::trees::nullo::Nullo;
 
     #[test]
     fn picture_empty() {
-        let pic = parse("").expect("failed to parse picture \"\"");
+        let pic = parse::<Nullo>("").expect("failed to parse picture \"\"");
         assert_eq!(pic, "");
     }
 
     #[test]
     fn picture_date() {
-        let pic = parse("[D] [M] [Y]").expect("failed to parse picture \"[D] [M] [Y]\"");
+        let pic = parse::<Nullo>("[D] [M] [Y]").expect("failed to parse picture \"[D] [M] [Y]\"");
         assert_eq!(pic, "%d %m %Y");
     }
 
     #[test]
     fn picture_time() {
-        let pic = parse("Hr [h][P] Mins [m] secs [s],[f]")
+        let pic = parse::<Nullo>("Hr [h][P] Mins [m] secs [s],[f]")
             .expect("failed to parse picture \"Hr [h][P] Mins [m] secs [s],[f]\"");
         assert_eq!(pic, "Hr %I%P Mins %M secs %S,%f");
     }
 
     #[test]
     fn picture_datetime() {
-        let pic = parse("[D]/[M]/[Y] [H]:[m]:[s]")
+        let pic = parse::<Nullo>("[D]/[M]/[Y] [H]:[m]:[s]")
             .expect("failed to parse picture \"[D]/[M]/[Y] [H]:[m]:[s]\"");
         assert_eq!(pic, "%d/%m/%Y %H:%M:%S");
     }
 
     #[test]
     fn picture_escapes() {
-        let pic = parse("[[[D]/[M]/[Y]]] [[[H]:[m]:[s]]]")
+        let pic = parse::<Nullo>("[[[D]/[M]/[Y]]] [[[H]:[m]:[s]]]")
             .expect("failed to parse picture \"[D]/[M]/[Y] [H]:[m]:[s]\"");
         assert_eq!(pic, "[%d/%m/%Y] [%H:%M:%S]");
     }

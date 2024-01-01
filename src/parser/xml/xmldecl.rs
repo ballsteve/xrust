@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -7,10 +8,10 @@ use crate::parser::combinators::tuple::{tuple2, tuple3, tuple5, tuple6, tuple8};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
-use crate::parser::{ParseError, ParseInput, ParseResult};
-use crate::trees::intmuttree::XMLDecl;
+use crate::parser::{ParseError, ParseInput};
+use crate::xmldecl::XMLDecl;
 
-fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |input| match tuple5(
         tag("version"),
         whitespace0(),
@@ -36,7 +37,7 @@ fn xmldeclversion() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 
-fn xmldeclstandalone() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn xmldeclstandalone<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| match map(
         wellformed(
             tuple6(
@@ -62,7 +63,7 @@ fn xmldeclstandalone() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 
-pub(crate) fn encodingdecl() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn encodingdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple6(
             whitespace1(),
@@ -100,7 +101,7 @@ pub(crate) fn encodingdecl() -> impl Fn(ParseInput) -> ParseResult<String> {
     )
 }
 
-pub(crate) fn xmldecl() -> impl Fn(ParseInput) -> ParseResult<XMLDecl> {
+pub(crate) fn xmldecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
     move |(input, state)| match tuple8(
         tag("<?xml"),
         whitespace1(),
