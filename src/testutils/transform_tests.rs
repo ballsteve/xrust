@@ -216,7 +216,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_set_attribute() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -261,7 +261,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_copy_context_node() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -289,7 +289,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_deep_copy() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -451,7 +451,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_root() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -495,7 +495,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -524,7 +524,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -570,7 +570,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -622,7 +622,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -666,7 +666,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -712,7 +712,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -764,7 +764,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(n.clone())
@@ -798,7 +798,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -833,7 +833,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -876,7 +876,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -919,7 +919,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -962,7 +962,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1005,7 +1005,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1049,7 +1049,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1097,7 +1097,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1145,7 +1145,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1206,7 +1206,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1277,7 +1277,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1332,7 +1332,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1383,7 +1383,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1434,7 +1434,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1498,7 +1498,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1729,7 +1729,7 @@ macro_rules! transform_tests (
 	    );
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -1774,7 +1774,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_for_each() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to element node");
 	    sd.push(t.clone())
@@ -1899,7 +1899,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_apply_templates_builtins() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_text(Rc::new(Value::from("Test")))
 		.expect("unable to text node");
 	    sd.push(t.clone())
@@ -1944,7 +1944,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_apply_templates_1() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
@@ -2010,7 +2010,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_apply_templates_2() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
@@ -2077,7 +2077,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_apply_templates_import() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
@@ -2158,7 +2158,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_apply_templates_next_match() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
@@ -2325,7 +2325,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_localname_0() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -2353,7 +2353,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_name_0() {
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $y();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())

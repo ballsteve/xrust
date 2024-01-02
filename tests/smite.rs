@@ -1,9 +1,9 @@
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
-use xrust::trees::intmuttree::Document;
-use xrust::trees::intmuttree::{NodeBuilder, RNode};
 use xrust::xdmerror::{Error, ErrorKind};
+use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::parser::xml::parse as xmlparse;
 use xrust::item_value_tests;
 use xrust::item_node_tests;
 use xrust::pattern_tests;
@@ -14,42 +14,33 @@ use xrust::xslt_tests;
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn make_empty_doc() -> RNode {
-    NodeBuilder::new(NodeType::Document).build()
+    Rc::new(SmiteNode::new())
 }
 
 fn make_doc(n: QualifiedName, v: Value) -> RNode {
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    let mut child = NodeBuilder::new(NodeType::Element).name(n).build();
-    d.push(child.clone()).expect("unable to append child");
-    child
-        .push(NodeBuilder::new(NodeType::Text).value(Rc::new(v)).build())
-        .expect("unable to append child");
+    let d = Rc::new(SmiteNode::new());
+    let child = d.new_element(n).expect("unable to create element");
+    child.new_text(Rc::new(v)).expect("unable to create text node");
     d
 }
 
 fn make_sd_raw() -> RNode {
-    let r = Document::try_from((
-        "<a id='a1'><b id='b1'><a id='a2'><b id='b2'/><b id='b3'/></a><a id='a3'><b id='b4'/><b id='b5'/></a></b><b id='b6'><a id='a4'><b id='b7'/><b id='b8'/></a><a id='a5'><b id='b9'/><b id='b10'/></a></b></a>",
-        None,None ))
-        .expect("failed to parse XML");
-    r.content[0].clone()
+    let doc = Rc::new(SmiteNode::new());
+    xmlparse(doc.clone(),
+             "<a id='a1'><b id='b1'><a id='a2'><b id='b2'/><b id='b3'/></a><a id='a3'><b id='b4'/><b id='b5'/></a></b><b id='b6'><a id='a4'><b id='b7'/><b id='b8'/></a><a id='a5'><b id='b9'/><b id='b10'/></a></b></a>",
+             None, None).expect("unable to parse XML");
+    doc
 }
 fn make_sd() -> Item<RNode> {
-    let r = make_sd_raw();
-    let e = r.clone();
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    d.push(e).expect("unable to append node");
-    Item::Node(d)
+    Item::Node(make_sd_raw())
 }
 
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from((s, None, None))
-        .expect("failed to parse XML")
-        .content[0]
-        .clone();
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    d.push(e).expect("unable to append node");
-    Ok(d)
+    let doc = Rc::new(SmiteNode::new());
+    xmlparse(doc.clone(),
+             s,
+             None, None)?;
+    Ok(doc)
 }
 
 item_value_tests!(RNode);

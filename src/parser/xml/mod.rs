@@ -32,7 +32,7 @@ pub fn parse<N: Node>(
 ) -> Result<N, Error> {
     let state = ParserState::new(Some(doc), entityresolver, docloc);
     match document((input, state)) {
-        Ok((_, xmldoc)) => Result::Ok(xmldoc),
+        Ok((_, xmldoc)) => Ok(xmldoc),
         Err(err) => {
             match err {
                 ParseError::Combinator => Err(Error::new(
