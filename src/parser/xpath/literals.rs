@@ -39,7 +39,7 @@ fn integer_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<
 {
     Box::new(map(digit1(), |s: String| {
         let n = s.parse::<i64>().unwrap();
-        Transform::Literal(Rc::new(Item::Value(Value::Integer(n))))
+        Transform::Literal(Item::Value(Rc::new(Value::Integer(n))))
     }))
 }
 // DecimalLiteral ::= ('.' Digits) | (Digits '.' [0-9]*)
@@ -63,7 +63,7 @@ fn decimal_literal_frac<'a, N: Node + 'a>(
                 Value::Decimal(Decimal::from_str(&f).unwrap())
             }
         };
-        Transform::Literal(Rc::new(Item::Value(i)))
+        Transform::Literal(Item::Value(Rc::new(i)))
     }))
 }
 fn decimal_literal_comp<'a, N: Node + 'a>(
@@ -75,7 +75,7 @@ fn decimal_literal_comp<'a, N: Node + 'a>(
             Ok(m) => Value::Double(m),
             Err(_) => Value::Decimal(Decimal::from_str(&s).unwrap()),
         };
-        Transform::Literal(Rc::new(Item::Value(i)))
+        Transform::Literal(Item::Value(Rc::new(i)))
     }))
 }
 
@@ -100,7 +100,7 @@ fn double_literal_frac<'a, N: Node + 'a>(
                 Ok(m) => Value::Double(m),
                 Err(_) => panic!("unable to convert to double"),
             };
-            Transform::Literal(Rc::new(Item::Value(Value::from(i))))
+            Transform::Literal(Item::Value(Rc::new(Value::from(i))))
         },
     ))
 }
@@ -119,7 +119,7 @@ fn double_literal_comp<'a, N: Node + 'a>(
                 Ok(m) => Value::Double(m),
                 Err(_) => panic!("unable to convert to double"),
             };
-            Transform::Literal(Rc::new(Item::Value(Value::from(i))))
+            Transform::Literal(Item::Value(Rc::new(Value::from(i))))
         },
     ))
 }
@@ -135,7 +135,7 @@ fn string_literal_double<'a, N: Node + 'a>(
             }),
             anychar('"'),
         ),
-        |s| Transform::Literal(Rc::new(Item::Value(Value::from(s)))),
+        |s| Transform::Literal(Item::Value(Rc::new(Value::from(s)))),
     ))
 }
 fn string_literal_single<'a, N: Node + 'a>(
@@ -148,7 +148,7 @@ fn string_literal_single<'a, N: Node + 'a>(
             }),
             anychar('\''),
         ),
-        |s| Transform::Literal(Rc::new(Item::Value(Value::from(s)))),
+        |s| Transform::Literal(Item::Value(Rc::new(Value::from(s)))),
     ))
 }
 fn string_literal<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {

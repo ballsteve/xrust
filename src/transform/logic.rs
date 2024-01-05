@@ -29,7 +29,7 @@ pub(crate) fn tr_or<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             None => break,
         }
     }
-    Ok(vec![Rc::new(Item::Value(Value::from(b)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 
 /// Return the conjunction of all of the given functions.
@@ -53,7 +53,7 @@ pub(crate) fn tr_and<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             None => break,
         }
     }
-    Ok(vec![Rc::new(Item::Value(Value::from(b)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 
 /// General comparison of two sequences.
@@ -80,7 +80,7 @@ pub(crate) fn general_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         }
     }
 
-    Ok(vec![Rc::new(Item::Value(Value::from(b)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 
 /// Value comparison of two singelton sequences.
@@ -106,8 +106,8 @@ pub(crate) fn value_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         ));
     }
 
-    Ok(vec![Rc::new(Item::Value(Value::from(
-        left[0].compare(&*right[0], *o)?,
+    Ok(vec![Item::Value(Rc::new(Value::from(
+        left[0].compare(&right[0], *o)?,
     )))])
 }
 

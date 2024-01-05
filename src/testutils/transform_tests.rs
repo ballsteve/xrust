@@ -16,7 +16,7 @@ macro_rules! transform_tests (
 	}
 	#[test]
 	fn tr_singleton_literal() {
-	    let x = Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("this is a test"))));
+	    let x = Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("this is a test"))));
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 			.expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "this is a test")
@@ -25,7 +25,7 @@ macro_rules! transform_tests (
 	fn tr_literal_element() {
 	    let x = Transform::LiteralElement(
 			QualifiedName::new(None, None, String::from("Test")),
-			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))))
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))))
 	    );
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
@@ -41,7 +41,7 @@ macro_rules! transform_tests (
 			QualifiedName::new(None, None, String::from("Test")),
 			Box::new(Transform::LiteralElement(
 		    	QualifiedName::new(None, None, String::from("Level-1")),
-		    	Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))))
+		    	Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))))
 			))
 	    );
 	    let mut mydoc = $y();
@@ -55,8 +55,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_element() {
 	    let x = Transform::Element(
-			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("Test"))))),
-			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))))
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("Test"))))),
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))))
 	    );
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
@@ -73,9 +73,9 @@ macro_rules! transform_tests (
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::LiteralAttribute(
 				QualifiedName::new(None, None, String::from("foo")),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar")))))
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar")))))
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))),
 		]))
 	    );
 	    let mut mydoc = $y();
@@ -91,9 +91,9 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::LiteralComment(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar")))))
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar")))))
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))),
 		]))
 	    );
 	    let mut mydoc = $y();
@@ -109,10 +109,10 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::LiteralProcessingInstruction(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("thepi"))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar")))))
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("thepi"))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar")))))
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))),
 		]))
 	    );
 	    let mut mydoc = $y();
@@ -129,12 +129,12 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar"))))),
 				None,
 				Box::new(Transform::Empty),
 				Box::new(Transform::Empty),
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))),
 		]))
 	    );
 	    let mut mydoc = $y();
@@ -155,14 +155,14 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("first message"))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("first message"))))),
 				None,
 				Box::new(Transform::Empty),
 				Box::new(Transform::Empty),
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))),
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("second message"))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("second message"))))),
 				None,
 				Box::new(Transform::Empty),
 				Box::new(Transform::Empty),
@@ -189,12 +189,12 @@ macro_rules! transform_tests (
 		QualifiedName::new(None, None, String::from("Test")),
 		Box::new(Transform::SequenceItems(vec![
 		    Transform::Message(
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar"))))),
 				None,
 				Box::new(Transform::Empty),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("yes"))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("yes"))))),
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("content")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("content")))),
 		]))
 	    );
 	    let mut mydoc = $y();
@@ -224,12 +224,12 @@ macro_rules! transform_tests (
 
 	    let x = Transform::SetAttribute(
 			QualifiedName::new(None, None, String::from("foo")),
-			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))),
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar"))))),
 	    );
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
-		.current(vec![Rc::new(Item::Node(n))])
+		.current(vec![Item::Node(n)])
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(sd.to_xml(), "<Test foo='bar'></Test>")
@@ -237,7 +237,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_copy_literal() {
 	    let x = Transform::Copy(
-			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("this is the original"))))),
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("this is the original"))))),
 			Box::new(Transform::<$x>::Empty)
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
@@ -251,7 +251,7 @@ macro_rules! transform_tests (
 			Box::new(Transform::<$x>::Empty)
 	    );
 	    let seq = ContextBuilder::new()
-		    .current(vec![Rc::new(Item::<$x>::Value(Value::from("this is the original")))])
+		    .current(vec![Item::<$x>::Value(Rc::new(Value::from("this is the original")))])
 		    .build()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
@@ -266,18 +266,18 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    sd.push(n.clone())
 		.expect("unable to append child");
-	    n.push(sd.new_text(Value::from("this is the original")).expect("unable to create text node"))
+	    n.push(sd.new_text(Rc::new(Value::from("this is the original"))).expect("unable to create text node"))
 		.expect("unable to add text node");
 
 	    let x = Transform::Copy(
 			Box::new(Transform::ContextItem),
-			Box::new(Transform::Literal(((Rc::new(Item::<$x>::Value(Value::from("this is the copy")))))))
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("this is the copy")))))
 	    );
 
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
-		.current(vec![Rc::new(Item::Node(n))])
+		.current(vec![Item::Node(n)])
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
@@ -298,13 +298,13 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(u.clone())
 		.expect("unable to append child");
-	    u.push(sd.new_text(Value::from("this is the original")).expect("unable to create text node"))
+	    u.push(sd.new_text(Rc::new(Value::from("this is the original"))).expect("unable to create text node"))
 		.expect("unable to add text node");
 
 	    let x = Transform::DeepCopy(Box::new(Transform::ContextItem));
 
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![Rc::new(Item::Node(n))])
+		.current(vec![Item::Node(n)])
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
@@ -316,9 +316,9 @@ macro_rules! transform_tests (
 	fn tr_seq_of_literals() {
 	    let x = Transform::SequenceItems(
 		vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("this is a test")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("end of test")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("this is a test")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("end of test")))),
 		]
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
@@ -331,14 +331,14 @@ macro_rules! transform_tests (
 		vec![
 		    Transform::SequenceItems(
 			vec![
-			    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("first sequence")))),
-			    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
+			    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("first sequence")))),
+			    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
 			]
 		    ),
 		    Transform::SequenceItems(
 			vec![
-			    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("second sequence")))),
-			    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
+			    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("second sequence")))),
+			    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2)))),
 			]
 		    ),
 		]
@@ -354,27 +354,27 @@ macro_rules! transform_tests (
 		vec![
 		    (Transform::ValueComparison(
 				Operator::Equal,
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2.0))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2.0))))),
 		    	),
-			Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("comparison failed"))))
 			),
 		    (Transform::ValueComparison(
 				Operator::Equal,
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.0))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1.0))))),
 		    	),
-			Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("comparison succeeded"))))
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("comparison succeeded"))))
 			),
 		    (Transform::ValueComparison(
 				Operator::Equal,
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(3.0))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(3.0))))),
 		    	),
-			Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("comparison failed"))))
 			),
 		],
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("otherwise clause")))))
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("otherwise clause")))))
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "comparison succeeded")
@@ -385,24 +385,24 @@ macro_rules! transform_tests (
 		vec![
 		    (Transform::ValueComparison(
 				Operator::Equal,
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2.0))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2.0))))),
 		    	),
-			Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("comparison failed"))))),
 		    (Transform::ValueComparison(
 				Operator::Equal,
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(11.0))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(11.0))))),
 		    	),
-			Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("comparison failed"))))),
 		    (Transform::ValueComparison(
 				Operator::Equal,
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-				Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(3.0))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+				Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(3.0))))),
 		    ),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("comparison failed"))))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("comparison failed"))))),
 		],
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("otherwise clause")))))
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("otherwise clause")))))
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_string(), "otherwise clause")
@@ -414,9 +414,9 @@ macro_rules! transform_tests (
 		vec![
 			(String::from("x"),
 			Transform::SequenceItems(vec![
-					Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("one")))),
-					Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("two")))),
-					Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("three")))),
+					Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("one")))),
+					Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("two")))),
+					Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("three")))),
 			]))
 		],
 		Box::new(Transform::Concat(vec![
@@ -431,7 +431,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_context_item() {
 	    let x = Transform::ContextItem;
-	    let c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
+	    let c = Context::from(vec![Item::<$x>::Value(Rc::new(Value::from("the context item")))]);
 	    let seq = c.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_string(), "the context item")
@@ -442,7 +442,7 @@ macro_rules! transform_tests (
 	    let x = Transform::SequenceItems(
 		vec![Transform::ContextItem, Transform::ContextItem]
 	    );
-	    let c = Context::from(vec![Rc::new(Item::<$x>::Value(Value::from("the context item")))]);
+	    let c = Context::from(vec![Item::<$x>::Value(Rc::new(Value::from("the context item")))]);
 	    let seq = c.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "the context itemthe context item")
@@ -464,7 +464,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Root;
 
 	    // Now evaluate the combinator with <Level-1> as the context item
-	    let seq = Context::from(vec![Rc::new(Item::Node(l1))])
+	    let seq = Context::from(vec![Item::Node(l1)])
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -475,8 +475,8 @@ macro_rules! transform_tests (
 	fn tr_path_of_lits() {
 	    let x = Transform::Compose(
 		vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("step 1")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("step 2"))))
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("step 1")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("step 2"))))
 		]
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
@@ -506,7 +506,7 @@ macro_rules! transform_tests (
 		.expect("unable to append child");
 
 	    // Now evaluate the combinator with <Test> as the context item
-	    let seq = Context::from(vec![Rc::new(Item::Node(n))])
+	    let seq = Context::from(vec![Item::Node(n)])
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -533,7 +533,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    l1_1.push(t1)
 		.expect("unable to append text node");
@@ -541,7 +541,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l1_2.push(t2)
 		.expect("unable to append text node");
@@ -549,8 +549,8 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with both <Level-1>s as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(l1_1)),
-		    Rc::new(Item::Node(l1_2)),
+		    Item::Node(l1_1),
+		    Item::Node(l1_2),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -579,7 +579,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    n.push(t1.clone())
 		.expect("unable to append text node");
@@ -587,7 +587,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    n.push(t2.clone())
 		.expect("unable to append text node");
@@ -599,11 +599,11 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with Test's children as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(l1_1)),
-		    Rc::new(Item::Node(t1)),
-		    Rc::new(Item::Node(l1_2)),
-		    Rc::new(Item::Node(t2)),
-		    Rc::new(Item::Node(et)),
+		    Item::Node(l1_1),
+		    Item::Node(t1),
+		    Item::Node(l1_2),
+		    Item::Node(t2),
+		    Item::Node(et),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -631,7 +631,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    n.push(t1.clone())
 		.expect("unable to append text node");
@@ -639,7 +639,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    n.push(t2.clone())
 		.expect("unable to append text node");
@@ -650,7 +650,7 @@ macro_rules! transform_tests (
 
 	    // Now evaluate the combinator with Test's document node as the context items
 	    let seq = Context::from(
-		vec![Rc::new(Item::Node(sd))]
+		vec![Item::Node(sd)]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
@@ -675,7 +675,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    n.push(t1.clone())
 		.expect("unable to append text node");
@@ -683,7 +683,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    n.push(t2.clone())
 		.expect("unable to append text node");
@@ -694,7 +694,7 @@ macro_rules! transform_tests (
 
 	    // Now evaluate the combinator with Test's document element node as the context items
 	    let seq = Context::from(
-		vec![Rc::new(Item::Node(n))]
+		vec![Item::Node(n)]
 	    )
         .dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
@@ -721,7 +721,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    n.push(t1.clone())
 		.expect("unable to append text node");
@@ -729,7 +729,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    n.push(t2.clone())
 		.expect("unable to append text node");
@@ -741,11 +741,11 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with Test's children as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(l1_1)),
-		    Rc::new(Item::Node(t1)),
-		    Rc::new(Item::Node(l1_2)),
-		    Rc::new(Item::Node(t2)),
-		    Rc::new(Item::Node(et)),
+		    Item::Node(l1_1),
+		    Item::Node(t1),
+		    Item::Node(l1_2),
+		    Item::Node(t2),
+		    Item::Node(et),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -773,7 +773,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    n.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    n.push(t1.clone())
 		.expect("unable to append text node");
@@ -781,7 +781,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the root node as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(sd)),
+		    Item::Node(sd),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -807,7 +807,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -815,7 +815,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the document element as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
         .dispatch(&mut StaticContext::<F>::new(), &x)
@@ -842,7 +842,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -850,7 +850,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    l1_1.push(l2_1.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l2_1.push(t2.clone())
 		.expect("unable to append text node");
@@ -858,7 +858,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the document element as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -885,7 +885,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -893,7 +893,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    l1_1.push(l2_1.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l2_1.push(t2.clone())
 		.expect("unable to append text node");
@@ -901,7 +901,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the document element as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -928,7 +928,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -936,7 +936,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    l1_1.push(l2_1.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l2_1.push(t2.clone())
 		.expect("unable to append text node");
@@ -944,7 +944,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the root node as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(sd)),
+		    Item::Node(sd),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -971,7 +971,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -979,7 +979,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    l1_1.push(l2_1.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l2_1.push(t2.clone())
 		.expect("unable to append text node");
@@ -987,7 +987,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the lowest node as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t2)),
+		    Item::Node(t2),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1014,7 +1014,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -1022,7 +1022,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    l1_1.push(l2_1.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l2_1.push(t2.clone())
 		.expect("unable to append text node");
@@ -1030,7 +1030,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the lowest node as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t2)),
+		    Item::Node(t2),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1058,7 +1058,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -1066,7 +1066,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    t.push(t2.clone())
 		.expect("unable to append text node");
@@ -1078,7 +1078,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with Test's first child as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(l1_1)),
+		    Item::Node(l1_1),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1106,7 +1106,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    t.push(t1.clone())
 		.expect("unable to append text node");
@@ -1114,7 +1114,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    t.push(t2.clone())
 		.expect("unable to append text node");
@@ -1126,7 +1126,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with Test's last child as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(et)),
+		    Item::Node(et),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1187,7 +1187,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with lowest left node as the context items
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(seven)),
+		    Item::Node(seven),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1248,7 +1248,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with last node as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(six)),
+		    Item::Node(six),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1286,7 +1286,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    l1_1.push(t1)
 		.expect("unable to append text node");
@@ -1294,7 +1294,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("second"))
+	    let t2 = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    l1_2.push(t2)
 		.expect("unable to append text node");
@@ -1302,7 +1302,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the Test element as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1341,11 +1341,11 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("one"))
+	    let t1 = sd.new_text(Rc::new(Value::from("one")))
 		.expect("unable to create text node");
 	    l1_1.push(t1)
 		.expect("unable to append text node");
-	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("first"))
+	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Rc::new(Value::from("first")))
 		.expect("unable to create attribute node");
 	    l1_1.add_attribute(a1)
 		.expect("unable to add attribute node");
@@ -1353,11 +1353,11 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("two"))
+	    let t2 = sd.new_text(Rc::new(Value::from("two")))
 		.expect("unable to create text node");
 	    l1_2.push(t2)
 		.expect("unable to append text node");
-	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("second"))
+	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Rc::new(Value::from("second")))
 		.expect("unable to create attribute node");
 	    l1_2.add_attribute(a2)
 		.expect("unable to add attribute node");
@@ -1365,7 +1365,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the Test element as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1392,11 +1392,11 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("one"))
+	    let t1 = sd.new_text(Rc::new(Value::from("one")))
 		.expect("unable to create text node");
 	    l1_1.push(t1)
 		.expect("unable to append text node");
-	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("first"))
+	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Rc::new(Value::from("first")))
 		.expect("unable to create attribute node");
 	    l1_1.add_attribute(a1)
 		.expect("unable to add attribute node");
@@ -1404,11 +1404,11 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("two"))
+	    let t2 = sd.new_text(Rc::new(Value::from("two")))
 		.expect("unable to create text node");
 	    l1_2.push(t2)
 		.expect("unable to append text node");
-	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("second"))
+	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Rc::new(Value::from("second")))
 		.expect("unable to create attribute node");
 	    l1_2.add_attribute(a2.clone())
 		.expect("unable to add attribute node");
@@ -1416,7 +1416,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with an attribute as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(a2)),
+		    Item::Node(a2),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1443,11 +1443,11 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("one"))
+	    let t1 = sd.new_text(Rc::new(Value::from("one")))
 		.expect("unable to create text node");
 	    l1_1.push(t1)
 		.expect("unable to append text node");
-	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("first"))
+	    let a1 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Rc::new(Value::from("first")))
 		.expect("unable to create attribute node");
 	    l1_1.add_attribute(a1)
 		.expect("unable to add attribute node");
@@ -1455,11 +1455,11 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_2.clone())
 		.expect("unable to append child");
-	    let t2 = sd.new_text(Value::from("two"))
+	    let t2 = sd.new_text(Rc::new(Value::from("two")))
 		.expect("unable to create text node");
 	    l1_2.push(t2)
 		.expect("unable to append text node");
-	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Value::from("second"))
+	    let a2 = sd.new_attribute(QualifiedName::new(None, None, String::from("name")), Rc::new(Value::from("second")))
 		.expect("unable to create attribute node");
 	    l1_2.add_attribute(a2.clone())
 		.expect("unable to add attribute node");
@@ -1467,7 +1467,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with an element as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(l1_2)),
+		    Item::Node(l1_2),
 		]
 	    )
         .dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1507,7 +1507,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(l1_1.clone())
 		.expect("unable to append child");
-	    let t1 = sd.new_text(Value::from("first"))
+	    let t1 = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    l1_1.push(t1)
 		.expect("unable to append text node");
@@ -1519,7 +1519,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the Test element as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1531,8 +1531,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_or_true() {
 	    let x = Transform::Or(vec![
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(0)))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("false")))),
 	    ]);
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1543,7 +1543,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_or_false() {
 	    let x = Transform::Or(vec![
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(0)))),
 	    ]);
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1555,8 +1555,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_and_true() {
 	    let x = Transform::And(vec![
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("false")))),
 	    ]);
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1567,8 +1567,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_and_false() {
 	    let x = Transform::And(vec![
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true")))),
-		Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true")))),
+		Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(0)))),
 	    ]);
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1582,12 +1582,12 @@ macro_rules! transform_tests (
 	    let x = Transform::GeneralComparison(
 		Operator::Equal,
 		Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("false")))),
 		])),
 		Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(0)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true")))),
 		])),
 	    );
 	    let seq = Context::new()
@@ -1601,12 +1601,12 @@ macro_rules! transform_tests (
 	    let x = Transform::GeneralComparison(
 		Operator::Equal,
 		Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("false")))),
 		])),
 		Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("foo")))),
 		])),
 	    );
 	    let seq = Context::new()
@@ -1620,8 +1620,8 @@ macro_rules! transform_tests (
 	fn tr_value_compare_true() {
 	    let x = Transform::ValueComparison(
 		Operator::Equal,
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true"))))),
 	    );
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1634,8 +1634,8 @@ macro_rules! transform_tests (
 	fn tr_value_compare_false() {
 	    let x = Transform::ValueComparison(
 		Operator::Equal,
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("true"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("false"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("true"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("false"))))),
 	    );
 	    let seq = Context::new()
         .dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1648,7 +1648,7 @@ macro_rules! transform_tests (
 	fn tr_range_empty() {
 	    let x = Transform::Range(
 		Box::new(Transform::<$x>::Empty),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(10))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(10))))),
 	    );
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1659,8 +1659,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_range_many() {
 	    let x = Transform::Range(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(10))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(10))))),
 	    );
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1671,8 +1671,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_range_one() {
 	    let x = Transform::Range(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(5))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(5))))),
 	    );
 	    let seq = Context::new()
         .dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1684,8 +1684,8 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_arithmetic_add() {
 	    let x = Transform::Arithmetic(vec![
-		ArithmeticOperand::new(ArithmeticOperator::Noop, Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
-		ArithmeticOperand::new(ArithmeticOperator::Add, Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(5))))),
+		ArithmeticOperand::new(ArithmeticOperator::Noop, Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(5))))),
+		ArithmeticOperand::new(ArithmeticOperator::Add, Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(5))))),
 	    ]);
 	    let seq = Context::new()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1698,7 +1698,7 @@ macro_rules! transform_tests (
 	fn tr_var_declare() {
 	    let x = Transform::VariableDeclaration(
 			"foo".to_string(),
-			Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bar"))))),
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bar"))))),
 			Box::new(Transform::VariableReference("foo".to_string())),
 	    );
 	    let seq = Context::new()
@@ -1738,7 +1738,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -1746,7 +1746,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -1754,7 +1754,7 @@ macro_rules! transform_tests (
 		.expect("unable to create element");
 	    t.push(c.clone())
 		.expect("unable to append child");
-	    let t_c = sd.new_text(Value::from("third"))
+	    let t_c = sd.new_text(Rc::new(Value::from("third")))
 		.expect("unable to create text node");
 	    c.push(t_c)
 		.expect("unable to append text node");
@@ -1762,7 +1762,7 @@ macro_rules! transform_tests (
 	    // Now evaluate the combinator with the Test element as the context item
 	    let seq = Context::from(
 		vec![
-		    Rc::new(Item::Node(t)),
+		    Item::Node(t),
 		]
 	    )
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -1783,19 +1783,19 @@ macro_rules! transform_tests (
 		.expect("unable to element node");
 	    t.push(l1.clone())
 		.expect("unable to append child");
-	    l1.push(sd.new_text(Value::from("one")).expect("unable to create text node"))
+	    l1.push(sd.new_text(Rc::new(Value::from("one"))).expect("unable to create text node"))
 		.expect("unable to append text");
 	    let mut l2 = sd.new_element(QualifiedName::new(None, None, String::from("Level1")))
 		.expect("unable to element node");
 	    t.push(l2.clone())
 		.expect("unable to append child");
-	    l2.push(sd.new_text(Value::from("two")).expect("unable to create text node"))
+	    l2.push(sd.new_text(Rc::new(Value::from("two"))).expect("unable to create text node"))
 		.expect("unable to append text");
 	    let mut l3 = sd.new_element(QualifiedName::new(None, None, String::from("Level1")))
 		.expect("unable to element node");
 	    t.push(l3.clone())
 		.expect("unable to append child");
-	    l3.push(sd.new_text(Value::from("three")).expect("unable to create text node"))
+	    l3.push(sd.new_text(Rc::new(Value::from("three"))).expect("unable to create text node"))
 		.expect("unable to append text");
 
 	    // xsl:for-each select="/child::* /child::*" body == xsl:text "found a Level-1"
@@ -1815,11 +1815,11 @@ macro_rules! transform_tests (
 			}
 		    ),
 		])),
-		Box::new(Transform::Literal(Rc::new(Item::Value(Value::from("found a Level-1"))))),
+		Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("found a Level-1"))))),
 	    );
 
 	    let seq = ContextBuilder::new()
-			 .current(vec![Rc::new(Item::Node(sd))])
+			 .current(vec![Item::Node(sd)])
 			 .build()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
@@ -1833,18 +1833,18 @@ macro_rules! transform_tests (
 	    let x = Transform::ForEach(
 			Some(Grouping::By(vec![Transform::Arithmetic(vec![
 		    ArithmeticOperand::new(ArithmeticOperator::Noop, Transform::ContextItem),
-		    ArithmeticOperand::new(ArithmeticOperator::Modulo, Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(10)))))
+		    ArithmeticOperand::new(ArithmeticOperator::Modulo, Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(10)))))
 		])])),
 		Box::new(Transform::Range(
-		    Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
-		    Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(50))))),
+		    Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
+		    Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(50))))),
 		)),
 		Box::new(Transform::LiteralElement(
 		    QualifiedName::new(None, None, String::from("group")),
 		    Box::new(Transform::SequenceItems(vec![
-			Transform::Literal(Rc::new(Item::Value(Value::from("key ")))),
+			Transform::Literal(Item::Value(Rc::new(Value::from("key ")))),
 			Transform::CurrentGroupingKey,
-			Transform::Literal(Rc::new(Item::Value(Value::from(" #members ")))),
+			Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
 			Transform::Count(Box::new(Transform::CurrentGroup)),
 		    ]))
 		))
@@ -1867,19 +1867,19 @@ macro_rules! transform_tests (
 	    let x = Transform::ForEach(
 			Some(Grouping::Adjacent(vec![Transform::ContextItem])),
 		Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("a")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("a")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("b")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("c")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("c")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("c")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("a")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("a")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("b")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("c")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("c")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("c")))),
 		])),
 		Box::new(Transform::LiteralElement(
 		    QualifiedName::new(None, None, String::from("group")),
 		    Box::new(Transform::SequenceItems(vec![
-			Transform::Literal(Rc::new(Item::Value(Value::from("key ")))),
+			Transform::Literal(Item::Value(Rc::new(Value::from("key ")))),
 			Transform::CurrentGroupingKey,
-			Transform::Literal(Rc::new(Item::Value(Value::from(" #members ")))),
+			Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
 			Transform::Count(Box::new(Transform::CurrentGroup)),
 		    ]))
 		))
@@ -1900,7 +1900,7 @@ macro_rules! transform_tests (
 	fn tr_apply_templates_builtins() {
 	    // Setup a source document
 	    let mut sd = NodeBuilder::new(NodeType::Document).build();
-	    let mut t = sd.new_text(Value::from("Test"))
+	    let mut t = sd.new_text(Rc::new(Value::from("Test")))
 		.expect("unable to text node");
 	    sd.push(t.clone())
 		.expect("unable to append child");
@@ -1931,7 +1931,7 @@ macro_rules! transform_tests (
 		    None,
 		    None,
 		))
-		.current(vec![Rc::new(Item::Node(sd))])
+		.current(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -1948,7 +1948,7 @@ macro_rules! transform_tests (
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
-	    let c = sd.new_text(Value::from("content"))
+	    let c = sd.new_text(Rc::new(Value::from("content")))
 		.expect("unable to text node");
 	    t.push(c)
 		.expect("unable to append child");
@@ -1960,14 +1960,14 @@ macro_rules! transform_tests (
 		    // pattern "Test"
 			Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
 		    Transform::SequenceItems(vec![
-			Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("before "))))),
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("before ")))),
 			Transform::ApplyTemplates(Box::new(Transform::Step(
 			    NodeMatch {
 				axis: Axis::Child,
 				nodetest: NodeTest::Kind(KindTest::Any)
 			    }
 			))),
-			Transform::Literal((Rc::new(Item::<$x>::Value(Value::from(" after"))))),
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(" after")))),
 		    ]), // body "before", "apply-templates select=node()", "after"
 		    Some(0.0), // priority
 		    vec![0], // import
@@ -1997,7 +1997,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Rc::new(Item::Node(sd))])
+		.current(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2014,7 +2014,7 @@ macro_rules! transform_tests (
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
-	    let c = sd.new_text(Value::from("content"))
+	    let c = sd.new_text(Rc::new(Value::from("content")))
 		.expect("unable to text node");
 	    t.push(c)
 		.expect("unable to append child");
@@ -2026,7 +2026,7 @@ macro_rules! transform_tests (
 		.template(Template::new(
 		    // pattern "Test"
 			Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
-		    Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("priority 1 template"))))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("priority 1 template")))),
 		    Some(1.0), // priority
 		    vec![0], // import
 		    Some(1), // document order
@@ -2035,7 +2035,7 @@ macro_rules! transform_tests (
 		.template(Template::new(
 		    // pattern "*"
 			Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-		    Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("priority 0 template"))))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("priority 0 template")))),
 		    Some(0.0), // priority
 		    vec![0], // import
 		    Some(2), // document order
@@ -2064,7 +2064,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Rc::new(Item::Node(sd))])
+		.current(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2081,7 +2081,7 @@ macro_rules! transform_tests (
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
-	    let c = sd.new_text(Value::from("content"))
+	    let c = sd.new_text(Rc::new(Value::from("content")))
 		.expect("unable to text node");
 	    t.push(c)
 		.expect("unable to append child");
@@ -2093,7 +2093,7 @@ macro_rules! transform_tests (
 		.template(Template::new(
 		    // pattern "Test"
 			Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
-		    Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("priority 1 template, import level 1"))))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("priority 1 template, import level 1")))),
 		    Some(1.0), // priority
 		    vec![0, 1], // import
 		    Some(1), // document order
@@ -2102,7 +2102,7 @@ macro_rules! transform_tests (
 		.template(Template::new(
 		    // pattern "Test"
 			Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
-		    Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("priority 1 template, import level 0"))))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("priority 1 template, import level 0")))),
 		    Some(1.0), // priority
 		    vec![0], // import
 		    Some(2), // document order
@@ -2145,7 +2145,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Rc::new(Item::Node(sd))])
+		.current(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2162,7 +2162,7 @@ macro_rules! transform_tests (
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create new element");
 	    sd.push(t.clone());
-	    let c = sd.new_text(Value::from("content"))
+	    let c = sd.new_text(Rc::new(Value::from("content")))
 		.expect("unable to text node");
 	    t.push(c)
 		.expect("unable to append child");
@@ -2174,7 +2174,7 @@ macro_rules! transform_tests (
 		    // pattern "Test"
 			Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
 		    Transform::SequenceItems(vec![
-			Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("priority 1 template"))))),
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("priority 1 template")))),
 			Transform::NextMatch,
 		    ]),
 		    Some(1.0), // priority
@@ -2185,7 +2185,7 @@ macro_rules! transform_tests (
 		.template(Template::new(
 		    // pattern "Test"
 			Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
-		    Transform::Literal((Rc::new(Item::<$x>::Value(Value::from("priority 0 template"))))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("priority 0 template")))),
 		    Some(0.0), // priority
 		    vec![0], // import
 		    Some(2), // document order
@@ -2228,7 +2228,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Rc::new(Item::Node(sd))])
+		.current(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2245,10 +2245,10 @@ macro_rules! transform_tests (
 	    let x = Transform::Position;
 	    let seq = ContextBuilder::new()
 		    .current(vec![
-			Rc::new(Item::<$x>::Value(Value::from("one"))),
-			Rc::new(Item::<$x>::Value(Value::from("two"))),
-			Rc::new(Item::<$x>::Value(Value::from("three"))),
-			Rc::new(Item::<$x>::Value(Value::from("four"))),
+			Item::<$x>::Value(Rc::new(Value::from("one"))),
+			Item::<$x>::Value(Rc::new(Value::from("two"))),
+			Item::<$x>::Value(Rc::new(Value::from("three"))),
+			Item::<$x>::Value(Rc::new(Value::from("four"))),
 		    ])
 		    .index(2)
 		    .build()
@@ -2266,10 +2266,10 @@ macro_rules! transform_tests (
 	    let x = Transform::Last;
 	    let seq = ContextBuilder::new()
 		    .current(vec![
-			Rc::new(Item::<$x>::Value(Value::from("one"))),
-			Rc::new(Item::<$x>::Value(Value::from("two"))),
-			Rc::new(Item::<$x>::Value(Value::from("three"))),
-			Rc::new(Item::<$x>::Value(Value::from("four"))),
+			Item::<$x>::Value(Rc::new(Value::from("one"))),
+			Item::<$x>::Value(Rc::new(Value::from("two"))),
+			Item::<$x>::Value(Rc::new(Value::from("three"))),
+			Item::<$x>::Value(Rc::new(Value::from("four"))),
 		    ])
 		    .index(2)
 		    .build()
@@ -2286,10 +2286,10 @@ macro_rules! transform_tests (
 	    let x = Transform::Count(Box::new(Transform::Empty));
 	    let seq = ContextBuilder::new()
 		    .current(vec![
-			Rc::new(Item::<$x>::Value(Value::from("one"))),
-			Rc::new(Item::<$x>::Value(Value::from("two"))),
-			Rc::new(Item::<$x>::Value(Value::from("three"))),
-			Rc::new(Item::<$x>::Value(Value::from("four"))),
+			Item::<$x>::Value(Rc::new(Value::from("one"))),
+			Item::<$x>::Value(Rc::new(Value::from("two"))),
+			Item::<$x>::Value(Rc::new(Value::from("three"))),
+			Item::<$x>::Value(Rc::new(Value::from("four"))),
 		    ])
 		    .build()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
@@ -2303,16 +2303,16 @@ macro_rules! transform_tests (
 	    // XPath == count()
 
 	    let x = Transform::Count(Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abc")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("foo")))),
 		])));
 	    let seq = ContextBuilder::new()
 		    .current(vec![
-			Rc::new(Item::<$x>::Value(Value::from("one"))),
-			Rc::new(Item::<$x>::Value(Value::from("two"))),
-			Rc::new(Item::<$x>::Value(Value::from("three"))),
-			Rc::new(Item::<$x>::Value(Value::from("four"))),
+			Item::<$x>::Value(Rc::new(Value::from("one"))),
+			Item::<$x>::Value(Rc::new(Value::from("two"))),
+			Item::<$x>::Value(Rc::new(Value::from("three"))),
+			Item::<$x>::Value(Rc::new(Value::from("four"))),
 		    ])
 		    .index(2)
 		    .build()
@@ -2343,7 +2343,7 @@ macro_rules! transform_tests (
 	    let x = Transform::LocalName(Some(Box::new(Transform::ContextItem)));
 
 	    // Now evaluate the combinator with <Level-1> as the context item
-	    let seq = Context::from(vec![Rc::new(Item::Node(l1))])
+	    let seq = Context::from(vec![Item::Node(l1)])
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2371,7 +2371,7 @@ macro_rules! transform_tests (
 	    let x = Transform::Name(Some(Box::new(Transform::ContextItem)));
 
 	    // Now evaluate the combinator with <Level-1> as the context item
-	    let seq = Context::from(vec![Rc::new(Item::Node(l1))])
+	    let seq = Context::from(vec![Item::Node(l1)])
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2381,7 +2381,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_string() {
 	    // XPath == string(1.0)
-	    let x = Transform::String(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.0))))));
+	    let x = Transform::String(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1.0))))));
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
@@ -2393,9 +2393,9 @@ macro_rules! transform_tests (
 	    // XPath == concat("abc", 1, "foo")
 	    let x = Transform::Concat(
 		vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc")))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("foo")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abc")))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("foo")))),
 		]
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
@@ -2408,8 +2408,8 @@ macro_rules! transform_tests (
 	fn tr_starts_with_pos() {
 	    // XPath == starts-with("abc", "ab")
 	    let x = Transform::StartsWith(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("ab"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abc"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("ab"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2420,8 +2420,8 @@ macro_rules! transform_tests (
 	fn tr_starts_with_neg() {
 	    // XPath == starts-with("abc", "x")
 	    let x = Transform::StartsWith(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abc"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("x"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abc"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("x"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2433,8 +2433,8 @@ macro_rules! transform_tests (
 	fn tr_contains_pos() {
 	    // XPath == contains("abcd", "bc")
 	    let x = Transform::Contains(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bc"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bc"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2445,8 +2445,8 @@ macro_rules! transform_tests (
 	fn tr_contains_neg() {
 	    // XPath == contains("abcd", "xyz")
 	    let x = Transform::Contains(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("xyz"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("xyz"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2458,8 +2458,8 @@ macro_rules! transform_tests (
 	fn tr_substring_2args() {
 	    // XPath == substring("abcd", 2)
 	    let x = Transform::Substring(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2))))),
 		None
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
@@ -2471,9 +2471,9 @@ macro_rules! transform_tests (
 	fn tr_substring_3args() {
 	    // XPath == substring("abcd", 2, 2)
 	    let x = Transform::Substring(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2))))),
-		Some(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2))))))
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2))))),
+		Some(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2))))))
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2485,8 +2485,8 @@ macro_rules! transform_tests (
 	fn tr_substring_before() {
 	    // XPath == substring-before("abcd", "bc")
 	    let x = Transform::SubstringBefore(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bc"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bc"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2497,8 +2497,8 @@ macro_rules! transform_tests (
 	fn tr_substring_after() {
 	    // XPath == substring-after("abcd", "bc")
 	    let x = Transform::SubstringAfter(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bc"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bc"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2510,7 +2510,7 @@ macro_rules! transform_tests (
 	fn tr_normalize_space_1() {
 	    // XPath == normalize-space(" a b  c	d\n")
 	    let x = Transform::NormalizeSpace(
-		Some(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(" a b  c	d
+		Some(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(" a b  c	d
 "))))))
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
@@ -2523,9 +2523,9 @@ macro_rules! transform_tests (
 	fn tr_translate_1() {
 	    // XPath == translate("abcd", "bdc" "BD")
 	    let x = Transform::Translate(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("bdc"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("BD"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("bdc"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("BD"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2537,7 +2537,7 @@ macro_rules! transform_tests (
 	fn tr_boolean_string_pos() {
 	    // XPath == boolean("abcd")
 	    let x = Transform::Boolean(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2548,7 +2548,7 @@ macro_rules! transform_tests (
 	fn tr_boolean_string_neg() {
 	    // XPath == boolean("")
 	    let x = Transform::Boolean(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(""))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(""))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2559,7 +2559,7 @@ macro_rules! transform_tests (
 	fn tr_boolean_int_pos() {
 	    // XPath == boolean(1)
 	    let x = Transform::Boolean(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2570,7 +2570,7 @@ macro_rules! transform_tests (
 	fn tr_boolean_int_neg() {
 	    // XPath == boolean(0)
 	    let x = Transform::Boolean(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(0))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2582,7 +2582,7 @@ macro_rules! transform_tests (
 	fn tr_not_pos() {
 	    // XPath == not("abcd")
 	    let x = Transform::Not(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("abcd"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("abcd"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2593,7 +2593,7 @@ macro_rules! transform_tests (
 	fn tr_not_neg() {
 	    // XPath == not(0)
 	    let x = Transform::Not(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(0))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(0))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2624,7 +2624,7 @@ macro_rules! transform_tests (
 	fn tr_number() {
 	    // XPath == number("124")
 	    let x = Transform::Number(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("124"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("124"))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2637,9 +2637,9 @@ macro_rules! transform_tests (
 	    // XPath == sum((1, 2, 4))
 	    let x = Transform::Sum(
 		Box::new(Transform::SequenceItems(vec![
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(2)))),
-		    Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(4)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(2)))),
+		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(4)))),
 		]))
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
@@ -2652,7 +2652,7 @@ macro_rules! transform_tests (
 	fn tr_floor() {
 	    // XPath == floor((1.2))
 	    let x = Transform::Floor(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.2))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1.2))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2664,7 +2664,7 @@ macro_rules! transform_tests (
 	fn tr_ceiling() {
 	    // XPath == ceiling((1.2))
 	    let x = Transform::Ceiling(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.2))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1.2))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2676,7 +2676,7 @@ macro_rules! transform_tests (
 	fn tr_round_1() {
 	    // XPath == round((1.23456))
 	    let x = Transform::Round(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.23456))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1.23456))))),
 		None,
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
@@ -2688,8 +2688,8 @@ macro_rules! transform_tests (
 	fn tr_round_2() {
 	    // XPath == round((1.23456, 4))
 	    let x = Transform::Round(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(1.23456))))),
-		Some(Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from(4)))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(1.23456))))),
+		Some(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from(4)))))),
 	    );
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
@@ -2704,16 +2704,19 @@ macro_rules! transform_tests (
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
-	    match &*seq[0] {
-		Item::Value(Value::DateTime(dt)) => {
+	    match &seq[0] {
+			Item::Value(v) => match **v {
+				Value::DateTime(dt) => {
 		    assert_eq!(dt.year(), Local::now().year());
 		    assert_eq!(dt.month(), Local::now().month());
 		    assert_eq!(dt.day(), Local::now().day());
 		    assert_eq!(dt.hour(), Local::now().hour());
 		    assert_eq!(dt.minute(), Local::now().minute());
 		    assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
-		}
-		_ => panic!("not a singleton dateTime value")
+				}
+				_ => panic!("not a singleton dateTime value")
+			}
+			_ => panic!("not a value")
 	    }
 	}
 
@@ -2724,13 +2727,16 @@ macro_rules! transform_tests (
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
-	    match &*seq[0] {
-		Item::Value(Value::Date(dt)) => {
+	    match &seq[0] {
+			Item::Value(v) => match **v {
+				Value::Date(dt) => {
 		    assert_eq!(dt.year(), Local::now().year());
 		    assert_eq!(dt.month(), Local::now().month());
 		    assert_eq!(dt.day(), Local::now().day());
-		}
-		_ => panic!("not a singleton date value")
+				}
+				_ => panic!("not a singleton date value")
+			}
+			_ => panic!("not a value")
 	    }
 	}
 
@@ -2741,13 +2747,16 @@ macro_rules! transform_tests (
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
 		.expect("evaluation failed");
 	    assert_eq!(seq.len(), 1);
-	    match &*seq[0] {
-		Item::Value(Value::Time(dt)) => {
+	    match &seq[0] {
+		Item::Value(v) => match **v {
+			Value::Time(dt) => {
 		    assert_eq!(dt.hour(), Local::now().hour());
 		    assert_eq!(dt.minute(), Local::now().minute());
 		    assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
+			}
+			_ => panic!("not a singleton time value")
 		}
-		_ => panic!("not a singleton time value")
+		_ => panic!("not a value")
 	    }
 	}
 
@@ -2755,8 +2764,8 @@ macro_rules! transform_tests (
 	fn tr_format_date_time() {
 	    // XPath == format-dateTime("2022-01-03T04:05:06.789+10:00", "[H]:[m] [D]/[M]/[Y]")
 	    let x = Transform::FormatDateTime(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("2022-01-03T04:05:06.789+10:00"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("[H]:[m] [D]/[M]/[Y]"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("2022-01-03T04:05:06.789+10:00"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("[H]:[m] [D]/[M]/[Y]"))))),
 		None,
 		None,
 		None,
@@ -2771,8 +2780,8 @@ macro_rules! transform_tests (
 	fn tr_format_date() {
 	    // XPath == format-date("2022-01-03", "[D]/[M]/[Y]")
 	    let x = Transform::FormatDate(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("2022-01-03"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("[D]/[M]/[Y]"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("2022-01-03"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("[D]/[M]/[Y]"))))),
 		None,
 		None,
 		None,
@@ -2787,8 +2796,8 @@ macro_rules! transform_tests (
 	fn tr_format_time() {
 	    // XPath == format-time("04:05:06.789+10:00", "[H]:[m]")
 	    let x = Transform::FormatTime(
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("04:05:06.789"))))),
-		Box::new(Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("[H]:[m]:[s]"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("04:05:06.789"))))),
+		Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("[H]:[m]:[s]"))))),
 		None,
 		None,
 		None,
@@ -2805,11 +2814,11 @@ macro_rules! transform_tests (
 	    let x = Transform::UserDefined(
 			QualifiedName::new(None, None, String::from("mytest")),
 		vec![
-		    ("bar".to_string(), Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("a test")))))
+		    ("bar".to_string(), Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("a test")))))
 		],
 		Box::new(Transform::SequenceItems(
 		    vec![
-			Transform::Literal(Rc::new(Item::<$x>::Value(Value::from("this is ")))),
+			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("this is ")))),
 			Transform::VariableReference("bar".to_string()),
 		    ]
 		))

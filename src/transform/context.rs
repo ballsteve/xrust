@@ -54,7 +54,7 @@ pub struct Context<N: Node> {
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Grouping
-    pub(crate) current_grouping_key: Option<Value>,
+    pub(crate) current_grouping_key: Option<Rc<Value>>,
     pub(crate) current_group: Sequence<N>,
     // Output control
     pub(crate) od: OutputDefinition,
@@ -140,7 +140,7 @@ impl<N: Node> Context<N> {
     ///   d
     /// }
     ///
-    /// let sd = Rc::new(Item::Node(make_from_str("<Example/>")));
+    /// let sd = Item::Node(make_from_str("<Example/>"));
     /// let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
     /// <xsl:template match='/'><xsl:apply-templates/></xsl:template>
     /// <xsl:template match='child::Example'>This template will match</xsl:template>
@@ -208,7 +208,7 @@ impl<N: Node> Context<N> {
     pub fn find_templates<F: FnMut(&str) -> Result<(), Error>>(
         &self,
         stctxt: &mut StaticContext<F>,
-        i: &Rc<Item<N>>,
+        i: &Item<N>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates = self.templates.iter().try_fold(vec![], |mut cand, t| {
             let e = t.pattern.matches(self, stctxt, i);
@@ -254,7 +254,7 @@ impl<N: Node> Context<N> {
     ///
     /// // Equivalent to "child::*"
     /// let t = Transform::Step(NodeMatch {axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::Any)});
-    /// let sd = Rc::new(Item::Node(make_from_str("<Example/>")));
+    /// let sd = Item::Node(make_from_str("<Example/>"));
     /// let context = ContextBuilder::new()
     ///   .current(vec![sd])
     ///   .build();
@@ -415,7 +415,7 @@ impl<N: Node> ContextBuilder<N> {
         self.0.current_group = c;
         self
     }
-    pub fn current_grouping_key(mut self, k: Value) -> Self {
+    pub fn current_grouping_key(mut self, k: Rc<Value>) -> Self {
         self.0.current_grouping_key = Some(k);
         self
     }
@@ -473,12 +473,12 @@ where
 ///   QualifiedName::new(None, None, String::from("Example")),
 ///   Box::new(Transform::SequenceItems(vec![
 ///	Transform::Message(
-///		Box::new(Transform::Literal(Rc::new(Item::Value(Value::from("a message from the transformation"))))),
+///		Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
 ///		None,
 ///		Box::new(Transform::Empty),
 ///		Box::new(Transform::Empty),
 ///	),
-///	Transform::Literal(Rc::new(Item::Value(Value::from("element content")))),
+///	Transform::Literal(Item::Value(Rc::new(Value::from("element content")))),
 ///   ]))
 /// );
 /// let mut context = ContextBuilder::new()

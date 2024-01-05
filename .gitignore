@@ -1,3 +1,5 @@
 /target
 /src/parser/validators/
 *.DS_Store
+.idea
+

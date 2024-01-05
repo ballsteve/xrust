@@ -33,7 +33,7 @@ let source = Document::try_from(("<A><B><C/></B><B><C/></B></A>".to_string(), No
 let mut doc = NodeBuilder::new(NodeType::Document).build();
 doc.push(source).expect("unable to attach root node");
 let context = ContextBuilder::new()
-    .current(vec![Rc::new(Item::Node(doc))])
+    .current(vec![Item::Node(doc)])
     .build();
 let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t)
     .expect("evaluation failed");

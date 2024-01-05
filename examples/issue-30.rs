@@ -6,7 +6,6 @@ use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::rc::Rc;
 
 use xrust::item::{Item, Node, NodeType, SequenceTrait};
 use xrust::parser::xpath::parse;
@@ -71,7 +70,7 @@ fn main() {
 
     // Create a transformation context
     let context = ContextBuilder::new()
-        .current(vec![Rc::new(Item::Node(doc))])
+        .current(vec![Item::Node(doc)])
         .build();
 
     // Let 'er rip!

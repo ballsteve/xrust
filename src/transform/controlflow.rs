@@ -3,7 +3,7 @@
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::item::{Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Grouping, Transform};
 use crate::value::{Operator, Value};
@@ -101,7 +101,7 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             .dispatch(stctxt, &t)?
             .iter()
             .for_each(|k| {
-                let e: &mut Vec<Rc<Item<N>>> = groups.entry(k.to_string()).or_default();
+                let e: &mut Sequence<N> = groups.entry(k.to_string()).or_default();
                 e.push(i.clone());
             });
         Ok(())
@@ -111,7 +111,7 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     groups.iter().try_fold(vec![], |mut result, (k, v)| {
         // Set current-group and current-grouping-key
         let mut r = ContextBuilder::from(ctxt)
-            .current_grouping_key(Value::from(k.clone()))
+            .current_grouping_key(Rc::new(Value::from(k.clone())))
             .current_group(v.clone())
             .build()
             .dispatch(stctxt, body)?;
@@ -152,7 +152,7 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                 .build()
                 .dispatch(stctxt, &t)?;
             if thiskey.len() == 1 {
-                if curkey[0].compare(&*thiskey[0], Operator::Equal)? {
+                if curkey[0].compare(&thiskey[0], Operator::Equal)? {
                     // Append to the current group
                     curgrp.push(i.clone())
                 } else {
@@ -177,7 +177,7 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     groups.iter().try_fold(vec![], |mut result, (k, v)| {
         // Set current-group and current-grouping-key
         let mut r = ContextBuilder::from(ctxt)
-            .current_grouping_key(Value::from(k.clone()))
+            .current_grouping_key(Rc::new(Value::from(k.clone())))
             .current_group(v.clone())
             .build()
             .dispatch(stctxt, body)?;

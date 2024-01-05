@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::item::NodeType;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
@@ -20,31 +21,31 @@ pub(crate) fn reference() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
                     "amp" => Ok((
                         (input1, state1),
                         vec![NodeBuilder::new(NodeType::Text)
-                            .value(Value::String("&".to_string()))
+                            .value(Rc::new(Value::String("&".to_string())))
                             .build()],
                     )),
                     "gt" => Ok((
                         (input1, state1),
                         vec![NodeBuilder::new(NodeType::Text)
-                            .value(Value::String(">".to_string()))
+                            .value(Rc::new(Value::String(">".to_string())))
                             .build()],
                     )),
                     "lt" => Ok((
                         (input1, state1),
                         vec![NodeBuilder::new(NodeType::Text)
-                            .value(Value::String("<".to_string()))
+                            .value(Rc::new(Value::String("<".to_string())))
                             .build()],
                     )),
                     "quot" => Ok((
                         (input1, state1),
                         vec![NodeBuilder::new(NodeType::Text)
-                            .value(Value::String("\"".to_string()))
+                            .value(Rc::new(Value::String("\"".to_string())))
                             .build()],
                     )),
                     "apos" => Ok((
                         (input1, state1),
                         vec![NodeBuilder::new(NodeType::Text)
-                            .value(Value::String("'".to_string()))
+                            .value(Rc::new(Value::String("'".to_string())))
                             .build()],
                     )),
                     _ => {

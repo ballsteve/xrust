@@ -14,7 +14,7 @@ pub fn boolean<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     stctxt: &mut StaticContext<F>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::Boolean(
+    Ok(vec![Item::Value(Rc::new(Value::Boolean(
         ctxt.dispatch(stctxt, b)?.to_bool(),
     )))])
 }
@@ -25,17 +25,17 @@ pub fn not<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     stctxt: &mut StaticContext<F>,
     n: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::Boolean(
+    Ok(vec![Item::Value(Rc::new(Value::Boolean(
         !ctxt.dispatch(stctxt, n)?.to_bool(),
     )))])
 }
 
 /// XPath true function.
 pub fn tr_true<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::Boolean(true)))])
+    Ok(vec![Item::Value(Rc::new(Value::Boolean(true)))])
 }
 
 /// XPath false function.
 pub fn tr_false<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::Boolean(false)))])
+    Ok(vec![Item::Value(Rc::new(Value::Boolean(false)))])
 }

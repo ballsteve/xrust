@@ -20,8 +20,8 @@ pub fn local_name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         || {
             // Get the name of the context item
             // TODO: handle the case of there not being a context item
-            match *ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Rc::new(Item::Value(Value::from(
+            match ctxt.cur[ctxt.i] {
+                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
                     m.name().get_localname(),
                 )))]),
                 _ => Err(Error::new(
@@ -34,9 +34,9 @@ pub fn local_name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             // Get the name of the singleton node
             let n = ctxt.dispatch(stctxt, t)?;
             match n.len() {
-                0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
-                1 => match *n[0] {
-                    Item::Node(ref m) => Ok(vec![Rc::new(Item::Value(Value::from(
+                0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
+                1 => match n[0] {
+                    Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
                         m.name().get_localname(),
                     )))]),
                     _ => Err(Error::new(
@@ -63,8 +63,8 @@ pub fn name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         || {
             // Get the name of the context item
             // TODO: handle the case of there being no context item
-            match *ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Rc::new(Item::Value(Value::from(
+            match ctxt.cur[ctxt.i] {
+                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
                     m.name().to_string(),
                 )))]),
                 _ => Err(Error::new(
@@ -77,9 +77,9 @@ pub fn name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             // Get the name of the singleton node
             let n = ctxt.dispatch(stctxt, t)?;
             match n.len() {
-                0 => Ok(vec![Rc::new(Item::Value(Value::from("")))]),
-                1 => match *n[0] {
-                    Item::Node(ref m) => Ok(vec![Rc::new(Item::Value(Value::from(
+                0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
+                1 => match n[0] {
+                    Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
                         m.name().to_string(),
                     )))]),
                     _ => Err(Error::new(
@@ -102,7 +102,7 @@ pub fn string<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::from(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?.to_string(),
     )))])
 }
@@ -115,7 +115,7 @@ pub fn starts_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
-    Ok(vec![Rc::new(Item::Value(Value::from(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?
             .to_string()
             .starts_with(ctxt.dispatch(stctxt, t)?.to_string().as_str()),
@@ -130,7 +130,7 @@ pub fn ends_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
-    Ok(vec![Rc::new(Item::Value(Value::from(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?
             .to_string()
             .ends_with(ctxt.dispatch(stctxt, t)?.to_string().as_str()),
@@ -145,7 +145,7 @@ pub fn contains<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     // s is the string to search, t is what to search for
-    Ok(vec![Rc::new(Item::Value(Value::from(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?
             .to_string()
             .contains(ctxt.dispatch(stctxt, t)?.to_string().as_str()),
@@ -165,7 +165,7 @@ pub fn substring<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     // t is the index to start at,
     // l is the length of the substring at extract (or the rest of the string if missing)
     match l {
-        Some(m) => Ok(vec![Rc::new(Item::Value(Value::from(
+        Some(m) => Ok(vec![Item::Value(Rc::new(Value::from(
             ctxt.dispatch(stctxt, s)?
                 .to_string()
                 .graphemes(true)
@@ -173,7 +173,7 @@ pub fn substring<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                 .take(ctxt.dispatch(stctxt, m)?.to_int()? as usize)
                 .collect::<String>(),
         )))]),
-        None => Ok(vec![Rc::new(Item::Value(Value::from(
+        None => Ok(vec![Item::Value(Rc::new(Value::from(
             ctxt.dispatch(stctxt, s)?
                 .to_string()
                 .graphemes(true)
@@ -196,7 +196,7 @@ pub fn substring_before<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     match u.find(ctxt.dispatch(stctxt, t)?.to_string().as_str()) {
         Some(i) => {
             match u.get(0..i) {
-                Some(v) => Ok(vec![Rc::new(Item::Value(Value::from(v)))]),
+                Some(v) => Ok(vec![Item::Value(Rc::new(Value::from(v)))]),
                 None => {
                     // This shouldn't happen!
                     Err(Error::new(
@@ -224,7 +224,7 @@ pub fn substring_after<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     match u.find(v.as_str()) {
         Some(i) => {
             match u.get(i + v.len()..u.len()) {
-                Some(w) => Ok(vec![Rc::new(Item::Value(Value::from(w)))]),
+                Some(w) => Ok(vec![Item::Value(Rc::new(Value::from(w)))]),
                 None => {
                     // This shouldn't happen!
                     Err(Error::new(
@@ -256,7 +256,7 @@ pub fn normalize_space<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     );
     // intersperse is the right iterator to use, but it is only available in nightly at the moment
     s.map(|u| {
-        vec![Rc::new(Item::Value(Value::from(
+        vec![Item::Value(Rc::new(Value::from(
             u.split_whitespace().collect::<Vec<&str>>().join(" "),
         )))]
     })
@@ -304,7 +304,7 @@ pub fn translate<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             }
         }
     }
-    Ok(vec![Rc::new(Item::Value(Value::from(result)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(result)))])
 }
 
 /// XPath concat function. All arguments are concatenated into a single string value.
@@ -322,7 +322,7 @@ pub(crate) fn tr_concat<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             }
             Err(err) => Err(err),
         }) {
-        Ok(r) => Ok(vec![Rc::new(Item::Value(Value::from(r)))]),
+        Ok(r) => Ok(vec![Item::Value(Rc::new(Value::from(r)))]),
         Err(err) => Err(err),
     }
 }

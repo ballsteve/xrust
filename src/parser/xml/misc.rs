@@ -1,3 +1,4 @@
+use std::rc::Rc;
 use crate::item::NodeType;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::delimited::delimited;
@@ -29,11 +30,11 @@ pub(crate) fn processing_instruction() -> impl Fn(ParseInput) -> ParseResult<RNo
             |(_, n, vt, _, _)| match vt {
                 None => NodeBuilder::new(NodeType::ProcessingInstruction)
                     .pi_name(n)
-                    .value(Value::String("".to_string()))
+                    .value(Rc::new(Value::String("".to_string())))
                     .build(),
                 Some((_, v)) => NodeBuilder::new(NodeType::ProcessingInstruction)
                     .pi_name(n)
-                    .value(Value::String(v))
+                    .value(Rc::new(Value::String(v)))
                     .build(),
             },
         ),
@@ -75,7 +76,7 @@ pub(crate) fn comment() -> impl Fn(ParseInput) -> ParseResult<RNode> {
             delimited(tag("<!--"), take_until("--"), tag("-->")),
             |v: String| {
                 NodeBuilder::new(NodeType::Comment)
-                    .value(Value::String(v))
+                    .value(Rc::new(Value::String(v)))
                     .build()
             },
         ),

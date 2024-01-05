@@ -16,6 +16,7 @@ use crate::parser::{ParseError, ParseInput, ParseResult};
 use crate::trees::intmuttree::{NodeBuilder, RNode};
 use crate::{Node, Value};
 use std::collections::HashMap;
+use std::rc::Rc;
 
 pub(crate) fn attributes() -> impl Fn(ParseInput) -> ParseResult<Vec<RNode>> {
     move |input| match many0(attribute())(input) {
@@ -136,7 +137,7 @@ fn attribute() -> impl Fn(ParseInput) -> ParseResult<RNode> {
         |(_, n, _, _, _, s)| {
             NodeBuilder::new(NodeType::Attribute)
                 .name(n)
-                .value(Value::String(s))
+                .value(Rc::new(Value::String(s)))
                 .build()
         },
     )

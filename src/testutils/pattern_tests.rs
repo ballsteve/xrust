@@ -22,7 +22,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -30,7 +30,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -51,7 +51,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -59,7 +59,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -81,7 +81,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -89,7 +89,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -110,7 +110,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -118,7 +118,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -139,7 +139,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -147,7 +147,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -168,7 +168,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -176,7 +176,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -198,7 +198,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -206,7 +206,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -227,7 +227,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a)
 		.expect("unable to append text node");
@@ -235,7 +235,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");
@@ -257,7 +257,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(a.clone())
 		.expect("unable to append child");
-	    let t_a = sd.new_text(Value::from("first"))
+	    let t_a = sd.new_text(Rc::new(Value::from("first")))
 		.expect("unable to create text node");
 	    a.push(t_a.clone())
 		.expect("unable to append text node");
@@ -265,7 +265,7 @@ macro_rules! pattern_tests (
 		.expect("unable to create element");
 	    t.push(b.clone())
 		.expect("unable to append child");
-	    let t_b = sd.new_text(Value::from("second"))
+	    let t_b = sd.new_text(Rc::new(Value::from("second")))
 		.expect("unable to create text node");
 	    b.push(t_b)
 		.expect("unable to append text node");

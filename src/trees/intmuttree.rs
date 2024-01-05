@@ -9,6 +9,7 @@ To create a tree, use [NodeBuilder] to make a Document-type node. To add a node,
 NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
 
 ```rust
+use std::rc::Rc;
 use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
@@ -30,7 +31,7 @@ doc.push(top.clone())
 
 top.push(
     NodeBuilder::new(NodeType::Text)
-    .value(Value::from("content of the element"))
+    .value(Rc::new(Value::from("content of the element")))
     .build()
 ).expect("unable to append child node");
 
@@ -270,7 +271,7 @@ pub struct Node {
     // name is mutable only so that the namespace URI can be set once the document is parsed.
     // If we can build a better parser then the RefCell can be removed.
     name: RefCell<Option<QualifiedName>>,
-    value: Option<Value>,
+    value: Option<Rc<Value>>,
     pi_name: Option<String>,
     dtd: Option<DTD>,
     reference: Option<QualifiedName>,
@@ -316,8 +317,8 @@ impl ItemNode for RNode {
             .as_ref()
             .map_or(QualifiedName::new(None, None, String::new()), |n| n.clone())
     }
-    fn value(&self) -> Value {
-        self.value.as_ref().map_or(Value::from(""), |v| v.clone())
+    fn value(&self) -> Rc<Value> {
+        self.value.as_ref().map_or(Rc::new(Value::from("")), |v| v.clone())
     }
 
     fn to_string(&self) -> String {
@@ -410,29 +411,29 @@ impl ItemNode for RNode {
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(Attributes::new(self))
     }
-    fn get_attribute(&self, a: &QualifiedName) -> Value {
+    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value> {
         self.attributes
             .borrow()
             .get(a)
-            .map_or(Value::from(""), |v| v.value.as_ref().unwrap().clone())
+            .map_or(Rc::new(Value::from("")), |v| v.value.as_ref().unwrap().clone())
     }
 
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Element).name(qn).build())
     }
-    fn new_text(&self, v: Value) -> Result<Self, Error> {
+    fn new_text(&self, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Text).value(v).build())
     }
-    fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+    fn new_attribute(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Attribute)
             .name(qn)
             .value(v)
             .build())
     }
-    fn new_comment(&self, v: Value) -> Result<Self, Error> {
+    fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Comment).value(v).build())
     }
-    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::ProcessingInstruction)
             .name(qn)
             .value(v)
@@ -527,12 +528,10 @@ impl ItemNode for RNode {
         match self.node_type() {
             NodeType::Comment => Err(Error::new(ErrorKind::TypeError, "".to_string())),
             NodeType::Text => {
-                let v = match self.value() {
-                    Value::String(s) => {
-                        Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n"))
-                    }
-                    e => e,
-                };
+                let mut v: Rc<Value> = self.value();
+                if let Value::String(s) = &*v {
+                    v = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n")))
+                }
                 let result = NodeBuilder::new(self.node_type())
                     .name(self.name())
                     .value(v)
@@ -954,7 +953,7 @@ impl NodeBuilder {
         *self.0.name.borrow_mut() = Some(qn);
         self
     }
-    pub fn value(mut self, v: Value) -> Self {
+    pub fn value(mut self, v: Rc<Value>) -> Self {
         self.0.value = Some(v);
         self
     }
@@ -1177,14 +1176,14 @@ mod tests {
         let at = root
             .new_attribute(
                 QualifiedName::new(None, None, String::from("mode")),
-                Value::from("testing"),
+                Rc::new(Value::from("testing")),
             )
             .expect("unable to create attribute node");
         child.add_attribute(at).expect("unable to add attribute");
 
         assert_eq!(
             child.get_attribute(&QualifiedName::new(None, None, String::from("mode"))),
-            Value::from("testing")
+            Value::from("testing").into()
         )
     }
     #[test]
@@ -1197,14 +1196,14 @@ mod tests {
         let at = root
             .new_attribute(
                 QualifiedName::new(None, None, String::from("mode")),
-                Value::from("testing"),
+                Rc::new(Value::from("testing")),
             )
             .expect("unable to create attribute node");
         child.add_attribute(at).expect("unable to add attribute");
 
         assert_eq!(
             child.get_attribute(&QualifiedName::new(None, None, String::from("foo"))),
-            Value::from("")
+            Value::from("").into()
         )
     }
 
@@ -1222,7 +1221,7 @@ mod tests {
             child.push(l1.clone()).expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from(i))
+                    .value(Rc::new(Value::from(i)))
                     .build(),
             )
             .expect("unable to append child");
@@ -1244,7 +1243,7 @@ mod tests {
             child.push(l1.clone()).expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from(i))
+                    .value(Rc::new(Value::from(i)))
                     .build(),
             )
             .expect("unable to append child");
@@ -1272,14 +1271,14 @@ mod tests {
             .add_attribute(
                 NodeBuilder::new(NodeType::Attribute)
                     .name(QualifiedName::new(None, None, String::from("id")))
-                    .value(Value::from("foo"))
+                    .value(Rc::new(Value::from("foo")))
                     .build(),
             )
             .expect("unable to add attribute");
         child
             .push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from("1234"))
+                    .value(Rc::new(Value::from("1234")))
                     .build(),
             )
             .expect("unable to add text node");
@@ -1305,14 +1304,14 @@ mod tests {
             .add_attribute(
                 NodeBuilder::new(NodeType::Attribute)
                     .name(QualifiedName::new(None, None, String::from("id")))
-                    .value(Value::from("foo"))
+                    .value(Rc::new(Value::from("foo")))
                     .build(),
             )
             .expect("unable to add attribute");
         child
             .push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from("1234"))
+                    .value(Rc::new(Value::from("1234")))
                     .build(),
             )
             .expect("unable to add text node");
@@ -1338,7 +1337,7 @@ mod tests {
             .add_attribute(
                 NodeBuilder::new(NodeType::Attribute)
                     .name(QualifiedName::new(None, None, String::from("id")))
-                    .value(Value::from("foo"))
+                    .value(Rc::new(Value::from("foo")))
                     .build(),
             )
             .expect("unable to add attribute");
@@ -1352,7 +1351,7 @@ mod tests {
         child.push(l1.clone()).expect("unable to add node");
         l1.push(
             NodeBuilder::new(NodeType::Text)
-                .value(Value::from("1234"))
+                .value(Rc::new(Value::from("1234")))
                 .build(),
         )
         .expect("unable to add text node");

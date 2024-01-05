@@ -19,11 +19,11 @@ use xrust::transform::context::{Context, StaticContext};
 let xform = Transform::Arithmetic(vec![
         ArithmeticOperand::new(
             ArithmeticOperator::Noop,
-            Transform::Literal(Rc::new(Item::<RNode>::Value(Value::from(1))))
+            Transform::Literal(Item::<RNode>::Value(Rc::new(Value::from(1))))
         ),
         ArithmeticOperand::new(
             ArithmeticOperator::Add,
-            Transform::Literal(Rc::new(Item::<RNode>::Value(Value::from(1))))
+            Transform::Literal(Item::<RNode>::Value(Rc::new(Value::from(1))))
         )
     ]);
 let sequence = Context::new()
@@ -59,7 +59,6 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::Formatter;
-use std::rc::Rc;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone, Debug)]
@@ -84,7 +83,7 @@ pub enum Transform<N: Node> {
     /// An empty sequence
     Empty,
     /// A literal, atomic value.
-    Literal(Rc<Item<N>>),
+    Literal(Item<N>),
     /// A literal element. Consists of the element name and content.
     LiteralElement(QualifiedName, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
@@ -356,8 +355,8 @@ impl NodeMatch {
     pub fn new(axis: Axis, nodetest: NodeTest) -> Self {
         NodeMatch { axis, nodetest }
     }
-    pub fn matches_item<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches_item<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(n) => self.matches(n),
             _ => false,
         }
@@ -413,8 +412,8 @@ pub enum NodeTest {
 }
 
 impl NodeTest {
-    pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(_) => match self {
                 NodeTest::Kind(k) => k.matches(i),
                 NodeTest::Name(nm) => nm.matches(i),
@@ -527,8 +526,8 @@ impl fmt::Display for KindTest {
 
 impl KindTest {
     /// Does an item match the Kind Test?
-    pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(n) => {
                 match (self, n.node_type()) {
                     (KindTest::Document, NodeType::Document) => true,
@@ -585,8 +584,8 @@ impl NameTest {
     }
     /// Does an Item match this name test? To match, the item must be a node, have a name,
     /// have the namespace URI and local name be equal or a wildcard
-    pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(n) => {
                 match n.node_type() {
                     NodeType::Element | NodeType::ProcessingInstruction | NodeType::Attribute => {

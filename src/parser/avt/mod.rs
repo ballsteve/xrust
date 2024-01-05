@@ -58,7 +58,7 @@ fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>
     Box::new(map(
         many0(alt2(
             map(many1(none_of("{")), |v| {
-                Transform::Literal(Rc::new(Item::Value(Value::from(
+                Transform::Literal(Item::Value(Rc::new(Value::from(
                     v.iter().collect::<String>(),
                 ))))
             }),

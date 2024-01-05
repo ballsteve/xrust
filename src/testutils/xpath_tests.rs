@@ -2,7 +2,6 @@
 macro_rules! xpath_tests (
     ( $t:ty , $x:expr , $y:expr ) => {
 	use xrust::parser::xpath::parse;
-	use xrust::xdmerror::ErrorKind;
 
 	#[test]
 	fn xpath_empty() {
@@ -44,7 +43,7 @@ macro_rules! xpath_tests (
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    if seq.len() != 0 {
-		match &*seq[0] {
+		match &seq[0] {
 		    Item::Node(n) => {
 				assert!(true)
 		    }
@@ -274,7 +273,7 @@ macro_rules! xpath_tests (
 		.expect("failed to parse expression \".\"");
 	    let rd = $x();
 	    let s = ContextBuilder::new()
-		      .current(vec![Rc::new(Item::Value(Value::from("foobar")))])
+		      .current(vec![Item::Value(Rc::new(Value::from("foobar")))])
 		      .result_document(rd)
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
@@ -312,7 +311,7 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match &*s[0] {
+	    match &s[0] {
 		Item::Node(n) => {
 		    assert_eq!(n.node_type(), NodeType::Element);
 		    assert_eq!(n.name().to_string(), "a")
@@ -332,14 +331,14 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 2);
-	    match &*s[0] {
+	    match &s[0] {
 		Item::Node(n) => {
 		    assert_eq!(n.node_type(), NodeType::Element);
 		    assert_eq!(n.name().to_string(), "b")
 		}
 		_ => panic!("not a node")
 	    }
-	    match &*s[1] {
+	    match &s[1] {
 		Item::Node(n) => {
 		    assert_eq!(n.node_type(), NodeType::Element);
 		    assert_eq!(n.name().to_string(), "b")
@@ -361,7 +360,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 5);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "a")
@@ -383,7 +382,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
@@ -406,7 +405,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
@@ -428,7 +427,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 2);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
@@ -450,7 +449,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 10);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "b")
@@ -472,7 +471,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "a")
@@ -507,7 +506,7 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    for t in s {
-		match &*t {
+		match &t {
 		    Item::Node(n) => {
 			assert_eq!(n.node_type(), NodeType::Element);
 			assert_eq!(n.name().to_string(), "a")
@@ -522,12 +521,12 @@ macro_rules! xpath_tests (
 		.expect("failed to parse expression \"ancestor::*\"");
 	    let rd = $x();
 		let sd = $y();
-		match &*sd {
+		match &sd {
 			Item::Node(c) => {
 				let l = c.descend_iter().last().unwrap();
 				let s = ContextBuilder::new()
 					.result_document(rd)
-					.current(vec![Rc::new(Item::Node(l))])
+					.current(vec![Item::Node(l)])
 					.build()
 					.dispatch(&mut StaticContext::<F>::new(), &e)
 					.expect("evaluation failed");
@@ -681,9 +680,12 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-		_ => panic!("not a singleton boolean true value")
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Boolean(b) => assert_eq!(b, true),
+			_ => panic!("not a singleton boolean true value"),
+		}
+		_ => panic!("not a value"),
 	    }
 	}
 	#[test]
@@ -694,9 +696,12 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-		_ => panic!("not a singleton boolean false value")
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Boolean(b) => assert_eq!(b, false),
+			_ => panic!("not a singleton boolean false value"),
+		}
+		_ => panic!("not a value"),
 	    }
 	}
 	#[test]
@@ -707,9 +712,12 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-		_ => panic!("not a singleton boolean true value")
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Boolean(b) => assert_eq!(b, true),
+			_ => panic!("not a singleton boolean true value"),
+		}
+		_ => panic!("not a value"),
 	    }
 	}
 	#[test]
@@ -720,9 +728,12 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-		_ => panic!("not a singleton boolean false value")
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Boolean(b) => assert_eq!(b, false),
+			_ => panic!("not a singleton boolean false value"),
+		}
+		_ => panic!("not a value"),
 	    }
 	}
 	#[test]
@@ -733,10 +744,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Boolean(b)) => assert_eq!(b, true),
-		_ => panic!("not a singleton boolean true value")
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Boolean(b) => assert_eq!(b, true),
+			_ => panic!("not a singleton boolean true value"),
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_false() {
@@ -746,10 +760,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Boolean(b)) => assert_eq!(b, false),
-		_ => panic!("not a singleton boolean false value")
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Boolean(b) => assert_eq!(b, false),
+			_ => panic!("not a singleton boolean false value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_number_int() {
@@ -759,10 +776,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Integer(i)) => assert_eq!(i, 123),
-		_ => panic!("not a singleton integer value, got \"{}\"", s.to_string())
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Integer(i) => assert_eq!(i, 123),
+			_ => panic!("not a singleton integer value, got \"{}\"", s.to_string())
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_number_double() {
@@ -772,10 +792,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Double(d)) => assert_eq!(d, 123.456),
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Double(d) => assert_eq!(d, 123.456),
 		_ => panic!("not a singleton double value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_sum() {
@@ -785,10 +808,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Double(d)) => assert_eq!(d, 123.456 + 10.0 + 20.0),
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Double(d) => assert_eq!(d, 123.456 + 10.0 + 20.0),
 		_ => panic!("not a singleton double value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_floor() {
@@ -798,10 +824,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Double(d) => assert_eq!(d, 123.0),
 		_ => panic!("not a singleton double value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_ceiling() {
@@ -811,10 +840,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Double(d) => assert_eq!(d, 124.0),
 		_ => panic!("not a singleton double value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_round_down() {
@@ -824,10 +856,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Double(d)) => assert_eq!(d, 123.0),
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Double(d) => assert_eq!(d, 123.0),
 		_ => panic!("not a singleton double value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_round_up() {
@@ -837,10 +872,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-		Item::Value(Value::Double(d)) => assert_eq!(d, 124.0),
+	    match &s[0] {
+		Item::Value(v) => match **v {
+			Value::Double(d) => assert_eq!(d, 124.0),
 		_ => panic!("not a singleton double value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_count_1() {
@@ -850,10 +888,13 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
-	    match *s[0] {
-			Item::Value(Value::Integer(d)) => assert_eq!(d, 4),
+	    match &s[0] {
+			Item::Value(v) => match **v {
+				Value::Integer(d) => assert_eq!(d, 4),
 			_ => panic!("not a singleton integer value")
 	    }
+		_ => panic!("not a value"),
+		}
 	}
 	#[test]
 	fn xpath_fncall_count_2() {
@@ -861,12 +902,12 @@ macro_rules! xpath_tests (
 		.expect("failed to parse expression \"count(ancestor::*)\"");
 	    let rd = $x();
 		let sd = $y();
-	    match &*sd {
+	    match &sd {
 			Item::Node(c) => {
 				let l = c.descend_iter().last().unwrap();
 	    	    let s = ContextBuilder::new()
 		      		.result_document(rd)
-		      		.current(vec![Rc::new(Item::Node(l))])
+		      		.current(vec![Item::Node(l)])
 		      		.build()
 					.dispatch(&mut StaticContext::<F>::new(), &e)
 					.expect("evaluation failed");
@@ -944,5 +985,4 @@ macro_rules! xpath_tests (
 	}
 
 	}
-
 );

@@ -10,12 +10,12 @@ use crate::xdmerror::{Error, ErrorKind};
 
 /// XPath position function.
 pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::from(ctxt.i as i64 + 1)))])
+    Ok(vec![Item::Value(Rc::new(Value::from(ctxt.i as i64 + 1)))])
 }
 
 /// XPath last function.
 pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::from(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.cur.len() as i64
     )))])
 }
@@ -26,7 +26,7 @@ pub fn tr_count<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    Ok(vec![Rc::new(Item::Value(Value::from(
+    Ok(vec![Item::Value(Rc::new(Value::from(
         ctxt.dispatch(stctxt, s)?.len() as i64,
     )))])
 }
