@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -8,19 +9,19 @@ use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::common::{is_namechar, is_namestartchar, is_ncnamechar, is_ncnamestartchar};
 use crate::parser::xml::dtd::pereference::petextreference;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 
 // QualifiedName
-pub(crate) fn qualname() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
+pub(crate) fn qualname<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     alt2(prefixed_name(), unprefixed_name())
 }
-fn unprefixed_name() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
+fn unprefixed_name<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     map(alt2(petextreference(), ncname()), |localpart| {
         QualifiedName::new(None, None, localpart)
     })
 }
-fn prefixed_name() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
+fn prefixed_name<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     map(
         tuple3(
             alt2(petextreference(), ncname()),
@@ -35,7 +36,7 @@ fn prefixed_name() -> impl Fn(ParseInput) -> ParseResult<QualifiedName> {
 // Name ::= NameStartChar NameChar*
 // NameStartChar ::= ':' | [A-Z] | '_' | [a-z] | [#xC0-#xD6] | [#xD8-#xF6] | [#xF8-#x2FF] | [#x370-#x37D] | [#x37F-#x1FFF] | [#x200C-#x200D] | [#x2070-#x218F] | [#x2C00-#x2FEF] | [#x3001-#xD7FF] | [#xF900-#xFDCF] | [#xFDF0-#xFFFD] | [#x10000-#xEFFFF]
 // NameChar ::= NameStartChar | '-' | '.' | [0-9] | #xB7 | [#x0300-#x036F] | [#x203F-#x2040]
-pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
+pub(crate) fn ncname<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple2(
             wellformed(take_one(), is_ncnamestartchar),
@@ -45,7 +46,7 @@ pub(crate) fn ncname<'a>() -> impl Fn(ParseInput) -> ParseResult<String> + 'a {
     )
 }
 
-pub(crate) fn name() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn name<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple2(
             wellformed(take_one(), is_namestartchar),

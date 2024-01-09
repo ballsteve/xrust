@@ -1,9 +1,10 @@
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::item::Node;
+use crate::parser::{ParseError, ParseInput};
 
-pub fn separated_list0<P1, P2, R1>(sep: P1, f: P2) -> impl Fn(ParseInput) -> ParseResult<Vec<R1>>
+pub fn separated_list0<P1, P2, R1, N: Node>(sep: P1, f: P2) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R1>), ParseError>
 where
-    P1: Fn(ParseInput) -> ParseResult<()>,
-    P2: Fn(ParseInput) -> ParseResult<R1>,
+    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>,
+    P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
 {
     move |mut input| {
         let mut res = Vec::new();
@@ -45,13 +46,13 @@ where
     }
 }
 
-pub(crate) fn separated_list1<P1, P2, R1>(
+pub(crate) fn separated_list1<P1, P2, R1, N: Node>(
     sep: P1,
     f: P2,
-) -> impl Fn(ParseInput) -> ParseResult<Vec<R1>>
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R1>), ParseError>
 where
-    P1: Fn(ParseInput) -> ParseResult<()>,
-    P2: Fn(ParseInput) -> ParseResult<R1>,
+    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>,
+    P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
 {
     move |mut input| {
         let mut res = Vec::new();
@@ -100,15 +101,16 @@ mod tests {
     use crate::parser::combinators::map::map;
     use crate::parser::combinators::tag::tag;
     use crate::parser::ParserState;
+    use crate::trees::nullo::Nullo;
 
     #[test]
     fn parser_separated_list0_test1() {
         let testdoc = "b";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = separated_list0(tag(","), map(tag("a"), |_| "a"));
 
         assert_eq!(
-            Ok((("b", ParserState::new(None, None)), vec![])),
+            Ok((("b", ParserState::new(None, None, None)), vec![])),
             parse_doc((testdoc, teststate))
         );
     }
@@ -116,11 +118,11 @@ mod tests {
     #[test]
     fn parser_separated_list0_test2() {
         let testdoc = "a";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = separated_list0(tag(","), map(tag("a"), |_| "a"));
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None)), vec!["a"])),
+            Ok((("", ParserState::new(None, None, None)), vec!["a"])),
             parse_doc((testdoc, teststate))
         );
     }
@@ -128,7 +130,7 @@ mod tests {
     #[test]
     fn parser_separated_list0_test3() {
         let testdoc = "a,b,c,d";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = separated_list1(
             tag(","),
             alt4(
@@ -140,7 +142,7 @@ mod tests {
         );
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None)), vec!["1", "2", "3", "4"])),
+            Ok((("", ParserState::new(None, None, None)), vec!["1", "2", "3", "4"])),
             parse_doc((testdoc, teststate))
         );
     }
@@ -148,11 +150,11 @@ mod tests {
     #[test]
     fn parser_separated_list1_test1() {
         let testdoc = "a";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = separated_list1(tag(","), map(tag("a"), |_| "a"));
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None)), vec!["a"])),
+            Ok((("", ParserState::new(None, None, None)), vec!["a"])),
             parse_doc((testdoc, teststate))
         );
     }
@@ -160,7 +162,7 @@ mod tests {
     #[test]
     fn parser_separated_list1_test2() {
         let testdoc = "a,b,c,d";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = separated_list1(
             tag(","),
             alt4(
@@ -172,7 +174,7 @@ mod tests {
         );
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None)), vec!["1", "2", "3", "4"])),
+            Ok((("", ParserState::new(None, None, None)), vec!["1", "2", "3", "4"])),
             parse_doc((testdoc, teststate))
         );
     }

@@ -13,7 +13,7 @@ macro_rules! pattern_tests (
             let p: Pattern<$t> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -42,7 +42,7 @@ macro_rules! pattern_tests (
             let p: Pattern<$t> = Pattern::try_from(".[self::a]").expect("unable to parse \".[self::a]\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -72,7 +72,7 @@ macro_rules! pattern_tests (
 		let p: Pattern<$t> = Pattern::try_from("/").expect("unable to parse \"/\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -101,7 +101,7 @@ macro_rules! pattern_tests (
 		let p: Pattern<$t> = Pattern::try_from("/").expect("unable to parse \"/\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -130,7 +130,7 @@ macro_rules! pattern_tests (
             let p: Pattern<$t> = Pattern::try_from("child::a").expect("unable to parse \"child::a\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -159,7 +159,7 @@ macro_rules! pattern_tests (
             let p: Pattern<$t> = Pattern::try_from("child::a").expect("unable to parse \"child::a\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -189,7 +189,7 @@ macro_rules! pattern_tests (
 			.expect("unable to parse \"child::Test/child::a\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -218,7 +218,7 @@ macro_rules! pattern_tests (
             let p: Pattern<$t> = Pattern::try_from("child::Test/child::a").expect("unable to parse \"child::Test/child::a\"");
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("NotATest")))
 		.expect("unable to create element");
 	    sd.push(t.clone())
@@ -245,10 +245,9 @@ macro_rules! pattern_tests (
 	#[test]
 	fn pattern_sel_text_kind_1_pos() {
             let p: Pattern<$t> = Pattern::try_from("child::text()").expect("unable to parse \"child::text()\"");
-			eprintln!("pattern {}", p);
 
 	    // Setup a source document
-	    let mut sd = NodeBuilder::new(NodeType::Document).build();
+	    let mut sd = $x();
 	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
 		.expect("unable to create element");
 	    sd.push(t.clone())

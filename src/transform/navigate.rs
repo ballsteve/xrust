@@ -17,12 +17,14 @@ pub(crate) fn root<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
         // TODO: check all context items.
         // If any of them is not a Node then error.
         match &ctxt.cur[0] {
-            Item::Node(n) => match n.node_type() {
-                NodeType::Document => Ok(vec![Item::Node(n.clone())]),
-                _ => n
-                    .ancestor_iter()
-                    .last()
-                    .map_or(Ok(vec![]), |m| Ok(vec![Item::Node(m)])),
+            Item::Node(n) => {
+                match n.node_type() {
+                    NodeType::Document => Ok(vec![Item::Node(n.clone())]),
+                    _ => n
+                        .ancestor_iter()
+                        .last()
+                        .map_or(Ok(vec![]), |m| Ok(vec![Item::Node(m)])),
+                }
             },
             _ => Err(Error::new(
                 ErrorKind::ContextNotNode,

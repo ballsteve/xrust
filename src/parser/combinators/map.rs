@@ -1,9 +1,10 @@
-use crate::parser::{ParseInput, ParseResult};
+use crate::item::Node;
+use crate::parser::{ParseError, ParseInput};
 
-pub fn map<P, F, A, B>(parser: P, map_fn: F) -> impl Fn(ParseInput) -> ParseResult<B>
-//-> impl Fn(ParseInput)-> Result<(String, usize, B), usize>
+pub fn map<P, F, A, B, N: Node>(parser: P, map_fn: F) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, B), ParseError>
+//-> impl Fn(ParseInput<N>)-> Result<(String, usize, B), usize>
 where
-    P: Fn(ParseInput) -> ParseResult<A>,
+    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>,
     F: Fn(A) -> B,
 {
     move |input| match parser(input) {

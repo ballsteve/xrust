@@ -26,8 +26,9 @@ macro_rules! xpath_tests (
 	fn xpath_path_1_pos() {
 		let ev = parse::<$t>("/child::a").expect("not an XPath expression");
 	    let rd = $x();
+		let sd = $y();
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![$y()])
+		.current(vec![sd])
 		.result_document(rd)
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");

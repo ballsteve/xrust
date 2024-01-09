@@ -40,11 +40,11 @@ assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
-use crate::parser;
-use crate::parser::xml::XMLDocument;
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
+use crate::externals::URLResolver;
+use crate::parser::xml::parse;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::hash_map::IntoIter;
@@ -53,7 +53,7 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
 
-pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+//pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -121,7 +121,7 @@ impl Document {
             }
         }
 
-        XMLDocument {
+        Document {
             xmldecl: Some(d),
             prologue: p,
             content: c,
@@ -168,16 +168,26 @@ impl Document {
      */
 }
 
-impl TryFrom<(String, Option<ExtDTDresolver>, Option<String>)> for Document {
+impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(s: (String, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
-        parser::xml::parse(s.0.as_str(), s.1, s.2)
+    fn try_from(s: (String, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
+        let doc = NodeBuilder::new(NodeType::Document).build();
+        parse(doc.clone(), s.0.as_str(), s.1, s.2)?;
+        let result = DocumentBuilder::new()
+            .content(vec![doc])
+            .build();
+        Ok(result)
     }
 }
-impl TryFrom<(&str, Option<ExtDTDresolver>, Option<String>)> for Document {
+impl TryFrom<(&str, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(s: (&str, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
-        parser::xml::parse(s.0, s.1, s.2)
+    fn try_from(s: (&str, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
+        let doc = NodeBuilder::new(NodeType::Document).build();
+        parse(doc.clone(), s.0, s.1, s.2)?;
+        let result = DocumentBuilder::new()
+            .content(vec![doc])
+            .build();
+        Ok(result)
     }
 }
 
@@ -442,6 +452,9 @@ impl ItemNode for RNode {
 
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {
+        if n.node_type() == NodeType::Document {
+            return Err(Error::new(ErrorKind::TypeError, String::from("document type nodes cannot be inserted into a tree")))
+        }
         *n.parent.borrow_mut() = Some(Rc::downgrade(self));
         self.children.borrow_mut().push(n);
         Ok(())
@@ -479,8 +492,13 @@ impl ItemNode for RNode {
     }
     /// Insert a node into the child list immediately before this node.
     fn insert_before(&mut self, mut insert: Self) -> Result<(), Error> {
+        if insert.node_type() == NodeType::Document {
+            return Err(Error::new(ErrorKind::TypeError, String::from("document type nodes cannot be inserted into a tree")))
+        }
+
         // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
         _ = insert.pop();
+
         // Get the parent of this node. It is an error if there is no parent.
         let parent = self.parent().ok_or_else(|| {
             Error::new(
@@ -488,6 +506,7 @@ impl ItemNode for RNode {
                 String::from("unable to insert before: node is an orphan"),
             )
         })?;
+
         // Find the child node's index in the parent's child list
         let idx = find_index(&parent, self)?;
         // Insert the node at position of self, shifting insert right
@@ -557,6 +576,12 @@ impl ItemNode for RNode {
                 Ok(result)
             }
         }
+    }
+    fn xmldecl(&self) -> crate::xmldecl::XMLDecl {
+        crate::xmldecl::XMLDeclBuilder::new().build()
+    }
+    fn set_xmldecl(&mut self, _: crate::xmldecl::XMLDecl) -> Result<(), Error> {
+        Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
     }
 }
 

@@ -1,7 +1,7 @@
 //! Supporting functions.
 
 use crate::item::Node;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 
 pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
@@ -16,7 +16,7 @@ pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
 }
 
 /// Return zero or more digits from the input stream. Be careful not to consume non-digit input.
-pub(crate) fn digit0() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn digit0<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         match input.find(|c| !(c >= '0' && c <= '9')) {
             Some(0) => Err(ParseError::Combinator),
@@ -35,7 +35,7 @@ pub(crate) fn digit0() -> impl Fn(ParseInput) -> ParseResult<String> {
     }
 }
 /// Return one or more digits from the input stream.
-pub(crate) fn digit1() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn digit1<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         if input.starts_with(|c| (c >= '0' && c <= '9')) {
             match input.find(|c| !(c >= '0' && c <= '9')) {
@@ -50,7 +50,7 @@ pub(crate) fn digit1() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 /// Return the next character if it is not from the given set
-pub(crate) fn none_of(s: &str) -> impl Fn(ParseInput) -> ParseResult<char> + '_ {
+pub(crate) fn none_of<N: Node>(s: &str) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> + '_ {
     move |(input, state)| {
         if input.is_empty() {
             Err(ParseError::Combinator)
@@ -64,6 +64,6 @@ pub(crate) fn none_of(s: &str) -> impl Fn(ParseInput) -> ParseResult<char> + '_ 
     }
 }
 
-pub(crate) fn noop<N: Node>() -> impl Fn(ParseInput) -> ParseResult<Transform<N>> {
+pub(crate) fn noop<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
     move |_| Err(ParseError::Combinator)
 }

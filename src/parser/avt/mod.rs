@@ -8,7 +8,7 @@ use crate::item::{Item, Node};
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
-use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserState};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use std::rc::Rc;
@@ -19,7 +19,7 @@ use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*
 pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
-    let state = ParserState::new(None, None);
+    let state = ParserState::new(None, None, None);
     match avt_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
@@ -40,7 +40,7 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
     }
 }
 
-fn avt_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
+fn avt_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
     match avt::<N>()(input) {
         Err(err) => Err(err),
         Ok(((input1, state1), e)) => {
@@ -54,7 +54,7 @@ fn avt_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
     }
 }
 
-fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         many0(alt2(
             map(many1(none_of("{")), |v| {
@@ -75,7 +75,7 @@ fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>
 }
 
 /// A XPath expression in the AVT. Braces do not nest.
-fn braced_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn braced_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     // Can't use combinator directly, since the close brace will be unexpected.
     // Instead, extract the string up to the close brace, then feed that to the combinator.
     //    Box::new(map(
@@ -91,7 +91,7 @@ fn braced_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Tran
             None => Err(ParseError::Combinator),
             Some(ind) => match expr()((input.get(1..ind).unwrap(), state.clone())) {
                 Ok((_, result)) => Ok(((input.get(ind..).map_or("", |r| r), state), result)),
-                Err(e) => Err(e),
+                Err(_) => Err(ParseError::NotWellFormed),
             },
         },
         _ => Err(ParseError::Combinator),

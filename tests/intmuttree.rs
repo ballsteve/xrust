@@ -36,20 +36,17 @@ fn make_sd_raw() -> RNode {
 }
 fn make_sd() -> Item<RNode> {
     let r = make_sd_raw();
-    let e = r.clone();
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    d.push(e).expect("unable to append node");
-    Item::Node(d)
+    //let e = r.clone();
+    //let mut d = NodeBuilder::new(NodeType::Document).build();
+    //d.push(e).expect("unable to append node");
+    //Item::Node(d)
+    Item::Node(r)
 }
 
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from((s, None, None))
-        .expect("failed to parse XML")
+    Ok(Document::try_from((s, None, None))?
         .content[0]
-        .clone();
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    d.push(e).expect("unable to append node");
-    Ok(d)
+        .clone())
 }
 
 item_value_tests!(RNode);

@@ -41,7 +41,7 @@ pub fn format_date_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let dt = ctxt.dispatch(stctxt, value)?;
-    let pic = picture_parse(&ctxt.dispatch(stctxt, picture)?.to_string())?;
+    let pic = picture_parse::<N>(&ctxt.dispatch(stctxt, picture)?.to_string())?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {
@@ -92,7 +92,7 @@ pub fn format_date<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let dt = ctxt.dispatch(stctxt, value)?;
-    let pic = picture_parse(&ctxt.dispatch(stctxt, picture)?.to_string())?;
+    let pic = picture_parse::<N>(&ctxt.dispatch(stctxt, picture)?.to_string())?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {
@@ -144,7 +144,7 @@ pub fn format_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _place: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let dt = ctxt.dispatch(stctxt, value)?;
-    let pic = picture_parse(&ctxt.dispatch(stctxt, picture)?.to_string())?;
+    let pic = picture_parse::<N>(&ctxt.dispatch(stctxt, picture)?.to_string())?;
     match dt.len() {
         0 => Ok(vec![]), // Empty value returns empty sequence
         1 => {

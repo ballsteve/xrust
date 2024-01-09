@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt7};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -13,11 +14,11 @@ use crate::parser::xml::dtd::enumerated::enumeratedtype;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::xml::reference::textreference;
-use crate::parser::{ParseInput, ParseResult};
-use crate::trees::intmuttree::DTDDecl;
+use crate::parser::{ParseError, ParseInput};
+use crate::xmldecl::DTDDecl;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-pub(crate) fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn attlistdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| match tuple6(
         tag("<!ATTLIST"),
         whitespace1(),
@@ -39,7 +40,7 @@ pub(crate) fn attlistdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 }
 
 //AttDef ::= S Name S AttType S DefaultDecl
-fn attdef() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn attdef<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple6(
             whitespace1(),
@@ -54,7 +55,7 @@ fn attdef() -> impl Fn(ParseInput) -> ParseResult<String> {
 }
 
 //AttType ::= StringType | TokenizedType | EnumeratedType
-fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
+fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     alt4(
         map(petextreference(), |_| {}), //TODO
         tag("CDATA"),                   //Stringtype
@@ -73,7 +74,7 @@ fn atttype() -> impl Fn(ParseInput) -> ParseResult<()> {
 }
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
-fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+fn defaultdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     map(
         alt3(
             value(tag("#REQUIRED"), "#REQUIRED".to_string()),
@@ -100,7 +101,7 @@ fn defaultdecl() -> impl Fn(ParseInput) -> ParseResult<()> {
 }
 
 //AttValue ::= '"' ([^<&"] | Reference)* '"' | "'" ([^<&'] | Reference)* "'"
-fn attvalue() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn attvalue<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     alt2(
         delimited(
             tag("\'"),

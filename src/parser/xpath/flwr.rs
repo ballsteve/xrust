@@ -11,12 +11,12 @@ use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 use crate::transform::Transform;
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
 pub(crate) fn if_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             // need tuple15
@@ -48,7 +48,7 @@ pub(crate) fn if_expr<'a, N: Node + 'a>(
 
 // ForExpr ::= SimpleForClause 'return' ExprSingle
 pub(crate) fn for_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             simple_for_clause::<N>(),
@@ -62,7 +62,7 @@ pub(crate) fn for_expr<'a, N: Node + 'a>(
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
 fn simple_for_clause<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             tag("for"),
@@ -88,7 +88,7 @@ fn simple_for_clause<'a, N: Node + 'a>(
 
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
 pub(crate) fn let_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             simple_let_clause::<N>(),
@@ -116,7 +116,7 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
 fn simple_let_clause<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Vec<(String, Transform<N>)>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             tag("let"),

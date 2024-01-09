@@ -1,11 +1,12 @@
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::item::Node;
+use crate::parser::{ParseError, ParseInput};
 //use std::fmt::Debug;
 
 /// Emits a message to stderr from within the parser combinator. This can be useful for debugging.
 #[allow(dead_code)]
-pub fn inspect<'a, P1, A>(msg: &'a str, parser: P1) -> impl Fn(ParseInput) -> ParseResult<A> + '_
+pub fn inspect<'a, P1, A, N: Node>(msg: &'a str, parser: P1) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + '_
 where
-    P1: Fn(ParseInput) -> ParseResult<A> + 'a,
+    P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a,
 {
     move |(input, state)| {
         eprintln!("inspect pre: {} - input: \"{}\"", msg, input);
