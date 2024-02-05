@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "0.9.0"
+version = "0.10.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath, and XSLT"
@@ -37,7 +37,5 @@ regex = "1.10.2"
 criterion = "0.5.1"
 encoding_rs = "0.8.33"
 encoding_rs_io = "0.1.7"
-#ixml = { package = "earleybird", version = "0.0.1" }
-#earleybird = {path = "../earleybird"}
 earleybird = {git = "https://github.com/mdubinko/earleybird.git"}
 indextree = "4.6.0"

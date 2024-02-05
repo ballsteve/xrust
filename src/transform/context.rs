@@ -276,6 +276,7 @@ impl<N: Node> Context<N> {
             Transform::Literal(v) => literal(self, v),
             Transform::LiteralElement(qn, t) => literal_element(self, stctxt, qn, t),
             Transform::Element(qn, t) => element(self, stctxt, qn, t),
+            Transform::LiteralText(t) => literal_text(self, stctxt, t),
             Transform::LiteralAttribute(qn, t) => literal_attribute(self, stctxt, qn, t),
             Transform::LiteralComment(t) => literal_comment(self, stctxt, t),
             Transform::LiteralProcessingInstruction(n, t) => {

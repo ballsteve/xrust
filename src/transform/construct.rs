@@ -92,6 +92,24 @@ pub(crate) fn element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     Ok(vec![Item::Node(e)])
 }
 
+/// Creates a new text node.
+/// The transform is evaluated to create the value of the text node.
+pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    _stctxt: &mut StaticContext<F>,
+    t: &Rc<Value>,
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+
+    let n = ctxt.rd.clone().unwrap().new_text(t.clone())?;
+    Ok(vec![Item::Node(n)])
+}
+
 /// Creates a singleton sequence with a new attribute node.
 /// The transform is evaluated to create the value of the attribute.
 /// TODO: AVT for attribute name

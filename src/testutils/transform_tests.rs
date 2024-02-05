@@ -67,6 +67,16 @@ macro_rules! transform_tests (
 	}
 
 	#[test]
+	fn tr_literal_text() {
+		let x = Transform::LiteralText(Rc::new(Value::from("content of text node")));
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "content of text node")
+	}
+	#[test]
 	fn tr_literal_attribute() {
 	    let x = Transform::LiteralElement(
 		QualifiedName::new(None, None, String::from("Test")),

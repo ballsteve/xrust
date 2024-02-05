@@ -1319,7 +1319,7 @@ dependencies = [
 
 [[package]]
 name = "xrust"
-version = "0.9.0"
+version = "0.10.0"
 dependencies = [
  "chrono",
  "criterion",

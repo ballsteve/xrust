@@ -56,6 +56,7 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+use std::rc::Rc;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::Formatter;
@@ -88,6 +89,8 @@ pub enum Transform<N: Node> {
     LiteralElement(QualifiedName, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
+    /// A literal text node. Consists of the value of the node.
+    LiteralText(Rc<Value>),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(QualifiedName, Box<Transform<N>>),
@@ -247,6 +250,7 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
             Transform::Element(_, _) => write!(f, "constructed element"),
+            Transform::LiteralText(t) => write!(f, "literal text \"{}\"", t.to_string()),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::LiteralProcessingInstruction(_, _) => {
