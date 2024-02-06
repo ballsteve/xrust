@@ -444,7 +444,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                     .replace('\"', "&quot;");
                                 Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                             }
-                            _ => Result::Err(Error::new(
+                            _ => Err(Error::new(
                                 ErrorKind::TypeError,
                                 "disable-output-escaping only accepts values yes or no."
                                     .to_string(),
@@ -459,6 +459,32 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             .replace('\'', "&apos;")
                             .replace('\"', "&quot;");
                         Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
+                    }
+                }
+                (Some(XSLTNS), "value-of") => {
+                    let sel = n.get_attribute(&QualifiedName::new(
+                        None,
+                        None,
+                        "select".to_string()
+                    ));
+                    let doe = n.get_attribute(&QualifiedName::new(
+                        None,
+                        None,
+                        "disable-output-escaping".to_string(),
+                    ));
+                    eprintln!("got value-of element - doe=\"{}\"", doe.to_string());
+                    if !doe.to_string().is_empty() {
+                        match &doe.to_string()[..] {
+                            "yes" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), true)),
+                            "no" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), false)),
+                            _ => Err(Error::new(
+                                ErrorKind::TypeError,
+                                "disable-output-escaping only accepts values yes or no."
+                                    .to_string(),
+                            )),
+                        }
+                    } else {
+                        Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), false))
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {

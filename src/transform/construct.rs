@@ -94,11 +94,14 @@ pub(crate) fn element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// Creates a new text node.
 /// The transform is evaluated to create the value of the text node.
+/// Special characters are escaped, unless disabled.
 pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<F>,
-    t: &Rc<Value>,
+    stctxt: &mut StaticContext<F>,
+    t: &Transform<N>,
+    b: &bool,
 ) -> Result<Sequence<N>, Error> {
+    eprintln!("literal text");
     if ctxt.rd.is_none() {
         return Err(Error::new(
             ErrorKind::Unknown,
@@ -106,8 +109,21 @@ pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         ));
     }
 
-    let n = ctxt.rd.clone().unwrap().new_text(t.clone())?;
-    Ok(vec![Item::Node(n)])
+    let v = ctxt.dispatch(stctxt, t)?.to_string();
+    eprintln!("literal text has value \"{}\"", v);
+    if *b {
+        eprintln!("output escaping is disabled");
+        Ok(vec![Item::Node(ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v)))?)])
+    } else {
+        eprintln!("output escaping is enabled");
+        Ok(vec![Item::Node(ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v
+            .replace('&', "&amp;")
+            .replace('>', "&gt;")
+            .replace('<', "&lt;")
+            .replace('\'', "&apos;")
+            .replace('\"', "&quot;")
+        )))?)])
+    }
 }
 
 /// Creates a singleton sequence with a new attribute node.

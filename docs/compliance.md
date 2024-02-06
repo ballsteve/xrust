@@ -496,7 +496,7 @@ xsl:template/@mode|no|
 xsl:template/@as|no|
 xsl:template/@visibility|no|
 xsl:text|yes|
-xsl:text/@disable-output-escaping|no|
+xsl:text/@disable-output-escaping|yes|
 xsl:transform|yes|
 xsl:try|no|
 xsl:try/@select|no|

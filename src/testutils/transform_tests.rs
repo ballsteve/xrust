@@ -67,15 +67,26 @@ macro_rules! transform_tests (
 	}
 
 	#[test]
-	fn tr_literal_text() {
-		let x = Transform::LiteralText(Rc::new(Value::from("content of text node")));
+	fn tr_literal_text_1() {
+		let x = Transform::LiteralText(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("special character: < less than"))))), false);
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
 			.result_document(mydoc)
 			.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
-	    assert_eq!(seq.to_xml(), "content of text node")
+	    assert_eq!(seq.to_xml(), "special character: &lt; less than")
 	}
+	#[test]
+	fn tr_literal_text_2() {
+		let x = Transform::LiteralText(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("special character: < less than"))))), true);
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "special character: < less than")
+	}
+
 	#[test]
 	fn tr_literal_attribute() {
 	    let x = Transform::LiteralElement(

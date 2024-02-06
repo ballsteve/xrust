@@ -33,6 +33,63 @@ macro_rules! xslt_tests (
 	}
 
 	#[test]
+	fn xslt_value_of_1() {
+	    let src = Item::Node(
+		$x("<Test>special &lt; less than</Test>")
+		    .expect("unable to parse source document")
+	    );
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:value-of select='.'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup context
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+		// Add the source document to the context
+		ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+		// Let 'er rip
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_string(), "special &lt; less than")
+	}
+	#[test]
+	fn xslt_value_of_2() {
+	    let src = Item::Node(
+		$x("<Test>special &lt; less than</Test>")
+		    .expect("unable to parse source document")
+	    );
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::*'><xsl:value-of select='.' disable-output-escaping='yes'/></xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup context
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+		// Add the source document to the context
+		ctxt.context(vec![src], 0);
+		ctxt.result_document($y());
+
+		// Let 'er rip
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_string(), "special < less than")
+	}
+
+	#[test]
 	fn xslt_literal_element() {
 	    let src = Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
