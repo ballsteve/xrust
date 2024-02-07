@@ -331,6 +331,10 @@ impl ItemNode for RNode {
         self.value.as_ref().map_or(Rc::new(Value::from("")), |v| v.clone())
     }
 
+    fn get_id(&self) -> String {
+        format!("{:p}", &**self as *const Node)
+    }
+
     fn to_string(&self) -> String {
         match self.node_type() {
             NodeType::Document | NodeType::Element => self

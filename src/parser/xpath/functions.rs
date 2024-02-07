@@ -194,6 +194,19 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         )
                     }
                 }
+                "generate-id" => {
+                    if a.len() == 0 {
+                        Transform::GenerateId(None)
+                    } else if a.len() == 1 {
+                        Transform::GenerateId(Some(Box::new(a.pop().unwrap())))
+                    } else {
+                        // Wrong number of arguments
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
                 "boolean" => {
                     if a.len() == 1 {
                         Transform::Boolean(Box::new(a.pop().unwrap()))

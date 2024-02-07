@@ -383,6 +383,9 @@ pub trait Node: Clone {
     /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
     fn value(&self) -> Rc<Value>;
 
+    /// Get a unique identifier for this node.
+    fn get_id(&self) -> String;
+
     /// Get the string value of the node. See XPath ???
     fn to_string(&self) -> String;
     /// Serialise the node as XML

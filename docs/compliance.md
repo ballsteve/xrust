@@ -530,7 +530,7 @@ Function|Status|Notes
 current|no|
 current-grouping-key|yes|
 current-group|yes|
-generate-id|no|
+generate-id|yes|
 key|no|
 unparsed-entity-uri|no|
 unparsed-entity-public-id|no|
