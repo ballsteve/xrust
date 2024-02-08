@@ -365,6 +365,7 @@ macro_rules! transform_tests (
 		.expect("unable to append child");
 	    u.push(sd.new_text(Rc::new(Value::from("this is the original"))).expect("unable to create text node"))
 		.expect("unable to add text node");
+		eprintln!("test doc: {}", sd.to_xml());
 
 	    let x = Transform::DeepCopy(Box::new(Transform::ContextItem));
 

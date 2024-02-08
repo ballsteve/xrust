@@ -343,13 +343,30 @@ impl ItemNode for RNode {
         Ok(())
     }
     fn shallow_copy(&self) -> Result<Self, Error> {
+        // All new nodes are parentless, i.e. they are unattached to the tree
         match &self.0 {
             NodeInner::Document(x, _, _) => Ok(Rc::new(Node(NodeInner::Document(x.clone(), RefCell::new(vec![]), RefCell::new(vec![]))))),
-            NodeInner::Element(p, qn, _, _) => Ok(Rc::new(Node(NodeInner::Element(p.clone(), qn.clone(), RefCell::new(HashMap::new()), RefCell::new(vec![]))))),
+            NodeInner::Element(p, qn, _, _) => {
+                let new = Rc::new(Node(NodeInner::Element(p.clone(), qn.clone(), RefCell::new(HashMap::new()), RefCell::new(vec![]))));
+                unattached(self, new.clone());
+                Ok(new)
+            },
             NodeInner::Attribute(p, qn, v) => Ok(Rc::new(Node(NodeInner::Attribute(p.clone(), qn.clone(), v.clone())))),
-            NodeInner::Text(p, v) => Ok(Rc::new(Node(NodeInner::Text(p.clone(), v.clone())))),
-            NodeInner::Comment(p, v) => Ok(Rc::new(Node(NodeInner::Comment(p.clone(), v.clone())))),
-            NodeInner::ProcessingInstruction(p, qn, v) => Ok(Rc::new(Node(NodeInner::ProcessingInstruction(p.clone(), qn.clone(), v.clone())))),
+            NodeInner::Text(p, v) => {
+                let new = Rc::new(Node(NodeInner::Text(p.clone(), v.clone())));
+                unattached(&self.parent().unwrap(), new.clone());
+                Ok(new)
+            },
+            NodeInner::Comment(p, v) => {
+                let new = Rc::new(Node(NodeInner::Comment(p.clone(), v.clone())));
+                unattached(&self.parent().unwrap(), new.clone());
+                Ok(new)
+            },
+            NodeInner::ProcessingInstruction(p, qn, v) => {
+                let new = Rc::new(Node(NodeInner::ProcessingInstruction(p.clone(), qn.clone(), v.clone())));
+                unattached(&self.parent().unwrap(), new.clone());
+                Ok(new)
+            },
         }
     }
     fn deep_copy(&self) -> Result<Self, Error> {

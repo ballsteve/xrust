@@ -27,11 +27,11 @@ macro_rules! item_node_tests (
 	fn item_node_name() {
 	    let d = $y(QualifiedName::new(None, None, String::from("Test")), Value::from("foobar"));
 	    match d.child_iter().nth(0) {
-		Some(c) => {
-		    assert_eq!(c.node_type(), NodeType::Element);
-		    assert_eq!(c.name().to_string(), "Test")
-		}
-		None => panic!("no toplevel element")
+			Some(c) => {
+		    	assert_eq!(c.node_type(), NodeType::Element);
+		    	assert_eq!(c.name().to_string(), "Test")
+			}
+			None => panic!("no toplevel element")
 	    }
 	}
 
