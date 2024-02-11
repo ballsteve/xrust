@@ -1,5 +1,6 @@
 mod conformance;
 mod intmuttree;
+mod smite;
 
 //use std::convert::TryFrom;
 //use std::fs;

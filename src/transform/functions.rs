@@ -31,6 +31,31 @@ pub fn tr_count<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     )))])
 }
 
+/// XPath generate-id function.
+pub fn generate_id<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+    s: &Option<Box<Transform<N>>>,
+) -> Result<Sequence<N>, Error> {
+    let i = match s {
+        None => {
+            ctxt.cur[ctxt.i].clone()
+        }
+        Some(t) => {
+            let seq = ctxt.dispatch(stctxt, t)?;
+            match seq.len() {
+                0 => return Ok(vec![Item::Value(Rc::new(Value::from("")))]),
+                1 => seq[0].clone(),
+                _ => return Err(Error::new(ErrorKind::TypeError, String::from("not a singleton sequence"))),
+            }
+        }
+    };
+    match i {
+        Item::Node(n) => Ok(vec![Item::Value(Rc::new(Value::from(n.get_id())))]),
+        _ => Err(Error::new(ErrorKind::TypeError, String::from("not a node")))
+    }
+}
+
 /// A user defined function.
 /// Each argument is declared as a variable in the [Context].
 /// The body of the function is then evaluated and it's result is returned.

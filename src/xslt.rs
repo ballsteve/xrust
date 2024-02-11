@@ -7,23 +7,24 @@ Once the stylesheet has been compiled, it may then be evaluated with an appropri
 NB. This module, by default, does not resolve include or import statements. See the xrust-net crate for a helper module to do that.
 
 ```rust
+use std::rc::Rc;
 use xrust::xdmerror::Error;
 use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
 use xrust::transform::context::StaticContext;
-use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+use xrust::trees::smite::{RNode, Node as SmiteNode};
+use xrust::parser::xml::parse;
 use xrust::xslt::from_document;
 
 // This is for the callback in the static context
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
-// A little helper function that wraps the toplevel node in a Document
+// A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let e = Document::try_from((s, None, None)).expect("failed to parse XML").content[0].clone();
-    let mut d = NodeBuilder::new(NodeType::Document).build();
-    d.push(e).expect("unable to append node");
-    Ok(d)
+    let doc = Rc::new(SmiteNode::new());
+    let e = parse(doc.clone(), s, None, None)?;
+    Ok(doc)
 }
 
 // The source document (a tree)
@@ -51,7 +52,7 @@ let mut ctxt = from_document(
 // Set the source document as the context item
 ctxt.context(vec![src], 0);
 // Make an empty result document
-ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
+ctxt.result_document(Rc::new(SmiteNode::new()));
 
 // Let 'er rip!
 // Evaluate the transformation
@@ -444,7 +445,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                     .replace('\"', "&quot;");
                                 Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
                             }
-                            _ => Result::Err(Error::new(
+                            _ => Err(Error::new(
                                 ErrorKind::TypeError,
                                 "disable-output-escaping only accepts values yes or no."
                                     .to_string(),
@@ -459,6 +460,32 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             .replace('\'', "&apos;")
                             .replace('\"', "&quot;");
                         Ok(Transform::Literal(Item::Value(Rc::new(Value::from(text)))))
+                    }
+                }
+                (Some(XSLTNS), "value-of") => {
+                    let sel = n.get_attribute(&QualifiedName::new(
+                        None,
+                        None,
+                        "select".to_string()
+                    ));
+                    let doe = n.get_attribute(&QualifiedName::new(
+                        None,
+                        None,
+                        "disable-output-escaping".to_string(),
+                    ));
+                    eprintln!("got value-of element - doe=\"{}\"", doe.to_string());
+                    if !doe.to_string().is_empty() {
+                        match &doe.to_string()[..] {
+                            "yes" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), true)),
+                            "no" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), false)),
+                            _ => Err(Error::new(
+                                ErrorKind::TypeError,
+                                "disable-output-escaping only accepts values yes or no."
+                                    .to_string(),
+                            )),
+                        }
+                    } else {
+                        Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), false))
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {

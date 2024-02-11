@@ -10,7 +10,7 @@ NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For 
 
 ```rust
 use std::rc::Rc;
-use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::trees::smite::RNode;
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
@@ -20,19 +20,18 @@ pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Er
 
 
 // A document always has a NodeType::Document node as the toplevel node.
-let mut doc = NodeBuilder::new(NodeType::Document).build();
+let mut doc = Rc::new(Node::new());
 
-let mut top = NodeBuilder::new(NodeType::Element)
-    .name(QualifiedName::new(None, None, String::from("Top-Level")))
-    .build();
+let mut top = doc.new_element(
+    QualifiedName::new(None, None, String::from("Top-Level"))
+).expect("unable to create element node");
 // Nodes are Rc-shared, so it is cheap to clone them
 doc.push(top.clone())
     .expect("unable to append child node");
 
 top.push(
-    NodeBuilder::new(NodeType::Text)
-    .value(Rc::new(Value::from("content of the element")))
-    .build()
+    doc.new_text(Rc::new(Value::from("content of the element")))
+        .expect("unable to create text node")
 ).expect("unable to append child node");
 
 assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
@@ -125,6 +124,11 @@ impl ItemNode for RNode {
             _ => Rc::new(Value::from(String::from(""))),
         }
     }
+
+    fn get_id(&self) -> String {
+        format!("{:#p}", &(**self).0 as *const NodeInner)
+    }
+
     fn to_string(&self) -> String {
         match &self.0 {
             NodeInner::Document(_, c, _) |
@@ -339,13 +343,30 @@ impl ItemNode for RNode {
         Ok(())
     }
     fn shallow_copy(&self) -> Result<Self, Error> {
+        // All new nodes are parentless, i.e. they are unattached to the tree
         match &self.0 {
             NodeInner::Document(x, _, _) => Ok(Rc::new(Node(NodeInner::Document(x.clone(), RefCell::new(vec![]), RefCell::new(vec![]))))),
-            NodeInner::Element(p, qn, _, _) => Ok(Rc::new(Node(NodeInner::Element(p.clone(), qn.clone(), RefCell::new(HashMap::new()), RefCell::new(vec![]))))),
+            NodeInner::Element(p, qn, _, _) => {
+                let new = Rc::new(Node(NodeInner::Element(p.clone(), qn.clone(), RefCell::new(HashMap::new()), RefCell::new(vec![]))));
+                unattached(self, new.clone());
+                Ok(new)
+            },
             NodeInner::Attribute(p, qn, v) => Ok(Rc::new(Node(NodeInner::Attribute(p.clone(), qn.clone(), v.clone())))),
-            NodeInner::Text(p, v) => Ok(Rc::new(Node(NodeInner::Text(p.clone(), v.clone())))),
-            NodeInner::Comment(p, v) => Ok(Rc::new(Node(NodeInner::Comment(p.clone(), v.clone())))),
-            NodeInner::ProcessingInstruction(p, qn, v) => Ok(Rc::new(Node(NodeInner::ProcessingInstruction(p.clone(), qn.clone(), v.clone())))),
+            NodeInner::Text(p, v) => {
+                let new = Rc::new(Node(NodeInner::Text(p.clone(), v.clone())));
+                unattached(&self.parent().unwrap(), new.clone());
+                Ok(new)
+            },
+            NodeInner::Comment(p, v) => {
+                let new = Rc::new(Node(NodeInner::Comment(p.clone(), v.clone())));
+                unattached(&self.parent().unwrap(), new.clone());
+                Ok(new)
+            },
+            NodeInner::ProcessingInstruction(p, qn, v) => {
+                let new = Rc::new(Node(NodeInner::ProcessingInstruction(p.clone(), qn.clone(), v.clone())));
+                unattached(&self.parent().unwrap(), new.clone());
+                Ok(new)
+            },
         }
     }
     fn deep_copy(&self) -> Result<Self, Error> {
@@ -890,4 +911,15 @@ mod tests {
         assert_eq!(root.to_xml(), "<Test><MoreTest></MoreTest></Test>")
     }
 
+    #[test]
+    fn smite_generate_id_1() {
+        let mut root = Rc::new(Node::new());
+        let mut child1 = root.new_element(QualifiedName::new(None, None, String::from("Test")))
+            .expect("unable to create element node");
+        root.push(child1.clone()).expect("unable to add node");
+        let child2 = child1.new_element(QualifiedName::new(None, None, String::from("MoreTest")))
+            .expect("unable to create child element");
+        child1.push(child2.clone()).expect("unable to add node");
+        assert_ne!(child1.get_id(), child2.get_id())
+    }
 }

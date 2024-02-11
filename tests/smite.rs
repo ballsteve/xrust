@@ -18,9 +18,13 @@ fn make_empty_doc() -> RNode {
 }
 
 fn make_doc(n: QualifiedName, v: Value) -> RNode {
-    let d = Rc::new(SmiteNode::new());
-    let child = d.new_element(n).expect("unable to create element");
-    child.new_text(Rc::new(v)).expect("unable to create text node");
+    let mut d = Rc::new(SmiteNode::new());
+    let mut child = d.new_element(n).expect("unable to create element");
+    d.push(child.clone()).expect("unable to add element node");
+    child.push(
+        child.new_text(Rc::new(v))
+            .expect("unable to create text node")
+    ).expect("unable to add text node");
     d
 }
 

@@ -66,6 +66,19 @@ macro_rules! xpath_tests (
 	}
 
 	#[test]
+	fn xpath_generate_id_ctxt() {
+		let ev = parse::<$t>("generate-id()").expect("not an XPath expression");
+	    let rd = $x();
+	    let mut ctxt = ContextBuilder::new()
+		.current(vec![$y()])
+		.result_document(rd)
+		.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
+	    assert_eq!(seq.len(), 1);
+	    assert!(seq.to_string().len() > 0);
+	}
+
+	#[test]
 	fn xpath_parse_union() {
             let e = parse::<$t>("'a' | 'b'").expect("failed to parse expression \"'a' | 'b'\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)

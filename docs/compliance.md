@@ -496,7 +496,7 @@ xsl:template/@mode|no|
 xsl:template/@as|no|
 xsl:template/@visibility|no|
 xsl:text|yes|
-xsl:text/@disable-output-escaping|no|
+xsl:text/@disable-output-escaping|yes|
 xsl:transform|yes|
 xsl:try|no|
 xsl:try/@select|no|
@@ -504,8 +504,8 @@ xsl:try/@rollback-output|no|
 xsl:use-package|no|
 xsl:use-package/@name|no|
 xsl:use-package/@package-version|no|
-xsl:value-of|no|
-xsl:value-of/@select|no|
+xsl:value-of|yes|
+xsl:value-of/@select|yes|
 xsl:value-of/@separator|no|
 xsl:value-of/@disable-output-escaping|no|
 xsl:variable|no|
@@ -530,6 +530,7 @@ Function|Status|Notes
 current|no|
 current-grouping-key|yes|
 current-group|yes|
+generate-id|yes|
 key|no|
 unparsed-entity-uri|no|
 unparsed-entity-public-id|no|

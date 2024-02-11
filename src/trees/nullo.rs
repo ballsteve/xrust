@@ -29,6 +29,7 @@ impl Node for Nullo {
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
+    fn get_id(&self) -> String { String::from("") }
     fn to_string(&self) -> String {
         String::new()
     }

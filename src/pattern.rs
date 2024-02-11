@@ -25,10 +25,10 @@ An [Item] can then be tested to see if it matches the [Pattern]. To do that, it 
 # use xrust::item::{Item, NodeType};
 # use xrust::pattern::Pattern;
 # use xrust::transform::context::{Context, StaticContext};
-# use xrust::trees::intmuttree::{RNode, NodeBuilder};
+# use xrust::trees::smite::{RNode, Node};
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 let p = Pattern::try_from("/").expect("unable to compile pattern");
-let n = Rc::new(Item::Node(NodeBuilder::new(NodeType::Document).build()));
+let n = Item::Node(Rc::new(Node::new()));
 // This pattern matches the root node
 assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), true)
 ```
@@ -39,10 +39,10 @@ assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), true)
 # use xrust::item::{Item, NodeType};
 # use xrust::pattern::Pattern;
 # use xrust::transform::context::{Context, StaticContext};
-# use xrust::trees::intmuttree::{RNode, NodeBuilder};
+# use xrust::trees::smite::{RNode, Node};
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 let p = Pattern::try_from("child::foobar").expect("unable to compile pattern");
-let n = Rc::new(Item::Node(NodeBuilder::new(NodeType::Document).build()));
+let n = Item::Node(Rc::new(Node::new()));
 // This pattern will not match because "n" is not an element named "foobar"
 assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), false)
 ```

@@ -67,6 +67,27 @@ macro_rules! transform_tests (
 	}
 
 	#[test]
+	fn tr_literal_text_1() {
+		let x = Transform::LiteralText(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("special character: < less than"))))), false);
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "special character: &lt; less than")
+	}
+	#[test]
+	fn tr_literal_text_2() {
+		let x = Transform::LiteralText(Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("special character: < less than"))))), true);
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.result_document(mydoc)
+			.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+	    assert_eq!(seq.to_xml(), "special character: < less than")
+	}
+
+	#[test]
 	fn tr_literal_attribute() {
 	    let x = Transform::LiteralElement(
 		QualifiedName::new(None, None, String::from("Test")),
@@ -121,6 +142,50 @@ macro_rules! transform_tests (
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(seq.to_xml(), "<Test><?thepi bar?>content</Test>")
+	}
+	#[test]
+	fn tr_generate_id_ctxt() {
+	    let x = Transform::GenerateId(None);
+	    let sd = $y();
+	    let mut ctxt = ContextBuilder::new()
+			.current(vec![Item::Node(sd)])
+			.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+	    assert!(seq.to_string().len() > 1)
+	}
+	#[test]
+	fn tr_generate_id_2() {
+	    let x1 = Transform::GenerateId(Some(Box::new(Transform::Step(
+		NodeMatch {
+		    axis: Axis::Child,
+		    nodetest: NodeTest::Name(NameTest::new(None, None, Some(WildcardOrName::Name(String::from("Test1")))))
+		}
+	    ))));
+	    let x2 = Transform::GenerateId(Some(Box::new(Transform::Step(
+		NodeMatch {
+		    axis: Axis::Child,
+		    nodetest: NodeTest::Name(NameTest::new(None, None, Some(WildcardOrName::Name(String::from("Test2")))))
+		}
+	    ))));
+	    let mut sd = $y();
+	    let n1 = sd.new_element(QualifiedName::new(None, None, String::from("Test1")))
+			.expect("unable to create element");
+	    sd.push(n1.clone())
+			.expect("unable to append child");
+	    let n2 = sd.new_element(QualifiedName::new(None, None, String::from("Test2")))
+			.expect("unable to create element");
+	    sd.push(n2.clone())
+			.expect("unable to append child");
+	    let mut ctxt = ContextBuilder::new()
+			.current(vec![Item::Node(sd)])
+			.build();
+
+	    let seq1 = ctxt.dispatch(&mut StaticContext::<F>::new(), &x1).expect("evaluation failed");
+	    let seq2 = ctxt.dispatch(&mut StaticContext::<F>::new(), &x2).expect("evaluation failed");
+
+	    assert!(seq1.to_string().len() > 1);
+	    assert!(seq2.to_string().len() > 1);
+		assert_ne!(seq1.to_string(), seq2.to_string())
 	}
 	#[test]
 	fn tr_message_1() {
@@ -300,6 +365,7 @@ macro_rules! transform_tests (
 		.expect("unable to append child");
 	    u.push(sd.new_text(Rc::new(Value::from("this is the original"))).expect("unable to create text node"))
 		.expect("unable to add text node");
+		eprintln!("test doc: {}", sd.to_xml());
 
 	    let x = Transform::DeepCopy(Box::new(Transform::ContextItem));
 
