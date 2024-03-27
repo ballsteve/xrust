@@ -88,9 +88,9 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
                 ErrorKind::ParseError,
                 "Unrecoverable parser error.".to_string(),
             )),
-            ParseError::NotWellFormed => Err(Error::new(
+            ParseError::NotWellFormed(e) => Err(Error::new(
                 ErrorKind::ParseError,
-                "Unrecognised extra characters.".to_string(),
+                format!("Unrecognised extra characters: \"{}\"", e),
             )),
             ParseError::MissingNameSpace => Err(Error::new(
                 ErrorKind::ParseError,
@@ -116,7 +116,7 @@ fn xpath_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform
             if input1.is_empty() {
                 Ok(((input1, state1), e))
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(format!("Unrecognised extra characters: \"{}\"", input1)))
             }
         }
     }

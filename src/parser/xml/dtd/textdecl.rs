@@ -21,7 +21,7 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
         Ok(((input1, state1), (_, _, _, _, v))) => {
             if v == *"1.1" {
                 if state1.xmlversion == "1.0" {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("version mismatch")));
                 }
                 Ok(((input1, state1), v))
             } else if v.starts_with("1.") {

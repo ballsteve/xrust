@@ -32,12 +32,12 @@ pub(crate) fn pereference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseI
                             match extsubsetdecl()((e2.as_str(), tempstate)) {
                                 Ok(((outstr, _), _)) => {
                                     if !outstr.is_empty() {
-                                        Err(ParseError::NotWellFormed)
+                                        Err(ParseError::NotWellFormed(outstr.to_string()))
                                     } else {
                                         Ok(((input1, state1), ()))
                                     }
                                 }
-                                Err(_) => Err(ParseError::NotWellFormed),
+                                Err(_) => Err(ParseError::NotWellFormed(e2)),
                             }
                         }
                     }
@@ -61,7 +61,7 @@ pub(crate) fn petextreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Pa
             Ok(((input1, state1), entitykey)) => {
                 match state1.currentlyexternal {
                     /* Are we in an external DTD? Param entities not allowed anywhere else. */
-                    false => Err(ParseError::NotWellFormed),
+                    false => Err(ParseError::NotWellFormed(String::from("parameter entity not allowed outside of external DTD"))),
                     true => {
                         match state1.clone().dtd.paramentities.get(&entitykey as &str) {
                             Some((entval, _)) => {

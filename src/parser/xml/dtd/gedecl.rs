@@ -41,7 +41,7 @@ pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
             deal with later, after that we just store the entity as a string and parse again when called.
              */
             if !state2.currentlyexternal && s.contains('%') {
-                return Err(ParseError::NotWellFormed);
+                return Err(ParseError::NotWellFormed(s));
             }
 
             let entityparse = map(
@@ -71,7 +71,7 @@ pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
                     if !state2.currentlyexternal {
                         match intsubset()((res.as_str(), state2.clone())) {
                             Ok(_) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed),
+                            Err(_) => return Err(ParseError::NotWellFormed(res)),
                         }
                     };
 

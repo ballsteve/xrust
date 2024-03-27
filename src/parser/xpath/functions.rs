@@ -68,6 +68,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 ns: None,
                 prefix: None,
             }) => match localpart.as_str() {
+                "current" => Transform::CurrentItem,
                 "position" => Transform::Position,
                 "last" => Transform::Last,
                 "count" => {

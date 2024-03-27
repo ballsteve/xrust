@@ -67,9 +67,9 @@ pub fn parse<N: Node>(
                     ErrorKind::ParseError,
                     "Missing namespace declaration.".to_string(),
                 )),
-                ParseError::NotWellFormed => Err(Error::new(
+                ParseError::NotWellFormed(s) => Err(Error::new(
                     ErrorKind::ParseError,
-                    "XML document not well formed.".to_string(),
+                    format!("XML document not well formed at \"{}\".", s),
                 )),
                 ParseError::ExtDTDLoadError => Err(Error::new(
                     ErrorKind::ParseError,
@@ -104,7 +104,7 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
                 }
                 Ok(((input1, state1.clone()), state1.doc.clone().unwrap().clone()))
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(format!("unexpected extra characters: \"{}\"", input1)))
             }
         }
     }

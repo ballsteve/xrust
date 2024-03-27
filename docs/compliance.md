@@ -527,7 +527,7 @@ xsl:with-param/@tunnel|no|
 
 Function|Status|Notes
 -------|-----|-----
-current|no|
+current|yes|
 current-grouping-key|yes|
 current-group|yes|
 generate-id|yes|

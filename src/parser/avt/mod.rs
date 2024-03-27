@@ -27,9 +27,9 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
                 ErrorKind::ParseError,
                 "Unrecoverable parser error.".to_string(),
             )),
-            ParseError::NotWellFormed => Result::Err(Error::new(
+            ParseError::NotWellFormed(e) => Result::Err(Error::new(
                 ErrorKind::ParseError,
-                "Unrecognised extra characters.".to_string(),
+                format!("Unrecognised extra characters: \"{}\"", e),
             )),
             ParseError::Notimplemented => Result::Err(Error::new(
                 ErrorKind::ParseError,
@@ -48,7 +48,7 @@ fn avt_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N
             if input1.is_empty() {
                 Ok(((input1, state1), e))
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(format!("unexpected extra characters: \"{}\"", input1)))
             }
         }
     }
@@ -91,7 +91,7 @@ fn braced_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(Parse
             None => Err(ParseError::Combinator),
             Some(ind) => match expr()((input.get(1..ind).unwrap(), state.clone())) {
                 Ok((_, result)) => Ok(((input.get(ind..).map_or("", |r| r), state), result)),
-                Err(_) => Err(ParseError::NotWellFormed),
+                Err(e) => Err(e),
             },
         },
         _ => Err(ParseError::Combinator),

@@ -72,7 +72,7 @@ fn parse_hex<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, u32)
     move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
         Ok((input1, hex)) => match u32::from_str_radix(&hex, 16) {
             Ok(r) => Ok((input1, r)),
-            Err(_) => Err(ParseError::NotWellFormed),
+            Err(_) => Err(ParseError::NotWellFormed(hex)),
         },
         Err(e) => Err(e),
     }
@@ -81,7 +81,7 @@ fn parse_decimal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, 
     move |input| match take_while(|c: char| c.is_ascii_digit())(input) {
         Ok((input1, dec)) => match u32::from_str(&dec) {
             Ok(r) => Ok((input1, r)),
-            Err(_) => Err(ParseError::NotWellFormed),
+            Err(_) => Err(ParseError::NotWellFormed(dec)),
         },
         Err(e) => Err(e),
     }

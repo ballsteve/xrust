@@ -422,6 +422,36 @@ macro_rules! xslt_tests (
 	    assert_eq!(seq.to_xml(), "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour")
 	}
 
+	#[test]
+	fn xslt_fn_current() {
+	    let src = Item::Node(
+		$x("<Test ref='one'><second name='foo'>I am foo</second><second name='one'>I am one</second></Test>")
+		    .expect("unable to parse source document")
+	    );
+
+	    let style = $x("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'>
+    <xsl:sequence select='child::*/child::second[attribute::name eq current()/attribute::ref]'/>
+  </xsl:template>
+</xsl:stylesheet>").expect("unable to parse stylesheet");
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![src.clone()], 0);
+		ctxt.previous_context(src);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_xml(), "<second>I am one</second>")
+	}
+
 /*
 	#[test]
 	fn import_1() {

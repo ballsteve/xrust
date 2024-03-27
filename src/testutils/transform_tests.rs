@@ -1,3 +1,4 @@
+use crate::Transform;
 #[macro_export]
 macro_rules! transform_tests (
     ( $x:ty, $y:expr, $z:expr ) => {
@@ -349,6 +350,31 @@ macro_rules! transform_tests (
 	    assert_eq!(seq.len(), 1);
 	    assert_eq!(seq.to_xml(), "<Test>this is the copy</Test>");
 	    assert_eq!(sd.to_xml(), "<Test>this is the original</Test>")
+	}
+
+	#[test]
+	fn tr_current_node() {
+	    // Setup a source document
+	    let mut sd = $y();
+	    let mut n = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(n.clone())
+		.expect("unable to append child");
+	    n.push(sd.new_text(Rc::new(Value::from("this is the original"))).expect("unable to create text node"))
+		.expect("unable to add text node");
+
+	    let x = Transform::CurrentItem;
+
+	    let mut mydoc = $y();
+	    let mut ctxt = ContextBuilder::new()
+		.result_document(mydoc)
+		.current(vec![Item::Node(n.clone())])
+		.previous_context(Item::Node(n.clone()))
+		.build();
+	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
+
+	    assert_eq!(seq.len(), 1);
+	    assert_eq!(seq.to_xml(), "<Test>this is the original</Test>")
 	}
 
 	#[test]

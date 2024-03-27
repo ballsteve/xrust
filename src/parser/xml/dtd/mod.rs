@@ -59,11 +59,11 @@ pub(crate) fn doctypedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseI
             for (k, (v, _)) in state1.clone().dtd.generalentities {
                 if v != *"<" {
                     /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
-                    if let Err(ParseError::NotWellFormed) = reference()((
+                    if let Err(ParseError::NotWellFormed(v)) = reference()((
                         ["&".to_string(), k, ";".to_string()].join("").as_str(),
                         state1.clone(),
                     )) {
-                        return Err(ParseError::NotWellFormed);
+                        return Err(ParseError::NotWellFormed(v));
                     }
                 }
             }

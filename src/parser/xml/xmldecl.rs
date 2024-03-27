@@ -30,7 +30,7 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
                     Err(ParseError::Notimplemented)
                 }
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(v))
             }
         }
         Err(err) => Err(err),

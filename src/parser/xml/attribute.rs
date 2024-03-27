@@ -27,28 +27,28 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseIn
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     && (node.name().get_localname() == *"xmlns")
                 {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("cannot redefine namespace")));
                 }
                 //xml prefix must always be set to http://www.w3.org/XML/1998/namespace
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     && (node.name().get_localname() == *"xml")
                     && (node.to_string() != *"http://www.w3.org/XML/1998/namespace")
                 {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("xml namespace URI must be http://www.w3.org/XML/1998/namespace")));
                 }
                 // http://www.w3.org/XML/1998/namespace must always be bound to xml
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     && (node.name().get_localname() != *"xml")
                     && (node.to_string() == *"http://www.w3.org/XML/1998/namespace")
                 {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("XML namespace must be bound to xml prefix")));
                 }
                 // http://www.w3.org/2000/xmlns/ must always be bound to xmlns
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
                     && (node.name().get_localname() != *"xmlns")
                     && (node.to_string() == *"http://www.w3.org/2000/xmlns/")
                 {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("XMLNS namespace must be bound to xmlns prefix")));
                 }
                 // Default namespace cannot be http://www.w3.org/XML/1998/namespace
                 // Default namespace cannot be http://www.w3.org/2000/xmlns/
@@ -57,7 +57,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseIn
                     && (node.to_string() == *"http://www.w3.org/XML/1998/namespace"
                         || node.to_string() == *"http://www.w3.org/2000/xmlns/")
                 {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("invalid default namespace")));
                 }
 
                 // XML 1.0 documents cannot redefine an alias to ""
@@ -66,7 +66,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseIn
                     && (node.to_string() == *"")
                     && state1.xmlversion == *"1.0"
                 {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("cannot redefine alias to empty")));
                 }
 
                 if (node.name().get_prefix() == Some("xmlns".to_string()))
@@ -112,7 +112,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseIn
                     if resnodenames
                         .contains(&(node.name().get_nsuri(), node.name().get_localname()))
                     {
-                        return Err(ParseError::NotWellFormed);
+                        return Err(ParseError::NotWellFormed(String::from("missing namespace")));
                     } else {
                         resnodenames.push((node.name().get_nsuri(), node.name().get_localname()));
                         resnodes.push(node);
@@ -188,11 +188,11 @@ fn attribute_value<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>
                     .to_string();
                 //NEL character cannot be in attributes.
                 if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
-                    Err(ParseError::NotWellFormed)
+                    Err(ParseError::NotWellFormed(r))
                 } else if r.find(|c| !is_char10(&c)).is_some() {
-                    Err(ParseError::NotWellFormed)
+                    Err(ParseError::NotWellFormed(r))
                 } else if r.contains('\u{0085}') {
-                    Err(ParseError::NotWellFormed)
+                    Err(ParseError::NotWellFormed(r))
                 } else {
                     Ok(((input1, state1), r))
                 }

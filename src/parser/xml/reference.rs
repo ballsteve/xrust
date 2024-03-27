@@ -63,12 +63,12 @@ pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
                                     match content()((e2.as_str(), tempstate)) {
                                         Ok(((outstr, _), nodes)) => {
                                             if outstr != "<" {
-                                                Err(ParseError::NotWellFormed)
+                                                Err(ParseError::NotWellFormed(outstr.to_string()))
                                             } else {
                                                 Ok(((input1, state1), nodes))
                                             }
                                         }
-                                        Err(_) => Err(ParseError::NotWellFormed),
+                                        Err(_) => Err(ParseError::NotWellFormed(e2)),
                                     }
                                 }
                             }
@@ -120,12 +120,12 @@ pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
                                                                     match content()((e2.as_str(), tempstate)) {
                                                                         Ok(((outstr, _), nodes)) => {
                                                                             if outstr != "<" {
-                                                                                Err(ParseError::NotWellFormed)
+                                                                                Err(ParseError::NotWellFormed(outstr.to_string()))
                                                                             } else {
                                                                                 Ok(((input1, state2), nodes))
                                                                             }
                                                                         }
-                                                                        Err(_) => Err(ParseError::NotWellFormed),
+                                                                        Err(_) => Err(ParseError::NotWellFormed(e2)),
                                                                     }
                                                                 }
                                                             }
@@ -190,19 +190,19 @@ pub(crate) fn textreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Pars
                                     match content()((e2.as_str(), tempstate)) {
                                         Ok(((outstr, _), nodes)) => {
                                             if outstr != "<" {
-                                                Err(ParseError::NotWellFormed)
+                                                Err(ParseError::NotWellFormed(outstr.to_string()))
                                             } else {
                                                 let mut res = vec![];
                                                 for rn in nodes {
                                                     match rn.node_type() {
                                                         NodeType::Text => res.push(rn.to_string()),
-                                                        _ => return Err(ParseError::NotWellFormed),
+                                                        _ => return Err(ParseError::NotWellFormed(String::from("not a text node"))),
                                                     }
                                                 }
                                                 Ok(((input1, state1), res.concat()))
                                             }
                                         }
-                                        Err(_) => Err(ParseError::NotWellFormed),
+                                        Err(_) => Err(ParseError::NotWellFormed(e2)),
                                     }
                                 }
                             }

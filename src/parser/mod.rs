@@ -22,7 +22,7 @@ pub type ParseInput<'a, N: Node> = (&'a str, ParserState<N>);
 #[allow(type_alias_bounds)]
 pub type ParseResult<'a, N: Node, Output> = Result<(ParseInput<'a, N>, Output), ParseError>;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ParseError {
     // The "Combinator" error just means a parser hasn't matched, its not serious necessarily.
     // Every other error should get returned.
@@ -37,7 +37,8 @@ pub enum ParseError {
     //Unknown { row: usize, col: usize },
     MissingNameSpace,
     IncorrectArguments,
-    NotWellFormed,
+    // An unexpected character has been encountered
+    NotWellFormed(String),
     Unbalanced,
     Notimplemented,
     ExtDTDLoadError,

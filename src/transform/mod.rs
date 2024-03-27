@@ -67,6 +67,8 @@ pub enum Transform<N: Node> {
     Root,
     /// Produces a copy of the context item.
     ContextItem,
+    /// Produces a copy of the current item (see XSLT 20.4.1).
+    CurrentItem,
 
     /// A path in a tree. Each element of the outer vector is a step in the path.
     /// The result of each step becomes the new context for the next step.
@@ -242,6 +244,7 @@ impl<N: Node> fmt::Display for Transform<N> {
         match self {
             Transform::Root => write!(f, "root node"),
             Transform::ContextItem => write!(f, "context item"),
+            Transform::CurrentItem => write!(f, "current item"),
             Transform::SequenceItems(v) => write!(f, "Sequence of {} items", v.len()),
             Transform::Compose(v) => write!(f, "Compose {} steps", v.len()),
             Transform::Step(nm) => write!(f, "Step matching {}", nm),

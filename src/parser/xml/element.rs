@@ -58,7 +58,7 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                                         && nsuri.is_empty()
                                         && state1.xmlversion == "1.1"
                                     {
-                                        return Err(ParseError::NotWellFormed);
+                                        return Err(ParseError::NotWellFormed(String::from("namespace alias is empty")));
                                     }
                                     ens = Some(nsuri.clone())
                                 }

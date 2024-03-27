@@ -66,7 +66,8 @@ pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             let mut result: Sequence<N> = Vec::new();
             for i in ctxt.dispatch(stctxt, s)? {
                 let mut v = ContextBuilder::from(ctxt)
-                    .current(vec![i])
+                    .current(vec![i.clone()])
+                    .previous_context(i)
                     .build()
                     .dispatch(stctxt, body)?;
                 result.append(&mut v);
@@ -97,6 +98,7 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         // For each one, add this item into the group for that key
         ContextBuilder::from(ctxt)
             .current(vec![i.clone()])
+            .previous_context(i.clone())
             .build()
             .dispatch(stctxt, &t)?
             .iter()
@@ -149,6 +151,7 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         sel.iter().skip(1).try_for_each(|i| {
             let thiskey = ContextBuilder::from(ctxt)
                 .current(vec![i.clone()])
+                .previous_context(i.clone())
                 .build()
                 .dispatch(stctxt, &t)?;
             if thiskey.len() == 1 {

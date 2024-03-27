@@ -47,17 +47,35 @@ pub(crate) fn context<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> 
 
 /// Each transform in the supplied vector is evaluated.
 /// The sequence returned by a transform is used as the context for the next transform.
+/// See also XSLT 20.4.1 for how the current item is set.
 pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
-    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
-        ContextBuilder::from(ctxt)
-            .current(seq)
-            .build()
-            .dispatch(stctxt, t)
-    })
+    let mut context = ctxt.cur.clone();
+    let mut current = ctxt.cur.clone();
+    let mut it = steps.iter();
+    loop {
+        if let Some(t) = it.next() {
+            let new = ContextBuilder::from(ctxt)
+                .current(context.clone())
+                .previous_context(current[ctxt.i].clone())
+                .build()
+                .dispatch(stctxt, t)?;
+            current = context.clone();
+            context = new;
+        } else {
+            break
+        }
+    }
+    Ok(context)
+//    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
+//        ContextBuilder::from(ctxt)
+//            .current(seq)
+//            .build()
+//            .dispatch(stctxt, t)
+//    })
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
@@ -278,6 +296,7 @@ pub(crate) fn filter<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
         if ContextBuilder::from(ctxt)
             .current(vec![i.clone()])
+            .previous_context(i.clone())
             .build()
             .dispatch(stctxt, predicate)?
             .to_bool()

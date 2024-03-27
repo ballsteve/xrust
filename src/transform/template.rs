@@ -127,6 +127,7 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
             let mut u = ContextBuilder::from(ctxt)
                 .current(vec![i.clone()])
+                .previous_context(i.clone())
                 .current_templates(templates)
                 .build()
                 .dispatch(stctxt, &matching.body)?;

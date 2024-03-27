@@ -8,7 +8,7 @@ where
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
-        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
             match parser2((input, state)) {
                 Ok(parse_result2) => Ok(parse_result2),
                 Err(err) => Err(err),
@@ -30,10 +30,10 @@ where
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
-        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
             match parser2((input, state.clone())) {
                 Ok(parse_result2) => Ok(parse_result2),
-                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
                     match parser3((input, state)) {
                         Ok(parse_result3) => Ok(parse_result3),
                         Err(err) => Err(err),
@@ -60,13 +60,13 @@ where
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
-        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
             match parser2((input, state.clone())) {
                 Ok(parse_result2) => Ok(parse_result2),
-                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
                     match parser3((input, state.clone())) {
                         Ok(parse_result3) => Ok(parse_result3),
-                        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+                        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
                             match parser4((input, state)) {
                                 Ok(parse_result4) => Ok(parse_result4),
                                 Err(err) => Err(err),
@@ -98,16 +98,16 @@ where
 {
     move |(input, state)| match parser1((input, state.clone())) {
         Ok(parse_result) => Ok(parse_result),
-        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
             match parser2((input, state.clone())) {
                 Ok(parse_result2) => Ok(parse_result2),
-                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
                     match parser3((input, state.clone())) {
                         Ok(parse_result3) => Ok(parse_result3),
-                        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+                        Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
                             match parser4((input, state.clone())) {
                                 Ok(parse_result4) => Ok(parse_result4),
-                                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed) => {
+                                Err(ParseError::Combinator) | Err(ParseError::NotWellFormed(_)) => {
                                     match parser5((input, state)) {
                                         Ok(parse_result5) => Ok(parse_result5),
                                         Err(err) => Err(err),

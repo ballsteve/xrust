@@ -21,7 +21,7 @@ use crate::transform::datetime::*;
 use crate::transform::functions::*;
 use crate::transform::grouping::*;
 use crate::transform::logic::*;
-use crate::transform::misc::message;
+use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
@@ -45,6 +45,7 @@ use url::Url;
 pub struct Context<N: Node> {
     pub(crate) cur: Sequence<N>, // The current context
     pub(crate) i: usize,         // The index to the item that is the current context item
+    pub(crate) previous_context: Option<Item<N>>,   // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
     pub(crate) depth: usize,     // Depth of evaluation
     pub(crate) rd: Option<N>,    // Result document
     // There is no distinction between built-in and user-defined templates
@@ -66,6 +67,7 @@ impl<N: Node> Context<N> {
         Context {
             cur: Sequence::new(),
             i: 0,
+            previous_context: None,
             depth: 0,
             rd: None,
             templates: vec![],
@@ -81,6 +83,10 @@ impl<N: Node> Context<N> {
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
         self.cur = s;
         self.i = i;
+    }
+    /// Sets the "current" item.
+    pub fn previous_context(&mut self, i: Item<N>) {
+        self.previous_context = Some(i);
     }
     /// Sets the result document. Any nodes created by the transformation are owned by this document.
     pub fn result_document(&mut self, rd: N) {
@@ -124,7 +130,8 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext};
-    /// use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
     /// // This is necessary since there is no callback defined for the static context
@@ -132,11 +139,9 @@ impl<N: Node> Context<N> {
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let e = Document::try_from((s, None, None))
-    ///     .expect("failed to parse XML")
-    ///     .content[0].clone();
-    ///   let mut d = NodeBuilder::new(NodeType::Document).build();
-    ///   d.push(e).expect("unable to append node");
+    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   parse(d.clone(), s, None, None)
+    ///     .expect("failed to parse XML");
     ///   d
     /// }
     ///
@@ -237,18 +242,17 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext};
-    /// use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::parser::xml::parse;
     ///
     /// // This is necessary since there is no callback defined for the static context
     /// type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let e = Document::try_from((s, None, None))
-    ///     .expect("failed to parse XML")
-    ///     .content[0].clone();
-    ///   let mut d = NodeBuilder::new(NodeType::Document).build();
-    ///   d.push(e).expect("unable to append node");
+    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   parse(d.clone(), s, None, None)
+    ///     .expect("failed to parse XML");
     ///   d
     /// }
     ///
@@ -269,6 +273,7 @@ impl<N: Node> Context<N> {
         match t {
             Transform::Root => root(self),
             Transform::ContextItem => context(self),
+            Transform::CurrentItem => current(self),
             Transform::Compose(v) => compose(self, stctxt, v),
             Transform::Step(nm) => step(self, nm),
             Transform::Filter(t) => filter(self, stctxt, t),
@@ -355,6 +360,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
         Context {
             cur: value,
             i: 0,
+            previous_context: None,
             depth: 0,
             rd: None,
             templates: vec![],
@@ -381,6 +387,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn index(mut self, i: usize) -> Self {
         self.0.i = i;
+        self
+    }
+    pub fn previous_context(mut self, i: Item<N>) -> Self {
+        self.0.previous_context = Some(i);
         self
     }
     pub fn depth(mut self, d: usize) -> Self {
@@ -434,13 +444,14 @@ impl<N: Node> ContextBuilder<N> {
     }
 }
 
+/// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
 impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
     fn from(c: &Context<N>) -> Self {
-        ContextBuilder(c.clone())
+        ContextBuilder(c.clone()).previous_context(c.cur[c.i].clone())
     }
 }
 
-/// The static context. This is not clonable, since it includes the storage of a closure.
+/// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
 pub struct StaticContext<F>
@@ -466,7 +477,7 @@ where
 /// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
 /// use xrust::item::{Item, Sequence, SequenceTrait, NodeType};
-/// use xrust::trees::intmuttree::NodeBuilder;
+/// use xrust::trees::smite::{RNode, Node};
 /// use xrust::transform::Transform;
 /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 ///
@@ -484,7 +495,7 @@ where
 ///   ]))
 /// );
 /// let mut context = ContextBuilder::new()
-///	.result_document(NodeBuilder::new(NodeType::Document).build())
+///	.result_document(Rc::new(Node::new()))
 ///	.build();
 /// let mut static_context = StaticContextBuilder::new()
 ///	.message(|m| {message = String::from(m); Ok(())})
