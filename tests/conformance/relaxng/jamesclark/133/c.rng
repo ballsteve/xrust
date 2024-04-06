@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <div ns="http://www.example.com">
+    <div>
+      <start>
+        <ref name="foo"/>
+      </start>
+    </div>
+    <define name="foo">
+      <element name="foo">
+        <empty/>
+      </element>
+    </define>
+  </div>
+  <div/>
+</grammar>

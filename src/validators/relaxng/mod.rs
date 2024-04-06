@@ -4,13 +4,18 @@ mod pattern;
 use crate::Node;
 use crate::qname::QualifiedName;
 use crate::trees::smite::RNode;
+use crate::validators::relaxng::pattern::Pattern;
 use crate::validators::ValidationError;
 
 pub fn validate_relaxng(doc: &RNode, schema: &RNode) -> Result<(), ValidationError>  {
-    let schemapattern = pattern::Pattern::new(schema);
-    let d = derive::derive(doc,schemapattern);
-    println!("d-{:?}", &d);
-    println!("pn-{:?}", d.is_nullable());
+
+
+    //let schemapattern = Ok(Pattern::Empty);
+    let schemapattern = pattern::patternmaker(schema.clone());
+    println!("schemapattern-{:?}", schemapattern);
+    let d = derive::derive(doc,schemapattern.unwrap());
+    println!("d-{:?}", d);
+    println!("d2-{:?}", d.is_nullable());
     Ok(())
 }
 

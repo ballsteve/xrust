@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<element xmlns:n1="http://www.example.com/1" xmlns="http://relaxng.org/ns/structure/1.0" name="n1:foo">
+  <attribute name="a0"/>
+  <attribute name="n1:a1"/>
+  <attribute name="a2" ns="http://www.example.com/2"/>
+  <attribute name="a3" ns="http://www.example.com/3"/>
+  <attribute name="a4" ns="http://www.example.com/3"/>
+</element>

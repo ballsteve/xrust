@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<r:element xmlns:r="http://relaxng.org/ns/structure/1.0" name="foo" r:a="val">
+  <r:empty/>
+</r:element>

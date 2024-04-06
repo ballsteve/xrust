@@ -14,7 +14,7 @@ fn contains(nc: NameClass, qn: QualifiedName) -> bool {
         (NameClass::AnyNameExcept(n), q) => !contains(*n, q),
         (NameClass::NSName(nsuri), q ) => Some(nsuri)==q.get_nsuri(),
         (NameClass::NSNameExcept(ns1, n), q) => (Some(ns1) ==q.get_nsuri()) && !contains(*n, q),
-        (NameClass::Name(ns1, ln1), q) => (Some(ns1) == q.get_nsuri()) && (ln1 ==q.get_localname()),
+        (NameClass::Name(ns1, ln1), q) => (ns1 == q.get_nsuri()) && (ln1 ==q.get_localname()),
         (NameClass::NameClassChoice(nc1, nc2), q) => contains(*nc1,q.clone()) || contains(*nc2, q)
     }
 }
@@ -22,6 +22,7 @@ fn contains(nc: NameClass, qn: QualifiedName) -> bool {
 
 
 fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
+    println!("cn-{:?}", cn.node_type());
     match cn.node_type(){
         NodeType::Document => {Pattern::NotAllowed}
         NodeType::Attribute => {Pattern::NotAllowed}
@@ -36,17 +37,22 @@ fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
         NodeType::Element => {
             //opening deriv
             let mut pat1 = startTagOpenDeriv(pat, cn.name());
-            println!("p1={:?}", &pat1);
+            println!("pat-stod-{:?}",pat1);
             //attsDeriv
             for attribute in cn.attribute_iter() {
-                pat1 = attDeriv(pat1, attribute)
+                pat1 = attDeriv(pat1, attribute);
+                println!("pat-attr-{:?}",pat1);
             }
             //CloseTag
             pat1 = startTagCloseDeriv(pat1);
+            println!("pat-stcd-{:?}",pat1);
             //Children
             pat1 = childrenDeriv(pat1, cn.clone());
+            println!("pat-child-{:?}",pat1);
             //EndTagDeriv
-            endTagDeriv(pat1)
+            pat1 = endTagDeriv(pat1);
+            println!("pat-etd-{:?}",pat1);
+            pat1
         }
 
     }
@@ -67,7 +73,7 @@ fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
 }
 
 fn startTagOpenDeriv(p: Pattern, q: QualifiedName) -> Pattern {
-    println!("sto-p={:?}", &p);
+    println!("eee2-{:?}--{:?}", p, q);
     match p {
         Pattern::Choice(p1, p2) => {
             choice(
@@ -76,6 +82,9 @@ fn startTagOpenDeriv(p: Pattern, q: QualifiedName) -> Pattern {
             )
         }
         Pattern::Element(nc, p1) => {
+            println!("eee-{:?}--{:?}", nc, p1);
+            println!("eee4-{:?}--{:?}", nc.clone(), q.clone());
+            println!("eee3-{:?}", contains(nc.clone(), q.clone()));
             if contains(nc, q) {
                 after(*p1, Pattern::Empty)
             } else {

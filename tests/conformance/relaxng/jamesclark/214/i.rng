@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+  <start>
+    <choice>
+      <element name="foo">
+        <empty/>
+      </element>
+      <group>
+        <notAllowed/>
+        <ref name="bar"/>
+      </group>
+    </choice>
+  </start>
+  <define name="bar">
+    <element name="bar">
+      <empty/>
+    </element>
+    <optional>
+      <ref name="bar"/>
+    </optional>
+  </define>
+</grammar>
