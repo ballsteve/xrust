@@ -1,3 +1,5 @@
+mod jamesclark;
+
 use std::fs;
 use std::rc::Rc;
 use xrust::Node;
@@ -22,9 +24,10 @@ fn rngtestone(){
     let _ = xml::parse(doc.clone(), d, None, None);
 
     let sch = Rc::new(SmiteNode::new());
-    let schemadoc = xml::parse(sch.clone(), s, None, None);
+    let _ = xml::parse(sch.clone(), s, None, None);
 
 
-    let result = validate_relaxng(&doc, &schemadoc.unwrap());
+    let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
 }
+

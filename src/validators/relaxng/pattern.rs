@@ -68,15 +68,12 @@ impl Pattern{
 }
 
 pub(crate) fn patternmaker(n: RNode) -> Result<Pattern, PatternError<'static>>{
-    println!("n-{:?}",n);
-
     //let _ =
     match n.node_type(){
         NodeType::Document => {
             patternmaker(n.child_iter().next().unwrap())
         }
         NodeType::Element => {
-            println!("NE-{:?}", n.name());
             if n.name().get_nsuri() != Some("http://relaxng.org/ns/structure/1.0".to_string()) {
                 Err(PatternError::NotRelaxNG)
             } else {

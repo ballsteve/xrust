@@ -22,7 +22,6 @@ fn contains(nc: NameClass, qn: QualifiedName) -> bool {
 
 
 fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
-    println!("cn-{:?}", cn.node_type());
     match cn.node_type(){
         NodeType::Document => {Pattern::NotAllowed}
         NodeType::Attribute => {Pattern::NotAllowed}
@@ -37,21 +36,16 @@ fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
         NodeType::Element => {
             //opening deriv
             let mut pat1 = startTagOpenDeriv(pat, cn.name());
-            println!("pat-stod-{:?}",pat1);
             //attsDeriv
             for attribute in cn.attribute_iter() {
                 pat1 = attDeriv(pat1, attribute);
-                println!("pat-attr-{:?}",pat1);
             }
             //CloseTag
             pat1 = startTagCloseDeriv(pat1);
-            println!("pat-stcd-{:?}",pat1);
             //Children
             pat1 = childrenDeriv(pat1, cn.clone());
-            println!("pat-child-{:?}",pat1);
             //EndTagDeriv
             pat1 = endTagDeriv(pat1);
-            println!("pat-etd-{:?}",pat1);
             pat1
         }
 
@@ -73,7 +67,6 @@ fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
 }
 
 fn startTagOpenDeriv(p: Pattern, q: QualifiedName) -> Pattern {
-    println!("eee2-{:?}--{:?}", p, q);
     match p {
         Pattern::Choice(p1, p2) => {
             choice(
@@ -82,9 +75,6 @@ fn startTagOpenDeriv(p: Pattern, q: QualifiedName) -> Pattern {
             )
         }
         Pattern::Element(nc, p1) => {
-            println!("eee-{:?}--{:?}", nc, p1);
-            println!("eee4-{:?}--{:?}", nc.clone(), q.clone());
-            println!("eee3-{:?}", contains(nc.clone(), q.clone()));
             if contains(nc, q) {
                 after(*p1, Pattern::Empty)
             } else {

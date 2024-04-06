@@ -16,7 +16,12 @@ pub fn validate_relaxng(doc: &RNode, schema: &RNode) -> Result<(), ValidationErr
     let d = derive::derive(doc,schemapattern.unwrap());
     println!("d-{:?}", d);
     println!("d2-{:?}", d.is_nullable());
-    Ok(())
+
+    if d.is_nullable(){
+        Ok(())
+    } else {
+        Err(ValidationError::DocumentError("Some Error".to_string()))
+    }
 }
 
 /*
