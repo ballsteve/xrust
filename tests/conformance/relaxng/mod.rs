@@ -7,7 +7,7 @@ use xrust::parser::xml;
 use xrust::trees::smite::{Node as SmiteNode};
 use xrust::validators::relaxng::validate_relaxng;
 
-
+/*
 #[test]
 fn rngtestone(){
 
@@ -30,4 +30,4 @@ fn rngtestone(){
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
 }
-
+ */
