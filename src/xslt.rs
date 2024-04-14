@@ -473,7 +473,6 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         None,
                         "disable-output-escaping".to_string(),
                     ));
-                    eprintln!("got value-of element - doe=\"{}\"", doe.to_string());
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
                             "yes" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), true)),

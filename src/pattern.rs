@@ -99,7 +99,7 @@ impl<N: Node> Pattern<N> {
     ) -> bool {
         match self {
             Pattern::Predicate(t) => ContextBuilder::from(ctxt)
-                .current(vec![i.clone()])
+                .context(vec![i.clone()])
                 .build()
                 .dispatch(stctxt, t)
                 .unwrap_or(vec![Item::Value(Rc::new(Value::from(false)))])

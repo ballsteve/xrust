@@ -101,7 +101,6 @@ pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     t: &Transform<N>,
     b: &bool,
 ) -> Result<Sequence<N>, Error> {
-    eprintln!("literal text");
     if ctxt.rd.is_none() {
         return Err(Error::new(
             ErrorKind::Unknown,
@@ -110,12 +109,9 @@ pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     }
 
     let v = ctxt.dispatch(stctxt, t)?.to_string();
-    eprintln!("literal text has value \"{}\"", v);
     if *b {
-        eprintln!("output escaping is disabled");
         Ok(vec![Item::Node(ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v)))?)])
     } else {
-        eprintln!("output escaping is enabled");
         Ok(vec![Item::Node(ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v
             .replace('&', "&amp;")
             .replace('>', "&gt;")

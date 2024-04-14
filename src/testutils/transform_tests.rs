@@ -149,7 +149,7 @@ macro_rules! transform_tests (
 	    let x = Transform::GenerateId(None);
 	    let sd = $y();
 	    let mut ctxt = ContextBuilder::new()
-			.current(vec![Item::Node(sd)])
+			.context(vec![Item::Node(sd)])
 			.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert!(seq.to_string().len() > 1)
@@ -178,7 +178,7 @@ macro_rules! transform_tests (
 	    sd.push(n2.clone())
 			.expect("unable to append child");
 	    let mut ctxt = ContextBuilder::new()
-			.current(vec![Item::Node(sd)])
+			.context(vec![Item::Node(sd)])
 			.build();
 
 	    let seq1 = ctxt.dispatch(&mut StaticContext::<F>::new(), &x1).expect("evaluation failed");
@@ -295,7 +295,7 @@ macro_rules! transform_tests (
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
-		.current(vec![Item::Node(n)])
+		.context(vec![Item::Node(n)])
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 	    assert_eq!(sd.to_xml(), "<Test foo='bar'></Test>")
@@ -317,7 +317,7 @@ macro_rules! transform_tests (
 			Box::new(Transform::<$x>::Empty)
 	    );
 	    let seq = ContextBuilder::new()
-		    .current(vec![Item::<$x>::Value(Rc::new(Value::from("this is the original")))])
+		    .context(vec![Item::<$x>::Value(Rc::new(Value::from("this is the original")))])
 		    .build()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
@@ -343,7 +343,7 @@ macro_rules! transform_tests (
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
-		.current(vec![Item::Node(n)])
+		.context(vec![Item::Node(n)])
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
@@ -368,7 +368,7 @@ macro_rules! transform_tests (
 	    let mut mydoc = $y();
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
-		.current(vec![Item::Node(n.clone())])
+		.context(vec![Item::Node(n.clone())])
 		.previous_context(Item::Node(n.clone()))
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
@@ -391,12 +391,11 @@ macro_rules! transform_tests (
 		.expect("unable to append child");
 	    u.push(sd.new_text(Rc::new(Value::from("this is the original"))).expect("unable to create text node"))
 		.expect("unable to add text node");
-		eprintln!("test doc: {}", sd.to_xml());
 
 	    let x = Transform::DeepCopy(Box::new(Transform::ContextItem));
 
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![Item::Node(n)])
+		.context(vec![Item::Node(n)])
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
@@ -1911,7 +1910,7 @@ macro_rules! transform_tests (
 	    );
 
 	    let seq = ContextBuilder::new()
-			 .current(vec![Item::Node(sd)])
+			 .context(vec![Item::Node(sd)])
 			 .build()
 		.dispatch(&mut StaticContext::<F>::new(), &x)
 	    .expect("evaluation failed");
@@ -2023,7 +2022,7 @@ macro_rules! transform_tests (
 		    None,
 		    None,
 		))
-		.current(vec![Item::Node(sd)])
+		.context(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2089,7 +2088,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Item::Node(sd)])
+		.context(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2156,7 +2155,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Item::Node(sd)])
+		.context(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2237,7 +2236,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Item::Node(sd)])
+		.context(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2320,7 +2319,7 @@ macro_rules! transform_tests (
 		    None, // document order
 		    None, // mode
 		))
-		.current(vec![Item::Node(sd)])
+		.context(vec![Item::Node(sd)])
 		.build();
 
 	    // Now Evaluate the combinator with the source document root node as the context item
@@ -2336,7 +2335,7 @@ macro_rules! transform_tests (
 
 	    let x = Transform::Position;
 	    let seq = ContextBuilder::new()
-		    .current(vec![
+		    .context(vec![
 			Item::<$x>::Value(Rc::new(Value::from("one"))),
 			Item::<$x>::Value(Rc::new(Value::from("two"))),
 			Item::<$x>::Value(Rc::new(Value::from("three"))),
@@ -2357,7 +2356,7 @@ macro_rules! transform_tests (
 
 	    let x = Transform::Last;
 	    let seq = ContextBuilder::new()
-		    .current(vec![
+		    .context(vec![
 			Item::<$x>::Value(Rc::new(Value::from("one"))),
 			Item::<$x>::Value(Rc::new(Value::from("two"))),
 			Item::<$x>::Value(Rc::new(Value::from("three"))),
@@ -2377,7 +2376,7 @@ macro_rules! transform_tests (
 
 	    let x = Transform::Count(Box::new(Transform::Empty));
 	    let seq = ContextBuilder::new()
-		    .current(vec![
+		    .context(vec![
 			Item::<$x>::Value(Rc::new(Value::from("one"))),
 			Item::<$x>::Value(Rc::new(Value::from("two"))),
 			Item::<$x>::Value(Rc::new(Value::from("three"))),
@@ -2400,7 +2399,7 @@ macro_rules! transform_tests (
 		    Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("foo")))),
 		])));
 	    let seq = ContextBuilder::new()
-		    .current(vec![
+		    .context(vec![
 			Item::<$x>::Value(Rc::new(Value::from("one"))),
 			Item::<$x>::Value(Rc::new(Value::from("two"))),
 			Item::<$x>::Value(Rc::new(Value::from("three"))),

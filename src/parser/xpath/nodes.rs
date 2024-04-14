@@ -14,6 +14,7 @@ use crate::parser::{ParseError, ParseInput};
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::expressions::postfix_expr;
 use crate::parser::xpath::nodetests::nodetest;
+use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::types::instanceof_expr;
 use crate::transform::{Axis, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
@@ -146,6 +147,7 @@ fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<
     ))
 }
 
+// StepExpr ::= PostfixExpr | AxisStep
 fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt2(postfix_expr::<N>(), axisstep::<N>()))
 }
@@ -153,12 +155,18 @@ fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseIn
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
 fn axisstep<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
-        pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
-        |(a, n)| {
-            Transform::Step(NodeMatch {
-                axis: Axis::from(a),
-                nodetest: n,
-            })
+        pair(
+            pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
+            predicate_list()
+        ),
+        |((a, n), pl)| {
+            Transform::Compose(vec![
+                Transform::Step(NodeMatch {
+                    axis: Axis::from(a),
+                    nodetest: n,
+                }),
+                pl
+            ])
         },
     ))
 }

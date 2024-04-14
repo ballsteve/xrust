@@ -15,7 +15,7 @@ macro_rules! xpath_tests (
 		let ev = parse::<$t>("child::a").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![$y()])
+		.context(vec![$y()])
 		.result_document(rd)
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
@@ -28,7 +28,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 		let sd = $y();
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![sd])
+		.context(vec![sd])
 		.result_document(rd)
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
@@ -39,7 +39,7 @@ macro_rules! xpath_tests (
 		let ev = parse::<$t>("/child::b").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![$y()])
+		.context(vec![$y()])
 		.result_document(rd)
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
@@ -58,7 +58,7 @@ macro_rules! xpath_tests (
             let ev = parse::<$t>("/child::a/child::b").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![$y()])
+		.context(vec![$y()])
 		.result_document(rd)
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
@@ -70,7 +70,7 @@ macro_rules! xpath_tests (
 		let ev = parse::<$t>("generate-id()").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
-		.current(vec![$y()])
+		.context(vec![$y()])
 		.result_document(rd)
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
@@ -287,7 +287,7 @@ macro_rules! xpath_tests (
 		.expect("failed to parse expression \".\"");
 	    let rd = $x();
 	    let s = ContextBuilder::new()
-		      .current(vec![Item::Value(Rc::new(Value::from("foobar")))])
+		      .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
 		      .result_document(rd)
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
@@ -320,7 +320,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = ContextBuilder::new()
 		      .result_document(rd.clone())
-		      .current(vec![$y()])
+		      .context(vec![$y()])
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -340,7 +340,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
-		      .current(vec![$y()])
+		      .context(vec![$y()])
 	    	      .build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -368,7 +368,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
-		      .current(vec![$y()])
+		      .context(vec![$y()])
 		      .build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -390,7 +390,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
-		      .current(vec![$y()])
+		      .context(vec![$y()])
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -413,7 +413,7 @@ macro_rules! xpath_tests (
 		let sd = $y();
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
-		      .current(vec![sd])
+		      .context(vec![sd])
 		      .build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -435,7 +435,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 	    let s = ContextBuilder::new()
 		      .result_document(rd)
-		      .current(vec![$y()])
+		      .context(vec![$y()])
 		      .build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -457,7 +457,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 		let s = ContextBuilder::new()
 			.result_document(rd)
-			.current(vec![$y()])
+			.context(vec![$y()])
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -479,7 +479,7 @@ macro_rules! xpath_tests (
 	    let rd = $x();
 		let s = ContextBuilder::new()
 			.result_document(rd)
-			.current(vec![$y()])
+			.context(vec![$y()])
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -497,11 +497,11 @@ macro_rules! xpath_tests (
 	#[test]
 	fn xpath_step_2() {
 	    let e = parse::<$t>("child::bc")
-		.expect("failed to parse expression \"child::bc\"");
+			.expect("failed to parse expression \"child::bc\"");
 	    let rd = $x();
 		let s = ContextBuilder::new()
 			.result_document(rd)
-			.current(vec![$y()])
+			.context(vec![$y()])
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -510,11 +510,11 @@ macro_rules! xpath_tests (
 	#[test]
 	fn xpath_step_wild_1() {
 	    let e = parse::<$t>("child::*")
-		.expect("failed to parse expression \"child::*\"");
+			.expect("failed to parse expression \"child::*\"");
 	    let rd = $x();
 		let s = ContextBuilder::new()
 			.result_document(rd)
-			.current(vec![$y()])
+			.context(vec![$y()])
 			.build()
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
@@ -540,7 +540,7 @@ macro_rules! xpath_tests (
 				let l = c.descend_iter().last().unwrap();
 				let s = ContextBuilder::new()
 					.result_document(rd)
-					.current(vec![Item::Node(l)])
+					.context(vec![Item::Node(l)])
 					.build()
 					.dispatch(&mut StaticContext::<F>::new(), &e)
 					.expect("evaluation failed");
@@ -559,6 +559,49 @@ macro_rules! xpath_tests (
 			.dispatch(&mut StaticContext::<F>::new(), &e)
 			.expect("evaluation failed");
 	    assert_eq!(s.to_string(), "abc")
+	}
+	#[test]
+	#[should_panic]
+	fn xpath_fncall_current_1() {
+	    let mut e = parse::<$t>("current()")
+		.expect("failed to parse expression \"current()\"");
+	    let s = Context::new()
+			.dispatch(&mut StaticContext::<F>::new(), &e)
+			.expect("evaluation failed");
+	    assert_eq!(s.to_string(), "")
+	}
+	#[test]
+	fn xpath_fncall_current_2() {
+	    let mut e = parse::<$t>("current()/child::a")
+			.expect("failed to parse expression \"current()/child::a\"");
+		let rd = $x();
+	    let s = ContextBuilder::new()
+			.result_document(rd)
+			.context(vec![$y()])
+			.build()
+			.dispatch(&mut StaticContext::<F>::new(), &e)
+			.expect("evaluation failed");
+	    assert_eq!(s.len(), 1)
+	}
+	#[test]
+	fn xpath_fncall_current_3() {
+	    let mut e = parse::<$t>("current()/child::a")
+			.expect("failed to parse expression \"current()/child::a\"");
+		let sd = $y();
+		if let Item::Node(ref doc) = sd {
+			let top = doc.child_iter().nth(0).unwrap();
+			let rd = $x();
+	    	let s = ContextBuilder::new()
+				.result_document(rd)
+				.context(vec![Item::Node(top)])
+				.previous_context(sd)
+				.build()
+				.dispatch(&mut StaticContext::<F>::new(), &e)
+				.expect("evaluation failed");
+	    	assert_eq!(s.len(), 1)
+		} else {
+			panic!("not a node")
+		}
 	}
 	#[test]
 	fn xpath_fncall_concat() {
@@ -921,7 +964,7 @@ macro_rules! xpath_tests (
 				let l = c.descend_iter().last().unwrap();
 	    	    let s = ContextBuilder::new()
 		      		.result_document(rd)
-		      		.current(vec![Item::Node(l)])
+		      		.context(vec![Item::Node(l)])
 		      		.build()
 					.dispatch(&mut StaticContext::<F>::new(), &e)
 					.expect("evaluation failed");

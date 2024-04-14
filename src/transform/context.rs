@@ -381,7 +381,7 @@ impl<N: Node> ContextBuilder<N> {
     pub fn new() -> Self {
         ContextBuilder(Context::new())
     }
-    pub fn current(mut self, s: Sequence<N>) -> Self {
+    pub fn context(mut self, s: Sequence<N>) -> Self {
         self.0.cur = s;
         self
     }

@@ -54,16 +54,21 @@ pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut context = ctxt.cur.clone();
-    let mut current = ctxt.cur.clone();
+    let mut current = ctxt.previous_context.clone();
     let mut it = steps.iter();
     loop {
         if let Some(t) = it.next() {
+            // previous context is the last step's context.
+            // If the initial previous context is None, then the current context is also the previous context (XSLT 20.4.1)
             let new = ContextBuilder::from(ctxt)
-                .current(context.clone())
-                .previous_context(current[ctxt.i].clone())
+                .context(context.clone())
+                .previous_context(current.map_or(
+                    context[ctxt.i].clone(),
+                    |c| c.clone()
+                ))
                 .build()
                 .dispatch(stctxt, t)?;
-            current = context.clone();
+            current = Some(context[ctxt.i].clone());
             context = new;
         } else {
             break
@@ -295,7 +300,7 @@ pub(crate) fn filter<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 ) -> Result<Sequence<N>, Error> {
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
         if ContextBuilder::from(ctxt)
-            .current(vec![i.clone()])
+            .context(vec![i.clone()])
             .previous_context(i.clone())
             .build()
             .dispatch(stctxt, predicate)?
