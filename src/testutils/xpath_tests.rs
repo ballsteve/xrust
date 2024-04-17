@@ -594,7 +594,7 @@ macro_rules! xpath_tests (
 	    	let s = ContextBuilder::new()
 				.result_document(rd)
 				.context(vec![Item::Node(top)])
-				.previous_context(sd)
+				.previous_context(Some(sd))
 				.build()
 				.dispatch(&mut StaticContext::<F>::new(), &e)
 				.expect("evaluation failed");

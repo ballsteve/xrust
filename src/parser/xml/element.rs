@@ -1,4 +1,3 @@
-use std::rc::Rc;
 use crate::item::{Node, NodeType};
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;
@@ -16,9 +15,11 @@ use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::value::Value;
+use std::rc::Rc;
 
 // Element ::= EmptyElemTag | STag content ETag
-pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
+pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
+{
     move |input| alt2(emptyelem(), taggedelem())(input)
 }
 
@@ -58,7 +59,9 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                                         && nsuri.is_empty()
                                         && state1.xmlversion == "1.1"
                                     {
-                                        return Err(ParseError::NotWellFormed(String::from("namespace alias is empty")));
+                                        return Err(ParseError::NotWellFormed(String::from(
+                                            "namespace alias is empty",
+                                        )));
                                     }
                                     ens = Some(nsuri.clone())
                                 }
@@ -66,7 +69,10 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                         }
                     }
                 };
-                let e = state1.doc.clone().unwrap()
+                let e = state1
+                    .doc
+                    .clone()
+                    .unwrap()
                     .new_element(QualifiedName::new(ens, n.get_prefix(), n.get_localname()))
                     .expect("unable to create element");
                 av.iter()
@@ -127,7 +133,10 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                         }
                     }
                 };
-                let mut e = state1.doc.clone().unwrap()
+                let mut e = state1
+                    .doc
+                    .clone()
+                    .unwrap()
                     .new_element(QualifiedName::new(ens, n.get_prefix(), n.get_localname()))
                     .expect("unable to create element");
                 av.iter()
@@ -143,58 +152,66 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
 }
 
 // content ::= CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
-pub(crate) fn content<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
-    move |(input, state)| {
-        match tuple2(
-                opt(chardata()),
-                many0(tuple2(
-                    alt4(
-                        map(processing_instruction(), |e| vec![e]),
-                        map(comment(), |e| vec![e]),
-                        map(element(), |e| vec![e]),
-                        reference(),
-                    ),
-                    opt(chardata()),
-                )),
-            )((input, state.clone())) {
-            Ok((state1, (c, v))) =>             {
-                let mut new: Vec<N> = Vec::new();
-                let mut notex: Vec<String> = Vec::new();
-                if let Some(..) = c {
-                    notex.push(c.unwrap());
-                }
-                if !v.is_empty() {
-                    for (w, d) in v {
-                        for x in w {
-                            match x.node_type() {
-                                NodeType::Text => notex.push(x.to_string()),
-                                _ => {
-                                    if !notex.is_empty() {
-                                        new.push(
-                                            state.doc.clone().unwrap().new_text(Rc::new(Value::String(notex.concat())))
-                                                .expect("unable to create text node"),
-                                        );
-                                        notex.clear();
-                                    }
-                                    new.push(x);
+pub(crate) fn content<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+    move |(input, state)| match tuple2(
+        opt(chardata()),
+        many0(tuple2(
+            alt4(
+                map(processing_instruction(), |e| vec![e]),
+                map(comment(), |e| vec![e]),
+                map(element(), |e| vec![e]),
+                reference(),
+            ),
+            opt(chardata()),
+        )),
+    )((input, state.clone()))
+    {
+        Ok((state1, (c, v))) => {
+            let mut new: Vec<N> = Vec::new();
+            let mut notex: Vec<String> = Vec::new();
+            if let Some(..) = c {
+                notex.push(c.unwrap());
+            }
+            if !v.is_empty() {
+                for (w, d) in v {
+                    for x in w {
+                        match x.node_type() {
+                            NodeType::Text => notex.push(x.to_string()),
+                            _ => {
+                                if !notex.is_empty() {
+                                    new.push(
+                                        state
+                                            .doc
+                                            .clone()
+                                            .unwrap()
+                                            .new_text(Rc::new(Value::String(notex.concat())))
+                                            .expect("unable to create text node"),
+                                    );
+                                    notex.clear();
                                 }
+                                new.push(x);
                             }
                         }
-                        if let Some(..) = d {
-                            notex.push(d.unwrap())
-                        }
+                    }
+                    if let Some(..) = d {
+                        notex.push(d.unwrap())
                     }
                 }
-                if !notex.is_empty() {
-                    new.push(
-                        state.doc.clone().unwrap().new_text(Rc::new(Value::String(notex.concat())))
-                            .expect("unable to create text node")
-                    );
-                }
-                Ok((state1, new))
-            },
-
-            Err(e) => Err(e),
+            }
+            if !notex.is_empty() {
+                new.push(
+                    state
+                        .doc
+                        .clone()
+                        .unwrap()
+                        .new_text(Rc::new(Value::String(notex.concat())))
+                        .expect("unable to create text node"),
+                );
+            }
+            Ok((state1, new))
         }
+
+        Err(e) => Err(e),
     }
 }

@@ -43,11 +43,11 @@ use url::Url;
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
-    pub(crate) cur: Sequence<N>, // The current context
-    pub(crate) i: usize,         // The index to the item that is the current context item
-    pub(crate) previous_context: Option<Item<N>>,   // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
-    pub(crate) depth: usize,     // Depth of evaluation
-    pub(crate) rd: Option<N>,    // Result document
+    pub(crate) cur: Sequence<N>,                  // The current context
+    pub(crate) i: usize, // The index to the item that is the current context item
+    pub(crate) previous_context: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
+    pub(crate) depth: usize,                      // Depth of evaluation
+    pub(crate) rd: Option<N>,                     // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
@@ -389,8 +389,8 @@ impl<N: Node> ContextBuilder<N> {
         self.0.i = i;
         self
     }
-    pub fn previous_context(mut self, i: Item<N>) -> Self {
-        self.0.previous_context = Some(i);
+    pub fn previous_context(mut self, i: Option<Item<N>>) -> Self {
+        self.0.previous_context = i;
         self
     }
     pub fn depth(mut self, d: usize) -> Self {
@@ -447,7 +447,11 @@ impl<N: Node> ContextBuilder<N> {
 /// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
 impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
     fn from(c: &Context<N>) -> Self {
-        ContextBuilder(c.clone()).previous_context(c.cur[c.i].clone())
+        if c.cur.len() > c.i {
+            ContextBuilder(c.clone()).previous_context(Some(c.cur[c.i].clone()))
+        } else {
+            ContextBuilder(c.clone()).previous_context(None)
+        }
     }
 }
 

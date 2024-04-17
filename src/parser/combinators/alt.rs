@@ -1,7 +1,10 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
 
-pub fn alt2<P1, P2, A, N: Node>(parser1: P1, parser2: P2) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>
+pub fn alt2<P1, P2, A, N: Node>(
+    parser1: P1,
+    parser2: P2,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>
 where
     P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>,
     P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError>,

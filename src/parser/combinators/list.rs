@@ -1,7 +1,10 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
 
-pub fn separated_list0<P1, P2, R1, N: Node>(sep: P1, f: P2) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R1>), ParseError>
+pub fn separated_list0<P1, P2, R1, N: Node>(
+    sep: P1,
+    f: P2,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R1>), ParseError>
 where
     P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>,
     P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
@@ -142,7 +145,10 @@ mod tests {
         );
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None, None)), vec!["1", "2", "3", "4"])),
+            Ok((
+                ("", ParserState::new(None, None, None)),
+                vec!["1", "2", "3", "4"]
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -174,7 +180,10 @@ mod tests {
         );
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None, None)), vec!["1", "2", "3", "4"])),
+            Ok((
+                ("", ParserState::new(None, None, None)),
+                vec!["1", "2", "3", "4"]
+            )),
             parse_doc((testdoc, teststate))
         );
     }

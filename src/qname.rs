@@ -2,12 +2,12 @@
 
 use crate::parser::xml::qname::qualname;
 use crate::parser::ParserState;
+use crate::trees::nullo::Nullo;
 use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::trees::nullo::Nullo;
 
 #[derive(Clone, Debug)]
 pub struct QualifiedName {

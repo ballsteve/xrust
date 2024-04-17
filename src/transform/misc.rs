@@ -12,7 +12,10 @@ pub fn current<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
     if ctxt.previous_context.is_some() {
         Ok(vec![ctxt.previous_context.as_ref().unwrap().clone()])
     } else {
-        Err(Error::new(ErrorKind::DynamicAbsent, String::from("current item missing")))
+        Err(Error::new(
+            ErrorKind::DynamicAbsent,
+            String::from("current item missing"),
+        ))
     }
 }
 

@@ -1,7 +1,9 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn opt<P1, R1, N: Node>(parser1: P1) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Option<R1>), ParseError>
+pub(crate) fn opt<P1, R1, N: Node>(
+    parser1: P1,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Option<R1>), ParseError>
 where
     P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
 {

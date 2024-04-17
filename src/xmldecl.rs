@@ -1,10 +1,10 @@
 /*! Defines common features of XML documents.
  */
 
+use crate::qname::QualifiedName;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
-use crate::qname::QualifiedName;
 
 #[derive(Clone, PartialEq)]
 pub struct XMLDecl {

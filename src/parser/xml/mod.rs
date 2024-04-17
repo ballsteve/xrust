@@ -8,6 +8,8 @@ mod reference;
 mod strings;
 mod xmldecl;
 
+use crate::externals::URLResolver;
+use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tuple::{tuple3, tuple4};
@@ -17,8 +19,6 @@ use crate::parser::xml::misc::misc;
 use crate::parser::xml::xmldecl::xmldecl;
 use crate::parser::{ParseError, ParseInput, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::externals::URLResolver;
-use crate::item::Node;
 use crate::xmldecl::XMLDecl;
 
 // For backward compatibility
@@ -79,10 +79,7 @@ pub fn parse<N: Node>(
                     ErrorKind::ParseError,
                     "Unimplemented feature.".to_string(),
                 )),
-                _ => Err(Error::new(
-                    ErrorKind::Unknown,
-                    "Unknown error.".to_string(),
-                )),
+                _ => Err(Error::new(ErrorKind::Unknown, "Unknown error.".to_string())),
             }
         }
     }
@@ -96,22 +93,48 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
             if input1.is_empty() {
                 let pr = p.unwrap_or((None, vec![]));
 
-                pr.1.iter().for_each(|n| state1.doc.clone().unwrap().push(n.clone()).expect("unable to add node"));
-                state1.doc.clone().unwrap().push(e).expect("unable to add node");
-                m.unwrap_or_default().iter().for_each(|n| state1.doc.clone().unwrap().push(n.clone()).expect("unable to add node"));
+                pr.1.iter().for_each(|n| {
+                    state1
+                        .doc
+                        .clone()
+                        .unwrap()
+                        .push(n.clone())
+                        .expect("unable to add node")
+                });
+                state1
+                    .doc
+                    .clone()
+                    .unwrap()
+                    .push(e)
+                    .expect("unable to add node");
+                m.unwrap_or_default().iter().for_each(|n| {
+                    state1
+                        .doc
+                        .clone()
+                        .unwrap()
+                        .push(n.clone())
+                        .expect("unable to add node")
+                });
                 if let Some(x) = pr.0 {
                     let _ = state1.doc.clone().unwrap().set_xmldecl(x);
                 }
-                Ok(((input1, state1.clone()), state1.doc.clone().unwrap().clone()))
+                Ok((
+                    (input1, state1.clone()),
+                    state1.doc.clone().unwrap().clone(),
+                ))
             } else {
-                Err(ParseError::NotWellFormed(format!("unexpected extra characters: \"{}\"", input1)))
+                Err(ParseError::NotWellFormed(format!(
+                    "unexpected extra characters: \"{}\"",
+                    input1
+                )))
             }
         }
     }
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
-fn prolog<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Option<XMLDecl>, Vec<N>)), ParseError> {
+fn prolog<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Option<XMLDecl>, Vec<N>)), ParseError> {
     map(
         tuple4(opt(xmldecl()), misc(), opt(doctypedecl()), misc()),
         |(xmld, mut m1, _dtd, mut m2)| {

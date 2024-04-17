@@ -1,13 +1,13 @@
 use xrust::item::{Node, NodeType};
+use xrust::item_node_tests;
+use xrust::item_value_tests;
+use xrust::parser::xml::parse as xmlparse;
+use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
-use xrust::xdmerror::{Error, ErrorKind};
-use xrust::trees::smite::{Node as SmiteNode, RNode};
-use xrust::parser::xml::parse as xmlparse;
-use xrust::item_value_tests;
-use xrust::item_node_tests;
-use xrust::pattern_tests;
 use xrust::transform_tests;
+use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xpath_tests;
 use xrust::xslt_tests;
 
@@ -21,10 +21,13 @@ fn make_doc(n: QualifiedName, v: Value) -> RNode {
     let mut d = Rc::new(SmiteNode::new());
     let mut child = d.new_element(n).expect("unable to create element");
     d.push(child.clone()).expect("unable to add element node");
-    child.push(
-        child.new_text(Rc::new(v))
-            .expect("unable to create text node")
-    ).expect("unable to add text node");
+    child
+        .push(
+            child
+                .new_text(Rc::new(v))
+                .expect("unable to create text node"),
+        )
+        .expect("unable to add text node");
     d
 }
 
@@ -41,9 +44,7 @@ fn make_sd() -> Item<RNode> {
 
 fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = Rc::new(SmiteNode::new());
-    xmlparse(doc.clone(),
-             s,
-             None, None)?;
+    xmlparse(doc.clone(), s, None, None)?;
     Ok(doc)
 }
 

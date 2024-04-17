@@ -38,13 +38,13 @@ top.push(
 assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 */
 
+use crate::externals::URLResolver;
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
+use crate::parser::xml::parse;
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
-use crate::externals::URLResolver;
-use crate::parser::xml::parse;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::hash_map::IntoIter;
@@ -173,9 +173,7 @@ impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
     fn try_from(s: (String, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
         let doc = NodeBuilder::new(NodeType::Document).build();
         parse(doc.clone(), s.0.as_str(), s.1, s.2)?;
-        let result = DocumentBuilder::new()
-            .content(vec![doc])
-            .build();
+        let result = DocumentBuilder::new().content(vec![doc]).build();
         Ok(result)
     }
 }
@@ -184,9 +182,7 @@ impl TryFrom<(&str, Option<URLResolver>, Option<String>)> for Document {
     fn try_from(s: (&str, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
         let doc = NodeBuilder::new(NodeType::Document).build();
         parse(doc.clone(), s.0, s.1, s.2)?;
-        let result = DocumentBuilder::new()
-            .content(vec![doc])
-            .build();
+        let result = DocumentBuilder::new().content(vec![doc]).build();
         Ok(result)
     }
 }
@@ -328,7 +324,9 @@ impl ItemNode for RNode {
             .map_or(QualifiedName::new(None, None, String::new()), |n| n.clone())
     }
     fn value(&self) -> Rc<Value> {
-        self.value.as_ref().map_or(Rc::new(Value::from("")), |v| v.clone())
+        self.value
+            .as_ref()
+            .map_or(Rc::new(Value::from("")), |v| v.clone())
     }
 
     fn get_id(&self) -> String {
@@ -429,7 +427,9 @@ impl ItemNode for RNode {
         self.attributes
             .borrow()
             .get(a)
-            .map_or(Rc::new(Value::from("")), |v| v.value.as_ref().unwrap().clone())
+            .map_or(Rc::new(Value::from("")), |v| {
+                v.value.as_ref().unwrap().clone()
+            })
     }
 
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
@@ -457,7 +457,10 @@ impl ItemNode for RNode {
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {
         if n.node_type() == NodeType::Document {
-            return Err(Error::new(ErrorKind::TypeError, String::from("document type nodes cannot be inserted into a tree")))
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("document type nodes cannot be inserted into a tree"),
+            ));
         }
         *n.parent.borrow_mut() = Some(Rc::downgrade(self));
         self.children.borrow_mut().push(n);
@@ -497,7 +500,10 @@ impl ItemNode for RNode {
     /// Insert a node into the child list immediately before this node.
     fn insert_before(&mut self, mut insert: Self) -> Result<(), Error> {
         if insert.node_type() == NodeType::Document {
-            return Err(Error::new(ErrorKind::TypeError, String::from("document type nodes cannot be inserted into a tree")))
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("document type nodes cannot be inserted into a tree"),
+            ));
         }
 
         // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
@@ -585,7 +591,10 @@ impl ItemNode for RNode {
         crate::xmldecl::XMLDeclBuilder::new().build()
     }
     fn set_xmldecl(&mut self, _: crate::xmldecl::XMLDecl) -> Result<(), Error> {
-        Err(Error::new(ErrorKind::NotImplemented, String::from("not implemented")))
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
     }
 }
 

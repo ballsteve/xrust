@@ -1,11 +1,12 @@
+use crate::item::Node;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubsetdecl;
 use crate::parser::{ParseError, ParseInput};
-use crate::item::Node;
 
-pub(crate) fn pereference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn pereference<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -53,7 +54,8 @@ pub(crate) fn pereference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseI
     }
 }
 
-pub(crate) fn petextreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn petextreference<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -61,7 +63,9 @@ pub(crate) fn petextreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Pa
             Ok(((input1, state1), entitykey)) => {
                 match state1.currentlyexternal {
                     /* Are we in an external DTD? Param entities not allowed anywhere else. */
-                    false => Err(ParseError::NotWellFormed(String::from("parameter entity not allowed outside of external DTD"))),
+                    false => Err(ParseError::NotWellFormed(String::from(
+                        "parameter entity not allowed outside of external DTD",
+                    ))),
                     true => {
                         match state1.clone().dtd.paramentities.get(&entitykey as &str) {
                             Some((entval, _)) => {

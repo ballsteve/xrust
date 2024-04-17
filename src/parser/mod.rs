@@ -4,10 +4,10 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
-use crate::xmldecl::DTD;
 use crate::externals::URLResolver;
-use crate::xdmerror::{Error, ErrorKind};
 use crate::item::Node;
+use crate::xdmerror::{Error, ErrorKind};
+use crate::xmldecl::DTD;
 use std::collections::HashMap;
 use std::fmt;
 

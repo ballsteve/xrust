@@ -463,11 +463,8 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     }
                 }
                 (Some(XSLTNS), "value-of") => {
-                    let sel = n.get_attribute(&QualifiedName::new(
-                        None,
-                        None,
-                        "select".to_string()
-                    ));
+                    let sel =
+                        n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     let doe = n.get_attribute(&QualifiedName::new(
                         None,
                         None,
@@ -475,8 +472,14 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     ));
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), true)),
-                            "no" => Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), false)),
+                            "yes" => Ok(Transform::LiteralText(
+                                Box::new(parse::<N>(&sel.to_string())?),
+                                true,
+                            )),
+                            "no" => Ok(Transform::LiteralText(
+                                Box::new(parse::<N>(&sel.to_string())?),
+                                false,
+                            )),
                             _ => Err(Error::new(
                                 ErrorKind::TypeError,
                                 "disable-output-escaping only accepts values yes or no."
@@ -484,7 +487,10 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             )),
                         }
                     } else {
-                        Ok(Transform::LiteralText(Box::new(parse::<N>(&sel.to_string())?), false))
+                        Ok(Transform::LiteralText(
+                            Box::new(parse::<N>(&sel.to_string())?),
+                            false,
+                        ))
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {

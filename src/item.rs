@@ -12,11 +12,11 @@ use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
+use crate::xmldecl::XMLDecl;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use crate::xmldecl::XMLDecl;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -283,7 +283,9 @@ impl<N: Node> Item<N> {
                 Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
                 _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
-            Item::Node(..) => other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op),
+            Item::Node(..) => {
+                other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op)
+            }
             _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
     }
@@ -353,9 +355,10 @@ impl<N: Node> fmt::Debug for Item<N> {
             Item::Node(n) => {
                 write!(
                     f,
-                    "node type item (node type {}, name \"{}\")",
-                    n.node_type().to_string(),
-                    n.name()
+                    "node type item ({:?})",
+                    n //                    "node type item (node type {}, name \"{}\")",
+                      //                    n.node_type().to_string(),
+                      //                    n.name()
                 )
             }
             Item::Function => {
@@ -373,7 +376,7 @@ impl<N: Node> fmt::Debug for Item<N> {
 /// Some nodes have names, such as elements. Some nodes have values, such as text or comments. Some have both a name and a value, such as attributes and processing instructions.
 ///
 /// Element nodes have children and attributes.
-pub trait Node: Clone {
+pub trait Node: Clone + fmt::Debug {
     type NodeIterator: Iterator<Item = Self>;
 
     /// Get the type of the node

@@ -38,21 +38,24 @@ pub fn generate_id<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let i = match s {
-        None => {
-            ctxt.cur[ctxt.i].clone()
-        }
+        None => ctxt.cur[ctxt.i].clone(),
         Some(t) => {
             let seq = ctxt.dispatch(stctxt, t)?;
             match seq.len() {
                 0 => return Ok(vec![Item::Value(Rc::new(Value::from("")))]),
                 1 => seq[0].clone(),
-                _ => return Err(Error::new(ErrorKind::TypeError, String::from("not a singleton sequence"))),
+                _ => {
+                    return Err(Error::new(
+                        ErrorKind::TypeError,
+                        String::from("not a singleton sequence"),
+                    ))
+                }
             }
         }
     };
     match i {
         Item::Node(n) => Ok(vec![Item::Value(Rc::new(Value::from(n.get_id())))]),
-        _ => Err(Error::new(ErrorKind::TypeError, String::from("not a node")))
+        _ => Err(Error::new(ErrorKind::TypeError, String::from("not a node"))),
     }
 }
 

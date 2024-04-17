@@ -17,14 +17,12 @@ pub(crate) fn root<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
         // TODO: check all context items.
         // If any of them is not a Node then error.
         match &ctxt.cur[0] {
-            Item::Node(n) => {
-                match n.node_type() {
-                    NodeType::Document => Ok(vec![Item::Node(n.clone())]),
-                    _ => n
-                        .ancestor_iter()
-                        .last()
-                        .map_or(Ok(vec![]), |m| Ok(vec![Item::Node(m)])),
-                }
+            Item::Node(n) => match n.node_type() {
+                NodeType::Document => Ok(vec![Item::Node(n.clone())]),
+                _ => n
+                    .ancestor_iter()
+                    .last()
+                    .map_or(Ok(vec![]), |m| Ok(vec![Item::Node(m)])),
             },
             _ => Err(Error::new(
                 ErrorKind::ContextNotNode,
@@ -54,7 +52,16 @@ pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut context = ctxt.cur.clone();
-    let mut current = ctxt.previous_context.clone();
+    let mut current;
+    if ctxt.previous_context.is_none() {
+        if ctxt.cur.is_empty() {
+            current = None
+        } else {
+            current = Some(context[ctxt.i].clone())
+        }
+    } else {
+        current = ctxt.previous_context.clone()
+    }
     let mut it = steps.iter();
     loop {
         if let Some(t) = it.next() {
@@ -62,25 +69,26 @@ pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             // If the initial previous context is None, then the current context is also the previous context (XSLT 20.4.1)
             let new = ContextBuilder::from(ctxt)
                 .context(context.clone())
-                .previous_context(current.map_or(
-                    context[ctxt.i].clone(),
-                    |c| c.clone()
-                ))
+                .previous_context(current)
                 .build()
                 .dispatch(stctxt, t)?;
-            current = Some(context[ctxt.i].clone());
+            if context.len() > ctxt.i {
+                current = Some(context[ctxt.i].clone());
+            } else {
+                current = None
+            }
             context = new;
         } else {
-            break
+            break;
         }
     }
     Ok(context)
-//    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
-//        ContextBuilder::from(ctxt)
-//            .current(seq)
-//            .build()
-//            .dispatch(stctxt, t)
-//    })
+    //    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
+    //        ContextBuilder::from(ctxt)
+    //            .current(seq)
+    //            .build()
+    //            .dispatch(stctxt, t)
+    //    })
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
@@ -301,7 +309,7 @@ pub(crate) fn filter<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
         if ContextBuilder::from(ctxt)
             .context(vec![i.clone()])
-            .previous_context(i.clone())
+            .previous_context(ctxt.previous_context.clone())
             .build()
             .dispatch(stctxt, predicate)?
             .to_bool()

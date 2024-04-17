@@ -48,13 +48,17 @@ fn avt_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N
             if input1.is_empty() {
                 Ok(((input1, state1), e))
             } else {
-                Err(ParseError::NotWellFormed(format!("unexpected extra characters: \"{}\"", input1)))
+                Err(ParseError::NotWellFormed(format!(
+                    "unexpected extra characters: \"{}\"",
+                    input1
+                )))
             }
         }
     }
 }
 
-fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn avt<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         many0(alt2(
             map(many1(none_of("{")), |v| {
@@ -75,7 +79,8 @@ fn avt<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>
 }
 
 /// A XPath expression in the AVT. Braces do not nest.
-fn braced_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn braced_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     // Can't use combinator directly, since the close brace will be unexpected.
     // Instead, extract the string up to the close brace, then feed that to the combinator.
     //    Box::new(map(

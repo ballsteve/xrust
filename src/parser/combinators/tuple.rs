@@ -244,7 +244,27 @@ where
 }
 
 #[allow(clippy::too_many_arguments)]
-pub(crate) fn tuple9<P1, P2, P3, P4, P5, P6, P7, P8, P9, R1, R2, R3, R4, R5, R6, R7, R8, R9, N: Node>(
+pub(crate) fn tuple9<
+    P1,
+    P2,
+    P3,
+    P4,
+    P5,
+    P6,
+    P7,
+    P8,
+    P9,
+    R1,
+    R2,
+    R3,
+    R4,
+    R5,
+    R6,
+    R7,
+    R8,
+    R9,
+    N: Node,
+>(
     parser1: P1,
     parser2: P2,
     parser3: P3,
@@ -324,7 +344,7 @@ pub(crate) fn tuple10<
     R8,
     R9,
     R10,
-    N: Node
+    N: Node,
 >(
     parser1: P1,
     parser2: P2,
@@ -336,7 +356,9 @@ pub(crate) fn tuple10<
     parser8: P8,
     parser9: P9,
     parser10: P10,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (R1, R2, R3, R4, R5, R6, R7, R8, R9, R10)), ParseError>
+) -> impl Fn(
+    ParseInput<N>,
+) -> Result<(ParseInput<N>, (R1, R2, R3, R4, R5, R6, R7, R8, R9, R10)), ParseError>
 where
     P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
     P2: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R2), ParseError>,

@@ -1,7 +1,9 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
 
-pub fn tag<N: Node>(expected: &str) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> + '_ {
+pub fn tag<N: Node>(
+    expected: &str,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> + '_ {
     move |(input, state)| match input.get(0..expected.len()) {
         None => Err(ParseError::Combinator),
         Some(chars) => {
@@ -16,7 +18,9 @@ pub fn tag<N: Node>(expected: &str) -> impl Fn(ParseInput<N>) -> Result<(ParseIn
 
 /// Return the longest possible of one of the given tags.
 /// If there are multiple tags of the same length, the first one that matches will be returned.
-pub(crate) fn anytag<N: Node>(s: Vec<&str>) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + '_ {
+pub(crate) fn anytag<N: Node>(
+    s: Vec<&str>,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + '_ {
     move |(input, state)| {
         // NB. this algorithm could probably be optimised
         let u = s.iter().fold("", |result, t| {
@@ -44,7 +48,9 @@ pub(crate) fn anytag<N: Node>(s: Vec<&str>) -> impl Fn(ParseInput<N>) -> Result<
     }
 }
 
-pub(crate) fn anychar<N: Node>(expected: char) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn anychar<N: Node>(
+    expected: char,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         if input.starts_with(expected) {
             Ok(((&input[1..], state), ()))
@@ -86,7 +92,10 @@ mod tests {
         let parse_doc = tag("<?");
         assert_eq!(
             Ok((
-                ("ProcessingInstruction?>", ParserState::new(None, None, None)),
+                (
+                    "ProcessingInstruction?>",
+                    ParserState::new(None, None, None)
+                ),
                 ()
             )),
             parse_doc((testdoc, teststate))
@@ -116,7 +125,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), "<".to_string())),
+            Ok((
+                ("doc>", ParserState::new(None, None, None)),
+                "<".to_string()
+            )),
             parse_doc((testdoc, teststate))
         )
     }

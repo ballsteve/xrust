@@ -406,8 +406,8 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a>
-{
+fn argumentlist<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             tag("("),
@@ -423,6 +423,7 @@ fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(Pars
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn argument<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(expr_single_wrapper::<N>(true))
 }

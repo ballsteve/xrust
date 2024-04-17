@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::alt10;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -14,9 +15,9 @@ use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::dtd::textdecl::textdecl;
 use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::{ParseError, ParseInput};
-use crate::item::Node;
 
-pub(crate) fn extsubset<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn extsubset<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, mut state)| {
         if state.standalone {
             Ok(((input, state), ()))
@@ -37,7 +38,8 @@ pub(crate) fn extsubset<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
     }
 }
 
-pub(crate) fn extsubsetdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
+pub(crate) fn extsubsetdecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
     many0(alt10(
         conditionalsect(),
         elementdecl(),

@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::{alt3, alt4};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -14,9 +15,9 @@ use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::textexternalid;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput};
-use crate::item::Node;
 
-pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn pedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+{
     move |input| match wellformed_ver(
         tuple9(
             tag("<!ENTITY"),

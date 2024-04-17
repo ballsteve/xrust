@@ -66,7 +66,7 @@ pub fn format_date_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                         ErrorKind::TypeError,
                         String::from("not a dateTime value"),
                     )),
-                }
+                },
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("not a dateTime value"),
@@ -118,7 +118,7 @@ pub fn format_date<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                         ErrorKind::TypeError,
                         String::from("not a date value"),
                     )),
-                }
+                },
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("not a date value"),
@@ -170,7 +170,7 @@ pub fn format_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                         ErrorKind::TypeError,
                         String::from("not a time value"),
                     )),
-                }
+                },
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("not a time value"),

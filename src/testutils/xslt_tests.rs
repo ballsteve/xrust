@@ -447,10 +447,9 @@ macro_rules! xslt_tests (
 		ctxt.previous_context(src);
 		ctxt.result_document($y());
 
-		eprintln!("evaluating transform");
 	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
-	    assert_eq!(seq.to_xml(), "<second>I am one</second>")
+	    assert_eq!(seq.to_xml(), "<second name='one'>I am one</second>")
 	}
 
 /*

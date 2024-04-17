@@ -11,7 +11,8 @@ use crate::parser::{ParseError, ParseInput};
 use std::str::FromStr;
 
 // CharData ::= [^<&]* - (']]>')
-pub(crate) fn chardata<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn chardata<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         many1(alt3(
             wellformed_ver(
@@ -38,18 +39,21 @@ pub(crate) fn chardata<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInpu
     )
 }
 
-fn chardata_cdata<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn chardata_cdata<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+{
     delimited(tag("<![CDATA["), take_until("]]>"), tag("]]>"))
 }
 
-pub(crate) fn chardata_escapes<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn chardata_escapes<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |input| match chardata_unicode_codepoint()(input.clone()) {
         Ok((inp, s)) => Ok((inp, s.to_string())),
         Err(e) => Err(e),
     }
 }
 
-pub(crate) fn chardata_unicode_codepoint<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
+pub(crate) fn chardata_unicode_codepoint<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
     map(
         wellformed(
             alt2(
@@ -87,6 +91,7 @@ fn parse_decimal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, 
     }
 }
 
-fn chardata_literal<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn chardata_literal<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     take_while(|c| c != '<' && c != '&')
 }

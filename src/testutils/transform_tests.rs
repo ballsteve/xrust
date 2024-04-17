@@ -369,7 +369,7 @@ macro_rules! transform_tests (
 	    let mut ctxt = ContextBuilder::new()
 		.result_document(mydoc)
 		.context(vec![Item::Node(n.clone())])
-		.previous_context(Item::Node(n.clone()))
+		.previous_context(Some(Item::Node(n.clone())))
 		.build();
 	    let seq = ctxt.dispatch(&mut StaticContext::<F>::new(), &x).expect("evaluation failed");
 
