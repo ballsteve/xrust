@@ -2923,7 +2923,7 @@ macro_rules! transform_tests (
 	#[test]
 	fn tr_key_1() {
 		let x = Transform::Key(
-			String::from("mykey"),
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("mykey"))))),
 			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("blue"))))),
 			None
 		);
@@ -2963,7 +2963,6 @@ macro_rules! transform_tests (
 		let mut stctxt = StaticContext::<F>::new();
 		ctxt.populate_key_values(&mut stctxt, sd.clone())
 			.expect("unable to populate key values");
-		ctxt.dump_key_values();
 		let seq = ctxt.dispatch(&mut stctxt, &x)
 			.expect("evaluation failed");
 

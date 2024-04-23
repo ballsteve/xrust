@@ -1041,5 +1041,52 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "not one")
 	}
 
+	#[test]
+	fn xpath_key_1() {
+		let mut e = parse::<$t>("key('mykey', 'blue')")
+			.expect("failed to parse key function call");
+		let mut sd = $x();
+		let mut top = sd.new_element(QualifiedName::new(None, None, String::from("Top")))
+			.expect("unable to create element");
+		sd.push(top.clone());
+		let mut red1 = sd.new_element(QualifiedName::new(None, None, String::from("one")))
+			.expect("unable to create element");
+		red1.push(sd.new_text(Rc::new(Value::from("red"))).expect("unable to create text"))
+			.expect("unable to create element");
+		top.push(red1);
+		let mut blue1 = sd.new_element(QualifiedName::new(None, None, String::from("two")))
+			.expect("unable to create element");
+		blue1.push(sd.new_text(Rc::new(Value::from("blue"))).expect("unable to create text"))
+			.expect("unable to create element");
+		top.push(blue1);
+		let mut yellow1 = sd.new_element(QualifiedName::new(None, None, String::from("three")))
+			.expect("unable to create element");
+		yellow1.push(sd.new_text(Rc::new(Value::from("yellow"))).expect("unable to create text"))
+			.expect("unable to create element");
+		top.push(yellow1);
+
+		let mut ctxt = ContextBuilder::new()
+			.context(vec![Item::Node(sd.clone())])
+			.build();
+		ctxt.declare_key(
+			String::from("mykey"),
+			Pattern::try_from("child::*").expect("unable to parse pattern"), // Top/*
+			Transform::Step(
+				NodeMatch {
+					axis: Axis::Child,
+					nodetest: NodeTest::Kind(KindTest::Text)
+				}
+			)
+		);
+		let mut stctxt = StaticContext::<F>::new();
+		ctxt.populate_key_values(&mut stctxt, sd.clone())
+			.expect("unable to populate key values");
+		let seq = ctxt.dispatch(&mut stctxt, &e)
+			.expect("evaluation failed");
+
+		assert_eq!(seq.len(), 1);
+		assert_eq!(seq[0].name().to_string(), "two")
+	}
+
 	}
 );

@@ -397,6 +397,21 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
+                "key" => {
+                    if a.len() == 2 {
+                        let m = a.pop().unwrap();
+                        let name = a.pop().unwrap();
+                        Transform::Key(Box::new(name), Box::new(m), None)
+                    } else if a.len() == 3 {
+                        let u = a.pop().unwrap();
+                        let m = a.pop().unwrap();
+                        let name = a.pop().unwrap();
+                        Transform::Key(Box::new(name), Box::new(m), Some(Box::new(u)))
+                    } else {
+                        // Wrong # arguments
+                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
+                    }
+                }
                 _ => Transform::Error(ErrorKind::ParseError, String::from("undefined function")), // TODO: user-defined functions
             },
             _ => Transform::Error(ErrorKind::ParseError, String::from("unknown function")),

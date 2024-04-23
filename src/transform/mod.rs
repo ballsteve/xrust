@@ -218,7 +218,7 @@ pub enum Transform<N: Node> {
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
     /// the third argument is the top of the tree for the resulting nodes.
-    Key(String, Box<Transform<N>>, Option<N>),
+    Key(Box<Transform<N>>, Box<Transform<N>>, Option<Box<Transform<N>>>),
     /// A user-defined callable. Consists of a name, an argument list, and a body.
     /// TODO: merge with Call?
     UserDefined(
@@ -328,7 +328,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
-            Transform::Key(s, _, _) => write!(f, "key({}, ...)", s),
+            Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
             Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
