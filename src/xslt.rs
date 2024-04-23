@@ -374,7 +374,25 @@ where
             Ok::<(), Error>(())
         })?;
 
-    Ok(ContextBuilder::new()
+    // Iterate over the children, looking for key declarations.
+    // NB. could combine this with the previous loop, but performance shouldn't be an issue.
+    let mut keys = vec![];
+    stylenode
+        .child_iter()
+        .filter(|c| {
+            c.is_element()
+                && c.name().get_nsuri_ref() == Some(XSLTNS)
+                && c.name().get_localname() == "key"
+        })
+        .try_for_each(|c| {
+            let name = c.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+            let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
+            let pat = Pattern::try_from(m.to_string())?;
+            let u = c.get_attribute(&QualifiedName::new(None, None, "use".to_string()));
+            Ok(keys.push((name, pat, parse::<N>(&u.to_string())?)))
+        })?;
+
+    let mut newctxt = ContextBuilder::new()
         // Define the builtin templates
         // See XSLT 6.7. This implements text-only-copy.
         // TODO: Support deep-copy, shallow-copy, deep-skin, shallow-skip and fail
@@ -413,7 +431,11 @@ where
         ))
         .template_all(templates)
         .output_definition(od)
-        .build())
+        .build();
+    keys.iter().for_each(|(name, m, u)| {
+        newctxt.declare_key(name.to_string(), m.clone(), u.clone())
+    });
+    Ok(newctxt)
 }
 
 /// Compile a node in a template to a sequence [Combinator]
