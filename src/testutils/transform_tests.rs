@@ -2919,5 +2919,56 @@ macro_rules! transform_tests (
 	    assert_eq!(seq.len(), 2);
 	    assert_eq!(seq.to_string(), "this is a test")
 	}
-    }
+
+	#[test]
+	fn tr_key_1() {
+		let x = Transform::Key(
+			String::from("mykey"),
+			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("blue"))))),
+			None
+		);
+		let mut sd = $y();
+		let mut top = sd.new_element(QualifiedName::new(None, None, String::from("Top")))
+			.expect("unable to create element");
+		sd.push(top.clone());
+		let mut red1 = sd.new_element(QualifiedName::new(None, None, String::from("one")))
+			.expect("unable to create element");
+		red1.push(sd.new_text(Rc::new(Value::from("red"))).expect("unable to create text"))
+			.expect("unable to create element");
+		top.push(red1);
+		let mut blue1 = sd.new_element(QualifiedName::new(None, None, String::from("two")))
+			.expect("unable to create element");
+		blue1.push(sd.new_text(Rc::new(Value::from("blue"))).expect("unable to create text"))
+			.expect("unable to create element");
+		top.push(blue1);
+		let mut yellow1 = sd.new_element(QualifiedName::new(None, None, String::from("three")))
+			.expect("unable to create element");
+		yellow1.push(sd.new_text(Rc::new(Value::from("yellow"))).expect("unable to create text"))
+			.expect("unable to create element");
+		top.push(yellow1);
+
+		let mut ctxt = ContextBuilder::new()
+			.context(vec![Item::Node(sd.clone())])
+			.build();
+		ctxt.declare_key(
+			String::from("mykey"),
+			Pattern::try_from("child::*").expect("unable to parse pattern"), // Top/*
+			Transform::Step(
+				NodeMatch {
+					axis: Axis::Child,
+					nodetest: NodeTest::Kind(KindTest::Text)
+				}
+			)
+		);
+		let mut stctxt = StaticContext::<F>::new();
+		ctxt.populate_key_values(&mut stctxt, sd.clone())
+			.expect("unable to populate key values");
+		ctxt.dump_key_values();
+		let seq = ctxt.dispatch(&mut stctxt, &x)
+			.expect("evaluation failed");
+
+		assert_eq!(seq.len(), 1);
+		assert_eq!(seq[0].name().to_string(), "two")
+	}
+		}
 );
