@@ -119,6 +119,9 @@ impl<N: Node> ParserState<N> {
     //    self.limit = Some(l)
     //}
 
+    pub fn doc(&self) -> Option<N> {
+        self.doc.clone()
+    }
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
         match self.ext_dtd_resolver {
             None => Err(Error::new(
