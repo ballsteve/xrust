@@ -1,10 +1,13 @@
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
+use crate::parser::combinators::many::many1;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
+use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_one, take_while};
 use crate::parser::combinators::tuple::{tuple2, tuple3};
+use crate::parser::xpath::support::none_of;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::common::{is_namechar, is_namestartchar, is_ncnamechar, is_ncnamestartchar};
@@ -17,6 +20,29 @@ pub(crate) fn qualname<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     alt2(prefixed_name(), unprefixed_name())
 }
+
+// Expanded Qualified Name
+// EQName ::= QName | URIQualifiedName
+pub(crate) fn eqname<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+    alt2(uriqualname(), qualname())
+}
+// URIQualifiedName ::= "Q" "{" [^{}]* "}" NCName
+pub(crate) fn uriqualname<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
+    map(
+        pair(
+            tuple3(
+                tag("Q{"),
+                map(many1(none_of("{}")), |v| v.iter().collect()),
+                tag("}"),
+            ),
+            ncname(),
+        ),
+        |((_, uri, _), localpart)| QualifiedName::new(Some(uri), None, localpart),
+    )
+}
+
 fn unprefixed_name<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, QualifiedName), ParseError> {
     map(alt2(petextreference(), ncname()), |localpart| {

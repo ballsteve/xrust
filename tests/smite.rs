@@ -1,7 +1,8 @@
+use std::collections::HashMap;
 use xrust::item::{Node, NodeType};
 use xrust::item_node_tests;
 use xrust::item_value_tests;
-use xrust::parser::xml::parse as xmlparse;
+use xrust::parser::xml::{parse as xmlparse, parse_with_ns};
 use xrust::pattern_tests;
 use xrust::qname::QualifiedName;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
@@ -48,9 +49,16 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
     Ok(doc)
 }
 
+fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
+    let doc = Rc::new(SmiteNode::new());
+    let r = parse_with_ns(doc.clone(), s, None, None)?;
+    eprintln!("smite: got {} namespaces", r.1.len());
+    Ok(r)
+}
+
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc, make_sd_raw);
 pattern_tests!(RNode, make_empty_doc, make_sd);
 transform_tests!(RNode, make_empty_doc, make_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
-xslt_tests!(make_from_str, make_empty_doc);
+xslt_tests!(make_from_str, make_empty_doc, make_from_str_with_ns);

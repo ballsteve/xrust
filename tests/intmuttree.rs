@@ -1,3 +1,4 @@
+use std::collections::HashMap;
 use xrust::item::{Node, NodeType};
 use xrust::item_node_tests;
 use xrust::item_value_tests;
@@ -47,9 +48,21 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
     Ok(Document::try_from((s, None, None))?.content[0].clone())
 }
 
+fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
+    let mut ns = HashMap::new();
+    ns.insert(
+        String::from("xsl"),
+        String::from("http://www.w3.org/1999/XSL/Transform"),
+    );
+    Ok((
+        Document::try_from((s, None, None))?.content[0].clone(),
+        vec![ns],
+    ))
+}
+
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc, make_sd_raw);
 pattern_tests!(RNode, make_empty_doc, make_sd);
 transform_tests!(RNode, make_empty_doc, make_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
-xslt_tests!(make_from_str, make_empty_doc);
+xslt_tests!(make_from_str, make_empty_doc, make_from_str_with_ns);

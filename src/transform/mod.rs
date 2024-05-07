@@ -40,6 +40,7 @@ pub(crate) mod controlflow;
 pub(crate) mod datetime;
 pub(crate) mod functions;
 pub(crate) mod grouping;
+mod keys;
 pub(crate) mod logic;
 pub(crate) mod misc;
 pub(crate) mod navigate;
@@ -47,7 +48,6 @@ pub(crate) mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
-mod keys;
 
 #[allow(unused_imports)]
 use crate::item::Sequence;
@@ -218,7 +218,15 @@ pub enum Transform<N: Node> {
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
     /// the third argument is the top of the tree for the resulting nodes.
-    Key(Box<Transform<N>>, Box<Transform<N>>, Option<Box<Transform<N>>>),
+    Key(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+    ),
+    /// Get information about the processor
+    SystemProperty(Box<Transform<N>>),
+    AvailableSystemProperties,
+
     /// A user-defined callable. Consists of a name, an argument list, and a body.
     /// TODO: merge with Call?
     UserDefined(
@@ -329,6 +337,8 @@ impl<N: Node> Debug for Transform<N> {
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
+            Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
+            Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
             Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),

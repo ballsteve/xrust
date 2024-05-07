@@ -119,8 +119,13 @@ impl<N: Node> ParserState<N> {
     //    self.limit = Some(l)
     //}
 
+    /// Get the result document
     pub fn doc(&self) -> Option<N> {
         self.doc.clone()
+    }
+    /// Get a copy of all namespaces
+    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
+        &self.namespace
     }
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
         match self.ext_dtd_resolver {

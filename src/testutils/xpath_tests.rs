@@ -1,7 +1,9 @@
+use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
 #[macro_export]
 macro_rules! xpath_tests (
     ( $t:ty , $x:expr , $y:expr ) => {
 	use xrust::parser::xpath::parse;
+	use pkg_version::*;
 
 	#[test]
 	fn xpath_empty() {
@@ -1039,6 +1041,28 @@ macro_rules! xpath_tests (
 			.expect("evaluation failed");
 	    assert_eq!(s.len(), 1);
 	    assert_eq!(s.to_string(), "not one")
+	}
+
+	#[test]
+	fn xpath_sys_prop_vers_qual() {
+	    let mut e = parse::<$t>("system-property('Q{http://www.w3.org/1999/XSL/Transform}version')")
+			.expect("failed to parse system-property expression");
+		let s = Context::new()
+			.dispatch(&mut StaticContext::<F>::new(), &e)
+			.expect("evaluation failed");
+	    assert_eq!(s.len(), 1);
+	    assert_eq!(s.to_string(), "0.9")
+	}
+
+	#[test]
+	fn xpath_sys_prop_product_vers() {
+	    let mut e = parse::<$t>("system-property('Q{http://www.w3.org/1999/XSL/Transform}product-version')")
+			.expect("failed to parse system-property expression");
+		let s = Context::new()
+			.dispatch(&mut StaticContext::<F>::new(), &e)
+			.expect("evaluation failed");
+	    assert_eq!(s.len(), 1);
+	    assert_eq!(s.to_string(), format!("{}.{}.{}", pkg_version_major!(), pkg_version_minor!(), pkg_version_patch!()))
 	}
 
 	#[test]

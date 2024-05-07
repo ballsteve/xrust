@@ -534,6 +534,6 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | key                         | yes    |       |
 | unparsed-entity-uri         | no     |       |
 | unparsed-entity-public-id   | no     |       |
-| system-property             | no     |       |
-| available-system-properties | no     |       |
+| system-property             | yes    |       |
+| available-system-properties | yes    |       |
 

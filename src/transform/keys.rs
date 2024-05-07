@@ -1,11 +1,11 @@
 //! Support for keys.
 
-use std::collections::HashMap;
-use crate::{Item, SequenceTrait};
 use crate::item::{Node, Sequence};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::{Item, SequenceTrait};
+use std::collections::HashMap;
 
 /// For each key declaration:
 /// 1. find the nodes in the document that match the pattern
@@ -16,7 +16,7 @@ use crate::xdmerror::{Error, ErrorKind};
 pub(crate) fn populate_key_values<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &mut Context<N>,
     stctxt: &mut StaticContext<F>,
-    sd: N
+    sd: N,
 ) -> Result<(), Error> {
     // We have to visit N nodes to compute K keys.
     // In a typical scenario, N >> K so we want to perform a single pass over the nodes.
@@ -61,19 +61,20 @@ pub fn key<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
     name: &Box<Transform<N>>,
-    v: &Box<Transform<N>>
+    v: &Box<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let keyname = ctxt.dispatch(stctxt, name)?.to_string();
-    Ok(ctxt.dispatch(stctxt, v)?.iter().fold(
-        vec![],
-        |mut acc, s| {
-            if let Some(u) = ctxt.key_values.get(&keyname) {
-                if let Some(a) = u.get(&s.to_string()) {
-                    let mut b: Sequence<N> = a.iter().map(|n| Item::Node(n.clone())).collect();
-                    acc.append(&mut b);
-                    acc
-                } else { acc }
-            } else { acc }
+    Ok(ctxt.dispatch(stctxt, v)?.iter().fold(vec![], |mut acc, s| {
+        if let Some(u) = ctxt.key_values.get(&keyname) {
+            if let Some(a) = u.get(&s.to_string()) {
+                let mut b: Sequence<N> = a.iter().map(|n| Item::Node(n.clone())).collect();
+                acc.append(&mut b);
+                acc
+            } else {
+                acc
+            }
+        } else {
+            acc
         }
-    ))
+    }))
 }

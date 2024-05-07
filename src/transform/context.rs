@@ -20,6 +20,7 @@ use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
 use crate::transform::functions::*;
 use crate::transform::grouping::*;
+use crate::transform::keys::{key, populate_key_values};
 use crate::transform::logic::*;
 use crate::transform::misc::*;
 use crate::transform::navigate::*;
@@ -27,7 +28,6 @@ use crate::transform::numbers::*;
 use crate::transform::strings::*;
 use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
 use crate::transform::variables::{declare_variable, reference_variable};
-use crate::transform::keys::{populate_key_values, key};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, Value};
@@ -67,6 +67,9 @@ pub struct Context<N: Node> {
     // Output control
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
+    // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
+    // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
+    pub(crate) namespaces: Vec<HashMap<String, String>>,
 }
 
 impl<N: Node> Context<N> {
@@ -86,12 +89,21 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: vec![],
         }
     }
     /// Sets the context item.
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
         self.cur = s;
         self.i = i;
+    }
+    /// Sets the XML Namespaces.
+    pub fn namespaces(&mut self, ns: Vec<HashMap<String, String>>) {
+        self.namespaces = ns;
+    }
+    /// Gets the XML Namespaces.
+    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
+        &self.namespaces
     }
     /// Sets the "current" item.
     pub fn previous_context(&mut self, i: Item<N>) {
@@ -119,14 +131,15 @@ impl<N: Node> Context<N> {
     pub fn populate_key_values<F: FnMut(&str) -> Result<(), Error>>(
         &mut self,
         stctxt: &mut StaticContext<F>,
-        sd: N
-    ) -> Result<(), Error> { populate_key_values(self, stctxt, sd) }
+        sd: N,
+    ) -> Result<(), Error> {
+        populate_key_values(self, stctxt, sd)
+    }
     pub fn dump_key_values(&self) {
         self.key_values.iter().for_each(|(k, v)| {
             println!("key \"{}\":", k);
-            v.iter().for_each(|(kk, vv)| {
-                println!("\tvalue \"{}\" {} nodes", kk, vv.len())
-            })
+            v.iter()
+                .for_each(|(kk, vv)| println!("\tvalue \"{}\" {} nodes", kk, vv.len()))
         })
     }
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
@@ -381,6 +394,8 @@ impl<N: Node> Context<N> {
             Transform::FormatDate(t, p, l, c, q) => format_date(self, stctxt, t, p, l, c, q),
             Transform::FormatTime(t, p, l, c, q) => format_time(self, stctxt, t, p, l, c, q),
             Transform::Key(n, v, _) => key(self, stctxt, n, v),
+            Transform::SystemProperty(p) => system_property(self, stctxt, p),
+            Transform::AvailableSystemProperties => available_system_properties(),
             Transform::UserDefined(_qn, a, b) => user_defined(self, stctxt, a, b),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
@@ -410,6 +425,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: vec![],
         }
     }
 }
@@ -477,6 +493,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn base_url(mut self, b: Url) -> Self {
         self.0.base_url = Some(b);
+        self
+    }
+    pub fn namespaces(mut self, ns: Vec<HashMap<String, String>>) -> Self {
+        self.0.namespaces = ns;
         self
     }
     pub fn build(self) -> Context<N> {

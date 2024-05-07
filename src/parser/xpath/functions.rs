@@ -409,7 +409,33 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         Transform::Key(Box::new(name), Box::new(m), Some(Box::new(u)))
                     } else {
                         // Wrong # arguments
-                        Transform::Error(ErrorKind::ParseError, String::from("wrong number of arguments"))
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
+                "system-property" => {
+                    if a.len() == 1 {
+                        let p = a.pop().unwrap();
+                        Transform::SystemProperty(Box::new(p))
+                    } else {
+                        // Wrong # arguments
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
+                "available-system-properties" => {
+                    if a.len() == 0 {
+                        Transform::AvailableSystemProperties
+                    } else {
+                        // Wrong # arguments
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
                     }
                 }
                 _ => Transform::Error(ErrorKind::ParseError, String::from("undefined function")), // TODO: user-defined functions

@@ -1,8 +1,10 @@
+use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
 #[macro_export]
 macro_rules! xslt_tests (
-    ( $x:expr , $y:expr ) => {
+    ( $x:expr , $y:expr , $z:expr ) => {
 	use url::Url;
 	use xrust::xslt::from_document;
+	use pkg_version::*;
 
 	#[test]
 	fn xslt_literal_text() {
@@ -30,6 +32,38 @@ macro_rules! xslt_tests (
 	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
 
 	    assert_eq!(seq.to_string(), "Found the document")
+	}
+
+	#[test]
+	fn xslt_sys_prop() {
+	    let src = Item::Node(
+		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
+		    .expect("unable to parse source document")
+	    );
+
+		eprintln!("parsing stylesheet");
+	    let (style, style_ns) = $z(r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:sequence select='system-property("xsl:version")'/>-<xsl:sequence select='system-property("xsl:product-version")'/></xsl:template>
+</xsl:stylesheet>"#).expect("unable to parse stylesheet");
+		eprintln!("finished parsing stylesheet");
+
+	    // Setup context
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+		// Add the source document to the context
+		ctxt.context(vec![src], 0);
+		// Add stylesheet namespaces to the context
+		ctxt.namespaces(style_ns);
+
+		// Let 'er rip
+	    let seq = ctxt.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+
+	    assert_eq!(seq.to_string(), format!("0.9-{}.{}.{}", pkg_version_major!(), pkg_version_minor!(), pkg_version_patch!()))
 	}
 
 	#[test]

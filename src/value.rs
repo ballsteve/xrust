@@ -2,6 +2,7 @@
 //!
 //! An atomic value that is an item in a sequence.
 
+use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
@@ -113,6 +114,11 @@ pub enum Value {
     DateTime(DateTime<Local>),
     DateTimeStamp,
     Date(NaiveDate),
+    // gYearMonth
+    // gYear
+    // gMonthDay
+    // gMonth
+    // gDay
     String(String),
     NormalizedString(NormalizedString),
     /// Like normalizedString, but without leading, trailing and consecutive whitespace
@@ -132,6 +138,12 @@ pub enum Value {
     /// Same format as NCName
     ENTITY,
     Boolean(bool),
+    //base64binary,
+    //hexBinary,
+    //anyURI,
+    /// Qualified Name
+    QName(QualifiedName),
+    //NOTATION
 }
 
 impl fmt::Display for Value {
@@ -158,6 +170,7 @@ impl fmt::Display for Value {
             Value::Time(t) => t.format("%H:%M:%S.%f").to_string(),
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
+            Value::QName(q) => q.to_string(),
             _ => "".to_string(),
         };
         f.write_str(result.as_str())
@@ -198,10 +211,7 @@ impl Value {
     /// Convert the value to a double. If the value cannot be converted, returns Nan.
     pub fn to_double(&self) -> f64 {
         match &self {
-            Value::String(s) => match s.parse::<f64>() {
-                Ok(i) => i,
-                Err(_) => f64::NAN,
-            },
+            Value::String(s) => s.parse::<f64>().unwrap_or_else(|_| f64::NAN),
             Value::Integer(i) => (*i) as f64,
             Value::Int(i) => (*i) as f64,
             Value::Double(d) => *d,
@@ -251,6 +261,7 @@ impl Value {
             Value::IDREF => "IDREF",
             Value::ENTITY => "ENTITY",
             Value::Boolean(_) => "boolean",
+            Value::QName(_) => "QName",
         }
     }
     pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
@@ -265,7 +276,7 @@ impl Value {
                     Operator::GreaterThan => Ok(*b & !c),
                     Operator::GreaterThanEqual => Ok(*b >= c),
                     Operator::Is | Operator::Before | Operator::After => {
-                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                        Err(Error::new(ErrorKind::TypeError, String::from("type error")))
                     }
                 }
             }
@@ -279,7 +290,7 @@ impl Value {
                     Operator::GreaterThan => Ok(*i > c),
                     Operator::GreaterThanEqual => Ok(*i >= c),
                     Operator::Is | Operator::Before | Operator::After => {
-                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                        Err(Error::new(ErrorKind::TypeError, String::from("type error")))
                     }
                 }
             }
@@ -293,7 +304,7 @@ impl Value {
                     Operator::GreaterThan => Ok(*i > c),
                     Operator::GreaterThanEqual => Ok(*i >= c),
                     Operator::Is | Operator::Before | Operator::After => {
-                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                        Err(Error::new(ErrorKind::TypeError, String::from("type error")))
                     }
                 }
             }
@@ -307,7 +318,7 @@ impl Value {
                     Operator::GreaterThan => Ok(*i > c),
                     Operator::GreaterThanEqual => Ok(*i >= c),
                     Operator::Is | Operator::Before | Operator::After => {
-                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                        Err(Error::new(ErrorKind::TypeError, String::from("type error")))
                     }
                 }
             }
@@ -321,10 +332,15 @@ impl Value {
                     Operator::GreaterThan => Ok(*i > c),
                     Operator::GreaterThanEqual => Ok(*i >= c),
                     Operator::Is | Operator::Before | Operator::After => {
-                        Result::Err(Error::new(ErrorKind::TypeError, String::from("type error")))
+                        Err(Error::new(ErrorKind::TypeError, String::from("type error")))
                     }
                 }
             }
+            Value::QName(q) => match (op, other) {
+                (Operator::Equal, Value::QName(r)) => Ok(*q == *r),
+                (Operator::NotEqual, Value::QName(r)) => Ok(*q != *r),
+                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+            },
             _ => Result::Err(Error::new(
                 ErrorKind::Unknown,
                 format!(
@@ -453,6 +469,11 @@ impl From<u8> for Value {
 impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Boolean(b)
+    }
+}
+impl From<QualifiedName> for Value {
+    fn from(q: QualifiedName) -> Self {
+        Value::QName(q)
     }
 }
 

@@ -36,9 +36,10 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
             tag("/>"),
         )(input)
         {
-            Ok(((input1, mut state1), (_, n, av, _, _))) => {
+            Ok(((input1, state1), (_, n, av, _, _))) => {
                 let mut ens = n.get_nsuri();
-                match state1.namespace.pop() {
+                //match state1.namespace.pop() {
+                match state1.namespaces_ref().iter().last().clone() {
                     None => {
                         //No namespace to assign.
                     }
@@ -109,9 +110,10 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
             |(_, n, _a, _, _, _c, _, e, _, _)| n.to_string() == e.to_string(),
         )(input)
         {
-            Ok(((input1, mut state1), (_, n, av, _, _, c, _, _, _, _))) => {
+            Ok(((input1, state1), (_, n, av, _, _, c, _, _, _, _))) => {
                 let mut ens = n.get_nsuri();
-                match state1.namespace.pop() {
+                //match state1.namespace.pop() {
+                match state1.namespaces_ref().iter().last().clone() {
                     None => {
                         //No namespace to assign.
                     }

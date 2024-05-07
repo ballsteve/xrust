@@ -431,10 +431,10 @@ where
         ))
         .template_all(templates)
         .output_definition(od)
+        .namespaces(vec![])
         .build();
-    keys.iter().for_each(|(name, m, u)| {
-        newctxt.declare_key(name.to_string(), m.clone(), u.clone())
-    });
+    keys.iter()
+        .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
     Ok(newctxt)
 }
 
