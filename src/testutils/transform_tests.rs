@@ -7,6 +7,7 @@ macro_rules! transform_tests (
 	use xrust::value::Operator;
 	use xrust::transform::{Transform, Axis, NodeMatch, NodeTest, KindTest, NameTest, WildcardOrName, ArithmeticOperand, ArithmeticOperator, Grouping};
 	use xrust::transform::template::Template;
+	use xrust::transform::callable::{Callable, ActualParameters, FormalParameters};
 
 	#[test]
 	fn tr_empty() {
@@ -2900,27 +2901,6 @@ macro_rules! transform_tests (
 	}
 
 	#[test]
-	fn tr_func_user_defined() {
-	    // foo(bar='a test'; ('this is ', $bar))
-	    let x = Transform::UserDefined(
-			QualifiedName::new(None, None, String::from("mytest")),
-		vec![
-		    ("bar".to_string(), Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("a test")))))
-		],
-		Box::new(Transform::SequenceItems(
-		    vec![
-			Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("this is ")))),
-			Transform::VariableReference("bar".to_string()),
-		    ]
-		))
-	    );
-	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &x)
-		.expect("evaluation failed");
-	    assert_eq!(seq.len(), 2);
-	    assert_eq!(seq.to_string(), "this is a test")
-	}
-
-	#[test]
 	fn tr_key_1() {
 		let x = Transform::Key(
 			Box::new(Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("mykey"))))),
@@ -2968,6 +2948,36 @@ macro_rules! transform_tests (
 
 		assert_eq!(seq.len(), 1);
 		assert_eq!(seq[0].name().to_string(), "two")
+	}
+
+	#[test]
+	fn tr_callable_named_1() {
+		let x = Transform::Invoke(
+			QualifiedName::new(None, None, String::from("mycallable")),
+			ActualParameters::Named(
+				vec![(QualifiedName::new(None, None, String::from("param1")),
+				Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("value 1")))))]
+			),
+		);
+
+		let mut ctxt = ContextBuilder::new()
+			.callable(
+				QualifiedName::new(None, None, String::from("mycallable")),
+				Callable::new(
+					Transform::SequenceItems(vec![
+						Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("found parameter, value: ")))),
+						Transform::VariableReference("param1".to_string()),
+		    		]),
+					FormalParameters::Named(vec![(QualifiedName::new(None, None, String::from("param1")), None)])
+				),
+			)
+			.build();
+
+		let mut stctxt = StaticContext::<F>::new();
+		let seq = ctxt.dispatch(&mut stctxt, &x)
+			.expect("evaluation failed");
+
+		assert_eq!(seq.to_string(), "found parameter, value: value 1")
 	}
 		}
 );

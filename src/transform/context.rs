@@ -26,15 +26,17 @@ use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
+use crate::transform::callable::{Callable, invoke};
 use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
 use crate::transform::variables::{declare_variable, reference_variable};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
-use crate::{ErrorKind, Item, Value};
+use crate::{ErrorKind, Item, SequenceTrait, Value};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
 use url::Url;
+use crate::qname::QualifiedName;
 
 //pub type Message = FnMut(&str) -> Result<(), Error>;
 
@@ -53,6 +55,8 @@ pub struct Context<N: Node> {
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
     pub(crate) current_templates: Vec<Rc<Template<N>>>,
+    // Named templates and functions
+    pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Grouping
@@ -82,6 +86,7 @@ impl<N: Node> Context<N> {
             rd: None,
             templates: vec![],
             current_templates: vec![],
+            callables: HashMap::new(),
             vars: HashMap::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
@@ -159,6 +164,12 @@ impl<N: Node> Context<N> {
     #[allow(dead_code)]
     fn var_pop(&mut self, name: String) {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
+    }
+    pub(crate) fn dump_vars(&self) -> String {
+        self.vars.iter().fold(
+            String::new(),
+            |mut acc, (k, v)| {acc.push_str(format!("{}==\"{}\", ", k, v[0].to_string()).as_str()); acc}
+        )
     }
 
     /// Returns the Base URL.
@@ -396,7 +407,7 @@ impl<N: Node> Context<N> {
             Transform::Key(n, v, _) => key(self, stctxt, n, v),
             Transform::SystemProperty(p) => system_property(self, stctxt, p),
             Transform::AvailableSystemProperties => available_system_properties(),
-            Transform::UserDefined(_qn, a, b) => user_defined(self, stctxt, a, b),
+            Transform::Invoke(qn, a) => invoke(self, stctxt, qn, a),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
@@ -418,6 +429,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             rd: None,
             templates: vec![],
             current_templates: vec![],
+            callables: HashMap::new(),
             vars: HashMap::new(),
             keys: HashMap::new(),
             key_values: HashMap::new(),
@@ -497,6 +509,10 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn namespaces(mut self, ns: Vec<HashMap<String, String>>) -> Self {
         self.0.namespaces = ns;
+        self
+    }
+    pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
+        self.0.callables.insert(qn, c);
         self
     }
     pub fn build(self) -> Context<N> {

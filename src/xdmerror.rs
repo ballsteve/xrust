@@ -76,10 +76,10 @@ pub struct Error {
 impl std::error::Error for Error {}
 
 impl Error {
-    pub fn new(kind: ErrorKind, message: String) -> Self {
+    pub fn new(kind: ErrorKind, message: impl Into<String>) -> Self {
         Error {
             kind,
-            message,
+            message: message.into(),
             code: None,
         }
     }

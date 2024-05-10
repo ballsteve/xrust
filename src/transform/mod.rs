@@ -48,6 +48,7 @@ pub(crate) mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
+pub mod callable;
 
 #[allow(unused_imports)]
 use crate::item::Sequence;
@@ -57,6 +58,7 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::transform::callable::ActualParameters;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -227,13 +229,8 @@ pub enum Transform<N: Node> {
     SystemProperty(Box<Transform<N>>),
     AvailableSystemProperties,
 
-    /// A user-defined callable. Consists of a name, an argument list, and a body.
-    /// TODO: merge with Call?
-    UserDefined(
-        QualifiedName,
-        Vec<(String, Transform<N>)>,
-        Box<Transform<N>>,
-    ),
+    /// Invoke a callable component. Consists of a name, an actual argument list.
+    Invoke(QualifiedName, ActualParameters<N>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -339,7 +336,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
             Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
             Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
-            Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
+            Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
