@@ -519,6 +519,45 @@ macro_rules! xslt_tests (
 	    assert_eq!(seq.to_xml(), "#blue = 2")
 	}
 
+	#[test]
+	fn xslt_callable_named_1() {
+	    let src = $x("<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>")
+		    .expect("unable to parse source document");
+
+	    let style = $x(r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'>
+    <xsl:call-template name='my_template'>
+      <xsl:with-param name='my_param' select='count(child::*)'/>
+    </xsl:call-template>
+  </xsl:template>
+  <xsl:template name='my_template'>
+    <xsl:param name='my_param'>default value</xsl:param>
+    <xsl:text>There are </xsl:text>
+    <xsl:sequence select='$my_param'/>
+    <xsl:text> child elements</xsl:text>
+  </xsl:template>
+</xsl:stylesheet>"#).expect("unable to parse stylesheet");
+
+		// A static context is needed for all evaluations
+		let mut stctxt = StaticContext::<F>::new();
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![Item::Node(src.clone())], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut stctxt).expect("evaluation failed");
+
+	    assert_eq!(seq.to_string(), "There are 4 child elements")
+	}
+
 /*
 	#[test]
 	fn import_1() {

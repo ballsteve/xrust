@@ -71,6 +71,7 @@ use crate::parser::avt::parse as parse_avt;
 use crate::parser::xpath::parse;
 use crate::pattern::Pattern;
 use crate::qname::*;
+use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::template::Template;
 use crate::transform::{
@@ -309,6 +310,11 @@ where
                 && c.name().get_nsuri_ref() == Some(XSLTNS)
                 && c.name().get_localname() == "template"
         })
+        .filter(|c| {
+            !c.get_attribute(&QualifiedName::new(None, None, "match".to_string()))
+                .to_string()
+                .is_empty()
+        })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
             let pat = Pattern::try_from(m.to_string())?;
@@ -435,6 +441,85 @@ where
         .build();
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
+
+    // Add named templates
+    stylenode
+        .child_iter()
+        .filter(|c| {
+            c.is_element()
+                && c.name().get_nsuri_ref() == Some(XSLTNS)
+                && c.name().get_localname() == "template"
+        })
+        .filter(|c| {
+            !c.get_attribute(&QualifiedName::new(None, None, "name"))
+                .to_string()
+                .is_empty()
+        })
+        .try_for_each(|c| {
+            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+            // xsl:with-param for formal parameters
+            // TODO: validate that xsl:param elements come first in the child list
+            // TODO: validate that xsl:param elements have unique name attributes
+            let mut params: Vec<(QualifiedName, Option<Transform<N>>)> = Vec::new();
+            c.child_iter()
+                .filter(|c| {
+                    c.is_element()
+                        && c.name().get_nsuri_ref() == Some(XSLTNS)
+                        && c.name().get_localname() == "param"
+                })
+                .try_for_each(|c| {
+                    let p_name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+                    if p_name.to_string().is_empty() {
+                        Err(Error::new(
+                            ErrorKind::StaticAbsent,
+                            "name attribute is missing",
+                        ))
+                    } else {
+                        let sel = c.get_attribute(&QualifiedName::new(None, None, "select"));
+                        if sel.to_string().is_empty() {
+                            // xsl:param content is the sequence constructor
+                            let mut body = vec![];
+                            c.child_iter().try_for_each(|d| {
+                                body.push(to_transform(d)?);
+                                Ok(())
+                            })?;
+                            params.push((
+                                QualifiedName::new(None, None, p_name.to_string()),
+                                Some(Transform::SequenceItems(body)),
+                            ));
+                            Ok(())
+                        } else {
+                            // select attribute value is an expression
+                            params.push((
+                                QualifiedName::new(None, None, p_name.to_string()),
+                                Some(parse::<N>(&sel.to_string())?),
+                            ));
+                            Ok(())
+                        }
+                    }
+                })?;
+            // Content is the template body
+            let mut body = vec![];
+            c.child_iter()
+                .filter(|c| {
+                    !(c.is_element()
+                        && c.name().get_nsuri_ref() == Some(XSLTNS)
+                        && c.name().get_localname() == "param")
+                })
+                .try_for_each(|d| {
+                    body.push(to_transform(d)?);
+                    Ok::<(), Error>(())
+                })?;
+            newctxt.callable_push(
+                QualifiedName::new(None, None, name.to_string()),
+                Callable::new(
+                    Transform::SequenceItems(body),
+                    FormalParameters::Named(params),
+                ),
+            );
+            Ok(())
+        })?;
+
     Ok(newctxt)
 }
 
@@ -752,6 +837,62 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Ok(Transform::DeepCopy(Box::new(parse::<N>(&s.to_string())?)))
                     } else {
                         Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
+                    }
+                }
+                (Some(XSLTNS), "call-template") => {
+                    let name = n.get_attribute(&QualifiedName::new(None, None, "name"));
+                    if !name.to_string().is_empty() {
+                        // Iterate over the xsl:with-param elements to get the actual parameters
+                        // TODO: validate that the children are only xsl:with-param elements
+                        let mut ap = vec![];
+                        n.child_iter()
+                            .filter(|c| {
+                                c.is_element()
+                                    && c.name().get_nsuri_ref() == Some(XSLTNS)
+                                    && c.name().get_localname() == "with-param"
+                            })
+                            .try_for_each(|c| {
+                                let wp_name =
+                                    c.get_attribute(&QualifiedName::new(None, None, "name"));
+                                if !wp_name.to_string().is_empty() {
+                                    let sel =
+                                        c.get_attribute(&QualifiedName::new(None, None, "select"));
+                                    if sel.to_string().is_empty() {
+                                        // xsl:with-param content is the sequence constructor
+                                        let mut body = vec![];
+                                        c.child_iter().try_for_each(|d| {
+                                            body.push(to_transform(d)?);
+                                            Ok(())
+                                        })?;
+                                        ap.push((
+                                            QualifiedName::new(None, None, wp_name.to_string()),
+                                            Transform::SequenceItems(body),
+                                        ));
+                                        Ok(())
+                                    } else {
+                                        // select attribute value is an expression
+                                        ap.push((
+                                            QualifiedName::new(None, None, wp_name.to_string()),
+                                            parse::<N>(&sel.to_string())?,
+                                        ));
+                                        Ok(())
+                                    }
+                                } else {
+                                    Err(Error::new(
+                                        ErrorKind::StaticAbsent,
+                                        "missing name attribute",
+                                    ))
+                                }
+                            })?;
+                        Ok(Transform::Invoke(
+                            QualifiedName::new(None, None, name.to_string()),
+                            ActualParameters::Named(ap),
+                        ))
+                    } else {
+                        Err(Error::new(
+                            ErrorKind::StaticAbsent,
+                            "name attribute missing",
+                        ))
                     }
                 }
                 (Some(XSLTNS), "element") => {

@@ -14,7 +14,9 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
+use crate::qname::QualifiedName;
 use crate::transform::booleans::*;
+use crate::transform::callable::{invoke, Callable};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -26,7 +28,6 @@ use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
-use crate::transform::callable::{Callable, invoke};
 use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
 use crate::transform::variables::{declare_variable, reference_variable};
 use crate::transform::Transform;
@@ -36,7 +37,6 @@ use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
 use url::Url;
-use crate::qname::QualifiedName;
 
 //pub type Message = FnMut(&str) -> Result<(), Error>;
 
@@ -166,10 +166,15 @@ impl<N: Node> Context<N> {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
     pub(crate) fn dump_vars(&self) -> String {
-        self.vars.iter().fold(
-            String::new(),
-            |mut acc, (k, v)| {acc.push_str(format!("{}==\"{}\", ", k, v[0].to_string()).as_str()); acc}
-        )
+        self.vars.iter().fold(String::new(), |mut acc, (k, v)| {
+            acc.push_str(format!("{}==\"{}\", ", k, v[0].to_string()).as_str());
+            acc
+        })
+    }
+
+    /// Callable components: named templates and user-defined functions
+    pub fn callable_push(&mut self, qn: QualifiedName, c: Callable<N>) {
+        self.callables.insert(qn, c);
     }
 
     /// Returns the Base URL.

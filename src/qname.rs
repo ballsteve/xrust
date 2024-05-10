@@ -19,11 +19,15 @@ pub struct QualifiedName {
 
 // TODO: we may need methods that return a string slice, rather than a copy of the string
 impl QualifiedName {
-    pub fn new(nsuri: Option<String>, prefix: Option<String>, localname: String) -> QualifiedName {
+    pub fn new(
+        nsuri: Option<String>,
+        prefix: Option<String>,
+        localname: impl Into<String>,
+    ) -> QualifiedName {
         QualifiedName {
             nsuri,
             prefix,
-            localname,
+            localname: localname.into(),
         }
     }
     pub fn as_ref(&self) -> &Self {

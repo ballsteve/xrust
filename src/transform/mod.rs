@@ -34,6 +34,7 @@ assert_eq!(sequence.to_string(), "2")
 */
 
 pub(crate) mod booleans;
+pub mod callable;
 pub(crate) mod construct;
 pub mod context;
 pub(crate) mod controlflow;
@@ -48,17 +49,16 @@ pub(crate) mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
-pub mod callable;
 
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType};
 use crate::qname::QualifiedName;
+use crate::transform::callable::ActualParameters;
 use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::transform::callable::ActualParameters;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
