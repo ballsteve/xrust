@@ -83,6 +83,13 @@ impl Error {
             code: None,
         }
     }
+    pub fn new_with_code(kind: ErrorKind, message: impl Into<String>, code: Option<QualifiedName>) -> Self {
+        Error {
+            kind,
+            message: message.into(),
+            code,
+        }
+    }
 }
 
 impl fmt::Debug for Error {

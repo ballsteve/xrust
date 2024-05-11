@@ -2979,5 +2979,34 @@ macro_rules! transform_tests (
 
 		assert_eq!(seq.to_string(), "found parameter, value: value 1")
 	}
+
+	#[test]
+	fn tr_callable_positional_1() {
+		let x = Transform::Invoke(
+			QualifiedName::new(Some("http://example.org/".to_string()), None, String::from("my_func")),
+			ActualParameters::Positional(
+				vec![Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("value 1"))))]
+			),
+		);
+
+		let mut ctxt = ContextBuilder::new()
+			.callable(
+				QualifiedName::new(Some("http://example.org/".to_string()), None, String::from("my_func")),
+				Callable::new(
+					Transform::SequenceItems(vec![
+						Transform::Literal(Item::<$x>::Value(Rc::new(Value::from("found parameter, value: ")))),
+						Transform::VariableReference("param1".to_string()),
+		    		]),
+					FormalParameters::Positional(vec![QualifiedName::new(None, None, String::from("param1"))])
+				),
+			)
+			.build();
+
+		let mut stctxt = StaticContext::<F>::new();
+		let seq = ctxt.dispatch(&mut stctxt, &x)
+			.expect("evaluation failed");
+
+		assert_eq!(seq.to_string(), "found parameter, value: value 1")
+	}
 		}
 );

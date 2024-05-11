@@ -457,7 +457,7 @@ where
         })
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
-            // xsl:with-param for formal parameters
+            // xsl:param for formal parameters
             // TODO: validate that xsl:param elements come first in the child list
             // TODO: validate that xsl:param elements have unique name attributes
             let mut params: Vec<(QualifiedName, Option<Transform<N>>)> = Vec::new();
@@ -515,6 +515,66 @@ where
                 Callable::new(
                     Transform::SequenceItems(body),
                     FormalParameters::Named(params),
+                ),
+            );
+            Ok(())
+        })?;
+
+    // Add functions
+    stylenode
+        .child_iter()
+        .filter(|c| {
+            c.is_element()
+                && c.name().get_nsuri_ref() == Some(XSLTNS)
+                && c.name().get_localname() == "function"
+        })
+        .try_for_each(|c| {
+            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+            // Name must have a namespace. See XSLT 10.3.1.
+            let eqname = QualifiedName::try_from((name.to_string().as_str(), newctxt.namespaces_ref()))?;
+            if eqname.get_nsuri_ref().is_none() {
+                return Err(Error::new_with_code(ErrorKind::StaticAbsent, "function name must have a namespace", Some(QualifiedName::new(None, None, "XTSE0740"))))
+            }
+            // xsl:param for formal parameters
+            // TODO: validate that xsl:param elements come first in the child list
+            // TODO: validate that xsl:param elements have unique name attributes
+            let mut params: Vec<QualifiedName> = Vec::new();
+            c.child_iter()
+                .filter(|c| {
+                    c.is_element()
+                        && c.name().get_nsuri_ref() == Some(XSLTNS)
+                        && c.name().get_localname() == "param"
+                })
+                .try_for_each(|c| {
+                    let p_name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+                    if p_name.to_string().is_empty() {
+                        Err(Error::new(
+                            ErrorKind::StaticAbsent,
+                            "name attribute is missing",
+                        ))
+                    } else {
+                        // TODO: validate that xsl:param elements do not specify a default value. See XSLT 10.3.2.
+                        params.push(QualifiedName::new(None, None, p_name.to_string()));
+                        Ok(())
+                    }
+                })?;
+            // Content is the function body
+            let mut body = vec![];
+            c.child_iter()
+                .filter(|c| {
+                    !(c.is_element()
+                        && c.name().get_nsuri_ref() == Some(XSLTNS)
+                        && c.name().get_localname() == "param")
+                })
+                .try_for_each(|d| {
+                    body.push(to_transform(d)?);
+                    Ok::<(), Error>(())
+                })?;
+            newctxt.callable_push(
+                eqname,
+                Callable::new(
+                    Transform::SequenceItems(body),
+                    FormalParameters::Positional(params),
                 ),
             );
             Ok(())

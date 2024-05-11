@@ -34,7 +34,7 @@ pub enum FormalParameters<N: Node> {
 #[derive(Clone, Debug)]
 pub enum ActualParameters<N: Node> {
     Named(Vec<(QualifiedName, Transform<N>)>), // parameter name, value
-    Positional(Vec<(QualifiedName, Transform<N>)>), // ditto
+    Positional(Vec<Transform<N>>),
 }
 
 /// Invoke a callable component
@@ -80,8 +80,21 @@ pub(crate) fn invoke<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                     newctxt.dispatch(stctxt, &t.body)
                 }
                 FormalParameters::Positional(v) => {
-                    // Make sure number of parameters are equal, then set up variables by position
-                    Err(Error::new(ErrorKind::NotImplemented, "not yet implemented"))
+                    if let ActualParameters::Positional(av) = a {
+                        // Make sure number of parameters are equal, then set up variables by position
+                        if v.len() == av.len() {
+                            let mut newctxt = ctxt.clone();
+                            v.iter().zip(av.iter()).try_for_each(|(qn, t)| {
+                                newctxt.var_push(qn.to_string(), ctxt.dispatch(stctxt, t)?);
+                                Ok(())
+                            })?;
+                            newctxt.dispatch(stctxt, &t.body)
+                        } else {
+                            Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
+                        }
+                    } else {
+                        Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
+                    }
                 }
             }
         }
