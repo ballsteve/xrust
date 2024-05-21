@@ -1,11 +1,10 @@
 //! Tests for XSLT defined generically
 
 use std::collections::HashMap;
-use crate::{ErrorKind, SequenceTrait};
-use crate::item::{Item, Node, Sequence};
-use crate::xdmerror::Error;
-use crate::transform::context::StaticContext;
-use crate::xslt::from_document;
+use xrust::xdmerror::{Error, ErrorKind};
+use xrust::item::{Item, Node, Sequence, SequenceTrait};
+use xrust::transform::context::StaticContext;
+use xrust::xslt::from_document;
 
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
@@ -36,6 +35,29 @@ fn test_rig<N: Node, G, H, J>(
     ctxt.evaluate(&mut stctxt)
 }
 
+pub fn generic_literal_text<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn(&str) -> Result<N, Error>,
+        H: Fn() -> Result<N, Error>,
+        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'>Found the document</xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    if result.to_string() == "Found the document" {
+        Ok(())
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"Found the document\"", result.to_string()))) }
+}
 pub fn generic_callable_posn_2<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,

@@ -11,7 +11,8 @@ use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xpath_tests;
 use xrust::xslt_tests;
-use xrust::testutils::xsltgeneric::generic_callable_posn_2;
+
+mod xsltgeneric;
 
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
@@ -60,13 +61,9 @@ fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>
 }
 
 #[test]
-fn xslt_callable_posn_2() {
-    generic_callable_posn_2(
-        make_from_str,
-        make_from_str_with_ns,
-        make_sd_cooked,
-    ).expect("test failed")
-}
+fn xslt_literal_text() { xsltgeneric::generic_literal_text(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_callable_posn_2() { xsltgeneric::generic_callable_posn_2(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
 
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc, make_sd_raw);

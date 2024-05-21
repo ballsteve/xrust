@@ -9,7 +9,3 @@ pub mod pattern_tests;
 pub mod transform_tests;
 pub mod xpath_tests;
 pub mod xslt_tests;
-
-// TODO: make this only included when testing
-//#[cfg(test)]
-pub mod xsltgeneric;

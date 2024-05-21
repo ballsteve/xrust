@@ -6,8 +6,8 @@ macro_rules! xslt_tests (
 	use xrust::xslt::from_document;
 	use pkg_version::*;
 
-	#[test]
-	fn xslt_literal_text() {
+	//#[test]
+	fn old_xslt_literal_text() {
 	    let src = Item::Node(
 		$x("<Test><Level1>one</Level1><Level1>two</Level1></Test>")
 		    .expect("unable to parse source document")
