@@ -44,6 +44,7 @@ let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL
 // Compile the stylesheet
 let mut ctxt = from_document(
     style,
+    vec![],
     None,
     make_from_str,
     |_| Ok(String::new())
@@ -63,6 +64,7 @@ let seq = ctxt.evaluate(&mut StaticContext::<F>::new())
 assert_eq!(seq.to_xml(), "<html><head><title>XSLT in Rust</title></head><body><p>A simple document.</p></body></html>")
  */
 
+use std::collections::HashMap;
 use std::rc::Rc;
 
 use crate::item::{Item, Node, NodeType, Sequence};
@@ -115,6 +117,7 @@ pub trait XSLT: Node {
 /// They are not included in this module since some environments, in particular Wasm, do not have I/O facilities.
 pub fn from_document<N: Node, F, G>(
     styledoc: N,
+    stylens: Vec<HashMap<String, String>>,
     base: Option<Url>,
     f: F,
     g: G,
@@ -437,7 +440,7 @@ where
         ))
         .template_all(templates)
         .output_definition(od)
-        .namespaces(vec![])
+        .namespaces(stylens)
         .build();
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));

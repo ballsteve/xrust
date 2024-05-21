@@ -1,4 +1,6 @@
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
+use crate::{Item, Transform};
+use crate::transform::callable::ActualParameters;
 #[macro_export]
 macro_rules! xpath_tests (
     ( $t:ty , $x:expr , $y:expr ) => {
@@ -977,6 +979,27 @@ macro_rules! xpath_tests (
 				panic!("unable to unpack node");
 			}
 	    }
+	}
+	#[test]
+	fn xpath_fncall_user_defined() {
+	    let e = parse::<$t>("test:my_func(123)")
+			.expect("failed to parse expression \"test:my_func(123)\"");
+		match e {
+			Transform::Invoke(qn, ap) => {
+				assert_eq!(qn, QualifiedName::new(None, Some("test".to_string()), "my_func".to_string()));
+				match ap {
+					ActualParameters::Positional(v) => {
+						assert_eq!(v.len(), 1);
+						match &v[0] {
+							Transform::Literal(Item::Value(u)) => assert_eq!(u.to_int().expect("not an integer"), 123),
+							_ => panic!("not a literal integer"),
+						}
+					}
+					_ => panic!("Not positional parameters")
+				}
+			}
+			_ => panic!("Not an invocation")
+		}
 	}
 
 	// Variables

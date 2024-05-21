@@ -11,6 +11,7 @@ use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xpath_tests;
 use xrust::xslt_tests;
+use xrust::testutils::xsltgeneric::generic_callable_posn_2;
 
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
@@ -39,6 +40,9 @@ fn make_sd_raw() -> RNode {
              None, None).expect("unable to parse XML");
     doc
 }
+fn make_sd_cooked() -> Result<RNode, Error> {
+    Ok(make_sd_raw())
+}
 fn make_sd() -> Item<RNode> {
     Item::Node(make_sd_raw())
 }
@@ -52,8 +56,16 @@ fn make_from_str(s: &str) -> Result<RNode, Error> {
 fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
     let doc = Rc::new(SmiteNode::new());
     let r = parse_with_ns(doc.clone(), s, None, None)?;
-    eprintln!("smite: got {} namespaces", r.1.len());
     Ok(r)
+}
+
+#[test]
+fn xslt_callable_posn_2() {
+    generic_callable_posn_2(
+        make_from_str,
+        make_from_str_with_ns,
+        make_sd_cooked,
+    ).expect("test failed")
 }
 
 item_value_tests!(RNode);

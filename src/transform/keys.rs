@@ -3,7 +3,7 @@
 use crate::item::{Node, Sequence};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
-use crate::xdmerror::{Error, ErrorKind};
+use crate::xdmerror::Error;
 use crate::{Item, SequenceTrait};
 use std::collections::HashMap;
 

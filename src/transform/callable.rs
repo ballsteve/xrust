@@ -44,7 +44,9 @@ pub(crate) fn invoke<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     qn: &QualifiedName,
     a: &ActualParameters<N>,
 ) -> Result<Sequence<N>, Error> {
-    match ctxt.callables.get(qn) {
+    let mut qnr = qn.clone();
+    qnr.resolve(ctxt.namespaces_ref())?;
+    match ctxt.callables.get(&qnr) {
         Some(t) => {
             match &t.parameters {
                 FormalParameters::Named(v) => {

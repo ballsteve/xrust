@@ -73,11 +73,6 @@ pub fn system_property<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 ) -> Result<Sequence<N>, Error> {
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
-        eprintln!("sys_prop: {} namespaces:", ctxt.namespaces_ref().len());
-        ctxt.namespaces_ref().iter().for_each(|ns| {
-            ns.iter()
-                .for_each(|(k, v)| eprintln!("prefix {} nsuri {}", k, v))
-        });
         let qn = QualifiedName::try_from((prop.to_string().as_str(), ctxt.namespaces_ref()))?;
         match (qn.get_nsuri_ref(), qn.get_localname().as_str()) {
             (Some(XSLTNS), "version") => Ok(vec![Item::Value(Rc::new(Value::from("0.9")))]),
@@ -201,28 +196,6 @@ pub fn available_system_properties<N: Node>() -> Result<Sequence<N>, Error> {
             String::from("xsd-version"),
         )))),
     ])
-}
-
-/// A user defined function.
-/// Each argument is declared as a variable in the [Context].
-/// The body of the function is then evaluated and it's result is returned.
-pub fn user_defined<N: Node, F: FnMut(&str) -> Result<(), Error>>(
-    ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
-    arguments: &Vec<(String, Transform<N>)>,
-    body: &Transform<N>,
-) -> Result<Sequence<N>, Error> {
-    let mut new_ctxt = ctxt.clone();
-    arguments
-        .iter()
-        .try_for_each(|(n, a)| match ctxt.dispatch(stctxt, a) {
-            Ok(b) => {
-                new_ctxt.var_push(n.clone(), b);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        })?;
-    new_ctxt.dispatch(stctxt, body)
 }
 
 pub(crate) fn tr_error<N: Node>(

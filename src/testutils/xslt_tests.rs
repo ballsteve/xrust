@@ -20,6 +20,7 @@ macro_rules! xslt_tests (
 	    // Setup context
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -41,15 +42,14 @@ macro_rules! xslt_tests (
 		    .expect("unable to parse source document")
 	    );
 
-		eprintln!("parsing stylesheet");
 	    let (style, style_ns) = $z(r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='/'><xsl:sequence select='system-property("xsl:version")'/>-<xsl:sequence select='system-property("xsl:product-version")'/></xsl:template>
 </xsl:stylesheet>"#).expect("unable to parse stylesheet");
-		eprintln!("finished parsing stylesheet");
 
 	    // Setup context
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -80,6 +80,7 @@ macro_rules! xslt_tests (
 	    // Setup context
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -108,6 +109,7 @@ macro_rules! xslt_tests (
 	    // Setup context
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -137,6 +139,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -163,6 +166,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -192,6 +196,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -221,6 +226,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -250,6 +256,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -280,6 +287,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -310,6 +318,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -346,6 +355,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -408,6 +418,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -444,6 +455,7 @@ macro_rules! xslt_tests (
 	    let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
 			|s| $x(s),
 			|_| Ok(String::new()),
@@ -472,6 +484,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -505,6 +518,7 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -545,6 +559,45 @@ macro_rules! xslt_tests (
 	    // Setup dynamic context with result document
 	    let mut ctxt = from_document(
 			style,
+			vec![],
+			None,
+			|s| $x(s),
+			|url| Ok(String::new()),
+	    ).expect("failed to compile stylesheet");
+
+	    ctxt.context(vec![Item::Node(src.clone())], 0);
+		ctxt.result_document($y());
+
+	    let seq = ctxt.evaluate(&mut stctxt).expect("evaluation failed");
+
+	    assert_eq!(seq.to_string(), "There are 4 child elements")
+	}
+
+	#[test]
+	fn xslt_callable_posn_1() {
+	    let src = $x("<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>")
+		    .expect("unable to parse source document");
+
+	    let style = $x(r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform' xmlns:eg='http://example.org/'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'>
+    <xsl:sequence select='eg:my_func(count(child::*))'/>
+  </xsl:template>
+  <xsl:function name='eg:my_func'>
+    <xsl:param name='my_param'/>
+    <xsl:text>There are </xsl:text>
+    <xsl:sequence select='$my_param'/>
+    <xsl:text> child elements</xsl:text>
+  </xsl:template>
+</xsl:stylesheet>"#).expect("unable to parse stylesheet");
+
+		// A static context is needed for all evaluations
+		let mut stctxt = StaticContext::<F>::new();
+
+	    // Setup dynamic context with result document
+	    let mut ctxt = from_document(
+			style,
+			vec![],
 			None,
 			|s| $x(s),
 			|url| Ok(String::new()),
@@ -577,6 +630,7 @@ macro_rules! xslt_tests (
 	    let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
 	    let ev = from_document(
 		style,
+			vec![],
 		&mut sc,
 		Some(Url::parse(format!("file://{}/tests/xsl/importing.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
 	    )
@@ -614,6 +668,7 @@ macro_rules! xslt_tests (
 	    let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
 	    let ev = from_document(
 		style,
+			vec![],
 		&mut sc,
 		Some(Url::parse(format!("file://{}/tests/xsl/importing.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
 	    )

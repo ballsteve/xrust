@@ -48,7 +48,7 @@ pub fn parse_with_ns<N: Node>(
             match err {
                 ParseError::Combinator => Err(Error::new(
                     ErrorKind::ParseError,
-                    "Unrecoverable parser error.".to_string(),
+                    format!("Unrecoverable parser error while parsing XML \"{}\"", input.chars().take(80).collect::<String>()),
                 )),
                 /*
                 ParseError::InvalidChar { row, col } => {

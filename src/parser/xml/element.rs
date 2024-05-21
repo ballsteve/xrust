@@ -87,7 +87,7 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
 
 // STag ::= '<' Name (Attribute)* '>'
 // ETag ::= '</' Name '>'
-// NB. Names must match
+// TODO: Check that names match and throw meaningful error
 fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
     move |input| {
         match wellformed(

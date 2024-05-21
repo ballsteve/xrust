@@ -86,7 +86,7 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
         Err(err) => match err {
             ParseError::Combinator => Err(Error::new(
                 ErrorKind::ParseError,
-                "Unrecoverable parser error.".to_string(),
+                format!("Unrecoverable parser error while parsing XPath expression \"{}\"", input),
             )),
             ParseError::NotWellFormed(e) => Err(Error::new(
                 ErrorKind::ParseError,

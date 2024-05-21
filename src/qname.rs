@@ -9,8 +9,9 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
 use std::ops::ControlFlow;
+use std::fmt::Debug;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct QualifiedName {
     nsuri: Option<String>,
     prefix: Option<String>,
@@ -45,6 +46,30 @@ impl QualifiedName {
     pub fn get_localname(&self) -> String {
         self.localname.clone()
     }
+    /// Fully resolve a qualified name. If the qualified name has a prefix but no namespace URI,
+    /// then find the prefix in the supplied namespaces and use the corresponding URI.
+    /// If the qualified name already has a namespace URI, then this method has no effect.
+    /// If the qualified name has no prefix, then this method has no effect.
+    pub fn resolve(&mut self, namespaces: &Vec<HashMap<String, String>>) -> Result<(), Error> {
+        match (&self.prefix, &self.nsuri) {
+            (Some(p), None) => {
+                namespaces.iter().last().map_or(
+                    Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespaces to resolve prefix \"{}\"", p))),
+                    |v| {
+                        match v.get(p) {
+                            Some(u) => {
+                                self.nsuri = Some(u.clone());
+                                Ok(())
+                            }
+                            None => Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespace corresponding to prefix \"{}\"", p))),
+
+                        }
+                    }
+                )
+            }
+            _ => Ok(())
+        }
+    }
 }
 
 impl fmt::Display for QualifiedName {
@@ -56,6 +81,18 @@ impl fmt::Display for QualifiedName {
         });
         result.push_str(self.localname.as_str());
         f.write_str(result.as_str())
+    }
+}
+
+impl Debug for QualifiedName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let _ = f.write_str("namespace ");
+        let _ = f.write_str(self.nsuri.as_ref().map_or("--none--", |ns| ns.as_str()));
+        let _ = f.write_str(" prefix ");
+        let _ = f.write_str(self.prefix.as_ref().map_or("--none--", |p| p.as_str()));
+        let _ = f.write_str(" local part \"");
+        let _ = f.write_str(self.localname.as_str());
+        f.write_str("\"")
     }
 }
 
