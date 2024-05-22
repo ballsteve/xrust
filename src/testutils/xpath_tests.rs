@@ -8,7 +8,7 @@ macro_rules! xpath_tests (
 	use pkg_version::*;
 
 	#[test]
-	fn xpath_empty() {
+	fn old_xpath_empty() {
 		let ev = parse::<$t>("").expect("not an XPath expression");
 	    let seq = Context::new().dispatch(&mut StaticContext::<F>::new(), &ev).expect("evaluation failed");
 	    assert_eq!(seq.len(), 0);

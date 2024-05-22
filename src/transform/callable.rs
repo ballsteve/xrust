@@ -9,7 +9,7 @@ use crate::item::Node;
 use crate::qname::QualifiedName;
 use crate::transform::context::StaticContext;
 use crate::transform::Transform;
-use crate::{Context, Error, ErrorKind, Sequence, SequenceTrait};
+use crate::{Context, Error, ErrorKind, Sequence};
 use std::collections::HashMap;
 
 #[derive(Clone, Debug)]

@@ -165,6 +165,7 @@ impl<N: Node> Context<N> {
     fn var_pop(&mut self, name: String) {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
     }
+    #[allow(dead_code)]
     pub(crate) fn dump_vars(&self) -> String {
         self.vars.iter().fold(String::new(), |mut acc, (k, v)| {
             acc.push_str(format!("{}==\"{}\", ", k, v[0].to_string()).as_str());
@@ -216,7 +217,7 @@ impl<N: Node> Context<N> {
     /// <xsl:template match='/'><xsl:apply-templates/></xsl:template>
     /// <xsl:template match='child::Example'>This template will match</xsl:template>
     /// </xsl:stylesheet>");
-    /// let mut context = from_document(style, None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
+    /// let mut context = from_document(style, vec![], None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
     /// context.context(vec![sd], 0);
     /// context.result_document(make_from_str("<Result/>"));
     /// let sequence = context.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");

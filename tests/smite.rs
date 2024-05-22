@@ -10,8 +10,8 @@ use xrust::transform_tests;
 use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xpath_tests;
-use xrust::xslt_tests;
 
+mod xpathgeneric;
 mod xsltgeneric;
 
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
@@ -61,13 +61,47 @@ fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>
 }
 
 #[test]
+fn xpath_empty() { xpathgeneric::generic_empty::<RNode>().expect("test failed") }
+#[test]
 fn xslt_literal_text() { xsltgeneric::generic_literal_text(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
 #[test]
-fn xslt_callable_posn_2() { xsltgeneric::generic_callable_posn_2(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+fn xslt_sys_prop() { xsltgeneric::generic_sys_prop(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_value_of_1() { xsltgeneric::generic_value_of_1(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_value_of_2() { xsltgeneric::generic_value_of_2(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_literal_element() { xsltgeneric::generic_literal_element(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_element() { xsltgeneric::generic_element(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_apply_templates_1() { xsltgeneric::generic_apply_templates_1(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_apply_templates_2() { xsltgeneric::generic_apply_templates_2(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_comment() { xsltgeneric::generic_comment(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_pi() { xsltgeneric::generic_pi(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_message_1() { xsltgeneric::generic_message_1(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_message_term() { xsltgeneric::generic_message_term(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_issue_58() { xsltgeneric::generic_issue_58(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_callable_named_1() { xsltgeneric::generic_callable_named_1(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_callable_posn_1() { xsltgeneric::generic_callable_posn_1(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+#[should_panic]
+fn xslt_include() { xsltgeneric::generic_include(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_current() { xsltgeneric::generic_current(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
+#[test]
+fn xslt_key_1() { xsltgeneric::generic_key_1(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
 
 item_value_tests!(RNode);
 item_node_tests!(make_empty_doc, make_doc, make_sd_raw);
 pattern_tests!(RNode, make_empty_doc, make_sd);
 transform_tests!(RNode, make_empty_doc, make_doc);
 xpath_tests!(RNode, make_empty_doc, make_sd);
-xslt_tests!(make_from_str, make_empty_doc, make_from_str_with_ns);
