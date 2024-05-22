@@ -63,6 +63,34 @@ fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>
 #[test]
 fn xpath_empty() { xpathgeneric::generic_empty::<RNode>().expect("test failed") }
 #[test]
+fn xpath_step_1_pos() { xpathgeneric::generic_step_1_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_path_1_pos() { xpathgeneric::generic_path_1_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_path_1_neg() { xpathgeneric::generic_path_1_neg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_path_2() { xpathgeneric::generic_path_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_generate_id() { xpathgeneric::generic_generate_id::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_union() { xpathgeneric::generic_union::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_intersectexcept() { xpathgeneric::generic_intersectexcept::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_instanceof() { xpathgeneric::generic_instanceof::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_treat() { xpathgeneric::generic_treat::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_castable() { xpathgeneric::generic_castable::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_cast() { xpathgeneric::generic_cast::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_arrow() { xpathgeneric::generic_arrow::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_unary() { xpathgeneric::generic_unary::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_simplemap() { xpathgeneric::generic_simplemap::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
 fn xslt_literal_text() { xsltgeneric::generic_literal_text(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
 #[test]
 fn xslt_sys_prop() { xsltgeneric::generic_sys_prop(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }

@@ -15,7 +15,7 @@ macro_rules! xpath_tests (
 	}
 
 	#[test]
-	fn xpath_step_1_pos() {
+	fn old_xpath_step_1_pos() {
 		let ev = parse::<$t>("child::a").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
@@ -27,7 +27,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(seq[0].name().to_string(), "a");
 	}
 	#[test]
-	fn xpath_path_1_pos() {
+	fn old_xpath_path_1_pos() {
 		let ev = parse::<$t>("/child::a").expect("not an XPath expression");
 	    let rd = $x();
 		let sd = $y();
@@ -39,7 +39,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(seq.len(), 1);
 	}
 	#[test]
-	fn xpath_path_1_neg() {
+	fn old_xpath_path_1_neg() {
 		let ev = parse::<$t>("/child::b").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
@@ -58,7 +58,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(seq.len(), 0);
 	}
 	#[test]
-	fn xpath_path_2() {
+	fn old_xpath_path_2() {
             let ev = parse::<$t>("/child::a/child::b").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
@@ -70,7 +70,7 @@ macro_rules! xpath_tests (
 	}
 
 	#[test]
-	fn xpath_generate_id_ctxt() {
+	fn old_xpath_generate_id_ctxt() {
 		let ev = parse::<$t>("generate-id()").expect("not an XPath expression");
 	    let rd = $x();
 	    let mut ctxt = ContextBuilder::new()
@@ -83,55 +83,55 @@ macro_rules! xpath_tests (
 	}
 
 	#[test]
-	fn xpath_parse_union() {
+	fn old_xpath_parse_union() {
             let e = parse::<$t>("'a' | 'b'").expect("failed to parse expression \"'a' | 'b'\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_intersectexcept() {
+	fn old_xpath_parse_intersectexcept() {
             let e = parse::<$t>("'a' intersect 'b' except 'c'").expect("failed to parse expression \"'a' intersect 'b' except 'c'\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_instanceof() {
+	fn old_xpath_parse_instanceof() {
             let e = parse::<$t>("'a' instance of empty-sequence()").expect("failed to parse expression \"'a' instance of empty-sequence()\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_treat() {
+	fn old_xpath_parse_treat() {
             let e = parse::<$t>("'a' treat as empty-sequence()").expect("failed to parse expression \"'a' treat as empty-sequence()\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_castable() {
+	fn old_xpath_parse_castable() {
             let e = parse::<$t>("'a' castable as type?").expect("failed to parse expression \"'a' castable as type\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_cast() {
+	fn old_path_parse_cast() {
             let e = parse::<$t>("'a' cast as type?").expect("failed to parse expression \"'a' cast as type\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_arrow() {
+	fn old_xpath_parse_arrow() {
             let e = parse::<$t>("'a' => spec()").expect("failed to parse expression \"'a' => spec()\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_unary() {
+	fn old_xpath_parse_unary() {
             let e = parse::<$t>("+'a'").expect("failed to parse expression \"+'a'\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
 
 	#[test]
-	fn xpath_parse_simplemap() {
+	fn old_xpath_parse_simplemap() {
             let e = parse::<$t>("'a'!'b'").expect("failed to parse expression \"'a'!'b'\"");
 	    assert_eq!(ErrorKind::NotImplemented, Context::new().dispatch(&mut StaticContext::<F>::new(), &e).expect_err("is implemented").kind)
 	}
@@ -477,7 +477,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_step_1() {
+	fn old_xpath_step_1() {
 	    let e = parse::<$t>("child::a")
 		.expect("failed to parse expression \"child::a\"");
 	    let rd = $x();
