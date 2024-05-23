@@ -286,7 +286,7 @@ macro_rules! xpath_tests (
 
 	// Parses to a singleton context item sequence constructor
 	#[test]
-	fn xpath_context_item() {
+	fn old_xpath_context_item() {
 	    let e = parse::<$t>(".")
 		.expect("failed to parse expression \".\"");
 	    let rd = $x();
@@ -302,7 +302,7 @@ macro_rules! xpath_tests (
 
 	// Parentheses
 	#[test]
-	fn xpath_parens_singleton() {
+	fn old_xpath_parens_singleton() {
 	    let e = parse::<$t>("(1)")
 		.expect("failed to parse expression \"(1)\"");
 	    let rd = $x();
@@ -366,7 +366,7 @@ macro_rules! xpath_tests (
 	}
 
 	#[test]
-	fn xpath_root_desc_or_self_1() {
+	fn old_xpath_root_desc_or_self_1() {
 	    let e = parse::<$t>("//child::a")
 		.expect("failed to parse expression \"//child::a\"");
 	    let rd = $x();
@@ -388,7 +388,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_root_desc_or_self_2() {
+	fn old_xpath_root_desc_or_self_2() {
 	    let e = parse::<$t>("//child::a/child::b")
 		.expect("failed to parse expression \"//child::a/child::b\"");
 	    let rd = $x();
@@ -410,7 +410,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_root_desc_or_self_3() {
+	fn old_xpath_root_desc_or_self_3() {
 	    let e = parse::<$t>("//child::a//child::b")
 		.expect("failed to parse expression \"//child::a//child::b\"");
 	    let rd = $x();
@@ -433,7 +433,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_rel_path_1() {
+	fn old_xpath_rel_path_1() {
 	    let e = parse::<$t>("child::a/child::b")
 		.expect("failed to parse expression \"child::a/child::b\"");
 	    let rd = $x();
@@ -455,7 +455,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_rel_path_2() {
+	fn old_xpath_rel_path_2() {
 	    let e = parse::<$t>("child::a//child::b")
 		.expect("failed to parse expression \"child::a//child::b\"");
 	    let rd = $x();
@@ -499,7 +499,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_step_2() {
+	fn old_xpath_step_2() {
 	    let e = parse::<$t>("child::bc")
 			.expect("failed to parse expression \"child::bc\"");
 	    let rd = $x();
@@ -512,7 +512,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.len(), 0);
 	}
 	#[test]
-	fn xpath_step_wild_1() {
+	fn old_xpath_step_wild_1() {
 	    let e = parse::<$t>("child::*")
 			.expect("failed to parse expression \"child::*\"");
 	    let rd = $x();
@@ -534,7 +534,7 @@ macro_rules! xpath_tests (
 	    }
 	}
 	#[test]
-	fn xpath_step_wild_2() {
+	fn old_xpath_step_wild_2() {
 	    let e = parse::<$t>("ancestor::*")
 		.expect("failed to parse expression \"ancestor::*\"");
 	    let rd = $x();
@@ -556,7 +556,7 @@ macro_rules! xpath_tests (
 
 	// Functions
 	#[test]
-	fn xpath_fncall_string() {
+	fn old_xpath_fncall_string() {
 	    let mut e = parse::<$t>("string(('a', 'b', 'c'))")
 		.expect("failed to parse expression \"string(('a', 'b', 'c'))\"");
 	    let s = Context::new()
@@ -566,7 +566,7 @@ macro_rules! xpath_tests (
 	}
 	#[test]
 	#[should_panic]
-	fn xpath_fncall_current_1() {
+	fn old_xpath_fncall_current_1() {
 	    let mut e = parse::<$t>("current()")
 		.expect("failed to parse expression \"current()\"");
 	    let s = Context::new()
@@ -575,7 +575,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "")
 	}
 	#[test]
-	fn xpath_fncall_current_2() {
+	fn old_xpath_fncall_current_2() {
 	    let mut e = parse::<$t>("current()/child::a")
 			.expect("failed to parse expression \"current()/child::a\"");
 		let rd = $x();
@@ -588,7 +588,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.len(), 1)
 	}
 	#[test]
-	fn xpath_fncall_current_3() {
+	fn old_xpath_fncall_current_3() {
 	    let mut e = parse::<$t>("current()/child::a")
 			.expect("failed to parse expression \"current()/child::a\"");
 		let sd = $y();
@@ -608,7 +608,7 @@ macro_rules! xpath_tests (
 		}
 	}
 	#[test]
-	fn xpath_fncall_concat() {
+	fn old_xpath_fncall_concat() {
 	    let mut e = parse::<$t>("concat('a', 'b', 'c')")
 		.expect("failed to parse expression \"concat('a', 'b', 'c')\"");
 		let s = Context::new()
@@ -617,7 +617,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "abc")
 	}
 	#[test]
-	fn xpath_fncall_startswith_pos() {
+	fn old_xpath_fncall_startswith_pos() {
 	    let mut e = parse::<$t>("starts-with('abc', 'a')")
 		.expect("failed to parse expression \"starts-with('abc', 'a')\"");
 		let s = Context::new()
@@ -626,7 +626,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_bool(), true)
 	}
 	#[test]
-	fn xpath_fncall_startswith_neg() {
+	fn old_xpath_fncall_startswith_neg() {
 	    let mut e = parse::<$t>("starts-with('abc', 'b')")
 		.expect("failed to parse expression \"starts-with('abc', 'a')\"");
 		let s = Context::new()
@@ -635,7 +635,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_bool(), false)
 	}
 	#[test]
-	fn xpath_fncall_contains_pos() {
+	fn old_xpath_fncall_contains_pos() {
 	    let mut e = parse::<$t>("contains('abc', 'b')")
 		.expect("failed to parse expression \"contains('abc', 'b')\"");
 		let s = Context::new()
@@ -644,7 +644,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_bool(), true)
 	}
 	#[test]
-	fn xpath_fncall_contains_neg() {
+	fn old_xpath_fncall_contains_neg() {
 	    let mut e = parse::<$t>("contains('abc', 'd')")
 		.expect("failed to parse expression \"contains('abc', 'd')\"");
 		let s = Context::new()
@@ -653,7 +653,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_bool(), false)
 	}
 	#[test]
-	fn xpath_fncall_substring_2arg() {
+	fn old_xpath_fncall_substring_2arg() {
 	    let mut e = parse::<$t>("substring('abcdefg', 4)")
 		.expect("failed to parse expression \"substring('abcdefg', 4)\"");
 		let s = Context::new()
@@ -662,7 +662,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "defg")
 	}
 	#[test]
-	fn xpath_fncall_substring_3arg() {
+	fn old_xpath_fncall_substring_3arg() {
 	    let mut e = parse::<$t>("substring('abcdefg', 4, 2)")
 		.expect("failed to parse expression \"substring('abcdefg', 4, 2)\"");
 		let s = Context::new()
@@ -671,7 +671,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "de")
 	}
 	#[test]
-	fn xpath_fncall_substringbefore_pos() {
+	fn old_xpath_fncall_substringbefore_pos() {
 	    let mut e = parse::<$t>("substring-before('abc', 'b')")
 		.expect("failed to parse expression \"substring-before('abc', 'b')\"");
 		let s = Context::new()
@@ -680,7 +680,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "a")
 	}
 	#[test]
-	fn xpath_fncall_substringbefore_neg() {
+	fn old_xpath_fncall_substringbefore_neg() {
 	    let mut e = parse::<$t>("substring-before('abc', 'd')")
 		.expect("failed to parse expression \"substring-before('abc', 'd')\"");
 		let s = Context::new()
@@ -689,7 +689,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "")
 	}
 	#[test]
-	fn xpath_fncall_substringafter_pos_1() {
+	fn old_xpath_fncall_substringafter_pos_1() {
 	    let mut e = parse::<$t>("substring-after('abc', 'b')")
 		.expect("failed to parse expression \"substring-after('abc', 'b')\"");
 		let s = Context::new()
@@ -698,7 +698,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "c")
 	}
 	#[test]
-	fn xpath_fncall_substringafter_pos_2() {
+	fn old_xpath_fncall_substringafter_pos_2() {
 	    let mut e = parse::<$t>("substring-after('abc', 'c')")
 		.expect("failed to parse expression \"substring-after('abc', 'b')\"");
 		let s = Context::new()
@@ -707,7 +707,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "")
 	}
 	#[test]
-	fn xpath_fncall_substringafter_neg() {
+	fn old_xpath_fncall_substringafter_neg() {
 	    let mut e = parse::<$t>("substring-after('abc', 'd')")
 		.expect("failed to parse expression \"substring-after('abc', 'd')\"");
 		let s = Context::new()
@@ -716,7 +716,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "")
 	}
 	#[test]
-	fn xpath_fncall_normalizespace() {
+	fn old_xpath_fncall_normalizespace() {
 	    let mut e = parse::<$t>("normalize-space('	a  b\nc 	')")
 		.expect("failed to parse expression \"normalize-space('	a  b\nc 	')\"");
 		let s = Context::new()
@@ -725,7 +725,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s.to_string(), "a b c")
 	}
 	#[test]
-	fn xpath_fncall_translate() {
+	fn old_xpath_fncall_translate() {
 	    let mut e = parse::<$t>("translate('abcdeabcde', 'ade', 'XY')")
 		.expect("failed to parse expression \"translate('abcdeabcde', 'ade', 'XY')\"");
 		let s = Context::new()

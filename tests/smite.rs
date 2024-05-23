@@ -67,6 +67,12 @@ fn xpath_empty() { xpathgeneric::generic_empty::<RNode>().expect("test failed") 
 #[test]
 fn xpath_step_1_pos() { xpathgeneric::generic_step_1_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
 #[test]
+fn xpath_step_2() { xpathgeneric::generic_step_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_step_wild_1() { xpathgeneric::generic_step_wild_1::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_step_wild_2() { xpathgeneric::generic_step_wild_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
 fn xpath_path_1_pos() { xpathgeneric::generic_path_1_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
 #[test]
 fn xpath_path_1_neg() { xpathgeneric::generic_path_1_neg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
@@ -112,6 +118,57 @@ fn xpath_literal_sequence() { xpathgeneric::generic_literal_sequence::<RNode, _,
 fn xpath_literal_sequence_ws() { xpathgeneric::generic_literal_sequence_ws::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
 #[test]
 fn xpath_comment() { xpathgeneric::generic_xpath_comment::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_context_item() { xpathgeneric::generic_xpath_context_item::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_parens_singleton() { xpathgeneric::generic_parens_singleton::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_root_desc_or_self_1() { xpathgeneric::generic_root_desc_or_self_1::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_root_desc_or_self_2() { xpathgeneric::generic_root_desc_or_self_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_root_desc_or_self_3() { xpathgeneric::generic_root_desc_or_self_3::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_rel_path_1() { xpathgeneric::generic_rel_path_1::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_rel_path_2() { xpathgeneric::generic_rel_path_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_string() { xpathgeneric::generic_fncall_string::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+#[should_panic]
+fn xpath_fncall_current_1() { xpathgeneric::generic_fncall_current_1::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_current_2() { xpathgeneric::generic_fncall_current_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_current_3() { xpathgeneric::generic_fncall_current_3::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_concat() { xpathgeneric::generic_fncall_concat::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_startswith_pos() { xpathgeneric::generic_fncall_startswith_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_startswith_neg() { xpathgeneric::generic_fncall_startswith_neg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_contains_pos() { xpathgeneric::generic_fncall_contains_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_contains_neg() { xpathgeneric::generic_fncall_contains_neg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substring_2arg() { xpathgeneric::generic_fncall_substring_2arg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substring_3arg() { xpathgeneric::generic_fncall_substring_3arg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substringbefore_pos() { xpathgeneric::generic_fncall_substringbefore_pos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substringbefore_neg() { xpathgeneric::generic_fncall_substringbefore_neg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substringafter_pos_1() { xpathgeneric::generic_fncall_substringafter_pos_1::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substringafter_pos_2() { xpathgeneric::generic_fncall_substringafter_pos_2::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_substringafter_neg() { xpathgeneric::generic_fncall_substringafter_neg::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_normalizespace() { xpathgeneric::generic_fncall_normalizespace::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_fncall_translate() { xpathgeneric::generic_fncall_translate::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
 
 // XSLT tests
 

@@ -1,6 +1,8 @@
 //! Tests for XPath defined generically
 
+use std::rc::Rc;
 use xrust::xdmerror::{Error, ErrorKind};
+use xrust::value::Value;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext};
@@ -119,6 +121,176 @@ pub fn generic_path_2<N: Node, G, H>(
     } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 0", result.len()))) }
 }
 
+pub fn generic_root_desc_or_self_1<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("//child::a", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 5);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Element);
+                assert_eq!(n.name().to_string(), "a")
+            }
+            _ => panic!("not a node")
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_root_desc_or_self_2<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("//child::a/child::b", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 10);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Element);
+                assert_eq!(n.name().to_string(), "b")
+            }
+            _ => panic!("not a node")
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_root_desc_or_self_3<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("//child::a//child::b", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 10);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Element);
+                assert_eq!(n.name().to_string(), "b")
+            }
+            _ => panic!("not a node")
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_rel_path_1<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("child::a/child::b", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 2);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Element);
+                assert_eq!(n.name().to_string(), "b")
+            }
+            _ => panic!("not a node")
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_rel_path_2<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("child::a//child::b", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 10);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Element);
+                assert_eq!(n.name().to_string(), "b")
+            }
+            _ => panic!("not a node")
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_step_2<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("child::bc", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 0);
+    Ok(())
+}
+
+pub fn generic_step_wild_1<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("child::*", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 1);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Element);
+                assert_eq!(n.name().to_string(), "a")
+            }
+            _ => panic!("not a node")
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_step_wild_2<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let sd = make_doc();
+    match &sd {
+        Item::Node(c) => {
+            let l = c.descend_iter().last().unwrap();
+            let s = ContextBuilder::new()
+                .context(vec![Item::Node(l)])
+                .result_document(rd)
+                .build()
+                .dispatch(&mut StaticContext::<F>::new(), &parse("ancestor::*")?)?;
+                assert_eq!(s.len(), 3);
+        }
+        _ => panic!("unable to unpack node"),
+    }
+    Ok(())
+}
+
 pub fn generic_generate_id<N: Node, G, H>(
     make_empty_doc: G,
     make_doc: H,
@@ -140,6 +312,44 @@ pub fn generic_generate_id<N: Node, G, H>(
             _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
         }
     } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_xpath_context_item<N: Node, G, H>(
+    make_empty_doc: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let s = ContextBuilder::new()
+        .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
+        .result_document(rd)
+        .build()
+        .dispatch(&mut StaticContext::<F>::new(), &parse(".")?)?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s[0].to_string(), "foobar");
+    Ok(())
+}
+
+pub fn generic_parens_singleton<N: Node, G, H>(
+    make_empty_doc: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let s = ContextBuilder::new()
+        .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
+        .result_document(rd)
+        .build()
+        .dispatch(&mut StaticContext::<F>::new(), &parse("(1)")?)?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s[0].to_int().unwrap(), 1);
+    Ok(())
 }
 
 pub fn generic_int<N: Node, G, H>(
@@ -357,6 +567,259 @@ pub fn generic_xpath_comment<N: Node, G, H>(
     assert_eq!(s[0].to_int().unwrap(), 1);
     assert_eq!(s[1].to_string(), "abc");
     assert_eq!(s[2].to_int().unwrap(), 2);
+    Ok(())
+}
+
+pub fn generic_fncall_string<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("string(('a', 'b', 'c'))")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "abc");
+    Ok(())
+}
+
+pub fn generic_fncall_current_1<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("current()")?;
+    assert_eq!(s.len(), 0);
+    assert_eq!(s.to_string(), "");
+    Ok(())
+}
+
+pub fn generic_fncall_current_2<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("current()/child::a", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 1);
+    Ok(())
+}
+
+pub fn generic_fncall_current_3<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let sd = make_doc();
+    if let Item::Node(ref doc) = sd {
+        let top = doc.child_iter().nth(0).unwrap();
+        let s = ContextBuilder::new()
+            .result_document(rd)
+            .context(vec![Item::Node(top)])
+            .previous_context(Some(sd))
+            .build()
+            .dispatch(&mut StaticContext::<F>::new(), &parse("current()/child::a")?)
+            .expect("evaluation failed");
+        assert_eq!(s.len(), 1)
+    } else {
+        panic!("not a node")
+    }
+    Ok(())
+}
+
+pub fn generic_fncall_concat<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("concat('a', 'b', 'c')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "abc");
+    Ok(())
+}
+
+pub fn generic_fncall_startswith_pos<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("starts-with('abc', 'a')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_bool(), true);
+    Ok(())
+}
+pub fn generic_fncall_startswith_neg<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("starts-with('abc', 'b')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_bool(), false);
+    Ok(())
+}
+
+pub fn generic_fncall_contains_pos<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("contains('abc', 'b')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_bool(), true);
+    Ok(())
+}
+pub fn generic_fncall_contains_neg<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("contains('abc', 'd')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_bool(), false);
+    Ok(())
+}
+
+pub fn generic_fncall_substring_2arg<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring('abcdefg', 4)")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "defg");
+    Ok(())
+}
+pub fn generic_fncall_substring_3arg<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring('abcdefg', 4, 2)")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "de");
+    Ok(())
+}
+
+pub fn generic_fncall_substringbefore_pos<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring-before('abc', 'b')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "a");
+    Ok(())
+}
+pub fn generic_fncall_substringbefore_neg<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring-before('abc', 'd')")?;
+    assert_eq!(s.to_string(), "");
+    Ok(())
+}
+
+pub fn generic_fncall_substringafter_pos_1<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring-after('abc', 'b')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "c");
+    Ok(())
+}
+pub fn generic_fncall_substringafter_pos_2<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring-after('abc', 'c')")?;
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_string(), "");
+    Ok(())
+}
+pub fn generic_fncall_substringafter_neg<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("substring-after('abc', 'd')")?;
+    assert_eq!(s.to_string(), "");
+    Ok(())
+}
+
+pub fn generic_fncall_normalizespace<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("normalize-space('	a  b\nc 	')")?;
+    assert_eq!(s.to_string(), "a b c");
+    Ok(())
+}
+
+pub fn generic_fncall_translate<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("translate('abcdeabcde', 'ade', 'XY')")?;
+    assert_eq!(s.to_string(), "XbcYXbcY");
     Ok(())
 }
 
