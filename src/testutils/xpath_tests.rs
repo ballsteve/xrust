@@ -138,7 +138,7 @@ macro_rules! xpath_tests (
 
 	// Parses to a singleton integer sequence constructor
 	#[test]
-	fn xpath_int() {
+	fn old_xpath_int() {
 	    let e = parse::<$t>("1")
 		.expect("failed to parse expression \"1\"");
 	    let rd = $x();
@@ -152,7 +152,7 @@ macro_rules! xpath_tests (
 	}
 	// Parses to a singleton double/decimal sequence constructor
 	#[test]
-	fn xpath_decimal() {
+	fn old_xpath_decimal() {
 	    let e = parse::<$t>("1.2")
 		.expect("failed to parse expression \"1.2\"");
 	    let rd = $x();
@@ -166,7 +166,7 @@ macro_rules! xpath_tests (
 	}
 	// Parses to a singleton double sequence constructor
 	#[test]
-	fn xpath_exponent() {
+	fn old_xpath_exponent() {
 	    let e = parse::<$t>("1.2e2")
 		.expect("failed to parse expression \"1.2e2\"");
 	    let rd = $x();
@@ -180,7 +180,7 @@ macro_rules! xpath_tests (
 	}
 	// Parses to a singleton string
 	#[test]
-	fn xpath_string_apos() {
+	fn old_xpath_string_apos() {
 	    let e = parse::<$t>("'abc'")
 		.expect("failed to parse expression \"'abc'\"");
 	    let rd = $x();
@@ -194,7 +194,7 @@ macro_rules! xpath_tests (
 	}
 	// Parses to a singleton string
 	#[test]
-	fn xpath_string_apos_esc() {
+	fn old_xpath_string_apos_esc() {
 	    let e = parse::<$t>("'abc''def'")
 		.expect("failed to parse expression \"'abc''def'\"");
 	    let rd = $x();
@@ -208,7 +208,7 @@ macro_rules! xpath_tests (
 	}
 	// Parses to a singleton string
 	#[test]
-	fn xpath_string_quot() {
+	fn old_xpath_string_quot() {
 	    let e = parse::<$t>(r#""abc""#)
 		.expect("failed to parse expression \"\"abc\"\"");
 	    let rd = $x();
@@ -222,7 +222,7 @@ macro_rules! xpath_tests (
 	}
 	// Parses to a singleton string
 	#[test]
-	fn xpath_string_quot_esc() {
+	fn old_xpath_string_quot_esc() {
 	    let e = parse::<$t>(r#""abc""def""#)
 		.expect("failed to parse expression \"\"abc\"\"def\"\"");
 	    let rd = $x();
@@ -237,7 +237,7 @@ macro_rules! xpath_tests (
 
 	// Sequences
 	#[test]
-	fn xpath_literal_sequence() {
+	fn old_xpath_literal_sequence() {
 	    let e = parse::<$t>("1,'abc',2")
 		.expect("failed to parse expression \"\"1,'abc',2\"");
 	    let rd = $x();
@@ -252,7 +252,7 @@ macro_rules! xpath_tests (
 	    assert_eq!(s[2].to_int().unwrap(), 2);
 	}
 	#[test]
-	fn xpath_literal_sequence_ws() {
+	fn old_xpath_literal_sequence_ws() {
 	    let e = parse::<$t>("1 , 'abc', 2")
 		.expect("failed to parse expression \"\"1 , 'abc', 2\"");
 	    let rd = $x();
@@ -269,7 +269,7 @@ macro_rules! xpath_tests (
 
 	// Comments
 	#[test]
-	fn xpath_comment() {
+	fn old_xpath_comment() {
 	    let e = parse::<$t>("1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2")
 		.expect("failed to parse \"1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2\"");
 	    let rd = $x();

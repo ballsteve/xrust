@@ -1,6 +1,5 @@
 //! Tests for XPath defined generically
 
-use std::collections::HashMap;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::parser::xpath::parse;
@@ -141,6 +140,224 @@ pub fn generic_generate_id<N: Node, G, H>(
             _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
         }
     } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_int<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result("1")?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_int().unwrap() == 1 {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected integer value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_decimal<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result("1.2")?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_double() == 1.2 {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected double value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_exponent<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result("1.2e2")?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_double() == 120.0 {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected double value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_string_apos<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result("'abc'")?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_string() == "abc" {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected string value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_string_apos_esc<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result("'abc''def'")?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_string() == "abc'def" {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected string value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_string_quot<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result(r#""abc""#)?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_string() == "abc" {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected string value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_string_quot_esc<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result(r#""abc""def""#)?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_string() == r#"abc"def"# {
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected string value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_literal_sequence<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = no_src_no_result("1,'abc',2")?;
+    if result.len() == 3 {
+        match &result[0] {
+            Item::Value(v) => {
+                if v.to_int().unwrap() == 1 {
+                    assert_eq!(result[1].to_string(), "abc");
+                    assert_eq!(result[2].to_int().unwrap(), 2);
+                    Ok(())
+                } else {
+                    Err(Error::new(ErrorKind::Unknown, "expected integer value"))
+                }
+            }
+            _ => Err(Error::new(ErrorKind::Unknown, "not a value"))
+        }
+    } else { Err(Error::new(ErrorKind::Unknown, format!("got {} results, expected 1", result.len()))) }
+}
+
+pub fn generic_literal_sequence_ws<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("1 , 'abc', 2")?;
+    assert_eq!(s.len(), 3);
+    assert_eq!(s[0].to_int().unwrap(), 1);
+    assert_eq!(s[1].to_string(), "abc");
+    assert_eq!(s[2].to_int().unwrap(), 2);
+    Ok(())
+}
+
+pub fn generic_xpath_comment<N: Node, G, H>(
+    _: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("1(::),(: a comment :)'abc', (: outer (: inner :) outer :) 2")?;
+    assert_eq!(s.len(), 3);
+    assert_eq!(s[0].to_int().unwrap(), 1);
+    assert_eq!(s[1].to_string(), "abc");
+    assert_eq!(s[2].to_int().unwrap(), 2);
+    Ok(())
 }
 
 fn unimplemented_rig<N: Node, G, H>(

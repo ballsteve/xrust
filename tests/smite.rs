@@ -60,6 +60,8 @@ fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>
     Ok(r)
 }
 
+// XPath tests
+
 #[test]
 fn xpath_empty() { xpathgeneric::generic_empty::<RNode>().expect("test failed") }
 #[test]
@@ -90,6 +92,29 @@ fn xpath_arrow() { xpathgeneric::generic_arrow::<RNode, _, _>(make_empty_doc, ma
 fn xpath_unary() { xpathgeneric::generic_unary::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
 #[test]
 fn xpath_simplemap() { xpathgeneric::generic_simplemap::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_int() { xpathgeneric::generic_int::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_decimal() { xpathgeneric::generic_decimal::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_exponent() { xpathgeneric::generic_exponent::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_string_apos() { xpathgeneric::generic_string_apos::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_string_apos_esc() { xpathgeneric::generic_string_apos_esc::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_string_quot() { xpathgeneric::generic_string_quot::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_string_quot_esc() { xpathgeneric::generic_string_quot_esc::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_literal_sequence() { xpathgeneric::generic_literal_sequence::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_literal_sequence_ws() { xpathgeneric::generic_literal_sequence_ws::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+#[test]
+fn xpath_comment() { xpathgeneric::generic_xpath_comment::<RNode, _, _>(make_empty_doc, make_sd).expect("test failed") }
+
+// XSLT tests
+
 #[test]
 fn xslt_literal_text() { xsltgeneric::generic_literal_text(make_from_str, make_from_str_with_ns, make_sd_cooked, ).expect("test failed") }
 #[test]
