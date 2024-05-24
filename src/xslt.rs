@@ -534,9 +534,14 @@ where
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
             // Name must have a namespace. See XSLT 10.3.1.
-            let eqname = QualifiedName::try_from((name.to_string().as_str(), newctxt.namespaces_ref()))?;
+            let eqname =
+                QualifiedName::try_from((name.to_string().as_str(), newctxt.namespaces_ref()))?;
             if eqname.get_nsuri_ref().is_none() {
-                return Err(Error::new_with_code(ErrorKind::StaticAbsent, "function name must have a namespace", Some(QualifiedName::new(None, None, "XTSE0740"))))
+                return Err(Error::new_with_code(
+                    ErrorKind::StaticAbsent,
+                    "function name must have a namespace",
+                    Some(QualifiedName::new(None, None, "XTSE0740")),
+                ));
             }
             // xsl:param for formal parameters
             // TODO: validate that xsl:param elements come first in the child list

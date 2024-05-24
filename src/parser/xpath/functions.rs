@@ -17,8 +17,8 @@ use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::numbers::unary_expr;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
-use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 use crate::transform::callable::ActualParameters;
+use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 use crate::xdmerror::ErrorKind;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
@@ -66,10 +66,10 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
         pair(qualname_test(), argumentlist::<N>()),
         |(qn, mut a)| match qn {
             NodeTest::Name(NameTest {
-                               name: Some(WildcardOrName::Name(ref localpart)),
-                               ns: None,
-                               prefix: None,
-                           }) => match localpart.as_str() {
+                name: Some(WildcardOrName::Name(ref localpart)),
+                ns: None,
+                prefix: None,
+            }) => match localpart.as_str() {
                 "current" => Transform::CurrentItem,
                 "position" => Transform::Position,
                 "last" => Transform::Last,
@@ -440,28 +440,27 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         )
                     }
                 }
-                _ => Transform::Error(ErrorKind::ParseError, format!("undefined function \"{}\"", qn.to_string())), // TODO: user-defined functions
+                _ => Transform::Error(
+                    ErrorKind::ParseError,
+                    format!("undefined function \"{}\"", qn.to_string()),
+                ), // TODO: user-defined functions
             },
             NodeTest::Name(NameTest {
-                               name: Some(WildcardOrName::Name(localpart)),
-                               ns: Some(WildcardOrName::Name(nsuri)),
-                               prefix: p,
-                           }) => {
-                Transform::Invoke(
-                    QualifiedName::new(Some(nsuri), p, localpart),
-                    ActualParameters::Positional(a),
-                )
-            }
+                name: Some(WildcardOrName::Name(localpart)),
+                ns: Some(WildcardOrName::Name(nsuri)),
+                prefix: p,
+            }) => Transform::Invoke(
+                QualifiedName::new(Some(nsuri), p, localpart),
+                ActualParameters::Positional(a),
+            ),
             NodeTest::Name(NameTest {
-                               name: Some(WildcardOrName::Name(localpart)),
-                               ns: None,
-                               prefix: p,
-                           }) => {
-                Transform::Invoke(
-                    QualifiedName::new(None, p, localpart),
-                    ActualParameters::Positional(a),
-                )
-            }
+                name: Some(WildcardOrName::Name(localpart)),
+                ns: None,
+                prefix: p,
+            }) => Transform::Invoke(
+                QualifiedName::new(None, p, localpart),
+                ActualParameters::Positional(a),
+            ),
             _ => Transform::Error(ErrorKind::Unknown, format!("unknown function \"{}\"", qn)),
         },
     ))

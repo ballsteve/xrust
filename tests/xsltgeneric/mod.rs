@@ -1,11 +1,11 @@
 //! Tests for XSLT defined generically
 
-use std::collections::HashMap;
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
+use std::collections::HashMap;
 use url::Url;
-use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::transform::context::{StaticContext, StaticContextBuilder};
+use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
@@ -17,10 +17,10 @@ fn test_rig<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<Sequence<N>, Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let srcdoc = parse_from_str(src.as_ref())?;
     let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())?;
@@ -45,16 +45,19 @@ fn test_msg_rig<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(Sequence<N>, Vec<String>), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let srcdoc = parse_from_str(src.as_ref())?;
     let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())?;
     let mut msgs: Vec<String> = vec![];
     let mut stctxt = StaticContextBuilder::new()
-        .message(|m| {msgs.push(String::from(m)); Ok(())})
+        .message(|m| {
+            msgs.push(String::from(m));
+            Ok(())
+        })
         .build();
     let mut ctxt = from_document(
         styledoc,
@@ -74,10 +77,10 @@ pub fn generic_literal_text<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -90,7 +93,15 @@ pub fn generic_literal_text<N: Node, G, H, J>(
     )?;
     if result.to_string() == "Found the document" {
         Ok(())
-    } else { Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"Found the document\"", result.to_string()))) }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"Found the document\"",
+                result.to_string()
+            ),
+        ))
+    }
 }
 
 pub fn generic_sys_prop<N: Node, G, H, J>(
@@ -98,10 +109,10 @@ pub fn generic_sys_prop<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -112,14 +123,29 @@ pub fn generic_sys_prop<N: Node, G, H, J>(
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == format!("0.9-{}.{}.{}", pkg_version_major!(), pkg_version_minor!(), pkg_version_patch!()) {
+    if result.to_string()
+        == format!(
+            "0.9-{}.{}.{}",
+            pkg_version_major!(),
+            pkg_version_minor!(),
+            pkg_version_patch!()
+        )
+    {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"{}\"", result.to_string(),
-                               format!("0.9-{}.{}.{}", pkg_version_major!(),
-                                       pkg_version_minor!(),
-                                       pkg_version_patch!()))))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"{}\"",
+                result.to_string(),
+                format!(
+                    "0.9-{}.{}.{}",
+                    pkg_version_major!(),
+                    pkg_version_minor!(),
+                    pkg_version_patch!()
+                )
+            ),
+        ))
     }
 }
 
@@ -128,10 +154,10 @@ pub fn generic_value_of_1<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test>special &lt; less than</Test>",
@@ -145,8 +171,13 @@ pub fn generic_value_of_1<N: Node, G, H, J>(
     if result.to_string() == "special &lt; less than" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"special &lt; less than\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"special &lt; less than\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -155,10 +186,10 @@ pub fn generic_value_of_2<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test>special &lt; less than</Test>",
@@ -172,8 +203,13 @@ pub fn generic_value_of_2<N: Node, G, H, J>(
     if result.to_string() == "special < less than" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"special < less than\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"special < less than\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -182,10 +218,10 @@ pub fn generic_literal_element<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -199,8 +235,13 @@ pub fn generic_literal_element<N: Node, G, H, J>(
     if result.to_xml() == "<answer>Made an element</answer>" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"<answer>Made an element</answer>\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"<answer>Made an element</answer>\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -209,10 +250,10 @@ pub fn generic_element<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -226,8 +267,13 @@ pub fn generic_element<N: Node, G, H, J>(
     if result.to_xml() == "<answer0>Made an element</answer0>" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"<answer0>Made an element</answer0>\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"<answer0>Made an element</answer0>\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -236,10 +282,10 @@ pub fn generic_apply_templates_1<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
@@ -255,8 +301,13 @@ pub fn generic_apply_templates_1<N: Node, G, H, J>(
     if result.to_xml() == "found textfound text" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"found textfound text\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"found textfound text\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -265,10 +316,10 @@ pub fn generic_apply_templates_2<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -285,8 +336,13 @@ pub fn generic_apply_templates_2<N: Node, G, H, J>(
     if result.to_xml() == "onetwothreefour" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"onetwothreefour\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"onetwothreefour\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -295,10 +351,10 @@ pub fn generic_comment<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -325,10 +381,10 @@ pub fn generic_pi<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -355,10 +411,10 @@ pub fn generic_current<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test ref='one'><second name='foo'>I am foo</second><second name='one'>I am one</second></Test>",
@@ -374,8 +430,13 @@ pub fn generic_current<N: Node, G, H, J>(
     if result.to_xml() == "<second name='one'>I am one</second>" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"<second name='one'>I am one</second>\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"<second name='one'>I am one</second>\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -384,10 +445,10 @@ pub fn generic_key_1<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>",
@@ -405,8 +466,13 @@ pub fn generic_key_1<N: Node, G, H, J>(
     if result.to_xml() == "#blue = 2" {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"#blue = 2\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"#blue = 2\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -417,10 +483,10 @@ pub fn generic_issue_58<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         r#"<Example>
@@ -457,14 +523,17 @@ pub fn generic_issue_58<N: Node, G, H, J>(
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_xml() == r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
+    if result.to_xml()
+        == r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
     <int:head>XSLT in Rust</int:head>
     <int:body>A simple document.</int:body>
 </dat:dataPack>"# {
         Ok(())
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("not expected result")))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("not expected result"),
+        ))
     }
 }
 
@@ -473,10 +542,10 @@ pub fn generic_message_1<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let (result, msgs) = test_msg_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -495,16 +564,28 @@ pub fn generic_message_1<N: Node, G, H, J>(
             if msgs[0] == "here is a level 1 element" {
                 Ok(())
             } else {
-                Err(Error::new(ErrorKind::Unknown,
-                               format!("got message \"{}\", expected \"here is a level 1 element\"", msgs[0])))
+                Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!(
+                        "got message \"{}\", expected \"here is a level 1 element\"",
+                        msgs[0]
+                    ),
+                ))
             }
         } else {
-            Err(Error::new(ErrorKind::Unknown,
-                           format!("got {} messages, expected 4", msgs.len())))
+            Err(Error::new(
+                ErrorKind::Unknown,
+                format!("got {} messages, expected 4", msgs.len()),
+            ))
         }
     } else {
-        Err(Error::new(ErrorKind::Unknown,
-                       format!("got result \"{}\", expected \"one<L></L>two<L></L>three<L></L>four<L></L>\"", result.to_string())))
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"one<L></L>two<L></L>three<L></L>four<L></L>\"",
+                result.to_string()
+            ),
+        ))
     }
 }
 
@@ -513,10 +594,10 @@ pub fn generic_message_term<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     match test_msg_rig(
         "<Test>one<Level1/>two<Level1/>three<Level1/>four<Level1/></Test>",
@@ -531,15 +612,19 @@ pub fn generic_message_term<N: Node, G, H, J>(
         make_doc,
     ) {
         Err(e) => {
-            if e.kind == ErrorKind::Terminated &&
-                e.message == "here is a level 1 element" &&
-                e.code.unwrap().to_string() == "XTMM9000" {
+            if e.kind == ErrorKind::Terminated
+                && e.message == "here is a level 1 element"
+                && e.code.unwrap().to_string() == "XTMM9000"
+            {
                 Ok(())
             } else {
                 Err(Error::new(ErrorKind::Unknown, "incorrect error"))
             }
         }
-        Ok(_) => Err(Error::new(ErrorKind::Unknown, "evaluation succeeded when it should have failed"))
+        Ok(_) => Err(Error::new(
+            ErrorKind::Unknown,
+            "evaluation succeeded when it should have failed",
+        )),
     }
 }
 pub fn generic_callable_named_1<N: Node, G, H, J>(
@@ -547,10 +632,10 @@ pub fn generic_callable_named_1<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>",
@@ -574,17 +659,25 @@ pub fn generic_callable_named_1<N: Node, G, H, J>(
     )?;
     if result.to_string() == "There are 4 child elements" {
         Ok(())
-    } else { Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"There are 4 child elements\"", result.to_string()))) }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"There are 4 child elements\"",
+                result.to_string()
+            ),
+        ))
+    }
 }
 pub fn generic_callable_posn_1<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test><one>blue</one><two>yellow</two><three>green</three><four>blue</four></Test>",
@@ -606,39 +699,60 @@ pub fn generic_callable_posn_1<N: Node, G, H, J>(
     )?;
     if result.to_string() == "There are 4 child elements" {
         Ok(())
-    } else { Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"There are 4 child elements\"", result.to_string()))) }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"There are 4 child elements\"",
+                result.to_string()
+            ),
+        ))
+    }
 }
 pub fn generic_include<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
-    let srcdoc = parse_from_str("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")?;
-    let (styledoc, stylens) = parse_from_str_with_ns("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+    let srcdoc =
+        parse_from_str("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")?;
+    let (styledoc, stylens) = parse_from_str_with_ns(
+        "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:include href='included.xsl'/>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::Level1'>found Level1 element</xsl:template>
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
-</xsl:stylesheet>")?;
+</xsl:stylesheet>",
+    )?;
     let pwd = std::env::current_dir().expect("unable to get current directory");
-    let pwds = pwd.into_os_string().into_string().expect("unable to convert pwd");
+    let pwds = pwd
+        .into_os_string()
+        .into_string()
+        .expect("unable to convert pwd");
     let mut stctxt = StaticContext::<F>::new();
     let mut ctxt = from_document(
         styledoc,
         stylens,
-        Some(Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str()).expect("unable to parse URL")),
+        Some(
+            Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str())
+                .expect("unable to parse URL"),
+        ),
         |s| parse_from_str(s),
         |_| Ok(String::new()),
     )?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     let result = ctxt.evaluate(&mut stctxt)?;
-    if result.to_string() == "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour" {
+    if result.to_string()
+        == "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour"
+    {
         Ok(())
-    } else { Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string()))) }
+    } else {
+        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+    }
 }

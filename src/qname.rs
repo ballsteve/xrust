@@ -7,9 +7,9 @@ use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::fmt;
+use std::fmt::Debug;
 use std::fmt::Formatter;
 use std::ops::ControlFlow;
-use std::fmt::Debug;
 
 #[derive(Clone)]
 pub struct QualifiedName {
@@ -52,22 +52,23 @@ impl QualifiedName {
     /// If the qualified name has no prefix, then this method has no effect.
     pub fn resolve(&mut self, namespaces: &Vec<HashMap<String, String>>) -> Result<(), Error> {
         match (&self.prefix, &self.nsuri) {
-            (Some(p), None) => {
-                namespaces.iter().last().map_or(
-                    Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespaces to resolve prefix \"{}\"", p))),
-                    |v| {
-                        match v.get(p) {
-                            Some(u) => {
-                                self.nsuri = Some(u.clone());
-                                Ok(())
-                            }
-                            None => Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespace corresponding to prefix \"{}\"", p))),
-
-                        }
+            (Some(p), None) => namespaces.iter().last().map_or(
+                Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    format!("no namespaces to resolve prefix \"{}\"", p),
+                )),
+                |v| match v.get(p) {
+                    Some(u) => {
+                        self.nsuri = Some(u.clone());
+                        Ok(())
                     }
-                )
-            }
-            _ => Ok(())
+                    None => Err(Error::new(
+                        ErrorKind::DynamicAbsent,
+                        format!("no namespace corresponding to prefix \"{}\"", p),
+                    )),
+                },
+            ),
+            _ => Ok(()),
         }
     }
 }
