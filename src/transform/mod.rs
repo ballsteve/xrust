@@ -139,8 +139,8 @@ pub enum Transform<N: Node> {
     /// Evaluate a transformation for each selected item, with possible grouping.
     ForEach(Option<Grouping<N>>, Box<Transform<N>>, Box<Transform<N>>),
     /// Find a template that matches an item and evaluate its body with the item as the context.
-    /// Consists of the selector for items to be matched.
-    ApplyTemplates(Box<Transform<N>>),
+    /// Consists of the selector for items to be matched and the mode.
+    ApplyTemplates(Box<Transform<N>>, Option<QualifiedName>),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
@@ -292,7 +292,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
             Transform::ForEach(_g, _, _) => write!(f, "for-each"),
             Transform::Union(v) => write!(f, "union of {} operands", v.len()),
-            Transform::ApplyTemplates(_) => write!(f, "Apply templates"),
+            Transform::ApplyTemplates(_, m) => write!(f, "Apply templates (mode {:?})", m),
             Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),

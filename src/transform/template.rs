@@ -8,6 +8,7 @@ use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
+use crate::qname::QualifiedName;
 
 #[derive(Clone)]
 pub struct Template<N: Node> {
@@ -16,8 +17,7 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    #[allow(dead_code)]
-    mode: Option<String>, // Not implemented (yet)
+    pub(crate) mode: Option<QualifiedName>,
 }
 
 impl<N: Node> Template<N> {
@@ -27,7 +27,7 @@ impl<N: Node> Template<N> {
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
-        mode: Option<String>,
+        mode: Option<QualifiedName>,
     ) -> Self {
         Template {
             pattern,
@@ -40,10 +40,10 @@ impl<N: Node> Template<N> {
     }
 }
 
-/// Two templates are equal if they have the same priority and import precedence.
+/// Two templates are equal if they have the same priority, import precedence, and mode.
 impl<N: Node> PartialEq for Template<N> {
     fn eq(&self, other: &Self) -> bool {
-        self.priority == other.priority && self.import == other.import
+        self.priority == other.priority && self.import == other.import && self.mode == other.mode
     }
 }
 impl<N: Node> Eq for Template<N> {}
@@ -81,8 +81,8 @@ impl<N: Node> Debug for Template<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "template match \"{:?}\" priority {:?}",
-            self.pattern, self.priority
+            "template match \"{:?}\" priority {:?} mode {:?}",
+            self.pattern, self.priority, self.mode
         )
     }
 }
@@ -92,13 +92,14 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
+    m: &Option<QualifiedName>,
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over it's items.
     // Each iteration becomes an item in the result sequence.
     ctxt.dispatch(stctxt, s)?
         .iter()
         .try_fold(vec![], |mut result, i| {
-            let templates = ctxt.find_templates(stctxt, i)?;
+            let templates = ctxt.find_templates(stctxt, i, m)?;
             // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
             let matching = if templates.len() > 1 {
                 if templates[0].priority == templates[1].priority

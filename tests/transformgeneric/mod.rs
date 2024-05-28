@@ -2398,7 +2398,7 @@ where
     sd.push(t.clone()).expect("unable to append child");
 
     // Built-in template rule for "/"
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "/",
@@ -2406,7 +2406,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2451,7 +2451,7 @@ where
     t.push(c).expect("unable to append child");
 
     // Template rule for "Test", plus builtins
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2461,7 +2461,7 @@ where
                 Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                     axis: Axis::Child,
                     nodetest: NodeTest::Kind(KindTest::Any),
-                }))),
+                })), None),
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" after")))),
             ]), // body "before", "apply-templates select=node()", "after"
             Some(0.0), // priority
@@ -2475,7 +2475,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2521,7 +2521,7 @@ where
 
     // Template rule for "Test", plus builtins
     // Test template priorities
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2551,7 +2551,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2600,7 +2600,7 @@ where
 
     // Template rule for "Test", an overridden rule, plus builtins
     // Test imported template
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2630,7 +2630,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2642,7 +2642,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2690,7 +2690,7 @@ where
     t.push(c).expect("unable to append child");
 
     // Template rule for "Test", an overridden rule, plus builtins
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2723,7 +2723,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2735,7 +2735,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            })), None), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order

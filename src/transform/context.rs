@@ -241,7 +241,7 @@ impl<N: Node> Context<N> {
                     // There may be 0, 1, or more matching templates.
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
-                    let templates = self.find_templates(stctxt, i)?;
+                    let templates = self.find_templates(stctxt, i, &None)?;
                     match templates.len() {
                         0 => Err(Error::new(
                             ErrorKind::DynamicAbsent,
@@ -276,17 +276,20 @@ impl<N: Node> Context<N> {
         }
     }
 
-    /// Find a template with a matching [Pattern]
+    /// Find a template with a matching [Pattern] in the given mode.
     pub fn find_templates<F: FnMut(&str) -> Result<(), Error>>(
         &self,
         stctxt: &mut StaticContext<F>,
         i: &Item<N>,
+        m: &Option<QualifiedName>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
-        let mut candidates = self.templates.iter().try_fold(vec![], |mut cand, t| {
-            let e = t.pattern.matches(self, stctxt, i);
-            if e {
-                cand.push(t.clone())
-            }
+        let mut candidates = self.templates.iter()
+            .filter(|t| t.mode == *m)
+            .try_fold(vec![], |mut cand, t| {
+                let e = t.pattern.matches(self, stctxt, i);
+                if e {
+                    cand.push(t.clone())
+                }
             Ok(cand)
         })?;
         if candidates.len() != 0 {
@@ -369,7 +372,7 @@ impl<N: Node> Context<N> {
             Transform::Loop(v, b) => tr_loop(self, stctxt, v, b),
             Transform::Switch(c, o) => switch(self, stctxt, c, o),
             Transform::ForEach(g, s, b) => for_each(self, stctxt, g, s, b),
-            Transform::ApplyTemplates(s) => apply_templates(self, stctxt, s),
+            Transform::ApplyTemplates(s, m) => apply_templates(self, stctxt, s, m),
             Transform::ApplyImports => apply_imports(self, stctxt),
             Transform::NextMatch => next_match(self, stctxt),
             Transform::VariableDeclaration(n, v, f) => {

@@ -411,7 +411,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
                 Axis::Child,
                 NodeTest::Kind(KindTest::Any),
-            )))),
+            ))), None),
             None,
             vec![0],
             None,
@@ -423,7 +423,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
                 Axis::Child,
                 NodeTest::Kind(KindTest::Any),
-            )))),
+            ))), None),
             None,
             vec![0],
             None,
@@ -669,17 +669,18 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {
+                    // TODO: mode
                     let sel =
                         n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !sel.to_string().is_empty() {
                         Ok(Transform::ApplyTemplates(Box::new(parse::<N>(
                             &sel.to_string(),
-                        )?)))
+                        )?), None))
                     } else {
                         // If there is no select attribute, then default is "child::node()"
                         Ok(Transform::ApplyTemplates(Box::new(Transform::Step(
                             NodeMatch::new(Axis::Child, NodeTest::Kind(KindTest::Any)),
-                        ))))
+                        )), None))
                     }
                 }
                 (Some(XSLTNS), "apply-imports") => Ok(Transform::ApplyImports),
