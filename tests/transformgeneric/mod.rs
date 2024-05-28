@@ -2762,6 +2762,104 @@ where
     Ok(())
 }
 
+pub fn generic_tr_apply_templates_mode<N: Node, G, H>(
+    make_empty_doc: G,
+    _: H,
+) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .expect("unable to create new element");
+    sd.push(t.clone()).expect("unable to add node");
+    let c = sd
+        .new_text(Rc::new(Value::from("content")))
+        .expect("unable to text node");
+    t.push(c).expect("unable to append child");
+
+    // Template rule for "Test", an overridden rule, plus builtins
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
+    let ctxt = ContextBuilder::new()
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::SequenceItems(vec![
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                    "modeless template",
+                )))),
+                Transform::NextMatch,
+            ]),
+            Some(1.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                "mode 'modetest' template",
+            )))),
+            Some(0.0), // priority
+            vec![0],   // import
+            Some(2),   // document order
+            Some(QualifiedName::new(None, None, String::from("modetest"))),      // mode
+        ))
+        .template(Template::new(
+            // pattern "*"
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            })), None), // body "apply-templates select=node()",
+            None,    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+        ))
+        .template(Template::new(
+            // pattern "/",
+            Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
+            Transform::SequenceItems(vec![
+                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })), None),
+                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })), Some(QualifiedName::new(None, None, String::from("modetest")))),
+            ]), // body "apply-templates select=node()", "apply-templates select=node() mode='modetest'"
+            Some(1.0),    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            None,                   // mode
+        ))
+        .context(vec![Item::Node(sd)])
+        .build();
+
+    // Now Evaluate the combinator with the source document root node as the context item
+    let seq = ctxt
+        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.to_string(), "modeless templatemode 'modetest' template");
+    Ok(())
+}
+
 pub fn generic_tr_position<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,

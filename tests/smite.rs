@@ -432,6 +432,11 @@ fn tr_apply_templates_next_match() {
         .expect("test failed")
 }
 #[test]
+fn tr_apply_templates_mode() {
+    transformgeneric::generic_tr_apply_templates_mode::<RNode, _, _>(make_empty_doc, make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_position() {
     transformgeneric::generic_tr_position::<RNode, _, _>(make_empty_doc, make_sd)
         .expect("test failed")
