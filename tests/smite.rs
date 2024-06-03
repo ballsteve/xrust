@@ -9,6 +9,7 @@ use xrust::transform::context::{Context, StaticContext};
 use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::xdmerror::Error;
 
+mod node;
 mod transformgeneric;
 mod xpathgeneric;
 mod xsltgeneric;
@@ -57,6 +58,13 @@ fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>
     let doc = Rc::new(SmiteNode::new());
     let r = parse_with_ns(doc.clone(), s, None, None)?;
     Ok(r)
+}
+
+// Item Node tests
+
+#[test]
+fn node_get_attr_node() {
+    node::get_attr_node::<RNode, _>(make_empty_doc).expect("test failed")
 }
 
 // Transform tests
@@ -1037,6 +1045,11 @@ fn xslt_apply_templates_1() {
 #[test]
 fn xslt_apply_templates_2() {
     xsltgeneric::generic_apply_templates_2(make_from_str, make_from_str_with_ns, make_sd_cooked)
+        .expect("test failed")
+}
+#[test]
+fn xslt_apply_templates_mode() {
+    xsltgeneric::generic_apply_templates_mode(make_from_str, make_from_str_with_ns, make_sd_cooked)
         .expect("test failed")
 }
 #[test]

@@ -227,6 +227,15 @@ impl ItemNode for RNode {
             _ => Rc::new(Value::from(String::new())),
         }
     }
+    fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self> {
+        match &self.0 {
+            NodeInner::Element(_, _, att, _) => att
+                .borrow()
+                .get(a)
+                .map_or(None, |v| Some(v.clone())),
+            _ => None,
+        }
+    }
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
         let child = Rc::new(Node(NodeInner::Element(
             RefCell::new(Rc::downgrade(&self.owner_document())),

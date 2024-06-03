@@ -314,16 +314,19 @@ where
                 && c.name().get_localname() == "template"
         })
         .filter(|c| {
-            !c.get_attribute(&QualifiedName::new(None, None, "match".to_string()))
+            !c.get_attribute(&QualifiedName::new(None, None, "match"))
                 .to_string()
                 .is_empty()
         })
         .try_for_each(|c| {
-            let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
+            let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
             let pat = Pattern::try_from(m.to_string())?;
             let mut body = vec![];
+            let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
+            eprintln!("processing template id {} mode attr id {}", c.get_id(),
+                mode.clone().map_or("--none--".to_string(), |mm| mm.get_id()));
             c.child_iter().try_for_each(|d| {
-                body.push(to_transform(d)?);
+                body.push(to_transform(d, &stylens)?);
                 Ok::<(), Error>(())
             })?;
             //sc.static_analysis(&mut pat);
@@ -372,13 +375,14 @@ where
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
+            eprintln!("Adding template matching {:?} in mode {}", pat, mode.clone().map_or("--none--".to_string(), |mm| mm.to_string()));
             templates.push(Template::new(
                 pat,
                 Transform::SequenceItems(body),
                 Some(prio),
                 vec![import],
                 None,
-                None,
+                mode.map(|n| QualifiedName::try_from((n.to_string().as_str(), &stylens)).expect("unable to resolve qualified name")), // TODO: don't panic
             ));
             Ok::<(), Error>(())
         })?;
@@ -440,7 +444,7 @@ where
         ))
         .template_all(templates)
         .output_definition(od)
-        .namespaces(stylens)
+        .namespaces(stylens.clone())
         .build();
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
@@ -483,7 +487,7 @@ where
                             // xsl:param content is the sequence constructor
                             let mut body = vec![];
                             c.child_iter().try_for_each(|d| {
-                                body.push(to_transform(d)?);
+                                body.push(to_transform(d, &stylens)?);
                                 Ok(())
                             })?;
                             params.push((
@@ -510,7 +514,7 @@ where
                         && c.name().get_localname() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d)?);
+                    body.push(to_transform(d, &stylens)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -575,7 +579,7 @@ where
                         && c.name().get_localname() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d)?);
+                    body.push(to_transform(d, &stylens)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -592,7 +596,7 @@ where
 }
 
 /// Compile a node in a template to a sequence [Combinator]
-fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
+fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Transform<N>, Error> {
     match n.node_type() {
         NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
             n.to_string(),
@@ -669,18 +673,19 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {
-                    // TODO: mode
                     let sel =
-                        n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
+                        n.get_attribute(&QualifiedName::new(None, None, "select"));
+                    let m =
+                        n.get_attribute_node(&QualifiedName::new(None, None, "mode"));
                     if !sel.to_string().is_empty() {
                         Ok(Transform::ApplyTemplates(Box::new(parse::<N>(
                             &sel.to_string(),
-                        )?), None))
+                        )?), m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")))) // TODO: don't panic
                     } else {
                         // If there is no select attribute, then default is "child::node()"
                         Ok(Transform::ApplyTemplates(Box::new(Transform::Step(
                             NodeMatch::new(Axis::Child, NodeTest::Kind(KindTest::Any)),
-                        )), None))
+                        )), m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")))) // TODO: don't panic
                     }
                 }
                 (Some(XSLTNS), "apply-imports") => Ok(Transform::ApplyImports),
@@ -704,7 +709,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e)?);
+                                        body.push(to_transform(e, ns)?);
                                         Ok(body)
                                     },
                                 )?),
@@ -741,7 +746,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                                                 .try_fold(
                                                                     vec![],
                                                                     |mut body, e| {
-                                                                        body.push(to_transform(e)?);
+                                                                        body.push(to_transform(e, ns)?);
                                                                         Ok(body)
                                                                     },
                                                                 )?
@@ -760,7 +765,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                                     .try_fold(
                                                         vec![],
                                                         |mut o, e| {
-                                                            o.push(to_transform(e)?);
+                                                            o.push(to_transform(e, ns)?);
                                                             Ok(o)
                                                         },
                                                     )?));
@@ -803,7 +808,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
-                                    body.push(to_transform(e)?);
+                                    body.push(to_transform(e, ns)?);
                                     Ok(body)
                                 },
                             )?)),
@@ -854,7 +859,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e)?);
+                                        body.push(to_transform(e, ns)?);
                                         Ok(body)
                                     },
                                 )?)),
@@ -865,7 +870,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e)?);
+                                        body.push(to_transform(e, ns)?);
                                         Ok(body)
                                     },
                                 )?)),
@@ -887,7 +892,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                     // TODO: handle select attribute
                     let content: Vec<Transform<N>> =
                         n.child_iter().try_fold(vec![], |mut body, e| {
-                            body.push(to_transform(e)?);
+                            body.push(to_transform(e, ns)?);
                             Ok(body)
                         })?;
                     Ok(Transform::Copy(
@@ -930,7 +935,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                                         // xsl:with-param content is the sequence constructor
                                         let mut body = vec![];
                                         c.child_iter().try_for_each(|d| {
-                                            body.push(to_transform(d)?);
+                                            body.push(to_transform(d, ns)?);
                                             Ok(())
                                         })?;
                                         ap.push((
@@ -977,7 +982,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e)?);
+                                body.push(to_transform(e, ns)?);
                                 Ok(body)
                             },
                         )?)),
@@ -991,7 +996,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
-                                    body.push(to_transform(e)?);
+                                    body.push(to_transform(e, ns)?);
                                     Ok(body)
                                 },
                             )?)),
@@ -1005,7 +1010,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                 }
                 (Some(XSLTNS), "comment") => Ok(Transform::LiteralComment(Box::new(
                     Transform::SequenceItems(n.child_iter().try_fold(vec![], |mut body, e| {
-                        body.push(to_transform(e)?);
+                        body.push(to_transform(e, ns)?);
                         Ok(body)
                     })?),
                 ))),
@@ -1022,7 +1027,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e)?);
+                                body.push(to_transform(e, ns)?);
                                 Ok(body)
                             },
                         )?)),
@@ -1035,7 +1040,7 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e)?);
+                                body.push(to_transform(e, ns)?);
                                 Ok(body)
                             },
                         )?)),
@@ -1055,11 +1060,11 @@ fn to_transform<N: Node>(n: N) -> Result<Transform<N>, Error> {
                 (u, a) => {
                     let mut content = vec![];
                     n.attribute_iter().try_for_each(|e| {
-                        content.push(to_transform(e)?);
+                        content.push(to_transform(e, ns)?);
                         Ok::<(), Error>(())
                     })?;
                     n.child_iter().try_for_each(|e| {
-                        content.push(to_transform(e)?);
+                        content.push(to_transform(e, ns)?);
                         Ok::<(), Error>(())
                     })?;
                     Ok(Transform::LiteralElement(

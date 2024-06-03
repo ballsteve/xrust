@@ -431,6 +431,14 @@ impl ItemNode for RNode {
                 v.value.as_ref().unwrap().clone()
             })
     }
+    fn get_attribute_node(&self, a: &QualifiedName) -> Option<RNode> {
+        self.attributes
+            .borrow()
+            .get(a)
+            .map_or(None, |v| {
+                Some(v.clone())
+            })
+    }
 
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Element).name(qn).build())

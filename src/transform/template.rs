@@ -7,8 +7,9 @@ use std::rc::Rc;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
-use crate::{Node, Pattern, Sequence};
+use crate::{Node, Pattern, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
+use crate::transform::controlflow::for_each;
 
 #[derive(Clone)]
 pub struct Template<N: Node> {
@@ -96,10 +97,15 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over it's items.
     // Each iteration becomes an item in the result sequence.
+    eprintln!("apply-templates - {} items in context - mode \"{:?}\"", ctxt.cur.len(), m);
+    ctxt.cur.iter().for_each(|c| eprintln!("item {:?}", c));
+    eprintln!("transform: {:?}", s);
     ctxt.dispatch(stctxt, s)?
         .iter()
+        .inspect(|i| eprintln!("apply templates to item {:?} in mode {:?}", i, m))
         .try_fold(vec![], |mut result, i| {
             let templates = ctxt.find_templates(stctxt, i, m)?;
+            eprintln!("found {} candidate templates", templates.len());
             // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
             let matching = if templates.len() > 1 {
                 if templates[0].priority == templates[1].priority
@@ -125,6 +131,7 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             } else {
                 templates[0].clone()
             };
+            eprintln!("matching template {:?}", matching);
             // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
             let mut u = ContextBuilder::from(ctxt)
                 .context(vec![i.clone()])
@@ -132,6 +139,7 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                 .current_templates(templates)
                 .build()
                 .dispatch(stctxt, &matching.body)?;
+            eprintln!("appending {} sub-result {}", u.len(), u.to_string());
             result.append(&mut u);
             Ok(result)
         })
