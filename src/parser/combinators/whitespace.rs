@@ -16,7 +16,8 @@ pub fn whitespace0<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>
     )
 }
 
-pub(crate) fn whitespace1<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn whitespace1<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     //TODO add support for xml:space
     map(
         many1(alt4(tag(" "), tag("\t"), tag("\r"), tag("\n"))),
@@ -24,7 +25,8 @@ pub(crate) fn whitespace1<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseI
     )
 }
 
-pub(crate) fn xpwhitespace<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn xpwhitespace<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     map(
         tuple3(
             whitespace0(),

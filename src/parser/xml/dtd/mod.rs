@@ -28,7 +28,8 @@ use crate::parser::xml::qname::name;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn doctypedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn doctypedecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple8(
         tag("<!DOCTYPE"),
         whitespace1(),
@@ -59,11 +60,11 @@ pub(crate) fn doctypedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseI
             for (k, (v, _)) in state1.clone().dtd.generalentities {
                 if v != *"<" {
                     /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
-                    if let Err(ParseError::NotWellFormed) = reference()((
+                    if let Err(ParseError::NotWellFormed(v)) = reference()((
                         ["&".to_string(), k, ";".to_string()].join("").as_str(),
                         state1.clone(),
                     )) {
-                        return Err(ParseError::NotWellFormed);
+                        return Err(ParseError::NotWellFormed(v));
                     }
                 }
             }
@@ -128,7 +129,8 @@ fn externalid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ())
     }
 }
 
-fn textexternalid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn textexternalid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+{
     move |(input, state)| {
         match alt2(
             map(

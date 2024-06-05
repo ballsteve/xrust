@@ -39,15 +39,16 @@ pub(crate) fn instanceof_expr<'a, N: Node + 'a>(
 
 // SequenceType ::= ( 'empty-sequence' '(' ')' | (ItemType OccurrenceIndicator?)
 // TODO: implement this parser fully
-fn sequencetype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a>
-{
+fn sequencetype_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(tag("empty-sequence()"), |_| {
         Transform::NotImplemented("sequencetype_expr".to_string())
     }))
 }
 
 // TreatExpr ::= CastableExpr ( 'treat' 'as' SequenceType)?
-fn treat_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn treat_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             castable_expr::<N>(),
@@ -71,7 +72,8 @@ fn treat_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseI
 }
 
 // CastableExpr ::= CastExpr ( 'castable' 'as' SingleType)?
-fn castable_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn castable_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             cast_expr::<N>(),
@@ -107,15 +109,16 @@ fn castable_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(Par
 // NCName ::= Name - (Char* ':' Char*)
 // Char ::= #x9 | #xA |#xD | [#x20-#xD7FF] | [#xE000-#xFFFD | [#x10000-#x10FFFF]
 // TODO: implement this parser fully
-fn singletype_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a>
-{
+fn singletype_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(pair(qualname_test(), tag("?")), |_| {
         Transform::NotImplemented("singletype_expr".to_string())
     }))
 }
 
 // CastExpr ::= ArrowExpr ( 'cast' 'as' SingleType)?
-fn cast_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn cast_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             arrow_expr::<N>(),

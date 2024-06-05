@@ -185,7 +185,6 @@ eol = "X".
         .expect("unable to parse input");
     // Translate the temporary tree into an Xrust RNode
     let md = to_rnode(&md_arena);
-    eprintln!("Input parsed to: {}", md.to_xml());
 
     // Now compile the XSL Stylesheet
     let pwd = std::env::current_dir().expect("unable to get current directory");
@@ -195,6 +194,7 @@ eol = "X".
         .expect("unable to convert pwd");
     let mut ctxt = from_document(
         style,
+        vec![],
         Some(
             Url::parse(format!("file://{}/{}", pwds, &args[1]).as_str())
                 .expect("unable to parse stylesheet URL"),

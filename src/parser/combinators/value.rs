@@ -1,7 +1,10 @@
 use crate::item::Node;
-use crate::parser::{ParseInput, ParseError};
+use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn value<P1, R1, V: Clone, N: Node>(parser1: P1, val: V) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, V), ParseError>
+pub(crate) fn value<P1, R1, V: Clone, N: Node>(
+    parser1: P1,
+    val: V,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, V), ParseError>
 where
     P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R1), ParseError>,
 {

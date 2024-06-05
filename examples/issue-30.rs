@@ -69,9 +69,7 @@ fn main() {
     doc.push(root).expect("unable to append root node");
 
     // Create a transformation context
-    let context = ContextBuilder::new()
-        .current(vec![Item::Node(doc)])
-        .build();
+    let context = ContextBuilder::new().context(vec![Item::Node(doc)]).build();
 
     // Let 'er rip!
     let result = context

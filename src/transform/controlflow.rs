@@ -66,7 +66,8 @@ pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             let mut result: Sequence<N> = Vec::new();
             for i in ctxt.dispatch(stctxt, s)? {
                 let mut v = ContextBuilder::from(ctxt)
-                    .current(vec![i])
+                    .context(vec![i.clone()])
+                    .previous_context(Some(i))
                     .build()
                     .dispatch(stctxt, body)?;
                 result.append(&mut v);
@@ -96,7 +97,8 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         // There may be multiple keys returned.
         // For each one, add this item into the group for that key
         ContextBuilder::from(ctxt)
-            .current(vec![i.clone()])
+            .context(vec![i.clone()])
+            .previous_context(Some(i.clone()))
             .build()
             .dispatch(stctxt, &t)?
             .iter()
@@ -137,7 +139,7 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     } else {
         let mut curgrp = vec![sel[0].clone()];
         let mut curkey = ContextBuilder::from(ctxt)
-            .current(vec![sel[1].clone()])
+            .context(vec![sel[1].clone()])
             .build()
             .dispatch(stctxt, &t)?;
         if curkey.len() != 1 {
@@ -148,7 +150,8 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         }
         sel.iter().skip(1).try_for_each(|i| {
             let thiskey = ContextBuilder::from(ctxt)
-                .current(vec![i.clone()])
+                .context(vec![i.clone()])
+                .previous_context(Some(i.clone()))
                 .build()
                 .dispatch(stctxt, &t)?;
             if thiskey.len() == 1 {

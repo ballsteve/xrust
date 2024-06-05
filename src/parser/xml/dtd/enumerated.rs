@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -7,10 +8,10 @@ use crate::parser::combinators::whitespace::whitespace0;
 use crate::parser::xml::dtd::misc::nmtoken;
 use crate::parser::xml::dtd::notation::notationtype;
 use crate::parser::{ParseError, ParseInput};
-use crate::item::Node;
 
 //EnumeratedType ::= NotationType | Enumeration
-pub(crate) fn enumeratedtype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn enumeratedtype<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     alt2(notationtype(), enumeration())
 }
 

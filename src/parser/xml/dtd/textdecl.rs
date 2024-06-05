@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
@@ -7,9 +8,9 @@ use crate::parser::xml::strings::delimited_string;
 use crate::parser::xml::xmldecl::encodingdecl;
 use crate::parser::{ParseError, ParseInput};
 use crate::xmldecl::XMLDecl;
-use crate::item::Node;
 
-fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+{
     move |(input, state)| match tuple5(
         tag("version"),
         whitespace0(),
@@ -21,7 +22,7 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
         Ok(((input1, state1), (_, _, _, _, v))) => {
             if v == *"1.1" {
                 if state1.xmlversion == "1.0" {
-                    return Err(ParseError::NotWellFormed);
+                    return Err(ParseError::NotWellFormed(String::from("version mismatch")));
                 }
                 Ok(((input1, state1), v))
             } else if v.starts_with("1.") {
@@ -34,7 +35,8 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
     }
 }
 
-pub(crate) fn textdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
+pub(crate) fn textdecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
     //This is NOT the same as the XML declaration in XML documents.
     //There is no standalone, and the version is optional.
     map(

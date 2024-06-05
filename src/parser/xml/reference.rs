@@ -1,4 +1,3 @@
-use std::rc::Rc;
 use crate::item::{Node, NodeType};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
@@ -7,10 +6,12 @@ use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::element::content;
 use crate::parser::{ParseError, ParseInput};
 use crate::value::Value;
+use std::rc::Rc;
 
 // Reference ::= EntityRef | CharRef
 // \Its important to note, we pre-populate the standard char references in the DTD.
-pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn reference<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state.clone()));
         match e {
@@ -19,23 +20,48 @@ pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
                 match entitykey.as_str() {
                     "amp" => Ok((
                         (input1, state1),
-                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("&".to_string()))).expect("unable to create text node")],
+                        vec![state
+                            .doc
+                            .clone()
+                            .unwrap()
+                            .new_text(Rc::new(Value::String("&".to_string())))
+                            .expect("unable to create text node")],
                     )),
                     "gt" => Ok((
                         (input1, state1),
-                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String(">".to_string()))).expect("unable to create text node")],
+                        vec![state
+                            .doc
+                            .clone()
+                            .unwrap()
+                            .new_text(Rc::new(Value::String(">".to_string())))
+                            .expect("unable to create text node")],
                     )),
                     "lt" => Ok((
                         (input1, state1),
-                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("<".to_string()))).expect("unable to create text node")],
+                        vec![state
+                            .doc
+                            .clone()
+                            .unwrap()
+                            .new_text(Rc::new(Value::String("<".to_string())))
+                            .expect("unable to create text node")],
                     )),
                     "quot" => Ok((
                         (input1, state1),
-                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("\"".to_string()))).expect("unable to create text node")],
+                        vec![state
+                            .doc
+                            .clone()
+                            .unwrap()
+                            .new_text(Rc::new(Value::String("\"".to_string())))
+                            .expect("unable to create text node")],
                     )),
                     "apos" => Ok((
                         (input1, state1),
-                        vec![state.doc.clone().unwrap().new_text(Rc::new(Value::String("'".to_string()))).expect("unable to create text node")],
+                        vec![state
+                            .doc
+                            .clone()
+                            .unwrap()
+                            .new_text(Rc::new(Value::String("'".to_string())))
+                            .expect("unable to create text node")],
                     )),
                     _ => {
                         match state1.clone().dtd.generalentities.get(&entitykey as &str) {
@@ -63,12 +89,12 @@ pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
                                     match content()((e2.as_str(), tempstate)) {
                                         Ok(((outstr, _), nodes)) => {
                                             if outstr != "<" {
-                                                Err(ParseError::NotWellFormed)
+                                                Err(ParseError::NotWellFormed(outstr.to_string()))
                                             } else {
                                                 Ok(((input1, state1), nodes))
                                             }
                                         }
-                                        Err(_) => Err(ParseError::NotWellFormed),
+                                        Err(_) => Err(ParseError::NotWellFormed(e2)),
                                     }
                                 }
                             }
@@ -120,12 +146,12 @@ pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
                                                                     match content()((e2.as_str(), tempstate)) {
                                                                         Ok(((outstr, _), nodes)) => {
                                                                             if outstr != "<" {
-                                                                                Err(ParseError::NotWellFormed)
+                                                                                Err(ParseError::NotWellFormed(outstr.to_string()))
                                                                             } else {
                                                                                 Ok(((input1, state2), nodes))
                                                                             }
                                                                         }
-                                                                        Err(_) => Err(ParseError::NotWellFormed),
+                                                                        Err(_) => Err(ParseError::NotWellFormed(e2)),
                                                                     }
                                                                 }
                                                             }
@@ -151,7 +177,8 @@ pub(crate) fn reference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInp
     }
 }
 
-pub(crate) fn textreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn textreference<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("&"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -190,19 +217,23 @@ pub(crate) fn textreference<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Pars
                                     match content()((e2.as_str(), tempstate)) {
                                         Ok(((outstr, _), nodes)) => {
                                             if outstr != "<" {
-                                                Err(ParseError::NotWellFormed)
+                                                Err(ParseError::NotWellFormed(outstr.to_string()))
                                             } else {
                                                 let mut res = vec![];
                                                 for rn in nodes {
                                                     match rn.node_type() {
                                                         NodeType::Text => res.push(rn.to_string()),
-                                                        _ => return Err(ParseError::NotWellFormed),
+                                                        _ => {
+                                                            return Err(ParseError::NotWellFormed(
+                                                                String::from("not a text node"),
+                                                            ))
+                                                        }
                                                     }
                                                 }
                                                 Ok(((input1, state1), res.concat()))
                                             }
                                         }
-                                        Err(_) => Err(ParseError::NotWellFormed),
+                                        Err(_) => Err(ParseError::NotWellFormed(e2)),
                                     }
                                 }
                             }

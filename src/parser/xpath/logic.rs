@@ -29,7 +29,8 @@ pub(crate) fn or_expr<'a, N: Node + 'a>(
 }
 
 // AndExpr ::= ComparisonExpr ('and' ComparisonExpr)*
-fn and_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn and_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag("and"), xpwhitespace()), |_| ()),

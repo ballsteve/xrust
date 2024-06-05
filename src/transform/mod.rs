@@ -34,12 +34,14 @@ assert_eq!(sequence.to_string(), "2")
 */
 
 pub(crate) mod booleans;
+pub mod callable;
 pub(crate) mod construct;
 pub mod context;
 pub(crate) mod controlflow;
 pub(crate) mod datetime;
 pub(crate) mod functions;
 pub(crate) mod grouping;
+mod keys;
 pub(crate) mod logic;
 pub(crate) mod misc;
 pub(crate) mod navigate;
@@ -52,21 +54,24 @@ pub(crate) mod variables;
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType};
 use crate::qname::QualifiedName;
+use crate::transform::callable::ActualParameters;
 use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use std::convert::TryFrom;
 use std::fmt;
-use std::fmt::Formatter;
+use std::fmt::{Debug, Formatter};
 
 /// Specifies how a [Sequence] is constructed.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Transform<N: Node> {
     /// Produces the root node of the tree containing the context item.
     Root,
     /// Produces a copy of the context item.
     ContextItem,
+    /// Produces a copy of the current item (see XSLT 20.4.1).
+    CurrentItem,
 
     /// A path in a tree. Each element of the outer vector is a step in the path.
     /// The result of each step becomes the new context for the next step.
@@ -213,13 +218,19 @@ pub enum Transform<N: Node> {
     ),
     CurrentGroup,
     CurrentGroupingKey,
-    /// A user-defined callable. Consists of a name, an argument list, and a body.
-    /// TODO: merge with Call?
-    UserDefined(
-        QualifiedName,
-        Vec<(String, Transform<N>)>,
+    /// Look up a key. The first argument is the key name, the second argument is the key value,
+    /// the third argument is the top of the tree for the resulting nodes.
+    Key(
         Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
     ),
+    /// Get information about the processor
+    SystemProperty(Box<Transform<N>>),
+    AvailableSystemProperties,
+
+    /// Invoke a callable component. Consists of a name, an actual argument list.
+    Invoke(QualifiedName, ActualParameters<N>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -237,13 +248,21 @@ pub enum Transform<N: Node> {
     Error(ErrorKind, String),
 }
 
-impl<N: Node> fmt::Display for Transform<N> {
+impl<N: Node> Debug for Transform<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Transform::Root => write!(f, "root node"),
             Transform::ContextItem => write!(f, "context item"),
+            Transform::CurrentItem => write!(f, "current item"),
             Transform::SequenceItems(v) => write!(f, "Sequence of {} items", v.len()),
-            Transform::Compose(v) => write!(f, "Compose {} steps", v.len()),
+            Transform::Compose(v) => {
+                write!(f, "Compose {} steps [", v.len()).expect("unable to format step");
+                v.iter().for_each(|s| {
+                    s.fmt(f).expect("unable to format step");
+                    write!(f, "; ").expect("unable to format step")
+                });
+                write!(f, "]")
+            }
             Transform::Step(nm) => write!(f, "Step matching {}", nm),
             Transform::Filter(_) => write!(f, "Filter"),
             Transform::Empty => write!(f, "Empty"),
@@ -259,10 +278,10 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {
-                write!(f, "general comparison {} of {} and {}", o, v, u)
+                write!(f, "general comparison {} of {:?} and {:?}", o, v, u)
             }
             Transform::ValueComparison(o, v, u) => {
-                write!(f, "value comparison {} of {} and {}", o, v, u)
+                write!(f, "value comparison {} of {:?} and {:?}", o, v, u)
             }
             Transform::Concat(o) => write!(f, "Concatenate {} operands", o.len()),
             Transform::Range(_, _) => write!(f, "range"),
@@ -285,36 +304,39 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Count(_s) => write!(f, "count()"),
             Transform::Name(_n) => write!(f, "name()"),
             Transform::LocalName(_n) => write!(f, "local-name()"),
-            Transform::String(s) => write!(f, "string({})", s),
-            Transform::StartsWith(s, t) => write!(f, "starts-with({}, {})", s, t),
-            Transform::EndsWith(s, t) => write!(f, "ends-with({}, {})", s, t),
-            Transform::Contains(s, t) => write!(f, "contains({}, {})", s, t),
-            Transform::Substring(s, t, _l) => write!(f, "substring({}, {}, ...)", s, t),
-            Transform::SubstringBefore(s, t) => write!(f, "substring-before({}, {})", s, t),
-            Transform::SubstringAfter(s, t) => write!(f, "substring-after({}, {})", s, t),
+            Transform::String(s) => write!(f, "string({:?})", s),
+            Transform::StartsWith(s, t) => write!(f, "starts-with({:?}, {:?})", s, t),
+            Transform::EndsWith(s, t) => write!(f, "ends-with({:?}, {:?})", s, t),
+            Transform::Contains(s, t) => write!(f, "contains({:?}, {:?})", s, t),
+            Transform::Substring(s, t, _l) => write!(f, "substring({:?}, {:?}, ...)", s, t),
+            Transform::SubstringBefore(s, t) => write!(f, "substring-before({:?}, {:?})", s, t),
+            Transform::SubstringAfter(s, t) => write!(f, "substring-after({:?}, {:?})", s, t),
             Transform::NormalizeSpace(_s) => write!(f, "normalize-space()"),
-            Transform::Translate(s, t, u) => write!(f, "translate({}, {}, {})", s, t, u),
+            Transform::Translate(s, t, u) => write!(f, "translate({:?}, {:?}, {:?})", s, t, u),
             Transform::GenerateId(_) => write!(f, "generate-id()"),
-            Transform::Boolean(b) => write!(f, "boolean({})", b),
-            Transform::Not(b) => write!(f, "not({})", b),
+            Transform::Boolean(b) => write!(f, "boolean({:?})", b),
+            Transform::Not(b) => write!(f, "not({:?})", b),
             Transform::True => write!(f, "true"),
             Transform::False => write!(f, "false"),
-            Transform::Number(n) => write!(f, "number({})", n),
-            Transform::Sum(n) => write!(f, "sum({})", n),
-            Transform::Floor(n) => write!(f, "floor({})", n),
-            Transform::Ceiling(n) => write!(f, "ceiling({})", n),
-            Transform::Round(n, _p) => write!(f, "round({},...)", n),
+            Transform::Number(n) => write!(f, "number({:?})", n),
+            Transform::Sum(n) => write!(f, "sum({:?})", n),
+            Transform::Floor(n) => write!(f, "floor({:?})", n),
+            Transform::Ceiling(n) => write!(f, "ceiling({:?})", n),
+            Transform::Round(n, _p) => write!(f, "round({:?},...)", n),
             Transform::CurrentDateTime => write!(f, "current-date-time"),
             Transform::CurrentDate => write!(f, "current-date"),
             Transform::CurrentTime => write!(f, "current-time"),
             Transform::FormatDateTime(p, q, _, _, _) => {
-                write!(f, "format-date-time({}, {}, ...)", p, q)
+                write!(f, "format-date-time({:?}, {:?}, ...)", p, q)
             }
-            Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({}, {}, ...)", p, q),
-            Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({}, {}, ...)", p, q),
+            Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({:?}, {:?}, ...)", p, q),
+            Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
-            Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
+            Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
+            Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
+            Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
+            Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),

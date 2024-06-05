@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3, alt4};
 use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
@@ -11,13 +12,14 @@ use crate::parser::common::is_namechar;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
-use crate::item::Node;
 
-pub(crate) fn nmtoken<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn nmtoken<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+{
     map(many1(take_while(|c| is_namechar(&c))), |_x| ())
 }
 
-pub(crate) fn contentspec<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn contentspec<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     alt4(
         value(tag("EMPTY"), "EMPTY".to_string()),
         value(tag("ANY"), "ANY".to_string()),
@@ -27,7 +29,8 @@ pub(crate) fn contentspec<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseI
 }
 
 //Mixed	   ::=   	'(' S? '#PCDATA' (S? '|' S? Name)* S? ')*' | '(' S? '#PCDATA' S? ')'
-pub(crate) fn mixed<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn mixed<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     alt2(
         map(
             tuple6(
@@ -59,7 +62,8 @@ pub(crate) fn mixed<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N
 }
 
 // children	   ::=   	(choice | seq) ('?' | '*' | '+')?
-pub(crate) fn children<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn children<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         tuple2(
             alt3(petextreference(), choice(), seq()),

@@ -81,7 +81,7 @@ impl<N: Node> Debug for Template<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "template match \"{}\" priority {:?}",
+            "template match \"{:?}\" priority {:?}",
             self.pattern, self.priority
         )
     }
@@ -126,7 +126,8 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             };
             // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
             let mut u = ContextBuilder::from(ctxt)
-                .current(vec![i.clone()])
+                .context(vec![i.clone()])
+                .previous_context(Some(i.clone()))
                 .current_templates(templates)
                 .build()
                 .dispatch(stctxt, &matching.body)?;

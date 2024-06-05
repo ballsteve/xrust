@@ -1,15 +1,17 @@
 //! Support for Qualified Names.
 
-use crate::parser::xml::qname::qualname;
+use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
+use crate::trees::nullo::Nullo;
 use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
 use std::collections::HashMap;
 use std::fmt;
+use std::fmt::Debug;
 use std::fmt::Formatter;
-use crate::trees::nullo::Nullo;
+use std::ops::ControlFlow;
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct QualifiedName {
     nsuri: Option<String>,
     prefix: Option<String>,
@@ -18,11 +20,15 @@ pub struct QualifiedName {
 
 // TODO: we may need methods that return a string slice, rather than a copy of the string
 impl QualifiedName {
-    pub fn new(nsuri: Option<String>, prefix: Option<String>, localname: String) -> QualifiedName {
+    pub fn new(
+        nsuri: Option<String>,
+        prefix: Option<String>,
+        localname: impl Into<String>,
+    ) -> QualifiedName {
         QualifiedName {
             nsuri,
             prefix,
-            localname,
+            localname: localname.into(),
         }
     }
     pub fn as_ref(&self) -> &Self {
@@ -40,6 +46,31 @@ impl QualifiedName {
     pub fn get_localname(&self) -> String {
         self.localname.clone()
     }
+    /// Fully resolve a qualified name. If the qualified name has a prefix but no namespace URI,
+    /// then find the prefix in the supplied namespaces and use the corresponding URI.
+    /// If the qualified name already has a namespace URI, then this method has no effect.
+    /// If the qualified name has no prefix, then this method has no effect.
+    pub fn resolve(&mut self, namespaces: &Vec<HashMap<String, String>>) -> Result<(), Error> {
+        match (&self.prefix, &self.nsuri) {
+            (Some(p), None) => namespaces.iter().last().map_or(
+                Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    format!("no namespaces to resolve prefix \"{}\"", p),
+                )),
+                |v| match v.get(p) {
+                    Some(u) => {
+                        self.nsuri = Some(u.clone());
+                        Ok(())
+                    }
+                    None => Err(Error::new(
+                        ErrorKind::DynamicAbsent,
+                        format!("no namespace corresponding to prefix \"{}\"", p),
+                    )),
+                },
+            ),
+            _ => Ok(()),
+        }
+    }
 }
 
 impl fmt::Display for QualifiedName {
@@ -51,6 +82,18 @@ impl fmt::Display for QualifiedName {
         });
         result.push_str(self.localname.as_str());
         f.write_str(result.as_str())
+    }
+}
+
+impl Debug for QualifiedName {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        let _ = f.write_str("namespace ");
+        let _ = f.write_str(self.nsuri.as_ref().map_or("--none--", |ns| ns.as_str()));
+        let _ = f.write_str(" prefix ");
+        let _ = f.write_str(self.prefix.as_ref().map_or("--none--", |p| p.as_str()));
+        let _ = f.write_str(" local part \"");
+        let _ = f.write_str(self.localname.as_str());
+        f.write_str("\"")
     }
 }
 
@@ -92,8 +135,47 @@ impl TryFrom<&str> for QualifiedName {
     type Error = Error;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
         let state: ParserState<Nullo> = ParserState::new(None, None, None);
-        match qualname()((s, state)) {
+        match eqname()((s, state)) {
             Ok((_, qn)) => Ok(qn),
+            Err(_) => Err(Error::new(
+                ErrorKind::ParseError,
+                String::from("unable to parse qualified name"),
+            )),
+        }
+    }
+}
+
+/// Parse a string to create a [QualifiedName].
+/// Resolve prefix against a set of XML Namespace declarations
+/// QualifiedName ::= (prefix ":")? local-name
+impl TryFrom<(&str, &Vec<HashMap<String, String>>)> for QualifiedName {
+    type Error = Error;
+    fn try_from(s: (&str, &Vec<HashMap<String, String>>)) -> Result<Self, Self::Error> {
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+        match eqname()((s.0, state)) {
+            Ok((_, qn)) => {
+                if qn.get_prefix().is_some() && !qn.get_nsuri_ref().is_some() {
+                    match s
+                        .1
+                        .iter()
+                        .try_for_each(|h| match h.get(&qn.get_prefix().unwrap()) {
+                            Some(ns) => return ControlFlow::Break(ns.clone()),
+                            None => ControlFlow::Continue(()),
+                        }) {
+                        ControlFlow::Break(ns) => Ok(QualifiedName::new(
+                            Some(ns),
+                            Some(qn.get_prefix().unwrap()),
+                            qn.get_localname(),
+                        )),
+                        _ => Err(Error::new(
+                            ErrorKind::Unknown,
+                            format!("unable to match prefix \"{}\"", qn.get_prefix().unwrap()),
+                        )),
+                    }
+                } else {
+                    Ok(qn)
+                }
+            }
             Err(_) => Err(Error::new(
                 ErrorKind::ParseError,
                 String::from("unable to parse qualified name"),
@@ -124,6 +206,14 @@ mod tests {
             .to_string(),
             "x:foo"
         )
+    }
+    #[test]
+    fn eqname() {
+        let e = QualifiedName::try_from("Q{http://example.org/bar}foo")
+            .expect("unable to parse EQName");
+        assert_eq!(e.get_localname(), "foo");
+        assert_eq!(e.get_nsuri_ref(), Some("http://example.org/bar"));
+        assert_eq!(e.get_prefix(), None)
     }
     #[test]
     fn hashmap() {

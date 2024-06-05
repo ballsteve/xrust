@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -11,10 +12,10 @@ use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::{ParseError, ParseInput};
 use crate::xmldecl::DTDDecl;
-use crate::item::Node;
 
 //NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
-pub(crate) fn notationtype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn notationtype<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     map(
         tuple8(
             tag("NOTATION"),
@@ -30,7 +31,8 @@ pub(crate) fn notationtype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Parse
     )
 }
 
-pub(crate) fn notationpublicid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn notationpublicid<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     alt3(
         map(
             tuple3(
@@ -81,7 +83,8 @@ pub(crate) fn notationpublicid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(P
     )
 }
 
-pub(crate) fn ndatadecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn ndatadecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple7(
         tag("<!NOTATION"),
         whitespace1(),

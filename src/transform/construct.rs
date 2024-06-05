@@ -1,6 +1,5 @@
 //! These functions construct nodes, possibly destined for the result document.
 
-use std::rc::Rc;
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
@@ -8,6 +7,7 @@ use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
+use std::rc::Rc;
 
 /// An empty sequence.
 pub(crate) fn empty<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -15,10 +15,7 @@ pub(crate) fn empty<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 }
 
 /// Creates a singleton sequence with the given value
-pub(crate) fn literal<N: Node>(
-    _ctxt: &Context<N>,
-    val: &Item<N>,
-) -> Result<Sequence<N>, Error> {
+pub(crate) fn literal<N: Node>(_ctxt: &Context<N>, val: &Item<N>) -> Result<Sequence<N>, Error> {
     Ok(vec![val.clone()])
 }
 
@@ -101,7 +98,6 @@ pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     t: &Transform<N>,
     b: &bool,
 ) -> Result<Sequence<N>, Error> {
-    eprintln!("literal text");
     if ctxt.rd.is_none() {
         return Err(Error::new(
             ErrorKind::Unknown,
@@ -110,19 +106,20 @@ pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     }
 
     let v = ctxt.dispatch(stctxt, t)?.to_string();
-    eprintln!("literal text has value \"{}\"", v);
     if *b {
-        eprintln!("output escaping is disabled");
-        Ok(vec![Item::Node(ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v)))?)])
+        Ok(vec![Item::Node(
+            ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v)))?,
+        )])
     } else {
-        eprintln!("output escaping is enabled");
-        Ok(vec![Item::Node(ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v
-            .replace('&', "&amp;")
-            .replace('>', "&gt;")
-            .replace('<', "&lt;")
-            .replace('\'', "&apos;")
-            .replace('\"', "&quot;")
-        )))?)])
+        Ok(vec![Item::Node(
+            ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(
+                v.replace('&', "&amp;")
+                    .replace('>', "&gt;")
+                    .replace('<', "&lt;")
+                    .replace('\'', "&apos;")
+                    .replace('\"', "&quot;"),
+            )))?,
+        )])
     }
 }
 
@@ -221,15 +218,17 @@ pub(crate) fn set_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                             n.add_attribute(od.new_attribute(atname.clone(), av.clone())?)?;
                         }
                         _ => {
-                            n.add_attribute(
-                                od.new_attribute(atname.clone(), Rc::new(Value::from(attval.to_string())))?,
-                            )?;
+                            n.add_attribute(od.new_attribute(
+                                atname.clone(),
+                                Rc::new(Value::from(attval.to_string())),
+                            )?)?;
                         }
                     }
                 } else {
-                    n.add_attribute(
-                        od.new_attribute(atname.clone(), Rc::new(Value::from(attval.to_string())))?,
-                    )?;
+                    n.add_attribute(od.new_attribute(
+                        atname.clone(),
+                        Rc::new(Value::from(attval.to_string())),
+                    )?)?;
                 }
             }
             _ => {
@@ -279,9 +278,7 @@ pub(crate) fn copy<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             Item::Node(mut im) => {
                 for j in ctxt.dispatch(stctxt, c)? {
                     match &j {
-                        Item::Value(v) => {
-                            im.push(im.new_text(v.clone())?)?
-                        },
+                        Item::Value(v) => im.push(im.new_text(v.clone())?)?,
                         Item::Node(n) => im.push(n.clone())?,
                         _ => {
                             return Err(Error::new(

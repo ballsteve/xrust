@@ -14,7 +14,7 @@ where
             if validate_fn(&result) {
                 Ok(((input2, state2), result))
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(input2.to_string()))
             }
         }
         Err(err) => Err(err),
@@ -40,12 +40,12 @@ where
                 if validate_fn11(&result) {
                     Ok(((input2, state2), result))
                 } else {
-                    Err(ParseError::NotWellFormed)
+                    Err(ParseError::NotWellFormed(input2.to_string()))
                 }
             } else if validate_fn10(&result) {
                 Ok(((input2, state2), result))
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(input2.to_string()))
             }
         }
         Err(err) => Err(err),

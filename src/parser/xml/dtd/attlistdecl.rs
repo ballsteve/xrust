@@ -18,7 +18,8 @@ use crate::parser::{ParseError, ParseInput};
 use crate::xmldecl::DTDDecl;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
-pub(crate) fn attlistdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+pub(crate) fn attlistdecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| match tuple6(
         tag("<!ATTLIST"),
         whitespace1(),

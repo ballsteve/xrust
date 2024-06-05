@@ -1,7 +1,8 @@
 use crate::item::Node;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn take_one<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
+pub(crate) fn take_one<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
     move |(input, state)| {
         let c = input.chars().next();
         match c {
@@ -11,7 +12,9 @@ pub(crate) fn take_one<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInpu
     }
 }
 
-pub(crate) fn take_until<N: Node>(s: &'static str) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn take_until<N: Node>(
+    s: &'static str,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| match input.find(s) {
         None => Err(ParseError::Combinator),
         Some(ind) => Ok(((&input[ind..], state), input[0..ind].to_string())),
@@ -74,7 +77,8 @@ pub(crate) fn take_until_either_or_min1<N: Node>(
     }
 }
 
-pub(crate) fn take_until_end<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn take_until_end<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| Ok((("", state), input.to_string()))
 }
 
@@ -82,7 +86,9 @@ pub(crate) fn take_until_end<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Par
 /// If there is no character that fails the condition,
 /// then if the input is empty returns ParseError::Combinator (i.e. no match),
 /// otherwise returns the input.
-pub(crate) fn take_while<F, N: Node>(condition: F) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+pub(crate) fn take_while<F, N: Node>(
+    condition: F,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
 //TODO REPLACE WITH ORDINARY TAKE_WHILE
 where
     F: Fn(char) -> bool,
@@ -149,7 +155,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until(">");
         assert_eq!(
-            Ok(((">", ParserState::new(None, None, None)), "<doc".to_string())),
+            Ok((
+                (">", ParserState::new(None, None, None)),
+                "<doc".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -167,7 +176,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until("oc");
         assert_eq!(
-            Ok((("oc>", ParserState::new(None, None, None)), "<d".to_string())),
+            Ok((
+                ("oc>", ParserState::new(None, None, None)),
+                "<d".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -178,7 +190,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until("doc");
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), "<".to_string())),
+            Ok((
+                ("doc>", ParserState::new(None, None, None)),
+                "<".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -203,7 +218,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_while(|c| c != 'B' && c != 'C');
         assert_eq!(
-            Ok((("BCDEFGH", ParserState::new(None, None, None)), "A".to_string())),
+            Ok((
+                ("BCDEFGH", ParserState::new(None, None, None)),
+                "A".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -228,7 +246,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until_either_or("DE", "FG");
         assert_eq!(
-            Ok((("DEFGH", ParserState::new(None, None, None)), "ABC".to_string())),
+            Ok((
+                ("DEFGH", ParserState::new(None, None, None)),
+                "ABC".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -247,7 +268,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until_either_or("EF", "FF");
         assert_eq!(
-            Ok((("EFGH", ParserState::new(None, None, None)), "ABCD".to_string())),
+            Ok((
+                ("EFGH", ParserState::new(None, None, None)),
+                "ABCD".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -258,7 +282,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until_either_or("ABD", "GH");
         assert_eq!(
-            Ok((("GH", ParserState::new(None, None, None)), "ABCDEF".to_string())),
+            Ok((
+                ("GH", ParserState::new(None, None, None)),
+                "ABCDEF".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -269,7 +296,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_until_either_or("BC", "BC");
         assert_eq!(
-            Ok((("BCDEFGH", ParserState::new(None, None, None)), "A".to_string())),
+            Ok((
+                ("BCDEFGH", ParserState::new(None, None, None)),
+                "A".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -280,7 +310,10 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
         let parse_doc = take_while_m_n(2, 4, |c| c.is_uppercase());
         assert_eq!(
-            Ok((("EFGH", ParserState::new(None, None, None)), "ABCD".to_string())),
+            Ok((
+                ("EFGH", ParserState::new(None, None, None)),
+                "ABCD".to_string()
+            )),
             parse_doc((testdoc, teststate))
         );
     }

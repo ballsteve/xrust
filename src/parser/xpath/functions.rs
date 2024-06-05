@@ -16,6 +16,8 @@ use crate::parser::xpath::expressions::parenthesized_expr;
 use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::numbers::unary_expr;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::QualifiedName;
+use crate::transform::callable::ActualParameters;
 use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
 use crate::xdmerror::ErrorKind;
 
@@ -64,10 +66,11 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
         pair(qualname_test(), argumentlist::<N>()),
         |(qn, mut a)| match qn {
             NodeTest::Name(NameTest {
-                name: Some(WildcardOrName::Name(localpart)),
+                name: Some(WildcardOrName::Name(ref localpart)),
                 ns: None,
                 prefix: None,
             }) => match localpart.as_str() {
+                "current" => Transform::CurrentItem,
                 "position" => Transform::Position,
                 "last" => Transform::Last,
                 "count" => {
@@ -396,17 +399,77 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
-                _ => Transform::Error(ErrorKind::ParseError, String::from("undefined function")), // TODO: user-defined functions
+                "key" => {
+                    if a.len() == 2 {
+                        let m = a.pop().unwrap();
+                        let name = a.pop().unwrap();
+                        Transform::Key(Box::new(name), Box::new(m), None)
+                    } else if a.len() == 3 {
+                        let u = a.pop().unwrap();
+                        let m = a.pop().unwrap();
+                        let name = a.pop().unwrap();
+                        Transform::Key(Box::new(name), Box::new(m), Some(Box::new(u)))
+                    } else {
+                        // Wrong # arguments
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
+                "system-property" => {
+                    if a.len() == 1 {
+                        let p = a.pop().unwrap();
+                        Transform::SystemProperty(Box::new(p))
+                    } else {
+                        // Wrong # arguments
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
+                "available-system-properties" => {
+                    if a.len() == 0 {
+                        Transform::AvailableSystemProperties
+                    } else {
+                        // Wrong # arguments
+                        Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
+                _ => Transform::Error(
+                    ErrorKind::ParseError,
+                    format!("undefined function \"{}\"", qn.to_string()),
+                ), // TODO: user-defined functions
             },
-            _ => Transform::Error(ErrorKind::ParseError, String::from("unknown function")),
+            NodeTest::Name(NameTest {
+                name: Some(WildcardOrName::Name(localpart)),
+                ns: Some(WildcardOrName::Name(nsuri)),
+                prefix: p,
+            }) => Transform::Invoke(
+                QualifiedName::new(Some(nsuri), p, localpart),
+                ActualParameters::Positional(a),
+            ),
+            NodeTest::Name(NameTest {
+                name: Some(WildcardOrName::Name(localpart)),
+                ns: None,
+                prefix: p,
+            }) => Transform::Invoke(
+                QualifiedName::new(None, p, localpart),
+                ActualParameters::Positional(a),
+            ),
+            _ => Transform::Error(ErrorKind::Unknown, format!("unknown function \"{}\"", qn)),
         },
     ))
 }
 
 // ArgumentList ::= '(' (Argument (',' Argument)*)? ')'
 // TODO: finish this parser with actual arguments
-fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a>
-{
+fn argumentlist<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<Transform<N>>), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             tag("("),
@@ -422,6 +485,7 @@ fn argumentlist<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(Pars
 
 // Argument ::= ExprSingle | ArgumentPlaceHolder
 // TODO: ArgumentPlaceHolder
-fn argument<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn argument<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(expr_single_wrapper::<N>(true))
 }

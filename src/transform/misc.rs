@@ -7,6 +7,18 @@ use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::ErrorKind;
 
+/// XSLT current function.
+pub fn current<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
+    if ctxt.previous_context.is_some() {
+        Ok(vec![ctxt.previous_context.as_ref().unwrap().clone()])
+    } else {
+        Err(Error::new(
+            ErrorKind::DynamicAbsent,
+            String::from("current item missing"),
+        ))
+    }
+}
+
 /// Emits a message from the stylesheet.
 /// The transform is evaluated to create the content of the message.
 pub(crate) fn message<N: Node, F: FnMut(&str) -> Result<(), Error>>(

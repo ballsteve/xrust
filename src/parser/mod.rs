@@ -4,10 +4,10 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
-use crate::xmldecl::DTD;
 use crate::externals::URLResolver;
-use crate::xdmerror::{Error, ErrorKind};
 use crate::item::Node;
+use crate::xdmerror::{Error, ErrorKind};
+use crate::xmldecl::DTD;
 use std::collections::HashMap;
 use std::fmt;
 
@@ -22,7 +22,7 @@ pub type ParseInput<'a, N: Node> = (&'a str, ParserState<N>);
 #[allow(type_alias_bounds)]
 pub type ParseResult<'a, N: Node, Output> = Result<(ParseInput<'a, N>, Output), ParseError>;
 
-#[derive(Copy, Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq)]
 pub enum ParseError {
     // The "Combinator" error just means a parser hasn't matched, its not serious necessarily.
     // Every other error should get returned.
@@ -37,7 +37,8 @@ pub enum ParseError {
     //Unknown { row: usize, col: usize },
     MissingNameSpace,
     IncorrectArguments,
-    NotWellFormed,
+    // An unexpected character has been encountered
+    NotWellFormed(String),
     Unbalanced,
     Notimplemented,
     ExtDTDLoadError,
@@ -118,6 +119,14 @@ impl<N: Node> ParserState<N> {
     //    self.limit = Some(l)
     //}
 
+    /// Get the result document
+    pub fn doc(&self) -> Option<N> {
+        self.doc.clone()
+    }
+    /// Get a copy of all namespaces
+    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
+        &self.namespace
+    }
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {
         match self.ext_dtd_resolver {
             None => Err(Error::new(

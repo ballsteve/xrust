@@ -14,14 +14,17 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
+use crate::qname::QualifiedName;
 use crate::transform::booleans::*;
+use crate::transform::callable::{invoke, Callable};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
 use crate::transform::functions::*;
 use crate::transform::grouping::*;
+use crate::transform::keys::{key, populate_key_values};
 use crate::transform::logic::*;
-use crate::transform::misc::message;
+use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
@@ -29,7 +32,7 @@ use crate::transform::template::{apply_imports, apply_templates, next_match, Tem
 use crate::transform::variables::{declare_variable, reference_variable};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
-use crate::{ErrorKind, Item, Value};
+use crate::{ErrorKind, Item, SequenceTrait, Value};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -43,22 +46,34 @@ use url::Url;
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
 #[derive(Clone, Debug)]
 pub struct Context<N: Node> {
-    pub(crate) cur: Sequence<N>, // The current context
-    pub(crate) i: usize,         // The index to the item that is the current context item
-    pub(crate) depth: usize,     // Depth of evaluation
-    pub(crate) rd: Option<N>,    // Result document
+    pub(crate) cur: Sequence<N>,                  // The current context
+    pub(crate) i: usize, // The index to the item that is the current context item
+    pub(crate) previous_context: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
+    pub(crate) depth: usize,                      // Depth of evaluation
+    pub(crate) rd: Option<N>,                     // Result document
     // There is no distinction between built-in and user-defined templates
     // Built-in templates have no priority and no document order
     pub(crate) templates: Vec<Rc<Template<N>>>,
     pub(crate) current_templates: Vec<Rc<Template<N>>>,
+    // Named templates and functions
+    pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Grouping
     pub(crate) current_grouping_key: Option<Rc<Value>>,
     pub(crate) current_group: Sequence<N>,
+    // Keys
+    // The declaration of a key. Keys are named, and each key can have multiple definitions.
+    // Each definition is the pattern that matches nodes and the expression that computes the key value.
+    pub(crate) keys: HashMap<String, Vec<(Pattern<N>, Transform<N>)>>,
+    // The calculated values of keys.
+    pub(crate) key_values: HashMap<String, HashMap<String, Vec<N>>>,
     // Output control
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
+    // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
+    // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
+    pub(crate) namespaces: Vec<HashMap<String, String>>,
 }
 
 impl<N: Node> Context<N> {
@@ -66,15 +81,20 @@ impl<N: Node> Context<N> {
         Context {
             cur: Sequence::new(),
             i: 0,
+            previous_context: None,
             depth: 0,
             rd: None,
             templates: vec![],
             current_templates: vec![],
+            callables: HashMap::new(),
             vars: HashMap::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
+            keys: HashMap::new(),
+            key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: vec![],
         }
     }
     /// Sets the context item.
@@ -82,9 +102,50 @@ impl<N: Node> Context<N> {
         self.cur = s;
         self.i = i;
     }
+    /// Sets the XML Namespaces.
+    pub fn namespaces(&mut self, ns: Vec<HashMap<String, String>>) {
+        self.namespaces = ns;
+    }
+    /// Gets the XML Namespaces.
+    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
+        &self.namespaces
+    }
+    /// Sets the "current" item.
+    pub fn previous_context(&mut self, i: Item<N>) {
+        self.previous_context = Some(i);
+    }
     /// Sets the result document. Any nodes created by the transformation are owned by this document.
     pub fn result_document(&mut self, rd: N) {
         self.rd = Some(rd);
+    }
+    /// Declare a key
+    pub fn declare_key(&mut self, name: String, m: Pattern<N>, u: Transform<N>) {
+        if let Some(v) = self.keys.get_mut(&name) {
+            v.push((m, u))
+        } else {
+            self.keys.insert(name.clone(), vec![(m, u)]);
+        }
+        // Initialise the key values store with an empty hashmap
+        if let Some(_) = self.key_values.get_mut(&name) {
+            // Already initialised
+        } else {
+            self.key_values.insert(name, HashMap::new());
+        }
+    }
+    /// Calculate the key values for a source document
+    pub fn populate_key_values<F: FnMut(&str) -> Result<(), Error>>(
+        &mut self,
+        stctxt: &mut StaticContext<F>,
+        sd: N,
+    ) -> Result<(), Error> {
+        populate_key_values(self, stctxt, sd)
+    }
+    pub fn dump_key_values(&self) {
+        self.key_values.iter().for_each(|(k, v)| {
+            println!("key \"{}\":", k);
+            v.iter()
+                .for_each(|(kk, vv)| println!("\tvalue \"{}\" {} nodes", kk, vv.len()))
+        })
     }
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
@@ -103,6 +164,18 @@ impl<N: Node> Context<N> {
     #[allow(dead_code)]
     fn var_pop(&mut self, name: String) {
         self.vars.get_mut(name.as_str()).map(|u| u.pop());
+    }
+    #[allow(dead_code)]
+    pub(crate) fn dump_vars(&self) -> String {
+        self.vars.iter().fold(String::new(), |mut acc, (k, v)| {
+            acc.push_str(format!("{}==\"{}\", ", k, v[0].to_string()).as_str());
+            acc
+        })
+    }
+
+    /// Callable components: named templates and user-defined functions
+    pub fn callable_push(&mut self, qn: QualifiedName, c: Callable<N>) {
+        self.callables.insert(qn, c);
     }
 
     /// Returns the Base URL.
@@ -124,7 +197,8 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext};
-    /// use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
     /// // This is necessary since there is no callback defined for the static context
@@ -132,11 +206,9 @@ impl<N: Node> Context<N> {
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let e = Document::try_from((s, None, None))
-    ///     .expect("failed to parse XML")
-    ///     .content[0].clone();
-    ///   let mut d = NodeBuilder::new(NodeType::Document).build();
-    ///   d.push(e).expect("unable to append node");
+    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   parse(d.clone(), s, None, None)
+    ///     .expect("failed to parse XML");
     ///   d
     /// }
     ///
@@ -145,7 +217,7 @@ impl<N: Node> Context<N> {
     /// <xsl:template match='/'><xsl:apply-templates/></xsl:template>
     /// <xsl:template match='child::Example'>This template will match</xsl:template>
     /// </xsl:stylesheet>");
-    /// let mut context = from_document(style, None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
+    /// let mut context = from_document(style, vec![], None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
     /// context.context(vec![sd], 0);
     /// context.result_document(make_from_str("<Result/>"));
     /// let sequence = context.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
@@ -237,18 +309,17 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext};
-    /// use xrust::trees::intmuttree::{Document, RNode, NodeBuilder};
+    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::parser::xml::parse;
     ///
     /// // This is necessary since there is no callback defined for the static context
     /// type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let e = Document::try_from((s, None, None))
-    ///     .expect("failed to parse XML")
-    ///     .content[0].clone();
-    ///   let mut d = NodeBuilder::new(NodeType::Document).build();
-    ///   d.push(e).expect("unable to append node");
+    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   parse(d.clone(), s, None, None)
+    ///     .expect("failed to parse XML");
     ///   d
     /// }
     ///
@@ -256,7 +327,7 @@ impl<N: Node> Context<N> {
     /// let t = Transform::Step(NodeMatch {axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::Any)});
     /// let sd = Item::Node(make_from_str("<Example/>"));
     /// let context = ContextBuilder::new()
-    ///   .current(vec![sd])
+    ///   .context(vec![sd])
     ///   .build();
     /// let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t).expect("evaluation failed");
     /// assert_eq!(sequence.to_xml(), "<Example></Example>")
@@ -269,6 +340,7 @@ impl<N: Node> Context<N> {
         match t {
             Transform::Root => root(self),
             Transform::ContextItem => context(self),
+            Transform::CurrentItem => current(self),
             Transform::Compose(v) => compose(self, stctxt, v),
             Transform::Step(nm) => step(self, nm),
             Transform::Filter(t) => filter(self, stctxt, t),
@@ -338,7 +410,10 @@ impl<N: Node> Context<N> {
             }
             Transform::FormatDate(t, p, l, c, q) => format_date(self, stctxt, t, p, l, c, q),
             Transform::FormatTime(t, p, l, c, q) => format_time(self, stctxt, t, p, l, c, q),
-            Transform::UserDefined(_qn, a, b) => user_defined(self, stctxt, a, b),
+            Transform::Key(n, v, _) => key(self, stctxt, n, v),
+            Transform::SystemProperty(p) => system_property(self, stctxt, p),
+            Transform::AvailableSystemProperties => available_system_properties(),
+            Transform::Invoke(qn, a) => invoke(self, stctxt, qn, a),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
@@ -355,15 +430,20 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
         Context {
             cur: value,
             i: 0,
+            previous_context: None,
             depth: 0,
             rd: None,
             templates: vec![],
             current_templates: vec![],
+            callables: HashMap::new(),
             vars: HashMap::new(),
+            keys: HashMap::new(),
+            key_values: HashMap::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            namespaces: vec![],
         }
     }
 }
@@ -375,12 +455,16 @@ impl<N: Node> ContextBuilder<N> {
     pub fn new() -> Self {
         ContextBuilder(Context::new())
     }
-    pub fn current(mut self, s: Sequence<N>) -> Self {
+    pub fn context(mut self, s: Sequence<N>) -> Self {
         self.0.cur = s;
         self
     }
     pub fn index(mut self, i: usize) -> Self {
         self.0.i = i;
+        self
+    }
+    pub fn previous_context(mut self, i: Option<Item<N>>) -> Self {
+        self.0.previous_context = i;
         self
     }
     pub fn depth(mut self, d: usize) -> Self {
@@ -429,18 +513,31 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
+    pub fn namespaces(mut self, ns: Vec<HashMap<String, String>>) -> Self {
+        self.0.namespaces = ns;
+        self
+    }
+    pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
+        self.0.callables.insert(qn, c);
+        self
+    }
     pub fn build(self) -> Context<N> {
         self.0
     }
 }
 
+/// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
 impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
     fn from(c: &Context<N>) -> Self {
-        ContextBuilder(c.clone())
+        if c.cur.len() > c.i {
+            ContextBuilder(c.clone()).previous_context(Some(c.cur[c.i].clone()))
+        } else {
+            ContextBuilder(c.clone()).previous_context(None)
+        }
     }
 }
 
-/// The static context. This is not clonable, since it includes the storage of a closure.
+/// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
 pub struct StaticContext<F>
@@ -466,7 +563,7 @@ where
 /// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
 /// use xrust::item::{Item, Sequence, SequenceTrait, NodeType};
-/// use xrust::trees::intmuttree::NodeBuilder;
+/// use xrust::trees::smite::{RNode, Node};
 /// use xrust::transform::Transform;
 /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 ///
@@ -484,7 +581,7 @@ where
 ///   ]))
 /// );
 /// let mut context = ContextBuilder::new()
-///	.result_document(NodeBuilder::new(NodeType::Document).build())
+///	.result_document(Rc::new(Node::new()))
 ///	.build();
 /// let mut static_context = StaticContextBuilder::new()
 ///	.message(|m| {message = String::from(m); Ok(())})

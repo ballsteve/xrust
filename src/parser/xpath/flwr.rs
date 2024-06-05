@@ -61,8 +61,9 @@ pub(crate) fn for_expr<'a, N: Node + 'a>(
 
 // SimpleForClause ::= 'for' SimpleForBinding (',' SimpleForBinding)*
 // SimpleForBinding ::= '$' VarName 'in' ExprSingle
-fn simple_for_clause<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a> {
+fn simple_for_clause<'a, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a,
+> {
     Box::new(map(
         tuple3(
             tag("for"),
@@ -115,8 +116,9 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
 // SimpleLetClause ::= 'let' SimpleLetBinding (',' SimpleLetBinding)*
 // SimpleLetBinding ::= '$' VarName ':=' ExprSingle
 // TODO: handle multiple bindings
-fn simple_let_clause<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a> {
+fn simple_let_clause<'a, N: Node + 'a>() -> Box<
+    dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<(String, Transform<N>)>), ParseError> + 'a,
+> {
     Box::new(map(
         tuple3(
             tag("let"),

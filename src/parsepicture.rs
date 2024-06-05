@@ -15,6 +15,7 @@
 //   sequence::tuple,
 //    IResult,
 //};
+use crate::item::Node;
 use crate::parser::combinators::alt::alt4;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -23,7 +24,6 @@ use crate::parser::combinators::tag::anychar;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::xpath::support::none_of;
 use crate::parser::{ParseError, ParseInput, ParserState};
-use crate::item::Node;
 use crate::xdmerror::*;
 
 // This implementation translates an XPath picture string to a strftime format
@@ -82,7 +82,8 @@ fn open_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, St
     map(tuple2(anychar('['), anychar('[')), |_| String::from("["))
 }
 #[allow(dead_code)]
-fn close_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+fn close_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+{
     map(tuple2(anychar(']'), anychar(']')), |_| String::from("]"))
 }
 
