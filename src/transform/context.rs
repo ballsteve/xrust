@@ -327,7 +327,7 @@ impl<N: Node> Context<N> {
     /// let t = Transform::Step(NodeMatch {axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::Any)});
     /// let sd = Item::Node(make_from_str("<Example/>"));
     /// let context = ContextBuilder::new()
-    ///   .current(vec![sd])
+    ///   .context(vec![sd])
     ///   .build();
     /// let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t).expect("evaluation failed");
     /// assert_eq!(sequence.to_xml(), "<Example></Example>")
