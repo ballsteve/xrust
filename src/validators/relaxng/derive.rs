@@ -1,7 +1,7 @@
 use crate::item::NodeType;
 use crate::Node;
 use crate::qname::QualifiedName;
-use crate::trees::smite::{RNode};
+use crate::trees::smite::RNode;
 use crate::validators::relaxng::pattern::{DataType, NameClass, Param, Pattern};
 
 pub(crate) fn derive(doc: &RNode, pat: Pattern) -> Pattern {
@@ -331,7 +331,7 @@ fn textDeriv(pat: Pattern, s: String) -> Pattern {
         Pattern::Text => {
             Pattern::Text
         }
-        Pattern::Value(dt, v, cx2) => {
+        Pattern::Value(dt, v, _cx2) => {
             if datatypeEqual(dt, v,  s) {
                 Pattern::Empty
             } else {
@@ -471,14 +471,14 @@ fn oneOrMore(pat: Pattern) -> Pattern {
         p => Pattern::OneOrMore(Box::from(p))
     }
 }
-fn dataTypeAllows((dt, st): DataType, params: Vec<Param>, s: String) -> bool {
+fn dataTypeAllows((_dt, st): DataType, _params: Vec<Param>, _s: String) -> bool {
     match st.as_str(){
         "string" => true,
         "token" => true,
         _ => false
     }
 }
-fn datatypeEqual((d, s): DataType, s1: String, s2:String) -> bool {
+fn datatypeEqual((_d, s): DataType, s1: String, s2:String) -> bool {
     match s.as_str() {
         "string" => {s1 == s2},
         "token" => {

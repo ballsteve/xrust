@@ -1,9 +1,6 @@
-use std::rc::Rc;
-use crate::{Error, Node, Value};
-use crate::item::NodeType;
+use crate::item::{Node, NodeType};
 use crate::qname::QualifiedName;
 use crate::trees::smite::RNode;
-use crate::validators::ValidationError;
 
 pub(crate) type DataType = (QualifiedName, String);
 type Attributenode = (QualifiedName, String);
@@ -78,11 +75,11 @@ pub(crate) fn patternmaker(n: RNode) -> Result<Pattern, PatternError<'static>>{
                 Err(PatternError::NotRelaxNG)
             } else {
                 match n.name().get_localname().as_str() {
-                    "empty" => Ok((Pattern::Empty)),
+                    "empty" => Ok(Pattern::Empty),
                     "element" => {
                         patternmaker_element(n)
                     }
-                    _ => Ok((Pattern::Empty))
+                    _ => Ok(Pattern::Empty)
                 }
             }
 
