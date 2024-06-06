@@ -23,20 +23,20 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust_decimal = "1.32"
-rust_decimal_macros = "1.32"
+rust_decimal = "1.35.0"
+rust_decimal_macros = "1.34.2"
 lexers = "0.1.4"
-unicode-segmentation = "1.10.1"
-chrono = "0.4.31"
+unicode-segmentation = "1.11.0"
+chrono = "0.4.38"
 url = "2.4.1"
 pkg-version = "1.0.0"
 # This is for the forest tree implementation
 #generational-arena = "0.2"
-regex = "1.10.2"
+regex = "1.10.4"
 
 [dev-dependencies]
 criterion = "0.5.1"
-encoding_rs = "0.8.33"
+encoding_rs = "0.8.34"
 encoding_rs_io = "0.1.7"
 earleybird = {git = "https://github.com/mdubinko/earleybird.git"}
-indextree = "4.6.0"
+indextree = "4.6.1"
