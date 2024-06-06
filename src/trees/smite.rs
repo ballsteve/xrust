@@ -10,8 +10,8 @@ NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For 
 
 ```rust
 use std::rc::Rc;
-use xrust::trees::smite::RNode;
-use xrust::item::{Node, NodeType};
+use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::item::{Node as ItemNode, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
 use xrust::xdmerror::Error;
@@ -20,7 +20,7 @@ pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Er
 
 
 // A document always has a NodeType::Document node as the toplevel node.
-let mut doc = Rc::new(Node::new());
+let mut doc = Rc::new(SmiteNode::new());
 
 let mut top = doc.new_element(
     QualifiedName::new(None, None, String::from("Top-Level"))

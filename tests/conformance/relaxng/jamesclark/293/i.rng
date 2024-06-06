@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+<start>
+  <element name="foo">
+    <oneOrMore>
+      <interleave>
+        <attribute>
+          <anyName/>
+        </attribute>
+        <attribute>
+          <anyName/>
+        </attribute>
+      </interleave>
+    </oneOrMore>
+  </element>
+</start>
+</grammar>

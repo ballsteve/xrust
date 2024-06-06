@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+<start>
+  <element name="foo">
+    <data type="string">
+      <except>
+        <interleave>
+          <data type="token"/>
+          <data type="token"/>
+        </interleave>
+      </except>
+    </data>
+  </element>
+</start>
+</grammar>

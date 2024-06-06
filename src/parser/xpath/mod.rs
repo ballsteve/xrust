@@ -18,7 +18,8 @@ To evaluate the transformation we need a Context with a source document as its c
 # use std::rc::Rc;
 # use xrust::xdmerror::Error;
 use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
-use xrust::trees::intmuttree::{Document, NodeBuilder};
+use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext};
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
@@ -26,14 +27,11 @@ use xrust::transform::context::{Context, ContextBuilder, StaticContext};
 let t = parse("/child::A/child::B/child::C")
     .expect("unable to parse XPath expression");
 
-let source = Document::try_from(("<A><B><C/></B><B><C/></B></A>".to_string(), None, None))
-    .expect("unable to parse XML")
-    .content[0]
-    .clone();
-let mut doc = NodeBuilder::new(NodeType::Document).build();
-doc.push(source).expect("unable to attach root node");
+let source = Rc::new(SmiteNode::new());
+xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None, None)
+    .expect("unable to parse XML");
 let context = ContextBuilder::new()
-    .current(vec![Item::Node(doc)])
+    .context(vec![Item::Node(source)])
     .build();
 let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t)
     .expect("evaluation failed");

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0">
+<start>
+  <element name="foo">
+    <ref name="x"/>
+  </element>
+</start>
+<define name="x" combine="choice">
+  <element name="bar1">
+    <empty/>
+  </element>
+</define>
+<define name="x">
+  <element name="bar2">
+    <empty/>
+  </element>
+</define>
+<define name="x" combine="interleave">
+  <element name="bar3">
+    <empty/>
+  </element>
+</define>
+</grammar>

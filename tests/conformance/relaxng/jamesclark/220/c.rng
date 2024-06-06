@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0">
+  <nsName ns="http://www.example.com">
+    <except>
+      <name ns="http://www.example.com">foo</name>
+    </except>
+  </nsName>
+  <empty/>
+</element>
