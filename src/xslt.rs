@@ -323,8 +323,6 @@ where
             let pat = Pattern::try_from(m.to_string())?;
             let mut body = vec![];
             let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
-            eprintln!("processing template id {} mode attr id {}", c.get_id(),
-                mode.clone().map_or("--none--".to_string(), |mm| mm.get_id()));
             c.child_iter().try_for_each(|d| {
                 body.push(to_transform(d, &stylens)?);
                 Ok::<(), Error>(())
@@ -375,7 +373,6 @@ where
             if im.to_string() != "" {
                 import = im.to_int()? as usize
             }
-            eprintln!("Adding template matching {:?} in mode {}", pat, mode.clone().map_or("--none--".to_string(), |mm| mm.to_string()));
             templates.push(Template::new(
                 pat,
                 Transform::SequenceItems(body),

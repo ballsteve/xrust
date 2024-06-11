@@ -369,7 +369,6 @@ pub fn generic_apply_templates_mode<N: Node, G, H, J>(
         parse_from_str_with_ns,
         make_doc,
     )?;
-    eprintln!("result: {}", result.to_xml());
     if result.to_xml() == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>" {
         Ok(())
     } else {

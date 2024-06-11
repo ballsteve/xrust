@@ -430,6 +430,11 @@ fn tr_apply_templates_2() {
         .expect("test failed")
 }
 #[test]
+fn tr_apply_templates_3() {
+    transformgeneric::generic_tr_apply_templates_3::<RNode, _, _>(make_empty_doc, make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_apply_templates_import() {
     transformgeneric::generic_tr_apply_templates_import::<RNode, _, _>(make_empty_doc, make_sd)
         .expect("test failed")

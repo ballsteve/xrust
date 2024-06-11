@@ -41,7 +41,7 @@ pub(crate) fn literal_element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         match i {
             Item::Node(t) => match t.node_type() {
                 NodeType::Attribute => e.add_attribute(t.clone()),
-                _ => e.push(t.clone()),
+                _ => e.push(t.deep_copy()?),
             },
             _ => {
                 // Add the Value as a text node
@@ -77,7 +77,7 @@ pub(crate) fn element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         match i {
             Item::Node(t) => match t.node_type() {
                 NodeType::Attribute => e.add_attribute(t.clone()),
-                _ => e.push(t.clone()),
+                _ => e.push(t.deep_copy()?),
             },
             _ => {
                 // Add the Value as a text node

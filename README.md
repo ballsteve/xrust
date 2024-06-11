@@ -39,7 +39,7 @@ NB. We're picking the low-hanging fruit first. So major, fundamental features of
 
 ## Documentation
 
-See the [XSLT module](xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
+See the [XSLT module](https://docs.rs/xrust/0.10.0/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
 ## Examples
 
@@ -48,6 +48,6 @@ See the [XSLT module](xrust/xslt/index.html) for an example of how to evaluate a
 
 ## Compliance
 
-Status of [docs/compliance.md](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) with XDM, XPath, XQuery, and XSLT.
+Status of [standards implementation](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
 
 

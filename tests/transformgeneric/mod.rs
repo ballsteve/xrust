@@ -2578,6 +2578,138 @@ where
     assert_eq!(seq.to_string(), "priority 1 template");
     Ok(())
 }
+// Multiple apply-templates selecting the same nodes, different modes
+pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .expect("unable to create new element");
+    sd.push(t.clone()).expect("unable to add node");
+    let mut c1 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create new element");
+    c1.push(sd
+        .new_text(Rc::new(Value::from("child 1")))
+        .expect("unable to text node"))
+    .expect("unable to append child");
+    t.push(c1).expect("unable to add child");
+    let mut c2 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create new element");
+    c2.push(sd
+        .new_text(Rc::new(Value::from("child 2")))
+        .expect("unable to text node"))
+        .expect("unable to append child");
+    t.push(c2).expect("unable to add child");
+
+    // Template rule for "Test", plus builtins
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None);
+    let ctxt = ContextBuilder::new()
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::SequenceItems(vec![
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from("before ")))),
+                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })), Some(QualifiedName::new(None, None, "first"))),
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" middle ")))),
+                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })), Some(QualifiedName::new(None, None, "second"))),
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" after")))),
+            ]), // body "before", "apply-templates select=node()", "after"
+            Some(0.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern "/",
+            Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
+            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            })), None), // body "apply-templates select=node()",
+            None,    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            None,                   // mode
+        ))
+        .template(Template::new(
+            // pattern child::node()
+            Pattern::try_from("child::*")
+                .expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            })), None), // body "apply-templates select=node()",
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            Some(QualifiedName::new(None, None, "first")),                   // mode
+        ))
+        .template(Template::new(
+            // pattern child::node()
+            Pattern::try_from("child::*")
+                .expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            })), None), // body "apply-templates select=node()",
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            Some(QualifiedName::new(None, None, "second")),                   // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            Some(QualifiedName::new(None, None, "first")),                   // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            Some(QualifiedName::new(None, None, "second")),                   // mode
+        ))
+        .context(vec![Item::Node(sd)])
+        .build();
+
+    // Now Evaluate the combinator with the source document root node as the context item
+    let seq = ctxt
+        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 7);
+    assert_eq!(seq.to_string(), "before child 1child 2 middle child 1child 2 after");
+    Ok(())
+}
 
 pub fn generic_tr_apply_templates_import<N: Node, G, H>(
     make_empty_doc: G,
