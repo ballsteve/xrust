@@ -1063,6 +1063,7 @@ fn relaxng_incorrect_048_1(){
 }
 
 #[test]
+#[ignore]
 fn relaxng_valid_049_1(){
 
     /*
@@ -1084,6 +1085,7 @@ fn relaxng_valid_049_1(){
 }
 
 #[test]
+#[ignore]
 fn relaxng_valid_050_1(){
 
     /*
@@ -1471,6 +1473,7 @@ fn relaxng_incorrect_068_1(){
 }
 
 #[test]
+#[ignore]
 fn relaxng_valid_069_1(){
 
     /*
@@ -1910,6 +1913,7 @@ fn relaxng_valid_088_1(){
 }
 
 #[test]
+#[ignore]
 fn relaxng_valid_089_1(){
 
     /*

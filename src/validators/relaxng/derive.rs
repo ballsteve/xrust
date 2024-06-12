@@ -1,231 +1,345 @@
+use std::collections::HashMap;
+use std::rc::Rc;
 use crate::item::NodeType;
-use crate::Node;
+use crate::{Node, Value};
 use crate::qname::QualifiedName;
-use crate::trees::smite::RNode;
-use crate::validators::relaxng::pattern::{DataType, NameClass, Param, Pattern};
+use crate::trees::smite::{RNode};
+use crate::validators::relaxng::pattern::{DataType, Param};
+use crate::trees::smite::{Node as SmiteNode};
 
-pub(crate) fn derive(doc: &RNode, pat: Pattern) -> Pattern {
-    childDeriv(pat, doc.child_iter().next().unwrap())
+pub(crate) fn derive(doc: &RNode, pat: RNode, refs: &HashMap<String, RNode>) -> RNode {
+    childDeriv( doc.child_iter().next().unwrap(),pat, refs)
 }
 
-fn contains(nc: NameClass, qn: QualifiedName) -> bool {
-    match (nc, qn) {
-        (NameClass::AnyName, _) => true,
-        (NameClass::AnyNameExcept(n), q) => !contains(*n, q),
-        (NameClass::NSName(nsuri), q ) => Some(nsuri)==q.get_nsuri(),
-        (NameClass::NSNameExcept(ns1, n), q) => (Some(ns1) ==q.get_nsuri()) && !contains(*n, q),
-        (NameClass::Name(ns1, ln1), q) => (ns1 == q.get_nsuri()) && (ln1 ==q.get_localname()),
-        (NameClass::NameClassChoice(nc1, nc2), q) => contains(*nc1,q.clone()) || contains(*nc2, q)
+
+pub(crate) fn is_nullable(pat: RNode) -> bool {
+    match pat.name().get_localname().as_str() {
+        "Empty" => true,
+        "Text" => true,
+        "Group" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            is_nullable(p1) && is_nullable(p2)
+        }
+        "Interleave" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            is_nullable(p1) && is_nullable(p2)
+        }
+        "Choice" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            is_nullable(p1) || is_nullable(p2)
+        }
+        "OneOrMore" => {
+            is_nullable(pat.first_child().unwrap())
+        }
+        //"Element"
+        //"Attribute"
+        //"List"
+        //"Value"
+        //"Data"
+        //"DataExcept"
+        //"NotAllowed"
+        //"After"
+        _ => false
+    }
+}
+
+fn contains(nc: RNode, qn: QualifiedName) -> bool {
+    match nc.name().get_localname().as_str() {
+        "AnyName" => true,
+        "AnyNameExcept" => {
+            let name = nc.first_child().unwrap();
+            !contains(name, qn)
+        }
+        "NSName" => {
+            let nsuri = nc.first_child().unwrap();
+            Some(nsuri.to_string()) == qn.get_nsuri()
+        }
+        "NSNameExcept" => {
+            let mut c = nc.child_iter();
+            let ns1 = c.next().unwrap();
+            let n = c.next().unwrap();
+            (Some(ns1.to_string()) ==qn.get_nsuri()) && !contains(n, qn)
+        }
+        "Name" => {
+            let mut c = nc.child_iter();
+            let ns1 = c.next().unwrap();
+            let ln1 = c.next().unwrap();
+            (Some(ns1.to_string()) == qn.get_nsuri()) && (ln1.to_string() ==qn.get_localname())
+        }
+        "NameClassChoice" => {
+            let mut c = nc.child_iter();
+            let nc1 = c.next().unwrap();
+            let nc2 = c.next().unwrap();
+            contains(nc1,qn.clone()) || contains(nc2, qn)
+        }
+        _ => false
     }
 }
 
 
-
-fn childDeriv(pat: Pattern, cn: RNode) -> Pattern {
+fn childDeriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
     match cn.node_type(){
-        NodeType::Document => {Pattern::NotAllowed}
-        NodeType::Attribute => {Pattern::NotAllowed}
-        NodeType::Comment => {Pattern::NotAllowed}
-        NodeType::ProcessingInstruction => {Pattern::NotAllowed}
-        NodeType::Reference => {Pattern::NotAllowed}
-        NodeType::Unknown => {Pattern::NotAllowed}
-        //NodeType::Text => {Pattern::NotAllowed}
-        NodeType::Text => { textDeriv(pat, cn.value().to_string()) }
-        //NodeType::Element => {Pattern::NotAllowed}
-
+        NodeType::Document |
+        NodeType::Attribute |
+        NodeType::Comment |
+        NodeType::ProcessingInstruction |
+        NodeType::Reference |
+        NodeType::Unknown |
+        NodeType::Namespace => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap(),
+        NodeType::Text =>  textDeriv(pat,cn.value().to_string()),
         NodeType::Element => {
             //opening deriv
-            let mut pat1 = startTagOpenDeriv(pat, cn.name());
+            let mut pat1 = startTagOpenDeriv(pat, cn.name(), refs);
             //attsDeriv
             for attribute in cn.attribute_iter() {
-                pat1 = attDeriv(pat1, attribute);
+                pat1 = attDeriv(attribute,pat1);
             }
             //CloseTag
             pat1 = startTagCloseDeriv(pat1);
             //Children
-            pat1 = childrenDeriv(pat1, cn.clone());
+            pat1 = childrenDeriv(cn.clone(), pat1, refs);
             //EndTagDeriv
             pat1 = endTagDeriv(pat1);
             pat1
         }
-
     }
-
-    /*
-    match (pat, cn) {
-        (p, ChildNode::TextNode(s)) => textDeriv(c, p, s),
-        (p, ChildNode::ElementNode(qn, c, atts, children)) => {
-            let p1 = startTagOpeningDeriv(p, qn);
-            let p2 = attsDeriv(c, p1, atts);
-            let p3 = startTagCloseDeriv(p2);
-            let p4 = childrenDeriv(c, p3, children);
-            endTagDeriv(p4)
-        }
-    }
-
-     */
 }
 
-fn startTagOpenDeriv(p: Pattern, q: QualifiedName) -> Pattern {
-    match p {
-        Pattern::Choice(p1, p2) => {
-            choice(
-                startTagOpenDeriv(*p1, q.clone()),
-                startTagOpenDeriv(*p2, q.clone())
-            )
-        }
-        Pattern::Element(nc, p1) => {
-            if contains(nc, q) {
-                after(*p1, Pattern::Empty)
-            } else {
-                Pattern::NotAllowed
+fn startTagOpenDeriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>) -> RNode {
+    match pat.name().get_localname().as_str() {
+        "ref" => {
+            //We lookup the reference, and use that for the pattern going forward
+            let patname = pat.get_attribute(&QualifiedName::new(None,None,"name".to_string()));
+            let newpat = refs.get(patname.to_string().as_str());
+            match newpat{
+                //TODO proper error checking
+                None => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap(),
+                Some(RN) => {
+                    startTagOpenDeriv(RN.clone(), q, refs)
+                }
             }
         }
-        Pattern::Interleave(p1, p2) => {
+        "element" =>{
+            let mut pc = pat.child_iter();
+            let nc = pc.next().unwrap();
+            let p = pc.next().unwrap();
+            if contains(nc, q) {
+                after(p, pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap())
+            } else {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+            }
+        }
+        "choice" => {
+            let mut pc = pat.child_iter();
             choice(
-                // applyAfter (flip interleave p2) (startTagOpenDeriv p1 qn)
+                startTagOpenDeriv( pc.next().unwrap(), q.clone(),refs),
+                startTagOpenDeriv( pc.next().unwrap(), q.clone(),refs)
+            )
+        }
+        "interleave" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            choice(
                 applyAfter(
-                    |pat: Pattern| {Pattern::Interleave(Box::from(pat), p2.clone())},
-                    startTagOpenDeriv(*p1.clone(), q.clone())
+                |pat: RNode| {
+                    let mut i = pat.owner_document().new_element(QualifiedName::new(None,None,"Interleave".to_string())).unwrap();
+                    i.push(pat);
+                    i.push(p2.clone());
+                    i
+                },
+                    startTagOpenDeriv( p1.clone(), q.clone(),refs)
                 ),
                 applyAfter(
-                    |pat: Pattern|{Pattern::Interleave(Box::from(pat), p1.clone())},
-                    startTagOpenDeriv(*p2, q.clone())
+                    |pat: RNode| {
+                        let mut i = pat.owner_document().new_element(QualifiedName::new(None,None,"Interleave".to_string())).unwrap();
+                        i.push(pat);
+                        i.push(p1.clone());
+                        i
+                    },
+                    startTagOpenDeriv( p2.clone(),q.clone(), refs)
                 )
             )
         }
-        Pattern::OneOrMore(p) => {
+        "OneOrMore" => {
+            let p1 = pat.first_child().unwrap();
             applyAfter(
-                Box::new(|pat: Pattern|{
+                |pat: RNode|{
                     group(
-                        pat,
+                        pat.clone(),
                         choice(
-                            Pattern::OneOrMore(p.clone()),
-                            Pattern::Empty
+                            pat.clone(),
+                            pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
                         )
                     )
-                }),
-                startTagOpenDeriv(*p.clone(), q)
+                },
+                startTagOpenDeriv(p1, q, refs)
             )
         }
-        Pattern::Group(p1, p2) => {
-            let x = applyAfter(
-                |pat: Pattern| { group(pat, *p2.clone())},
-                startTagOpenDeriv(*p1.clone(), q.clone())
+        "Group" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            let x =  applyAfter(
+                |pat: RNode| { group(pat, p2.clone())},
+                startTagOpenDeriv( p1.clone(),q.clone(), refs)
             );
-            if p1.is_nullable(){
+            if is_nullable(p1){
                 choice(
                     x,
-                    startTagOpenDeriv(*p2, q)
+                    startTagOpenDeriv( p2, q,refs)
                 )
-            } else {
+            } else{
                 x
             }
         }
-        Pattern::After(p1, p2) => {
+        "After" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             applyAfter(
-                |pat: Pattern|{after(pat, *p2.clone())},
-                startTagOpenDeriv(*p1, q)
+                |pat: RNode| {
+                    after(pat,  p2.clone())
+                },
+                startTagOpenDeriv( p1, q,refs)
             )
         }
-        _ => Pattern::NotAllowed
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
     }
 }
 
 
-fn attDeriv(pat: Pattern, att: RNode) -> Pattern {
-    match pat {
-        Pattern::After(p1, p2) => {
+fn attDeriv( pat: RNode, att: RNode) -> RNode {
+    match pat.name().get_localname().as_str() {
+        "After" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             after(
-                attDeriv(*p1, att),
-                *p2
+                attDeriv( p1, att),
+                p2
             )
-        },
-        Pattern::Choice(p1, p2)=>{
+        }
+        "Choice" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
-                attDeriv(*p1, att.clone()),
-                attDeriv(*p2, att)
+                attDeriv( p1, att.clone()),
+                attDeriv(p2, att)
             )
-        },
-        Pattern::Group(p1, p2) => {
+        }
+        "Group" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
                 group(
-                    attDeriv( *p1.clone(), att.clone()),
-                    *p2.clone()
+                    attDeriv( p1.clone(), att.clone()),
+                    p2.clone()
                 ),
                 group(
-                    attDeriv( *p2, att),
-                    *p1
+                    attDeriv( p2, att),
+                    p1
                 )
             )
         }
-        Pattern::Interleave(p1, p2) => {
+        "Interleave" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
                 interleave(
-                    attDeriv(*p1.clone(), att.clone()),
-                    *p2.clone()
+                    attDeriv(p1.clone(), att.clone()),
+                    p2.clone()
                 ),
                 interleave(
-                    attDeriv(*p2, att),
-                    *p1
+                    attDeriv( p2, att),
+                    p1
                 )
             )
         }
-        Pattern::OneOrMore(p) => {
+        "OneOrMore" => {
+            let p1 = pat.first_child().unwrap();
             group(
-                attDeriv( *p.clone(), att),
+                attDeriv(p1,  att),
                 choice(
-                    Pattern::OneOrMore(p),
-                    Pattern::Empty
+                    pat.clone(),
+                    pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
                 )
             )
         }
-        //attDeriv cx (Attribute nc p) (AttributeNode qn s) =
-        //    if contains nc qn && valueMatch cx p s then Empty else NotAllowed
-        Pattern::Attribute(nc, p) => {
+        "Attribute" => {
             let (qn, av) = (att.name(), att.value());
-            if contains(nc, qn) && valueMatch(*p, av.to_string()) {
-                Pattern::Empty
+            let mut i = pat.child_iter();
+            let nc = i.next().unwrap();
+            let p1 = i.next().unwrap();
+            if contains(nc, qn) && valueMatch(p1, av.to_string()) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
             } else {
-                Pattern::NotAllowed
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
             }
         }
-        _ => Pattern::NotAllowed
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
     }
 }
 
-fn startTagCloseDeriv(pat: Pattern) -> Pattern {
-    match pat {
-        Pattern::After(p1, p2) => {
-            after(startTagCloseDeriv(*p1), *p2)
-        },
-        Pattern::Choice(p1, p2) => {
+fn startTagCloseDeriv(pat: RNode) -> RNode {
+    match pat.name().get_localname().as_str() {
+        "After" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            after(
+                startTagCloseDeriv(p1),
+                p2
+            )
+        }
+        "Choice" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
-                startTagCloseDeriv(*p1),
-                startTagCloseDeriv(*p2)
+                startTagCloseDeriv(p1),
+                startTagCloseDeriv(p2)
             )
-        },
-        Pattern::Group(p1, p2) => {
+        }
+        "Group" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             group(
-                startTagCloseDeriv(*p1),
-                startTagCloseDeriv(*p2),
+                startTagCloseDeriv(p1),
+                startTagCloseDeriv(p2)
             )
         }
-        Pattern::Interleave(p1, p2) => {
+        "Interleave" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             interleave(
-                startTagCloseDeriv(*p1),
-                startTagCloseDeriv(*p2),
+                startTagCloseDeriv(p1),
+                startTagCloseDeriv(p2)
             )
         }
-        Pattern::OneOrMore(p) => {
-            oneOrMore(startTagCloseDeriv(*p))
+        "OneOrMore" => {
+            let p = pat.first_child().unwrap();
+            oneOrMore(startTagCloseDeriv(p))
         }
-        Pattern::Attribute(_,_) => Pattern::NotAllowed,
-        p => p
+        "Attribute" => {
+            pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        }
+        _ => pat
     }
 }
 
-fn childrenDeriv(pat: Pattern, cn: RNode) -> Pattern {
+fn childrenDeriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
     match cn.clone().child_iter().count(){
         //match cn.len() {
         0 => {
@@ -233,10 +347,10 @@ fn childrenDeriv(pat: Pattern, cn: RNode) -> Pattern {
             choice(pat.clone(), textDeriv(pat, "".to_string()))
         }
         1 => {
-            let n = cn.child_iter().next().unwrap();
+            let n = cn.first_child().unwrap();
             match n.node_type(){
                 NodeType::Text => {
-                    let p1 = childDeriv( pat.clone(), n.clone());
+                    let p1 = childDeriv( n.clone(),pat.clone(), refs);
                     if whitespace(n.value().to_string()) {
                         choice(pat, p1)
                     } else {
@@ -244,126 +358,149 @@ fn childrenDeriv(pat: Pattern, cn: RNode) -> Pattern {
                     }
                 }
                 _ => {
-                    stripChildrenDeriv(pat, cn.child_iter())
+                    stripChildrenDeriv(pat, cn.child_iter(), refs)
                 }
             }
         },
-        _ => {stripChildrenDeriv(pat, cn.child_iter())}
+        _ => {stripChildrenDeriv(pat, cn.child_iter(), refs)}
     }
 }
 
-fn endTagDeriv(pat: Pattern) -> Pattern {
-    match pat {
-        Pattern::Choice(p1, p2) => {
+fn endTagDeriv(pat: RNode) -> RNode {
+    match pat.name().get_localname().as_str() {
+        "Choice" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
-                endTagDeriv(*p1),
-                endTagDeriv(*p2)
+                endTagDeriv(p1),
+                endTagDeriv(p2)
             )
-        },
-        Pattern::After(p1, p2) => {
-            if p1.is_nullable(){
-                *p2
-            }else {
-                Pattern::NotAllowed
+        }
+        "After" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            if is_nullable(p1) {
+                p2
+            } else {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
             }
         }
-        _ => Pattern::NotAllowed
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
     }
 }
 
 
 
-
-
-
-
-
-fn textDeriv(pat: Pattern, s: String) -> Pattern {
-    match pat {
-        Pattern::Choice(p1, p2) => {
+fn textDeriv(pat: RNode, s: String) -> RNode {
+    match pat.name().get_localname().as_str() {
+        "Choice" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
-                textDeriv(*p1, s.clone()),
-                textDeriv(*p2, s.clone())
+                textDeriv(p1, s.clone()),
+                textDeriv(p2, s.clone())
             )
         }
-        Pattern::Interleave(p1, p2) => {
+        "Interleave" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             choice(
                 interleave(
-                    textDeriv(*p1.clone(), s.clone()),
-                    *p2.clone()),
+                    textDeriv(p1.clone(), s.clone()),
+                    p2.clone()),
                 interleave(
-                    *p1,
-                    textDeriv(*p2, s.clone())
+                    p1,
+                    textDeriv(p2, s.clone())
                 )
             )
         }
-        Pattern::Group(p1, p2) => {
+        "Group" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             let p = group(
-                textDeriv(*p1, s.clone()),
-                *p2.clone()
+                textDeriv(p1, s.clone()),
+                p2.clone()
             );
-            if p.is_nullable(){
+            if is_nullable(p.clone()){
                 choice(
-                    p,
+                    p.clone(),
                     textDeriv(
-                        *p2, s)
+                        p2, s)
                 )
             } else {
                 p
             }
         }
-        Pattern::After(p1, p2) => {
-            //textDeriv cx (After p1 p2) s = after (textDeriv cx p1 s) p2
+        "After" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
             after(
-                textDeriv(*p1, s),
-                *p2
+                textDeriv(p1, s),
+                p2
             )
         }
-        Pattern::OneOrMore(p1) => {
+        "OneOrMore" => {
+            let p = pat.first_child().unwrap();
             group(
-                textDeriv(*p1.clone(), s.clone()),
+                textDeriv(p.clone(), s.clone()),
                 choice(
-                    Pattern::OneOrMore(p1),
-                    Pattern::Empty
+                    pat.clone(),
+                    pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
                 )
             )
         }
-        Pattern::Text => {
-            Pattern::Text
-        }
-        Pattern::Value(dt, v, _cx2) => {
-            if datatypeEqual(dt, v,  s) {
-                Pattern::Empty
+        "Text" => pat,
+        "Value" => {
+            let dtlib = pat.get_attribute(&QualifiedName::new(None, None, "datatypeLibrary".to_string()));
+            let dtname = pat.get_attribute(&QualifiedName::new(None, None, "type".to_string()));
+            let v = pat.value().to_string();
+            if datatypeEqual((dtlib,dtname), v,  s) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
             } else {
-                Pattern::NotAllowed
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
             }
         }
-        Pattern::Data(dt, params) => {
+        "Data" => {
+            let mut c = pat.child_iter();
+            let dt = c.next().unwrap();
+            //let params = c.collect();
+            let params = vec![];
             if dataTypeAllows(dt, params, s) {
-                Pattern::Empty
+                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
             } else {
-                Pattern::NotAllowed
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
             }
         }
-        Pattern::DataExcept(dt, params, p) => {
-            if dataTypeAllows(dt, params, s.clone()) && !textDeriv(*p, s).is_nullable() {
-                Pattern::Empty
+        "DataExcept" => {
+            let mut c = pat.clone().child_iter();
+            let dt = c.next().unwrap();
+            //let params = c.collect();
+            let params = vec![];
+            if dataTypeAllows(dt, params, s.clone()) && !is_nullable(textDeriv(pat.clone(), s)) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
             } else {
-                Pattern::NotAllowed
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
             }
         }
-        Pattern::List(p) => {
-            if listDeriv(*p, stringsplit(s)).is_nullable(){
-                Pattern::Empty
+        "List" => {
+            let p = pat.first_child().unwrap();
+            if is_nullable(listDeriv(p, stringsplit(s))){
+                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
             } else {
-                Pattern::NotAllowed
+                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
             }
         }
-        _ => Pattern::NotAllowed
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
     }
 }
 
-fn listDeriv(p: Pattern, vs: Vec<String>) -> Pattern {
+fn listDeriv(p: RNode, vs: Vec<String>) -> RNode {
     let mut vsi = vs.into_iter();
     match vsi.next(){
         None => { p }
@@ -373,7 +510,7 @@ fn listDeriv(p: Pattern, vs: Vec<String>) -> Pattern {
     }
 }
 
-fn stripChildrenDeriv(pat: Pattern, mut cn: Box<dyn Iterator<Item=RNode>>) -> Pattern {
+fn stripChildrenDeriv(pat: RNode, mut cn: Box<dyn Iterator<Item=RNode>>, refs: &HashMap<String, RNode>) -> RNode {
     match cn.next(){
         None => { pat },
         Some(h) => {
@@ -381,9 +518,10 @@ fn stripChildrenDeriv(pat: Pattern, mut cn: Box<dyn Iterator<Item=RNode>>) -> Pa
                 if strip(h.clone()){
                     pat
                 } else {
-                    childDeriv(pat, h)
+                    childDeriv(pat, h, refs)
                 },
-                cn
+                cn,
+                refs
             )
         }
     }
@@ -391,69 +529,98 @@ fn stripChildrenDeriv(pat: Pattern, mut cn: Box<dyn Iterator<Item=RNode>>) -> Pa
 
 pub fn applyAfter<F1>(
     f: F1,
-    p: Pattern
-) -> Pattern
+    pat: RNode
+) -> RNode
     where
-        F1: Fn(Pattern) -> Pattern + Clone,
+        F1: Fn(RNode) -> RNode + Clone,
 {
-    match p {
-        Pattern::After(p1, p2) => {
-            after(*p1, f(*p2))
-        }
-        Pattern::Choice(p1, p2) => {
-            choice(
-                applyAfter(f.clone(), *p1),
-                applyAfter(f, *p2)
+    match pat.name().get_localname().as_str() {
+        "After" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            after(
+                p1,
+                f(p2)
             )
         }
-        Pattern::NotAllowed => Pattern::NotAllowed,
-        _ => Pattern::NotAllowed
+        "Choice" => {
+            let mut pc = pat.child_iter();
+            let p1 = pc.next().unwrap();
+            let p2 = pc.next().unwrap();
+            choice(
+                applyAfter(f.clone(), p1),
+                applyAfter(f, p2)
+            )
+        }
+        "NotAllowed" => pat,
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
     }
 }
 
 
-fn choice(pat1: Pattern, pat2: Pattern) -> Pattern{
+fn choice(pat1: RNode, pat2: RNode) -> RNode{
     /*
         choice :: Pattern -> Pattern -> Pattern
         choice p NotAllowed = p
         choice NotAllowed p = p
         choice p1 p2 = Choice p1 p2
     */
-    match (pat1, pat2){
-        (p1, Pattern::NotAllowed) =>  p1,
-        (Pattern::NotAllowed, p2) =>  p2,
-        (p1, p2) => Pattern::Choice(Box::from(p1), Box::from(p2))
+    match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()){
+        ("NotAllowed", _) =>  pat2,
+        (_, "NotAllowed") =>  pat1,
+        (_, _) => {
+            let mut c = pat1.owner_document().new_element(QualifiedName::new(None,None,"Choice".to_string())).unwrap();
+            c.push(pat1);
+            c.push(pat2);
+            c
+        }
     }
 }
-fn group(p1: Pattern, p2: Pattern) -> Pattern {
-    match (p1, p2) {
-        (_, Pattern::NotAllowed) => Pattern::NotAllowed,
-        (Pattern::NotAllowed, _) => Pattern::NotAllowed,
-        (p, Pattern::Empty) => p,
-        (Pattern::Empty, p) => p,
-        (p1, p2) => Pattern::Group(Box::from(p1), Box::from(p2))
+fn group(pat1: RNode, pat2: RNode) -> RNode {
+    match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()) {
+        ("NotAllowed", _) => pat1,
+        (_,"NotAllowed") => pat2,
+        ("Empty",_) => pat2,
+        (_,"Empty") => pat1,
+        (_,_) => {
+            let mut g = pat1.owner_document().new_element(QualifiedName::new(None,None,"Group".to_string())).unwrap();
+            g.push(pat1);
+            g.push(pat2);
+            g
+        }
     }
 }
-fn after(p1: Pattern, p2: Pattern) -> Pattern {
-    match (p1, p2) {
-        (_, Pattern::NotAllowed) => Pattern::NotAllowed,
-        (Pattern::NotAllowed, _) => Pattern::NotAllowed,
-        (p1, p2) => Pattern::After(Box::from(p1), Box::from(p2))
+fn after(pat1: RNode, pat2: RNode) -> RNode {
+    match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()) {
+        (_, "NotAllowed") => pat2,
+        ("NotAllowed", _) => pat1,
+        (_,_) => {
+            let mut a = pat1.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap();
+            a.push(pat1);
+            a.push(pat2);
+            a
+        }
     }
 }
-fn interleave(p1: Pattern, p2: Pattern) -> Pattern {
-    match (p1, p2) {
-        (_, Pattern::NotAllowed) => Pattern::NotAllowed,
-        (Pattern::NotAllowed, _) => Pattern::NotAllowed,
-        (p, Pattern::Empty) => p,
-        (Pattern::Empty, p) => p,
-        (p1, p2) => Pattern::Interleave(Box::from(p1), Box::from(p2))
+fn interleave(pat1: RNode, pat2: RNode) -> RNode {
+    match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()) {
+        ("NotAllowed", _) => pat1,
+        (_,"NotAllowed") => pat2,
+        ("Empty",_) => pat2,
+        (_,"Empty") => pat1,
+        (_,_) => {
+            let mut i = pat1.owner_document().new_element(QualifiedName::new(None,None,"Interleave".to_string())).unwrap();
+            i.push(pat1);
+            i.push(pat2);
+            i
+        }
     }
 }
-fn valueMatch(pat: Pattern, s: String) -> bool {
-    (pat.clone().is_nullable() && whitespace(s.clone()))
+fn valueMatch(pat: RNode, s: String) -> bool {
+    (is_nullable(pat.clone()) && whitespace(s.clone()))
         ||
-        textDeriv(pat, s).is_nullable()
+    is_nullable(textDeriv(pat, s))
 }
 fn whitespace(s: String) -> bool {
     //tests whether a string is contains only whitespace.
@@ -465,20 +632,34 @@ fn strip(c: RNode) -> bool {
         _ => false
     }
 }
-fn oneOrMore(pat: Pattern) -> Pattern {
-    match pat {
-        Pattern::NotAllowed => Pattern::NotAllowed,
-        p => Pattern::OneOrMore(Box::from(p))
+fn oneOrMore(pat: RNode) -> RNode {
+    match pat.name().get_localname().as_str() {
+        "NotAllowed" => pat,
+        _ => {
+            let mut o = Rc::new(SmiteNode::new()).new_element(QualifiedName::new(None, None, "OneOrMore".to_string())).unwrap();
+            o.push(pat);
+            o
+        }
     }
 }
-fn dataTypeAllows((_dt, st): DataType, _params: Vec<Param>, _s: String) -> bool {
-    match st.as_str(){
+fn dataTypeAllows(dt: RNode, params: Vec<Param>, s: String) -> bool {
+    let datatypens = dt.name().get_nsuri();
+    let datatype = dt.name().get_localname();
+    match datatype.as_str(){
         "string" => true,
         "token" => true,
         _ => false
     }
 }
-fn datatypeEqual((_d, s): DataType, s1: String, s2:String) -> bool {
+fn datatypeEqual((d, s): (Rc<Value>,Rc<Value>), s1: String, s2:String) -> bool {
+    match s.as_ref() {
+        Value::String(_) => { s1 == s2}
+        Value::Token => {
+            normalizeWhitespace(s1) == normalizeWhitespace(s2)
+        }
+        _ => false
+    }
+    /*
     match s.as_str() {
         "string" => {s1 == s2},
         "token" => {
@@ -486,6 +667,8 @@ fn datatypeEqual((_d, s): DataType, s1: String, s2:String) -> bool {
         }
         _ => false
     }
+
+     */
 }
 fn normalizeWhitespace(s: String) -> String {
     s.trim().split(' ').filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ")
