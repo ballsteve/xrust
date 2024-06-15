@@ -597,7 +597,7 @@ impl ItemNode for RNode {
         ))
     }
 
-    fn add_namespace(&self, ns: Self) -> Result<(), Error> {
+    fn add_namespace(&self, _ns: Self) -> Result<(), Error> {
         todo!()
     }
 }

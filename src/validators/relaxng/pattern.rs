@@ -1,15 +1,9 @@
 use std::collections::HashMap;
-use std::rc::Rc;
-use crate::{Error, Node, Value};
-use crate::item::NodeType;
-use crate::qname::QualifiedName;
+use crate::{Node};
 use crate::trees::smite::RNode;
-use crate::validators::ValidationError;
 
-pub(crate) type DataType = (QualifiedName, String);
-type Attributenode = (QualifiedName, String);
+
 pub(crate) type Param = (String, String);
-type Context = (QualifiedName, Vec<(String, QualifiedName)>);
 
 
 #[derive(Debug)]

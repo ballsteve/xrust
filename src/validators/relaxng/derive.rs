@@ -4,55 +4,57 @@ use crate::item::NodeType;
 use crate::{Node, Value};
 use crate::qname::QualifiedName;
 use crate::trees::smite::{RNode};
-use crate::validators::relaxng::pattern::{DataType, Param};
+use crate::validators::relaxng::pattern::{Param};
 use crate::trees::smite::{Node as SmiteNode};
 
 pub(crate) fn derive(doc: &RNode, pat: RNode, refs: &HashMap<String, RNode>) -> RNode {
-    childDeriv( doc.child_iter().next().unwrap(),pat, refs)
+    //println!("deriv-{:?}", doc.clone().child_iter().next().unwrap());
+    child_deriv( pat,doc.child_iter().next().unwrap(), refs)
 }
 
 
 pub(crate) fn is_nullable(pat: RNode) -> bool {
     match pat.name().get_localname().as_str() {
-        "Empty" => true,
-        "Text" => true,
-        "Group" => {
+        "empty" => true,
+        "text" => true,
+        "group" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             is_nullable(p1) && is_nullable(p2)
         }
-        "Interleave" => {
+        "interleave" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             is_nullable(p1) && is_nullable(p2)
         }
-        "Choice" => {
+        "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             is_nullable(p1) || is_nullable(p2)
         }
-        "OneOrMore" => {
+        "oneOrMore" => {
             is_nullable(pat.first_child().unwrap())
         }
-        //"Element"
-        //"Attribute"
-        //"List"
-        //"Value"
-        //"Data"
-        //"DataExcept"
-        //"NotAllowed"
-        //"After"
+        //"element"
+        //"attribute"
+        //"list"
+        //"value"
+        //"data"
+        //"dataExcept"
+        //"notAllowed"
+        //"after"
         _ => false
     }
 }
 
 fn contains(nc: RNode, qn: QualifiedName) -> bool {
+    //println!("containsnc-{:?}", nc.clone());
     match nc.name().get_localname().as_str() {
-        "AnyName" => true,
-        "AnyNameExcept" => {
+        "anyName" => true,
+        "anyNameExcept" => {
             let name = nc.first_child().unwrap();
             !contains(name, qn)
         }
@@ -66,11 +68,14 @@ fn contains(nc: RNode, qn: QualifiedName) -> bool {
             let n = c.next().unwrap();
             (Some(ns1.to_string()) ==qn.get_nsuri()) && !contains(n, qn)
         }
-        "Name" => {
-            let mut c = nc.child_iter();
-            let ns1 = c.next().unwrap();
-            let ln1 = c.next().unwrap();
-            (Some(ns1.to_string()) == qn.get_nsuri()) && (ln1.to_string() ==qn.get_localname())
+        "name" => {
+            let ln1 = nc.first_child().unwrap();
+            let ns1 = nc.get_attribute(&QualifiedName::new(None,None, "ns".to_string()));
+            if ns1.to_string().is_empty(){
+                qn.get_nsuri().is_none() && (ln1.to_string() ==qn.get_localname())
+            } else {
+                (Some(ns1.to_string()) == qn.get_nsuri()) && (ln1.to_string() ==qn.get_localname())
+            }
         }
         "NameClassChoice" => {
             let mut c = nc.child_iter();
@@ -83,7 +88,7 @@ fn contains(nc: RNode, qn: QualifiedName) -> bool {
 }
 
 
-fn childDeriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
+fn child_deriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
     match cn.node_type(){
         NodeType::Document |
         NodeType::Attribute |
@@ -91,27 +96,43 @@ fn childDeriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
         NodeType::ProcessingInstruction |
         NodeType::Reference |
         NodeType::Unknown |
-        NodeType::Namespace => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap(),
-        NodeType::Text =>  textDeriv(pat,cn.value().to_string()),
+        NodeType::Namespace => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap(),
+        NodeType::Text =>  text_deriv(pat,cn.value().to_string()),
         NodeType::Element => {
             //opening deriv
-            let mut pat1 = startTagOpenDeriv(pat, cn.name(), refs);
+            //println!("start_tag_open_deriv");
+            let mut pat1 = start_tag_open_deriv(pat, cn.name(), refs);
+            //println!("pat1-{:?}", pat1.clone());
+
+            //println!("att_deriv");
             //attsDeriv
             for attribute in cn.attribute_iter() {
-                pat1 = attDeriv(attribute,pat1);
+                pat1 = att_deriv(attribute,pat1);
             }
+            //println!("pat1-{:?}", pat1.clone());
+            //println!("start_tag_close_deriv");
             //CloseTag
-            pat1 = startTagCloseDeriv(pat1);
+            pat1 = start_tag_close_deriv(pat1);
+
+            //println!("pat1-{:?}", pat1.clone());
+            //println!("children_deriv");
             //Children
-            pat1 = childrenDeriv(cn.clone(), pat1, refs);
-            //EndTagDeriv
-            pat1 = endTagDeriv(pat1);
+            pat1 = children_deriv( pat1, cn.clone(),refs);
+
+            //println!("pat1-{:?}", pat1.clone());
+
+            //println!("end_tag_deriv");
+            //end_tag_deriv
+            pat1 = end_tag_deriv(pat1);
+
+            //println!("pat1-{:?}", pat1.clone());
             pat1
         }
     }
 }
 
-fn startTagOpenDeriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>) -> RNode {
+fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>) -> RNode {
+    //println!("stod-{:?}",pat.name().get_localname().as_str());
     match pat.name().get_localname().as_str() {
         "ref" => {
             //We lookup the reference, and use that for the pattern going forward
@@ -119,9 +140,9 @@ fn startTagOpenDeriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>
             let newpat = refs.get(patname.to_string().as_str());
             match newpat{
                 //TODO proper error checking
-                None => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap(),
-                Some(RN) => {
-                    startTagOpenDeriv(RN.clone(), q, refs)
+                None => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap(),
+                Some(rn) => {
+                    start_tag_open_deriv(rn.clone(), q, refs)
                 }
             }
         }
@@ -130,16 +151,16 @@ fn startTagOpenDeriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>
             let nc = pc.next().unwrap();
             let p = pc.next().unwrap();
             if contains(nc, q) {
-                after(p, pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap())
+                after(p, pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap())
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
         "choice" => {
             let mut pc = pat.child_iter();
             choice(
-                startTagOpenDeriv( pc.next().unwrap(), q.clone(),refs),
-                startTagOpenDeriv( pc.next().unwrap(), q.clone(),refs)
+                start_tag_open_deriv( pc.next().unwrap(), q.clone(),refs),
+                start_tag_open_deriv( pc.next().unwrap(), q.clone(),refs)
             )
         }
         "interleave" => {
@@ -147,210 +168,210 @@ fn startTagOpenDeriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
-                applyAfter(
+                apply_after(
                 |pat: RNode| {
-                    let mut i = pat.owner_document().new_element(QualifiedName::new(None,None,"Interleave".to_string())).unwrap();
-                    i.push(pat);
-                    i.push(p2.clone());
+                    let mut i = pat.owner_document().new_element(QualifiedName::new(None,None,"interleave".to_string())).unwrap();
+                    let _ = i.push(pat);
+                    let _ = i.push(p2.clone());
                     i
                 },
-                    startTagOpenDeriv( p1.clone(), q.clone(),refs)
+                    start_tag_open_deriv( p1.clone(), q.clone(),refs)
                 ),
-                applyAfter(
+                apply_after(
                     |pat: RNode| {
-                        let mut i = pat.owner_document().new_element(QualifiedName::new(None,None,"Interleave".to_string())).unwrap();
-                        i.push(pat);
-                        i.push(p1.clone());
+                        let mut i = pat.owner_document().new_element(QualifiedName::new(None,None,"interleave".to_string())).unwrap();
+                        let _ = i.push(pat);
+                        let _ = i.push(p1.clone());
                         i
                     },
-                    startTagOpenDeriv( p2.clone(),q.clone(), refs)
+                    start_tag_open_deriv( p2.clone(),q.clone(), refs)
                 )
             )
         }
-        "OneOrMore" => {
+        "oneOrMore" => {
             let p1 = pat.first_child().unwrap();
-            applyAfter(
+            apply_after(
                 |pat: RNode|{
                     group(
                         pat.clone(),
                         choice(
                             pat.clone(),
-                            pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+                            pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
                         )
                     )
                 },
-                startTagOpenDeriv(p1, q, refs)
+                start_tag_open_deriv(p1, q, refs)
             )
         }
-        "Group" => {
+        "group" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
-            let x =  applyAfter(
+            let x =  apply_after(
                 |pat: RNode| { group(pat, p2.clone())},
-                startTagOpenDeriv( p1.clone(),q.clone(), refs)
+                start_tag_open_deriv( p1.clone(),q.clone(), refs)
             );
             if is_nullable(p1){
                 choice(
                     x,
-                    startTagOpenDeriv( p2, q,refs)
+                    start_tag_open_deriv( p2, q,refs)
                 )
             } else{
                 x
             }
         }
-        "After" => {
+        "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
-            applyAfter(
+            apply_after(
                 |pat: RNode| {
                     after(pat,  p2.clone())
                 },
-                startTagOpenDeriv( p1, q,refs)
+                start_tag_open_deriv( p1, q,refs)
             )
         }
-        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
     }
 }
 
 
-fn attDeriv( pat: RNode, att: RNode) -> RNode {
+fn att_deriv( pat: RNode, att: RNode) -> RNode {
     match pat.name().get_localname().as_str() {
-        "After" => {
+        "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             after(
-                attDeriv( p1, att),
+                att_deriv( p1, att),
                 p2
             )
         }
-        "Choice" => {
+        "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
-                attDeriv( p1, att.clone()),
-                attDeriv(p2, att)
+                att_deriv( p1, att.clone()),
+                att_deriv(p2, att)
             )
         }
-        "Group" => {
+        "group" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
                 group(
-                    attDeriv( p1.clone(), att.clone()),
+                    att_deriv( p1.clone(), att.clone()),
                     p2.clone()
                 ),
                 group(
-                    attDeriv( p2, att),
+                    att_deriv( p2, att),
                     p1
                 )
             )
         }
-        "Interleave" => {
+        "interleave" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
                 interleave(
-                    attDeriv(p1.clone(), att.clone()),
+                    att_deriv(p1.clone(), att.clone()),
                     p2.clone()
                 ),
                 interleave(
-                    attDeriv( p2, att),
+                    att_deriv( p2, att),
                     p1
                 )
             )
         }
-        "OneOrMore" => {
+        "oneOrMore" => {
             let p1 = pat.first_child().unwrap();
             group(
-                attDeriv(p1,  att),
+                att_deriv(p1,  att),
                 choice(
                     pat.clone(),
-                    pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+                    pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
                 )
             )
         }
-        "Attribute" => {
+        "attribute" => {
             let (qn, av) = (att.name(), att.value());
             let mut i = pat.child_iter();
             let nc = i.next().unwrap();
             let p1 = i.next().unwrap();
-            if contains(nc, qn) && valueMatch(p1, av.to_string()) {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+            if contains(nc, qn) && value_match(p1, av.to_string()) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
-        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
     }
 }
 
-fn startTagCloseDeriv(pat: RNode) -> RNode {
+fn start_tag_close_deriv(pat: RNode) -> RNode {
     match pat.name().get_localname().as_str() {
-        "After" => {
+        "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             after(
-                startTagCloseDeriv(p1),
+                start_tag_close_deriv(p1),
                 p2
             )
         }
-        "Choice" => {
+        "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
-                startTagCloseDeriv(p1),
-                startTagCloseDeriv(p2)
+                start_tag_close_deriv(p1),
+                start_tag_close_deriv(p2)
             )
         }
-        "Group" => {
+        "group" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             group(
-                startTagCloseDeriv(p1),
-                startTagCloseDeriv(p2)
+                start_tag_close_deriv(p1),
+                start_tag_close_deriv(p2)
             )
         }
-        "Interleave" => {
+        "interleave" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             interleave(
-                startTagCloseDeriv(p1),
-                startTagCloseDeriv(p2)
+                start_tag_close_deriv(p1),
+                start_tag_close_deriv(p2)
             )
         }
-        "OneOrMore" => {
+        "oneOrMore" => {
             let p = pat.first_child().unwrap();
-            oneOrMore(startTagCloseDeriv(p))
+            one_or_more(start_tag_close_deriv(p))
         }
-        "Attribute" => {
-            pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        "attribute" => {
+            pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
         }
         _ => pat
     }
 }
 
-fn childrenDeriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
+fn children_deriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
     match cn.clone().child_iter().count(){
         //match cn.len() {
         0 => {
             //We treat self closed elements as <e></e>
-            choice(pat.clone(), textDeriv(pat, "".to_string()))
+            choice(pat.clone(), text_deriv(pat, "".to_string()))
         }
         1 => {
             let n = cn.first_child().unwrap();
             match n.node_type(){
                 NodeType::Text => {
-                    let p1 = childDeriv( n.clone(),pat.clone(), refs);
+                    let p1 = child_deriv( n.clone(),pat.clone(), refs);
                     if whitespace(n.value().to_string()) {
                         choice(pat, p1)
                     } else {
@@ -358,100 +379,100 @@ fn childrenDeriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode 
                     }
                 }
                 _ => {
-                    stripChildrenDeriv(pat, cn.child_iter(), refs)
+                    strip_children_deriv(pat, cn.child_iter(), refs)
                 }
             }
         },
-        _ => {stripChildrenDeriv(pat, cn.child_iter(), refs)}
+        _ => {strip_children_deriv(pat, cn.child_iter(), refs)}
     }
 }
 
-fn endTagDeriv(pat: RNode) -> RNode {
+fn end_tag_deriv(pat: RNode) -> RNode {
     match pat.name().get_localname().as_str() {
-        "Choice" => {
+        "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
-                endTagDeriv(p1),
-                endTagDeriv(p2)
+                end_tag_deriv(p1),
+                end_tag_deriv(p2)
             )
         }
-        "After" => {
+        "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             if is_nullable(p1) {
                 p2
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
-        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
     }
 }
 
 
 
-fn textDeriv(pat: RNode, s: String) -> RNode {
+fn text_deriv(pat: RNode, s: String) -> RNode {
     match pat.name().get_localname().as_str() {
-        "Choice" => {
+        "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
-                textDeriv(p1, s.clone()),
-                textDeriv(p2, s.clone())
+                text_deriv(p1, s.clone()),
+                text_deriv(p2, s.clone())
             )
         }
-        "Interleave" => {
+        "interleave" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
                 interleave(
-                    textDeriv(p1.clone(), s.clone()),
+                    text_deriv(p1.clone(), s.clone()),
                     p2.clone()),
                 interleave(
                     p1,
-                    textDeriv(p2, s.clone())
+                    text_deriv(p2, s.clone())
                 )
             )
         }
-        "Group" => {
+        "group" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             let p = group(
-                textDeriv(p1, s.clone()),
+                text_deriv(p1, s.clone()),
                 p2.clone()
             );
             if is_nullable(p.clone()){
                 choice(
                     p.clone(),
-                    textDeriv(
+                    text_deriv(
                         p2, s)
                 )
             } else {
                 p
             }
         }
-        "After" => {
+        "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             after(
-                textDeriv(p1, s),
+                text_deriv(p1, s),
                 p2
             )
         }
-        "OneOrMore" => {
+        "oneOrMore" => {
             let p = pat.first_child().unwrap();
             group(
-                textDeriv(p.clone(), s.clone()),
+                text_deriv(p.clone(), s.clone()),
                 choice(
                     pat.clone(),
-                    pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+                    pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
                 )
             )
         }
@@ -460,10 +481,10 @@ fn textDeriv(pat: RNode, s: String) -> RNode {
             let dtlib = pat.get_attribute(&QualifiedName::new(None, None, "datatypeLibrary".to_string()));
             let dtname = pat.get_attribute(&QualifiedName::new(None, None, "type".to_string()));
             let v = pat.value().to_string();
-            if datatypeEqual((dtlib,dtname), v,  s) {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+            if datatype_equal((dtlib,dtname), v,  s) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
         "Data" => {
@@ -471,10 +492,10 @@ fn textDeriv(pat: RNode, s: String) -> RNode {
             let dt = c.next().unwrap();
             //let params = c.collect();
             let params = vec![];
-            if dataTypeAllows(dt, params, s) {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+            if data_type_allows(dt, params, s) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
         "DataExcept" => {
@@ -482,43 +503,43 @@ fn textDeriv(pat: RNode, s: String) -> RNode {
             let dt = c.next().unwrap();
             //let params = c.collect();
             let params = vec![];
-            if dataTypeAllows(dt, params, s.clone()) && !is_nullable(textDeriv(pat.clone(), s)) {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+            if data_type_allows(dt, params, s.clone()) && !is_nullable(text_deriv(pat.clone(), s)) {
+                pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
         "List" => {
             let p = pat.first_child().unwrap();
-            if is_nullable(listDeriv(p, stringsplit(s))){
-                pat.owner_document().new_element(QualifiedName::new(None,None,"Empty".to_string())).unwrap()
+            if is_nullable(list_deriv(p, stringsplit(s))){
+                pat.owner_document().new_element(QualifiedName::new(None,None,"empty".to_string())).unwrap()
             } else {
-                pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+                pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
             }
         }
-        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
     }
 }
 
-fn listDeriv(p: RNode, vs: Vec<String>) -> RNode {
+fn list_deriv(p: RNode, vs: Vec<String>) -> RNode {
     let mut vsi = vs.into_iter();
     match vsi.next(){
         None => { p }
         Some(p1) => {
-            listDeriv(textDeriv(p, p1), vsi.collect())
+            list_deriv(text_deriv(p, p1), vsi.collect())
         }
     }
 }
 
-fn stripChildrenDeriv(pat: RNode, mut cn: Box<dyn Iterator<Item=RNode>>, refs: &HashMap<String, RNode>) -> RNode {
+fn strip_children_deriv(pat: RNode, mut cn: Box<dyn Iterator<Item=RNode>>, refs: &HashMap<String, RNode>) -> RNode {
     match cn.next(){
         None => { pat },
         Some(h) => {
-            stripChildrenDeriv(
+            strip_children_deriv(
                 if strip(h.clone()){
                     pat
                 } else {
-                    childDeriv(pat, h, refs)
+                    child_deriv(pat, h, refs)
                 },
                 cn,
                 refs
@@ -527,7 +548,7 @@ fn stripChildrenDeriv(pat: RNode, mut cn: Box<dyn Iterator<Item=RNode>>, refs: &
     }
 }
 
-pub fn applyAfter<F1>(
+pub fn apply_after<F1>(
     f: F1,
     pat: RNode
 ) -> RNode
@@ -535,7 +556,7 @@ pub fn applyAfter<F1>(
         F1: Fn(RNode) -> RNode + Clone,
 {
     match pat.name().get_localname().as_str() {
-        "After" => {
+        "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
@@ -544,17 +565,17 @@ pub fn applyAfter<F1>(
                 f(p2)
             )
         }
-        "Choice" => {
+        "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
             let p2 = pc.next().unwrap();
             choice(
-                applyAfter(f.clone(), p1),
-                applyAfter(f, p2)
+                apply_after(f.clone(), p1),
+                apply_after(f, p2)
             )
         }
-        "NotAllowed" => pat,
-        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap()
+        "notAllowed" => pat,
+        _ => pat.owner_document().new_element(QualifiedName::new(None,None,"notAllowed".to_string())).unwrap()
     }
 }
 
@@ -567,60 +588,62 @@ fn choice(pat1: RNode, pat2: RNode) -> RNode{
         choice p1 p2 = Choice p1 p2
     */
     match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()){
-        ("NotAllowed", _) =>  pat2,
-        (_, "NotAllowed") =>  pat1,
+        ("notAllowed", _) =>  pat2,
+        (_, "notAllowed") =>  pat1,
         (_, _) => {
-            let mut c = pat1.owner_document().new_element(QualifiedName::new(None,None,"Choice".to_string())).unwrap();
-            c.push(pat1);
-            c.push(pat2);
+            let mut c = pat1.owner_document().new_element(QualifiedName::new(None,None,"choice".to_string())).unwrap();
+            let _ = c.push(pat1);
+            let _ = c.push(pat2);
             c
         }
     }
 }
 fn group(pat1: RNode, pat2: RNode) -> RNode {
     match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()) {
-        ("NotAllowed", _) => pat1,
-        (_,"NotAllowed") => pat2,
-        ("Empty",_) => pat2,
-        (_,"Empty") => pat1,
+        ("notAllowed", _) => pat1,
+        (_,"notAllowed") => pat2,
+        ("empty",_) => pat2,
+        (_,"empty") => pat1,
         (_,_) => {
-            let mut g = pat1.owner_document().new_element(QualifiedName::new(None,None,"Group".to_string())).unwrap();
-            g.push(pat1);
-            g.push(pat2);
+            let mut g = pat1.owner_document().new_element(QualifiedName::new(None,None,"group".to_string())).unwrap();
+            let _ = g.push(pat1);
+            let _ = g.push(pat2);
             g
         }
     }
 }
 fn after(pat1: RNode, pat2: RNode) -> RNode {
+    //println!("afterpat1-{:?}",pat1.name().get_localname().as_str());
+    //println!("afterpat2-{:?}",pat2.name().get_localname().as_str());
     match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()) {
-        (_, "NotAllowed") => pat2,
-        ("NotAllowed", _) => pat1,
+        (_, "notAllowed") => pat2,
+        ("notAllowed", _) => pat1,
         (_,_) => {
-            let mut a = pat1.owner_document().new_element(QualifiedName::new(None,None,"NotAllowed".to_string())).unwrap();
-            a.push(pat1);
-            a.push(pat2);
+            let mut a = pat1.owner_document().new_element(QualifiedName::new(None,None,"after".to_string())).unwrap();
+            let _ = a.push(pat1);
+            let _ = a.push(pat2);
             a
         }
     }
 }
 fn interleave(pat1: RNode, pat2: RNode) -> RNode {
     match (pat1.name().get_localname().as_str(), pat2.name().get_localname().as_str()) {
-        ("NotAllowed", _) => pat1,
-        (_,"NotAllowed") => pat2,
-        ("Empty",_) => pat2,
-        (_,"Empty") => pat1,
+        ("notAllowed", _) => pat1,
+        (_,"notAllowed") => pat2,
+        ("empty",_) => pat2,
+        (_,"empty") => pat1,
         (_,_) => {
-            let mut i = pat1.owner_document().new_element(QualifiedName::new(None,None,"Interleave".to_string())).unwrap();
-            i.push(pat1);
-            i.push(pat2);
+            let mut i = pat1.owner_document().new_element(QualifiedName::new(None,None,"interleave".to_string())).unwrap();
+            let _ = i.push(pat1);
+            let _ = i.push(pat2);
             i
         }
     }
 }
-fn valueMatch(pat: RNode, s: String) -> bool {
+fn value_match(pat: RNode, s: String) -> bool {
     (is_nullable(pat.clone()) && whitespace(s.clone()))
         ||
-    is_nullable(textDeriv(pat, s))
+    is_nullable(text_deriv(pat, s))
 }
 fn whitespace(s: String) -> bool {
     //tests whether a string is contains only whitespace.
@@ -632,18 +655,18 @@ fn strip(c: RNode) -> bool {
         _ => false
     }
 }
-fn oneOrMore(pat: RNode) -> RNode {
+fn one_or_more(pat: RNode) -> RNode {
     match pat.name().get_localname().as_str() {
-        "NotAllowed" => pat,
+        "notAllowed" => pat,
         _ => {
-            let mut o = Rc::new(SmiteNode::new()).new_element(QualifiedName::new(None, None, "OneOrMore".to_string())).unwrap();
-            o.push(pat);
+            let mut o = Rc::new(SmiteNode::new()).new_element(QualifiedName::new(None, None, "oneOrMore".to_string())).unwrap();
+            let _ = o.push(pat);
             o
         }
     }
 }
-fn dataTypeAllows(dt: RNode, params: Vec<Param>, s: String) -> bool {
-    let datatypens = dt.name().get_nsuri();
+fn data_type_allows(dt: RNode, _params: Vec<Param>, _s: String) -> bool {
+    let _datatypens = dt.name().get_nsuri();
     let datatype = dt.name().get_localname();
     match datatype.as_str(){
         "string" => true,
@@ -651,11 +674,11 @@ fn dataTypeAllows(dt: RNode, params: Vec<Param>, s: String) -> bool {
         _ => false
     }
 }
-fn datatypeEqual((d, s): (Rc<Value>,Rc<Value>), s1: String, s2:String) -> bool {
+fn datatype_equal((_d, s): (Rc<Value>,Rc<Value>), s1: String, s2:String) -> bool {
     match s.as_ref() {
         Value::String(_) => { s1 == s2}
         Value::Token => {
-            normalizeWhitespace(s1) == normalizeWhitespace(s2)
+            normalize_whitespace(s1) == normalize_whitespace(s2)
         }
         _ => false
     }
@@ -663,14 +686,14 @@ fn datatypeEqual((d, s): (Rc<Value>,Rc<Value>), s1: String, s2:String) -> bool {
     match s.as_str() {
         "string" => {s1 == s2},
         "token" => {
-            normalizeWhitespace(s1) == normalizeWhitespace(s2)
+            normalize_whitespace(s1) == normalize_whitespace(s2)
         }
         _ => false
     }
 
      */
 }
-fn normalizeWhitespace(s: String) -> String {
+fn normalize_whitespace(s: String) -> String {
     s.trim().split(' ').filter(|s| !s.is_empty()).collect::<Vec<_>>().join(" ")
 }
 fn stringsplit(s: String) -> Vec<String>{

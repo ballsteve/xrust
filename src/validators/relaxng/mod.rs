@@ -1,8 +1,6 @@
 mod derive;
 mod pattern;
 
-use crate::Node;
-use crate::qname::QualifiedName;
 use crate::trees::smite::RNode;
 use crate::validators::relaxng::derive::{derive, is_nullable};
 use crate::validators::ValidationError;
@@ -13,7 +11,7 @@ pub fn validate_relaxng(doc: &RNode, schema: &RNode) -> Result<(), ValidationErr
     let schemapattern = pattern::prepare(schema);
 
     match schemapattern {
-        Err(e) => Err(ValidationError::SchemaError("Pattern Prep Error".to_string())),
+        Err(_) => Err(ValidationError::SchemaError("Pattern Prep Error".to_string())),
         Ok((pat, refs)) => {
             if is_nullable(derive(doc, pat, &refs)){
                 Ok(())

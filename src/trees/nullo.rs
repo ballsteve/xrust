@@ -162,7 +162,7 @@ impl Node for Nullo {
         ))
     }
 
-    fn add_namespace(&self, ns: Self) -> Result<(), Error> {
+    fn add_namespace(&self, _: Self) -> Result<(), Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
