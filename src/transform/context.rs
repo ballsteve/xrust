@@ -300,7 +300,7 @@ impl<N: Node> Context<N> {
         } else {
             Err(Error::new(
                 ErrorKind::Unknown,
-                String::from("no matching template"),
+                format!("no matching template for item {:?} in mode \"{:?}\"", i, m),
             ))
         }
     }
@@ -371,8 +371,8 @@ impl<N: Node> Context<N> {
             Transform::Arithmetic(v) => arithmetic(self, stctxt, v),
             Transform::Loop(v, b) => tr_loop(self, stctxt, v, b),
             Transform::Switch(c, o) => switch(self, stctxt, c, o),
-            Transform::ForEach(g, s, b) => for_each(self, stctxt, g, s, b),
-            Transform::ApplyTemplates(s, m) => apply_templates(self, stctxt, s, m),
+            Transform::ForEach(g, s, b, o) => for_each(self, stctxt, g, s, b, o),
+            Transform::ApplyTemplates(s, m, o) => apply_templates(self, stctxt, s, m, o),
             Transform::ApplyImports => apply_imports(self, stctxt),
             Transform::NextMatch => next_match(self, stctxt),
             Transform::VariableDeclaration(n, v, f) => {

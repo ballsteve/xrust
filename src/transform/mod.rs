@@ -52,7 +52,7 @@ pub(crate) mod variables;
 
 #[allow(unused_imports)]
 use crate::item::Sequence;
-use crate::item::{Item, Node, NodeType};
+use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
 use crate::value::Operator;
@@ -62,6 +62,8 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+use crate::Context;
+use crate::transform::context::{ContextBuilder, StaticContext};
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -136,11 +138,11 @@ pub enum Transform<N: Node> {
     /// A branching transformation. Consists of (test, body) clauses and an otherwise clause.
     Switch(Vec<(Transform<N>, Transform<N>)>, Box<Transform<N>>),
 
-    /// Evaluate a transformation for each selected item, with possible grouping.
-    ForEach(Option<Grouping<N>>, Box<Transform<N>>, Box<Transform<N>>),
+    /// Evaluate a transformation for each selected item, with possible grouping and sorting.
+    ForEach(Option<Grouping<N>>, Box<Transform<N>>, Box<Transform<N>>, Vec<(Order, Transform<N>)>),
     /// Find a template that matches an item and evaluate its body with the item as the context.
-    /// Consists of the selector for items to be matched and the mode.
-    ApplyTemplates(Box<Transform<N>>, Option<QualifiedName>),
+    /// Consists of the selector for items to be matched, the mode, and sort keys.
+    ApplyTemplates(Box<Transform<N>>, Option<QualifiedName>, Vec<(Order, Transform<N>)>),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
@@ -290,9 +292,9 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Or(o) => write!(f, "OR {} operands", o.len()),
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
-            Transform::ForEach(_g, _, _) => write!(f, "for-each"),
+            Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
             Transform::Union(v) => write!(f, "union of {} operands", v.len()),
-            Transform::ApplyTemplates(_, m) => write!(f, "Apply templates (mode {:?})", m),
+            Transform::ApplyTemplates(_, m, o) => write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len()),
             Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),
@@ -342,6 +344,41 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
     }
+}
+
+/// The sort order
+#[derive(Clone, PartialEq, Debug)]
+pub enum Order {
+    Ascending,
+    Descending,
+}
+
+/// Performing sorting of a [Sequence] using the given sort keys.
+pub(crate) fn do_sort<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+    seq: &mut Sequence<N>,
+    o: &Vec<(Order, Transform<N>)>,
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<F>,
+) -> Result<(), Error> {
+    // Optionally sort the select sequence
+    // TODO: multiple sort keys
+    if o.len() > 0 {
+        seq.sort_by_cached_key(|k| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(vec![k.clone()])
+                .build()
+                .dispatch(stctxt, &o[0].1).expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            seq.reverse();
+        }
+    }
+    Ok(())
 }
 
 /// Determine how a collection is to be divided into groups.

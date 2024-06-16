@@ -412,7 +412,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
                 Axis::Child,
                 NodeTest::Kind(KindTest::Any),
-            ))), None),
+            ))), None, vec![]),
             None,
             vec![0],
             None,
@@ -424,7 +424,7 @@ where
             Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
                 Axis::Child,
                 NodeTest::Kind(KindTest::Any),
-            ))), None),
+            ))), None, vec![]),
             None,
             vec![0],
             None,
@@ -677,12 +677,15 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                     if !sel.to_string().is_empty() {
                         Ok(Transform::ApplyTemplates(Box::new(parse::<N>(
                             &sel.to_string(),
-                        )?), m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")))) // TODO: don't panic
+                        )?),
+                                                     m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")),
+                        vec![])) // TODO: don't panic
                     } else {
                         // If there is no select attribute, then default is "child::node()"
                         Ok(Transform::ApplyTemplates(Box::new(Transform::Step(
                             NodeMatch::new(Axis::Child, NodeTest::Kind(KindTest::Any)),
-                        )), m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")))) // TODO: don't panic
+                        )), m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")),
+                                                     vec![])) // TODO: don't panic
                     }
                 }
                 (Some(XSLTNS), "apply-imports") => Ok(Transform::ApplyImports),
@@ -809,6 +812,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                     Ok(body)
                                 },
                             )?)),
+                            vec![],
                         ))
                     } else {
                         Result::Err(Error::new(
@@ -860,6 +864,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                         Ok(body)
                                     },
                                 )?)),
+                                vec![],
                             )),
                             ("", adj, "", "") => Ok(Transform::ForEach(
                                 Some(Grouping::Adjacent(vec![parse::<N>(adj)?])),
@@ -871,6 +876,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                         Ok(body)
                                     },
                                 )?)),
+                                vec![],
                             )),
                             // TODO: group-starting-with and group-ending-with
                             _ => Result::Err(Error::new(

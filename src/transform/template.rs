@@ -5,11 +5,10 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::Transform;
+use crate::transform::{Transform, Order, do_sort};
 use crate::xdmerror::Error;
-use crate::{Item, Node, Pattern, Sequence, SequenceTrait};
+use crate::{Node, Pattern, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
-use crate::transform::controlflow::for_each;
 
 #[derive(Clone)]
 pub struct Template<N: Node> {
@@ -94,11 +93,13 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     stctxt: &mut StaticContext<F>,
     s: &Transform<N>,
     m: &Option<QualifiedName>,
+    o: &Vec<(Order, Transform<N>)>, // sort keys
 ) -> Result<Sequence<N>, Error> {
-    // s is the select expression. Evaluate it, and then iterate over it's items.
+    // s is the select expression. Evaluate it, and then iterate over its items.
     // Each iteration becomes an item in the result sequence.
-    ctxt.dispatch(stctxt, s)?
-        .iter()
+    let mut seq = ctxt.dispatch(stctxt, s)?;
+    do_sort(&mut seq, o, ctxt, stctxt)?;
+    seq.iter()
         .try_fold(vec![], |mut result, i| {
             let templates = ctxt.find_templates(stctxt, i, m)?;
             // If there are two or more templates with the same priority and import level, then take the one that has the higher document order

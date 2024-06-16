@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::item::{Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{Grouping, Transform};
+use crate::transform::{Grouping, Transform, Order, do_sort};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -60,11 +60,14 @@ pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     g: &Option<Grouping<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>
 ) -> Result<Sequence<N>, Error> {
     match g {
         None => {
             let mut result: Sequence<N> = Vec::new();
-            for i in ctxt.dispatch(stctxt, s)? {
+            let mut seq = ctxt.dispatch(stctxt, s)?;
+            do_sort(&mut seq, o, ctxt, stctxt)?;
+            for i in seq {
                 let mut v = ContextBuilder::from(ctxt)
                     .context(vec![i.clone()])
                     .previous_context(Some(i))
@@ -74,10 +77,10 @@ pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             }
             Ok(result)
         }
-        Some(Grouping::By(b)) => group_by(ctxt, stctxt, &b, s, body),
-        Some(Grouping::Adjacent(a)) => group_adjacent(ctxt, stctxt, &a, s, body),
-        Some(Grouping::StartingWith(v)) => group_starting_with(ctxt, stctxt, &v, s, body),
-        Some(Grouping::EndingWith(v)) => group_ending_with(ctxt, stctxt, &v, s, body),
+        Some(Grouping::By(b)) => group_by(ctxt, stctxt, &b, s, body, o),
+        Some(Grouping::Adjacent(a)) => group_adjacent(ctxt, stctxt, &a, s, body, o),
+        Some(Grouping::StartingWith(v)) => group_starting_with(ctxt, stctxt, &v, s, body, o),
+        Some(Grouping::EndingWith(v)) => group_ending_with(ctxt, stctxt, &v, s, body, o),
     }
 }
 
@@ -88,6 +91,7 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     by: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>
 ) -> Result<Sequence<N>, Error> {
     // Each 'by' expression is evaluated to a string key and stored in the hashmap
     // TODO: this implementation is only supporting a single key
@@ -109,6 +113,8 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         Ok(())
     })?;
 
+    // TODO: sorting
+
     // Now evaluate the body for each group
     groups.iter().try_fold(vec![], |mut result, (k, v)| {
         // Set current-group and current-grouping-key
@@ -129,6 +135,7 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     adj: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>
 ) -> Result<Sequence<N>, Error> {
     // TODO: this implementation is only supporting a single key
     let t = adj[0].clone();
@@ -176,6 +183,8 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         groups.push((curkey.to_string(), curgrp))
     }
 
+    // TODO: sorting
+
     // Now evaluate the body for each group
     groups.iter().try_fold(vec![], |mut result, (k, v)| {
         // Set current-group and current-grouping-key
@@ -196,6 +205,7 @@ fn group_starting_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
+    _o: &Vec<(Order, Transform<N>)>
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,
@@ -210,6 +220,7 @@ pub fn group_ending_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
+    _o: &Vec<(Order, Transform<N>)>
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,
