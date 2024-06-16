@@ -405,6 +405,11 @@ fn tr_for_each() {
         .expect("test failed")
 }
 #[test]
+fn tr_for_each_sort_1() {
+    transformgeneric::generic_tr_for_each_sort::<RNode, _, _>(make_empty_doc, make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_group_by_1() {
     transformgeneric::generic_tr_group_by_1::<RNode, _, _>(make_empty_doc, make_sd)
         .expect("test failed")

@@ -2298,6 +2298,75 @@ where
     );
     Ok(())
 }
+pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .expect("unable to element node");
+    sd.push(t.clone()).expect("unable to append child");
+    let mut l1 = sd
+        .new_element(QualifiedName::new(None, None, String::from("Level1")))
+        .expect("unable to element node");
+    t.push(l1.clone()).expect("unable to append child");
+    l1.push(
+        sd.new_text(Rc::new(Value::from("one")))
+            .expect("unable to create text node"),
+    )
+        .expect("unable to append text");
+    let mut l2 = sd
+        .new_element(QualifiedName::new(None, None, String::from("Level1")))
+        .expect("unable to element node");
+    t.push(l2.clone()).expect("unable to append child");
+    l2.push(
+        sd.new_text(Rc::new(Value::from("two")))
+            .expect("unable to create text node"),
+    )
+        .expect("unable to append text");
+    let mut l3 = sd
+        .new_element(QualifiedName::new(None, None, String::from("Level1")))
+        .expect("unable to element node");
+    t.push(l3.clone()).expect("unable to append child");
+    l3.push(
+        sd.new_text(Rc::new(Value::from("three")))
+            .expect("unable to create text node"),
+    )
+        .expect("unable to append text");
+
+    // xsl:for-each select="/child::* /child::*" body == xsl:text "found a Level-1"
+    let x = Transform::ForEach(
+        None,
+        Box::new(Transform::Compose(vec![
+            Transform::Root,
+            Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            }),
+            Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            }),
+        ])),
+        Box::new(Transform::ContextItem),
+        vec![(Order::Ascending, Transform::ContextItem)],
+    );
+
+    let seq = ContextBuilder::new()
+        .context(vec![Item::Node(sd)])
+        .build()
+        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 3);
+    assert_eq!(
+        seq.to_string(),
+        "onethreetwo"
+    );
+    Ok(())
+}
 
 pub fn generic_tr_group_by_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
 where
