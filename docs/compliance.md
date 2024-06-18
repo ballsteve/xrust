@@ -460,14 +460,14 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:result-document/@output-version          | no      |                                                               |
 | xsl:sequence                                 | yes     |                                                               |
 | xsl:sequence/@select                         | yes     |                                                               |
-| xsl:sort                                     | no      |                                                               |
-| xsl:sort/@select                             | no      |                                                               |
+| xsl:sort                                     | yes     |                                                               |
+| xsl:sort/@select                             | yes     |                                                               |
 | xsl:sort/@lang                               | no      |                                                               |
-| xsl:sort/@order                              | no      |                                                               |
+| xsl:sort/@order                              | yes     |                                                               |
 | xsl:sort/@collation                          | no      |                                                               |
 | xsl:sort/@stable                             | no      |                                                               |
 | xsl:sort/@case-order                         | no      |                                                               |
-| xsl:sort/@data-type                          | no      |                                                               |
+| xsl:sort/@data-type                          | no      | String sort keys only                                         |
 | xsl:source-document                          | no      |                                                               |
 | xsl:source-document/@href                    | no      |                                                               |
 | xsl:source-document/@streamable              | no      |                                                               |

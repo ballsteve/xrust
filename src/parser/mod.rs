@@ -44,6 +44,25 @@ pub enum ParseError {
     ExtDTDLoadError,
 }
 
+pub struct ParserConfig {
+    pub ext_dtd_resolver: Option<URLResolver>,
+    pub docloc: Option<String>,
+    pub namespace_nodes: bool,
+    pub entitydepth: usize,
+}
+
+impl ParserConfig {
+    pub fn new() -> Self {
+        ParserConfig {
+            ext_dtd_resolver: None,
+            docloc: None,
+            namespace_nodes: false,
+            entitydepth: 8
+        }
+    }
+}
+
+
 #[derive(Clone)]
 pub struct ParserState<N: Node> {
     doc: Option<N>,

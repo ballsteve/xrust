@@ -148,6 +148,7 @@ pub enum NodeType {
     Comment,
     ProcessingInstruction,
     Reference,
+    Namespace,
     #[default]
     Unknown,
 }
@@ -163,6 +164,7 @@ impl NodeType {
             NodeType::ProcessingInstruction => "Processing-Instruction",
             NodeType::Comment => "Comment",
             NodeType::Reference => "Reference",
+            NodeType::Namespace => "Namespace",
             NodeType::Unknown => "--None--",
         }
     }
@@ -478,4 +480,7 @@ pub trait Node: Clone + fmt::Debug {
     fn xmldecl(&self) -> XMLDecl;
     /// Set the XML Declaration for the document.
     fn set_xmldecl(&mut self, d: XMLDecl) -> Result<(), Error>;
+    /// Add a namespace to this element-type node.
+    /// NOTE: Does NOT assign a namespace to the element.
+    fn add_namespace(&self, ns: Self) -> Result<(), Error>;
 }

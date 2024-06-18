@@ -164,6 +164,13 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
+
+    fn add_namespace(&self, _: Self) -> Result<(), Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    }
 }
 
 pub struct NulloIter();

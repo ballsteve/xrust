@@ -602,6 +602,10 @@ impl ItemNode for RNode {
             String::from("not implemented"),
         ))
     }
+
+    fn add_namespace(&self, _ns: Self) -> Result<(), Error> {
+        todo!()
+    }
 }
 
 impl Debug for Node {

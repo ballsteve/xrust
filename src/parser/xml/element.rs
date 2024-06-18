@@ -78,6 +78,40 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                     .expect("unable to create element");
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
+                //Add namespace nodes
+                /*
+                match namespaces {
+                    None => {
+                        //No namespace to assign, we only assign the XML prefix.
+                        e.add_namespace(
+                            e.new_namespace(
+                                "xml".to_string(),
+                                "http://www.w3.org/XML/1998/namespace".to_string()
+                            ).unwrap()
+                        ).expect("unable to add namespace node");
+                    }
+                    Some(ns) => {
+                        ns.iter().for_each(|(p, u)| {
+                            e.add_namespace(
+                                e.new_namespace(
+                                    p.to_string(),
+                                    u.to_string()
+                                ).unwrap()
+                            ).expect("unable to add namespace node");
+                        });
+                        //Check if XML NS was added, add if not.
+                        if ns.get("xml").is_none() {
+                            e.add_namespace(
+                                e.new_namespace(
+                                    "xml".to_string(),
+                                    "http://www.w3.org/XML/1998/namespace".to_string()
+                                ).unwrap()
+                            ).expect("unable to add namespace node");
+                        }
+                    }
+                }
+
+                 */
                 Ok(((input1, state1.clone()), e))
             }
             Err(err) => Err(err),
