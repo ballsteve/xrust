@@ -425,6 +425,11 @@ fn tr_group_adjacent_1() {
         .expect("test failed")
 }
 #[test]
+fn tr_group_adjacent_sort_1() {
+    transformgeneric::generic_tr_group_adjacent_sort_1::<RNode, _, _>(make_empty_doc, make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_apply_templates_builtins() {
     transformgeneric::generic_tr_apply_templates_builtins::<RNode, _, _>(make_empty_doc, make_sd)
         .expect("test failed")

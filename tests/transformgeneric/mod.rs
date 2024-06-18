@@ -2508,6 +2508,46 @@ where
     // the groups are not ordered, so it is difficult to test all of the groups are correct
     //assert_eq!(seq[0].to_string(), "key 0 #members 10")
 }
+pub fn generic_tr_group_adjacent_sort_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // xsl:for-each-group select="(a, a, b, c, c, c)" group-adjacent="." body == xsl:text "group current-grouping-key size count(current-group)"
+    let x = Transform::ForEach(
+        Some(Grouping::Adjacent(vec![Transform::ContextItem])),
+        Box::new(Transform::SequenceItems(vec![
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("b")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+        ])),
+        Box::new(Transform::LiteralElement(
+            QualifiedName::new(None, None, String::from("group")),
+            Box::new(Transform::SequenceItems(vec![
+                Transform::Literal(Item::Value(Rc::new(Value::from("key ")))),
+                Transform::CurrentGroupingKey,
+                Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
+                Transform::Count(Box::new(Transform::CurrentGroup)),
+            ])),
+        )),
+        vec![(Order::Ascending, Transform::CurrentGroupingKey)],
+    );
+
+    let resdoc = make_empty_doc();
+    let seq = ContextBuilder::new()
+        .result_document(resdoc)
+        .build()
+        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 3);
+    assert_eq!(seq[0].to_string(), "key a #members 2");
+    assert_eq!(seq[1].to_string(), "key b #members 1");
+    assert_eq!(seq[2].to_string(), "key c #members 3");
+    Ok(())
+}
 
 pub fn generic_tr_apply_templates_builtins<N: Node, G, H>(
     make_empty_doc: G,
