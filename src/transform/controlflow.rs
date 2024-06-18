@@ -113,19 +113,50 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         Ok(())
     })?;
 
-    // TODO: sorting
-
-    // Now evaluate the body for each group
-    groups.iter().try_fold(vec![], |mut result, (k, v)| {
-        // Set current-group and current-grouping-key
-        let mut r = ContextBuilder::from(ctxt)
-            .current_grouping_key(Rc::new(Value::from(k.clone())))
-            .current_group(v.clone())
-            .build()
-            .dispatch(stctxt, body)?;
-        result.append(&mut r);
-        Ok(result)
-    })
+    if !o.is_empty() {
+        // Build a vector of the groups, and then sort the vector
+        // TODO: support multiple sort keys
+        let mut gr_vec: Vec<(String, Sequence<N>)> = groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        gr_vec.sort_by_cached_key(|(k, v)| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(v.clone())
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, &o[0].1).expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            gr_vec.reverse();
+        }
+        // Now evaluate the body for each group
+        gr_vec.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    } else {
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    }
 }
 
 /// Evaluate a combinator for each group of items. 'adj' is an expression that is evaluated for each selected item. It must resolve to a singleton item. The first item starts the first group. For the second and subsequent items, if the 'adj' item is the same as the previous item then the item is added to the same group. Otherwise a new group is started.

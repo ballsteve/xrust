@@ -2413,6 +2413,61 @@ where
     // the groups are not ordered, so it is difficult to test all of the groups are correct
     //assert_eq!(seq[0].to_string(), "key 0 #members 10")
 }
+pub fn generic_tr_group_by_sort_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // xsl:for-each-group select="1 to 50" group-by=". mod 10"
+    // body == xsl:text "group current-grouping-key size count(current-group)"
+    // sort == current-grouping-key()
+    let x = Transform::ForEach(
+        Some(Grouping::By(vec![Transform::Arithmetic(vec![
+            ArithmeticOperand::new(ArithmeticOperator::Noop, Transform::ContextItem),
+            ArithmeticOperand::new(
+                ArithmeticOperator::Modulo,
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(10)))),
+            ),
+        ])])),
+        Box::new(Transform::Range(
+            Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                1,
+            ))))),
+            Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                50,
+            ))))),
+        )),
+        Box::new(Transform::LiteralElement(
+            QualifiedName::new(None, None, String::from("group")),
+            Box::new(Transform::SequenceItems(vec![
+                Transform::Literal(Item::Value(Rc::new(Value::from("key ")))),
+                Transform::CurrentGroupingKey,
+                Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
+                Transform::Count(Box::new(Transform::CurrentGroup)),
+            ])),
+        )),
+        vec![(Order::Ascending, Transform::CurrentGroupingKey)],
+    );
+
+    let resdoc = make_empty_doc();
+    let seq = ContextBuilder::new()
+        .result_document(resdoc)
+        .build()
+        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 10);
+    assert_eq!(seq[0].to_string(), "key 0 #members 5");
+    assert_eq!(seq[1].to_string(), "key 1 #members 5");
+    assert_eq!(seq[2].to_string(), "key 2 #members 5");
+    assert_eq!(seq[3].to_string(), "key 3 #members 5");
+    assert_eq!(seq[4].to_string(), "key 4 #members 5");
+    assert_eq!(seq[5].to_string(), "key 5 #members 5");
+    assert_eq!(seq[6].to_string(), "key 6 #members 5");
+    assert_eq!(seq[7].to_string(), "key 7 #members 5");
+    assert_eq!(seq[8].to_string(), "key 8 #members 5");
+    assert_eq!(seq[9].to_string(), "key 9 #members 5");
+    Ok(())
+}
 
 pub fn generic_tr_group_adjacent_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
 where

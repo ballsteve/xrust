@@ -415,6 +415,11 @@ fn tr_group_by_1() {
         .expect("test failed")
 }
 #[test]
+fn tr_group_by_sort_1() {
+    transformgeneric::generic_tr_group_by_sort_1::<RNode, _, _>(make_empty_doc, make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_group_adjacent_1() {
     transformgeneric::generic_tr_group_adjacent_1::<RNode, _, _>(make_empty_doc, make_sd)
         .expect("test failed")
