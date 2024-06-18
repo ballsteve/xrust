@@ -77,7 +77,7 @@ use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::template::Template;
 use crate::transform::{
-    Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName,
+    Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
 };
 use crate::value::*;
 use crate::xdmerror::*;
@@ -379,7 +379,10 @@ where
                 Some(prio),
                 vec![import],
                 None,
-                mode.map(|n| QualifiedName::try_from((n.to_string().as_str(), &stylens)).expect("unable to resolve qualified name")), // TODO: don't panic
+                mode.map(|n| {
+                    QualifiedName::try_from((n.to_string().as_str(), &stylens))
+                        .expect("unable to resolve qualified name")
+                }), // TODO: don't panic
             ));
             Ok::<(), Error>(())
         })?;
@@ -409,10 +412,14 @@ where
         // This matches "/" and processes the root element
         .template(Template::new(
             Pattern::try_from("/")?,
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
-                Axis::Child,
-                NodeTest::Kind(KindTest::Any),
-            ))), None, vec![]),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch::new(
+                    Axis::Child,
+                    NodeTest::Kind(KindTest::Any),
+                ))),
+                None,
+                vec![],
+            ),
             None,
             vec![0],
             None,
@@ -421,10 +428,14 @@ where
         // This matches "*" and applies templates to all children
         .template(Template::new(
             Pattern::try_from("child::*")?,
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch::new(
-                Axis::Child,
-                NodeTest::Kind(KindTest::Any),
-            ))), None, vec![]),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch::new(
+                    Axis::Child,
+                    NodeTest::Kind(KindTest::Any),
+                ))),
+                None,
+                vec![],
+            ),
             None,
             vec![0],
             None,
@@ -670,22 +681,31 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                     }
                 }
                 (Some(XSLTNS), "apply-templates") => {
-                    let sel =
-                        n.get_attribute(&QualifiedName::new(None, None, "select"));
-                    let m =
-                        n.get_attribute_node(&QualifiedName::new(None, None, "mode"));
+                    let sel = n.get_attribute(&QualifiedName::new(None, None, "select"));
+                    let m = n.get_attribute_node(&QualifiedName::new(None, None, "mode"));
+                    let sort_keys = get_sort_keys(n)?;
                     if !sel.to_string().is_empty() {
-                        Ok(Transform::ApplyTemplates(Box::new(parse::<N>(
-                            &sel.to_string(),
-                        )?),
-                                                     m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")),
-                        vec![])) // TODO: don't panic
+                        Ok(Transform::ApplyTemplates(
+                            Box::new(parse::<N>(&sel.to_string())?),
+                            m.map(|s| {
+                                QualifiedName::try_from((s.to_string().as_str(), ns))
+                                    .expect("unable to resolve qualified name")
+                            }),
+                            sort_keys,
+                        )) // TODO: don't panic
                     } else {
                         // If there is no select attribute, then default is "child::node()"
-                        Ok(Transform::ApplyTemplates(Box::new(Transform::Step(
-                            NodeMatch::new(Axis::Child, NodeTest::Kind(KindTest::Any)),
-                        )), m.map(|s| QualifiedName::try_from((s.to_string().as_str(), ns)).expect("unable to resolve qualified name")),
-                                                     vec![])) // TODO: don't panic
+                        Ok(Transform::ApplyTemplates(
+                            Box::new(Transform::Step(NodeMatch::new(
+                                Axis::Child,
+                                NodeTest::Kind(KindTest::Any),
+                            ))),
+                            m.map(|s| {
+                                QualifiedName::try_from((s.to_string().as_str(), ns))
+                                    .expect("unable to resolve qualified name")
+                            }),
+                            sort_keys,
+                        )) // TODO: don't panic
                     }
                 }
                 (Some(XSLTNS), "apply-imports") => Ok(Transform::ApplyImports),
@@ -812,7 +832,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                     Ok(body)
                                 },
                             )?)),
-                            vec![],
+                            get_sort_keys(n)?,
                         ))
                     } else {
                         Result::Err(Error::new(
@@ -822,6 +842,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                     }
                 }
                 (Some(XSLTNS), "for-each-group") => {
+                    let ord = get_sort_keys(n)?;
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
                         match (
@@ -864,7 +885,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                         Ok(body)
                                     },
                                 )?)),
-                                vec![],
+                                ord,
                             )),
                             ("", adj, "", "") => Ok(Transform::ForEach(
                                 Some(Grouping::Adjacent(vec![parse::<N>(adj)?])),
@@ -876,7 +897,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                         Ok(body)
                                     },
                                 )?)),
-                                vec![],
+                                ord,
                             )),
                             // TODO: group-starting-with and group-ending-with
                             _ => Result::Err(Error::new(
@@ -1092,12 +1113,54 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
         }
         _ => {
             // TODO: literal elements, etc, pretty much everything in the XSLT spec
-            println!("found a strange element");
             Ok(Transform::NotImplemented(
                 "other template content".to_string(),
             ))
         }
     }
+}
+
+fn get_sort_keys<N: Node>(n: N) -> Result<Vec<(Order, Transform<N>)>, Error> {
+    n.child_iter()
+        .try_fold(vec![], |mut acc, c| match c.node_type() {
+            NodeType::Element => {
+                if c.name() == QualifiedName::new(Some(XSLTNS.to_string()), None, "sort") {
+                    let ordval = c.get_attribute(&QualifiedName::new(None, None, "order"));
+                    let ord = match ordval.to_string().as_str() {
+                        "descending" => Order::Descending,
+                        _ => Order::Ascending,
+                    };
+                    let sortsel = c.get_attribute(&QualifiedName::new(None, None, "select"));
+                    acc.push((ord, parse::<N>(&sortsel.to_string())?));
+                    Ok(acc)
+                } else {
+                    Err(Error::new(
+                        ErrorKind::TypeError,
+                        "only sort elements allowed",
+                    ))
+                }
+            }
+            NodeType::Text => {
+                if c.value()
+                    .to_string()
+                    .as_str()
+                    .find(|d: char| !d.is_whitespace())
+                    .is_none()
+                {
+                    Ok(acc)
+                } else {
+                    Err(Error::new(
+                        ErrorKind::TypeError,
+                        "only sort elements allowed",
+                    ))
+                }
+            }
+            NodeType::Comment | NodeType::ProcessingInstruction => Ok(acc),
+            _ => Err(Error::new(
+                ErrorKind::TypeError,
+                "only sort elements allowed",
+            )),
+        })
 }
 
 /// Strip whitespace nodes from a XDM tree.

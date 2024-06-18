@@ -77,7 +77,9 @@ impl Node for Nullo {
     fn get_attribute(&self, _: &QualifiedName) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
-    fn get_attribute_node(&self, _: &QualifiedName) -> Option<Self> { None }
+    fn get_attribute_node(&self, _: &QualifiedName) -> Option<Self> {
+        None
+    }
     fn owner_document(&self) -> Self {
         self.clone()
     }

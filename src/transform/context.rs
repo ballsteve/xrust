@@ -283,15 +283,17 @@ impl<N: Node> Context<N> {
         i: &Item<N>,
         m: &Option<QualifiedName>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
-        let mut candidates = self.templates.iter()
-            .filter(|t| t.mode == *m)
-            .try_fold(vec![], |mut cand, t| {
-                let e = t.pattern.matches(self, stctxt, i);
-                if e {
-                    cand.push(t.clone())
-                }
-            Ok(cand)
-        })?;
+        let mut candidates =
+            self.templates
+                .iter()
+                .filter(|t| t.mode == *m)
+                .try_fold(vec![], |mut cand, t| {
+                    let e = t.pattern.matches(self, stctxt, i);
+                    if e {
+                        cand.push(t.clone())
+                    }
+                    Ok(cand)
+                })?;
         if candidates.len() != 0 {
             // Find the template(s) with the lowest priority.
 

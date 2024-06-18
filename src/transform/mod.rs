@@ -55,15 +55,15 @@ use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
+use crate::transform::context::{ContextBuilder, StaticContext};
 use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::Context;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
-use crate::Context;
-use crate::transform::context::{ContextBuilder, StaticContext};
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -139,10 +139,19 @@ pub enum Transform<N: Node> {
     Switch(Vec<(Transform<N>, Transform<N>)>, Box<Transform<N>>),
 
     /// Evaluate a transformation for each selected item, with possible grouping and sorting.
-    ForEach(Option<Grouping<N>>, Box<Transform<N>>, Box<Transform<N>>, Vec<(Order, Transform<N>)>),
+    ForEach(
+        Option<Grouping<N>>,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Vec<(Order, Transform<N>)>,
+    ),
     /// Find a template that matches an item and evaluate its body with the item as the context.
     /// Consists of the selector for items to be matched, the mode, and sort keys.
-    ApplyTemplates(Box<Transform<N>>, Option<QualifiedName>, Vec<(Order, Transform<N>)>),
+    ApplyTemplates(
+        Box<Transform<N>>,
+        Option<QualifiedName>,
+        Vec<(Order, Transform<N>)>,
+    ),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
@@ -294,7 +303,9 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
             Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
             Transform::Union(v) => write!(f, "union of {} operands", v.len()),
-            Transform::ApplyTemplates(_, m, o) => write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len()),
+            Transform::ApplyTemplates(_, m, o) => {
+                write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
+            }
             Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),
@@ -368,7 +379,8 @@ pub(crate) fn do_sort<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             let key_seq = ContextBuilder::from(ctxt)
                 .context(vec![k.clone()])
                 .build()
-                .dispatch(stctxt, &o[0].1).expect("unable to determine key value");
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
             // Assume string data type for now
             // TODO: support number data type
             // TODO: support all data types

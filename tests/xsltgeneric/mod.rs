@@ -351,10 +351,10 @@ pub fn generic_apply_templates_mode<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
     let result = test_rig(
         "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
@@ -376,6 +376,43 @@ pub fn generic_apply_templates_mode<N: Node, G, H, J>(
             ErrorKind::Unknown,
             format!(
                 "got result \"{}\", expected \"<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>\"",
+                result.to_xml()
+            ),
+        ))
+    }
+}
+
+pub fn generic_apply_templates_sort<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates><xsl:sort select='.'/></xsl:apply-templates></xsl:template>
+  <xsl:template match='child::Level1'><L><xsl:apply-templates/></L></xsl:template>
+  <xsl:template match='child::Test/child::text()'><p><xsl:sequence select='.'/></p></xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    if result.to_xml()
+        == "<L>a</L><L>b</L><L>c</L><L>d</L><p>four</p><p>one</p><p>three</p><p>two</p>"
+    {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"<L>a</L><L>b</L><L>c</L><L>d</L><p>four</p><p>one</p><p>three</p><p>two</p>\"",
                 result.to_xml()
             ),
         ))

@@ -10,7 +10,7 @@ use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticCo
 use xrust::transform::template::Template;
 use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
-    Transform, WildcardOrName, Order,
+    Order, Transform, WildcardOrName,
 };
 use xrust::value::{Operator, Value};
 use xrust::xdmerror::{Error, ErrorKind};
@@ -2299,9 +2299,9 @@ where
     Ok(())
 }
 pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // Setup a source document
     let mut sd = make_empty_doc();
@@ -2317,7 +2317,7 @@ pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Resul
         sd.new_text(Rc::new(Value::from("one")))
             .expect("unable to create text node"),
     )
-        .expect("unable to append text");
+    .expect("unable to append text");
     let mut l2 = sd
         .new_element(QualifiedName::new(None, None, String::from("Level1")))
         .expect("unable to element node");
@@ -2326,7 +2326,7 @@ pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Resul
         sd.new_text(Rc::new(Value::from("two")))
             .expect("unable to create text node"),
     )
-        .expect("unable to append text");
+    .expect("unable to append text");
     let mut l3 = sd
         .new_element(QualifiedName::new(None, None, String::from("Level1")))
         .expect("unable to element node");
@@ -2335,7 +2335,7 @@ pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Resul
         sd.new_text(Rc::new(Value::from("three")))
             .expect("unable to create text node"),
     )
-        .expect("unable to append text");
+    .expect("unable to append text");
 
     // xsl:for-each select="/child::* /child::*" body == xsl:text "found a Level-1"
     let x = Transform::ForEach(
@@ -2361,10 +2361,7 @@ pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Resul
         .dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 3);
-    assert_eq!(
-        seq.to_string(),
-        "onethreetwo"
-    );
+    assert_eq!(seq.to_string(), "onethreetwo");
     Ok(())
 }
 
@@ -2414,9 +2411,9 @@ where
     //assert_eq!(seq[0].to_string(), "key 0 #members 10")
 }
 pub fn generic_tr_group_by_sort_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // xsl:for-each-group select="1 to 50" group-by=". mod 10"
     // body == xsl:text "group current-grouping-key size count(current-group)"
@@ -2509,9 +2506,9 @@ where
     //assert_eq!(seq[0].to_string(), "key 0 #members 10")
 }
 pub fn generic_tr_group_adjacent_sort_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // xsl:for-each-group select="(a, a, b, c, c, c)" group-adjacent="." body == xsl:text "group current-grouping-key size count(current-group)"
     let x = Transform::ForEach(
@@ -2570,10 +2567,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2625,10 +2626,14 @@ where
             Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
             Transform::SequenceItems(vec![
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from("before ")))),
-                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                })), None, vec![]),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    None,
+                    vec![],
+                ),
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" after")))),
             ]), // body "before", "apply-templates select=node()", "after"
             Some(0.0), // priority
@@ -2639,10 +2644,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2715,10 +2724,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2747,9 +2760,9 @@ where
 }
 // Multiple apply-templates selecting the same nodes, different modes
 pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // Setup a source document
     let mut sd = make_empty_doc();
@@ -2760,18 +2773,20 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
     let mut c1 = sd
         .new_element(QualifiedName::new(None, None, "child"))
         .expect("unable to create new element");
-    c1.push(sd
-        .new_text(Rc::new(Value::from("child 1")))
-        .expect("unable to text node"))
+    c1.push(
+        sd.new_text(Rc::new(Value::from("child 1")))
+            .expect("unable to text node"),
+    )
     .expect("unable to append child");
     t.push(c1).expect("unable to add child");
     let mut c2 = sd
         .new_element(QualifiedName::new(None, None, "child"))
         .expect("unable to create new element");
-    c2.push(sd
-        .new_text(Rc::new(Value::from("child 2")))
-        .expect("unable to text node"))
-        .expect("unable to append child");
+    c2.push(
+        sd.new_text(Rc::new(Value::from("child 2")))
+            .expect("unable to text node"),
+    )
+    .expect("unable to append child");
     t.push(c2).expect("unable to add child");
 
     // Template rule for "Test", plus builtins
@@ -2782,15 +2797,23 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
             Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
             Transform::SequenceItems(vec![
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from("before ")))),
-                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                })), Some(QualifiedName::new(None, None, "first")), vec![]),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    Some(QualifiedName::new(None, None, "first")),
+                    vec![],
+                ),
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" middle ")))),
-                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                })), Some(QualifiedName::new(None, None, "second")), vec![]),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    Some(QualifiedName::new(None, None, "second")),
+                    vec![],
+                ),
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" after")))),
             ]), // body "before", "apply-templates select=node()", "after"
             Some(0.0), // priority
@@ -2801,10 +2824,14 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2822,29 +2849,35 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
         ))
         .template(Template::new(
             // pattern child::node()
-            Pattern::try_from("child::*")
-                .expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
-            None,                   // priority
-            vec![0],                // import
-            None,                   // document order
-            Some(QualifiedName::new(None, None, "first")),                   // mode
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,                                          // priority
+            vec![0],                                       // import
+            None,                                          // document order
+            Some(QualifiedName::new(None, None, "first")), // mode
         ))
         .template(Template::new(
             // pattern child::node()
-            Pattern::try_from("child::*")
-                .expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
-            None,                   // priority
-            vec![0],                // import
-            None,                   // document order
-            Some(QualifiedName::new(None, None, "second")),                   // mode
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,                                           // priority
+            vec![0],                                        // import
+            None,                                           // document order
+            Some(QualifiedName::new(None, None, "second")), // mode
         ))
         .template(Template::new(
             // pattern child::text()
@@ -2854,7 +2887,7 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
             None,                   // priority
             vec![0],                // import
             None,                   // document order
-            Some(QualifiedName::new(None, None, "first")),                   // mode
+            Some(QualifiedName::new(None, None, "first")), // mode
         ))
         .template(Template::new(
             // pattern child::text()
@@ -2864,7 +2897,7 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
             None,                   // priority
             vec![0],                // import
             None,                   // document order
-            Some(QualifiedName::new(None, None, "second")),                   // mode
+            Some(QualifiedName::new(None, None, "second")), // mode
         ))
         .context(vec![Item::Node(sd)])
         .build();
@@ -2874,7 +2907,10 @@ pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> R
         .dispatch(&mut StaticContext::<F>::new(), &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 7);
-    assert_eq!(seq.to_string(), "before child 1child 2 middle child 1child 2 after");
+    assert_eq!(
+        seq.to_string(),
+        "before child 1child 2 middle child 1child 2 after"
+    );
     Ok(())
 }
 
@@ -2926,10 +2962,14 @@ where
         .template(Template::new(
             // pattern "*"
             Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2938,10 +2978,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -3019,10 +3063,14 @@ where
         .template(Template::new(
             // pattern "*"
             Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -3031,10 +3079,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -3061,13 +3113,10 @@ where
     Ok(())
 }
 
-pub fn generic_tr_apply_templates_mode<N: Node, G, H>(
-    make_empty_doc: G,
-    _: H,
-) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+pub fn generic_tr_apply_templates_mode<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // Setup a source document
     let mut sd = make_empty_doc();
@@ -3087,9 +3136,7 @@ pub fn generic_tr_apply_templates_mode<N: Node, G, H>(
             // pattern "Test"
             Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
             Transform::SequenceItems(vec![
-                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
-                    "modeless template",
-                )))),
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from("modeless template")))),
                 Transform::NextMatch,
             ]),
             Some(1.0), // priority
@@ -3103,18 +3150,22 @@ pub fn generic_tr_apply_templates_mode<N: Node, G, H>(
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                 "mode 'modetest' template",
             )))),
-            Some(0.0), // priority
-            vec![0],   // import
-            Some(2),   // document order
-            Some(QualifiedName::new(None, None, String::from("modetest"))),      // mode
+            Some(0.0),                                                      // priority
+            vec![0],                                                        // import
+            Some(2),                                                        // document order
+            Some(QualifiedName::new(None, None, String::from("modetest"))), // mode
         ))
         .template(Template::new(
             // pattern "*"
             Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -3124,19 +3175,27 @@ pub fn generic_tr_apply_templates_mode<N: Node, G, H>(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
             Transform::SequenceItems(vec![
-                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                })), None, vec![]),
-                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                })), Some(QualifiedName::new(None, None, String::from("modetest"))), vec![]),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    None,
+                    vec![],
+                ),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    Some(QualifiedName::new(None, None, String::from("modetest"))),
+                    vec![],
+                ),
             ]), // body "apply-templates select=node()", "apply-templates select=node() mode='modetest'"
-            Some(1.0),    // priority
-            vec![0], // import
-            None,    // document order
-            None,    // mode
+            Some(1.0), // priority
+            vec![0],   // import
+            None,      // document order
+            None,      // mode
         ))
         .template(Template::new(
             // pattern child::text()
@@ -3164,9 +3223,9 @@ pub fn generic_tr_apply_templates_sort_1<N: Node, G, H>(
     make_empty_doc: G,
     _: H,
 ) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // Setup a source document
     let mut sd = make_empty_doc();
@@ -3174,21 +3233,24 @@ pub fn generic_tr_apply_templates_sort_1<N: Node, G, H>(
         .new_element(QualifiedName::new(None, None, "Test"))
         .expect("unable to create new element");
     sd.push(t.clone()).expect("unable to add node");
-    let mut c1 = sd.new_element(QualifiedName::new(None, None, "child"))
+    let mut c1 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
         .expect("unable to create element");
     let tx1 = sd
         .new_text(Rc::new(Value::from("one")))
         .expect("unable to text node");
     c1.push(tx1).expect("unable to append child");
     t.push(c1).expect("unable to append child");
-    let mut c2 = sd.new_element(QualifiedName::new(None, None, "child"))
+    let mut c2 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
         .expect("unable to create element");
     let tx2 = sd
         .new_text(Rc::new(Value::from("two")))
         .expect("unable to text node");
     c2.push(tx2).expect("unable to append child");
     t.push(c2).expect("unable to append child");
-    let mut c3 = sd.new_element(QualifiedName::new(None, None, "child"))
+    let mut c3 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
         .expect("unable to create element");
     let tx3 = sd
         .new_text(Rc::new(Value::from("three")))
@@ -3202,10 +3264,14 @@ pub fn generic_tr_apply_templates_sort_1<N: Node, G, H>(
         .template(Template::new(
             // pattern "Test"
             Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![(Order::Ascending, Transform::ContextItem)]), // body "apply-templates select=node() sort",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![(Order::Ascending, Transform::ContextItem)],
+            ), // body "apply-templates select=node() sort",
             Some(1.0), // priority
             vec![0],   // import
             Some(1),   // document order
@@ -3214,10 +3280,14 @@ pub fn generic_tr_apply_templates_sort_1<N: Node, G, H>(
         .template(Template::new(
             // pattern "*"
             Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            })), None, vec![]), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -3226,14 +3296,18 @@ pub fn generic_tr_apply_templates_sort_1<N: Node, G, H>(
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
                     axis: Axis::Child,
                     nodetest: NodeTest::Kind(KindTest::Any),
-                })), None, vec![]), // body "apply-templates select=node()", "apply-templates select=node()"
-            Some(1.0),    // priority
-            vec![0], // import
-            None,    // document order
-            None,    // mode
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()", "apply-templates select=node()"
+            Some(1.0), // priority
+            vec![0],   // import
+            None,      // document order
+            None,      // mode
         ))
         .template(Template::new(
             // pattern child::text()

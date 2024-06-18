@@ -2,14 +2,12 @@ use std::fs;
 use std::rc::Rc;
 //use xrust::item::Node;
 use xrust::parser::xml;
-use xrust::trees::smite::{Node as SmiteNode};
+use xrust::trees::smite::Node as SmiteNode;
 use xrust::validators::relaxng::validate_relaxng;
-
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_001_1(){
-
+fn relaxng_incorrect_001_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -25,13 +23,11 @@ fn relaxng_incorrect_001_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_002_1(){
-
+fn relaxng_incorrect_002_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -47,13 +43,11 @@ fn relaxng_incorrect_002_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_003_1(){
-
+fn relaxng_incorrect_003_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -69,13 +63,11 @@ fn relaxng_incorrect_003_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_004_1(){
-
+fn relaxng_incorrect_004_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -91,13 +83,11 @@ fn relaxng_incorrect_004_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_005_1(){
-
+fn relaxng_incorrect_005_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -113,13 +103,11 @@ fn relaxng_incorrect_005_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_006_1(){
-
+fn relaxng_incorrect_006_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -135,13 +123,11 @@ fn relaxng_incorrect_006_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_007_1(){
-
+fn relaxng_incorrect_007_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -157,13 +143,11 @@ fn relaxng_incorrect_007_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_008_1(){
-
+fn relaxng_incorrect_008_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -179,13 +163,11 @@ fn relaxng_incorrect_008_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_009_1(){
-
+fn relaxng_incorrect_009_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -201,13 +183,11 @@ fn relaxng_incorrect_009_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_010_1(){
-
+fn relaxng_incorrect_010_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -223,13 +203,11 @@ fn relaxng_incorrect_010_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_011_1(){
-
+fn relaxng_incorrect_011_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -245,13 +223,11 @@ fn relaxng_incorrect_011_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_012_1(){
-
+fn relaxng_incorrect_012_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -267,13 +243,11 @@ fn relaxng_incorrect_012_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_013_1(){
-
+fn relaxng_incorrect_013_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -289,13 +263,11 @@ fn relaxng_incorrect_013_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_014_1(){
-
+fn relaxng_incorrect_014_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -311,13 +283,11 @@ fn relaxng_incorrect_014_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_015_1(){
-
+fn relaxng_incorrect_015_1() {
     /*
         Spec Sections: 3
         Description: Various possible syntax errors.
@@ -333,13 +303,11 @@ fn relaxng_incorrect_015_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_016_1(){
-
+fn relaxng_incorrect_016_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -355,13 +323,11 @@ fn relaxng_incorrect_016_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_017_1(){
-
+fn relaxng_incorrect_017_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -377,13 +343,11 @@ fn relaxng_incorrect_017_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_018_1(){
-
+fn relaxng_incorrect_018_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -399,13 +363,11 @@ fn relaxng_incorrect_018_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_019_1(){
-
+fn relaxng_incorrect_019_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -421,13 +383,11 @@ fn relaxng_incorrect_019_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_020_1(){
-
+fn relaxng_incorrect_020_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -443,13 +403,11 @@ fn relaxng_incorrect_020_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_021_1(){
-
+fn relaxng_incorrect_021_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -465,13 +423,11 @@ fn relaxng_incorrect_021_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_022_1(){
-
+fn relaxng_incorrect_022_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -487,13 +443,11 @@ fn relaxng_incorrect_022_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_023_1(){
-
+fn relaxng_incorrect_023_1() {
     /*
         Spec Sections: 3
         Description: Tests for obsolete syntax
@@ -509,13 +463,11 @@ fn relaxng_incorrect_023_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_024_1(){
-
+fn relaxng_incorrect_024_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -531,13 +483,11 @@ fn relaxng_incorrect_024_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_025_1(){
-
+fn relaxng_incorrect_025_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -553,13 +503,11 @@ fn relaxng_incorrect_025_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_026_1(){
-
+fn relaxng_incorrect_026_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -575,13 +523,11 @@ fn relaxng_incorrect_026_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_027_1(){
-
+fn relaxng_incorrect_027_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -597,13 +543,11 @@ fn relaxng_incorrect_027_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_028_1(){
-
+fn relaxng_incorrect_028_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -619,13 +563,11 @@ fn relaxng_incorrect_028_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_029_1(){
-
+fn relaxng_incorrect_029_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -641,13 +583,11 @@ fn relaxng_incorrect_029_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_030_1(){
-
+fn relaxng_incorrect_030_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -663,13 +603,11 @@ fn relaxng_incorrect_030_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_031_1(){
-
+fn relaxng_incorrect_031_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -685,13 +623,11 @@ fn relaxng_incorrect_031_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_032_1(){
-
+fn relaxng_incorrect_032_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -707,13 +643,11 @@ fn relaxng_incorrect_032_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_033_1(){
-
+fn relaxng_incorrect_033_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -729,13 +663,11 @@ fn relaxng_incorrect_033_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_034_1(){
-
+fn relaxng_incorrect_034_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -751,13 +683,11 @@ fn relaxng_incorrect_034_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_035_1(){
-
+fn relaxng_incorrect_035_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -773,13 +703,11 @@ fn relaxng_incorrect_035_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_036_1(){
-
+fn relaxng_incorrect_036_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -795,13 +723,11 @@ fn relaxng_incorrect_036_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_037_1(){
-
+fn relaxng_incorrect_037_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -817,13 +743,11 @@ fn relaxng_incorrect_037_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_038_1(){
-
+fn relaxng_incorrect_038_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -839,13 +763,11 @@ fn relaxng_incorrect_038_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_039_1(){
-
+fn relaxng_incorrect_039_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -861,13 +783,11 @@ fn relaxng_incorrect_039_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_040_1(){
-
+fn relaxng_incorrect_040_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -883,13 +803,11 @@ fn relaxng_incorrect_040_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_041_1(){
-
+fn relaxng_incorrect_041_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -905,13 +823,11 @@ fn relaxng_incorrect_041_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_042_1(){
-
+fn relaxng_incorrect_042_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -927,13 +843,11 @@ fn relaxng_incorrect_042_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_043_1(){
-
+fn relaxng_incorrect_043_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -949,13 +863,11 @@ fn relaxng_incorrect_043_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_044_1(){
-
+fn relaxng_incorrect_044_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -971,13 +883,11 @@ fn relaxng_incorrect_044_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_045_1(){
-
+fn relaxng_incorrect_045_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -993,13 +903,11 @@ fn relaxng_incorrect_045_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_046_1(){
-
+fn relaxng_incorrect_046_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -1015,13 +923,11 @@ fn relaxng_incorrect_046_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_047_1(){
-
+fn relaxng_incorrect_047_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -1037,13 +943,11 @@ fn relaxng_incorrect_047_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_048_1(){
-
+fn relaxng_incorrect_048_1() {
     /*
         Spec Sections: 3
         Description: Tests for missing attributes and child elements
@@ -1059,12 +963,10 @@ fn relaxng_incorrect_048_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
-fn relaxng_valid_049_1(){
-
+fn relaxng_valid_049_1() {
     /*
         Spec Sections: 3
         Description: Checking of ns attribute
@@ -1080,12 +982,10 @@ fn relaxng_valid_049_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
-fn relaxng_valid_050_1(){
-
+fn relaxng_valid_050_1() {
     /*
         Spec Sections: 3
         Description: Checking of ns attribute
@@ -1102,13 +1002,11 @@ fn relaxng_valid_050_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_053_1(){
-
+fn relaxng_incorrect_053_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1125,13 +1023,11 @@ fn relaxng_incorrect_053_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_054_1(){
-
+fn relaxng_valid_054_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1148,13 +1044,11 @@ fn relaxng_valid_054_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_055_1(){
-
+fn relaxng_valid_055_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1171,13 +1065,11 @@ fn relaxng_valid_055_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_056_1(){
-
+fn relaxng_incorrect_056_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1194,13 +1086,11 @@ fn relaxng_incorrect_056_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_057_1(){
-
+fn relaxng_incorrect_057_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1217,13 +1107,11 @@ fn relaxng_incorrect_057_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_058_1(){
-
+fn relaxng_incorrect_058_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1240,13 +1128,11 @@ fn relaxng_incorrect_058_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_059_1(){
-
+fn relaxng_valid_059_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1263,13 +1149,11 @@ fn relaxng_valid_059_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_060_1(){
-
+fn relaxng_incorrect_060_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1286,13 +1170,11 @@ fn relaxng_incorrect_060_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_061_1(){
-
+fn relaxng_incorrect_061_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1309,13 +1191,11 @@ fn relaxng_incorrect_061_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_062_1(){
-
+fn relaxng_incorrect_062_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1332,13 +1212,11 @@ fn relaxng_incorrect_062_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_063_1(){
-
+fn relaxng_incorrect_063_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1355,13 +1233,11 @@ fn relaxng_incorrect_063_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_064_1(){
-
+fn relaxng_valid_064_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1377,13 +1253,11 @@ fn relaxng_valid_064_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_065_1(){
-
+fn relaxng_valid_065_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1399,13 +1273,11 @@ fn relaxng_valid_065_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_066_1(){
-
+fn relaxng_valid_066_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1421,13 +1293,11 @@ fn relaxng_valid_066_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_067_1(){
-
+fn relaxng_incorrect_067_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1444,13 +1314,11 @@ fn relaxng_incorrect_067_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_068_1(){
-
+fn relaxng_incorrect_068_1() {
     /*
         Spec Sections: 3
         Description: Checking of datatypeLibrary attribute
@@ -1467,12 +1335,10 @@ fn relaxng_incorrect_068_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
-fn relaxng_valid_069_1(){
-
+fn relaxng_valid_069_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1488,13 +1354,11 @@ fn relaxng_valid_069_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_070_1(){
-
+fn relaxng_incorrect_070_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1510,13 +1374,11 @@ fn relaxng_incorrect_070_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_071_1(){
-
+fn relaxng_incorrect_071_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1532,13 +1394,11 @@ fn relaxng_incorrect_071_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_072_1(){
-
+fn relaxng_incorrect_072_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1554,13 +1414,11 @@ fn relaxng_incorrect_072_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_073_1(){
-
+fn relaxng_incorrect_073_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1576,13 +1434,11 @@ fn relaxng_incorrect_073_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_074_1(){
-
+fn relaxng_incorrect_074_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1598,13 +1454,11 @@ fn relaxng_incorrect_074_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_075_1(){
-
+fn relaxng_valid_075_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1620,13 +1474,11 @@ fn relaxng_valid_075_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_076_1(){
-
+fn relaxng_incorrect_076_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1642,13 +1494,11 @@ fn relaxng_incorrect_076_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_077_1(){
-
+fn relaxng_incorrect_077_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1664,13 +1514,11 @@ fn relaxng_incorrect_077_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_078_1(){
-
+fn relaxng_incorrect_078_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1686,13 +1534,11 @@ fn relaxng_incorrect_078_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_079_1(){
-
+fn relaxng_incorrect_079_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1708,13 +1554,11 @@ fn relaxng_incorrect_079_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_080_1(){
-
+fn relaxng_incorrect_080_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1730,13 +1574,11 @@ fn relaxng_incorrect_080_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_081_1(){
-
+fn relaxng_incorrect_081_1() {
     /*
         Spec Sections: 3
         Description: Tests for QName and NCNames in schemas
@@ -1752,13 +1594,11 @@ fn relaxng_incorrect_081_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_082_1(){
-
+fn relaxng_incorrect_082_1() {
     /*
         Spec Sections: 3
         Description: Tests for elements that allow only a single pattern child.
@@ -1774,13 +1614,11 @@ fn relaxng_incorrect_082_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_083_1(){
-
+fn relaxng_incorrect_083_1() {
     /*
         Spec Sections: 3
         Description: Tests for elements that allow only a single pattern child.
@@ -1796,13 +1634,11 @@ fn relaxng_incorrect_083_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_084_1(){
-
+fn relaxng_incorrect_084_1() {
     /*
         Spec Sections: 3
         Description: Tests for elements that allow only a single pattern child.
@@ -1818,13 +1654,11 @@ fn relaxng_incorrect_084_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_085_1(){
-
+fn relaxng_incorrect_085_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1840,13 +1674,11 @@ fn relaxng_incorrect_085_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_086_1(){
-
+fn relaxng_incorrect_086_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1862,13 +1694,11 @@ fn relaxng_incorrect_086_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_087_1(){
-
+fn relaxng_incorrect_087_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1884,13 +1714,11 @@ fn relaxng_incorrect_087_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_088_1(){
-
+fn relaxng_valid_088_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1906,12 +1734,10 @@ fn relaxng_valid_088_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
-fn relaxng_valid_089_1(){
-
+fn relaxng_valid_089_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1927,13 +1753,11 @@ fn relaxng_valid_089_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_090_1(){
-
+fn relaxng_valid_090_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1949,13 +1773,11 @@ fn relaxng_valid_090_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_091_1(){
-
+fn relaxng_valid_091_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1971,13 +1793,11 @@ fn relaxng_valid_091_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_092_1(){
-
+fn relaxng_valid_092_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -1993,13 +1813,11 @@ fn relaxng_valid_092_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_093_1(){
-
+fn relaxng_valid_093_1() {
     /*
         Spec Sections: 3
         Description: Tests for foreign element and attribute handling.
@@ -2015,13 +1833,11 @@ fn relaxng_valid_093_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_094_1(){
-
+fn relaxng_valid_094_1() {
     /*
         Spec Sections: 4.2
     */
@@ -2036,13 +1852,11 @@ fn relaxng_valid_094_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_095_1(){
-
+fn relaxng_valid_095_1() {
     /*
         Spec Sections: 4.2
     */
@@ -2057,13 +1871,11 @@ fn relaxng_valid_095_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_095_2(){
-
+fn relaxng_invalid_095_2() {
     /*
         Spec Sections: 4.2
     */
@@ -2078,13 +1890,11 @@ fn relaxng_invalid_095_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_096_1(){
-
+fn relaxng_valid_096_1() {
     /*
         Spec Sections: 4.2
     */
@@ -2099,13 +1909,11 @@ fn relaxng_valid_096_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_097_1(){
-
+fn relaxng_valid_097_1() {
     /*
         Spec Sections: 4.2
     */
@@ -2120,13 +1928,11 @@ fn relaxng_valid_097_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_098_1(){
-
+fn relaxng_valid_098_1() {
     /*
         Spec Sections: 4.2
     */
@@ -2141,13 +1947,11 @@ fn relaxng_valid_098_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_099_1(){
-
+fn relaxng_valid_099_1() {
     /*
         Spec Sections: 4.4
     */
@@ -2162,13 +1966,11 @@ fn relaxng_valid_099_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_099_2(){
-
+fn relaxng_valid_099_2() {
     /*
         Spec Sections: 4.4
     */
@@ -2183,13 +1985,11 @@ fn relaxng_valid_099_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_099_3(){
-
+fn relaxng_valid_099_3() {
     /*
         Spec Sections: 4.4
     */
@@ -2204,13 +2004,11 @@ fn relaxng_valid_099_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_099_4(){
-
+fn relaxng_invalid_099_4() {
     /*
         Spec Sections: 4.4
     */
@@ -2225,13 +2023,11 @@ fn relaxng_invalid_099_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_099_5(){
-
+fn relaxng_invalid_099_5() {
     /*
         Spec Sections: 4.4
     */
@@ -2246,13 +2042,11 @@ fn relaxng_invalid_099_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_100_1(){
-
+fn relaxng_valid_100_1() {
     /*
         Spec Sections: 4.5
     */
@@ -2267,13 +2061,11 @@ fn relaxng_valid_100_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_100_2(){
-
+fn relaxng_invalid_100_2() {
     /*
         Spec Sections: 4.5
     */
@@ -2288,13 +2080,11 @@ fn relaxng_invalid_100_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_101_1(){
-
+fn relaxng_valid_101_1() {
     /*
         Spec Sections: 4.5
     */
@@ -2309,13 +2099,11 @@ fn relaxng_valid_101_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_101_2(){
-
+fn relaxng_invalid_101_2() {
     /*
         Spec Sections: 4.5
     */
@@ -2330,13 +2118,11 @@ fn relaxng_invalid_101_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_102_1(){
-
+fn relaxng_incorrect_102_1() {
     /*
         Spec Sections: 4.5
     */
@@ -2351,13 +2137,11 @@ fn relaxng_incorrect_102_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_103_1(){
-
+fn relaxng_valid_103_1() {
     /*
         Spec Sections: 4.6
     */
@@ -2372,13 +2156,11 @@ fn relaxng_valid_103_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_103_2(){
-
+fn relaxng_invalid_103_2() {
     /*
         Spec Sections: 4.6
     */
@@ -2393,13 +2175,11 @@ fn relaxng_invalid_103_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_104_1(){
-
+fn relaxng_valid_104_1() {
     /*
         Spec Sections: 4.6
     */
@@ -2414,13 +2194,11 @@ fn relaxng_valid_104_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_104_2(){
-
+fn relaxng_invalid_104_2() {
     /*
         Spec Sections: 4.6
     */
@@ -2435,13 +2213,11 @@ fn relaxng_invalid_104_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_105_1(){
-
+fn relaxng_incorrect_105_1() {
     /*
         Spec Sections: 4.6
     */
@@ -2456,13 +2232,11 @@ fn relaxng_incorrect_105_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_106_1(){
-
+fn relaxng_incorrect_106_1() {
     /*
         Spec Sections: 4.6
     */
@@ -2477,13 +2251,11 @@ fn relaxng_incorrect_106_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_107_1(){
-
+fn relaxng_incorrect_107_1() {
     /*
         Spec Sections: 4.6
     */
@@ -2498,13 +2270,11 @@ fn relaxng_incorrect_107_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_108_1(){
-
+fn relaxng_valid_108_1() {
     /*
         Spec Sections: 4.6
         Description: Same value of href before resolution, but not a loop.
@@ -2520,13 +2290,11 @@ fn relaxng_valid_108_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_108_2(){
-
+fn relaxng_invalid_108_2() {
     /*
         Spec Sections: 4.6
         Description: Same value of href before resolution, but not a loop.
@@ -2542,13 +2310,11 @@ fn relaxng_invalid_108_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_109_1(){
-
+fn relaxng_valid_109_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2563,13 +2329,11 @@ fn relaxng_valid_109_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_109_2(){
-
+fn relaxng_invalid_109_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2584,13 +2348,11 @@ fn relaxng_invalid_109_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_110_1(){
-
+fn relaxng_valid_110_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2605,13 +2367,11 @@ fn relaxng_valid_110_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_110_2(){
-
+fn relaxng_invalid_110_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2626,13 +2386,11 @@ fn relaxng_invalid_110_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_111_1(){
-
+fn relaxng_valid_111_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2647,13 +2405,11 @@ fn relaxng_valid_111_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_111_2(){
-
+fn relaxng_invalid_111_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2668,13 +2424,11 @@ fn relaxng_invalid_111_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_112_1(){
-
+fn relaxng_incorrect_112_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2689,13 +2443,11 @@ fn relaxng_incorrect_112_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_113_1(){
-
+fn relaxng_incorrect_113_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2710,13 +2462,11 @@ fn relaxng_incorrect_113_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_114_1(){
-
+fn relaxng_incorrect_114_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2731,13 +2481,11 @@ fn relaxng_incorrect_114_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_115_1(){
-
+fn relaxng_valid_115_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2752,13 +2500,11 @@ fn relaxng_valid_115_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_115_2(){
-
+fn relaxng_invalid_115_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2773,13 +2519,11 @@ fn relaxng_invalid_115_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_116_1(){
-
+fn relaxng_incorrect_116_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2794,13 +2538,11 @@ fn relaxng_incorrect_116_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_117_1(){
-
+fn relaxng_valid_117_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2815,13 +2557,11 @@ fn relaxng_valid_117_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_117_2(){
-
+fn relaxng_invalid_117_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2836,13 +2576,11 @@ fn relaxng_invalid_117_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_118_1(){
-
+fn relaxng_incorrect_118_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2857,13 +2595,11 @@ fn relaxng_incorrect_118_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_119_1(){
-
+fn relaxng_valid_119_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2878,13 +2614,11 @@ fn relaxng_valid_119_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_119_2(){
-
+fn relaxng_invalid_119_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2899,13 +2633,11 @@ fn relaxng_invalid_119_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_120_1(){
-
+fn relaxng_valid_120_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2920,13 +2652,11 @@ fn relaxng_valid_120_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_120_2(){
-
+fn relaxng_valid_120_2() {
     /*
         Spec Sections: 4.7
     */
@@ -2941,13 +2671,11 @@ fn relaxng_valid_120_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_120_3(){
-
+fn relaxng_invalid_120_3() {
     /*
         Spec Sections: 4.7
     */
@@ -2962,13 +2690,11 @@ fn relaxng_invalid_120_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_121_1(){
-
+fn relaxng_incorrect_121_1() {
     /*
         Spec Sections: 4.7
     */
@@ -2983,13 +2709,11 @@ fn relaxng_incorrect_121_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_122_1(){
-
+fn relaxng_valid_122_1() {
     /*
         Spec Sections: 4.8
     */
@@ -3004,13 +2728,11 @@ fn relaxng_valid_122_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_122_2(){
-
+fn relaxng_invalid_122_2() {
     /*
         Spec Sections: 4.8
     */
@@ -3025,13 +2747,11 @@ fn relaxng_invalid_122_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_123_1(){
-
+fn relaxng_invalid_123_1() {
     /*
         Spec Sections: 4.8
     */
@@ -3046,13 +2766,11 @@ fn relaxng_invalid_123_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_123_2(){
-
+fn relaxng_valid_123_2() {
     /*
         Spec Sections: 4.8
     */
@@ -3067,13 +2785,11 @@ fn relaxng_valid_123_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_124_1(){
-
+fn relaxng_valid_124_1() {
     /*
         Spec Sections: 4.9
     */
@@ -3088,13 +2804,11 @@ fn relaxng_valid_124_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_124_2(){
-
+fn relaxng_invalid_124_2() {
     /*
         Spec Sections: 4.9
     */
@@ -3109,13 +2823,11 @@ fn relaxng_invalid_124_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_125_1(){
-
+fn relaxng_valid_125_1() {
     /*
         Spec Sections: 4.6 4.9
     */
@@ -3130,13 +2842,11 @@ fn relaxng_valid_125_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_125_2(){
-
+fn relaxng_invalid_125_2() {
     /*
         Spec Sections: 4.6 4.9
     */
@@ -3151,15 +2861,13 @@ fn relaxng_invalid_125_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_126_1(){
-
+fn relaxng_valid_126_1() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/126/1.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -3171,15 +2879,13 @@ fn relaxng_valid_126_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_126_2(){
-
+fn relaxng_invalid_126_2() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/126/2.i.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -3191,15 +2897,13 @@ fn relaxng_invalid_126_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_127_1(){
-
+fn relaxng_valid_127_1() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/127/1.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -3211,15 +2915,13 @@ fn relaxng_valid_127_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_127_2(){
-
+fn relaxng_invalid_127_2() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/127/2.i.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -3231,15 +2933,13 @@ fn relaxng_invalid_127_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_128_1(){
-
+fn relaxng_valid_128_1() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/128/1.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -3251,15 +2951,13 @@ fn relaxng_valid_128_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_128_2(){
-
+fn relaxng_invalid_128_2() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/128/2.i.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -3271,13 +2969,11 @@ fn relaxng_invalid_128_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_129_1(){
-
+fn relaxng_incorrect_129_1() {
     /*
         Spec Sections: 4.10
     */
@@ -3292,13 +2988,11 @@ fn relaxng_incorrect_129_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_130_1(){
-
+fn relaxng_valid_130_1() {
     /*
         Spec Sections: 4.10
     */
@@ -3313,13 +3007,11 @@ fn relaxng_valid_130_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_130_2(){
-
+fn relaxng_invalid_130_2() {
     /*
         Spec Sections: 4.10
     */
@@ -3334,13 +3026,11 @@ fn relaxng_invalid_130_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_131_1(){
-
+fn relaxng_valid_131_1() {
     /*
         Spec Sections: 4.10
     */
@@ -3355,13 +3045,11 @@ fn relaxng_valid_131_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_131_2(){
-
+fn relaxng_invalid_131_2() {
     /*
         Spec Sections: 4.10
     */
@@ -3376,13 +3064,11 @@ fn relaxng_invalid_131_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_132_1(){
-
+fn relaxng_valid_132_1() {
     /*
         Spec Sections: 4.10
     */
@@ -3397,13 +3083,11 @@ fn relaxng_valid_132_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_132_2(){
-
+fn relaxng_invalid_132_2() {
     /*
         Spec Sections: 4.10
     */
@@ -3418,13 +3102,11 @@ fn relaxng_invalid_132_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_133_1(){
-
+fn relaxng_valid_133_1() {
     /*
         Spec Sections: 4.11
     */
@@ -3439,13 +3121,11 @@ fn relaxng_valid_133_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_133_2(){
-
+fn relaxng_invalid_133_2() {
     /*
         Spec Sections: 4.11
     */
@@ -3460,13 +3140,11 @@ fn relaxng_invalid_133_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_134_1(){
-
+fn relaxng_valid_134_1() {
     /*
         Spec Sections: 4.12
     */
@@ -3481,13 +3159,11 @@ fn relaxng_valid_134_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_2(){
-
+fn relaxng_invalid_134_2() {
     /*
         Spec Sections: 4.12
     */
@@ -3502,13 +3178,11 @@ fn relaxng_invalid_134_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_3(){
-
+fn relaxng_invalid_134_3() {
     /*
         Spec Sections: 4.12
     */
@@ -3523,13 +3197,11 @@ fn relaxng_invalid_134_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_4(){
-
+fn relaxng_invalid_134_4() {
     /*
         Spec Sections: 4.12
     */
@@ -3544,13 +3216,11 @@ fn relaxng_invalid_134_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_5(){
-
+fn relaxng_invalid_134_5() {
     /*
         Spec Sections: 4.12
     */
@@ -3565,13 +3235,11 @@ fn relaxng_invalid_134_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_6(){
-
+fn relaxng_invalid_134_6() {
     /*
         Spec Sections: 4.12
     */
@@ -3586,13 +3254,11 @@ fn relaxng_invalid_134_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_7(){
-
+fn relaxng_invalid_134_7() {
     /*
         Spec Sections: 4.12
     */
@@ -3607,13 +3273,11 @@ fn relaxng_invalid_134_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_134_8(){
-
+fn relaxng_invalid_134_8() {
     /*
         Spec Sections: 4.12
     */
@@ -3628,13 +3292,11 @@ fn relaxng_invalid_134_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_135_1(){
-
+fn relaxng_valid_135_1() {
     /*
         Spec Sections: 4.12
     */
@@ -3649,13 +3311,11 @@ fn relaxng_valid_135_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_135_2(){
-
+fn relaxng_valid_135_2() {
     /*
         Spec Sections: 4.12
     */
@@ -3670,13 +3330,11 @@ fn relaxng_valid_135_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_135_3(){
-
+fn relaxng_invalid_135_3() {
     /*
         Spec Sections: 4.12
     */
@@ -3691,13 +3349,11 @@ fn relaxng_invalid_135_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_135_4(){
-
+fn relaxng_invalid_135_4() {
     /*
         Spec Sections: 4.12
     */
@@ -3712,13 +3368,11 @@ fn relaxng_invalid_135_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_135_5(){
-
+fn relaxng_invalid_135_5() {
     /*
         Spec Sections: 4.12
     */
@@ -3733,13 +3387,11 @@ fn relaxng_invalid_135_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_135_6(){
-
+fn relaxng_invalid_135_6() {
     /*
         Spec Sections: 4.12
     */
@@ -3754,13 +3406,11 @@ fn relaxng_invalid_135_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_135_7(){
-
+fn relaxng_invalid_135_7() {
     /*
         Spec Sections: 4.12
     */
@@ -3775,13 +3425,11 @@ fn relaxng_invalid_135_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_135_8(){
-
+fn relaxng_invalid_135_8() {
     /*
         Spec Sections: 4.12
     */
@@ -3796,13 +3444,11 @@ fn relaxng_invalid_135_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_136_1(){
-
+fn relaxng_valid_136_1() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3817,13 +3463,11 @@ fn relaxng_valid_136_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_136_2(){
-
+fn relaxng_valid_136_2() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3838,13 +3482,11 @@ fn relaxng_valid_136_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_136_3(){
-
+fn relaxng_invalid_136_3() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3859,13 +3501,11 @@ fn relaxng_invalid_136_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_136_4(){
-
+fn relaxng_invalid_136_4() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3880,13 +3520,11 @@ fn relaxng_invalid_136_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_136_5(){
-
+fn relaxng_valid_136_5() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3901,13 +3539,11 @@ fn relaxng_valid_136_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_136_6(){
-
+fn relaxng_invalid_136_6() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3922,13 +3558,11 @@ fn relaxng_invalid_136_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_136_7(){
-
+fn relaxng_invalid_136_7() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3943,13 +3577,11 @@ fn relaxng_invalid_136_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_136_8(){
-
+fn relaxng_invalid_136_8() {
     /*
         Spec Sections: 4.12 4.15
     */
@@ -3964,13 +3596,11 @@ fn relaxng_invalid_136_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_137_1(){
-
+fn relaxng_valid_137_1() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -3985,13 +3615,11 @@ fn relaxng_valid_137_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_137_2(){
-
+fn relaxng_invalid_137_2() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4006,13 +3634,11 @@ fn relaxng_invalid_137_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_137_3(){
-
+fn relaxng_invalid_137_3() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4027,13 +3653,11 @@ fn relaxng_invalid_137_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_137_4(){
-
+fn relaxng_invalid_137_4() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4048,13 +3672,11 @@ fn relaxng_invalid_137_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_137_5(){
-
+fn relaxng_valid_137_5() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4069,13 +3691,11 @@ fn relaxng_valid_137_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_137_6(){
-
+fn relaxng_invalid_137_6() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4090,13 +3710,11 @@ fn relaxng_invalid_137_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_137_7(){
-
+fn relaxng_invalid_137_7() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4111,13 +3729,11 @@ fn relaxng_invalid_137_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_137_8(){
-
+fn relaxng_invalid_137_8() {
     /*
         Spec Sections: 4.12 4.14
     */
@@ -4132,13 +3748,11 @@ fn relaxng_invalid_137_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_138_1(){
-
+fn relaxng_valid_138_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4153,13 +3767,11 @@ fn relaxng_valid_138_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_138_2(){
-
+fn relaxng_invalid_138_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4174,13 +3786,11 @@ fn relaxng_invalid_138_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_139_1(){
-
+fn relaxng_valid_139_1() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4195,13 +3805,11 @@ fn relaxng_valid_139_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_139_2(){
-
+fn relaxng_invalid_139_2() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4216,13 +3824,11 @@ fn relaxng_invalid_139_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_139_3(){
-
+fn relaxng_invalid_139_3() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4237,13 +3843,11 @@ fn relaxng_invalid_139_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_139_4(){
-
+fn relaxng_invalid_139_4() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4258,13 +3862,11 @@ fn relaxng_invalid_139_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_139_5(){
-
+fn relaxng_invalid_139_5() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4279,13 +3881,11 @@ fn relaxng_invalid_139_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_139_6(){
-
+fn relaxng_valid_139_6() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4300,13 +3900,11 @@ fn relaxng_valid_139_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_139_7(){
-
+fn relaxng_invalid_139_7() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4321,13 +3919,11 @@ fn relaxng_invalid_139_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_139_8(){
-
+fn relaxng_invalid_139_8() {
     /*
         Spec Sections: 4.12 4.13
     */
@@ -4342,13 +3938,11 @@ fn relaxng_invalid_139_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_140_1(){
-
+fn relaxng_valid_140_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4363,13 +3957,11 @@ fn relaxng_valid_140_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_2(){
-
+fn relaxng_invalid_140_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4384,13 +3976,11 @@ fn relaxng_invalid_140_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_3(){
-
+fn relaxng_invalid_140_3() {
     /*
         Spec Sections: 4.12
     */
@@ -4405,13 +3995,11 @@ fn relaxng_invalid_140_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_4(){
-
+fn relaxng_invalid_140_4() {
     /*
         Spec Sections: 4.12
     */
@@ -4426,13 +4014,11 @@ fn relaxng_invalid_140_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_5(){
-
+fn relaxng_invalid_140_5() {
     /*
         Spec Sections: 4.12
     */
@@ -4447,13 +4033,11 @@ fn relaxng_invalid_140_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_6(){
-
+fn relaxng_invalid_140_6() {
     /*
         Spec Sections: 4.12
     */
@@ -4468,13 +4052,11 @@ fn relaxng_invalid_140_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_7(){
-
+fn relaxng_invalid_140_7() {
     /*
         Spec Sections: 4.12
     */
@@ -4489,13 +4071,11 @@ fn relaxng_invalid_140_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_140_8(){
-
+fn relaxng_invalid_140_8() {
     /*
         Spec Sections: 4.12
     */
@@ -4510,13 +4090,11 @@ fn relaxng_invalid_140_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_141_1(){
-
+fn relaxng_valid_141_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4531,13 +4109,11 @@ fn relaxng_valid_141_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_141_2(){
-
+fn relaxng_invalid_141_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4552,13 +4128,11 @@ fn relaxng_invalid_141_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_141_3(){
-
+fn relaxng_invalid_141_3() {
     /*
         Spec Sections: 4.12
     */
@@ -4573,13 +4147,11 @@ fn relaxng_invalid_141_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_141_4(){
-
+fn relaxng_invalid_141_4() {
     /*
         Spec Sections: 4.12
     */
@@ -4594,13 +4166,11 @@ fn relaxng_invalid_141_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_142_1(){
-
+fn relaxng_valid_142_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4615,13 +4185,11 @@ fn relaxng_valid_142_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_142_2(){
-
+fn relaxng_valid_142_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4636,13 +4204,11 @@ fn relaxng_valid_142_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_142_3(){
-
+fn relaxng_invalid_142_3() {
     /*
         Spec Sections: 4.12
     */
@@ -4657,13 +4223,11 @@ fn relaxng_invalid_142_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_142_4(){
-
+fn relaxng_invalid_142_4() {
     /*
         Spec Sections: 4.12
     */
@@ -4678,13 +4242,11 @@ fn relaxng_invalid_142_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_142_5(){
-
+fn relaxng_invalid_142_5() {
     /*
         Spec Sections: 4.12
     */
@@ -4699,13 +4261,11 @@ fn relaxng_invalid_142_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_143_1(){
-
+fn relaxng_valid_143_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4720,13 +4280,11 @@ fn relaxng_valid_143_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_143_2(){
-
+fn relaxng_valid_143_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4741,13 +4299,11 @@ fn relaxng_valid_143_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_143_3(){
-
+fn relaxng_invalid_143_3() {
     /*
         Spec Sections: 4.12
     */
@@ -4762,13 +4318,11 @@ fn relaxng_invalid_143_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_144_1(){
-
+fn relaxng_valid_144_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4783,13 +4337,11 @@ fn relaxng_valid_144_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_144_2(){
-
+fn relaxng_valid_144_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4804,13 +4356,11 @@ fn relaxng_valid_144_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_144_3(){
-
+fn relaxng_invalid_144_3() {
     /*
         Spec Sections: 4.12
     */
@@ -4825,13 +4375,11 @@ fn relaxng_invalid_144_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_145_1(){
-
+fn relaxng_valid_145_1() {
     /*
         Spec Sections: 4.12
     */
@@ -4846,13 +4394,11 @@ fn relaxng_valid_145_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_2(){
-
+fn relaxng_invalid_145_2() {
     /*
         Spec Sections: 4.12
     */
@@ -4867,13 +4413,11 @@ fn relaxng_invalid_145_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_3(){
-
+fn relaxng_invalid_145_3() {
     /*
         Spec Sections: 4.12
     */
@@ -4888,13 +4432,11 @@ fn relaxng_invalid_145_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_4(){
-
+fn relaxng_invalid_145_4() {
     /*
         Spec Sections: 4.12
     */
@@ -4909,13 +4451,11 @@ fn relaxng_invalid_145_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_5(){
-
+fn relaxng_invalid_145_5() {
     /*
         Spec Sections: 4.12
     */
@@ -4930,13 +4470,11 @@ fn relaxng_invalid_145_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_6(){
-
+fn relaxng_invalid_145_6() {
     /*
         Spec Sections: 4.12
     */
@@ -4951,13 +4489,11 @@ fn relaxng_invalid_145_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_7(){
-
+fn relaxng_invalid_145_7() {
     /*
         Spec Sections: 4.12
     */
@@ -4972,13 +4508,11 @@ fn relaxng_invalid_145_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_145_8(){
-
+fn relaxng_invalid_145_8() {
     /*
         Spec Sections: 4.12
     */
@@ -4993,13 +4527,11 @@ fn relaxng_invalid_145_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_146_1(){
-
+fn relaxng_valid_146_1() {
     /*
         Spec Sections: 4.12
     */
@@ -5014,13 +4546,11 @@ fn relaxng_valid_146_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_146_2(){
-
+fn relaxng_valid_146_2() {
     /*
         Spec Sections: 4.12
     */
@@ -5035,13 +4565,11 @@ fn relaxng_valid_146_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_146_3(){
-
+fn relaxng_valid_146_3() {
     /*
         Spec Sections: 4.12
     */
@@ -5056,13 +4584,11 @@ fn relaxng_valid_146_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_146_4(){
-
+fn relaxng_invalid_146_4() {
     /*
         Spec Sections: 4.12
     */
@@ -5077,13 +4603,11 @@ fn relaxng_invalid_146_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_147_1(){
-
+fn relaxng_valid_147_1() {
     /*
         Spec Sections: 4.12
     */
@@ -5098,13 +4622,11 @@ fn relaxng_valid_147_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_147_2(){
-
+fn relaxng_valid_147_2() {
     /*
         Spec Sections: 4.12
     */
@@ -5119,13 +4641,11 @@ fn relaxng_valid_147_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_147_3(){
-
+fn relaxng_valid_147_3() {
     /*
         Spec Sections: 4.12
     */
@@ -5140,13 +4660,11 @@ fn relaxng_valid_147_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_147_4(){
-
+fn relaxng_valid_147_4() {
     /*
         Spec Sections: 4.12
     */
@@ -5161,13 +4679,11 @@ fn relaxng_valid_147_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_147_5(){
-
+fn relaxng_valid_147_5() {
     /*
         Spec Sections: 4.12
     */
@@ -5182,13 +4698,11 @@ fn relaxng_valid_147_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_147_6(){
-
+fn relaxng_valid_147_6() {
     /*
         Spec Sections: 4.12
     */
@@ -5203,13 +4717,11 @@ fn relaxng_valid_147_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_147_7(){
-
+fn relaxng_invalid_147_7() {
     /*
         Spec Sections: 4.12
     */
@@ -5224,13 +4736,11 @@ fn relaxng_invalid_147_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_147_8(){
-
+fn relaxng_invalid_147_8() {
     /*
         Spec Sections: 4.12
     */
@@ -5245,13 +4755,11 @@ fn relaxng_invalid_147_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_148_1(){
-
+fn relaxng_valid_148_1() {
     /*
         Spec Sections: 4.12
     */
@@ -5266,13 +4774,11 @@ fn relaxng_valid_148_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_148_2(){
-
+fn relaxng_invalid_148_2() {
     /*
         Spec Sections: 4.12
     */
@@ -5287,13 +4793,11 @@ fn relaxng_invalid_148_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_149_1(){
-
+fn relaxng_valid_149_1() {
     /*
         Spec Sections: 4.12
     */
@@ -5308,13 +4812,11 @@ fn relaxng_valid_149_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_149_2(){
-
+fn relaxng_invalid_149_2() {
     /*
         Spec Sections: 4.12
     */
@@ -5329,13 +4831,11 @@ fn relaxng_invalid_149_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_150_1(){
-
+fn relaxng_valid_150_1() {
     /*
         Spec Sections: 4.12
     */
@@ -5350,13 +4850,11 @@ fn relaxng_valid_150_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_150_2(){
-
+fn relaxng_invalid_150_2() {
     /*
         Spec Sections: 4.12
     */
@@ -5371,13 +4869,11 @@ fn relaxng_invalid_150_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_151_1(){
-
+fn relaxng_valid_151_1() {
     /*
         Spec Sections: 4.13
     */
@@ -5392,13 +4888,11 @@ fn relaxng_valid_151_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_151_2(){
-
+fn relaxng_valid_151_2() {
     /*
         Spec Sections: 4.13
     */
@@ -5413,13 +4907,11 @@ fn relaxng_valid_151_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_151_3(){
-
+fn relaxng_valid_151_3() {
     /*
         Spec Sections: 4.13
     */
@@ -5434,13 +4926,11 @@ fn relaxng_valid_151_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_151_4(){
-
+fn relaxng_valid_151_4() {
     /*
         Spec Sections: 4.13
     */
@@ -5455,13 +4945,11 @@ fn relaxng_valid_151_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_151_5(){
-
+fn relaxng_invalid_151_5() {
     /*
         Spec Sections: 4.13
     */
@@ -5476,13 +4964,11 @@ fn relaxng_invalid_151_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_151_6(){
-
+fn relaxng_invalid_151_6() {
     /*
         Spec Sections: 4.13
     */
@@ -5497,13 +4983,11 @@ fn relaxng_invalid_151_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_152_1(){
-
+fn relaxng_valid_152_1() {
     /*
         Spec Sections: 4.14
     */
@@ -5518,13 +5002,11 @@ fn relaxng_valid_152_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_152_2(){
-
+fn relaxng_valid_152_2() {
     /*
         Spec Sections: 4.14
     */
@@ -5539,13 +5021,11 @@ fn relaxng_valid_152_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_152_3(){
-
+fn relaxng_invalid_152_3() {
     /*
         Spec Sections: 4.14
     */
@@ -5560,13 +5040,11 @@ fn relaxng_invalid_152_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_152_4(){
-
+fn relaxng_invalid_152_4() {
     /*
         Spec Sections: 4.14
     */
@@ -5581,13 +5059,11 @@ fn relaxng_invalid_152_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_153_1(){
-
+fn relaxng_valid_153_1() {
     /*
         Spec Sections: 4.15
     */
@@ -5602,13 +5078,11 @@ fn relaxng_valid_153_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_153_2(){
-
+fn relaxng_valid_153_2() {
     /*
         Spec Sections: 4.15
     */
@@ -5623,13 +5097,11 @@ fn relaxng_valid_153_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_153_3(){
-
+fn relaxng_invalid_153_3() {
     /*
         Spec Sections: 4.15
     */
@@ -5644,13 +5116,11 @@ fn relaxng_invalid_153_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_153_4(){
-
+fn relaxng_invalid_153_4() {
     /*
         Spec Sections: 4.15
     */
@@ -5665,13 +5135,11 @@ fn relaxng_invalid_153_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_153_5(){
-
+fn relaxng_valid_153_5() {
     /*
         Spec Sections: 4.15
     */
@@ -5686,13 +5154,11 @@ fn relaxng_valid_153_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_154_1(){
-
+fn relaxng_incorrect_154_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5707,13 +5173,11 @@ fn relaxng_incorrect_154_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_155_1(){
-
+fn relaxng_incorrect_155_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5728,13 +5192,11 @@ fn relaxng_incorrect_155_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_156_1(){
-
+fn relaxng_incorrect_156_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5749,13 +5211,11 @@ fn relaxng_incorrect_156_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_157_1(){
-
+fn relaxng_incorrect_157_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5770,13 +5230,11 @@ fn relaxng_incorrect_157_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_158_1(){
-
+fn relaxng_incorrect_158_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5791,13 +5249,11 @@ fn relaxng_incorrect_158_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_159_1(){
-
+fn relaxng_incorrect_159_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5812,13 +5268,11 @@ fn relaxng_incorrect_159_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_160_1(){
-
+fn relaxng_incorrect_160_1() {
     /*
         Spec Sections: 4.16
         Description: Tests that 4.16 is before 4.20.
@@ -5834,13 +5288,11 @@ fn relaxng_incorrect_160_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_161_1(){
-
+fn relaxng_incorrect_161_1() {
     /*
         Spec Sections: 4.16
         Description: Tests that 4.16 is before removal of unreachable definitions.
@@ -5856,13 +5308,11 @@ fn relaxng_incorrect_161_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_162_1(){
-
+fn relaxng_incorrect_162_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5877,13 +5327,11 @@ fn relaxng_incorrect_162_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_163_1(){
-
+fn relaxng_valid_163_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5898,13 +5346,11 @@ fn relaxng_valid_163_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_164_1(){
-
+fn relaxng_incorrect_164_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5919,13 +5365,11 @@ fn relaxng_incorrect_164_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_165_1(){
-
+fn relaxng_incorrect_165_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5940,13 +5384,11 @@ fn relaxng_incorrect_165_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_166_1(){
-
+fn relaxng_incorrect_166_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5961,13 +5403,11 @@ fn relaxng_incorrect_166_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_167_1(){
-
+fn relaxng_incorrect_167_1() {
     /*
         Spec Sections: 4.16
     */
@@ -5982,13 +5422,11 @@ fn relaxng_incorrect_167_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_168_1(){
-
+fn relaxng_incorrect_168_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6003,13 +5441,11 @@ fn relaxng_incorrect_168_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_169_1(){
-
+fn relaxng_incorrect_169_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6024,13 +5460,11 @@ fn relaxng_incorrect_169_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_170_1(){
-
+fn relaxng_incorrect_170_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6045,13 +5479,11 @@ fn relaxng_incorrect_170_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_171_1(){
-
+fn relaxng_incorrect_171_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6066,13 +5498,11 @@ fn relaxng_incorrect_171_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_172_1(){
-
+fn relaxng_incorrect_172_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6087,13 +5517,11 @@ fn relaxng_incorrect_172_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_173_1(){
-
+fn relaxng_incorrect_173_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6108,13 +5536,11 @@ fn relaxng_incorrect_173_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_174_1(){
-
+fn relaxng_incorrect_174_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6129,13 +5555,11 @@ fn relaxng_incorrect_174_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_175_1(){
-
+fn relaxng_incorrect_175_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6150,13 +5574,11 @@ fn relaxng_incorrect_175_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_176_1(){
-
+fn relaxng_valid_176_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6171,13 +5593,11 @@ fn relaxng_valid_176_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_177_1(){
-
+fn relaxng_incorrect_177_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6192,13 +5612,11 @@ fn relaxng_incorrect_177_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_178_1(){
-
+fn relaxng_incorrect_178_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6213,13 +5631,11 @@ fn relaxng_incorrect_178_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_179_1(){
-
+fn relaxng_incorrect_179_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6234,13 +5650,11 @@ fn relaxng_incorrect_179_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_180_1(){
-
+fn relaxng_incorrect_180_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6255,13 +5669,11 @@ fn relaxng_incorrect_180_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_181_1(){
-
+fn relaxng_incorrect_181_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6276,13 +5688,11 @@ fn relaxng_incorrect_181_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_182_1(){
-
+fn relaxng_incorrect_182_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6297,13 +5707,11 @@ fn relaxng_incorrect_182_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_183_1(){
-
+fn relaxng_incorrect_183_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6318,13 +5726,11 @@ fn relaxng_incorrect_183_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_184_1(){
-
+fn relaxng_incorrect_184_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6339,13 +5745,11 @@ fn relaxng_incorrect_184_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_185_1(){
-
+fn relaxng_incorrect_185_1() {
     /*
         Spec Sections: 4.16
     */
@@ -6360,13 +5764,11 @@ fn relaxng_incorrect_185_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_186_1(){
-
+fn relaxng_incorrect_186_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6381,13 +5783,11 @@ fn relaxng_incorrect_186_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_187_1(){
-
+fn relaxng_incorrect_187_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6402,13 +5802,11 @@ fn relaxng_incorrect_187_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_188_1(){
-
+fn relaxng_incorrect_188_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6423,13 +5821,11 @@ fn relaxng_incorrect_188_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_189_1(){
-
+fn relaxng_incorrect_189_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6444,13 +5840,11 @@ fn relaxng_incorrect_189_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_190_1(){
-
+fn relaxng_valid_190_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6465,13 +5859,11 @@ fn relaxng_valid_190_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_190_2(){
-
+fn relaxng_valid_190_2() {
     /*
         Spec Sections: 4.17
     */
@@ -6486,13 +5878,11 @@ fn relaxng_valid_190_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_190_3(){
-
+fn relaxng_valid_190_3() {
     /*
         Spec Sections: 4.17
     */
@@ -6507,13 +5897,11 @@ fn relaxng_valid_190_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_190_4(){
-
+fn relaxng_invalid_190_4() {
     /*
         Spec Sections: 4.17
     */
@@ -6528,13 +5916,11 @@ fn relaxng_invalid_190_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_191_1(){
-
+fn relaxng_valid_191_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6549,13 +5935,11 @@ fn relaxng_valid_191_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_191_2(){
-
+fn relaxng_valid_191_2() {
     /*
         Spec Sections: 4.17
     */
@@ -6570,13 +5954,11 @@ fn relaxng_valid_191_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_191_3(){
-
+fn relaxng_valid_191_3() {
     /*
         Spec Sections: 4.17
     */
@@ -6591,13 +5973,11 @@ fn relaxng_valid_191_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_191_4(){
-
+fn relaxng_invalid_191_4() {
     /*
         Spec Sections: 4.17
     */
@@ -6612,13 +5992,11 @@ fn relaxng_invalid_191_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_192_1(){
-
+fn relaxng_incorrect_192_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6633,13 +6011,11 @@ fn relaxng_incorrect_192_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_193_1(){
-
+fn relaxng_incorrect_193_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6654,13 +6030,11 @@ fn relaxng_incorrect_193_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_194_1(){
-
+fn relaxng_valid_194_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6675,13 +6049,11 @@ fn relaxng_valid_194_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_194_2(){
-
+fn relaxng_valid_194_2() {
     /*
         Spec Sections: 4.17
     */
@@ -6696,13 +6068,11 @@ fn relaxng_valid_194_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_194_3(){
-
+fn relaxng_valid_194_3() {
     /*
         Spec Sections: 4.17
     */
@@ -6717,13 +6087,11 @@ fn relaxng_valid_194_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_194_4(){
-
+fn relaxng_invalid_194_4() {
     /*
         Spec Sections: 4.17
     */
@@ -6738,13 +6106,11 @@ fn relaxng_invalid_194_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_195_1(){
-
+fn relaxng_valid_195_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6759,13 +6125,11 @@ fn relaxng_valid_195_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_195_2(){
-
+fn relaxng_valid_195_2() {
     /*
         Spec Sections: 4.17
     */
@@ -6780,13 +6144,11 @@ fn relaxng_valid_195_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_195_3(){
-
+fn relaxng_valid_195_3() {
     /*
         Spec Sections: 4.17
     */
@@ -6801,13 +6163,11 @@ fn relaxng_valid_195_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_195_4(){
-
+fn relaxng_invalid_195_4() {
     /*
         Spec Sections: 4.17
     */
@@ -6822,13 +6182,11 @@ fn relaxng_invalid_195_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_196_1(){
-
+fn relaxng_incorrect_196_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6843,13 +6201,11 @@ fn relaxng_incorrect_196_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_197_1(){
-
+fn relaxng_incorrect_197_1() {
     /*
         Spec Sections: 4.17
     */
@@ -6864,13 +6220,11 @@ fn relaxng_incorrect_197_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_198_1(){
-
+fn relaxng_incorrect_198_1() {
     /*
         Spec Sections: 4.18
         Description: grammar must have a start
@@ -6886,13 +6240,11 @@ fn relaxng_incorrect_198_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_199_1(){
-
+fn relaxng_incorrect_199_1() {
     /*
         Spec Sections: 4.18
         Description: 4.17 is before 4.18
@@ -6908,13 +6260,11 @@ fn relaxng_incorrect_199_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_200_1(){
-
+fn relaxng_incorrect_200_1() {
     /*
         Spec Sections: 4.18
         Description: 4.17 is before 4.19
@@ -6930,13 +6280,11 @@ fn relaxng_incorrect_200_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_201_1(){
-
+fn relaxng_incorrect_201_1() {
     /*
         Spec Sections: 4.18
         Description: every ref must have a def
@@ -6952,13 +6300,11 @@ fn relaxng_incorrect_201_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_202_1(){
-
+fn relaxng_incorrect_202_1() {
     /*
         Spec Sections: 4.18
         Description: 4.17 is before 4.18
@@ -6974,13 +6320,11 @@ fn relaxng_incorrect_202_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_203_1(){
-
+fn relaxng_incorrect_203_1() {
     /*
         Spec Sections: 4.18
         Description: 4.17 is before 4.19
@@ -6996,13 +6340,11 @@ fn relaxng_incorrect_203_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_204_1(){
-
+fn relaxng_incorrect_204_1() {
     /*
         Spec Sections: 4.18
         Description: every parentRef must have a def
@@ -7018,13 +6360,11 @@ fn relaxng_incorrect_204_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_205_1(){
-
+fn relaxng_incorrect_205_1() {
     /*
         Spec Sections: 4.18
         Description: 4.17 is before 4.18
@@ -7040,13 +6380,11 @@ fn relaxng_incorrect_205_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_206_1(){
-
+fn relaxng_incorrect_206_1() {
     /*
         Spec Sections: 4.18
         Description: 4.17 is before 4.19
@@ -7062,13 +6400,11 @@ fn relaxng_incorrect_206_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_207_1(){
-
+fn relaxng_incorrect_207_1() {
     /*
         Spec Sections: 4.18
     */
@@ -7083,13 +6419,11 @@ fn relaxng_incorrect_207_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_208_1(){
-
+fn relaxng_valid_208_1() {
     /*
         Spec Sections: 4.18
     */
@@ -7104,13 +6438,11 @@ fn relaxng_valid_208_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_209_1(){
-
+fn relaxng_valid_209_1() {
     /*
         Spec Sections: 4.18
     */
@@ -7125,13 +6457,11 @@ fn relaxng_valid_209_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_209_2(){
-
+fn relaxng_invalid_209_2() {
     /*
         Spec Sections: 4.18
     */
@@ -7146,13 +6476,11 @@ fn relaxng_invalid_209_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_210_1(){
-
+fn relaxng_valid_210_1() {
     /*
         Spec Sections: 4.18
     */
@@ -7167,13 +6495,11 @@ fn relaxng_valid_210_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_210_2(){
-
+fn relaxng_invalid_210_2() {
     /*
         Spec Sections: 4.18
     */
@@ -7188,13 +6514,11 @@ fn relaxng_invalid_210_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_211_1(){
-
+fn relaxng_incorrect_211_1() {
     /*
         Spec Sections: 4.19
     */
@@ -7209,13 +6533,11 @@ fn relaxng_incorrect_211_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_212_1(){
-
+fn relaxng_valid_212_1() {
     /*
         Spec Sections: 4.19
     */
@@ -7230,13 +6552,11 @@ fn relaxng_valid_212_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_212_2(){
-
+fn relaxng_valid_212_2() {
     /*
         Spec Sections: 4.19
     */
@@ -7251,13 +6571,11 @@ fn relaxng_valid_212_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_212_3(){
-
+fn relaxng_invalid_212_3() {
     /*
         Spec Sections: 4.19
     */
@@ -7272,13 +6590,11 @@ fn relaxng_invalid_212_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_213_1(){
-
+fn relaxng_valid_213_1() {
     /*
         Spec Sections: 4.19
     */
@@ -7293,18 +6609,16 @@ fn relaxng_valid_213_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_214_1(){
-
+fn relaxng_incorrect_214_1() {
     /*
-        Spec Sections: 4.19 4.20
-        Description: Tests that recursion detection happens before
-normalization of notAllowed.
-    */
+            Spec Sections: 4.19 4.20
+            Description: Tests that recursion detection happens before
+    normalization of notAllowed.
+        */
 
     let docfile = "<doc/>".to_string();
     let doc = Rc::new(SmiteNode::new());
@@ -7316,13 +6630,11 @@ normalization of notAllowed.
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_215_1(){
-
+fn relaxng_valid_215_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7337,13 +6649,11 @@ fn relaxng_valid_215_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_215_2(){
-
+fn relaxng_valid_215_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7358,13 +6668,11 @@ fn relaxng_valid_215_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_216_1(){
-
+fn relaxng_invalid_216_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7379,13 +6687,11 @@ fn relaxng_invalid_216_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_216_2(){
-
+fn relaxng_valid_216_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7400,13 +6706,11 @@ fn relaxng_valid_216_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_216_3(){
-
+fn relaxng_valid_216_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7421,13 +6725,11 @@ fn relaxng_valid_216_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_217_1(){
-
+fn relaxng_invalid_217_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7442,13 +6744,11 @@ fn relaxng_invalid_217_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_217_2(){
-
+fn relaxng_valid_217_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7463,13 +6763,11 @@ fn relaxng_valid_217_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_218_1(){
-
+fn relaxng_valid_218_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7484,13 +6782,11 @@ fn relaxng_valid_218_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_218_2(){
-
+fn relaxng_invalid_218_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7505,13 +6801,11 @@ fn relaxng_invalid_218_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_219_1(){
-
+fn relaxng_invalid_219_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7526,13 +6820,11 @@ fn relaxng_invalid_219_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_219_2(){
-
+fn relaxng_invalid_219_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7547,13 +6839,11 @@ fn relaxng_invalid_219_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_219_3(){
-
+fn relaxng_invalid_219_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7568,13 +6858,11 @@ fn relaxng_invalid_219_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_219_4(){
-
+fn relaxng_valid_219_4() {
     /*
         Spec Sections: 6.1
     */
@@ -7589,13 +6877,11 @@ fn relaxng_valid_219_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_220_1(){
-
+fn relaxng_invalid_220_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7610,13 +6896,11 @@ fn relaxng_invalid_220_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_220_2(){
-
+fn relaxng_invalid_220_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7631,13 +6915,11 @@ fn relaxng_invalid_220_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_220_3(){
-
+fn relaxng_valid_220_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7652,13 +6934,11 @@ fn relaxng_valid_220_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_221_1(){
-
+fn relaxng_invalid_221_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7673,13 +6953,11 @@ fn relaxng_invalid_221_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_221_2(){
-
+fn relaxng_invalid_221_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7694,13 +6972,11 @@ fn relaxng_invalid_221_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_221_3(){
-
+fn relaxng_valid_221_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7715,13 +6991,11 @@ fn relaxng_valid_221_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_221_4(){
-
+fn relaxng_valid_221_4() {
     /*
         Spec Sections: 6.1
     */
@@ -7736,13 +7010,11 @@ fn relaxng_valid_221_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_222_1(){
-
+fn relaxng_valid_222_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7757,13 +7029,11 @@ fn relaxng_valid_222_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_222_2(){
-
+fn relaxng_invalid_222_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7778,13 +7048,11 @@ fn relaxng_invalid_222_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_222_3(){
-
+fn relaxng_invalid_222_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7799,13 +7067,11 @@ fn relaxng_invalid_222_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_222_4(){
-
+fn relaxng_invalid_222_4() {
     /*
         Spec Sections: 6.1
     */
@@ -7820,13 +7086,11 @@ fn relaxng_invalid_222_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_223_1(){
-
+fn relaxng_invalid_223_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7841,13 +7105,11 @@ fn relaxng_invalid_223_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_223_2(){
-
+fn relaxng_valid_223_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7862,13 +7124,11 @@ fn relaxng_valid_223_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_223_3(){
-
+fn relaxng_invalid_223_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7883,13 +7143,11 @@ fn relaxng_invalid_223_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_223_4(){
-
+fn relaxng_invalid_223_4() {
     /*
         Spec Sections: 6.1
     */
@@ -7904,13 +7162,11 @@ fn relaxng_invalid_223_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_224_1(){
-
+fn relaxng_invalid_224_1() {
     /*
         Spec Sections: 6.1
     */
@@ -7925,13 +7181,11 @@ fn relaxng_invalid_224_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_224_2(){
-
+fn relaxng_valid_224_2() {
     /*
         Spec Sections: 6.1
     */
@@ -7946,13 +7200,11 @@ fn relaxng_valid_224_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_224_3(){
-
+fn relaxng_valid_224_3() {
     /*
         Spec Sections: 6.1
     */
@@ -7967,13 +7219,11 @@ fn relaxng_valid_224_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_225_1(){
-
+fn relaxng_valid_225_1() {
     /*
         Spec Sections: 6.2.1
     */
@@ -7988,13 +7238,11 @@ fn relaxng_valid_225_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_225_2(){
-
+fn relaxng_valid_225_2() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8009,13 +7257,11 @@ fn relaxng_valid_225_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_225_3(){
-
+fn relaxng_invalid_225_3() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8030,13 +7276,11 @@ fn relaxng_invalid_225_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_226_1(){
-
+fn relaxng_valid_226_1() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8051,13 +7295,11 @@ fn relaxng_valid_226_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_226_2(){
-
+fn relaxng_valid_226_2() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8072,13 +7314,11 @@ fn relaxng_valid_226_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_226_3(){
-
+fn relaxng_invalid_226_3() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8093,13 +7333,11 @@ fn relaxng_invalid_226_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_226_4(){
-
+fn relaxng_invalid_226_4() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8114,13 +7352,11 @@ fn relaxng_invalid_226_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_226_5(){
-
+fn relaxng_invalid_226_5() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8135,13 +7371,11 @@ fn relaxng_invalid_226_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_226_6(){
-
+fn relaxng_invalid_226_6() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8156,13 +7390,11 @@ fn relaxng_invalid_226_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_226_7(){
-
+fn relaxng_invalid_226_7() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8177,13 +7409,11 @@ fn relaxng_invalid_226_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_227_1(){
-
+fn relaxng_valid_227_1() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8198,13 +7428,11 @@ fn relaxng_valid_227_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_227_2(){
-
+fn relaxng_valid_227_2() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8219,13 +7447,11 @@ fn relaxng_valid_227_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_227_3(){
-
+fn relaxng_invalid_227_3() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8240,13 +7466,11 @@ fn relaxng_invalid_227_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_227_4(){
-
+fn relaxng_invalid_227_4() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8261,13 +7485,11 @@ fn relaxng_invalid_227_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_227_5(){
-
+fn relaxng_invalid_227_5() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8282,13 +7504,11 @@ fn relaxng_invalid_227_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_227_6(){
-
+fn relaxng_invalid_227_6() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8303,13 +7523,11 @@ fn relaxng_invalid_227_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_227_7(){
-
+fn relaxng_invalid_227_7() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8324,13 +7542,11 @@ fn relaxng_invalid_227_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_228_1(){
-
+fn relaxng_valid_228_1() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8345,13 +7561,11 @@ fn relaxng_valid_228_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_228_2(){
-
+fn relaxng_valid_228_2() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8366,13 +7580,11 @@ fn relaxng_valid_228_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_228_3(){
-
+fn relaxng_invalid_228_3() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8387,13 +7599,11 @@ fn relaxng_invalid_228_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_228_4(){
-
+fn relaxng_invalid_228_4() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8408,13 +7618,11 @@ fn relaxng_invalid_228_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_228_5(){
-
+fn relaxng_invalid_228_5() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8429,13 +7637,11 @@ fn relaxng_invalid_228_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_228_6(){
-
+fn relaxng_invalid_228_6() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8450,13 +7656,11 @@ fn relaxng_invalid_228_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_228_7(){
-
+fn relaxng_invalid_228_7() {
     /*
         Spec Sections: 6.2.1
     */
@@ -8471,13 +7675,11 @@ fn relaxng_invalid_228_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_229_1(){
-
+fn relaxng_valid_229_1() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8492,13 +7694,11 @@ fn relaxng_valid_229_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_229_2(){
-
+fn relaxng_invalid_229_2() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8513,13 +7713,11 @@ fn relaxng_invalid_229_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_229_3(){
-
+fn relaxng_invalid_229_3() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8534,13 +7732,11 @@ fn relaxng_invalid_229_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_229_4(){
-
+fn relaxng_invalid_229_4() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8555,13 +7751,11 @@ fn relaxng_invalid_229_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_229_5(){
-
+fn relaxng_invalid_229_5() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8576,13 +7770,11 @@ fn relaxng_invalid_229_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_229_6(){
-
+fn relaxng_invalid_229_6() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8597,13 +7789,11 @@ fn relaxng_invalid_229_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_230_1(){
-
+fn relaxng_valid_230_1() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8618,13 +7808,11 @@ fn relaxng_valid_230_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_230_2(){
-
+fn relaxng_invalid_230_2() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8639,13 +7827,11 @@ fn relaxng_invalid_230_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_231_1(){
-
+fn relaxng_valid_231_1() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8660,13 +7846,11 @@ fn relaxng_valid_231_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_231_2(){
-
+fn relaxng_invalid_231_2() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8681,13 +7865,11 @@ fn relaxng_invalid_231_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_231_3(){
-
+fn relaxng_invalid_231_3() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8702,13 +7884,11 @@ fn relaxng_invalid_231_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_231_4(){
-
+fn relaxng_invalid_231_4() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8723,13 +7903,11 @@ fn relaxng_invalid_231_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_232_1(){
-
+fn relaxng_valid_232_1() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8744,13 +7922,11 @@ fn relaxng_valid_232_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_232_2(){
-
+fn relaxng_invalid_232_2() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8765,13 +7941,11 @@ fn relaxng_invalid_232_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_232_3(){
-
+fn relaxng_invalid_232_3() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8786,13 +7960,11 @@ fn relaxng_invalid_232_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_232_4(){
-
+fn relaxng_invalid_232_4() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8807,13 +7979,11 @@ fn relaxng_invalid_232_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_233_1(){
-
+fn relaxng_valid_233_1() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8828,13 +7998,11 @@ fn relaxng_valid_233_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_233_2(){
-
+fn relaxng_invalid_233_2() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8849,13 +8017,11 @@ fn relaxng_invalid_233_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_233_3(){
-
+fn relaxng_invalid_233_3() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8870,13 +8036,11 @@ fn relaxng_invalid_233_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_233_4(){
-
+fn relaxng_invalid_233_4() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8891,13 +8055,11 @@ fn relaxng_invalid_233_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_234_1(){
-
+fn relaxng_valid_234_1() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8912,13 +8074,11 @@ fn relaxng_valid_234_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_234_2(){
-
+fn relaxng_invalid_234_2() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8933,13 +8093,11 @@ fn relaxng_invalid_234_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_234_3(){
-
+fn relaxng_invalid_234_3() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8954,13 +8112,11 @@ fn relaxng_invalid_234_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_234_4(){
-
+fn relaxng_invalid_234_4() {
     /*
         Spec Sections: 6.2.2
     */
@@ -8975,13 +8131,11 @@ fn relaxng_invalid_234_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_235_1(){
-
+fn relaxng_valid_235_1() {
     /*
         Spec Sections: 6.2.3
     */
@@ -8996,13 +8150,11 @@ fn relaxng_valid_235_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_235_2(){
-
+fn relaxng_valid_235_2() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9017,13 +8169,11 @@ fn relaxng_valid_235_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_235_3(){
-
+fn relaxng_valid_235_3() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9038,13 +8188,11 @@ fn relaxng_valid_235_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_235_4(){
-
+fn relaxng_valid_235_4() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9059,13 +8207,11 @@ fn relaxng_valid_235_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_235_5(){
-
+fn relaxng_invalid_235_5() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9080,13 +8226,11 @@ fn relaxng_invalid_235_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_235_6(){
-
+fn relaxng_invalid_235_6() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9101,13 +8245,11 @@ fn relaxng_invalid_235_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_235_7(){
-
+fn relaxng_invalid_235_7() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9122,13 +8264,11 @@ fn relaxng_invalid_235_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_236_1(){
-
+fn relaxng_valid_236_1() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9143,13 +8283,11 @@ fn relaxng_valid_236_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_236_2(){
-
+fn relaxng_valid_236_2() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9164,13 +8302,11 @@ fn relaxng_valid_236_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_236_3(){
-
+fn relaxng_invalid_236_3() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9185,13 +8321,11 @@ fn relaxng_invalid_236_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_237_1(){
-
+fn relaxng_valid_237_1() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9206,13 +8340,11 @@ fn relaxng_valid_237_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_237_2(){
-
+fn relaxng_valid_237_2() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9227,13 +8359,11 @@ fn relaxng_valid_237_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_237_3(){
-
+fn relaxng_invalid_237_3() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9248,13 +8378,11 @@ fn relaxng_invalid_237_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_237_4(){
-
+fn relaxng_invalid_237_4() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9269,13 +8397,11 @@ fn relaxng_invalid_237_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_237_5(){
-
+fn relaxng_invalid_237_5() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9290,13 +8416,11 @@ fn relaxng_invalid_237_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_238_1(){
-
+fn relaxng_valid_238_1() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9311,13 +8435,11 @@ fn relaxng_valid_238_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_238_2(){
-
+fn relaxng_valid_238_2() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9332,13 +8454,11 @@ fn relaxng_valid_238_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_238_3(){
-
+fn relaxng_invalid_238_3() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9353,13 +8473,11 @@ fn relaxng_invalid_238_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_239_1(){
-
+fn relaxng_valid_239_1() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9374,13 +8492,11 @@ fn relaxng_valid_239_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_239_2(){
-
+fn relaxng_valid_239_2() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9395,13 +8511,11 @@ fn relaxng_valid_239_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_239_3(){
-
+fn relaxng_invalid_239_3() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9416,13 +8530,11 @@ fn relaxng_invalid_239_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_239_4(){
-
+fn relaxng_invalid_239_4() {
     /*
         Spec Sections: 6.2.3
     */
@@ -9437,15 +8549,13 @@ fn relaxng_invalid_239_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_240_1(){
-
+fn relaxng_valid_240_1() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/240/1.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -9457,15 +8567,13 @@ fn relaxng_valid_240_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_240_2(){
-
+fn relaxng_valid_240_2() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/240/2.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -9477,15 +8585,13 @@ fn relaxng_valid_240_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_240_3(){
-
+fn relaxng_invalid_240_3() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/240/3.i.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -9497,15 +8603,13 @@ fn relaxng_invalid_240_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_240_4(){
-
+fn relaxng_invalid_240_4() {
     /*
-    */
+     */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/240/4.i.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -9517,13 +8621,11 @@ fn relaxng_invalid_240_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_241_1(){
-
+fn relaxng_valid_241_1() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9538,13 +8640,11 @@ fn relaxng_valid_241_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_241_2(){
-
+fn relaxng_valid_241_2() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9559,13 +8659,11 @@ fn relaxng_valid_241_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_241_3(){
-
+fn relaxng_valid_241_3() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9580,13 +8678,11 @@ fn relaxng_valid_241_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_241_4(){
-
+fn relaxng_valid_241_4() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9601,13 +8697,11 @@ fn relaxng_valid_241_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_241_5(){
-
+fn relaxng_invalid_241_5() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9622,13 +8716,11 @@ fn relaxng_invalid_241_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_242_1(){
-
+fn relaxng_valid_242_1() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9643,13 +8735,11 @@ fn relaxng_valid_242_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_242_2(){
-
+fn relaxng_valid_242_2() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9664,13 +8754,11 @@ fn relaxng_valid_242_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_242_3(){
-
+fn relaxng_valid_242_3() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9685,13 +8773,11 @@ fn relaxng_valid_242_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_242_4(){
-
+fn relaxng_valid_242_4() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9706,13 +8792,11 @@ fn relaxng_valid_242_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_242_5(){
-
+fn relaxng_invalid_242_5() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9727,13 +8811,11 @@ fn relaxng_invalid_242_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_242_6(){
-
+fn relaxng_invalid_242_6() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9748,13 +8830,11 @@ fn relaxng_invalid_242_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_243_1(){
-
+fn relaxng_valid_243_1() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9769,13 +8849,11 @@ fn relaxng_valid_243_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_243_2(){
-
+fn relaxng_valid_243_2() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9790,13 +8868,11 @@ fn relaxng_valid_243_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_243_3(){
-
+fn relaxng_invalid_243_3() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9811,13 +8887,11 @@ fn relaxng_invalid_243_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_243_4(){
-
+fn relaxng_valid_243_4() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9832,13 +8906,11 @@ fn relaxng_valid_243_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_243_5(){
-
+fn relaxng_invalid_243_5() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9853,13 +8925,11 @@ fn relaxng_invalid_243_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_243_6(){
-
+fn relaxng_valid_243_6() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9874,13 +8944,11 @@ fn relaxng_valid_243_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_244_1(){
-
+fn relaxng_valid_244_1() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9895,13 +8963,11 @@ fn relaxng_valid_244_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_244_2(){
-
+fn relaxng_valid_244_2() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9916,13 +8982,11 @@ fn relaxng_valid_244_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_244_3(){
-
+fn relaxng_valid_244_3() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9937,13 +9001,11 @@ fn relaxng_valid_244_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_244_4(){
-
+fn relaxng_valid_244_4() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9958,13 +9020,11 @@ fn relaxng_valid_244_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_244_5(){
-
+fn relaxng_invalid_244_5() {
     /*
         Spec Sections: 6.2.4
     */
@@ -9979,13 +9039,11 @@ fn relaxng_invalid_244_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_244_6(){
-
+fn relaxng_valid_244_6() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10000,13 +9058,11 @@ fn relaxng_valid_244_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_244_7(){
-
+fn relaxng_valid_244_7() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10021,13 +9077,11 @@ fn relaxng_valid_244_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_244_8(){
-
+fn relaxng_invalid_244_8() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10042,13 +9096,11 @@ fn relaxng_invalid_244_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_245_1(){
-
+fn relaxng_valid_245_1() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10063,13 +9115,11 @@ fn relaxng_valid_245_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_245_2(){
-
+fn relaxng_valid_245_2() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10084,13 +9134,11 @@ fn relaxng_valid_245_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_245_3(){
-
+fn relaxng_valid_245_3() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10105,13 +9153,11 @@ fn relaxng_valid_245_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_245_4(){
-
+fn relaxng_invalid_245_4() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10126,13 +9172,11 @@ fn relaxng_invalid_245_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_245_5(){
-
+fn relaxng_invalid_245_5() {
     /*
         Spec Sections: 6.2.4
     */
@@ -10147,13 +9191,11 @@ fn relaxng_invalid_245_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_246_1(){
-
+fn relaxng_valid_246_1() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10168,13 +9210,11 @@ fn relaxng_valid_246_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_246_2(){
-
+fn relaxng_valid_246_2() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10189,13 +9229,11 @@ fn relaxng_valid_246_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_246_3(){
-
+fn relaxng_valid_246_3() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10210,13 +9248,11 @@ fn relaxng_valid_246_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_246_4(){
-
+fn relaxng_invalid_246_4() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10231,13 +9267,11 @@ fn relaxng_invalid_246_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_247_1(){
-
+fn relaxng_valid_247_1() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10252,13 +9286,11 @@ fn relaxng_valid_247_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_247_2(){
-
+fn relaxng_valid_247_2() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10273,13 +9305,11 @@ fn relaxng_valid_247_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_247_3(){
-
+fn relaxng_valid_247_3() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10294,13 +9324,11 @@ fn relaxng_valid_247_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_247_4(){
-
+fn relaxng_invalid_247_4() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10315,13 +9343,11 @@ fn relaxng_invalid_247_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_247_5(){
-
+fn relaxng_invalid_247_5() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10336,13 +9362,11 @@ fn relaxng_invalid_247_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_247_6(){
-
+fn relaxng_invalid_247_6() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10357,13 +9381,11 @@ fn relaxng_invalid_247_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_248_1(){
-
+fn relaxng_valid_248_1() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10378,13 +9400,11 @@ fn relaxng_valid_248_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_248_2(){
-
+fn relaxng_valid_248_2() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10399,13 +9419,11 @@ fn relaxng_valid_248_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_248_3(){
-
+fn relaxng_valid_248_3() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10420,13 +9438,11 @@ fn relaxng_valid_248_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_248_4(){
-
+fn relaxng_invalid_248_4() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10441,13 +9457,11 @@ fn relaxng_invalid_248_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_248_5(){
-
+fn relaxng_invalid_248_5() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10462,13 +9476,11 @@ fn relaxng_invalid_248_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_248_6(){
-
+fn relaxng_invalid_248_6() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10483,13 +9495,11 @@ fn relaxng_invalid_248_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_249_1(){
-
+fn relaxng_valid_249_1() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10504,13 +9514,11 @@ fn relaxng_valid_249_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_249_2(){
-
+fn relaxng_valid_249_2() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10525,13 +9533,11 @@ fn relaxng_valid_249_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_249_3(){
-
+fn relaxng_valid_249_3() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10546,13 +9552,11 @@ fn relaxng_valid_249_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_249_4(){
-
+fn relaxng_invalid_249_4() {
     /*
         Spec Sections: 6.2.5
     */
@@ -10567,13 +9571,11 @@ fn relaxng_invalid_249_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_250_1(){
-
+fn relaxng_valid_250_1() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10588,13 +9590,11 @@ fn relaxng_valid_250_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_250_2(){
-
+fn relaxng_valid_250_2() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10609,13 +9609,11 @@ fn relaxng_valid_250_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_250_3(){
-
+fn relaxng_invalid_250_3() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10630,13 +9628,11 @@ fn relaxng_invalid_250_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_250_4(){
-
+fn relaxng_invalid_250_4() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10651,13 +9647,11 @@ fn relaxng_invalid_250_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_250_5(){
-
+fn relaxng_invalid_250_5() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10672,13 +9666,11 @@ fn relaxng_invalid_250_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_250_6(){
-
+fn relaxng_invalid_250_6() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10693,13 +9685,11 @@ fn relaxng_invalid_250_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_251_1(){
-
+fn relaxng_valid_251_1() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10714,13 +9704,11 @@ fn relaxng_valid_251_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_251_2(){
-
+fn relaxng_valid_251_2() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10735,13 +9723,11 @@ fn relaxng_valid_251_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_251_3(){
-
+fn relaxng_valid_251_3() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10756,13 +9742,11 @@ fn relaxng_valid_251_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_251_4(){
-
+fn relaxng_invalid_251_4() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10777,13 +9761,11 @@ fn relaxng_invalid_251_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_251_5(){
-
+fn relaxng_invalid_251_5() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10798,13 +9780,11 @@ fn relaxng_invalid_251_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_251_6(){
-
+fn relaxng_invalid_251_6() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10819,13 +9799,11 @@ fn relaxng_invalid_251_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_251_7(){
-
+fn relaxng_invalid_251_7() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10840,13 +9818,11 @@ fn relaxng_invalid_251_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_251_8(){
-
+fn relaxng_invalid_251_8() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10861,13 +9837,11 @@ fn relaxng_invalid_251_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_252_1(){
-
+fn relaxng_valid_252_1() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10882,13 +9856,11 @@ fn relaxng_valid_252_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_252_2(){
-
+fn relaxng_invalid_252_2() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10903,13 +9875,11 @@ fn relaxng_invalid_252_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_252_3(){
-
+fn relaxng_invalid_252_3() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10924,13 +9894,11 @@ fn relaxng_invalid_252_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_252_4(){
-
+fn relaxng_invalid_252_4() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10945,13 +9913,11 @@ fn relaxng_invalid_252_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_252_5(){
-
+fn relaxng_invalid_252_5() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10966,13 +9932,11 @@ fn relaxng_invalid_252_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_253_1(){
-
+fn relaxng_valid_253_1() {
     /*
         Spec Sections: 6.2.6
     */
@@ -10987,13 +9951,11 @@ fn relaxng_valid_253_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_253_2(){
-
+fn relaxng_invalid_253_2() {
     /*
         Spec Sections: 6.2.6
     */
@@ -11008,13 +9970,11 @@ fn relaxng_invalid_253_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_253_3(){
-
+fn relaxng_invalid_253_3() {
     /*
         Spec Sections: 6.2.6
     */
@@ -11029,13 +9989,11 @@ fn relaxng_invalid_253_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_253_4(){
-
+fn relaxng_invalid_253_4() {
     /*
         Spec Sections: 6.2.6
     */
@@ -11050,13 +10008,11 @@ fn relaxng_invalid_253_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_253_5(){
-
+fn relaxng_invalid_253_5() {
     /*
         Spec Sections: 6.2.6
     */
@@ -11071,13 +10027,11 @@ fn relaxng_invalid_253_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_254_1(){
-
+fn relaxng_valid_254_1() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11092,13 +10046,11 @@ fn relaxng_valid_254_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_254_2(){
-
+fn relaxng_invalid_254_2() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11113,13 +10065,11 @@ fn relaxng_invalid_254_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_254_3(){
-
+fn relaxng_invalid_254_3() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11134,13 +10084,11 @@ fn relaxng_invalid_254_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_254_4(){
-
+fn relaxng_invalid_254_4() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11155,13 +10103,11 @@ fn relaxng_invalid_254_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_254_5(){
-
+fn relaxng_invalid_254_5() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11176,13 +10122,11 @@ fn relaxng_invalid_254_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_254_6(){
-
+fn relaxng_invalid_254_6() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11197,13 +10141,11 @@ fn relaxng_invalid_254_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_255_1(){
-
+fn relaxng_valid_255_1() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11218,13 +10160,11 @@ fn relaxng_valid_255_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_255_2(){
-
+fn relaxng_valid_255_2() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11239,13 +10179,11 @@ fn relaxng_valid_255_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_255_3(){
-
+fn relaxng_invalid_255_3() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11260,13 +10198,11 @@ fn relaxng_invalid_255_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_255_4(){
-
+fn relaxng_invalid_255_4() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11281,13 +10217,11 @@ fn relaxng_invalid_255_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_255_5(){
-
+fn relaxng_invalid_255_5() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11302,13 +10236,11 @@ fn relaxng_invalid_255_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_255_6(){
-
+fn relaxng_invalid_255_6() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11323,13 +10255,11 @@ fn relaxng_invalid_255_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_255_7(){
-
+fn relaxng_invalid_255_7() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11344,13 +10274,11 @@ fn relaxng_invalid_255_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_256_1(){
-
+fn relaxng_valid_256_1() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11365,13 +10293,11 @@ fn relaxng_valid_256_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_256_2(){
-
+fn relaxng_invalid_256_2() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11386,13 +10312,11 @@ fn relaxng_invalid_256_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_256_3(){
-
+fn relaxng_invalid_256_3() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11407,13 +10331,11 @@ fn relaxng_invalid_256_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_257_1(){
-
+fn relaxng_valid_257_1() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11428,13 +10350,11 @@ fn relaxng_valid_257_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_257_2(){
-
+fn relaxng_valid_257_2() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11449,13 +10369,11 @@ fn relaxng_valid_257_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_257_3(){
-
+fn relaxng_valid_257_3() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11470,13 +10388,11 @@ fn relaxng_valid_257_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_257_4(){
-
+fn relaxng_invalid_257_4() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11491,13 +10407,11 @@ fn relaxng_invalid_257_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_257_5(){
-
+fn relaxng_invalid_257_5() {
     /*
         Spec Sections: 6.2.7
     */
@@ -11512,13 +10426,11 @@ fn relaxng_invalid_257_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_258_1(){
-
+fn relaxng_valid_258_1() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11533,13 +10445,11 @@ fn relaxng_valid_258_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_258_2(){
-
+fn relaxng_invalid_258_2() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11554,13 +10464,11 @@ fn relaxng_invalid_258_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_258_3(){
-
+fn relaxng_invalid_258_3() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11575,13 +10483,11 @@ fn relaxng_invalid_258_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_259_1(){
-
+fn relaxng_valid_259_1() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11596,13 +10502,11 @@ fn relaxng_valid_259_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_259_2(){
-
+fn relaxng_valid_259_2() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11617,13 +10521,11 @@ fn relaxng_valid_259_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_259_3(){
-
+fn relaxng_invalid_259_3() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11638,13 +10540,11 @@ fn relaxng_invalid_259_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_260_1(){
-
+fn relaxng_invalid_260_1() {
     /*
         Spec Sections: 6.2.7 6.2.8 6.2.10
     */
@@ -11659,13 +10559,11 @@ fn relaxng_invalid_260_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_260_2(){
-
+fn relaxng_invalid_260_2() {
     /*
         Spec Sections: 6.2.7 6.2.8 6.2.10
     */
@@ -11680,13 +10578,11 @@ fn relaxng_invalid_260_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_260_3(){
-
+fn relaxng_valid_260_3() {
     /*
         Spec Sections: 6.2.7 6.2.8 6.2.10
     */
@@ -11701,13 +10597,11 @@ fn relaxng_valid_260_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_260_4(){
-
+fn relaxng_valid_260_4() {
     /*
         Spec Sections: 6.2.7 6.2.8 6.2.10
     */
@@ -11722,13 +10616,11 @@ fn relaxng_valid_260_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_260_5(){
-
+fn relaxng_invalid_260_5() {
     /*
         Spec Sections: 6.2.7 6.2.8 6.2.10
     */
@@ -11743,13 +10635,11 @@ fn relaxng_invalid_260_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_261_1(){
-
+fn relaxng_valid_261_1() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11764,13 +10654,11 @@ fn relaxng_valid_261_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_261_2(){
-
+fn relaxng_valid_261_2() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11785,13 +10673,11 @@ fn relaxng_valid_261_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_261_3(){
-
+fn relaxng_valid_261_3() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11806,13 +10692,11 @@ fn relaxng_valid_261_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_261_4(){
-
+fn relaxng_valid_261_4() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11827,13 +10711,11 @@ fn relaxng_valid_261_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_261_5(){
-
+fn relaxng_invalid_261_5() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11848,13 +10730,11 @@ fn relaxng_invalid_261_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_261_6(){
-
+fn relaxng_invalid_261_6() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11869,13 +10749,11 @@ fn relaxng_invalid_261_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_261_7(){
-
+fn relaxng_invalid_261_7() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11890,13 +10768,11 @@ fn relaxng_invalid_261_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_262_1(){
-
+fn relaxng_valid_262_1() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11911,13 +10787,11 @@ fn relaxng_valid_262_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_262_2(){
-
+fn relaxng_valid_262_2() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11932,13 +10806,11 @@ fn relaxng_valid_262_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_262_3(){
-
+fn relaxng_invalid_262_3() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11953,13 +10825,11 @@ fn relaxng_invalid_262_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_262_4(){
-
+fn relaxng_valid_262_4() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11974,13 +10844,11 @@ fn relaxng_valid_262_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_262_5(){
-
+fn relaxng_valid_262_5() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -11995,13 +10863,11 @@ fn relaxng_valid_262_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_262_6(){
-
+fn relaxng_invalid_262_6() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12016,13 +10882,11 @@ fn relaxng_invalid_262_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_262_7(){
-
+fn relaxng_invalid_262_7() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12037,13 +10901,11 @@ fn relaxng_invalid_262_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_262_8(){
-
+fn relaxng_invalid_262_8() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12058,13 +10920,11 @@ fn relaxng_invalid_262_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_263_1(){
-
+fn relaxng_valid_263_1() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12079,13 +10939,11 @@ fn relaxng_valid_263_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_263_2(){
-
+fn relaxng_valid_263_2() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12100,13 +10958,11 @@ fn relaxng_valid_263_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_263_3(){
-
+fn relaxng_invalid_263_3() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12121,13 +10977,11 @@ fn relaxng_invalid_263_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_263_4(){
-
+fn relaxng_valid_263_4() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12142,13 +10996,11 @@ fn relaxng_valid_263_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_263_5(){
-
+fn relaxng_valid_263_5() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12163,13 +11015,11 @@ fn relaxng_valid_263_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_263_6(){
-
+fn relaxng_valid_263_6() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12184,13 +11034,11 @@ fn relaxng_valid_263_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_263_7(){
-
+fn relaxng_invalid_263_7() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12205,13 +11053,11 @@ fn relaxng_invalid_263_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_263_8(){
-
+fn relaxng_valid_263_8() {
     /*
         Spec Sections: 6.2.7 6.2.8
     */
@@ -12226,13 +11072,11 @@ fn relaxng_valid_263_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_264_1(){
-
+fn relaxng_valid_264_1() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12247,13 +11091,11 @@ fn relaxng_valid_264_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_264_2(){
-
+fn relaxng_invalid_264_2() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12268,13 +11110,11 @@ fn relaxng_invalid_264_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_264_3(){
-
+fn relaxng_invalid_264_3() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12289,13 +11129,11 @@ fn relaxng_invalid_264_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_264_4(){
-
+fn relaxng_invalid_264_4() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12310,13 +11148,11 @@ fn relaxng_invalid_264_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_265_1(){
-
+fn relaxng_valid_265_1() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12331,13 +11167,11 @@ fn relaxng_valid_265_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_266_1(){
-
+fn relaxng_valid_266_1() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12352,13 +11186,11 @@ fn relaxng_valid_266_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_267_1(){
-
+fn relaxng_invalid_267_1() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12373,13 +11205,11 @@ fn relaxng_invalid_267_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_267_2(){
-
+fn relaxng_valid_267_2() {
     /*
         Spec Sections: 6.2.8
     */
@@ -12394,13 +11224,11 @@ fn relaxng_valid_267_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_268_1(){
-
+fn relaxng_valid_268_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12415,13 +11243,11 @@ fn relaxng_valid_268_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_268_2(){
-
+fn relaxng_valid_268_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12436,13 +11262,11 @@ fn relaxng_valid_268_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_268_3(){
-
+fn relaxng_valid_268_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12457,13 +11281,11 @@ fn relaxng_valid_268_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_268_4(){
-
+fn relaxng_valid_268_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12478,13 +11300,11 @@ fn relaxng_valid_268_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_268_5(){
-
+fn relaxng_invalid_268_5() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12499,13 +11319,11 @@ fn relaxng_invalid_268_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_268_6(){
-
+fn relaxng_invalid_268_6() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12520,13 +11338,11 @@ fn relaxng_invalid_268_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_269_1(){
-
+fn relaxng_valid_269_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12541,13 +11357,11 @@ fn relaxng_valid_269_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_269_2(){
-
+fn relaxng_valid_269_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12562,13 +11376,11 @@ fn relaxng_valid_269_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_269_3(){
-
+fn relaxng_valid_269_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12583,13 +11395,11 @@ fn relaxng_valid_269_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_269_4(){
-
+fn relaxng_valid_269_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12604,13 +11414,11 @@ fn relaxng_valid_269_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_269_5(){
-
+fn relaxng_invalid_269_5() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12625,13 +11433,11 @@ fn relaxng_invalid_269_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_269_6(){
-
+fn relaxng_invalid_269_6() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12646,13 +11452,11 @@ fn relaxng_invalid_269_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_270_1(){
-
+fn relaxng_valid_270_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12667,13 +11471,11 @@ fn relaxng_valid_270_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_270_2(){
-
+fn relaxng_invalid_270_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12688,13 +11490,11 @@ fn relaxng_invalid_270_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_270_3(){
-
+fn relaxng_invalid_270_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12709,13 +11509,11 @@ fn relaxng_invalid_270_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_270_4(){
-
+fn relaxng_invalid_270_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12730,13 +11528,11 @@ fn relaxng_invalid_270_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_271_1(){
-
+fn relaxng_valid_271_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12751,13 +11547,11 @@ fn relaxng_valid_271_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_271_2(){
-
+fn relaxng_invalid_271_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12772,13 +11566,11 @@ fn relaxng_invalid_271_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_271_3(){
-
+fn relaxng_invalid_271_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12793,13 +11585,11 @@ fn relaxng_invalid_271_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_271_4(){
-
+fn relaxng_invalid_271_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12814,13 +11604,11 @@ fn relaxng_invalid_271_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_272_1(){
-
+fn relaxng_valid_272_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12835,13 +11623,11 @@ fn relaxng_valid_272_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_272_2(){
-
+fn relaxng_valid_272_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12856,13 +11642,11 @@ fn relaxng_valid_272_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_272_3(){
-
+fn relaxng_valid_272_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12877,13 +11661,11 @@ fn relaxng_valid_272_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_272_4(){
-
+fn relaxng_valid_272_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12898,13 +11680,11 @@ fn relaxng_valid_272_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_272_5(){
-
+fn relaxng_invalid_272_5() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12919,13 +11699,11 @@ fn relaxng_invalid_272_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_272_6(){
-
+fn relaxng_invalid_272_6() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12940,13 +11718,11 @@ fn relaxng_invalid_272_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_273_1(){
-
+fn relaxng_valid_273_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12961,13 +11737,11 @@ fn relaxng_valid_273_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_273_2(){
-
+fn relaxng_valid_273_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -12982,13 +11756,11 @@ fn relaxng_valid_273_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_273_3(){
-
+fn relaxng_valid_273_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13003,13 +11775,11 @@ fn relaxng_valid_273_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_273_4(){
-
+fn relaxng_invalid_273_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13024,13 +11794,11 @@ fn relaxng_invalid_273_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_274_1(){
-
+fn relaxng_valid_274_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13045,13 +11813,11 @@ fn relaxng_valid_274_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_274_2(){
-
+fn relaxng_valid_274_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13066,13 +11832,11 @@ fn relaxng_valid_274_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_274_3(){
-
+fn relaxng_valid_274_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13087,13 +11851,11 @@ fn relaxng_valid_274_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_274_4(){
-
+fn relaxng_valid_274_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13108,13 +11870,11 @@ fn relaxng_valid_274_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_274_5(){
-
+fn relaxng_invalid_274_5() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13129,13 +11889,11 @@ fn relaxng_invalid_274_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_274_6(){
-
+fn relaxng_invalid_274_6() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13150,13 +11908,11 @@ fn relaxng_invalid_274_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_275_1(){
-
+fn relaxng_valid_275_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13171,13 +11927,11 @@ fn relaxng_valid_275_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_275_2(){
-
+fn relaxng_valid_275_2() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13192,13 +11946,11 @@ fn relaxng_valid_275_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_275_3(){
-
+fn relaxng_valid_275_3() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13213,13 +11965,11 @@ fn relaxng_valid_275_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_275_4(){
-
+fn relaxng_valid_275_4() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13234,13 +11984,11 @@ fn relaxng_valid_275_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_275_5(){
-
+fn relaxng_valid_275_5() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13255,13 +12003,11 @@ fn relaxng_valid_275_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_275_6(){
-
+fn relaxng_invalid_275_6() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13276,13 +12022,11 @@ fn relaxng_invalid_275_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_275_7(){
-
+fn relaxng_invalid_275_7() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13297,13 +12041,11 @@ fn relaxng_invalid_275_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_276_1(){
-
+fn relaxng_incorrect_276_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13318,13 +12060,11 @@ fn relaxng_incorrect_276_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_277_1(){
-
+fn relaxng_incorrect_277_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13339,13 +12079,11 @@ fn relaxng_incorrect_277_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_278_1(){
-
+fn relaxng_incorrect_278_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13360,13 +12098,11 @@ fn relaxng_incorrect_278_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_279_1(){
-
+fn relaxng_incorrect_279_1() {
     /*
         Spec Sections: 6.2.9
     */
@@ -13381,13 +12117,11 @@ fn relaxng_incorrect_279_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_280_1(){
-
+fn relaxng_valid_280_1() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13402,13 +12136,11 @@ fn relaxng_valid_280_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_280_2(){
-
+fn relaxng_valid_280_2() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13423,13 +12155,11 @@ fn relaxng_valid_280_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_280_3(){
-
+fn relaxng_invalid_280_3() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13444,13 +12174,11 @@ fn relaxng_invalid_280_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_281_1(){
-
+fn relaxng_valid_281_1() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13465,13 +12193,11 @@ fn relaxng_valid_281_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_281_2(){
-
+fn relaxng_valid_281_2() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13486,13 +12212,11 @@ fn relaxng_valid_281_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_281_3(){
-
+fn relaxng_invalid_281_3() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13507,13 +12231,11 @@ fn relaxng_invalid_281_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_281_4(){
-
+fn relaxng_invalid_281_4() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13528,13 +12250,11 @@ fn relaxng_invalid_281_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_282_1(){
-
+fn relaxng_valid_282_1() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13549,13 +12269,11 @@ fn relaxng_valid_282_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_282_2(){
-
+fn relaxng_valid_282_2() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13570,13 +12288,11 @@ fn relaxng_valid_282_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_282_3(){
-
+fn relaxng_valid_282_3() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13591,13 +12307,11 @@ fn relaxng_valid_282_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_282_4(){
-
+fn relaxng_invalid_282_4() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13612,13 +12326,11 @@ fn relaxng_invalid_282_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_283_1(){
-
+fn relaxng_valid_283_1() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13633,13 +12345,11 @@ fn relaxng_valid_283_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_283_2(){
-
+fn relaxng_invalid_283_2() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13654,13 +12364,11 @@ fn relaxng_invalid_283_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_283_3(){
-
+fn relaxng_invalid_283_3() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13675,13 +12383,11 @@ fn relaxng_invalid_283_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_284_1(){
-
+fn relaxng_invalid_284_1() {
     /*
         Spec Sections: 6.2.10
     */
@@ -13696,13 +12402,11 @@ fn relaxng_invalid_284_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_285_1(){
-
+fn relaxng_incorrect_285_1() {
     /*
         Spec Sections: 7.1.1
     */
@@ -13717,13 +12421,11 @@ fn relaxng_incorrect_285_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_286_1(){
-
+fn relaxng_incorrect_286_1() {
     /*
         Spec Sections: 7.1.1
     */
@@ -13738,13 +12440,11 @@ fn relaxng_incorrect_286_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_287_1(){
-
+fn relaxng_incorrect_287_1() {
     /*
         Spec Sections: 7.1.1
     */
@@ -13759,13 +12459,11 @@ fn relaxng_incorrect_287_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_288_1(){
-
+fn relaxng_incorrect_288_1() {
     /*
         Spec Sections: 7.1.1
     */
@@ -13780,13 +12478,11 @@ fn relaxng_incorrect_288_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_289_1(){
-
+fn relaxng_incorrect_289_1() {
     /*
         Spec Sections: 7.1.2
     */
@@ -13801,13 +12497,11 @@ fn relaxng_incorrect_289_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_290_1(){
-
+fn relaxng_incorrect_290_1() {
     /*
         Spec Sections: 7.1.2
     */
@@ -13822,13 +12516,11 @@ fn relaxng_incorrect_290_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_291_1(){
-
+fn relaxng_incorrect_291_1() {
     /*
         Spec Sections: 7.1.2
     */
@@ -13843,13 +12535,11 @@ fn relaxng_incorrect_291_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_292_1(){
-
+fn relaxng_incorrect_292_1() {
     /*
         Spec Sections: 7.1.2
     */
@@ -13864,13 +12554,11 @@ fn relaxng_incorrect_292_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_293_1(){
-
+fn relaxng_incorrect_293_1() {
     /*
         Spec Sections: 7.1.2
     */
@@ -13885,13 +12573,11 @@ fn relaxng_incorrect_293_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_294_1(){
-
+fn relaxng_incorrect_294_1() {
     /*
         Spec Sections: 7.1.2
     */
@@ -13906,13 +12592,11 @@ fn relaxng_incorrect_294_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_295_1(){
-
+fn relaxng_incorrect_295_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -13927,13 +12611,11 @@ fn relaxng_incorrect_295_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_296_1(){
-
+fn relaxng_incorrect_296_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -13948,13 +12630,11 @@ fn relaxng_incorrect_296_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_297_1(){
-
+fn relaxng_incorrect_297_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -13969,13 +12649,11 @@ fn relaxng_incorrect_297_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_298_1(){
-
+fn relaxng_incorrect_298_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -13990,13 +12668,11 @@ fn relaxng_incorrect_298_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_299_1(){
-
+fn relaxng_incorrect_299_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -14011,13 +12687,11 @@ fn relaxng_incorrect_299_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_300_1(){
-
+fn relaxng_incorrect_300_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -14032,13 +12706,11 @@ fn relaxng_incorrect_300_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_301_1(){
-
+fn relaxng_incorrect_301_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -14053,13 +12725,11 @@ fn relaxng_incorrect_301_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_302_1(){
-
+fn relaxng_incorrect_302_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -14074,13 +12744,11 @@ fn relaxng_incorrect_302_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_303_1(){
-
+fn relaxng_incorrect_303_1() {
     /*
         Spec Sections: 7.1.3
     */
@@ -14095,13 +12763,11 @@ fn relaxng_incorrect_303_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_304_1(){
-
+fn relaxng_incorrect_304_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14116,13 +12782,11 @@ fn relaxng_incorrect_304_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_305_1(){
-
+fn relaxng_incorrect_305_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14137,13 +12801,11 @@ fn relaxng_incorrect_305_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_306_1(){
-
+fn relaxng_incorrect_306_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14158,13 +12820,11 @@ fn relaxng_incorrect_306_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_307_1(){
-
+fn relaxng_incorrect_307_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14179,13 +12839,11 @@ fn relaxng_incorrect_307_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_308_1(){
-
+fn relaxng_incorrect_308_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14200,13 +12858,11 @@ fn relaxng_incorrect_308_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_309_1(){
-
+fn relaxng_incorrect_309_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14221,13 +12877,11 @@ fn relaxng_incorrect_309_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_310_1(){
-
+fn relaxng_incorrect_310_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14242,13 +12896,11 @@ fn relaxng_incorrect_310_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_311_1(){
-
+fn relaxng_incorrect_311_1() {
     /*
         Spec Sections: 7.1.4
     */
@@ -14263,13 +12915,11 @@ fn relaxng_incorrect_311_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_312_1(){
-
+fn relaxng_incorrect_312_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14284,13 +12934,11 @@ fn relaxng_incorrect_312_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_313_1(){
-
+fn relaxng_incorrect_313_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14305,13 +12953,11 @@ fn relaxng_incorrect_313_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_314_1(){
-
+fn relaxng_incorrect_314_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14326,13 +12972,11 @@ fn relaxng_incorrect_314_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_315_1(){
-
+fn relaxng_incorrect_315_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14347,13 +12991,11 @@ fn relaxng_incorrect_315_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_316_1(){
-
+fn relaxng_incorrect_316_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14368,13 +13010,11 @@ fn relaxng_incorrect_316_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_317_1(){
-
+fn relaxng_incorrect_317_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14389,13 +13029,11 @@ fn relaxng_incorrect_317_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_318_1(){
-
+fn relaxng_incorrect_318_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14410,13 +13048,11 @@ fn relaxng_incorrect_318_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_319_1(){
-
+fn relaxng_incorrect_319_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14431,13 +13067,11 @@ fn relaxng_incorrect_319_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_320_1(){
-
+fn relaxng_incorrect_320_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14452,13 +13086,11 @@ fn relaxng_incorrect_320_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_321_1(){
-
+fn relaxng_incorrect_321_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14473,13 +13105,11 @@ fn relaxng_incorrect_321_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_322_1(){
-
+fn relaxng_incorrect_322_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14494,13 +13124,11 @@ fn relaxng_incorrect_322_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_323_1(){
-
+fn relaxng_incorrect_323_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14515,13 +13143,11 @@ fn relaxng_incorrect_323_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_324_1(){
-
+fn relaxng_incorrect_324_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14536,13 +13162,11 @@ fn relaxng_incorrect_324_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_325_1(){
-
+fn relaxng_incorrect_325_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14557,13 +13181,11 @@ fn relaxng_incorrect_325_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_326_1(){
-
+fn relaxng_incorrect_326_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14578,13 +13200,11 @@ fn relaxng_incorrect_326_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_327_1(){
-
+fn relaxng_incorrect_327_1() {
     /*
         Spec Sections: 7.1.5
     */
@@ -14599,13 +13219,11 @@ fn relaxng_incorrect_327_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_328_1(){
-
+fn relaxng_valid_328_1() {
     /*
         Spec Sections: 7.1.5 7 4.18
         Description: Tests that constraints are post-normalization
@@ -14621,13 +13239,11 @@ fn relaxng_valid_328_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_329_1(){
-
+fn relaxng_incorrect_329_1() {
     /*
         Spec Sections: 7.1.5 7 4.18
     */
@@ -14642,13 +13258,11 @@ fn relaxng_incorrect_329_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_330_1(){
-
+fn relaxng_valid_330_1() {
     /*
         Spec Sections: 7.1.1 7 4.20
     */
@@ -14663,18 +13277,16 @@ fn relaxng_valid_330_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_331_1(){
-
+fn relaxng_valid_331_1() {
     /*
-        Spec Sections: 7.1.1 7 4.20
-        Description: The nested attribute element is normalized out because
-of the not allowed.
-    */
+            Spec Sections: 7.1.1 7 4.20
+            Description: The nested attribute element is normalized out because
+    of the not allowed.
+        */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/331/1.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -14686,13 +13298,11 @@ of the not allowed.
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_332_1(){
-
+fn relaxng_valid_332_1() {
     /*
         Spec Sections: 7.1.2 7 4.12
         Description: The group element is normalized out.
@@ -14708,13 +13318,11 @@ fn relaxng_valid_332_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_333_1(){
-
+fn relaxng_valid_333_1() {
     /*
         Spec Sections: 7.1.2 7 4.21
         Description: The group element is normalized out.
@@ -14730,13 +13338,11 @@ fn relaxng_valid_333_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_334_1(){
-
+fn relaxng_valid_334_1() {
     /*
         Spec Sections: 7.1.2 7 4.20
         Description: The attribute elements are all normalized out.
@@ -14752,13 +13358,11 @@ fn relaxng_valid_334_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_335_1(){
-
+fn relaxng_incorrect_335_1() {
     /*
         Spec Sections: 7.2
     */
@@ -14773,18 +13377,16 @@ fn relaxng_incorrect_335_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_336_1(){
-
+fn relaxng_valid_336_1() {
     /*
-        Spec Sections: 7.2 4.20
-        Description: Checks that normalization of notAllowed happens
-before string sequence checking.
-    */
+            Spec Sections: 7.2 4.20
+            Description: Checks that normalization of notAllowed happens
+    before string sequence checking.
+        */
 
     let docfile = fs::read_to_string("tests/conformance/relaxng/jamesclark/336/1.v.xml").unwrap();
     let doc = Rc::new(SmiteNode::new());
@@ -14796,13 +13398,11 @@ before string sequence checking.
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_337_1(){
-
+fn relaxng_incorrect_337_1() {
     /*
         Spec Sections: 4.20 7.2
         Description: notAllowed in an element is not normalized
@@ -14818,13 +13418,11 @@ fn relaxng_incorrect_337_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_338_1(){
-
+fn relaxng_incorrect_338_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14839,13 +13437,11 @@ fn relaxng_incorrect_338_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_339_1(){
-
+fn relaxng_incorrect_339_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14860,13 +13456,11 @@ fn relaxng_incorrect_339_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_340_1(){
-
+fn relaxng_valid_340_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14881,13 +13475,11 @@ fn relaxng_valid_340_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_341_1(){
-
+fn relaxng_incorrect_341_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14902,13 +13494,11 @@ fn relaxng_incorrect_341_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_342_1(){
-
+fn relaxng_incorrect_342_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14923,13 +13513,11 @@ fn relaxng_incorrect_342_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_343_1(){
-
+fn relaxng_incorrect_343_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14944,13 +13532,11 @@ fn relaxng_incorrect_343_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_344_1(){
-
+fn relaxng_incorrect_344_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14965,13 +13551,11 @@ fn relaxng_incorrect_344_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_345_1(){
-
+fn relaxng_valid_345_1() {
     /*
         Spec Sections: 7.3
     */
@@ -14986,13 +13570,11 @@ fn relaxng_valid_345_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_345_2(){
-
+fn relaxng_valid_345_2() {
     /*
         Spec Sections: 7.3
     */
@@ -15007,13 +13589,11 @@ fn relaxng_valid_345_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_345_3(){
-
+fn relaxng_invalid_345_3() {
     /*
         Spec Sections: 7.3
     */
@@ -15028,13 +13608,11 @@ fn relaxng_invalid_345_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_345_4(){
-
+fn relaxng_invalid_345_4() {
     /*
         Spec Sections: 7.3
     */
@@ -15049,13 +13627,11 @@ fn relaxng_invalid_345_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_345_5(){
-
+fn relaxng_invalid_345_5() {
     /*
         Spec Sections: 7.3
     */
@@ -15070,13 +13646,11 @@ fn relaxng_invalid_345_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_346_1(){
-
+fn relaxng_incorrect_346_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15091,13 +13665,11 @@ fn relaxng_incorrect_346_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_347_1(){
-
+fn relaxng_incorrect_347_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15112,13 +13684,11 @@ fn relaxng_incorrect_347_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_348_1(){
-
+fn relaxng_incorrect_348_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15133,13 +13703,11 @@ fn relaxng_incorrect_348_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_349_1(){
-
+fn relaxng_incorrect_349_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15154,13 +13722,11 @@ fn relaxng_incorrect_349_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_350_1(){
-
+fn relaxng_incorrect_350_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15175,13 +13741,11 @@ fn relaxng_incorrect_350_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_351_1(){
-
+fn relaxng_incorrect_351_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15196,13 +13760,11 @@ fn relaxng_incorrect_351_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_352_1(){
-
+fn relaxng_incorrect_352_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15217,13 +13779,11 @@ fn relaxng_incorrect_352_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_353_1(){
-
+fn relaxng_valid_353_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15238,13 +13798,11 @@ fn relaxng_valid_353_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_353_2(){
-
+fn relaxng_invalid_353_2() {
     /*
         Spec Sections: 7.3
     */
@@ -15259,13 +13817,11 @@ fn relaxng_invalid_353_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_353_3(){
-
+fn relaxng_valid_353_3() {
     /*
         Spec Sections: 7.3
     */
@@ -15280,13 +13836,11 @@ fn relaxng_valid_353_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_354_1(){
-
+fn relaxng_valid_354_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15301,13 +13855,11 @@ fn relaxng_valid_354_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_355_1(){
-
+fn relaxng_valid_355_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15322,13 +13874,11 @@ fn relaxng_valid_355_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_356_1(){
-
+fn relaxng_incorrect_356_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15343,13 +13893,11 @@ fn relaxng_incorrect_356_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_357_1(){
-
+fn relaxng_incorrect_357_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15364,13 +13912,11 @@ fn relaxng_incorrect_357_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_358_1(){
-
+fn relaxng_incorrect_358_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15385,13 +13931,11 @@ fn relaxng_incorrect_358_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_359_1(){
-
+fn relaxng_incorrect_359_1() {
     /*
         Spec Sections: 7.3
     */
@@ -15406,13 +13950,11 @@ fn relaxng_incorrect_359_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_360_1(){
-
+fn relaxng_incorrect_360_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15427,13 +13969,11 @@ fn relaxng_incorrect_360_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_361_1(){
-
+fn relaxng_incorrect_361_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15448,13 +13988,11 @@ fn relaxng_incorrect_361_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_362_1(){
-
+fn relaxng_incorrect_362_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15469,13 +14007,11 @@ fn relaxng_incorrect_362_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_363_1(){
-
+fn relaxng_incorrect_363_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15490,13 +14026,11 @@ fn relaxng_incorrect_363_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_364_1(){
-
+fn relaxng_incorrect_364_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15511,13 +14045,11 @@ fn relaxng_incorrect_364_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_365_1(){
-
+fn relaxng_incorrect_365_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15532,13 +14064,11 @@ fn relaxng_incorrect_365_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_366_1(){
-
+fn relaxng_incorrect_366_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15553,13 +14083,11 @@ fn relaxng_incorrect_366_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_367_1(){
-
+fn relaxng_incorrect_367_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15574,13 +14102,11 @@ fn relaxng_incorrect_367_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_368_1(){
-
+fn relaxng_valid_368_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15595,13 +14121,11 @@ fn relaxng_valid_368_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_369_1(){
-
+fn relaxng_valid_369_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15616,13 +14140,11 @@ fn relaxng_valid_369_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_370_1(){
-
+fn relaxng_incorrect_370_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15637,13 +14159,11 @@ fn relaxng_incorrect_370_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_incorrect_371_1(){
-
+fn relaxng_incorrect_371_1() {
     /*
         Spec Sections: 7.4
     */
@@ -15658,13 +14178,11 @@ fn relaxng_incorrect_371_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_372_1(){
-
+fn relaxng_valid_372_1() {
     /*
         Description: Regressions
     */
@@ -15679,13 +14197,11 @@ fn relaxng_valid_372_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_373_1(){
-
+fn relaxng_invalid_373_1() {
     /*
         Description: Regressions
     */
@@ -15700,13 +14216,11 @@ fn relaxng_invalid_373_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_374_1(){
-
+fn relaxng_valid_374_1() {
     /*
         Description: Validation error reporting
     */
@@ -15721,13 +14235,11 @@ fn relaxng_valid_374_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_2(){
-
+fn relaxng_invalid_374_2() {
     /*
         Description: Validation error reporting
     */
@@ -15742,13 +14254,11 @@ fn relaxng_invalid_374_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_3(){
-
+fn relaxng_invalid_374_3() {
     /*
         Description: Validation error reporting
     */
@@ -15763,13 +14273,11 @@ fn relaxng_invalid_374_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_4(){
-
+fn relaxng_invalid_374_4() {
     /*
         Description: Validation error reporting
     */
@@ -15784,13 +14292,11 @@ fn relaxng_invalid_374_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_5(){
-
+fn relaxng_invalid_374_5() {
     /*
         Description: Validation error reporting
     */
@@ -15805,13 +14311,11 @@ fn relaxng_invalid_374_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_6(){
-
+fn relaxng_invalid_374_6() {
     /*
         Description: Validation error reporting
     */
@@ -15826,13 +14330,11 @@ fn relaxng_invalid_374_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_7(){
-
+fn relaxng_invalid_374_7() {
     /*
         Description: Validation error reporting
     */
@@ -15847,13 +14349,11 @@ fn relaxng_invalid_374_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_8(){
-
+fn relaxng_invalid_374_8() {
     /*
         Description: Validation error reporting
     */
@@ -15868,13 +14368,11 @@ fn relaxng_invalid_374_8(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_374_9(){
-
+fn relaxng_invalid_374_9() {
     /*
         Description: Validation error reporting
     */
@@ -15889,13 +14387,11 @@ fn relaxng_invalid_374_9(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_375_1(){
-
+fn relaxng_valid_375_1() {
     /*
         Description: Validation error reporting
     */
@@ -15910,13 +14406,11 @@ fn relaxng_valid_375_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_375_2(){
-
+fn relaxng_invalid_375_2() {
     /*
         Description: Validation error reporting
     */
@@ -15931,13 +14425,11 @@ fn relaxng_invalid_375_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_376_1(){
-
+fn relaxng_valid_376_1() {
     /*
         Description: Validation error reporting
     */
@@ -15952,13 +14444,11 @@ fn relaxng_valid_376_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_376_2(){
-
+fn relaxng_valid_376_2() {
     /*
         Description: Validation error reporting
     */
@@ -15973,13 +14463,11 @@ fn relaxng_valid_376_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_376_3(){
-
+fn relaxng_invalid_376_3() {
     /*
         Description: Validation error reporting
     */
@@ -15994,13 +14482,11 @@ fn relaxng_invalid_376_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_377_1(){
-
+fn relaxng_valid_377_1() {
     /*
         Description: Validation error reporting
     */
@@ -16015,13 +14501,11 @@ fn relaxng_valid_377_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_377_2(){
-
+fn relaxng_invalid_377_2() {
     /*
         Description: Validation error reporting
     */
@@ -16036,13 +14520,11 @@ fn relaxng_invalid_377_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_378_1(){
-
+fn relaxng_valid_378_1() {
     /*
         Description: Datatype problems
     */
@@ -16057,13 +14539,11 @@ fn relaxng_valid_378_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_378_2(){
-
+fn relaxng_invalid_378_2() {
     /*
         Description: Datatype problems
     */
@@ -16078,13 +14558,11 @@ fn relaxng_invalid_378_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_378_3(){
-
+fn relaxng_invalid_378_3() {
     /*
         Description: Datatype problems
     */
@@ -16099,13 +14577,11 @@ fn relaxng_invalid_378_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_378_4(){
-
+fn relaxng_invalid_378_4() {
     /*
         Description: Datatype problems
     */
@@ -16120,13 +14596,11 @@ fn relaxng_invalid_378_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_379_1(){
-
+fn relaxng_valid_379_1() {
     /*
         Description: Datatype problems
     */
@@ -16141,13 +14615,11 @@ fn relaxng_valid_379_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_379_2(){
-
+fn relaxng_valid_379_2() {
     /*
         Description: Datatype problems
     */
@@ -16162,13 +14634,11 @@ fn relaxng_valid_379_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_379_3(){
-
+fn relaxng_invalid_379_3() {
     /*
         Description: Datatype problems
     */
@@ -16183,13 +14653,11 @@ fn relaxng_invalid_379_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_379_4(){
-
+fn relaxng_invalid_379_4() {
     /*
         Description: Datatype problems
     */
@@ -16204,13 +14672,11 @@ fn relaxng_invalid_379_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_379_5(){
-
+fn relaxng_invalid_379_5() {
     /*
         Description: Datatype problems
     */
@@ -16225,13 +14691,11 @@ fn relaxng_invalid_379_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_380_1(){
-
+fn relaxng_valid_380_1() {
     /*
         Description: Datatype problems
     */
@@ -16246,13 +14710,11 @@ fn relaxng_valid_380_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_380_2(){
-
+fn relaxng_valid_380_2() {
     /*
         Description: Datatype problems
     */
@@ -16267,13 +14729,11 @@ fn relaxng_valid_380_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_380_3(){
-
+fn relaxng_invalid_380_3() {
     /*
         Description: Datatype problems
     */
@@ -16288,13 +14748,11 @@ fn relaxng_invalid_380_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_380_4(){
-
+fn relaxng_invalid_380_4() {
     /*
         Description: Datatype problems
     */
@@ -16309,13 +14767,11 @@ fn relaxng_invalid_380_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_380_5(){
-
+fn relaxng_invalid_380_5() {
     /*
         Description: Datatype problems
     */
@@ -16330,13 +14786,11 @@ fn relaxng_invalid_380_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_381_1(){
-
+fn relaxng_valid_381_1() {
     /*
         Description: Datatype error reporting
     */
@@ -16351,13 +14805,11 @@ fn relaxng_valid_381_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_381_2(){
-
+fn relaxng_invalid_381_2() {
     /*
         Description: Datatype error reporting
     */
@@ -16372,13 +14824,11 @@ fn relaxng_invalid_381_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_381_3(){
-
+fn relaxng_invalid_381_3() {
     /*
         Description: Datatype error reporting
     */
@@ -16393,13 +14843,11 @@ fn relaxng_invalid_381_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_382_1(){
-
+fn relaxng_valid_382_1() {
     /*
         Description: Datatype error reporting
     */
@@ -16414,13 +14862,11 @@ fn relaxng_valid_382_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_382_2(){
-
+fn relaxng_invalid_382_2() {
     /*
         Description: Datatype error reporting
     */
@@ -16435,13 +14881,11 @@ fn relaxng_invalid_382_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_382_3(){
-
+fn relaxng_invalid_382_3() {
     /*
         Description: Datatype error reporting
     */
@@ -16456,13 +14900,11 @@ fn relaxng_invalid_382_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_382_4(){
-
+fn relaxng_invalid_382_4() {
     /*
         Description: Datatype error reporting
     */
@@ -16477,13 +14919,11 @@ fn relaxng_invalid_382_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_383_1(){
-
+fn relaxng_valid_383_1() {
     /*
         Description: Datatype error reporting
     */
@@ -16498,13 +14938,11 @@ fn relaxng_valid_383_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_383_2(){
-
+fn relaxng_valid_383_2() {
     /*
         Description: Datatype error reporting
     */
@@ -16519,13 +14957,11 @@ fn relaxng_valid_383_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_383_3(){
-
+fn relaxng_invalid_383_3() {
     /*
         Description: Datatype error reporting
     */
@@ -16540,13 +14976,11 @@ fn relaxng_invalid_383_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_383_4(){
-
+fn relaxng_invalid_383_4() {
     /*
         Description: Datatype error reporting
     */
@@ -16561,13 +14995,11 @@ fn relaxng_invalid_383_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_383_5(){
-
+fn relaxng_invalid_383_5() {
     /*
         Description: Datatype error reporting
     */
@@ -16582,13 +15014,11 @@ fn relaxng_invalid_383_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_384_1(){
-
+fn relaxng_valid_384_1() {
     /*
         Description: Datatype error reporting
     */
@@ -16603,13 +15033,11 @@ fn relaxng_valid_384_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_384_2(){
-
+fn relaxng_invalid_384_2() {
     /*
         Description: Datatype error reporting
     */
@@ -16624,13 +15052,11 @@ fn relaxng_invalid_384_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_384_3(){
-
+fn relaxng_valid_384_3() {
     /*
         Description: Datatype error reporting
     */
@@ -16645,13 +15071,11 @@ fn relaxng_valid_384_3(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_384_4(){
-
+fn relaxng_invalid_384_4() {
     /*
         Description: Datatype error reporting
     */
@@ -16666,13 +15090,11 @@ fn relaxng_invalid_384_4(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_384_5(){
-
+fn relaxng_invalid_384_5() {
     /*
         Description: Datatype error reporting
     */
@@ -16687,13 +15109,11 @@ fn relaxng_invalid_384_5(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_384_6(){
-
+fn relaxng_invalid_384_6() {
     /*
         Description: Datatype error reporting
     */
@@ -16708,13 +15128,11 @@ fn relaxng_invalid_384_6(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_384_7(){
-
+fn relaxng_invalid_384_7() {
     /*
         Description: Datatype error reporting
     */
@@ -16729,13 +15147,11 @@ fn relaxng_invalid_384_7(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_valid_385_1(){
-
+fn relaxng_valid_385_1() {
     /*
         Description: Datatype error reporting
     */
@@ -16750,13 +15166,11 @@ fn relaxng_valid_385_1(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
-
 }
 
 #[test]
 #[ignore]
-fn relaxng_invalid_385_2(){
-
+fn relaxng_invalid_385_2() {
     /*
         Description: Datatype error reporting
     */
@@ -16771,6 +15185,4 @@ fn relaxng_invalid_385_2(){
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_err());
-
 }
-

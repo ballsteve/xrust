@@ -4,11 +4,11 @@ use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 
+use crate::qname::QualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{Transform, Order, do_sort};
+use crate::transform::{do_sort, Order, Transform};
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence, SequenceTrait};
-use crate::qname::QualifiedName;
 
 #[derive(Clone)]
 pub struct Template<N: Node> {
@@ -99,44 +99,43 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     // Each iteration becomes an item in the result sequence.
     let mut seq = ctxt.dispatch(stctxt, s)?;
     do_sort(&mut seq, o, ctxt, stctxt)?;
-    seq.iter()
-        .try_fold(vec![], |mut result, i| {
-            let templates = ctxt.find_templates(stctxt, i, m)?;
-            // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
-            let matching = if templates.len() > 1 {
-                if templates[0].priority == templates[1].priority
-                    && templates[0].import.len() == templates[1].import.len()
-                {
-                    let mut candidates: Vec<Rc<Template<N>>> = templates
-                        .iter()
-                        .take_while(|t| {
-                            t.priority == templates[0].priority
-                                && t.import.len() == templates[0].import.len()
-                        })
-                        .cloned()
-                        .collect();
-                    candidates.sort_unstable_by(|a, b| {
-                        a.document_order.map_or(Ordering::Greater, |v| {
-                            b.document_order.map_or(Ordering::Less, |u| v.cmp(&u))
-                        })
-                    });
-                    candidates.last().unwrap().clone()
-                } else {
-                    templates[0].clone()
-                }
+    seq.iter().try_fold(vec![], |mut result, i| {
+        let templates = ctxt.find_templates(stctxt, i, m)?;
+        // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
+        let matching = if templates.len() > 1 {
+            if templates[0].priority == templates[1].priority
+                && templates[0].import.len() == templates[1].import.len()
+            {
+                let mut candidates: Vec<Rc<Template<N>>> = templates
+                    .iter()
+                    .take_while(|t| {
+                        t.priority == templates[0].priority
+                            && t.import.len() == templates[0].import.len()
+                    })
+                    .cloned()
+                    .collect();
+                candidates.sort_unstable_by(|a, b| {
+                    a.document_order.map_or(Ordering::Greater, |v| {
+                        b.document_order.map_or(Ordering::Less, |u| v.cmp(&u))
+                    })
+                });
+                candidates.last().unwrap().clone()
             } else {
                 templates[0].clone()
-            };
-            // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
-            let mut u = ContextBuilder::from(ctxt)
-                .context(vec![i.clone()])
-                .previous_context(Some(i.clone()))
-                .current_templates(templates)
-                .build()
-                .dispatch(stctxt, &matching.body)?;
-            result.append(&mut u);
-            Ok(result)
-        })
+            }
+        } else {
+            templates[0].clone()
+        };
+        // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
+        let mut u = ContextBuilder::from(ctxt)
+            .context(vec![i.clone()])
+            .previous_context(Some(i.clone()))
+            .current_templates(templates)
+            .build()
+            .dispatch(stctxt, &matching.body)?;
+        result.append(&mut u);
+        Ok(result)
+    })
 }
 
 /// Apply template with a higher import precedence.

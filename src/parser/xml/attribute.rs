@@ -13,10 +13,10 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::QualifiedName;
 use crate::value::Value;
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::qname::QualifiedName;
 
 pub(crate) fn attributes<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
@@ -109,16 +109,17 @@ pub(crate) fn attributes<N: Node>(
             let mut resnodes = vec![];
             let mut resnodenames = vec![];
             for (mut qn, attrval) in nodes {
-                if qn.get_prefix() != Some("xmlns".to_string())
-                    && qn.get_localname() != *"xmlns"
-                {
+                if qn.get_prefix() != Some("xmlns".to_string()) && qn.get_localname() != *"xmlns" {
                     if let Some(ns) = qn.get_prefix() {
                         if ns == *"xml" {
-                            let _ = qn.resolve(&vec!(HashMap::from([("xml".to_string(),"http://www.w3.org/XML/1998/namespace".to_string())])));
+                            let _ = qn.resolve(&vec![HashMap::from([(
+                                "xml".to_string(),
+                                "http://www.w3.org/XML/1998/namespace".to_string(),
+                            )])]);
                         } else {
                             let _ = qn.resolve(&state1.namespace);
                             if qn.get_nsuri() == None {
-                                return Err(ParseError::MissingNameSpace)
+                                return Err(ParseError::MissingNameSpace);
                             }
                         }
                     }
@@ -132,13 +133,10 @@ pub(crate) fn attributes<N: Node>(
                     resnodes.push(newatt);
 
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
-                    if resnodenames
-                        .contains(&(qn.get_nsuri(), qn.get_localname()))
-                    {
+                    if resnodenames.contains(&(qn.get_nsuri(), qn.get_localname())) {
                         return Err(ParseError::NotWellFormed(String::from("missing namespace")));
                     } else {
                         resnodenames.push((qn.get_nsuri(), qn.get_localname()));
-
                     }
                 }
             }
@@ -148,7 +146,8 @@ pub(crate) fn attributes<N: Node>(
     }
 }
 // Attribute ::= Name '=' AttValue
-fn attribute<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, String)), ParseError> {
+fn attribute<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, String)), ParseError> {
     move |(input, state)| match tuple6(
         whitespace1(),
         qualname(),
@@ -158,10 +157,7 @@ fn attribute<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Qua
         attribute_value(),
     )((input, state))
     {
-        Ok(((input1, state1), (_, n, _, _, _, s))) => Ok((
-            (input1, state1.clone()),
-            (n, s)
-        )),
+        Ok(((input1, state1), (_, n, _, _, _, s))) => Ok(((input1, state1.clone()), (n, s))),
         Err(e) => Err(e),
     }
 }

@@ -5,7 +5,7 @@ use std::rc::Rc;
 
 use crate::item::{Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{Grouping, Transform, Order, do_sort};
+use crate::transform::{do_sort, Grouping, Order, Transform};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -60,7 +60,7 @@ pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     g: &Option<Grouping<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
-    o: &Vec<(Order, Transform<N>)>
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     match g {
         None => {
@@ -91,7 +91,7 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     by: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
-    o: &Vec<(Order, Transform<N>)>
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     // Each 'by' expression is evaluated to a string key and stored in the hashmap
     // TODO: this implementation is only supporting a single key
@@ -116,7 +116,8 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     if !o.is_empty() {
         // Build a vector of the groups, and then sort the vector
         // TODO: support multiple sort keys
-        let mut gr_vec: Vec<(String, Sequence<N>)> = groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        let mut gr_vec: Vec<(String, Sequence<N>)> =
+            groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
         gr_vec.sort_by_cached_key(|(k, v)| {
             // TODO: Don't panic
             let key_seq = ContextBuilder::from(ctxt)
@@ -124,7 +125,8 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                 .current_grouping_key(Rc::new(Value::from(k.clone())))
                 .current_group(v.clone())
                 .build()
-                .dispatch(stctxt, &o[0].1).expect("unable to determine key value");
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
             // Assume string data type for now
             // TODO: support number data type
             // TODO: support all data types
@@ -166,7 +168,7 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     adj: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
-    o: &Vec<(Order, Transform<N>)>
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     // TODO: this implementation is only supporting a single key
     let t = adj[0].clone();
@@ -217,7 +219,8 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     if !o.is_empty() {
         // Build a vector of the groups, and then sort the vector
         // TODO: support multiple sort keys
-        let mut gr_vec: Vec<(String, Sequence<N>)> = groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        let mut gr_vec: Vec<(String, Sequence<N>)> =
+            groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
         gr_vec.sort_by_cached_key(|(k, v)| {
             // TODO: Don't panic
             let key_seq = ContextBuilder::from(ctxt)
@@ -225,7 +228,8 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
                 .current_grouping_key(Rc::new(Value::from(k.clone())))
                 .current_group(v.clone())
                 .build()
-                .dispatch(stctxt, &o[0].1).expect("unable to determine key value");
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
             // Assume string data type for now
             // TODO: support number data type
             // TODO: support all data types
@@ -267,7 +271,7 @@ fn group_starting_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
-    _o: &Vec<(Order, Transform<N>)>
+    _o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,
@@ -282,7 +286,7 @@ pub fn group_ending_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
-    _o: &Vec<(Order, Transform<N>)>
+    _o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,

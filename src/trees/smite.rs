@@ -229,10 +229,9 @@ impl ItemNode for RNode {
     }
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self> {
         match &self.0 {
-            NodeInner::Element(_, _, att, _) => att
-                .borrow()
-                .get(a)
-                .map_or(None, |v| Some(v.clone())),
+            NodeInner::Element(_, _, att, _) => {
+                att.borrow().get(a).map_or(None, |v| Some(v.clone()))
+            }
             _ => None,
         }
     }

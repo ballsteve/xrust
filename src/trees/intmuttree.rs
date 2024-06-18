@@ -435,9 +435,7 @@ impl ItemNode for RNode {
         self.attributes
             .borrow()
             .get(a)
-            .map_or(None, |v| {
-                Some(v.clone())
-            })
+            .map_or(None, |v| Some(v.clone()))
     }
 
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
