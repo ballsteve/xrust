@@ -7,12 +7,10 @@ use xrust::parser::xpath::parse;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::ActualParameters;
-use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
+use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
-
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
     let mut stctxt = StaticContextBuilder::new()
@@ -1212,6 +1210,30 @@ where
             pkg_version_patch!()
         )
     );
+    Ok(())
+}
+
+pub fn generic_document_1<N: Node, G, H, J>(make_empty_doc: G, make_doc: H, make_from_str: J) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+        J: Fn(&str) -> Result<N, Error>,
+{
+    let mut msgs: Vec<String> = vec![];
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|m| {msgs.push(m.to_string()); Ok(())})
+        .fetcher(|_| Ok(String::from("<Test>external document</Test>")))
+        .parser(|s| make_from_str(s))
+        .build();
+    let rd = make_empty_doc();
+    let seq: Sequence<N> = ContextBuilder::new()
+        .context(vec![make_doc()])
+        .result_document(rd)
+        .build()
+        .dispatch(&mut stctxt, &parse("document('urn:example.org/test')").expect("unable to parse XPath expression"))
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq.to_string(), "external document");
     Ok(())
 }
 

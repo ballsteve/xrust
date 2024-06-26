@@ -2,12 +2,11 @@
 
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
-use url::Url;
 use xrust::item::{Item, Node, SequenceTrait};
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
-use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
+use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
 use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
@@ -4872,7 +4871,7 @@ where
             Transform::LocalName(None),
         ]),
         Transform::Compose(vec![
-            Transform::Document(vec![Item::Value(Rc::new(Value::from("urn:test")))], None),
+            Transform::Document(Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("urn:test"))))), None),
             Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),

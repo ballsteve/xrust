@@ -4,7 +4,7 @@ use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
 use std::collections::HashMap;
 use url::Url;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
-use xrust::transform::context::{StaticContext, StaticContextBuilder};
+use xrust::transform::context::StaticContextBuilder;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
@@ -786,6 +786,7 @@ where
         ))
     }
 }
+
 pub fn generic_include<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,
@@ -831,6 +832,50 @@ where
     let result = ctxt.evaluate(&mut stctxt)?;
     if result.to_string()
         == "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour"
+    {
+        Ok(())
+    } else {
+        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+    }
+}
+
+pub fn generic_document_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn(&str) -> Result<N, Error>,
+        H: Fn() -> Result<N, Error>,
+        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let srcdoc =
+        parse_from_str("<Test><internal>on the inside</internal></Test>")?;
+    let (styledoc, stylens) = parse_from_str_with_ns(
+        r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/>|<xsl:apply-templates select='document("urn::test.org/test")'/></xsl:template>
+  <xsl:template match='child::internal'>found internal element</xsl:template>
+  <xsl:template match='child::external'>found external element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>"##,
+    )?;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_url| Ok(String::from("<Outside><external>from outside</external></Outside>")))
+        .parser(|s| parse_from_str(s))
+        .build();
+    let mut ctxt = from_document(
+        styledoc,
+        stylens,
+        None,
+        |s| parse_from_str(s),
+        |_| Ok(String::new()),
+    )?;
+    ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
+    ctxt.result_document(make_doc()?);
+    let result = ctxt.evaluate(&mut stctxt)?;
+    if result.to_string()
+        == "found internal element|found external element"
     {
         Ok(())
     } else {

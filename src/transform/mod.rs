@@ -245,7 +245,7 @@ pub enum Transform<N: Node> {
     SystemProperty(Box<Transform<N>>),
     AvailableSystemProperties,
     /// Read an external document
-    Document(Sequence<N>, Option<N>),
+    Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list.
     Invoke(QualifiedName, ActualParameters<N>),

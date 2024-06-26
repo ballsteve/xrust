@@ -440,6 +440,24 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         )
                     }
                 }
+                "document" => {
+                    match a.len() {
+                        0 => Transform::Document(Box::new(Transform::Empty), None),
+                        1 => {
+                            let u = a.pop().unwrap();
+                            Transform::Document(Box::new(u), None)
+                        },
+                        2 => {
+                            let b = a.pop().unwrap();
+                            let u = a.pop().unwrap();
+                            Transform::Document(Box::new(u), Some(Box::new(b)))
+                        },
+                        _ => Transform::Error(
+                            ErrorKind::ParseError,
+                            String::from("wrong number of arguments"),
+                        )
+                    }
+                }
                 _ => Transform::Error(
                     ErrorKind::ParseError,
                     format!("undefined function \"{}\"", qn.to_string()),

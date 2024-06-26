@@ -223,21 +223,22 @@ pub fn document<
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
-    _ctxt: &Context<N>,
+    ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    uris: &Sequence<N>,
-    _base: &Option<N>,
+    uris: &Box<Transform<N>>,
+    _base: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
+    let u_list = ctxt.dispatch(stctxt, uris)?;
     if let Some(h) = &mut stctxt.fetcher {
         if let Some(g) = &mut stctxt.parser {
-            uris.iter().try_fold(vec![], |mut acc, u| {
+            u_list.iter().try_fold(vec![], |mut acc, u| {
                 // TODO: resolve relative URI against base URI
                 let url = Url::parse(u.to_string().as_str())
                     .map_err(|_| Error::new(ErrorKind::TypeError, "unable to parse URL"))?;
                 let docdata = h(&url)?;
-                let x = g(docdata.as_str())?;
-                acc.push(Item::Node(x));
-                //acc.push(Item::Node(g(docdata.as_str())?));
+                //let x = g(docdata.as_str())?;
+                //acc.push(Item::Node(x));
+                acc.push(Item::Node(g(docdata.as_str())?));
                 Ok(acc)
             })
         } else {
