@@ -3,6 +3,7 @@
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
+use url::Url;
 
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
@@ -88,9 +89,14 @@ impl<N: Node> Debug for Template<N> {
 }
 
 /// Apply templates to the select expression.
-pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn apply_templates<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     m: &Option<QualifiedName>,
     o: &Vec<(Order, Transform<N>)>, // sort keys
@@ -139,9 +145,14 @@ pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Apply template with a higher import precedence.
-pub(crate) fn apply_imports<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn apply_imports<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
@@ -165,9 +176,14 @@ pub(crate) fn apply_imports<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Apply the next template that matches.
-pub(crate) fn next_match<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn next_match<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.current_templates.len() > 2 {
         ContextBuilder::from(ctxt)

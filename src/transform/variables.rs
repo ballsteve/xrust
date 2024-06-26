@@ -4,12 +4,18 @@ use crate::item::{Node, Sequence};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::{Error, ErrorKind};
+use url::Url;
 
 /// Declare a variable in a new scope and then evaluate the given transformation.
 /// Returns the result of the transformation.
-pub fn declare_variable<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn declare_variable<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     name: String,
     value: &Transform<N>,
     f: &Transform<N>,

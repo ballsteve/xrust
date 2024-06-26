@@ -1,19 +1,17 @@
-use std::collections::HashMap;
-use crate::{Node};
 use crate::trees::smite::RNode;
-
+use crate::Node;
+use std::collections::HashMap;
 
 pub(crate) type Param = (String, String);
 
-
 #[derive(Debug)]
-pub(crate) enum PatternError<'a>{
+pub(crate) enum PatternError<'a> {
     NotRelaxNG,
     MissingName,
-    Other(&'a str)
+    Other(&'a str),
 }
 
-pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>), PatternError> {
+pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String, RNode>), PatternError> {
     //TODO implement
 
     let mut ci = schemadoc.child_iter();

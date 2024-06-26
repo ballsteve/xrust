@@ -8,17 +8,14 @@ NB. This module, by default, does not resolve include or import statements. See 
 
 ```rust
 use std::rc::Rc;
-use xrust::xdmerror::Error;
+use xrust::xdmerror::{Error, ErrorKind};
 use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
-use xrust::transform::context::StaticContext;
+use xrust::transform::context::{StaticContext, StaticContextBuilder};
 use xrust::trees::smite::{RNode, Node as SmiteNode};
 use xrust::parser::xml::parse;
 use xrust::xslt::from_document;
-
-// This is for the callback in the static context
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 // A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
@@ -41,6 +38,13 @@ let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL
 </xsl:stylesheet>")
     .expect("unable to parse stylesheet");
 
+// Create a static context (with dummy callbacks)
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .build();
+
 // Compile the stylesheet
 let mut ctxt = from_document(
     style,
@@ -57,7 +61,7 @@ ctxt.result_document(Rc::new(SmiteNode::new()));
 
 // Let 'er rip!
 // Evaluate the transformation
-let seq = ctxt.evaluate(&mut StaticContext::<F>::new())
+let seq = ctxt.evaluate(&mut static_context)
     .expect("evaluation failed");
 
 // Serialise the sequence as XML
@@ -683,7 +687,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                 (Some(XSLTNS), "apply-templates") => {
                     let sel = n.get_attribute(&QualifiedName::new(None, None, "select"));
                     let m = n.get_attribute_node(&QualifiedName::new(None, None, "mode"));
-                    let sort_keys = get_sort_keys(n)?;
+                    let sort_keys = get_sort_keys(&n)?;
                     if !sel.to_string().is_empty() {
                         Ok(Transform::ApplyTemplates(
                             Box::new(parse::<N>(&sel.to_string())?),
@@ -832,7 +836,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                     Ok(body)
                                 },
                             )?)),
-                            get_sort_keys(n)?,
+                            get_sort_keys(&n)?,
                         ))
                     } else {
                         Result::Err(Error::new(
@@ -842,7 +846,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                     }
                 }
                 (Some(XSLTNS), "for-each-group") => {
-                    let ord = get_sort_keys(n)?;
+                    let ord = get_sort_keys(&n)?;
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
                         match (
@@ -1120,7 +1124,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
     }
 }
 
-fn get_sort_keys<N: Node>(n: N) -> Result<Vec<(Order, Transform<N>)>, Error> {
+fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
     n.child_iter()
         .try_fold(vec![], |mut acc, c| match c.node_type() {
             NodeType::Element => {

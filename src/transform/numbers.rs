@@ -1,6 +1,7 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
 use std::rc::Rc;
+use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, StaticContext};
@@ -9,9 +10,14 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// XPath number function.
-pub fn number<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn number<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     num: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, num)?;
@@ -35,9 +41,14 @@ pub fn number<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath sum function.
-pub fn sum<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn sum<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Double(
@@ -49,9 +60,14 @@ pub fn sum<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath floor function.
-pub fn floor<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn floor<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     f: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
@@ -67,9 +83,14 @@ pub fn floor<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath ceiling function.
-pub fn ceiling<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn ceiling<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
@@ -85,9 +106,14 @@ pub fn ceiling<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath round function.
-pub fn round<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn round<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     r: &Transform<N>,
     pr: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
@@ -123,9 +149,14 @@ pub fn round<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Generate a sequence with a range of integers.
-pub(crate) fn tr_range<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn tr_range<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     start: &Transform<N>,
     end: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -160,9 +191,14 @@ pub(crate) fn tr_range<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Perform an arithmetic operation.
-pub(crate) fn arithmetic<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn arithmetic<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     ops: &Vec<ArithmeticOperand<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Type: the result will be a number, but integer or double?

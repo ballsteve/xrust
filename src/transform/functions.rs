@@ -2,6 +2,7 @@
 
 use pkg_version::*;
 use std::rc::Rc;
+use url::Url;
 
 use crate::item::{Item, Node, Sequence};
 use crate::qname::QualifiedName;
@@ -24,9 +25,14 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 }
 
 /// XPath count function.
-pub fn tr_count<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn tr_count<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -35,9 +41,14 @@ pub fn tr_count<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath generate-id function.
-pub fn generate_id<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn generate_id<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let i = match s {
@@ -66,9 +77,14 @@ pub fn generate_id<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// XSLT system-property function.
-pub fn system_property<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn system_property<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Box<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let prop = ctxt.dispatch(stctxt, s)?;
@@ -196,6 +212,46 @@ pub fn available_system_properties<N: Node>() -> Result<Sequence<N>, Error> {
             String::from("xsd-version"),
         )))),
     ])
+}
+
+/// XSLT document function.
+/// The first argument is a sequence of URI references. Each reference is cast to xs:anyURI.
+/// Relative URIs are resolved against the base URI of the second argument. The default is to use the baseURI of the context (i.e. the XSL stylesheet).
+pub fn document<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    _ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    uris: &Sequence<N>,
+    _base: &Option<N>,
+) -> Result<Sequence<N>, Error> {
+    if let Some(h) = &mut stctxt.fetcher {
+        if let Some(g) = &mut stctxt.parser {
+            uris.iter().try_fold(vec![], |mut acc, u| {
+                // TODO: resolve relative URI against base URI
+                let url = Url::parse(u.to_string().as_str())
+                    .map_err(|_| Error::new(ErrorKind::TypeError, "unable to parse URL"))?;
+                let docdata = h(&url)?;
+                let x = g(docdata.as_str())?;
+                acc.push(Item::Node(x));
+                //acc.push(Item::Node(g(docdata.as_str())?));
+                Ok(acc)
+            })
+        } else {
+            Err(Error::new(
+                ErrorKind::StaticAbsent,
+                "function to parse document not supplied",
+            ))
+        }
+    } else {
+        Err(Error::new(
+            ErrorKind::StaticAbsent,
+            "function to resolve URI not supplied",
+        ))
+    }
 }
 
 pub(crate) fn tr_error<N: Node>(

@@ -8,8 +8,6 @@ use xrust::transform::context::{StaticContext, StaticContextBuilder};
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
-
 fn test_rig<N: Node, G, H, J>(
     src: impl AsRef<str>,
     style: impl AsRef<str>,
@@ -24,7 +22,11 @@ where
 {
     let srcdoc = parse_from_str(src.as_ref())?;
     let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())?;
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let mut ctxt = from_document(
         styledoc,
         stylens,
@@ -58,6 +60,8 @@ where
             msgs.push(String::from(m));
             Ok(())
         })
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let mut ctxt = from_document(
         styledoc,
@@ -807,7 +811,11 @@ where
         .into_os_string()
         .into_string()
         .expect("unable to convert pwd");
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let mut ctxt = from_document(
         styledoc,
         stylens,

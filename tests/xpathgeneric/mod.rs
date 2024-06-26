@@ -7,7 +7,7 @@ use xrust::parser::xpath::parse;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::ActualParameters;
-use xrust::transform::context::{Context, ContextBuilder, StaticContext};
+use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
@@ -15,7 +15,12 @@ use xrust::xdmerror::{Error, ErrorKind};
 type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
-    Context::new().dispatch(&mut StaticContext::<F>::new(), &parse(e.as_ref())?)
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    Context::new().dispatch(&mut stctxt, &parse(e.as_ref())?)
 }
 
 fn dispatch_rig<N: Node, G, H>(
@@ -27,12 +32,17 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let rd = make_empty_doc();
     ContextBuilder::new()
         .context(vec![make_doc()])
         .result_document(rd)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &parse(e.as_ref())?)
+        .dispatch(&mut stctxt, &parse(e.as_ref())?)
 }
 
 pub fn generic_empty<N: Node>() -> Result<(), Error> {
@@ -293,11 +303,16 @@ where
     match &sd {
         Item::Node(c) => {
             let l = c.descend_iter().last().unwrap();
+            let mut stctxt = StaticContextBuilder::new()
+                .message(|_| Ok(()))
+                .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .build();
             let s = ContextBuilder::new()
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut StaticContext::<F>::new(), &parse("ancestor::*")?)?;
+                .dispatch(&mut stctxt, &parse("ancestor::*")?)?;
             assert_eq!(s.len(), 3);
         }
         _ => panic!("unable to unpack node"),
@@ -336,11 +351,16 @@ where
     H: Fn() -> Item<N>,
 {
     let rd = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let s = ContextBuilder::new()
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &parse(".")?)?;
+        .dispatch(&mut stctxt, &parse(".")?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_string(), "foobar");
     Ok(())
@@ -352,11 +372,16 @@ where
     H: Fn() -> Item<N>,
 {
     let rd = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let s = ContextBuilder::new()
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &parse("(1)")?)?;
+        .dispatch(&mut stctxt, &parse("(1)")?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_int().unwrap(), 1);
     Ok(())
@@ -632,15 +657,17 @@ where
     let sd = make_doc();
     if let Item::Node(ref doc) = sd {
         let top = doc.child_iter().nth(0).unwrap();
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .build();
         let s = ContextBuilder::new()
             .result_document(rd)
             .context(vec![Item::Node(top)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(
-                &mut StaticContext::<F>::new(),
-                &parse("current()/child::a")?,
-            )
+            .dispatch(&mut stctxt, &parse("current()/child::a")?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1)
     } else {
@@ -1034,15 +1061,17 @@ where
     let sd = make_doc();
     if let Item::Node(ref doc) = sd {
         let l = doc.descend_iter().last().unwrap();
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .build();
         let s = ContextBuilder::new()
             .result_document(rd)
             .context(vec![Item::Node(l)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(
-                &mut StaticContext::<F>::new(),
-                &parse("count(ancestor::*)")?,
-            )
+            .dispatch(&mut stctxt, &parse("count(ancestor::*)")?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1);
         assert_eq!(s.to_int().expect("unable to get int from sequence"), 3)
@@ -1241,7 +1270,11 @@ where
             nodetest: NodeTest::Kind(KindTest::Text),
         }),
     );
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     ctxt.populate_key_values(&mut stctxt, sd.clone())
         .expect("unable to populate key values");
     let seq = ctxt.dispatch(&mut stctxt, &e).expect("evaluation failed");

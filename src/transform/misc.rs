@@ -6,6 +6,7 @@ use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::ErrorKind;
+use url::Url;
 
 /// XSLT current function.
 pub fn current<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -21,9 +22,14 @@ pub fn current<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 
 /// Emits a message from the stylesheet.
 /// The transform is evaluated to create the content of the message.
-pub(crate) fn message<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn message<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     body: &Transform<N>,
     _sel: &Option<Box<Transform<N>>>, // select expression, an alternative to body
     _e: &Transform<N>,                // error code

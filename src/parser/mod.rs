@@ -57,11 +57,10 @@ impl ParserConfig {
             ext_dtd_resolver: None,
             docloc: None,
             namespace_nodes: false,
-            entitydepth: 8
+            entitydepth: 8,
         }
     }
 }
-
 
 #[derive(Clone)]
 pub struct ParserState<N: Node> {

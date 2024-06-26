@@ -8,13 +8,12 @@ The following transformation implements the expression "1 + 1". The result is (h
 
 ```rust
 # use std::rc::Rc;
-# use xrust::xdmerror::Error;
-# use xrust::trees::intmuttree::RNode;
+# use xrust::xdmerror::{Error, ErrorKind};
+# use xrust::trees::smite::{RNode, Node as SmiteNode};
 use xrust::value::Value;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::transform::{Transform, ArithmeticOperand, ArithmeticOperator};
-use xrust::transform::context::{Context, StaticContext};
-# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
 
 let xform = Transform::Arithmetic(vec![
         ArithmeticOperand::new(
@@ -26,8 +25,13 @@ let xform = Transform::Arithmetic(vec![
             Transform::Literal(Item::<RNode>::Value(Rc::new(Value::from(1))))
         )
     ]);
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Ok(String::new()))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .build();
 let sequence = Context::new()
-    .dispatch(&mut StaticContext::<F>::new(), &xform)
+    .dispatch(&mut static_context, &xform)
     .expect("evaluation failed");
 assert_eq!(sequence.to_string(), "2")
 ```
@@ -64,6 +68,7 @@ use crate::Context;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -239,6 +244,8 @@ pub enum Transform<N: Node> {
     /// Get information about the processor
     SystemProperty(Box<Transform<N>>),
     AvailableSystemProperties,
+    /// Read an external document
+    Document(Sequence<N>, Option<N>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list.
     Invoke(QualifiedName, ActualParameters<N>),
@@ -349,6 +356,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
             Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
             Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
+            Transform::Document(uris, _) => write!(f, "document({:?})", uris),
             Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
@@ -365,11 +373,16 @@ pub enum Order {
 }
 
 /// Performing sorting of a [Sequence] using the given sort keys.
-pub(crate) fn do_sort<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn do_sort<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     seq: &mut Sequence<N>,
     o: &Vec<(Order, Transform<N>)>,
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<(), Error> {
     // Optionally sort the select sequence
     // TODO: multiple sort keys

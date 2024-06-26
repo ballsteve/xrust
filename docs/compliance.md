@@ -530,6 +530,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | current                     | yes    |       |
 | current-grouping-key        | yes    |       |
 | current-group               | yes    |       |
+| document                    | yes    |       |
 | generate-id                 | yes    |       |
 | key                         | yes    |       |
 | unparsed-entity-uri         | no     |       |

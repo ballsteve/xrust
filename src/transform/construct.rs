@@ -8,6 +8,7 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
 use std::rc::Rc;
+use url::Url;
 
 /// An empty sequence.
 pub(crate) fn empty<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -21,9 +22,14 @@ pub(crate) fn literal<N: Node>(_ctxt: &Context<N>, val: &Item<N>) -> Result<Sequ
 
 /// Creates a singleton sequence with a new element node.
 /// The transform is evaluated to create the content of the element.
-pub(crate) fn literal_element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn literal_element<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     qn: &QualifiedName,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -56,9 +62,14 @@ pub(crate) fn literal_element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 /// Creates a singleton sequence with a new element node.
 /// The name is interpreted as an AVT to determine the element name.
 /// The transform is evaluated to create the content of the element.
-pub(crate) fn element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn element<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     qn: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -92,9 +103,14 @@ pub(crate) fn element<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 /// Creates a new text node.
 /// The transform is evaluated to create the value of the text node.
 /// Special characters are escaped, unless disabled.
-pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn literal_text<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     t: &Transform<N>,
     b: &bool,
 ) -> Result<Sequence<N>, Error> {
@@ -126,9 +142,14 @@ pub(crate) fn literal_text<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 /// Creates a singleton sequence with a new attribute node.
 /// The transform is evaluated to create the value of the attribute.
 /// TODO: AVT for attribute name
-pub(crate) fn literal_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn literal_attribute<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     qn: &QualifiedName,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -148,9 +169,14 @@ pub(crate) fn literal_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// Creates a singleton sequence with a new comment node.
 /// The transform is evaluated to create the value of the comment.
-pub(crate) fn literal_comment<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn literal_comment<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -170,9 +196,14 @@ pub(crate) fn literal_comment<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// Creates a singleton sequence with a new processing instruction node.
 /// The transform is evaluated to create the value of the PI.
-pub(crate) fn literal_processing_instruction<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn literal_processing_instruction<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     name: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -195,9 +226,14 @@ pub(crate) fn literal_processing_instruction<N: Node, F: FnMut(&str) -> Result<(
 /// If the element does not have an attribute with the given name, create it.
 /// Otherwise replace the attribute's value with the supplied value.
 /// Returns an empty sequence.
-pub(crate) fn set_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn set_attribute<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     atname: &QualifiedName,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -249,9 +285,14 @@ pub(crate) fn set_attribute<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Construct a [Sequence] of items
-pub(crate) fn make_sequence<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn make_sequence<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     items: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     items.iter().try_fold(vec![], |mut acc, i| {
@@ -263,9 +304,14 @@ pub(crate) fn make_sequence<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 /// Shallow copy of an item.
 /// The first argument selects the items to be copied.
 /// The second argument creates the content of the target item.
-pub(crate) fn copy<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn copy<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -297,9 +343,14 @@ pub(crate) fn copy<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// Deep copy of an item.
 /// The first argument selects the items to be copied. If not specified then the context item is copied.
-pub(crate) fn deep_copy<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn deep_copy<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let sel = ctxt.dispatch(stctxt, s)?;
