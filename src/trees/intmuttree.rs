@@ -52,6 +52,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
+use crate::parser::ParserConfig;
 
 //pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
@@ -171,8 +172,12 @@ impl Document {
 impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
     fn try_from(s: (String, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
+
+        let mut pc = ParserConfig::new();
+        pc.ext_dtd_resolver = s.1;
+        pc.docloc = s.2;
         let doc = NodeBuilder::new(NodeType::Document).build();
-        parse(doc.clone(), s.0.as_str(), s.1, s.2)?;
+        parse(doc.clone(), s.0.as_str(), pc)?;
         let result = DocumentBuilder::new().content(vec![doc]).build();
         Ok(result)
     }
@@ -180,8 +185,11 @@ impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
 impl TryFrom<(&str, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
     fn try_from(s: (&str, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
+        let mut pc = ParserConfig::new();
+        pc.ext_dtd_resolver = s.1;
+        pc.docloc = s.2;
         let doc = NodeBuilder::new(NodeType::Document).build();
-        parse(doc.clone(), s.0, s.1, s.2)?;
+        parse(doc.clone(), s.0, pc)?;
         let result = DocumentBuilder::new().content(vec![doc]).build();
         Ok(result)
     }
