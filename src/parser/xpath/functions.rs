@@ -383,6 +383,28 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
+                "format-number" => {
+                    if a.len() == 0 || a.len() == 1 {
+                        // Too few arguments
+                        Transform::Error(ErrorKind::ParseError, String::from("too few arguments"))
+                    } else if a.len() == 2 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        Transform::FormatNumber(Box::new(c), Box::new(b), None)
+                    } else if a.len() == 3 {
+                        let b = a.pop().unwrap();
+                        let c = a.pop().unwrap();
+                        let d = a.pop().unwrap();
+                        Transform::FormatNumber(
+                            Box::new(d),
+                            Box::new(c),
+                            Some(Box::new(b)),
+                        )
+                    } else {
+                        // Too many arguments
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
+                    }
+                }
                 "current-group" => {
                     if a.len() == 0 {
                         Transform::CurrentGroup

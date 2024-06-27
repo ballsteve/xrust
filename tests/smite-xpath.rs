@@ -429,6 +429,11 @@ fn xpath_key_1() {
         .expect("test failed")
 }
 #[test]
+fn xpath_format_number_1() {
+    xpathgeneric::generic_format_number_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_document_1() {
     xpathgeneric::generic_document_1::<RNode, _, _, _>(smite::make_empty_doc, smite::make_sd, smite::make_from_str)
         .expect("test failed")

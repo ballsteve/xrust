@@ -428,6 +428,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "formato"
+version = "0.2.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b8c089a1e1ca9554b9a027827bb05436727b041cc3d3d149db93c88697d55828"
+
+[[package]]
 name = "funty"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1453,6 +1459,7 @@ dependencies = [
  "earleybird",
  "encoding_rs",
  "encoding_rs_io",
+ "formato",
  "indextree",
  "lexers",
  "pkg-version",

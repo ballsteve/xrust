@@ -1079,6 +1079,23 @@ where
     Ok(())
 }
 
+pub fn generic_format_number_1<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("format-number(456.789, '#.##')")?;
+    assert_eq!(s.len(), 1);
+    match &s[0] {
+        Item::Value(v) => match &**v {
+            Value::String(d) => assert_eq!(d, "456.79"),
+            _ => panic!("not a singleton double value"),
+        },
+        _ => panic!("not a value"),
+    }
+    Ok(())
+}
+
 pub fn generic_fncall_user_defined<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,

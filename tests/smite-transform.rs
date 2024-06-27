@@ -1,8 +1,6 @@
 // Transform tests
 
-use url::Url;
 use xrust::trees::smite::RNode;
-use xrust::Error;
 
 mod smite;
 mod transformgeneric;
@@ -778,6 +776,11 @@ fn tr_format_date() {
 #[test]
 fn tr_format_time() {
     transformgeneric::generic_tr_format_time::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn tr_format_number_1() {
+    transformgeneric::generic_tr_format_number_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
 #[test]

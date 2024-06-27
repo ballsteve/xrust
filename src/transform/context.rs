@@ -438,6 +438,7 @@ impl<N: Node> Context<N> {
             }
             Transform::FormatDate(t, p, l, c, q) => format_date(self, stctxt, t, p, l, c, q),
             Transform::FormatTime(t, p, l, c, q) => format_time(self, stctxt, t, p, l, c, q),
+            Transform::FormatNumber(v, p, d) => format_number(self, stctxt, v, p, d),
             Transform::Key(n, v, _) => key(self, stctxt, n, v),
             Transform::SystemProperty(p) => system_property(self, stctxt, p),
             Transform::AvailableSystemProperties => available_system_properties(),

@@ -232,6 +232,11 @@ pub enum Transform<N: Node> {
         Option<Box<Transform<N>>>,
         Option<Box<Transform<N>>>,
     ),
+    FormatNumber(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+    ),
     CurrentGroup,
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
@@ -351,6 +356,7 @@ impl<N: Node> Debug for Transform<N> {
             }
             Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({:?}, {:?}, ...)", p, q),
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
+            Transform::FormatNumber(v, p, _) => write!(f, "format-number({:?}, {:?})", v, p),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),

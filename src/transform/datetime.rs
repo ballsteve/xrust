@@ -7,7 +7,7 @@ use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::parsepicture::parse as picture_parse;
+use crate::parser::datetime::parse as picture_parse;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;

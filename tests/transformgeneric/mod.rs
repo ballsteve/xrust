@@ -4680,6 +4680,34 @@ where
     Ok(())
 }
 
+pub fn generic_tr_format_number_1<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // XPath == format-number(123.456, "#.##")
+    let x = Transform::FormatNumber(
+        Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+            123.456,
+        ))))),
+        Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+            "#.##",
+        ))))),
+        None,
+    );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = Context::new()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq.to_string(), "123.46");
+    Ok(())
+}
+
 pub fn generic_tr_key_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,

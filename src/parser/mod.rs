@@ -17,6 +17,8 @@ pub(crate) mod common;
 pub mod xml;
 pub mod xpath;
 
+pub mod datetime;
+
 #[allow(type_alias_bounds)]
 pub type ParseInput<'a, N: Node> = (&'a str, ParserState<N>);
 #[allow(type_alias_bounds)]

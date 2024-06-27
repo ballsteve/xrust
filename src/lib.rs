@@ -68,7 +68,6 @@ pub use xdmerror::{Error, ErrorKind};
 
 pub mod externals;
 pub mod output;
-mod parsepicture;
 pub mod qname;
 pub mod xmldecl;
 

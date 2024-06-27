@@ -3,6 +3,8 @@
 use std::rc::Rc;
 use url::Url;
 
+use formato::Formato;
+
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
@@ -230,4 +232,40 @@ pub(crate) fn arithmetic<
         }
     }
     Ok(vec![Item::Value(Rc::new(Value::from(acc)))])
+}
+
+/// XPath format-number function.
+pub fn format_number<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    num: &Transform<N>,
+    picture: &Transform<N>,
+    _name: &Option<Box<Transform<N>>>,
+) -> Result<Sequence<N>, Error> {
+    let p = ctxt.dispatch(stctxt, picture)?.to_string();
+    let n = ctxt.dispatch(stctxt, num)?;
+    match n.len() {
+        1 => {
+            // First try converting to an integer
+            match n[0].to_int() {
+                Ok(i) => {
+                    Ok(vec![Item::Value(Rc::new(Value::String(i.formato(p.as_str()))))])
+                }
+                _ => {
+                    // Otherwise convert to double.
+                    // NB. This can't fail. At worst it returns NaN.
+                    Ok(vec![Item::Value(Rc::new(Value::String(n[0].to_double().formato(p.as_str()))))])
+                }
+            }
+        }
+        _ => Err(Error::new(
+            ErrorKind::TypeError,
+            String::from("not a singleton sequence"),
+        )),
+    }
 }

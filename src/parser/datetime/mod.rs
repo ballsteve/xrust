@@ -6,15 +6,6 @@
 //!
 //! TODO: presentation modifiers, and width modifiers
 
-//extern crate nom;
-//use nom::{
-//    branch::alt,
-//    character::complete::{char, none_of},
-//    combinator::{map, opt},
-//    multi::many0,
-//   sequence::tuple,
-//    IResult,
-//};
 use crate::item::Node;
 use crate::parser::combinators::alt::alt4;
 use crate::parser::combinators::many::many0;

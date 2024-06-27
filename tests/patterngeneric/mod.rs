@@ -1,13 +1,12 @@
 //! Tests for pattern module defined generically
 
 use std::rc::Rc;
-use url::Url;
 use xrust::ErrorKind;
 
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
-use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
+use xrust::transform::context::{Context, StaticContextBuilder};
 use xrust::value::Value;
 use xrust::xdmerror::Error;
 

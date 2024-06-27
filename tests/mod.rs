@@ -1,9 +1,3 @@
-use std::rc::Rc;
-use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
-use xrust::validators::relaxng::validate_relaxng;
-use xrust::Node;
-
 mod conformance;
 
 //use std::convert::TryFrom;
