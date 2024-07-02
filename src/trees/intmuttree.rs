@@ -177,7 +177,7 @@ impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
         pc.ext_dtd_resolver = s.1;
         pc.docloc = s.2;
         let doc = NodeBuilder::new(NodeType::Document).build();
-        parse(doc.clone(), s.0.as_str(), pc)?;
+        parse(doc.clone(), s.0.as_str(), Some(pc))?;
         let result = DocumentBuilder::new().content(vec![doc]).build();
         Ok(result)
     }
@@ -189,7 +189,7 @@ impl TryFrom<(&str, Option<URLResolver>, Option<String>)> for Document {
         pc.ext_dtd_resolver = s.1;
         pc.docloc = s.2;
         let doc = NodeBuilder::new(NodeType::Document).build();
-        parse(doc.clone(), s.0, pc)?;
+        parse(doc.clone(), s.0, Some(pc))?;
         let result = DocumentBuilder::new().content(vec![doc]).build();
         Ok(result)
     }
