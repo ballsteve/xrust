@@ -22,10 +22,10 @@ fn rngtestone(){
 ";
 
     let doc = Rc::new(SmiteNode::new());
-    let _ = xml::parse(doc.clone(), d, ParserConfig::new());
+    let _ = xml::parse(doc.clone(), d, None);
 
     let sch = Rc::new(SmiteNode::new());
-    let _ = xml::parse(sch.clone(), s, ParserConfig::new());
+    let _ = xml::parse(sch.clone(), s, None);
 
 
     let result = validate_relaxng(&doc, &sch);

@@ -556,12 +556,12 @@ pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>
 
 fn parse_from_str(s: &str) -> Result<RNode, Error> {
     let doc = Rc::new(SmiteNode::new());
-    xmlparse(doc.clone(), s, ParserConfig::new())?;
+    xmlparse(doc.clone(), s, None)?;
     Ok(doc)
 }
 
 fn parse_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
     let doc = Rc::new(SmiteNode::new());
-    let r = parse_with_ns(doc.clone(), s, ParserConfig::new())?;
+    let r = parse_with_ns(doc.clone(), s, None)?;
     Ok(r)
 }

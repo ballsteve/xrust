@@ -26,7 +26,7 @@ use std::collections::HashMap;
 pub fn parse<N: Node>(
     doc: N,
     input: &str,
-    config: ParserConfig,
+    config: Option<ParserConfig>,
     //entityresolver: Option<URLResolver>,
     //docloc: Option<String>,
 ) -> Result<N, Error> {
@@ -37,11 +37,17 @@ pub fn parse<N: Node>(
 pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
-    config: ParserConfig,
+    config: Option<ParserConfig>,
     //entityresolver: Option<URLResolver>,
     //docloc: Option<String>,
 ) -> Result<(N, Vec<HashMap<String, String>>), Error> {
-    let state = ParserState::new(Some(doc), config.ext_dtd_resolver, config.docloc);
+    let pc = if config.is_none(){
+        ParserConfig::new()
+    } else {
+        config.unwrap()
+    };
+
+    let state = ParserState::new(Some(doc), pc.ext_dtd_resolver, pc.docloc);
     match document((input, state)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespaces_ref().clone())),
         Err(err) => {

@@ -23,7 +23,7 @@ pub(crate) fn validate(doc: &RNode, s: Schema) -> Result<(), ValidationError>  {
     match s {
         Schema::RelaxNG(schema) => {
             let schemadoc = Rc::new(SmiteNode::new());
-            let _ = xml::parse(schemadoc.clone(), schema.as_str(), ParserConfig::new());
+            let _ = xml::parse(schemadoc.clone(), schema.as_str(), None);
             validate_relaxng(doc, &schemadoc)
         }
     }
