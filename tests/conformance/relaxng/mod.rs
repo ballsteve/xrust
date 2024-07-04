@@ -1,14 +1,15 @@
 mod jamesclark;
 
-/*
+
 use std::fs;
 use std::rc::Rc;
 use xrust::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParserConfig, xml};
 use xrust::trees::smite::{Node as SmiteNode};
 use xrust::validators::relaxng::validate_relaxng;
 
 #[test]
+#[ignore]
 fn rngtestone(){
 
     let s = "<?xml version=\"1.0\" encoding=\"utf-8\"?>
@@ -21,13 +22,13 @@ fn rngtestone(){
 ";
 
     let doc = Rc::new(SmiteNode::new());
-    let _ = xml::parse(doc.clone(), d, None, None);
+    let _ = xml::parse(doc.clone(), d, None);
 
     let sch = Rc::new(SmiteNode::new());
-    let _ = xml::parse(sch.clone(), s, None, None);
+    let _ = xml::parse(sch.clone(), s, None);
 
 
     let result = validate_relaxng(&doc, &sch);
     assert!(result.is_ok());
 }
- */
+
