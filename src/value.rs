@@ -12,6 +12,7 @@ use rust_decimal_macros::dec;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Formatter;
+use rust_decimal::prelude::ToPrimitive;
 
 /// Comparison operators for values
 #[derive(Copy, Clone, Debug)]
@@ -466,7 +467,11 @@ impl From<u8> for Value {
         Value::UnsignedByte(i)
     }
 }
-impl From<bool> for Value {
+impl From<usize> for Value {
+    fn from(u: usize) -> Self {
+        Value::UnsignedLong(u.to_u64().unwrap())
+    }
+}impl From<bool> for Value {
     fn from(b: bool) -> Self {
         Value::Boolean(b)
     }

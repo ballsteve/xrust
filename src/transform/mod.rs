@@ -49,7 +49,7 @@ mod keys;
 pub(crate) mod logic;
 pub(crate) mod misc;
 pub(crate) mod navigate;
-pub(crate) mod numbers;
+pub mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
@@ -59,12 +59,13 @@ use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
-use crate::transform::context::{ContextBuilder, StaticContext};
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
+use crate::transform::numbers::Numbering;
 use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::Context;
+use crate::pattern::Pattern;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -237,6 +238,13 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
     ),
+    /// Generate a sequence of integers. This is one half of the functionality of xsl:number.
+    /// First argument is the start-at specification.
+    /// Second argument is the select expression.
+    /// Third argument is the level.
+    /// Fourth argument is the count pattern.
+    /// Fifth argument is the from pattern.
+    GenerateIntegers(Box<Transform<N>>, Box<Transform<N>>, Box<Numbering<N>>),
     CurrentGroup,
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
@@ -357,6 +365,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({:?}, {:?}, ...)", p, q),
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
             Transform::FormatNumber(v, p, _) => write!(f, "format-number({:?}, {:?})", v, p),
+            Transform::GenerateIntegers(_start_at, _select, _n) => write!(f, "generate-integers"),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),

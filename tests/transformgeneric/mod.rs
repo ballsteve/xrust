@@ -3,11 +3,13 @@
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
+use xrust::output::OutputDefinition;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
+use xrust::transform::numbers::{Numbering, Level};
 use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
     Order, Transform, WildcardOrName,
@@ -4888,7 +4890,7 @@ where
         sd.new_element(QualifiedName::new(None, None, "Test"))
             .expect("unable to create element"),
     )
-    .expect("unable to add element");
+        .expect("unable to add element");
 
     let x = Transform::SequenceItems(vec![
         Transform::Compose(vec![
@@ -4917,5 +4919,44 @@ where
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
     assert_eq!(seq.to_string(), "TestExternal");
+    Ok(())
+}
+
+pub fn generic_tr_generate_ints_1<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let sd = make_doc();
+
+    let n = if let Item::Node(root) = sd.clone() {
+        root.descend_iter().last().unwrap()
+    } else {
+        panic!("unable to find document root node")
+    };
+    let rd = make_empty_doc();
+
+    let x = Transform::GenerateIntegers(
+        Box::new(Transform::Empty),
+        Box::new(Transform::ContextItem),
+        Box::new(Numbering::new(Level::Single, None, None)),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .context(vec![Item::Node(n)])
+        .result_document(rd)
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .parser(|s| parser(s))
+        .message(|_| Ok(()))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "2");
     Ok(())
 }

@@ -813,3 +813,12 @@ fn tr_document_1() {
     )
     .expect("test failed")
 }
+#[test]
+fn tr_generate_ints_1() {
+    transformgeneric::generic_tr_generate_ints_1::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        Box::new(smite::make_from_str),
+    )
+        .expect("test failed")
+}

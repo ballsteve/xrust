@@ -1081,6 +1081,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                         }),
                     ))
                 }
+                (Some(XSLTNS), "decimal-format") => Ok(Transform::NotImplemented(String::from("unsupported XSL element \"decimal-format\""))),
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(
                     "unsupported XSL element \"{}\"",
                     u

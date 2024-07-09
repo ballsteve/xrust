@@ -5,11 +5,129 @@ use url::Url;
 
 use formato::Formato;
 
-use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::item::{Item, Node, Sequence, SequenceTrait, NodeType};
+use crate::pattern::{Pattern, Path, PathBuilder};
+use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
-use crate::transform::{ArithmeticOperand, ArithmeticOperator, Transform};
+use crate::transform::{ArithmeticOperand, ArithmeticOperator, Axis, Transform, NodeTest, KindTest, NameTest, WildcardOrName};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+
+/// Level value for xsl:number. See XSLT 12.3.
+#[derive(Copy, Clone, Debug, Default)]
+pub enum Level {
+    #[default] Single,
+    Multiple,
+    Any,
+}
+
+/// Specification for generating numbers. This is avoid recursive types in [Transform] and [Pattern].
+#[derive(Clone, Debug)]
+pub struct Numbering<N: Node> {
+    level: Level,
+    count: Option<Pattern<N>>,
+    from: Option<Pattern<N>>,
+}
+impl<N: Node> Numbering<N> {
+    pub fn new(level: Level, count: Option<Pattern<N>>, from: Option<Pattern<N>>) -> Self {
+        Numbering{level, count, from}
+    }
+}
+
+/// Generate a sequence of integers
+pub fn generate_integers<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    _start_at: &Transform<N>,
+    select: &Transform<N>,
+    num: &Numbering<N>,
+) -> Result<Sequence<N>, Error> {
+    // This implements "single" level. "multiple" and "any" are TODO
+
+    // The select expression must evaluate to a single node item (XSLT error XTTE1000)
+    let n = ctxt.dispatch(stctxt, select)?;
+    if n.len() == 1 {
+        if let Item::Node(m) = &n[0] {
+
+            // Determine the count pattern
+            let count_pat = (&num.count).clone().unwrap_or(Pattern::Selection(
+                match m.node_type() {
+                    NodeType::Element => {
+                        PathBuilder::new()
+                            .step(
+                                Axis::SelfAxis,
+                                Axis::SelfAxis,
+                                NodeTest::Name(NameTest::new(m.name().get_nsuri().map(|ns| WildcardOrName::Name(ns)), None, Some(WildcardOrName::Name(m.name().get_localname()))))
+                            )
+                            .build()
+                    }
+                    NodeType::Text => {
+                        PathBuilder::new()
+                            .step(Axis::SelfAxis, Axis::SelfAxis, NodeTest::Kind(KindTest::Text))
+                            .build()
+                    }
+                    _ => return Err(Error::new(ErrorKind::TypeError, "cannot match this type of node"))
+                }
+            ));
+
+            // let a = $S/ancestor-or-self::node()[matches-count(.)][1]
+            // TODO: Don't Panic
+            let a = if count_pat.matches(ctxt, stctxt, &Item::Node(m.clone())) {
+                vec![m.clone()]
+            } else {
+                m.ancestor_iter()
+                    .filter(|i| count_pat.matches(ctxt, stctxt, &Item::Node(i.clone())))
+                    .take(1)
+                    .collect()
+            };
+            if a.is_empty() {
+                return Ok(vec![])
+            }
+            // let f = $S/ancestor-or-self::node()[matches-from(.)][1]
+            // TODO: Don't Panic
+            let f: Vec<N> = if let Some(fr) = &num.from.clone() {
+                m.ancestor_iter()
+                    .filter(|i| {if i.node_type() == NodeType::Document {true} else {
+                        fr.matches(ctxt, stctxt, &Item::Node(i.clone()))
+                    }})
+                    .take(1)
+                    .collect()
+            } else {
+                // When there is no from pattern specified then use the root node
+                vec![m.owner_document().clone()]
+            };
+            if f.is_empty() {
+                return Ok(vec![])
+            }
+            // let af = $a[ancestor-or-self::node()[. is $f]]
+            let af_test: Vec<N> = if a[0].is_same(&f[0]) {
+                vec![a[0].clone()]
+            } else {
+                a[0].ancestor_iter()
+                    .filter(|i| i.is_same(&f[0]))
+                    .collect()
+            };
+            let af = if af_test.is_empty() {vec![]} else {a};
+            if af.is_empty() {
+                return Ok(vec![])
+            }
+            // 1 + count($af/preceding-sibling::node()[matches-count(.)])
+            let result: Vec<N> = af[0].prev_iter()
+                .filter(|i| count_pat.matches(ctxt, stctxt, &Item::Node(i.clone())))
+                .collect();
+            Ok(vec![Item::Value(Rc::new(Value::from(1 + result.len())))])
+        } else {
+            return Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
+        }
+    } else {
+        return Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
+    }
+}
 
 /// XPath number function.
 pub fn number<

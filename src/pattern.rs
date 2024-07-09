@@ -153,6 +153,7 @@ fn find_node<N: Node>(a: &Axis, i: &Item<N>) -> Option<Item<N>> {
             }
             _ => None,
         },
+        Axis::SelfAxis => Some(i.clone()),
         Axis::Parent => match &*i {
             Item::Node(n) => n.parent().map(|p| Item::Node(p)),
             _ => None,
