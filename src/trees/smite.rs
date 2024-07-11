@@ -57,9 +57,9 @@ pub type RNode = Rc<Node>;
 enum NodeInner {
     Document(
         RefCell<Option<XMLDecl>>,
-        RefCell<Vec<RNode>>,
-        RefCell<Vec<RNode>>,
-    ), // to be well-formed, only one of these can be an element-type node
+        RefCell<Vec<RNode>>, // Child nodes
+        RefCell<Vec<RNode>>, // Unattached nodes
+    ), // to be well-formed, only one of the child nodes can be an element-type node
     Element(
         RefCell<Weak<Node>>, // Parent: must be a Document or an Element
         Rc<QualifiedName>,   // name
@@ -106,6 +106,51 @@ impl Node {
                 ErrorKind::TypeError,
                 String::from("not an Element node"),
             )),
+        }
+    }
+}
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        match (&self.0, &other.0) {
+            (NodeInner::Document(_, c, _), NodeInner::Document(_, d, _)) => {
+                c.borrow().iter().zip(d.borrow().iter())
+                    .fold(true,|mut acc, (c, d)| if acc {acc = c == d; acc} else {acc})
+                // TODO: use a method that terminates early on non-equality
+            }
+            (NodeInner::Element(_, name, atts, c, _), NodeInner::Element(_, o_name, o_atts, d, _)) => {
+                if name == o_name {
+                    // Attributes must match
+                    let b_atts = atts.borrow();
+                    let b_o_atts = o_atts.borrow();
+                    if b_atts.len() == b_o_atts.len() {
+                        let mut at_names: Vec<Rc<QualifiedName>> = b_atts.keys().cloned().collect();
+                        at_names.sort();
+                        if at_names.iter().fold(true, |mut acc, qn| {
+                            if acc {
+                                acc = b_atts.get(qn) == b_o_atts.get(qn);
+                                acc
+                            } else { acc }
+                        }) {
+                            // Content
+                            c.borrow().iter()
+                                .zip(d.borrow().iter())
+                                .fold(true,|mut acc, (c, d)| if acc {acc = c == d; acc} else {acc})
+                            // TODO: use a method that terminates early on non-equality
+                        } else { false }
+                    } else { false }
+                    // Content must match
+                } else { false }
+            }
+            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => {
+                v == u
+            }
+            (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
+                if name == o_name {
+                    v == o_v
+                } else { false }
+            }
+            _ => { false }
         }
     }
 }

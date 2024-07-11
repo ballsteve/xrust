@@ -378,7 +378,11 @@ impl<N: Node> fmt::Debug for Item<N> {
 /// Some nodes have names, such as elements. Some nodes have values, such as text or comments. Some have both a name and a value, such as attributes and processing instructions.
 ///
 /// Element nodes have children and attributes.
-pub trait Node: Clone + fmt::Debug {
+///
+/// Nodes must implement the PartialEq trait. This allows two (sub-)trees to be compared. The comparison is against the XML Infoset of each tree;
+/// i.e. do the trees contain the same information, but not necessarily the same string representation.
+/// For example, the order of attributes does not matter.
+pub trait Node: Clone + PartialEq + fmt::Debug {
     type NodeIterator: Iterator<Item = Self>;
 
     /// Get the type of the node
@@ -481,4 +485,59 @@ pub trait Node: Clone + fmt::Debug {
     /// Add a namespace to this element-type node.
     /// NOTE: Does NOT assign a namespace to the element.
     fn add_namespace(&self, ns: Self) -> Result<(), Error>;
+    /// Compare two trees. If a non-document node is used, then the descendant subtrees are compared.
+    fn eq(&self, other: &Self) -> bool {
+        match self.node_type() {
+            NodeType::Document => {
+                if other.node_type() == NodeType::Document {
+                    self.child_iter()
+                        .zip(other.child_iter())
+                        .fold(true,|mut acc, (c, d)| if acc {acc = Node::eq(&c, &d); acc} else {acc})
+                    // TODO: use a method that terminates early on non-equality
+                } else { false }
+            }
+            NodeType::Element => {
+                // names must match,
+                // attributes must match (order doesn't matter),
+                // content must match
+                if other.node_type() == NodeType::Element {
+                    if self.name() == other.name() {
+                        // Attributes
+                        let mut at_names: Vec<QualifiedName> = self.attribute_iter()
+                            .map(|a| a.name())
+                            .collect();
+                        if at_names.len() == other.attribute_iter().count() {
+                            at_names.sort();
+                            if at_names.iter().fold(true, |mut acc, qn| {
+                                if acc {
+                                    acc = self.get_attribute(&qn) == other.get_attribute(&qn);
+                                    acc
+                                } else { acc }
+                            }) {
+                                // Content
+                                self.child_iter()
+                                    .zip(other.child_iter())
+                                    .fold(true,|mut acc, (c, d)| if acc {acc = Node::eq(&c, &d); acc} else {acc})
+                                // TODO: use a method that terminates early on non-equality
+                            } else { false }
+                        } else {
+                            false
+                        }
+                    } else { false }
+                } else { false }
+            }
+            NodeType::Text => {
+                if other.node_type() == NodeType::Text {
+                    self.value() == other.value()
+                } else { false }
+            }
+            NodeType::ProcessingInstruction => {
+                if other.node_type() == NodeType::ProcessingInstruction {
+                    self.name() == other.name() &&
+                    self.value() == other.value()
+                } else { false }
+            }
+            _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
+        }
+    }
 }

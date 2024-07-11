@@ -5,6 +5,7 @@ use crate::parser::ParserState;
 use crate::trees::nullo::Nullo;
 use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
+use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
@@ -116,6 +117,29 @@ impl PartialEq for QualifiedName {
                 )
             },
         )
+    }
+}
+
+/// A partial ordering for QualifiedNames. Unprefixed names are considered to come before prefixed names.
+impl PartialOrd for QualifiedName {
+    fn partial_cmp(&self, other: &Self) -> Option<Ordering> {
+        match (&self.nsuri, &other.nsuri) {
+            (None, None) => self.localname.partial_cmp(&other.localname),
+            (Some(_), None) => Some(Ordering::Greater),
+            (None, Some(_)) => Some(Ordering::Less),
+            (Some(n), Some(m)) => {
+                if n == m {
+                    self.localname.partial_cmp(&other.localname)
+                } else {
+                    n.partial_cmp(&m)
+                }
+            }
+        }
+    }
+}
+impl Ord for QualifiedName {
+    fn cmp(&self, other: &Self) -> Ordering {
+        self.partial_cmp(other).unwrap()
     }
 }
 impl Eq for QualifiedName {}

@@ -456,5 +456,96 @@ macro_rules! item_node_tests (
 		let b6: Vec<RNode> = sd.descend_iter().filter(|n| n.get_attribute(&QualifiedName::new(None, None, String::from("id"))).to_string() == String::from("b6")).collect();
 		assert_eq!(b10[0].cmp_document_order(&b6[0]), Ordering::Greater)
 	}
+
+	#[test]
+	fn item_node_partialeq_1_pos() {
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let a1 = sd.new_attribute(
+		QualifiedName::new(None, None, String::from("role")),
+		Rc::new(Value::from("testing"))
+	    ).expect("unable to create attribute");
+	    t.add_attribute(a1)
+		.expect("unable to add attribute");
+	    let a2 = sd.new_attribute(
+		QualifiedName::new(None, None, String::from("phase")),
+		Rc::new(Value::from("one"))
+	    ).expect("unable to create element");
+	    t.add_attribute(a2)
+		.expect("unable to add attribute");
+		t.push(sd.new_text(Rc::new(Value::from("my test document"))).expect("unable to create text node"))
+		.expect("unable to add text node");
+
+		// The same document as above, but with attributes in a different order
+	    let mut od = $x();
+	    let mut u = od.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    od.push(u.clone())
+		.expect("unable to append child");
+	    let b1 = od.new_attribute(
+		QualifiedName::new(None, None, String::from("role")),
+		Rc::new(Value::from("testing"))
+	    ).expect("unable to create attribute");
+	    let b2 = od.new_attribute(
+		QualifiedName::new(None, None, String::from("phase")),
+		Rc::new(Value::from("one"))
+	    ).expect("unable to create element");
+	    u.add_attribute(b2)
+		.expect("unable to add attribute");
+		u.push(od.new_text(Rc::new(Value::from("my test document"))).expect("unable to create text node"))
+		.expect("unable to add text node");
+	    u.add_attribute(b1)
+		.expect("unable to add attribute");
+
+	    assert_eq!(sd == od, true)
+	}
+	#[test]
+	fn item_node_partialeq_1_neg() {
+	    let mut sd = $x();
+	    let mut t = sd.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    sd.push(t.clone())
+		.expect("unable to append child");
+	    let a1 = sd.new_attribute(
+		QualifiedName::new(None, None, String::from("role")),
+		Rc::new(Value::from("testing"))
+	    ).expect("unable to create attribute");
+	    t.add_attribute(a1)
+		.expect("unable to add attribute");
+	    let a2 = sd.new_attribute(
+		QualifiedName::new(None, None, String::from("phase")),
+		Rc::new(Value::from("one"))
+	    ).expect("unable to create element");
+	    t.add_attribute(a2)
+		.expect("unable to add attribute");
+		t.push(sd.new_text(Rc::new(Value::from("my test document"))).expect("unable to create text node"))
+		.expect("unable to add text node");
+
+		// The same document as above, but with attributes in a different order
+	    let mut od = $x();
+	    let mut u = od.new_element(QualifiedName::new(None, None, String::from("Test")))
+		.expect("unable to create element");
+	    od.push(u.clone())
+		.expect("unable to append child");
+	    let b1 = od.new_attribute(
+		QualifiedName::new(None, None, String::from("role")),
+		Rc::new(Value::from("testing"))
+	    ).expect("unable to create attribute");
+	    let b2 = od.new_attribute(
+		QualifiedName::new(None, None, String::from("phase")),
+		Rc::new(Value::from("one"))
+	    ).expect("unable to create element");
+	    u.add_attribute(b2)
+		.expect("unable to add attribute");
+		u.push(od.new_text(Rc::new(Value::from("not the same document"))).expect("unable to create text node"))
+		.expect("unable to add text node");
+	    u.add_attribute(b1)
+		.expect("unable to add attribute");
+
+	    assert_eq!(sd == od, false)
+	}
     }
 );
