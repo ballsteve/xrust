@@ -17,31 +17,37 @@ use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
 use crate::parser::xml::xmldecl::xmldecl;
-use crate::parser::{ParseError, ParseInput, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use std::collections::HashMap;
 
-// For backward compatibility
-//pub type XMLDocument = Document;
 
 pub fn parse<N: Node>(
     doc: N,
     input: &str,
-    entityresolver: Option<URLResolver>,
-    docloc: Option<String>,
+    config: Option<ParserConfig>,
+    //entityresolver: Option<URLResolver>,
+    //docloc: Option<String>,
 ) -> Result<N, Error> {
-    let (xmldoc, _) = parse_with_ns(doc, input, entityresolver, docloc)?;
+    let (xmldoc, _) = parse_with_ns(doc, input, config)?;
     Ok(xmldoc)
 }
 
 pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
-    entityresolver: Option<URLResolver>,
-    docloc: Option<String>,
+    config: Option<ParserConfig>,
+    //entityresolver: Option<URLResolver>,
+    //docloc: Option<String>,
 ) -> Result<(N, Vec<HashMap<String, String>>), Error> {
-    let state = ParserState::new(Some(doc), entityresolver, docloc);
+    let pc = if config.is_none(){
+        ParserConfig::new()
+    } else {
+        config.unwrap()
+    };
+
+    let state = ParserState::new(Some(doc), pc.ext_dtd_resolver, pc.docloc);
     match document((input, state)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespaces_ref().clone())),
         Err(err) => {

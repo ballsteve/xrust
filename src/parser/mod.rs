@@ -47,10 +47,16 @@ pub enum ParseError {
 }
 
 pub struct ParserConfig {
+    /// If you need to resolve external DTDs, you will need to provide your own resolver.
     pub ext_dtd_resolver: Option<URLResolver>,
+    /// The location of the string being parsed, which can be provided to your resolver to work out
+    /// relative URLs
     pub docloc: Option<String>,
-    pub namespace_nodes: bool,
+    /// How many recursive layers on entity expansion. Default is 8 levels.
     pub entitydepth: usize,
+    /// Default is false, sets the parser to generate XDM namespace nodes on elements.
+    /// Does not affect namespaces on elements and attributes.
+    pub namespace_nodes: bool,
 }
 
 impl ParserConfig {

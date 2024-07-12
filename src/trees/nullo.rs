@@ -190,3 +190,9 @@ impl fmt::Debug for Nullo {
         write!(f, "Nullo node")
     }
 }
+
+impl PartialEq for Nullo {
+    fn eq(&self, other: &Self) -> bool {
+        Node::eq(self, other)
+    }
+}

@@ -57,9 +57,9 @@ pub type RNode = Rc<Node>;
 enum NodeInner {
     Document(
         RefCell<Option<XMLDecl>>,
-        RefCell<Vec<RNode>>,
-        RefCell<Vec<RNode>>,
-    ), // to be well-formed, only one of these can be an element-type node
+        RefCell<Vec<RNode>>, // Child nodes
+        RefCell<Vec<RNode>>, // Unattached nodes
+    ), // to be well-formed, only one of the child nodes can be an element-type node
     Element(
         RefCell<Weak<Node>>, // Parent: must be a Document or an Element
         Rc<QualifiedName>,   // name
@@ -108,6 +108,51 @@ impl Node {
                 ErrorKind::TypeError,
                 String::from("not an Element node"),
             )),
+        }
+    }
+}
+
+impl PartialEq for Node {
+    fn eq(&self, other: &Self) -> bool {
+        match (&self.0, &other.0) {
+            (NodeInner::Document(_, c, _), NodeInner::Document(_, d, _)) => {
+                c.borrow().iter().zip(d.borrow().iter())
+                    .fold(true,|mut acc, (c, d)| if acc {acc = c == d; acc} else {acc})
+                // TODO: use a method that terminates early on non-equality
+            }
+            (NodeInner::Element(_, name, atts, c, _), NodeInner::Element(_, o_name, o_atts, d, _)) => {
+                if name == o_name {
+                    // Attributes must match
+                    let b_atts = atts.borrow();
+                    let b_o_atts = o_atts.borrow();
+                    if b_atts.len() == b_o_atts.len() {
+                        let mut at_names: Vec<Rc<QualifiedName>> = b_atts.keys().cloned().collect();
+                        at_names.sort();
+                        if at_names.iter().fold(true, |mut acc, qn| {
+                            if acc {
+                                acc = b_atts.get(qn) == b_o_atts.get(qn);
+                                acc
+                            } else { acc }
+                        }) {
+                            // Content
+                            c.borrow().iter()
+                                .zip(d.borrow().iter())
+                                .fold(true,|mut acc, (c, d)| if acc {acc = c == d; acc} else {acc})
+                            // TODO: use a method that terminates early on non-equality
+                        } else { false }
+                    } else { false }
+                    // Content must match
+                } else { false }
+            }
+            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => {
+                v == u
+            }
+            (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
+                if name == o_name {
+                    v == o_v
+                } else { false }
+            }
+            _ => { false }
         }
     }
 }
@@ -426,13 +471,13 @@ impl ItemNode for RNode {
                 m.pop()?;
                 // Popping will put the node in the unattached list,
                 // so remove it from there
-                detach(att.clone());
+                detach(m.clone());
                 // Now add to this parent
                 // TODO: deal with same name being redefined
-                if let NodeInner::Attribute(_, qn, _) = &att.0 {
-                    let _ = patt.borrow_mut().insert(qn.clone(), att.clone());
+                if let NodeInner::Attribute(_, qn, _) = &m.0 {
+                    let _ = patt.borrow_mut().insert(qn.clone(), m.clone());
                 }
-                make_parent(att, self.clone());
+                make_parent(m, self.clone());
                 Ok(())
             }
             _ => Err(Error::new(
@@ -585,26 +630,33 @@ impl ItemNode for RNode {
     }
     fn get_canonical(&self) -> Result<Self, Error> {
         match &self.0 {
-            NodeInner::Document(_, _, _)
-            | NodeInner::Comment(_, _)
+            NodeInner::Document(_, e, _) => {
+                let mut result = self.shallow_copy()?;
+                result.push(e.borrow_mut().first().unwrap().get_canonical()?)?;
+                Ok(result)
+            }
+            NodeInner::Comment(_, _)
             | NodeInner::ProcessingInstruction(_, _, _)
             | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
             NodeInner::Text(_, v) => {
+                let d = self.owner_document();
                 let mut w = v.clone();
                 if let Value::String(s) = (*v.clone()).clone() {
                     w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n")))
                 }
-                Ok(self.new_text(w)?)
+                Ok(d.new_text(w)?)
             }
             NodeInner::Attribute(_, _, _) => self.shallow_copy(),
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
 
+                let d = result.owner_document();
                 self.attribute_iter().try_for_each(|a| {
-                    result.add_attribute(a.deep_copy()?)?;
+                    result.add_attribute(d.new_attribute(a.name(), a.value())?)?;
+                    //result.add_attribute(a.get_canonical()?)?;
                     Ok::<(), Error>(())
                 })?;
 
