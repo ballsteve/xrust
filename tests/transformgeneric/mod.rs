@@ -4960,3 +4960,59 @@ where
     assert_eq!(seq.to_string(), "2");
     Ok(())
 }
+
+pub fn generic_tr_format_ints_1<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("1"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "42");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_2<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("0001"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "0042");
+    Ok(())
+}

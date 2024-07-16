@@ -32,7 +32,7 @@ pub fn make_sd_raw() -> RNode {
     let doc = Rc::new(SmiteNode::new());
     xmlparse(doc.clone(),
              "<a id='a1'><b id='b1'><a id='a2'><b id='b2'/><b id='b3'/></a><a id='a3'><b id='b4'/><b id='b5'/></a></b><b id='b6'><a id='a4'><b id='b7'/><b id='b8'/></a><a id='a5'><b id='b9'/><b id='b10'/></a></b></a>",
-             None, None).expect("unable to parse XML");
+             None).expect("unable to parse XML");
     doc
 }
 pub fn make_sd_cooked() -> Result<RNode, Error> {
@@ -44,12 +44,12 @@ pub fn make_sd() -> Item<RNode> {
 
 pub fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = Rc::new(SmiteNode::new());
-    xmlparse(doc.clone(), s, None, None)?;
+    xmlparse(doc.clone(), s, None)?;
     Ok(doc)
 }
 
 pub fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
     let doc = Rc::new(SmiteNode::new());
-    let r = parse_with_ns(doc.clone(), s, None, None)?;
+    let r = parse_with_ns(doc.clone(), s, None)?;
     Ok(r)
 }

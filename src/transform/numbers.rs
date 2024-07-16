@@ -387,3 +387,101 @@ pub fn format_number<
         )),
     }
 }
+
+/// XSLT xsl:number and XPath format-integer function.
+pub fn format_integer<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    num: &Transform<N>,
+    picture: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    let p = ctxt.dispatch(stctxt, picture)?.to_string();
+    let numbers = ctxt.dispatch(stctxt, num)?;
+    let mut nit = numbers.iter();
+
+    let mut result = String::new();
+
+    // Interpret the picture string.
+    // Most of the tokens are one character, except for 'Ww'.
+    let mut pit = p.chars().peekable();
+    loop {
+        let c = pit.next();
+        if let Some(d) = c {
+            if d.is_alphanumeric() {
+                match d {
+                    '0' => {
+                        // 01, 02, 03, 04, ...
+                        // length specification
+                        // TODO: non-arabic-roman numerals
+                        let mut token = String::from(d);
+                        loop {
+                            if let Some(p) = pit.peek() {
+                                if p.eq(&'0') {
+                                    pit.next();
+                                    token.push('0');
+                                } else if p.eq(&'1'){
+                                    pit.next();
+                                    token.push('1');
+                                } else {
+                                    break
+                                }
+                            } else {
+                                break
+                            }
+                        }
+                        if let Some(num) = nit.next() {
+                            result.push_str(format!("{:0>1$}", num.to_int()?.to_string(), token.len()).as_str());
+                        }  else {
+                            break
+                        }
+                    }
+                    '1' => {
+                        // 1, 2, 3, ...
+                        if let Some(num) = nit.next() {
+                            result.push_str(num.to_int()?.to_string().as_str())
+                        }  else {
+                            break
+                        }
+                    }
+                    'A' => {
+                        // A, B, C, ..., AA, BB, CC, ...
+                    }
+                    'a' => {
+                        // a, b, c, ..., aa, bb, cc, ...
+                    }
+                    'i' => {
+                        // i, ii, iii, iv, v, vi, ...
+                    }
+                    'I' => {
+                        // I, II, III, IV, V, VI, ...
+                    }
+                    'w' => {
+                        // one, two, three, ...
+                    }
+                    'W' => {
+                        // 'Ww'
+                        if let Some('w') = pit.peek() {
+                            // One, Two, Three, ...
+                            pit.next();
+                        } else {
+                            // ONE, TWO, THREE, ...
+                        }
+                    }
+                    // TODO: non-English words
+                    _ => {}
+                }
+            } else {
+                result.push(d)
+            }
+        } else {
+            break
+        }
+    }
+
+    Ok(vec![Item::Value(Rc::new(Value::from(result)))])
+}

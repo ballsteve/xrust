@@ -4,7 +4,7 @@ use crate::{Context, Error, Item};
 use crate::parser::ParserConfig;
 use crate::trees::smite::{Node as SmiteNode, RNode};
 use crate::parser::xml::{parse as xmlparse, parse_with_ns};
-use crate::transform::context::StaticContext;
+use crate::transform::context::{StaticContext, StaticContextBuilder};
 use crate::xslt::from_document;
 
 pub(crate) type Param = (String, String);
@@ -518,7 +518,11 @@ pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>
 </xsl:stylesheet>"#;
 
     let (styledoc, stylens) = parse_from_str_with_ns(patternprepper).expect("TODO: panic message");
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .parser(|_s| Ok(Rc::new(SmiteNode::new())))
+        .fetcher(|url| Ok(String::new()))
+        .build();
     let mut c = from_document(
         styledoc,
         stylens,

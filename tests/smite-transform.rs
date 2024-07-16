@@ -822,3 +822,21 @@ fn tr_generate_ints_1() {
     )
         .expect("test failed")
 }
+#[test]
+fn tr_format_int_1() {
+    transformgeneric::generic_tr_format_ints_1::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        Box::new(smite::make_from_str),
+    )
+        .expect("test failed")
+}
+#[test]
+fn tr_format_int_2() {
+    transformgeneric::generic_tr_format_ints_2::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        Box::new(smite::make_from_str),
+    )
+        .expect("test failed")
+}

@@ -238,6 +238,12 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
     ),
+    /// Convert a number to a string.
+    /// This is one half of the functionality of xsl:number, as well as format-integer().
+    /// See XSLT 12.4.
+    /// First argument is the integer to be formatted.
+    /// Second argument is the format specification.
+    FormatInteger(Box<Transform<N>>, Box<Transform<N>>),
     /// Generate a sequence of integers. This is one half of the functionality of xsl:number.
     /// First argument is the start-at specification.
     /// Second argument is the select expression.
@@ -365,6 +371,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({:?}, {:?}, ...)", p, q),
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
             Transform::FormatNumber(v, p, _) => write!(f, "format-number({:?}, {:?})", v, p),
+            Transform::FormatInteger(i, s) => write!(f, "format-integer({:?}, {:?})", i, s),
             Transform::GenerateIntegers(_start_at, _select, _n) => write!(f, "generate-integers"),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
