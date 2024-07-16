@@ -5,6 +5,7 @@ use url::Url;
 
 use formato::Formato;
 use english_numbers::{Formatting, convert};
+use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait, NodeType};
 use crate::pattern::{Pattern, Path, PathBuilder};
@@ -457,9 +458,29 @@ pub fn format_integer<
                     }
                     'i' => {
                         // i, ii, iii, iv, v, vi, ...
+                        if let Some(num) = nit.next() {
+                            result.push_str(
+                                roman_converter(
+                                u16::try_from(num.to_int()?).map_err(|e| Error::new(ErrorKind::ParseError, e.to_string()))?
+                                ).map_err(|e| Error::new(ErrorKind::ParseError, e))?
+                                .to_lowercase().as_str()
+                            )
+                        }  else {
+                            break
+                        }
                     }
                     'I' => {
                         // I, II, III, IV, V, VI, ...
+                        if let Some(num) = nit.next() {
+                            result.push_str(
+                                roman_converter(
+                                    u16::try_from(num.to_int()?).map_err(|e| Error::new(ErrorKind::ParseError, e.to_string()))?
+                                ).map_err(|e| Error::new(ErrorKind::ParseError, e))?
+                                    .as_str()
+                            )
+                        }  else {
+                            break
+                        }
                     }
                     'w' => {
                         // one, two, three, ...

@@ -565,6 +565,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "italian_numbers"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "35a3c7c1d238ca6867e37bafc519ef4626e77d3bd556d7be34e803eb572b1b87"
+dependencies = [
+ "regex",
+]
+
+[[package]]
 name = "itertools"
 version = "0.10.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1468,6 +1477,7 @@ dependencies = [
  "english-numbers",
  "formato",
  "indextree",
+ "italian_numbers",
  "lexers",
  "pkg-version",
  "regex",
