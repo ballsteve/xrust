@@ -390,6 +390,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "english-numbers"
+version = "0.3.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4e4f5d6e192964d498b45abee72ca445e91909094bc8e8791259e82c2a0d1aa6"
+
+[[package]]
 name = "env_logger"
 version = "0.9.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1459,6 +1465,7 @@ dependencies = [
  "earleybird",
  "encoding_rs",
  "encoding_rs_io",
+ "english-numbers",
  "formato",
  "indextree",
  "lexers",

@@ -35,6 +35,8 @@ pkg-version = "1.0.0"
 regex = "1.10.4"
 # For formatting numbers
 formato = "0.2.0"
+# For formatting integers
+english-numbers = "0.3.3"
 
 [dev-dependencies]
 criterion = "0.5.1"

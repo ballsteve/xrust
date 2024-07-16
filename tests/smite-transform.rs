@@ -840,3 +840,30 @@ fn tr_format_int_2() {
     )
         .expect("test failed")
 }
+#[test]
+fn tr_format_int_3() {
+    transformgeneric::generic_tr_format_ints_3::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        Box::new(smite::make_from_str),
+    )
+        .expect("test failed")
+}
+#[test]
+fn tr_format_int_4() {
+    transformgeneric::generic_tr_format_ints_4::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        Box::new(smite::make_from_str),
+    )
+        .expect("test failed")
+}
+#[test]
+fn tr_format_int_5() {
+    transformgeneric::generic_tr_format_ints_5::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        Box::new(smite::make_from_str),
+    )
+        .expect("test failed")
+}

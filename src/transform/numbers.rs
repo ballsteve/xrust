@@ -4,6 +4,7 @@ use std::rc::Rc;
 use url::Url;
 
 use formato::Formato;
+use english_numbers::{Formatting, convert};
 
 use crate::item::{Item, Node, Sequence, SequenceTrait, NodeType};
 use crate::pattern::{Pattern, Path, PathBuilder};
@@ -462,17 +463,39 @@ pub fn format_integer<
                     }
                     'w' => {
                         // one, two, three, ...
+                        if let Some(num) = nit.next() {
+                            result.push_str(convert(num.to_int()?,
+                                                    Formatting{title_case: false, spaces: true, conjunctions: false, commas: false, dashes: false}
+                            ).to_string().as_str())
+                        } else {
+                            break
+                        }
                     }
                     'W' => {
                         // 'Ww'
                         if let Some('w') = pit.peek() {
                             // One, Two, Three, ...
                             pit.next();
+                            if let Some(num) = nit.next() {
+                                result.push_str(convert(num.to_int()?,
+                                                        Formatting{title_case: true, spaces: true, conjunctions: false, commas: false, dashes: false}
+                                ).to_string().as_str())
+                            } else {
+                                break
+                            }
                         } else {
                             // ONE, TWO, THREE, ...
+                            if let Some(num) = nit.next() {
+                                result.push_str(convert(num.to_int()?,
+                                                        Formatting{title_case: false, spaces: true, conjunctions: false, commas: false, dashes: false}
+                                ).to_string().to_uppercase().as_str())
+                            } else {
+                                break
+                            }
                         }
                     }
                     // TODO: non-English words
+                    // Use french-numbers crate
                     _ => {}
                 }
             } else {
