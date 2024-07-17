@@ -882,3 +882,41 @@ pub fn generic_document_1<N: Node, G, H, J>(
         Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
     }
 }
+
+pub fn generic_number_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let srcdoc =
+        parse_from_str("<Test><t>one</t><t>two</t><t>three</t></Test>")?;
+    let (styledoc, stylens) = parse_from_str_with_ns(
+        r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::t'>t element <xsl:number/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>"##,
+    )?;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_url| Ok(String::new()))
+        .parser(|s| parse_from_str(s))
+        .build();
+    let mut ctxt = from_document(
+        styledoc,
+        stylens,
+        None,
+        |s| parse_from_str(s),
+        |_| Ok(String::new()),
+    )?;
+    ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
+    ctxt.result_document(make_doc()?);
+    let result = ctxt.evaluate(&mut stctxt)?;
+    assert_eq!(result.to_string(), "t element 1t element 2t element 3");
+    Ok(())
+}

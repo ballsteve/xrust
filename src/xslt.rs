@@ -20,7 +20,7 @@ use xrust::xslt::from_document;
 // A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = Rc::new(SmiteNode::new());
-    let e = parse(doc.clone(), s, None, None)?;
+    let e = parse(doc.clone(), s, None)?;
     Ok(doc)
 }
 
@@ -80,6 +80,7 @@ use crate::qname::*;
 use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::template::Template;
+use crate::transform::numbers::{Numbering, Level};
 use crate::transform::{
     Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
 };
@@ -1030,7 +1031,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                             )?)),
                         ))
                     } else {
-                        Result::Err(Error::new(
+                        Err(Error::new(
                             ErrorKind::TypeError,
                             "missing name attribute".to_string(),
                         ))
@@ -1080,6 +1081,55 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                             Transform::Literal(Item::Value(Rc::new(Value::from(t.to_string()))))
                         }),
                     ))
+                }
+                (Some(XSLTNS), "number") => {
+                    let value =
+                        n.get_attribute(&QualifiedName::new(None, None, "value"));
+                    let sel =
+                        n.get_attribute(&QualifiedName::new(None, None, "select"));
+                    let level =
+                        n.get_attribute(&QualifiedName::new(None, None, "level"));
+                    if level.to_string() != "" && level.to_string() != "single" {
+                        return Err(Error::new(ErrorKind::NotImplemented, "only single level numbering is supported"))
+                    }
+                    let count =
+                        n.get_attribute(&QualifiedName::new(None, None, "count"));
+                    let from =
+                        n.get_attribute(&QualifiedName::new(None, None, "from"));
+                    let format =
+                        n.get_attribute(&QualifiedName::new(None, None, "format"));
+                    // TODO: lang, letter-value, ordinal, start-at, grouping-separator, grouping-size
+                    if value.to_string().is_empty() {
+                        // Compute place marker
+                        Ok(Transform::FormatInteger(
+                            Box::new(Transform::GenerateIntegers(
+                                Box::new(Transform::Empty), // start-at (TODO)
+                                Box::new(if sel.to_string().is_empty() {
+                                    Transform::ContextItem
+                                } else {parse::<N>(&sel.to_string())?}), // select
+                                Box::new(Numbering::new(
+                                    Level::Single, // TODO: parse level attribute value
+                                    if count.to_string().is_empty() {None} else {
+                                        Some(Pattern::try_from(count.to_string())?)
+                                    },
+                                    if from.to_string().is_empty() {None} else {
+                                        Some(Pattern::try_from(from.to_string())?)
+                                    }
+                                )),
+                            )),
+                            Box::new(Transform::Literal(Item::Value(
+                                if format.to_string().is_empty() {Rc::new(Value::from("1"))} else {format}
+                            ))),
+                        ))
+                    } else {
+                        // Place marker is supplied
+                        Ok(Transform::FormatInteger(
+                            Box::new(parse::<N>(&value.to_string())?),
+                            Box::new(Transform::Literal(Item::Value(
+                                if format.to_string().is_empty() {Rc::new(Value::from("1"))} else {format}
+                            ))),
+                        ))
+                    }
                 }
                 (Some(XSLTNS), "decimal-format") => Ok(Transform::NotImplemented(String::from("unsupported XSL element \"decimal-format\""))),
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(

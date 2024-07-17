@@ -352,13 +352,13 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:next-iteration                           | no      |                                                               |
 | xsl:next-match                               | no      |                                                               |
 | xsl:non-matching-substring                   | no      |                                                               |
-| xsl:number                                   | no      |                                                               |
-| xsl:number/@value                            | no      |                                                               |
-| xsl:number/@select                           | no      |                                                               |
-| xsl:number/@level                            | no      |                                                               |
+| xsl:number                                   | yes     |                                                               |
+| xsl:number/@value                            | yes     |                                                               |
+| xsl:number/@select                           | yes     |                                                               |
+| xsl:number/@level                            | partial | Only single level supported                                   |
 | xsl:number/@count                            | no      |                                                               |
 | xsl:number/@from                             | no      |                                                               |
-| xsl:number/@format                           | no      |                                                               |
+| xsl:number/@format                           | yes     | Roman numerals up to 3999.                                    |
 | xsl:number/@lang                             | no      |                                                               |
 | xsl:number/@letter-value                     | no      |                                                               |
 | xsl:number/@ordinal                          | no      |                                                               |

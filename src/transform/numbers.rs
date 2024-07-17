@@ -517,6 +517,7 @@ pub fn format_integer<
                     }
                     // TODO: non-English words
                     // Use french-numbers crate
+                    // Use italian-numbers crate
                     _ => {}
                 }
             } else {
