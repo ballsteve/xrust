@@ -325,7 +325,10 @@ pub(crate) fn copy<
                 for j in ctxt.dispatch(stctxt, c)? {
                     match &j {
                         Item::Value(v) => im.push(im.new_text(v.clone())?)?,
-                        Item::Node(n) => im.push(n.clone())?,
+                        Item::Node(n) => match n.node_type() {
+                            NodeType::Attribute => im.add_attribute(n.clone())?,
+                            _ => im.push(n.clone())?,
+                        }
                         _ => {
                             return Err(Error::new(
                                 ErrorKind::NotImplemented,

@@ -88,6 +88,7 @@ use crate::value::*;
 use crate::xdmerror::*;
 use std::convert::TryFrom;
 use url::Url;
+use crate::parser::xpath::nodetests::nodetest;
 
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
@@ -306,6 +307,42 @@ where
             Ok::<(), Error>(())
         })?;
 
+    // Find named attribute sets
+
+    // Store for named attribute sets
+    let mut attr_sets: HashMap<QualifiedName, Vec<Transform<N>>> = HashMap::new();
+
+    stylenode
+        .child_iter()
+        .filter(|c| {
+            c.is_element()
+                && c.name().get_nsuri_ref() == Some(XSLTNS)
+                && c.name().get_localname() == "attribute-set"
+        })
+        .try_for_each(|c| {
+            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+            let eqname =
+                QualifiedName::try_from((name.to_string().as_str(), &stylens))?;
+            if eqname.to_string().is_empty() {
+                return Err(Error::new(ErrorKind::DynamicAbsent, "attribute sets must have a name"))
+            }
+            // xsl:attribute children
+            // TODO: check that there are no other children
+            let mut attrs = vec![];
+            c.child_iter()
+                .filter(|c| {
+                    c.is_element()
+                        && c.name().get_nsuri_ref() == Some(XSLTNS)
+                        && c.name().get_localname() == "attribute"
+                })
+                .try_for_each(|a| {
+                    attrs.push(to_transform(a, &stylens, &attr_sets)?);
+                    Ok(())
+                })?;
+            attr_sets.insert(eqname, attrs);
+            Ok(())
+        })?;
+
     // Iterate over children, looking for templates
     // * compile match pattern
     // * compile content into sequence constructor
@@ -329,7 +366,7 @@ where
             let mut body = vec![];
             let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
             c.child_iter().try_for_each(|d| {
-                body.push(to_transform(d, &stylens)?);
+                body.push(to_transform(d, &stylens, &attr_sets)?);
                 Ok::<(), Error>(())
             })?;
             //sc.static_analysis(&mut pat);
@@ -500,7 +537,7 @@ where
                             // xsl:param content is the sequence constructor
                             let mut body = vec![];
                             c.child_iter().try_for_each(|d| {
-                                body.push(to_transform(d, &stylens)?);
+                                body.push(to_transform(d, &stylens, &attr_sets)?);
                                 Ok(())
                             })?;
                             params.push((
@@ -527,7 +564,7 @@ where
                         && c.name().get_localname() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d, &stylens)?);
+                    body.push(to_transform(d, &stylens, &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -592,7 +629,7 @@ where
                         && c.name().get_localname() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d, &stylens)?);
+                    body.push(to_transform(d, &stylens, &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -609,7 +646,11 @@ where
 }
 
 /// Compile a node in a template to a sequence [Combinator]
-fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Transform<N>, Error> {
+fn to_transform<N: Node>(
+    n: N,
+    ns: &Vec<HashMap<String, String>>,
+    attr_sets: &HashMap<QualifiedName, Vec<Transform<N>>>,
+) -> Result<Transform<N>, Error> {
     match n.node_type() {
         NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
             n.to_string(),
@@ -734,7 +775,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                 Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e, ns)?);
+                                        body.push(to_transform(e, ns, attr_sets)?);
                                         Ok(body)
                                     },
                                 )?),
@@ -771,7 +812,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                                                 .try_fold(
                                                                     vec![],
                                                                     |mut body, e| {
-                                                                        body.push(to_transform(e, ns)?);
+                                                                        body.push(to_transform(e, ns, attr_sets)?);
                                                                         Ok(body)
                                                                     },
                                                                 )?
@@ -790,7 +831,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                                     .try_fold(
                                                         vec![],
                                                         |mut o, e| {
-                                                            o.push(to_transform(e, ns)?);
+                                                            o.push(to_transform(e, ns, attr_sets)?);
                                                             Ok(o)
                                                         },
                                                     )?));
@@ -833,7 +874,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
-                                    body.push(to_transform(e, ns)?);
+                                    body.push(to_transform(e, ns, attr_sets)?);
                                     Ok(body)
                                 },
                             )?)),
@@ -886,7 +927,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e, ns)?);
+                                        body.push(to_transform(e, ns, attr_sets)?);
                                         Ok(body)
                                     },
                                 )?)),
@@ -898,7 +939,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e, ns)?);
+                                        body.push(to_transform(e, ns, attr_sets)?);
                                         Ok(body)
                                     },
                                 )?)),
@@ -919,18 +960,29 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                 }
                 (Some(XSLTNS), "copy") => {
                     // TODO: handle select attribute
-                    let content: Vec<Transform<N>> =
+                    let mut content: Vec<Transform<N>> =
                         n.child_iter().try_fold(vec![], |mut body, e| {
-                            body.push(to_transform(e, ns)?);
+                            body.push(to_transform(e, ns, attr_sets)?);
                             Ok(body)
                         })?;
+                    // Process @xsl:use-attribute-sets
+                    let use_atts = n.get_attribute(&QualifiedName::new(Some(XSLTNS.to_string()), None, "use-attribute-sets"));
+                    let mut attrs = vec![];
+                    use_atts.to_string().split_whitespace().try_for_each(|a| {
+                        let eqa = QualifiedName::try_from((a, ns))?;
+                        attr_sets.get(&eqa).iter().cloned()
+                            .for_each(|a| attrs.append(&mut a.clone()));
+                        Ok(())
+                    })?;
                     Ok(Transform::Copy(
                         Box::new(Transform::ContextItem), // TODO: this is where the select attribute would go
                         // The content of this element is a template for the content of the new item
-                        Box::new(if content.is_empty() {
+                        Box::new(if content.is_empty() && attrs.is_empty() {
                             Transform::Empty
                         } else {
-                            Transform::SequenceItems(content)
+                            // Attributes always come first
+                            attrs.append(&mut content);
+                            Transform::SequenceItems(attrs)
                         }),
                     ))
                 }
@@ -964,7 +1016,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                                         // xsl:with-param content is the sequence constructor
                                         let mut body = vec![];
                                         c.child_iter().try_for_each(|d| {
-                                            body.push(to_transform(d, ns)?);
+                                            body.push(to_transform(d, ns, attr_sets)?);
                                             Ok(())
                                         })?;
                                         ap.push((
@@ -1001,20 +1053,34 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                 (Some(XSLTNS), "element") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
                     if m.to_string().is_empty() {
-                        return Result::Err(Error::new(
+                        return Err(Error::new(
                             ErrorKind::TypeError,
-                            "missing name attribute".to_string(),
+                            "missing name attribute",
                         ));
                     }
+                    let mut content = n.child_iter().try_fold(vec![], |mut body, e| {
+                        body.push(to_transform(e, ns, attr_sets)?);
+                        Ok(body)
+                    })?;
+                    // Process @xsl:use-attribute-sets
+                    let use_atts = n.get_attribute(&QualifiedName::new(Some(XSLTNS.to_string()), None, "use-attribute-sets"));
+                    let mut attrs = vec![];
+                    use_atts.to_string().split_whitespace().try_for_each(|a| {
+                        let eqa = QualifiedName::try_from((a, ns))?;
+                        attr_sets.get(&eqa).iter().cloned()
+                            .for_each(|a| attrs.append(&mut a.clone()));
+                        Ok(())
+                    })?;
+
                     Ok(Transform::Element(
                         Box::new(parse_avt(m.to_string().as_str())?),
-                        Box::new(Transform::SequenceItems(n.child_iter().try_fold(
-                            vec![],
-                            |mut body, e| {
-                                body.push(to_transform(e, ns)?);
-                                Ok(body)
-                            },
-                        )?)),
+                        Box::new(if content.is_empty() && attrs.is_empty() {
+                            Transform::Empty
+                        } else {
+                            // Attributes always come first
+                            attrs.append(&mut content);
+                            Transform::SequenceItems(attrs)
+                        }),
                     ))
                 }
                 (Some(XSLTNS), "attribute") => {
@@ -1025,7 +1091,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
-                                    body.push(to_transform(e, ns)?);
+                                    body.push(to_transform(e, ns, attr_sets)?);
                                     Ok(body)
                                 },
                             )?)),
@@ -1039,7 +1105,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                 }
                 (Some(XSLTNS), "comment") => Ok(Transform::LiteralComment(Box::new(
                     Transform::SequenceItems(n.child_iter().try_fold(vec![], |mut body, e| {
-                        body.push(to_transform(e, ns)?);
+                        body.push(to_transform(e, ns, attr_sets)?);
                         Ok(body)
                     })?),
                 ))),
@@ -1056,7 +1122,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e, ns)?);
+                                body.push(to_transform(e, ns, attr_sets)?);
                                 Ok(body)
                             },
                         )?)),
@@ -1069,7 +1135,7 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e, ns)?);
+                                body.push(to_transform(e, ns, attr_sets)?);
                                 Ok(body)
                             },
                         )?)),
@@ -1137,13 +1203,25 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                     u
                 ))),
                 (u, a) => {
+                    // Process @xsl:use-attribute-sets
+                    let use_atts = n.get_attribute(&QualifiedName::new(Some(XSLTNS.to_string()), None, "use-attribute-sets"));
+                    let mut attrs = vec![];
+                    use_atts.to_string().split_whitespace().try_for_each(|a| {
+                        let eqa = QualifiedName::try_from((a, ns))?;
+                        attr_sets.get(&eqa).iter().cloned()
+                            .for_each(|a| attrs.append(&mut a.clone()));
+                        Ok(())
+                    })?;
                     let mut content = vec![];
-                    n.attribute_iter().try_for_each(|e| {
-                        content.push(to_transform(e, ns)?);
+                    // Copy attributes to the result, except for XSLT directives
+                    n.attribute_iter()
+                        .filter(|e| e.name().get_nsuri_ref() != Some(XSLTNS))
+                        .try_for_each(|e| {
+                        content.push(to_transform(e, ns, attr_sets)?);
                         Ok::<(), Error>(())
                     })?;
                     n.child_iter().try_for_each(|e| {
-                        content.push(to_transform(e, ns)?);
+                        content.push(to_transform(e, ns, attr_sets)?);
                         Ok::<(), Error>(())
                     })?;
                     Ok(Transform::LiteralElement(
@@ -1152,7 +1230,13 @@ fn to_transform<N: Node>(n: N, ns: &Vec<HashMap<String, String>>) -> Result<Tran
                             n.name().get_prefix(),
                             a.to_string(),
                         ),
-                        Box::new(Transform::SequenceItems(content)),
+                        Box::new(if content.is_empty() && attrs.is_empty() {
+                            Transform::Empty
+                        } else {
+                            // Attributes always come first
+                            attrs.append(&mut content);
+                            Transform::SequenceItems(attrs)
+                        }),
                     ))
                 }
             }

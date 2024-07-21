@@ -68,6 +68,8 @@ pub struct Context<N: Node> {
     pub(crate) keys: HashMap<String, Vec<(Pattern<N>, Transform<N>)>>,
     // The calculated values of keys.
     pub(crate) key_values: HashMap<String, HashMap<String, Vec<N>>>,
+    // Named attribute sets
+    pub(crate) attr_sets: HashMap<String, Vec<Transform<N>>>,
     // Output control
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
@@ -92,6 +94,7 @@ impl<N: Node> Context<N> {
             current_group: Sequence::new(),
             keys: HashMap::new(),
             key_values: HashMap::new(),
+            attr_sets: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: vec![],
@@ -150,6 +153,10 @@ impl<N: Node> Context<N> {
             v.iter()
                 .for_each(|(kk, vv)| println!("\tvalue \"{}\" {} nodes", kk, vv.len()))
         })
+    }
+    /// Add a named attribute set. This replaces any previously declared attribute set with the same name
+    pub fn attribute_set(&mut self, name: QualifiedName, body: Vec<Transform<N>>) {
+
     }
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
@@ -210,7 +217,7 @@ impl<N: Node> Context<N> {
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = Rc::new(SmiteNode::new());
-    ///   parse(d.clone(), s, None, None)
+    ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -337,7 +344,7 @@ impl<N: Node> Context<N> {
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = Rc::new(SmiteNode::new());
-    ///   parse(d.clone(), s, None, None)
+    ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -473,6 +480,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             key_values: HashMap::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
+            attr_sets: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: vec![],
