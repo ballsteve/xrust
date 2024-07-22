@@ -27,7 +27,7 @@ let t = parse("/child::A/child::B/child::C")
     .expect("unable to parse XPath expression");
 
 let source = Rc::new(SmiteNode::new());
-xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None, None)
+xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
     .expect("unable to parse XML");
 let mut static_context = StaticContextBuilder::new()
     .message(|_| Ok(()))
