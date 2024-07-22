@@ -65,7 +65,7 @@ fn main() {
     };
     // Parse the XML into a RNode
     let root = Rc::new(SmiteNode::new());
-    xmlparse(root.clone(), srcxml.as_str(), None, None).expect("unable to parse XML");
+    xmlparse(root.clone(), srcxml.as_str(), None).expect("unable to parse XML");
 
     // Create a dynamic transformation context
     let context = ContextBuilder::new()
