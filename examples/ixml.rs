@@ -117,7 +117,7 @@ fn main() {
     };
 
     let style = Rc::new(SmiteNode::new());
-    parse(style.clone(), stylexml.trim(), None, None).expect("failed to parse XSL stylesheet");
+    parse(style.clone(), stylexml.trim(), None).expect("failed to parse XSL stylesheet");
 
     // Read the Markdown text file
     let srcpath = Path::new(&args[2]);
