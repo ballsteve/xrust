@@ -15,13 +15,38 @@ fn xpath_step_1_pos() {
         .expect("test failed")
 }
 #[test]
+fn xpath_step_2_pos() {
+    xpathgeneric::generic_step_2_pos::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_step_2() {
     xpathgeneric::generic_step_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
 #[test]
+fn xpath_step_attribute_1() {
+    xpathgeneric::generic_step_attribute_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_step_attribute_2() {
+    xpathgeneric::generic_step_attribute_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_step_wild_1() {
     xpathgeneric::generic_step_wild_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_step_parent_1() {
+    xpathgeneric::generic_step_parent_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_step_parent_2() {
+    xpathgeneric::generic_step_parent_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
 #[test]
@@ -35,13 +60,23 @@ fn xpath_path_1_pos() {
         .expect("test failed")
 }
 #[test]
+fn xpath_path_2_pos() {
+    xpathgeneric::generic_path_2_pos::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_path_1_neg() {
     xpathgeneric::generic_path_1_neg::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
 #[test]
-fn xpath_path_2() {
-    xpathgeneric::generic_path_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+fn xpath_path_3() {
+    xpathgeneric::generic_path_3::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_path_4() {
+    xpathgeneric::generic_path_4::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
 #[test]

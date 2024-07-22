@@ -16,7 +16,7 @@ use crate::parser::xpath::expressions::postfix_expr;
 use crate::parser::xpath::nodetests::nodetest;
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::types::instanceof_expr;
-use crate::transform::{Axis, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
+use crate::transform::{Axis, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
 pub(crate) fn union_expr<'a, N: Node + 'a>(
@@ -66,11 +66,17 @@ fn intersectexcept_expr<'a, N: Node + 'a>(
 
 pub(crate) fn path_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt3(
+    Box::new(alt4(
+        abbreviated_parent(),
         absolutedescendant_expr::<N>(),
         absolutepath_expr::<N>(),
         relativepath_expr::<N>(),
     ))
+}
+
+fn abbreviated_parent<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+    Box::new(map(tag(".."), |_| Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))))
 }
 
 // ('//' RelativePathExpr?)
@@ -158,7 +164,10 @@ fn axisstep<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
-            pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
+            alt2(
+                pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
+                pair(abbreviated_axisstep(), nodetest()),
+            ),
             predicate_list(),
         ),
         |((a, n), pl)| {
@@ -173,31 +182,43 @@ fn axisstep<'a, N: Node + 'a>(
     ))
 }
 
+fn abbreviated_axisstep<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {
+    Box::new(no_input("child"))
+}
+pub fn no_input<'a, A: Clone + 'a, N: Node>(
+    val: A,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a
+{
+    move |input| Ok((input, val.clone()))
+}
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
 fn forwardaxis<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {
-    Box::new(map(
-        //    alt8(
-        pair(
-            // need alt8
-            alt2(
-                alt4(
-                    map(tag("child"), |_| "child"),
-                    map(tag("descendant"), |_| "descendant"),
-                    map(tag("descendant-or-self"), |_| "descendant-or-self"),
-                    map(tag("attribute"), |_| "attribute"),
+    Box::new(
+        alt2(
+            //    alt8(
+            map(pair(
+                // need alt8
+                alt2(
+                    alt4(
+                        map(tag("child"), |_| "child"),
+                        map(tag("descendant"), |_| "descendant"),
+                        map(tag("descendant-or-self"), |_| "descendant-or-self"),
+                        map(tag("attribute"), |_| "attribute"),
+                    ),
+                    alt4(
+                        map(tag("self"), |_| "self"),
+                        map(tag("following"), |_| "following"),
+                        map(tag("following-sibling"), |_| "following-sibling"),
+                        map(tag("namespace"), |_| "namespace"),
+                    ),
                 ),
-                alt4(
-                    map(tag("self"), |_| "self"),
-                    map(tag("following"), |_| "following"),
-                    map(tag("following-sibling"), |_| "following-sibling"),
-                    map(tag("namespace"), |_| "namespace"),
-                ),
-            ),
-            tag("::"),
+                tag("::"),
+            ), |(a, _)| a),
+            map(tag("@"), |_| "attribute"),
         ),
-        |(a, _)| a,
-    ))
+    )
 }
 
 // ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding-sibling' | 'preceding' ) '::'
