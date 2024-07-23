@@ -160,7 +160,7 @@ pub(crate) fn expr_wrapper<N: Node>(
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
 fn expr_single<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt4(or_expr(), let_expr(), for_expr(), if_expr()))
+    Box::new(alt4(let_expr(), for_expr(), if_expr(), or_expr()))
 }
 
 pub(crate) fn expr_single_wrapper<N: Node>(
