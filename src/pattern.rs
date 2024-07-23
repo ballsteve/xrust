@@ -20,31 +20,45 @@ let p: Pattern<N> = Pattern::try_from("child::foobar")
 An [Item] can then be tested to see if it matches the [Pattern]. To do that, it is necessary to have a transformation [Context].
 
 ```rust
-# use std::rc::Rc;
+# use std::rc::Rc;use xrust::ErrorKind;
 # use xrust::xdmerror::Error;
 # use xrust::item::{Item, NodeType};
 # use xrust::pattern::Pattern;
-# use xrust::transform::context::{Context, StaticContext};
+# use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
 # use xrust::trees::smite::{RNode, Node};
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 let p = Pattern::try_from("/").expect("unable to compile pattern");
 let n = Item::Node(Rc::new(Node::new()));
+
+// Create a static context
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+   .build();
+
 // This pattern matches the root node
-assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), true)
+assert_eq!(p.matches(&Context::new(), &mut static_context, &n), true)
 ```
 
 ```rust
 # use std::rc::Rc;
-# use xrust::xdmerror::Error;
+# use xrust::xdmerror::{Error, ErrorKind};
 # use xrust::item::{Item, NodeType};
 # use xrust::pattern::Pattern;
-# use xrust::transform::context::{Context, StaticContext};
+# use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
 # use xrust::trees::smite::{RNode, Node};
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 let p = Pattern::try_from("child::foobar").expect("unable to compile pattern");
 let n = Item::Node(Rc::new(Node::new()));
+// Create a static context
+# let mut static_context = StaticContextBuilder::new()
+#    .message(|_| Ok(()))
+#    .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+#    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+#   .build();
 // This pattern will not match because "n" is not an element named "foobar"
-assert_eq!(p.matches(&Context::new(), &mut StaticContext::<F>::new(), &n), false)
+assert_eq!(p.matches(&Context::new(), &mut static_context, &n), false)
 ```
 
 */
@@ -53,6 +67,7 @@ use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
+use url::Url;
 
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::parser::combinators::whitespace::xpwhitespace;
@@ -92,10 +107,14 @@ pub enum Pattern<N: Node> {
 impl<N: Node> Pattern<N> {
     /// Returns whether the given item matches the pattern.
     /// TODO: return dynamic errors
-    pub fn matches<F: FnMut(&str) -> Result<(), Error>>(
+    pub fn matches<
+        F: FnMut(&str) -> Result<(), Error>,
+        G: FnMut(&str) -> Result<N, Error>,
+        H: FnMut(&Url) -> Result<String, Error>,
+    >(
         &self,
         ctxt: &Context<N>,
-        stctxt: &mut StaticContext<F>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
     ) -> bool {
         match self {
@@ -134,6 +153,7 @@ fn find_node<N: Node>(a: &Axis, i: &Item<N>) -> Option<Item<N>> {
             }
             _ => None,
         },
+        Axis::SelfAxis => Some(i.clone()),
         Axis::Parent => match &*i {
             Item::Node(n) => n.parent().map(|p| Item::Node(p)),
             _ => None,

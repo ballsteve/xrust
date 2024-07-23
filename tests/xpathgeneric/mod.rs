@@ -7,15 +7,18 @@ use xrust::parser::xpath::parse;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::ActualParameters;
-use xrust::transform::context::{Context, ContextBuilder, StaticContext};
+use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
 
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
-
 fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
-    Context::new().dispatch(&mut StaticContext::<F>::new(), &parse(e.as_ref())?)
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    Context::new().dispatch(&mut stctxt, &parse(e.as_ref())?)
 }
 
 fn dispatch_rig<N: Node, G, H>(
@@ -27,12 +30,17 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let rd = make_empty_doc();
     ContextBuilder::new()
         .context(vec![make_doc()])
         .result_document(rd)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &parse(e.as_ref())?)
+        .dispatch(&mut stctxt, &parse(e.as_ref())?)
 }
 
 pub fn generic_empty<N: Node>() -> Result<(), Error> {
@@ -53,6 +61,35 @@ where
     H: Fn() -> Item<N>,
 {
     let result: Sequence<N> = dispatch_rig("child::a", make_empty_doc, make_doc)?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+                (NodeType::Element, "a") => Ok(()),
+                (NodeType::Element, _) => Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!(
+                        "got element named \"{}\", expected \"a\"",
+                        result[0].name().to_string()
+                    ),
+                )),
+                _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
+            },
+            _ => Err(Error::new(ErrorKind::Unknown, "not a node")),
+        }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("got result \"{}\", expected \"\"", result.to_string()),
+        ))
+    }
+}
+pub fn generic_step_2_pos<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Abbreviated from child::a
+    let result: Sequence<N> = dispatch_rig("a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
             Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
@@ -104,6 +141,34 @@ where
         ))
     }
 }
+pub fn generic_path_2_pos<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = dispatch_rig("/a", make_empty_doc, make_doc)?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+                (NodeType::Element, "a") => Ok(()),
+                (NodeType::Element, _) => Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!(
+                        "got element named \"{}\", expected \"a\"",
+                        result[0].name().to_string()
+                    ),
+                )),
+                _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
+            },
+            _ => Err(Error::new(ErrorKind::Unknown, "not a node")),
+        }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("got result \"{}\", expected \"\"", result.to_string()),
+        ))
+    }
+}
 
 pub fn generic_path_1_neg<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
 where
@@ -121,12 +186,40 @@ where
     }
 }
 
-pub fn generic_path_2<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+pub fn generic_path_3<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
     let result: Sequence<N> = dispatch_rig("/child::a/child::b", make_empty_doc, make_doc)?;
+    if result.len() == 2 {
+        match &result[0] {
+            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+                (NodeType::Element, "b") => Ok(()),
+                (NodeType::Element, _) => Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!(
+                        "got element named \"{}\", expected \"a\"",
+                        result[0].name().to_string()
+                    ),
+                )),
+                _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
+            },
+            _ => Err(Error::new(ErrorKind::Unknown, "not a node")),
+        }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("got {} results, expected 0", result.len()),
+        ))
+    }
+}
+pub fn generic_path_4<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = dispatch_rig("/a/b", make_empty_doc, make_doc)?;
     if result.len() == 2 {
         match &result[0] {
             Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
@@ -283,6 +376,100 @@ where
     Ok(())
 }
 
+pub fn generic_step_attribute_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("/child::*/attribute::id", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 1);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Attribute);
+                assert_eq!(n.name().to_string(), "id");
+                assert_eq!(n.value().to_string(), "a1")
+            }
+            _ => panic!("not a node"),
+        }
+    }
+    Ok(())
+}
+pub fn generic_step_attribute_2<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = dispatch_rig("/child::*/@id", make_empty_doc, make_doc)?;
+    assert_eq!(s.len(), 1);
+    for t in s {
+        match &t {
+            Item::Node(n) => {
+                assert_eq!(n.node_type(), NodeType::Attribute);
+                assert_eq!(n.name().to_string(), "id");
+                assert_eq!(n.value().to_string(), "a1")
+            }
+            _ => panic!("not a node"),
+        }
+    }
+    Ok(())
+}
+
+pub fn generic_step_parent_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let sd = make_doc();
+    match &sd {
+        Item::Node(c) => {
+            let l = c.descend_iter().last().unwrap();
+            let mut stctxt = StaticContextBuilder::new()
+                .message(|_| Ok(()))
+                .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .build();
+            let s = ContextBuilder::new()
+                .context(vec![Item::Node(l)])
+                .result_document(rd)
+                .build()
+                .dispatch(&mut stctxt, &parse("parent::a")?)?;
+            assert_eq!(s.len(), 1);
+            assert_eq!(s[0].name().to_string(), "a")
+        }
+        _ => panic!("unable to unpack node"),
+    }
+    Ok(())
+}
+pub fn generic_step_parent_2<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let sd = make_doc();
+    match &sd {
+        Item::Node(c) => {
+            let l = c.descend_iter().last().unwrap();
+            let mut stctxt = StaticContextBuilder::new()
+                .message(|_| Ok(()))
+                .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .build();
+            let s = ContextBuilder::new()
+                .context(vec![Item::Node(l)])
+                .result_document(rd)
+                .build()
+                .dispatch(&mut stctxt, &parse("..")?)?;
+            assert_eq!(s.len(), 1);
+            assert_eq!(s[0].name().to_string(), "a")
+        }
+        _ => panic!("unable to unpack node"),
+    }
+    Ok(())
+}
+
 pub fn generic_step_wild_2<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
 where
     G: Fn() -> N,
@@ -293,11 +480,16 @@ where
     match &sd {
         Item::Node(c) => {
             let l = c.descend_iter().last().unwrap();
+            let mut stctxt = StaticContextBuilder::new()
+                .message(|_| Ok(()))
+                .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .build();
             let s = ContextBuilder::new()
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut StaticContext::<F>::new(), &parse("ancestor::*")?)?;
+                .dispatch(&mut stctxt, &parse("ancestor::*")?)?;
             assert_eq!(s.len(), 3);
         }
         _ => panic!("unable to unpack node"),
@@ -336,11 +528,16 @@ where
     H: Fn() -> Item<N>,
 {
     let rd = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let s = ContextBuilder::new()
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &parse(".")?)?;
+        .dispatch(&mut stctxt, &parse(".")?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_string(), "foobar");
     Ok(())
@@ -352,11 +549,16 @@ where
     H: Fn() -> Item<N>,
 {
     let rd = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let s = ContextBuilder::new()
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &parse("(1)")?)?;
+        .dispatch(&mut stctxt, &parse("(1)")?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_int().unwrap(), 1);
     Ok(())
@@ -632,15 +834,17 @@ where
     let sd = make_doc();
     if let Item::Node(ref doc) = sd {
         let top = doc.child_iter().nth(0).unwrap();
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .build();
         let s = ContextBuilder::new()
             .result_document(rd)
             .context(vec![Item::Node(top)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(
-                &mut StaticContext::<F>::new(),
-                &parse("current()/child::a")?,
-            )
+            .dispatch(&mut stctxt, &parse("current()/child::a")?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1)
     } else {
@@ -1034,20 +1238,39 @@ where
     let sd = make_doc();
     if let Item::Node(ref doc) = sd {
         let l = doc.descend_iter().last().unwrap();
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .build();
         let s = ContextBuilder::new()
             .result_document(rd)
             .context(vec![Item::Node(l)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(
-                &mut StaticContext::<F>::new(),
-                &parse("count(ancestor::*)")?,
-            )
+            .dispatch(&mut stctxt, &parse("count(ancestor::*)")?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1);
         assert_eq!(s.to_int().expect("unable to get int from sequence"), 3)
     } else {
         panic!("not a node")
+    }
+    Ok(())
+}
+
+pub fn generic_format_number_1<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("format-number(456.789, '#.##')")?;
+    assert_eq!(s.len(), 1);
+    match &s[0] {
+        Item::Value(v) => match &**v {
+            Value::String(d) => assert_eq!(d, "456.79"),
+            _ => panic!("not a singleton double value"),
+        },
+        _ => panic!("not a value"),
     }
     Ok(())
 }
@@ -1186,6 +1409,30 @@ where
     Ok(())
 }
 
+pub fn generic_document_1<N: Node, G, H, J>(make_empty_doc: G, make_doc: H, make_from_str: J) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+        J: Fn(&str) -> Result<N, Error>,
+{
+    let mut msgs: Vec<String> = vec![];
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|m| {msgs.push(m.to_string()); Ok(())})
+        .fetcher(|_| Ok(String::from("<Test>external document</Test>")))
+        .parser(|s| make_from_str(s))
+        .build();
+    let rd = make_empty_doc();
+    let seq: Sequence<N> = ContextBuilder::new()
+        .context(vec![make_doc()])
+        .result_document(rd)
+        .build()
+        .dispatch(&mut stctxt, &parse("document('urn:example.org/test')").expect("unable to parse XPath expression"))
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq.to_string(), "external document");
+    Ok(())
+}
+
 // Keys
 
 pub fn generic_key_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
@@ -1241,7 +1488,11 @@ where
             nodetest: NodeTest::Kind(KindTest::Text),
         }),
     );
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     ctxt.populate_key_values(&mut stctxt, sd.clone())
         .expect("unable to populate key values");
     let seq = ctxt.dispatch(&mut stctxt, &e).expect("evaluation failed");

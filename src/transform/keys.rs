@@ -6,6 +6,7 @@ use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{Item, SequenceTrait};
 use std::collections::HashMap;
+use url::Url;
 
 /// For each key declaration:
 /// 1. find the nodes in the document that match the pattern
@@ -13,9 +14,14 @@ use std::collections::HashMap;
 /// 3. Store the key value -> Node mapping
 /// NB. an optimisation is to calculate a key's value the first time that key is accessed
 /// TODO: support composite keys
-pub(crate) fn populate_key_values<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn populate_key_values<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &mut Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     sd: N,
 ) -> Result<(), Error> {
     // We have to visit N nodes to compute K keys.
@@ -57,9 +63,14 @@ pub(crate) fn populate_key_values<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// Look up the value of a key. The value is evaluated to a Sequence. The interpretation of the sequence depends on the key's composite setting.
 /// TODO: support composite keys
-pub fn key<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn key<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     name: &Box<Transform<N>>,
     v: &Box<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {

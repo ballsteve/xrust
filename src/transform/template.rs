@@ -3,9 +3,11 @@
 use std::cmp::Ordering;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
+use url::Url;
 
+use crate::qname::QualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::Transform;
+use crate::transform::{do_sort, Order, Transform};
 use crate::xdmerror::Error;
 use crate::{Node, Pattern, Sequence};
 
@@ -16,8 +18,7 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    #[allow(dead_code)]
-    mode: Option<String>, // Not implemented (yet)
+    pub(crate) mode: Option<QualifiedName>,
 }
 
 impl<N: Node> Template<N> {
@@ -27,7 +28,7 @@ impl<N: Node> Template<N> {
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
-        mode: Option<String>,
+        mode: Option<QualifiedName>,
     ) -> Self {
         Template {
             pattern,
@@ -40,10 +41,10 @@ impl<N: Node> Template<N> {
     }
 }
 
-/// Two templates are equal if they have the same priority and import precedence.
+/// Two templates are equal if they have the same priority, import precedence, and mode.
 impl<N: Node> PartialEq for Template<N> {
     fn eq(&self, other: &Self) -> bool {
-        self.priority == other.priority && self.import == other.import
+        self.priority == other.priority && self.import == other.import && self.mode == other.mode
     }
 }
 impl<N: Node> Eq for Template<N> {}
@@ -81,65 +82,77 @@ impl<N: Node> Debug for Template<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         write!(
             f,
-            "template match \"{:?}\" priority {:?}",
-            self.pattern, self.priority
+            "template match \"{:?}\" priority {:?} mode {:?}",
+            self.pattern, self.priority, self.mode
         )
     }
 }
 
 /// Apply templates to the select expression.
-pub(crate) fn apply_templates<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn apply_templates<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
+    m: &Option<QualifiedName>,
+    o: &Vec<(Order, Transform<N>)>, // sort keys
 ) -> Result<Sequence<N>, Error> {
-    // s is the select expression. Evaluate it, and then iterate over it's items.
+    // s is the select expression. Evaluate it, and then iterate over its items.
     // Each iteration becomes an item in the result sequence.
-    ctxt.dispatch(stctxt, s)?
-        .iter()
-        .try_fold(vec![], |mut result, i| {
-            let templates = ctxt.find_templates(stctxt, i)?;
-            // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
-            let matching = if templates.len() > 1 {
-                if templates[0].priority == templates[1].priority
-                    && templates[0].import.len() == templates[1].import.len()
-                {
-                    let mut candidates: Vec<Rc<Template<N>>> = templates
-                        .iter()
-                        .take_while(|t| {
-                            t.priority == templates[0].priority
-                                && t.import.len() == templates[0].import.len()
-                        })
-                        .cloned()
-                        .collect();
-                    candidates.sort_unstable_by(|a, b| {
-                        a.document_order.map_or(Ordering::Greater, |v| {
-                            b.document_order.map_or(Ordering::Less, |u| v.cmp(&u))
-                        })
-                    });
-                    candidates.last().unwrap().clone()
-                } else {
-                    templates[0].clone()
-                }
+    let mut seq = ctxt.dispatch(stctxt, s)?;
+    do_sort(&mut seq, o, ctxt, stctxt)?;
+    seq.iter().try_fold(vec![], |mut result, i| {
+        let templates = ctxt.find_templates(stctxt, i, m)?;
+        // If there are two or more templates with the same priority and import level, then take the one that has the higher document order
+        let matching = if templates.len() > 1 {
+            if templates[0].priority == templates[1].priority
+                && templates[0].import.len() == templates[1].import.len()
+            {
+                let mut candidates: Vec<Rc<Template<N>>> = templates
+                    .iter()
+                    .take_while(|t| {
+                        t.priority == templates[0].priority
+                            && t.import.len() == templates[0].import.len()
+                    })
+                    .cloned()
+                    .collect();
+                candidates.sort_unstable_by(|a, b| {
+                    a.document_order.map_or(Ordering::Greater, |v| {
+                        b.document_order.map_or(Ordering::Less, |u| v.cmp(&u))
+                    })
+                });
+                candidates.last().unwrap().clone()
             } else {
                 templates[0].clone()
-            };
-            // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
-            let mut u = ContextBuilder::from(ctxt)
-                .context(vec![i.clone()])
-                .previous_context(Some(i.clone()))
-                .current_templates(templates)
-                .build()
-                .dispatch(stctxt, &matching.body)?;
-            result.append(&mut u);
-            Ok(result)
-        })
+            }
+        } else {
+            templates[0].clone()
+        };
+        // Create a new context using the current templates, then evaluate the highest priority and highest import precedence
+        let mut u = ContextBuilder::from(ctxt)
+            .context(vec![i.clone()])
+            .previous_context(Some(i.clone()))
+            .current_templates(templates)
+            .build()
+            .dispatch(stctxt, &matching.body)?;
+        result.append(&mut u);
+        Ok(result)
+    })
 }
 
 /// Apply template with a higher import precedence.
-pub(crate) fn apply_imports<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn apply_imports<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
@@ -163,9 +176,14 @@ pub(crate) fn apply_imports<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Apply the next template that matches.
-pub(crate) fn next_match<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn next_match<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.current_templates.len() > 2 {
         ContextBuilder::from(ctxt)

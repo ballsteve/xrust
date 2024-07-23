@@ -3,8 +3,8 @@ use std::fs::File;
 use std::io::{Read, Seek, SeekFrom};
 use xrust::{Error, ErrorKind};
 
-mod xml;
 mod relaxng;
+mod xml;
 
 use encoding_rs::UTF_16BE;
 use encoding_rs::UTF_16LE;

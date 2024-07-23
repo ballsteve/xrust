@@ -2,18 +2,24 @@
 
 use std::collections::HashMap;
 use std::rc::Rc;
+use url::Url;
 
 use crate::item::{Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
-use crate::transform::{Grouping, Transform};
+use crate::transform::{do_sort, Grouping, Order, Transform};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
 /// Iterate over the items in a sequence.
 // TODO: Allow multiple variables
-pub(crate) fn tr_loop<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn tr_loop<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     v: &Vec<(String, Transform<N>)>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -36,9 +42,14 @@ pub(crate) fn tr_loop<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Choose a sequence to return.
-pub(crate) fn switch<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn switch<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     v: &Vec<(Transform<N>, Transform<N>)>,
     o: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -54,17 +65,25 @@ pub(crate) fn switch<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Evaluate a combinator for each item.
-pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn for_each<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     g: &Option<Grouping<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     match g {
         None => {
             let mut result: Sequence<N> = Vec::new();
-            for i in ctxt.dispatch(stctxt, s)? {
+            let mut seq = ctxt.dispatch(stctxt, s)?;
+            do_sort(&mut seq, o, ctxt, stctxt)?;
+            for i in seq {
                 let mut v = ContextBuilder::from(ctxt)
                     .context(vec![i.clone()])
                     .previous_context(Some(i))
@@ -74,20 +93,26 @@ pub fn for_each<N: Node, F: FnMut(&str) -> Result<(), Error>>(
             }
             Ok(result)
         }
-        Some(Grouping::By(b)) => group_by(ctxt, stctxt, &b, s, body),
-        Some(Grouping::Adjacent(a)) => group_adjacent(ctxt, stctxt, &a, s, body),
-        Some(Grouping::StartingWith(v)) => group_starting_with(ctxt, stctxt, &v, s, body),
-        Some(Grouping::EndingWith(v)) => group_ending_with(ctxt, stctxt, &v, s, body),
+        Some(Grouping::By(b)) => group_by(ctxt, stctxt, &b, s, body, o),
+        Some(Grouping::Adjacent(a)) => group_adjacent(ctxt, stctxt, &a, s, body, o),
+        Some(Grouping::StartingWith(v)) => group_starting_with(ctxt, stctxt, &v, s, body, o),
+        Some(Grouping::EndingWith(v)) => group_ending_with(ctxt, stctxt, &v, s, body, o),
     }
 }
 
 /// Evaluate a combinator for each group of items.
-fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+fn group_by<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     by: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     // Each 'by' expression is evaluated to a string key and stored in the hashmap
     // TODO: this implementation is only supporting a single key
@@ -109,26 +134,67 @@ fn group_by<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         Ok(())
     })?;
 
-    // Now evaluate the body for each group
-    groups.iter().try_fold(vec![], |mut result, (k, v)| {
-        // Set current-group and current-grouping-key
-        let mut r = ContextBuilder::from(ctxt)
-            .current_grouping_key(Rc::new(Value::from(k.clone())))
-            .current_group(v.clone())
-            .build()
-            .dispatch(stctxt, body)?;
-        result.append(&mut r);
-        Ok(result)
-    })
+    if !o.is_empty() {
+        // Build a vector of the groups, and then sort the vector
+        // TODO: support multiple sort keys
+        let mut gr_vec: Vec<(String, Sequence<N>)> =
+            groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        gr_vec.sort_by_cached_key(|(k, v)| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(v.clone())
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            gr_vec.reverse();
+        }
+        // Now evaluate the body for each group
+        gr_vec.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    } else {
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    }
 }
 
 /// Evaluate a combinator for each group of items. 'adj' is an expression that is evaluated for each selected item. It must resolve to a singleton item. The first item starts the first group. For the second and subsequent items, if the 'adj' item is the same as the previous item then the item is added to the same group. Otherwise a new group is started.
-fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+fn group_adjacent<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     adj: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
+    o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     // TODO: this implementation is only supporting a single key
     let t = adj[0].clone();
@@ -176,26 +242,67 @@ fn group_adjacent<N: Node, F: FnMut(&str) -> Result<(), Error>>(
         groups.push((curkey.to_string(), curgrp))
     }
 
-    // Now evaluate the body for each group
-    groups.iter().try_fold(vec![], |mut result, (k, v)| {
-        // Set current-group and current-grouping-key
-        let mut r = ContextBuilder::from(ctxt)
-            .current_grouping_key(Rc::new(Value::from(k.clone())))
-            .current_group(v.clone())
-            .build()
-            .dispatch(stctxt, body)?;
-        result.append(&mut r);
-        Ok(result)
-    })
+    if !o.is_empty() {
+        // Build a vector of the groups, and then sort the vector
+        // TODO: support multiple sort keys
+        let mut gr_vec: Vec<(String, Sequence<N>)> =
+            groups.iter().map(|(k, v)| (k.clone(), v.clone())).collect();
+        gr_vec.sort_by_cached_key(|(k, v)| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(v.clone())
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            gr_vec.reverse();
+        }
+        // Now evaluate the body for each group
+        gr_vec.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    } else {
+        // Now evaluate the body for each group
+        groups.iter().try_fold(vec![], |mut result, (k, v)| {
+            // Set current-group and current-grouping-key
+            let mut r = ContextBuilder::from(ctxt)
+                .current_grouping_key(Rc::new(Value::from(k.clone())))
+                .current_group(v.clone())
+                .build()
+                .dispatch(stctxt, body)?;
+            result.append(&mut r);
+            Ok(result)
+        })
+    }
 }
 
 /// Evaluate a combinator for each group of items.
-fn group_starting_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+fn group_starting_with<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<F>,
+    _stctxt: &mut StaticContext<N, F, G, H>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
+    _o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,
@@ -204,12 +311,18 @@ fn group_starting_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Evaluate a combinator for each group of items.
-pub fn group_ending_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn group_ending_with<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<F>,
+    _stctxt: &mut StaticContext<N, F, G, H>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
+    _o: &Vec<(Order, Transform<N>)>,
 ) -> Result<Sequence<N>, Error> {
     Err(Error::new(
         ErrorKind::NotImplemented,

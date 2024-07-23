@@ -1,6 +1,7 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
 use std::rc::Rc;
+use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, StaticContext};
@@ -9,9 +10,14 @@ use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 
 /// Return the disjunction of all of the given functions.
-pub(crate) fn tr_or<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn tr_or<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -33,9 +39,14 @@ pub(crate) fn tr_or<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Return the conjunction of all of the given functions.
-pub(crate) fn tr_and<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn tr_and<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -57,9 +68,14 @@ pub(crate) fn tr_and<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// General comparison of two sequences.
-pub(crate) fn general_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn general_comparison<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -84,9 +100,14 @@ pub(crate) fn general_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// Value comparison of two singelton sequences.
-pub(crate) fn value_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn value_comparison<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -113,9 +134,14 @@ pub(crate) fn value_comparison<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// Each function in the supplied vector is evaluated, and the resulting sequences are combined into a single sequence.
 /// TODO: eliminate duplicates
-pub(crate) fn union<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn union<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     branches: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut result = vec![];

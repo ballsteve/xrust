@@ -16,24 +16,28 @@ To evaluate the transformation we need a Context with a source document as its c
 
 ```rust
 # use std::rc::Rc;
-# use xrust::xdmerror::Error;
+# use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
 use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
-use xrust::transform::context::{Context, ContextBuilder, StaticContext};
-# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 
 let t = parse("/child::A/child::B/child::C")
     .expect("unable to parse XPath expression");
 
 let source = Rc::new(SmiteNode::new());
-xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None, None)
+xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
     .expect("unable to parse XML");
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Ok(String::new()))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .build();
 let context = ContextBuilder::new()
     .context(vec![Item::Node(source)])
     .build();
-let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t)
+let sequence = context.dispatch(&mut static_context, &t)
     .expect("evaluation failed");
 assert_eq!(sequence.len(), 2);
 assert_eq!(sequence.to_xml(), "<C></C><C></C>")
@@ -156,7 +160,7 @@ pub(crate) fn expr_wrapper<N: Node>(
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
 fn expr_single<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt4(or_expr(), let_expr(), for_expr(), if_expr()))
+    Box::new(alt4(let_expr(), for_expr(), if_expr(), or_expr()))
 }
 
 pub(crate) fn expr_single_wrapper<N: Node>(

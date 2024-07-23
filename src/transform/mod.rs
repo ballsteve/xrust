@@ -8,13 +8,12 @@ The following transformation implements the expression "1 + 1". The result is (h
 
 ```rust
 # use std::rc::Rc;
-# use xrust::xdmerror::Error;
-# use xrust::trees::intmuttree::RNode;
+# use xrust::xdmerror::{Error, ErrorKind};
+# use xrust::trees::smite::{RNode, Node as SmiteNode};
 use xrust::value::Value;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::transform::{Transform, ArithmeticOperand, ArithmeticOperator};
-use xrust::transform::context::{Context, StaticContext};
-# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
 
 let xform = Transform::Arithmetic(vec![
         ArithmeticOperand::new(
@@ -26,8 +25,13 @@ let xform = Transform::Arithmetic(vec![
             Transform::Literal(Item::<RNode>::Value(Rc::new(Value::from(1))))
         )
     ]);
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Ok(String::new()))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .build();
 let sequence = Context::new()
-    .dispatch(&mut StaticContext::<F>::new(), &xform)
+    .dispatch(&mut static_context, &xform)
     .expect("evaluation failed");
 assert_eq!(sequence.to_string(), "2")
 ```
@@ -45,23 +49,27 @@ mod keys;
 pub(crate) mod logic;
 pub(crate) mod misc;
 pub(crate) mod navigate;
-pub(crate) mod numbers;
+pub mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
 
 #[allow(unused_imports)]
 use crate::item::Sequence;
-use crate::item::{Item, Node, NodeType};
+use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
+use crate::transform::numbers::Numbering;
 use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::pattern::Pattern;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -136,11 +144,20 @@ pub enum Transform<N: Node> {
     /// A branching transformation. Consists of (test, body) clauses and an otherwise clause.
     Switch(Vec<(Transform<N>, Transform<N>)>, Box<Transform<N>>),
 
-    /// Evaluate a transformation for each selected item, with possible grouping.
-    ForEach(Option<Grouping<N>>, Box<Transform<N>>, Box<Transform<N>>),
+    /// Evaluate a transformation for each selected item, with possible grouping and sorting.
+    ForEach(
+        Option<Grouping<N>>,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Vec<(Order, Transform<N>)>,
+    ),
     /// Find a template that matches an item and evaluate its body with the item as the context.
-    /// Consists of the selector for items to be matched.
-    ApplyTemplates(Box<Transform<N>>),
+    /// Consists of the selector for items to be matched, the mode, and sort keys.
+    ApplyTemplates(
+        Box<Transform<N>>,
+        Option<QualifiedName>,
+        Vec<(Order, Transform<N>)>,
+    ),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
@@ -216,6 +233,24 @@ pub enum Transform<N: Node> {
         Option<Box<Transform<N>>>,
         Option<Box<Transform<N>>>,
     ),
+    FormatNumber(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+    ),
+    /// Convert a number to a string.
+    /// This is one half of the functionality of xsl:number, as well as format-integer().
+    /// See XSLT 12.4.
+    /// First argument is the integer to be formatted.
+    /// Second argument is the format specification.
+    FormatInteger(Box<Transform<N>>, Box<Transform<N>>),
+    /// Generate a sequence of integers. This is one half of the functionality of xsl:number.
+    /// First argument is the start-at specification.
+    /// Second argument is the select expression.
+    /// Third argument is the level.
+    /// Fourth argument is the count pattern.
+    /// Fifth argument is the from pattern.
+    GenerateIntegers(Box<Transform<N>>, Box<Transform<N>>, Box<Numbering<N>>),
     CurrentGroup,
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
@@ -228,6 +263,8 @@ pub enum Transform<N: Node> {
     /// Get information about the processor
     SystemProperty(Box<Transform<N>>),
     AvailableSystemProperties,
+    /// Read an external document
+    Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list.
     Invoke(QualifiedName, ActualParameters<N>),
@@ -290,9 +327,11 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Or(o) => write!(f, "OR {} operands", o.len()),
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
-            Transform::ForEach(_g, _, _) => write!(f, "for-each"),
+            Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
             Transform::Union(v) => write!(f, "union of {} operands", v.len()),
-            Transform::ApplyTemplates(_) => write!(f, "Apply templates"),
+            Transform::ApplyTemplates(_, m, o) => {
+                write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
+            }
             Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),
@@ -331,17 +370,62 @@ impl<N: Node> Debug for Transform<N> {
             }
             Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({:?}, {:?}, ...)", p, q),
             Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
+            Transform::FormatNumber(v, p, _) => write!(f, "format-number({:?}, {:?})", v, p),
+            Transform::FormatInteger(i, s) => write!(f, "format-integer({:?}, {:?})", i, s),
+            Transform::GenerateIntegers(_start_at, _select, _n) => write!(f, "generate-integers"),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
             Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
             Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
             Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
+            Transform::Document(uris, _) => write!(f, "document({:?})", uris),
             Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
     }
+}
+
+/// The sort order
+#[derive(Clone, PartialEq, Debug)]
+pub enum Order {
+    Ascending,
+    Descending,
+}
+
+/// Performing sorting of a [Sequence] using the given sort keys.
+pub(crate) fn do_sort<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    seq: &mut Sequence<N>,
+    o: &Vec<(Order, Transform<N>)>,
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+) -> Result<(), Error> {
+    // Optionally sort the select sequence
+    // TODO: multiple sort keys
+    if o.len() > 0 {
+        seq.sort_by_cached_key(|k| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(vec![k.clone()])
+                .build()
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            seq.reverse();
+        }
+    }
+    Ok(())
 }
 
 /// Determine how a collection is to be divided into groups.

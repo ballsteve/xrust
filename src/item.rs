@@ -451,6 +451,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
     fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
+    /// Get an attribute of the node. If the node is not an element returns None. Otherwise returns the attribute node. If the node does not have an attribute of the given name, returns None.
+    fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;

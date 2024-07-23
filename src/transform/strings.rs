@@ -3,6 +3,7 @@
 use std::rc::Rc;
 
 use unicode_segmentation::UnicodeSegmentation;
+use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::transform::context::{Context, StaticContext};
@@ -11,9 +12,14 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// XPath local-name function.
-pub fn local_name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn local_name<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
@@ -54,9 +60,14 @@ pub fn local_name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath name function.
-pub fn name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn name<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
@@ -97,9 +108,14 @@ pub fn name<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath string function.
-pub fn string<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn string<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -108,9 +124,14 @@ pub fn string<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath starts-with function.
-pub fn starts_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn starts_with<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -123,9 +144,14 @@ pub fn starts_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath ends-with function.
-pub fn ends_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn ends_with<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -138,9 +164,14 @@ pub fn ends_with<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath contains function.
-pub fn contains<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn contains<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -153,9 +184,14 @@ pub fn contains<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath substring function.
-pub fn substring<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn substring<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     t: &Transform<N>,
     l: &Option<Box<Transform<N>>>,
@@ -184,9 +220,14 @@ pub fn substring<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath substring-before function.
-pub fn substring_before<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn substring_before<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -211,9 +252,14 @@ pub fn substring_before<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath substring-after function.
-pub fn substring_after<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn substring_after<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -239,9 +285,14 @@ pub fn substring_after<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath normalize-space function.
-pub fn normalize_space<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn normalize_space<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     n: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let s: Result<String, Error> = n.as_ref().map_or_else(
@@ -263,9 +314,14 @@ pub fn normalize_space<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath translate function.
-pub fn translate<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn translate<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     map: &Transform<N>,
     trn: &Transform<N>,
@@ -308,9 +364,14 @@ pub fn translate<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 }
 
 /// XPath concat function. All arguments are concatenated into a single string value.
-pub(crate) fn tr_concat<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn tr_concat<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     arguments: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     match arguments

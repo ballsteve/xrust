@@ -4,11 +4,9 @@ use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
 use std::collections::HashMap;
 use url::Url;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
-use xrust::transform::context::{StaticContext, StaticContextBuilder};
+use xrust::transform::context::StaticContextBuilder;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
-
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn test_rig<N: Node, G, H, J>(
     src: impl AsRef<str>,
@@ -24,7 +22,11 @@ where
 {
     let srcdoc = parse_from_str(src.as_ref())?;
     let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())?;
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let mut ctxt = from_document(
         styledoc,
         stylens,
@@ -58,6 +60,8 @@ where
             msgs.push(String::from(m));
             Ok(())
         })
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let mut ctxt = from_document(
         styledoc,
@@ -341,6 +345,79 @@ where
             format!(
                 "got result \"{}\", expected \"onetwothreefour\"",
                 result.to_string()
+            ),
+        ))
+    }
+}
+
+pub fn generic_apply_templates_mode<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><HEAD><xsl:apply-templates select='child::Level1' mode='head'/></HEAD><BODY><xsl:apply-templates select='child::Level1' mode='body'/></BODY></xsl:template>
+  <xsl:template match='child::Level1' mode='head'><h1><xsl:apply-templates/></h1></xsl:template>
+  <xsl:template match='child::Level1' mode='body'><p><xsl:apply-templates/></p></xsl:template>
+  <xsl:template match='child::Level1'>should not see this</xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    if result.to_xml() == "<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>" {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"<HEAD><h1>a</h1><h1>b</h1><h1>c</h1><h1>d</h1></HEAD><BODY><p>a</p><p>b</p><p>c</p><p>d</p></BODY>\"",
+                result.to_xml()
+            ),
+        ))
+    }
+}
+
+pub fn generic_apply_templates_sort<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test>one<Level1>a</Level1>two<Level1>b</Level1>three<Level1>c</Level1>four<Level1>d</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::Test'><xsl:apply-templates><xsl:sort select='.'/></xsl:apply-templates></xsl:template>
+  <xsl:template match='child::Level1'><L><xsl:apply-templates/></L></xsl:template>
+  <xsl:template match='child::Test/child::text()'><p><xsl:sequence select='.'/></p></xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    if result.to_xml()
+        == "<L>a</L><L>b</L><L>c</L><L>d</L><p>four</p><p>one</p><p>three</p><p>two</p>"
+    {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"<L>a</L><L>b</L><L>c</L><L>d</L><p>four</p><p>one</p><p>three</p><p>two</p>\"",
+                result.to_xml()
             ),
         ))
     }
@@ -709,6 +786,7 @@ where
         ))
     }
 }
+
 pub fn generic_include<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,
@@ -734,7 +812,11 @@ where
         .into_os_string()
         .into_string()
         .expect("unable to convert pwd");
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let mut ctxt = from_document(
         styledoc,
         stylens,
@@ -755,4 +837,164 @@ where
     } else {
         Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
     }
+}
+
+pub fn generic_document_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+    where
+        G: Fn(&str) -> Result<N, Error>,
+        H: Fn() -> Result<N, Error>,
+        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let srcdoc =
+        parse_from_str("<Test><internal>on the inside</internal></Test>")?;
+    let (styledoc, stylens) = parse_from_str_with_ns(
+        r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/>|<xsl:apply-templates select='document("urn::test.org/test")'/></xsl:template>
+  <xsl:template match='child::internal'>found internal element</xsl:template>
+  <xsl:template match='child::external'>found external element</xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>"##,
+    )?;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_url| Ok(String::from("<Outside><external>from outside</external></Outside>")))
+        .parser(|s| parse_from_str(s))
+        .build();
+    let mut ctxt = from_document(
+        styledoc,
+        stylens,
+        None,
+        |s| parse_from_str(s),
+        |_| Ok(String::new()),
+    )?;
+    ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
+    ctxt.result_document(make_doc()?);
+    let result = ctxt.evaluate(&mut stctxt)?;
+    if result.to_string()
+        == "found internal element|found external element"
+    {
+        Ok(())
+    } else {
+        Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
+    }
+}
+
+pub fn generic_number_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let srcdoc =
+        parse_from_str("<Test><t>one</t><t>two</t><t>three</t></Test>")?;
+    let (styledoc, stylens) = parse_from_str_with_ns(
+        r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
+  <xsl:template match='child::t'>t element <xsl:number/></xsl:template>
+  <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
+</xsl:stylesheet>"##,
+    )?;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_url| Ok(String::new()))
+        .parser(|s| parse_from_str(s))
+        .build();
+    let mut ctxt = from_document(
+        styledoc,
+        stylens,
+        None,
+        |s| parse_from_str(s),
+        |_| Ok(String::new()),
+    )?;
+    ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
+    ctxt.result_document(make_doc()?);
+    let result = ctxt.evaluate(&mut stctxt)?;
+    assert_eq!(result.to_string(), "t element 1t element 2t element 3");
+    Ok(())
+}
+
+pub fn attr_set_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:attribute-set name='foo'>
+    <xsl:attribute name='bar'>from set foo</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:template match='child::Level1'><xsl:copy xsl:use-attribute-sets='foo'/></xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(result.to_xml(), "<Level1 bar='from set foo'></Level1><Level1 bar='from set foo'></Level1>");
+    Ok(())
+}
+
+pub fn attr_set_2<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:attribute-set name='foo'>
+    <xsl:attribute name='bar'>from set foo</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:template match='child::Level1'><MyElement xsl:use-attribute-sets='foo'><xsl:apply-templates/></MyElement></xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(result.to_xml(), "<MyElement bar='from set foo'>one</MyElement><MyElement bar='from set foo'>two</MyElement>");
+    Ok(())
+}
+
+pub fn attr_set_3<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+{
+    let result = test_rig(
+        "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:attribute-set name='foo'>
+    <xsl:attribute name='bar'>from set foo</xsl:attribute>
+  </xsl:attribute-set>
+  <xsl:template match='child::Level1'><xsl:element name='Element' xsl:use-attribute-sets='foo'><xsl:apply-templates/></xsl:element></xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(result.to_xml(), "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>");
+    Ok(())
 }

@@ -15,9 +15,10 @@ use std::rc::Rc;
 use url::Url;
 
 use xrust::item::{Item, Node, NodeType, SequenceTrait};
+use xrust::parser::xml::parse;
 use xrust::qname::QualifiedName;
-use xrust::transform::context::StaticContext;
-use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::transform::context::{StaticContext, StaticContextBuilder};
+use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
@@ -30,7 +31,7 @@ use indextree::{Arena, NodeId};
 // A quick-and-dirty converter from an indextree to an Xrust intmuttree RNode.
 // A better solution will be to define a trait in IXML that is used to build the tree directly.
 fn to_rnode(arena: &Arena<Content>) -> RNode {
-    let t = NodeBuilder::new(NodeType::Document).build();
+    let t = Rc::new(SmiteNode::new());
     let root = arena.iter().next().unwrap();
     let root_id = arena.get_node_id(root).unwrap();
     for child in root_id.children(arena) {
@@ -90,10 +91,6 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
     }
 }
 
-// This type is for the callback in the static context.
-// We're not using a callback in this example, so make the type as simple as possible.
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
-
 fn main() {
     let args: Vec<String> = env::args().collect();
 
@@ -119,12 +116,8 @@ fn main() {
         Ok(_) => {}
     };
 
-    let mut style = NodeBuilder::new(NodeType::Document).build();
-    let style_doc =
-        Document::try_from((stylexml.trim(), None, None)).expect("failed to parse XSL stylesheet");
-    style
-        .push(style_doc.content[0].clone())
-        .expect("unable to append style nodes");
+    let style = Rc::new(SmiteNode::new());
+    parse(style.clone(), stylexml.trim(), None).expect("failed to parse XSL stylesheet");
 
     // Read the Markdown text file
     let srcpath = Path::new(&args[2]);
@@ -217,11 +210,19 @@ eol = "X".
     // Set the Markdown RNode document as the context
     ctxt.context(vec![Item::Node(md)], 0);
     // Create a document for the result tree
-    ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
+    ctxt.result_document(Rc::new(SmiteNode::new()));
+
+    // Create a static transformation contact
+    // with dummy callbacks
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
 
     // Let 'er rip!
     let resultdoc = ctxt
-        .evaluate(&mut StaticContext::<F>::new())
+        .evaluate(&mut stctxt)
         .expect("failed to evaluate stylesheet");
 
     // Serialise the result document as XML

@@ -4,9 +4,10 @@ use std::rc::Rc;
 
 #[allow(unused_imports)]
 use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
+use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::parsepicture::parse as picture_parse;
+use crate::parser::datetime::parse as picture_parse;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
@@ -31,9 +32,14 @@ pub fn current_time<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 
 /// XPath format-date-time function.
 /// NB. language, calendar, and place are not implemented.
-pub fn format_date_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn format_date_time<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
@@ -82,9 +88,14 @@ pub fn format_date_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// XPath format-date function.
 /// NB. language, calendar, and place are not implemented.
-pub fn format_date<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn format_date<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
@@ -134,9 +145,14 @@ pub fn format_date<N: Node, F: FnMut(&str) -> Result<(), Error>>(
 
 /// XPath format-time function.
 /// NB. language, calendar, and place are not implemented.
-pub fn format_time<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub fn format_time<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,

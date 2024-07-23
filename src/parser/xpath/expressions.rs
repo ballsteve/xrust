@@ -12,7 +12,7 @@ use crate::parser::xpath::expr_wrapper;
 use crate::parser::xpath::functions::function_call;
 use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::variables::variable_reference;
-use crate::transform::Transform;
+use crate::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
 // TODO: predicates, arg list, lookup
@@ -27,10 +27,10 @@ fn primary_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt5(
         literal::<N>(),
-        context_item::<N>(),
         parenthesized_expr::<N>(),
         function_call::<N>(),
         variable_reference::<N>(),
+        context_item::<N>(),
     ))
 }
 

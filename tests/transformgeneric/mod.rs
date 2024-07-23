@@ -3,19 +3,19 @@
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
+use xrust::output::OutputDefinition;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
-use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
+use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::template::Template;
+use xrust::transform::numbers::{Numbering, Level};
 use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
-    Transform, WildcardOrName,
+    Order, Transform, WildcardOrName,
 };
 use xrust::value::{Operator, Value};
 use xrust::xdmerror::{Error, ErrorKind};
-
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 pub fn generic_tr_empty<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
@@ -23,8 +23,13 @@ where
     H: Fn() -> Item<N>,
 {
     let x = Transform::<N>::Empty;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 0);
     Ok(())
@@ -35,8 +40,13 @@ where
     H: Fn() -> Item<N>,
 {
     let x = Transform::Literal(Item::<N>::Value(Rc::new(Value::from("this is a test"))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.to_string(), "this is a test");
     Ok(())
@@ -53,10 +63,13 @@ where
         ))))),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test>content</Test>");
     Ok(())
 }
@@ -79,10 +92,13 @@ where
         )),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test><Level-1>content</Level-1></Test>");
     Ok(())
 }
@@ -101,10 +117,13 @@ where
         ))))),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test>content</Test>");
     Ok(())
 }
@@ -121,10 +140,13 @@ where
         false,
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "special character: &lt; less than");
     Ok(())
 }
@@ -141,10 +163,13 @@ where
         true,
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "special character: < less than");
     Ok(())
 }
@@ -167,10 +192,13 @@ where
         ])),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test foo='bar'>content</Test>");
     Ok(())
 }
@@ -190,10 +218,13 @@ where
         ])),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test><!--bar-->content</Test>");
     Ok(())
 }
@@ -218,10 +249,13 @@ where
         ])),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test><?thepi bar?>content</Test>");
     Ok(())
 }
@@ -233,10 +267,13 @@ where
 {
     let x = Transform::GenerateId(None);
     let sd = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().context(vec![Item::Node(sd)]).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert!(seq.to_string().len() > 1);
     Ok(())
 }
@@ -271,14 +308,15 @@ where
         .new_element(QualifiedName::new(None, None, String::from("Test2")))
         .expect("unable to create element");
     sd.push(n2.clone()).expect("unable to append child");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().context(vec![Item::Node(sd)]).build();
 
-    let seq1 = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x1)
-        .expect("evaluation failed");
-    let seq2 = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x2)
-        .expect("evaluation failed");
+    let seq1 = ctxt.dispatch(&mut stctxt, &x1).expect("evaluation failed");
+    let seq2 = ctxt.dispatch(&mut stctxt, &x2).expect("evaluation failed");
 
     assert!(seq1.to_string().len() > 1);
     assert!(seq2.to_string().len() > 1);
@@ -313,6 +351,8 @@ where
             receiver = String::from(m);
             Ok(())
         })
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test>content</Test>");
@@ -355,6 +395,8 @@ where
             messages.push(String::from(m));
             Ok(())
         })
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_xml(), "<Test>content</Test>");
@@ -393,6 +435,8 @@ where
             receiver = String::from(m);
             Ok(())
         })
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     match ctxt.dispatch(&mut stctxt, &x) {
         Ok(_) => panic!("evaluation succeeded when it should have failed"),
@@ -424,13 +468,16 @@ where
         ))))),
     );
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new()
         .result_document(mydoc)
         .context(vec![Item::Node(n)])
         .build();
-    let _ = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let _ = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(sd.to_xml(), "<Test foo='bar'></Test>");
     Ok(())
 }
@@ -446,8 +493,13 @@ where
         ))))),
         Box::new(Transform::<N>::Empty),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "this is the original");
@@ -463,12 +515,17 @@ where
         Box::new(Transform::ContextItem),
         Box::new(Transform::<N>::Empty),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .context(vec![Item::<N>::Value(Rc::new(Value::from(
             "this is the original",
         )))])
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "this is the original");
@@ -500,13 +557,16 @@ where
     );
 
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new()
         .result_document(mydoc)
         .context(vec![Item::Node(n)])
         .build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "<Test>this is the copy</Test>");
@@ -534,14 +594,17 @@ where
     let x = Transform::CurrentItem;
 
     let mydoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new()
         .result_document(mydoc)
         .context(vec![Item::Node(n.clone())])
         .previous_context(Some(Item::Node(n.clone())))
         .build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "<Test>this is the original</Test>");
@@ -571,10 +634,13 @@ where
 
     let x = Transform::DeepCopy(Box::new(Transform::ContextItem));
 
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let ctxt = ContextBuilder::new().context(vec![Item::Node(n)]).build();
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
     assert_eq!(seq.len(), 1);
     assert_eq!(
@@ -594,8 +660,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("end of test")))),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 3);
     assert_eq!(seq.to_string(), "this is a test1end of test");
@@ -617,8 +688,13 @@ where
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from(2)))),
         ]),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 4);
     assert_eq!(seq.to_string(), "first sequence1second sequence2");
@@ -675,8 +751,13 @@ where
             "otherwise clause",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.to_string(), "comparison succeeded");
     Ok(())
@@ -730,8 +811,13 @@ where
             "otherwise clause",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.to_string(), "otherwise clause");
     Ok(())
@@ -756,8 +842,13 @@ where
             Transform::VariableReference(String::from("x")),
         ])),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.to_string(), "oneonetwotwothreethree");
     Ok(())
@@ -772,9 +863,12 @@ where
     let c = Context::from(vec![Item::<N>::Value(Rc::new(Value::from(
         "the context item",
     )))]);
-    let seq = c
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = c.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "the context item");
     Ok(())
@@ -786,12 +880,15 @@ where
     H: Fn() -> Item<N>,
 {
     let x = Transform::SequenceItems(vec![Transform::ContextItem, Transform::ContextItem]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let c = Context::from(vec![Item::<N>::Value(Rc::new(Value::from(
         "the context item",
     )))]);
-    let seq = c
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let seq = c.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.len(), 2);
     assert_eq!(seq.to_string(), "the context itemthe context item");
     Ok(())
@@ -816,8 +913,13 @@ where
     let x = Transform::Root;
 
     // Now evaluate the combinator with <Level-1> as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "<Test><Level-1></Level-1></Test>");
@@ -833,8 +935,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("step 1")))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("step 2")))),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "step 2");
@@ -864,8 +971,13 @@ where
     n.push(l1.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with <Test> as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(n)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "<Level-1></Level-1>");
@@ -907,8 +1019,13 @@ where
     l1_2.push(t2).expect("unable to append text node");
 
     // Now evaluate the combinator with both <Level-1>s as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1_1), Item::Node(l1_2)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 2);
     assert_eq!(seq.to_xml(), "firstsecond");
@@ -958,6 +1075,11 @@ where
     n.push(et.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with Test's children as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![
         Item::Node(l1_1),
         Item::Node(t1),
@@ -965,7 +1087,7 @@ where
         Item::Node(t2),
         Item::Node(et),
     ])
-    .dispatch(&mut StaticContext::<F>::new(), &x)
+    .dispatch(&mut stctxt, &x)
     .expect("evaluation failed");
     assert_eq!(seq.len(), 2);
     assert_eq!(seq.to_xml(), "<Level-1></Level-1><Level-1></Level-1>");
@@ -1014,8 +1136,13 @@ where
     n.push(et.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with Test's document node as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(sd)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     Ok(())
@@ -1063,8 +1190,13 @@ where
     n.push(et.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with Test's document element node as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(n)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 0);
     Ok(())
@@ -1109,6 +1241,11 @@ where
     n.push(et.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with Test's children as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![
         Item::Node(l1_1),
         Item::Node(t1),
@@ -1116,7 +1253,7 @@ where
         Item::Node(t2),
         Item::Node(et),
     ])
-    .dispatch(&mut StaticContext::<F>::new(), &x)
+    .dispatch(&mut stctxt, &x)
     .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq[0].name().to_string(), "Test");
@@ -1149,8 +1286,13 @@ where
     n.push(t1.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the root node as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(sd)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     Ok(())
@@ -1182,8 +1324,13 @@ where
     t.push(t1.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the document element as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 0);
     Ok(())
@@ -1223,8 +1370,13 @@ where
     l2_1.push(t2.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the document element as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 4);
     Ok(())
@@ -1267,8 +1419,13 @@ where
     l2_1.push(t2.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the document element as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 5);
     Ok(())
@@ -1311,8 +1468,13 @@ where
     l2_1.push(t2.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the root node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(sd)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 6);
     Ok(())
@@ -1352,8 +1514,13 @@ where
     l2_1.push(t2.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the lowest node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t2)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 3);
     Ok(())
@@ -1393,8 +1560,13 @@ where
     l2_1.push(t2.clone()).expect("unable to append text node");
 
     // Now evaluate the combinator with the lowest node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t2)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 4);
     Ok(())
@@ -1442,8 +1614,13 @@ where
     t.push(et.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with Test's first child as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1_1)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 4);
     Ok(())
@@ -1491,8 +1668,13 @@ where
     t.push(et.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with Test's last child as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(et)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 4);
     Ok(())
@@ -1550,8 +1732,13 @@ where
     four.push(eight.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with lowest left node as the context items
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(seven)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 4);
     Ok(())
@@ -1609,8 +1796,13 @@ where
     four.push(eight.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with last node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(six)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 6);
     Ok(())
@@ -1657,8 +1849,13 @@ where
     l1_2.push(t2).expect("unable to append text node");
 
     // Now evaluate the combinator with the Test element as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 2);
     assert_eq!(seq.to_xml(), "firstsecond");
@@ -1726,8 +1923,13 @@ where
         .expect("unable to add attribute node");
 
     // Now evaluate the combinator with the Test element as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 2);
     assert_eq!(seq.to_string(), "firstsecond");
@@ -1787,8 +1989,13 @@ where
         .expect("unable to add attribute node");
 
     // Now evaluate the combinator with an attribute as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(a2)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "second");
@@ -1848,8 +2055,13 @@ where
         .expect("unable to add attribute node");
 
     // Now evaluate the combinator with an element as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1_2)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 0);
     Ok(())
@@ -1892,8 +2104,13 @@ where
     t.push(l1_2.clone()).expect("unable to append child");
 
     // Now evaluate the combinator with the Test element as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "<Level-1>first</Level-1>");
@@ -1909,8 +2126,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(0)))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("false")))),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -1925,8 +2147,13 @@ where
     let x = Transform::Or(vec![Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(0),
     )))]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -1942,8 +2169,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("false")))),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -1959,8 +2191,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("true")))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(0)))),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -1983,8 +2220,13 @@ where
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from("true")))),
         ])),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -2007,8 +2249,13 @@ where
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from("foo")))),
         ])),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -2029,8 +2276,13 @@ where
             "true",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -2051,8 +2303,13 @@ where
             "false",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -2070,8 +2327,13 @@ where
             10,
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 0);
     Ok(())
@@ -2090,8 +2352,13 @@ where
             10,
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 10);
     assert_eq!(seq.to_string(), "12345678910");
@@ -2111,8 +2378,13 @@ where
             5,
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "5");
@@ -2134,8 +2406,13 @@ where
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from(5)))),
         ),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "10");
@@ -2154,8 +2431,13 @@ where
         ))))),
         Box::new(Transform::VariableReference("foo".to_string())),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "bar");
@@ -2219,8 +2501,13 @@ where
     c.push(t_c).expect("unable to append text node");
 
     // Now evaluate the combinator with the Test element as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(t)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 2);
     assert_eq!(seq.to_xml(), "<a>first</a><b>second</b>");
@@ -2283,18 +2570,95 @@ where
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
             "found a Level-1",
         ))))),
+        vec![],
     );
 
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .context(vec![Item::Node(sd)])
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 3);
     assert_eq!(
         seq.to_string(),
         "found a Level-1found a Level-1found a Level-1"
     );
+    Ok(())
+}
+pub fn generic_tr_for_each_sort<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .expect("unable to element node");
+    sd.push(t.clone()).expect("unable to append child");
+    let mut l1 = sd
+        .new_element(QualifiedName::new(None, None, String::from("Level1")))
+        .expect("unable to element node");
+    t.push(l1.clone()).expect("unable to append child");
+    l1.push(
+        sd.new_text(Rc::new(Value::from("one")))
+            .expect("unable to create text node"),
+    )
+    .expect("unable to append text");
+    let mut l2 = sd
+        .new_element(QualifiedName::new(None, None, String::from("Level1")))
+        .expect("unable to element node");
+    t.push(l2.clone()).expect("unable to append child");
+    l2.push(
+        sd.new_text(Rc::new(Value::from("two")))
+            .expect("unable to create text node"),
+    )
+    .expect("unable to append text");
+    let mut l3 = sd
+        .new_element(QualifiedName::new(None, None, String::from("Level1")))
+        .expect("unable to element node");
+    t.push(l3.clone()).expect("unable to append child");
+    l3.push(
+        sd.new_text(Rc::new(Value::from("three")))
+            .expect("unable to create text node"),
+    )
+    .expect("unable to append text");
+
+    // xsl:for-each select="/child::* /child::*" body == xsl:text "found a Level-1"
+    let x = Transform::ForEach(
+        None,
+        Box::new(Transform::Compose(vec![
+            Transform::Root,
+            Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            }),
+            Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            }),
+        ])),
+        Box::new(Transform::ContextItem),
+        vec![(Order::Ascending, Transform::ContextItem)],
+    );
+
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ContextBuilder::new()
+        .context(vec![Item::Node(sd)])
+        .build()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 3);
+    assert_eq!(seq.to_string(), "onethreetwo");
     Ok(())
 }
 
@@ -2329,18 +2693,84 @@ where
                 Transform::Count(Box::new(Transform::CurrentGroup)),
             ])),
         )),
+        vec![],
     );
 
     let resdoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .result_document(resdoc)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 10);
     Ok(())
     // the groups are not ordered, so it is difficult to test all of the groups are correct
     //assert_eq!(seq[0].to_string(), "key 0 #members 10")
+}
+pub fn generic_tr_group_by_sort_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // xsl:for-each-group select="1 to 50" group-by=". mod 10"
+    // body == xsl:text "group current-grouping-key size count(current-group)"
+    // sort == current-grouping-key()
+    let x = Transform::ForEach(
+        Some(Grouping::By(vec![Transform::Arithmetic(vec![
+            ArithmeticOperand::new(ArithmeticOperator::Noop, Transform::ContextItem),
+            ArithmeticOperand::new(
+                ArithmeticOperator::Modulo,
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(10)))),
+            ),
+        ])])),
+        Box::new(Transform::Range(
+            Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                1,
+            ))))),
+            Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                50,
+            ))))),
+        )),
+        Box::new(Transform::LiteralElement(
+            QualifiedName::new(None, None, String::from("group")),
+            Box::new(Transform::SequenceItems(vec![
+                Transform::Literal(Item::Value(Rc::new(Value::from("key ")))),
+                Transform::CurrentGroupingKey,
+                Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
+                Transform::Count(Box::new(Transform::CurrentGroup)),
+            ])),
+        )),
+        vec![(Order::Ascending, Transform::CurrentGroupingKey)],
+    );
+
+    let resdoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ContextBuilder::new()
+        .result_document(resdoc)
+        .build()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 10);
+    assert_eq!(seq[0].to_string(), "key 0 #members 5");
+    assert_eq!(seq[1].to_string(), "key 1 #members 5");
+    assert_eq!(seq[2].to_string(), "key 2 #members 5");
+    assert_eq!(seq[3].to_string(), "key 3 #members 5");
+    assert_eq!(seq[4].to_string(), "key 4 #members 5");
+    assert_eq!(seq[5].to_string(), "key 5 #members 5");
+    assert_eq!(seq[6].to_string(), "key 6 #members 5");
+    assert_eq!(seq[7].to_string(), "key 7 #members 5");
+    assert_eq!(seq[8].to_string(), "key 8 #members 5");
+    assert_eq!(seq[9].to_string(), "key 9 #members 5");
+    Ok(())
 }
 
 pub fn generic_tr_group_adjacent_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
@@ -2368,18 +2798,69 @@ where
                 Transform::Count(Box::new(Transform::CurrentGroup)),
             ])),
         )),
+        vec![],
     );
 
     let resdoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .result_document(resdoc)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 3);
     Ok(())
     // the groups are not ordered, so it is difficult to test all of the groups are correct
     //assert_eq!(seq[0].to_string(), "key 0 #members 10")
+}
+pub fn generic_tr_group_adjacent_sort_1<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // xsl:for-each-group select="(a, a, b, c, c, c)" group-adjacent="." body == xsl:text "group current-grouping-key size count(current-group)"
+    let x = Transform::ForEach(
+        Some(Grouping::Adjacent(vec![Transform::ContextItem])),
+        Box::new(Transform::SequenceItems(vec![
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("a")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("b")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from("c")))),
+        ])),
+        Box::new(Transform::LiteralElement(
+            QualifiedName::new(None, None, String::from("group")),
+            Box::new(Transform::SequenceItems(vec![
+                Transform::Literal(Item::Value(Rc::new(Value::from("key ")))),
+                Transform::CurrentGroupingKey,
+                Transform::Literal(Item::Value(Rc::new(Value::from(" #members ")))),
+                Transform::Count(Box::new(Transform::CurrentGroup)),
+            ])),
+        )),
+        vec![(Order::Ascending, Transform::CurrentGroupingKey)],
+    );
+
+    let resdoc = make_empty_doc();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ContextBuilder::new()
+        .result_document(resdoc)
+        .build()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 3);
+    assert_eq!(seq[0].to_string(), "key a #members 2");
+    assert_eq!(seq[1].to_string(), "key b #members 1");
+    assert_eq!(seq[2].to_string(), "key c #members 3");
+    Ok(())
 }
 
 pub fn generic_tr_apply_templates_builtins<N: Node, G, H>(
@@ -2398,15 +2879,19 @@ where
     sd.push(t.clone()).expect("unable to append child");
 
     // Built-in template rule for "/"
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2426,9 +2911,12 @@ where
         .build();
 
     // Now Evaluate the combinator with the source document root node as the context item
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "Test");
     Ok(())
@@ -2451,17 +2939,21 @@ where
     t.push(c).expect("unable to append child");
 
     // Template rule for "Test", plus builtins
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
             Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
             Transform::SequenceItems(vec![
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from("before ")))),
-                Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                    axis: Axis::Child,
-                    nodetest: NodeTest::Kind(KindTest::Any),
-                }))),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    None,
+                    vec![],
+                ),
                 Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" after")))),
             ]), // body "before", "apply-templates select=node()", "after"
             Some(0.0), // priority
@@ -2472,10 +2964,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2495,9 +2991,12 @@ where
         .build();
 
     // Now Evaluate the combinator with the source document root node as the context item
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.len(), 3);
     assert_eq!(seq.to_string(), "before content after");
     Ok(())
@@ -2521,7 +3020,7 @@ where
 
     // Template rule for "Test", plus builtins
     // Test template priorities
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2548,10 +3047,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2571,11 +3074,172 @@ where
         .build();
 
     // Now Evaluate the combinator with the source document root node as the context item
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "priority 1 template");
+    Ok(())
+}
+// Multiple apply-templates selecting the same nodes, different modes
+pub fn generic_tr_apply_templates_3<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .expect("unable to create new element");
+    sd.push(t.clone()).expect("unable to add node");
+    let mut c1 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create new element");
+    c1.push(
+        sd.new_text(Rc::new(Value::from("child 1")))
+            .expect("unable to text node"),
+    )
+    .expect("unable to append child");
+    t.push(c1).expect("unable to add child");
+    let mut c2 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create new element");
+    c2.push(
+        sd.new_text(Rc::new(Value::from("child 2")))
+            .expect("unable to text node"),
+    )
+    .expect("unable to append child");
+    t.push(c2).expect("unable to add child");
+
+    // Template rule for "Test", plus builtins
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
+    let ctxt = ContextBuilder::new()
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::SequenceItems(vec![
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from("before ")))),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    Some(QualifiedName::new(None, None, "first")),
+                    vec![],
+                ),
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" middle ")))),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    Some(QualifiedName::new(None, None, "second")),
+                    vec![],
+                ),
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from(" after")))),
+            ]), // body "before", "apply-templates select=node()", "after"
+            Some(0.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern "/",
+            Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            None,                   // mode
+        ))
+        .template(Template::new(
+            // pattern child::node()
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,                                          // priority
+            vec![0],                                       // import
+            None,                                          // document order
+            Some(QualifiedName::new(None, None, "first")), // mode
+        ))
+        .template(Template::new(
+            // pattern child::node()
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,                                           // priority
+            vec![0],                                        // import
+            None,                                           // document order
+            Some(QualifiedName::new(None, None, "second")), // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            Some(QualifiedName::new(None, None, "first")), // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            Some(QualifiedName::new(None, None, "second")), // mode
+        ))
+        .context(vec![Item::Node(sd)])
+        .build();
+
+    // Now Evaluate the combinator with the source document root node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+    assert_eq!(seq.len(), 7);
+    assert_eq!(
+        seq.to_string(),
+        "before child 1child 2 middle child 1child 2 after"
+    );
     Ok(())
 }
 
@@ -2600,7 +3264,7 @@ where
 
     // Template rule for "Test", an overridden rule, plus builtins
     // Test imported template
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2627,10 +3291,14 @@ where
         .template(Template::new(
             // pattern "*"
             Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2639,10 +3307,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2662,9 +3334,12 @@ where
         .build();
 
     // Now Evaluate the combinator with the source document root node as the context item
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "priority 1 template, import level 0");
     Ok(())
@@ -2690,7 +3365,7 @@ where
     t.push(c).expect("unable to append child");
 
     // Template rule for "Test", an overridden rule, plus builtins
-    let x = Transform::ApplyTemplates(Box::new(Transform::Root));
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
     let ctxt = ContextBuilder::new()
         .template(Template::new(
             // pattern "Test"
@@ -2720,10 +3395,14 @@ where
         .template(Template::new(
             // pattern "*"
             Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2732,10 +3411,14 @@ where
         .template(Template::new(
             // pattern "/",
             Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
-            Transform::ApplyTemplates(Box::new(Transform::Step(NodeMatch {
-                axis: Axis::Child,
-                nodetest: NodeTest::Kind(KindTest::Any),
-            }))), // body "apply-templates select=node()",
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
             None,    // priority
             vec![0], // import
             None,    // document order
@@ -2755,10 +3438,236 @@ where
         .build();
 
     // Now Evaluate the combinator with the source document root node as the context item
-    let seq = ctxt
-        .dispatch(&mut StaticContext::<F>::new(), &x)
-        .expect("evaluation failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
     assert_eq!(seq.to_string(), "priority 1 templatepriority 0 template");
+    Ok(())
+}
+
+pub fn generic_tr_apply_templates_mode<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .expect("unable to create new element");
+    sd.push(t.clone()).expect("unable to add node");
+    let c = sd
+        .new_text(Rc::new(Value::from("content")))
+        .expect("unable to text node");
+    t.push(c).expect("unable to append child");
+
+    // Template rule for "Test", an overridden rule, plus builtins
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
+    let ctxt = ContextBuilder::new()
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::SequenceItems(vec![
+                Transform::Literal(Item::<N>::Value(Rc::new(Value::from("modeless template")))),
+                Transform::NextMatch,
+            ]),
+            Some(1.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+                "mode 'modetest' template",
+            )))),
+            Some(0.0),                                                      // priority
+            vec![0],                                                        // import
+            Some(2),                                                        // document order
+            Some(QualifiedName::new(None, None, String::from("modetest"))), // mode
+        ))
+        .template(Template::new(
+            // pattern "*"
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+        ))
+        .template(Template::new(
+            // pattern "/",
+            Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
+            Transform::SequenceItems(vec![
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    None,
+                    vec![],
+                ),
+                Transform::ApplyTemplates(
+                    Box::new(Transform::Step(NodeMatch {
+                        axis: Axis::Child,
+                        nodetest: NodeTest::Kind(KindTest::Any),
+                    })),
+                    Some(QualifiedName::new(None, None, String::from("modetest"))),
+                    vec![],
+                ),
+            ]), // body "apply-templates select=node()", "apply-templates select=node() mode='modetest'"
+            Some(1.0), // priority
+            vec![0],   // import
+            None,      // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            None,                   // mode
+        ))
+        .context(vec![Item::Node(sd)])
+        .build();
+
+    // Now Evaluate the combinator with the source document root node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+    assert_eq!(seq.to_string(), "modeless templatemode 'modetest' template");
+    Ok(())
+}
+
+// apply-templates, 1 sort key, string sort key value
+pub fn generic_tr_apply_templates_sort_1<N: Node, G, H>(
+    make_empty_doc: G,
+    _: H,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(QualifiedName::new(None, None, "Test"))
+        .expect("unable to create new element");
+    sd.push(t.clone()).expect("unable to add node");
+    let mut c1 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create element");
+    let tx1 = sd
+        .new_text(Rc::new(Value::from("one")))
+        .expect("unable to text node");
+    c1.push(tx1).expect("unable to append child");
+    t.push(c1).expect("unable to append child");
+    let mut c2 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create element");
+    let tx2 = sd
+        .new_text(Rc::new(Value::from("two")))
+        .expect("unable to text node");
+    c2.push(tx2).expect("unable to append child");
+    t.push(c2).expect("unable to append child");
+    let mut c3 = sd
+        .new_element(QualifiedName::new(None, None, "child"))
+        .expect("unable to create element");
+    let tx3 = sd
+        .new_text(Rc::new(Value::from("three")))
+        .expect("unable to text node");
+    c3.push(tx3).expect("unable to append child");
+    t.push(c3).expect("unable to append child");
+
+    // Template rule for "Test", an overridden rule, plus builtins
+    let x = Transform::ApplyTemplates(Box::new(Transform::Root), None, vec![]);
+    let ctxt = ContextBuilder::new()
+        .template(Template::new(
+            // pattern "Test"
+            Pattern::try_from("child::Test").expect("unable to create Pattern for \"child::Test\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![(Order::Ascending, Transform::ContextItem)],
+            ), // body "apply-templates select=node() sort",
+            Some(1.0), // priority
+            vec![0],   // import
+            Some(1),   // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern "*"
+            Pattern::try_from("child::*").expect("unable to create Pattern for \"child::*\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()",
+            None,    // priority
+            vec![0], // import
+            None,    // document order
+            None,    // mode
+        ))
+        .template(Template::new(
+            // pattern "/",
+            Pattern::try_from("/").expect("unable to create Pattern for \"/\""),
+            Transform::ApplyTemplates(
+                Box::new(Transform::Step(NodeMatch {
+                    axis: Axis::Child,
+                    nodetest: NodeTest::Kind(KindTest::Any),
+                })),
+                None,
+                vec![],
+            ), // body "apply-templates select=node()", "apply-templates select=node()"
+            Some(1.0), // priority
+            vec![0],   // import
+            None,      // document order
+            None,      // mode
+        ))
+        .template(Template::new(
+            // pattern child::text()
+            Pattern::try_from("child::text()")
+                .expect("unable to create Pattern for \"child::text()\""),
+            Transform::ContextItem, // body value-of select='.'
+            None,                   // priority
+            vec![0],                // import
+            None,                   // document order
+            None,                   // mode
+        ))
+        .context(vec![Item::Node(sd)])
+        .build();
+
+    // Now Evaluate the combinator with the source document root node as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+    assert_eq!(seq.to_string(), "onethreetwo");
     Ok(())
 }
 
@@ -2771,6 +3680,11 @@ where
     // NB. rust indexes start at 0, whereas XPath positions start at 1
 
     let x = Transform::Position;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .context(vec![
             Item::<N>::Value(Rc::new(Value::from("one"))),
@@ -2780,7 +3694,7 @@ where
         ])
         .index(2)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "3");
@@ -2796,6 +3710,11 @@ where
     // NB. rust indexes start at 0, whereas XPath positions start at 1
 
     let x = Transform::Last;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .context(vec![
             Item::<N>::Value(Rc::new(Value::from("one"))),
@@ -2805,7 +3724,7 @@ where
         ])
         .index(2)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "4");
@@ -2820,6 +3739,11 @@ where
     // XPath == count()
 
     let x = Transform::Count(Box::new(Transform::Empty));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .context(vec![
             Item::<N>::Value(Rc::new(Value::from("one"))),
@@ -2828,7 +3752,7 @@ where
             Item::<N>::Value(Rc::new(Value::from("four"))),
         ])
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "0");
@@ -2847,6 +3771,11 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("foo")))),
     ])));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ContextBuilder::new()
         .context(vec![
             Item::<N>::Value(Rc::new(Value::from("one"))),
@@ -2856,7 +3785,7 @@ where
         ])
         .index(2)
         .build()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "3");
@@ -2886,8 +3815,13 @@ where
     let x = Transform::LocalName(Some(Box::new(Transform::ContextItem)));
 
     // Now evaluate the combinator with <Level-1> as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "Level-1");
@@ -2917,8 +3851,13 @@ where
     let x = Transform::Name(Some(Box::new(Transform::ContextItem)));
 
     // Now evaluate the combinator with <Level-1> as the context item
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::from(vec![Item::Node(l1)])
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_xml(), "eg:Level-1");
@@ -2934,8 +3873,13 @@ where
     let x = Transform::String(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(1.0),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "1");
@@ -2953,8 +3897,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from("foo")))),
     ]);
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "abc1foo");
@@ -2975,8 +3924,13 @@ where
             "ab",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -2997,8 +3951,13 @@ where
             "x",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -3019,8 +3978,13 @@ where
             "bc",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -3041,8 +4005,13 @@ where
             "xyz",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -3064,8 +4033,13 @@ where
         ))))),
         None,
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "bcd");
@@ -3089,8 +4063,13 @@ where
             Value::from(2),
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "bc");
@@ -3111,8 +4090,13 @@ where
             "bc",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "a");
@@ -3133,8 +4117,13 @@ where
             "bc",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "d");
@@ -3153,8 +4142,13 @@ where
 ",
         )),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "a b c d");
@@ -3178,8 +4172,13 @@ where
             "BD",
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "aBD");
@@ -3195,8 +4194,13 @@ where
     let x = Transform::Boolean(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from("abcd"),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -3212,8 +4216,13 @@ where
     let x = Transform::Boolean(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(""),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -3229,8 +4238,13 @@ where
     let x = Transform::Boolean(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(1),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -3246,8 +4260,13 @@ where
     let x = Transform::Boolean(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(0),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -3263,8 +4282,13 @@ where
     let x = Transform::Not(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from("abcd"),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -3280,8 +4304,13 @@ where
     let x = Transform::Not(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(0),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -3295,8 +4324,13 @@ where
 {
     // XPath == true()
     let x = Transform::<N>::True;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), true);
@@ -3310,8 +4344,13 @@ where
 {
     // XPath == false()
     let x = Transform::<N>::False;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_bool(), false);
@@ -3327,8 +4366,13 @@ where
     let x = Transform::Number(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from("124"),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_int().unwrap(), 124);
@@ -3346,8 +4390,13 @@ where
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(2)))),
         Transform::Literal(Item::<N>::Value(Rc::new(Value::from(4)))),
     ])));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_int().unwrap(), 7);
@@ -3363,8 +4412,13 @@ where
     let x = Transform::Floor(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(1.2),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq[0].to_double(), 1.0);
@@ -3380,8 +4434,13 @@ where
     let x = Transform::Ceiling(Box::new(Transform::Literal(Item::<N>::Value(Rc::new(
         Value::from(1.2),
     )))));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq[0].to_double(), 2.0);
@@ -3400,8 +4459,13 @@ where
         ))))),
         None,
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq[0].to_double(), 1.0);
@@ -3422,8 +4486,13 @@ where
             Value::from(4),
         ))))),
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert!(seq[0].to_double() - 1.2346 < 0.000001);
@@ -3437,8 +4506,13 @@ where
 {
     // XPath == current-date-time()
     let x = Transform::<N>::CurrentDateTime;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
@@ -3465,8 +4539,13 @@ where
 {
     // XPath == current-date()
     let x = Transform::<N>::CurrentDate;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
@@ -3490,8 +4569,13 @@ where
 {
     // XPath == current-time()
     let x = Transform::<N>::CurrentTime;
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
@@ -3525,8 +4609,13 @@ where
         None,
         None,
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "04:05 03/01/2022");
@@ -3550,8 +4639,13 @@ where
         None,
         None,
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "03/01/2022");
@@ -3575,11 +4669,44 @@ where
         None,
         None,
     );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = Context::new()
-        .dispatch(&mut StaticContext::<F>::new(), &x)
+        .dispatch(&mut stctxt, &x)
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "04:05:06");
+    Ok(())
+}
+
+pub fn generic_tr_format_number_1<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+    where
+        G: Fn() -> N,
+        H: Fn() -> Item<N>,
+{
+    // XPath == format-number(123.456, "#.##")
+    let x = Transform::FormatNumber(
+        Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+            123.456,
+        ))))),
+        Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
+            "#.##",
+        ))))),
+        None,
+    );
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = Context::new()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq.to_string(), "123.46");
     Ok(())
 }
 
@@ -3643,7 +4770,11 @@ where
             nodetest: NodeTest::Kind(KindTest::Text),
         }),
     );
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     ctxt.populate_key_values(&mut stctxt, sd.clone())
         .expect("unable to populate key values");
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -3684,7 +4815,11 @@ where
         )
         .build();
 
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
     assert_eq!(seq.to_string(), "found parameter, value: value 1");
@@ -3730,9 +4865,294 @@ where
         )
         .build();
 
-    let mut stctxt = StaticContext::<F>::new();
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
 
     assert_eq!(seq.to_string(), "found parameter, value: value 1");
+    Ok(())
+}
+
+pub fn generic_tr_document_1<N: Node, G, H>(
+    make_empty_doc: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let mut sd = make_empty_doc();
+    sd.push(
+        sd.new_element(QualifiedName::new(None, None, "Test"))
+            .expect("unable to create element"),
+    )
+        .expect("unable to add element");
+
+    let x = Transform::SequenceItems(vec![
+        Transform::Compose(vec![
+            Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            }),
+            Transform::LocalName(None),
+        ]),
+        Transform::Compose(vec![
+            Transform::Document(Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("urn:test"))))), None),
+            Transform::Step(NodeMatch {
+                axis: Axis::Child,
+                nodetest: NodeTest::Kind(KindTest::Any),
+            }),
+            Transform::LocalName(None),
+        ]),
+    ]);
+
+    let ctxt = ContextBuilder::new().context(vec![Item::Node(sd)]).build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .parser(|s| parser(s))
+        .message(|_| Ok(()))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "TestExternal");
+    Ok(())
+}
+
+pub fn generic_tr_generate_ints_1<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let sd = make_doc();
+
+    let n = if let Item::Node(root) = sd.clone() {
+        root.descend_iter().last().unwrap()
+    } else {
+        panic!("unable to find document root node")
+    };
+    let rd = make_empty_doc();
+
+    let x = Transform::GenerateIntegers(
+        Box::new(Transform::Empty),
+        Box::new(Transform::ContextItem),
+        Box::new(Numbering::new(Level::Single, None, None)),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .context(vec![Item::Node(n)])
+        .result_document(rd)
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .parser(|s| parser(s))
+        .message(|_| Ok(()))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "2");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_1<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("1"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "42");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_2<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("0001"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "0042");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_3<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("W"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "FORTY TWO");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_4<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("w"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "forty two");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_5<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("Ww"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "Forty Two");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_6<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("i"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "xlii");
+    Ok(())
+}
+
+pub fn generic_tr_format_ints_7<N: Node, G, H>(
+    _: G,
+    _: H,
+    mut parser: Box<dyn FnMut(&str) -> Result<N, Error>>,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+
+    let x = Transform::FormatInteger(
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("I"))))),
+    );
+
+    let ctxt = ContextBuilder::new()
+        .build();
+    let mut stctxt = StaticContextBuilder::new()
+        .fetcher(|_url| Ok(String::from("<External>document</External>")))
+        .message(|_| Ok(()))
+        .parser(|s| parser(s))
+        .build();
+    let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
+
+    assert_eq!(seq.to_string(), "XLII");
     Ok(())
 }

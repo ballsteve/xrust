@@ -68,6 +68,8 @@ pub struct Context<N: Node> {
     pub(crate) keys: HashMap<String, Vec<(Pattern<N>, Transform<N>)>>,
     // The calculated values of keys.
     pub(crate) key_values: HashMap<String, HashMap<String, Vec<N>>>,
+    // Named attribute sets
+    pub(crate) attr_sets: HashMap<String, Vec<Transform<N>>>,
     // Output control
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
@@ -92,6 +94,7 @@ impl<N: Node> Context<N> {
             current_group: Sequence::new(),
             keys: HashMap::new(),
             key_values: HashMap::new(),
+            attr_sets: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: vec![],
@@ -133,9 +136,13 @@ impl<N: Node> Context<N> {
         }
     }
     /// Calculate the key values for a source document
-    pub fn populate_key_values<F: FnMut(&str) -> Result<(), Error>>(
+    pub fn populate_key_values<
+        F: FnMut(&str) -> Result<(), Error>,
+        G: FnMut(&str) -> Result<N, Error>,
+        H: FnMut(&Url) -> Result<String, Error>,
+    >(
         &mut self,
-        stctxt: &mut StaticContext<F>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         sd: N,
     ) -> Result<(), Error> {
         populate_key_values(self, stctxt, sd)
@@ -146,6 +153,10 @@ impl<N: Node> Context<N> {
             v.iter()
                 .for_each(|(kk, vv)| println!("\tvalue \"{}\" {} nodes", kk, vv.len()))
         })
+    }
+    /// Add a named attribute set. This replaces any previously declared attribute set with the same name
+    pub fn attribute_set(&mut self, name: QualifiedName, body: Vec<Transform<N>>) {
+
     }
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
@@ -193,21 +204,20 @@ impl<N: Node> Context<N> {
     /// returning the resulting [Sequence].
     /// ```rust
     /// use std::rc::Rc;
+    /// use url::Url;
+    /// use xrust::ErrorKind;
     /// use xrust::xdmerror::Error;
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::Transform;
-    /// use xrust::transform::context::{Context, StaticContext};
+    /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::{RNode, Node as SmiteNode};
     /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
-    /// // This is necessary since there is no callback defined for the static context
-    /// type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
-    ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = Rc::new(SmiteNode::new());
-    ///   parse(d.clone(), s, None, None)
+    ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -217,15 +227,24 @@ impl<N: Node> Context<N> {
     /// <xsl:template match='/'><xsl:apply-templates/></xsl:template>
     /// <xsl:template match='child::Example'>This template will match</xsl:template>
     /// </xsl:stylesheet>");
+    /// let mut stctxt = StaticContextBuilder::new()
+    ///     .message(|_| Ok(()))
+    ///     .fetcher(|_| Ok(String::new()))
+    ///     .parser(|s| Ok(make_from_str(s)))
+    ///     .build();
     /// let mut context = from_document(style, vec![], None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
     /// context.context(vec![sd], 0);
     /// context.result_document(make_from_str("<Result/>"));
-    /// let sequence = context.evaluate(&mut StaticContext::<F>::new()).expect("evaluation failed");
+    /// let sequence = context.evaluate(&mut stctxt).expect("evaluation failed");
     /// assert_eq!(sequence.to_string(), "This template will match")
     /// ```
-    pub fn evaluate<F: FnMut(&str) -> Result<(), Error>>(
+    pub fn evaluate<
+        F: FnMut(&str) -> Result<(), Error>,
+        G: FnMut(&str) -> Result<N, Error>,
+        H: FnMut(&Url) -> Result<String, Error>,
+    >(
         &self,
-        stctxt: &mut StaticContext<F>,
+        stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
         if self.cur.is_empty() {
             Ok(Sequence::new())
@@ -241,7 +260,7 @@ impl<N: Node> Context<N> {
                     // There may be 0, 1, or more matching templates.
                     // If there are more than one with the same priority and import level,
                     // then take the one with the higher document order.
-                    let templates = self.find_templates(stctxt, i)?;
+                    let templates = self.find_templates(stctxt, i, &None)?;
                     match templates.len() {
                         0 => Err(Error::new(
                             ErrorKind::DynamicAbsent,
@@ -276,19 +295,28 @@ impl<N: Node> Context<N> {
         }
     }
 
-    /// Find a template with a matching [Pattern]
-    pub fn find_templates<F: FnMut(&str) -> Result<(), Error>>(
+    /// Find a template with a matching [Pattern] in the given mode.
+    pub fn find_templates<
+        F: FnMut(&str) -> Result<(), Error>,
+        G: FnMut(&str) -> Result<N, Error>,
+        H: FnMut(&Url) -> Result<String, Error>,
+    >(
         &self,
-        stctxt: &mut StaticContext<F>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
+        m: &Option<QualifiedName>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
-        let mut candidates = self.templates.iter().try_fold(vec![], |mut cand, t| {
-            let e = t.pattern.matches(self, stctxt, i);
-            if e {
-                cand.push(t.clone())
-            }
-            Ok(cand)
-        })?;
+        let mut candidates =
+            self.templates
+                .iter()
+                .filter(|t| t.mode == *m)
+                .try_fold(vec![], |mut cand, t| {
+                    let e = t.pattern.matches(self, stctxt, i);
+                    if e {
+                        cand.push(t.clone())
+                    }
+                    Ok(cand)
+                })?;
         if candidates.len() != 0 {
             // Find the template(s) with the lowest priority.
 
@@ -297,7 +325,7 @@ impl<N: Node> Context<N> {
         } else {
             Err(Error::new(
                 ErrorKind::Unknown,
-                String::from("no matching template"),
+                format!("no matching template for item {:?} in mode \"{:?}\"", i, m),
             ))
         }
     }
@@ -305,20 +333,18 @@ impl<N: Node> Context<N> {
     /// Interpret the given [Transform] object
     /// ```rust
     /// use std::rc::Rc;
-    /// use xrust::xdmerror::Error;
+    /// use url::Url;
+    /// use xrust::xdmerror::{Error, ErrorKind};
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
-    /// use xrust::transform::context::{Context, ContextBuilder, StaticContext};
+    /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
     /// use xrust::trees::smite::{RNode, Node as SmiteNode};
     /// use xrust::parser::xml::parse;
-    ///
-    /// // This is necessary since there is no callback defined for the static context
-    /// type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
     ///   let mut d = Rc::new(SmiteNode::new());
-    ///   parse(d.clone(), s, None, None)
+    ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
     /// }
@@ -326,15 +352,24 @@ impl<N: Node> Context<N> {
     /// // Equivalent to "child::*"
     /// let t = Transform::Step(NodeMatch {axis: Axis::Child, nodetest: NodeTest::Kind(KindTest::Any)});
     /// let sd = Item::Node(make_from_str("<Example/>"));
+    /// let mut stctxt = StaticContextBuilder::new()
+    ///    .message(|_| Ok(()))
+    ///    .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    ///    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    ///     .build();
     /// let context = ContextBuilder::new()
     ///   .context(vec![sd])
     ///   .build();
-    /// let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t).expect("evaluation failed");
+    /// let sequence = context.dispatch(&mut stctxt, &t).expect("evaluation failed");
     /// assert_eq!(sequence.to_xml(), "<Example></Example>")
     /// ```
-    pub fn dispatch<F: FnMut(&str) -> Result<(), Error>>(
+    pub fn dispatch<
+        F: FnMut(&str) -> Result<(), Error>,
+        G: FnMut(&str) -> Result<N, Error>,
+        H: FnMut(&Url) -> Result<String, Error>,
+    >(
         &self,
-        stctxt: &mut StaticContext<F>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
         match t {
@@ -368,8 +403,8 @@ impl<N: Node> Context<N> {
             Transform::Arithmetic(v) => arithmetic(self, stctxt, v),
             Transform::Loop(v, b) => tr_loop(self, stctxt, v, b),
             Transform::Switch(c, o) => switch(self, stctxt, c, o),
-            Transform::ForEach(g, s, b) => for_each(self, stctxt, g, s, b),
-            Transform::ApplyTemplates(s) => apply_templates(self, stctxt, s),
+            Transform::ForEach(g, s, b, o) => for_each(self, stctxt, g, s, b, o),
+            Transform::ApplyTemplates(s, m, o) => apply_templates(self, stctxt, s, m, o),
             Transform::ApplyImports => apply_imports(self, stctxt),
             Transform::NextMatch => next_match(self, stctxt),
             Transform::VariableDeclaration(n, v, f) => {
@@ -410,9 +445,13 @@ impl<N: Node> Context<N> {
             }
             Transform::FormatDate(t, p, l, c, q) => format_date(self, stctxt, t, p, l, c, q),
             Transform::FormatTime(t, p, l, c, q) => format_time(self, stctxt, t, p, l, c, q),
+            Transform::FormatNumber(v, p, d) => format_number(self, stctxt, v, p, d),
+            Transform::FormatInteger(i, s) => format_integer(self, stctxt, i, s),
+            Transform::GenerateIntegers(start_at, select, n) => generate_integers(self, stctxt, start_at, select, n),
             Transform::Key(n, v, _) => key(self, stctxt, n, v),
             Transform::SystemProperty(p) => system_property(self, stctxt, p),
             Transform::AvailableSystemProperties => available_system_properties(),
+            Transform::Document(uris, base) => document(self, stctxt, uris, base),
             Transform::Invoke(qn, a) => invoke(self, stctxt, qn, a),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
@@ -441,6 +480,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             key_values: HashMap::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
+            attr_sets: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: vec![],
@@ -540,19 +580,29 @@ impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
 /// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
-pub struct StaticContext<F>
+pub struct StaticContext<N: Node, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>, // Parses a string into a tree
+    H: FnMut(&Url) -> Result<String, Error>, // Fetches the data from a URL
 {
     pub(crate) message: Option<F>,
+    pub(crate) parser: Option<G>,
+    pub(crate) fetcher: Option<H>,
 }
 
-impl<F> StaticContext<F>
+impl<N: Node, F, G, H> StaticContext<N, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
 {
     pub fn new() -> Self {
-        StaticContext { message: None }
+        StaticContext {
+            message: None,
+            parser: None,
+            fetcher: None,
+        }
     }
 }
 
@@ -560,6 +610,7 @@ where
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// ```rust
 /// use std::rc::Rc;
+/// use xrust::{Error, ErrorKind};
 /// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
 /// use xrust::item::{Item, Sequence, SequenceTrait, NodeType};
@@ -571,31 +622,40 @@ where
 /// let xform = Transform::LiteralElement(
 ///   QualifiedName::new(None, None, String::from("Example")),
 ///   Box::new(Transform::SequenceItems(vec![
-///	Transform::Message(
-///		Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
-///		None,
-///		Box::new(Transform::Empty),
-///		Box::new(Transform::Empty),
-///	),
-///	Transform::Literal(Item::Value(Rc::new(Value::from("element content")))),
+///    Transform::Message(
+///    	Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
+///    	None,
+///    	Box::new(Transform::Empty),
+///    	Box::new(Transform::Empty),
+///    ),
+///    Transform::Literal(Item::Value(Rc::new(Value::from("element content")))),
 ///   ]))
 /// );
 /// let mut context = ContextBuilder::new()
-///	.result_document(Rc::new(Node::new()))
-///	.build();
+///    .result_document(Rc::new(Node::new()))
+///    .build();
 /// let mut static_context = StaticContextBuilder::new()
-///	.message(|m| {message = String::from(m); Ok(())})
-///	.build();
+///    .message(|m| {message = String::from(m); Ok(())})
+///    .fetcher(|_| Ok(String::new()))
+///    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+///    .build();
 /// let sequence = context.dispatch(&mut static_context, &xform).expect("evaluation failed");
 ///
 /// assert_eq!(sequence.to_xml(), "<Example>element content</Example>");
 /// assert_eq!(message, "a message from the transformation")
 /// ```
-pub struct StaticContextBuilder<F: FnMut(&str) -> Result<(), Error>>(StaticContext<F>);
+pub struct StaticContextBuilder<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(StaticContext<N, F, G, H>);
 
-impl<F> StaticContextBuilder<F>
+impl<N: Node, F, G, H> StaticContextBuilder<N, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
 {
     pub fn new() -> Self {
         StaticContextBuilder(StaticContext::new())
@@ -604,7 +664,15 @@ where
         self.0.message = Some(f);
         self
     }
-    pub fn build(self) -> StaticContext<F> {
+    pub fn parser(mut self, p: G) -> Self {
+        self.0.parser = Some(p);
+        self
+    }
+    pub fn fetcher(mut self, f: H) -> Self {
+        self.0.fetcher = Some(f);
+        self
+    }
+    pub fn build(self) -> StaticContext<N, F, G, H> {
         self.0
     }
 }

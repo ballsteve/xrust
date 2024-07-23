@@ -11,6 +11,7 @@ use crate::transform::context::StaticContext;
 use crate::transform::Transform;
 use crate::{Context, Error, ErrorKind, Sequence};
 use std::collections::HashMap;
+use url::Url;
 
 #[derive(Clone, Debug)]
 pub struct Callable<N: Node> {
@@ -38,9 +39,14 @@ pub enum ActualParameters<N: Node> {
 }
 
 /// Invoke a callable component
-pub(crate) fn invoke<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn invoke<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     qn: &QualifiedName,
     a: &ActualParameters<N>,
 ) -> Result<Sequence<N>, Error> {
