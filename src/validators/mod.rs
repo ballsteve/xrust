@@ -2,7 +2,7 @@ pub mod relaxng;
 
 use std::rc::Rc;
 use crate::trees::smite::{RNode, Node as SmiteNode};
-use crate::parser::{ParserConfig, xml};
+use crate::parser::xml;
 use crate::validators::relaxng::validate_relaxng;
 
 

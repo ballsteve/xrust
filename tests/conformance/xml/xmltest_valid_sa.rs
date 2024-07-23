@@ -9,10 +9,9 @@ James Clark XMLTEST cases - Standalone
 */
 
 use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
-use std::convert::TryFrom;
 use std::fs;
 use std::rc::Rc;
-use xrust::{Document, Node};
+use xrust::Node;
 use xrust::parser::{ParserConfig, xml};
 use xrust::trees::smite::Node as SmiteNode;
 

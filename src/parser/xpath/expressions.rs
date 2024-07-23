@@ -12,7 +12,7 @@ use crate::parser::xpath::expr_wrapper;
 use crate::parser::xpath::functions::function_call;
 use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::variables::variable_reference;
-use crate::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
+use crate::transform::Transform;
 
 // PostfixExpr ::= PrimaryExpr (Predicate | ArgumentList | Lookup)*
 // TODO: predicates, arg list, lookup

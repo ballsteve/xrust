@@ -65,7 +65,6 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::pattern::Pattern;
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};

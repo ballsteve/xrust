@@ -8,7 +8,7 @@ use english_numbers::{Formatting, convert};
 use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait, NodeType};
-use crate::pattern::{Pattern, Path, PathBuilder};
+use crate::pattern::{Pattern, PathBuilder};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Axis, Transform, NodeTest, KindTest, NameTest, WildcardOrName};
