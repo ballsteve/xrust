@@ -21,7 +21,7 @@ fn unprefixed_name<'a, N: Node + 'a>(
         NodeTest::Name(NameTest {
             ns: None,
             prefix: None,
-            name: Some(WildcardOrName::Name(String::from(localpart))),
+            name: Some(WildcardOrName::Name(localpart)),
         })
     }))
 }
@@ -32,8 +32,8 @@ fn prefixed_name<'a, N: Node + 'a>(
         |(prefix, _, localpart)| {
             NodeTest::Name(NameTest {
                 ns: None,
-                prefix: Some(String::from(prefix)),
-                name: Some(WildcardOrName::Name(String::from(localpart))),
+                prefix: Some(prefix),
+                name: Some(WildcardOrName::Name(localpart)),
             })
         },
     ))

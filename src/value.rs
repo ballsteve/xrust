@@ -212,7 +212,7 @@ impl Value {
     /// Convert the value to a double. If the value cannot be converted, returns Nan.
     pub fn to_double(&self) -> f64 {
         match &self {
-            Value::String(s) => s.parse::<f64>().unwrap_or_else(|_| f64::NAN),
+            Value::String(s) => s.parse::<f64>().unwrap_or(f64::NAN),
             Value::Integer(i) => (*i) as f64,
             Value::Int(i) => (*i) as f64,
             Value::Double(d) => *d,

@@ -50,7 +50,7 @@ fn xmldeclstandalone<N: Node>(
                 whitespace0(),
                 delimited_string(),
             ),
-            |(_, _, _, _, _, s)| vec!["yes".to_string(), "no".to_string()].contains(s),
+            |(_, _, _, _, _, s)| ["yes".to_string(), "no".to_string()].contains(s),
         ),
         |(_, _, _, _, _, s)| s,
     )((input, state))
@@ -118,7 +118,7 @@ pub(crate) fn xmldecl<N: Node>(
     )((input, state))
     {
         Ok(((input1, mut state1), (_, _, ver, enc, sta, _, _, _))) => {
-            state1.xmlversion = ver.clone();
+            state1.xmlversion.clone_from(&ver);
             let res = XMLDecl {
                 version: ver,
                 encoding: enc,

@@ -40,7 +40,7 @@ pub(crate) fn anytag<N: Node>(
                 result
             }
         });
-        if u == "" {
+        if u.is_empty() {
             Err(ParseError::Combinator)
         } else {
             Ok(((&input[u.len()..], state), u.to_string()))

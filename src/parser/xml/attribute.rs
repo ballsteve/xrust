@@ -36,7 +36,7 @@ pub(crate) fn attributes<N: Node>(
                 //xml prefix must always be set to http://www.w3.org/XML/1998/namespace
                 if (qn.get_prefix() == Some("xmlns".to_string()))
                     && (qn.get_localname() == *"xml")
-                    && (val != "http://www.w3.org/XML/1998/namespace".to_string())
+                    && (val != *"http://www.w3.org/XML/1998/namespace")
                 {
                     return Err(ParseError::NotWellFormed(String::from(
                         "xml namespace URI must be http://www.w3.org/XML/1998/namespace",
@@ -45,7 +45,7 @@ pub(crate) fn attributes<N: Node>(
                 // http://www.w3.org/XML/1998/namespace must always be bound to xml
                 if (qn.get_prefix() == Some("xmlns".to_string()))
                     && (qn.get_localname() != *"xml")
-                    && (val == "http://www.w3.org/XML/1998/namespace".to_string())
+                    && (val == *"http://www.w3.org/XML/1998/namespace")
                 {
                     return Err(ParseError::NotWellFormed(String::from(
                         "XML namespace must be bound to xml prefix",
@@ -54,7 +54,7 @@ pub(crate) fn attributes<N: Node>(
                 // http://www.w3.org/2000/xmlns/ must always be bound to xmlns
                 if (qn.get_prefix() == Some("xmlns".to_string()))
                     && (qn.get_localname() != *"xmlns")
-                    && (val == "http://www.w3.org/2000/xmlns/".to_string())
+                    && (val == *"http://www.w3.org/2000/xmlns/")
                 {
                     return Err(ParseError::NotWellFormed(String::from(
                         "XMLNS namespace must be bound to xmlns prefix",
@@ -118,7 +118,7 @@ pub(crate) fn attributes<N: Node>(
                             )])]);
                         } else {
                             let _ = qn.resolve(&state1.namespace);
-                            if qn.get_nsuri() == None {
+                            if qn.get_nsuri().is_none() {
                                 return Err(ParseError::MissingNameSpace);
                             }
                         }

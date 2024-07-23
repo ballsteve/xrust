@@ -77,7 +77,7 @@ pub(crate) fn invoke<
                             None => {
                                 // Use default value
                                 if let Some(d) = dflt {
-                                    newctxt.var_push(name.to_string(), ctxt.dispatch(stctxt, &d)?)
+                                    newctxt.var_push(name.to_string(), ctxt.dispatch(stctxt, d)?)
                                 } else {
                                     newctxt.var_push(name.to_string(), vec![])
                                 }
@@ -108,7 +108,7 @@ pub(crate) fn invoke<
         }
         None => Err(Error::new(
             ErrorKind::Unknown,
-            format!("unknown callable \"{}\"", qn.to_string()),
+            format!("unknown callable \"{}\"", qn),
         )),
     }
 }

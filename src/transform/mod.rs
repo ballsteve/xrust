@@ -407,7 +407,7 @@ pub(crate) fn do_sort<
 ) -> Result<(), Error> {
     // Optionally sort the select sequence
     // TODO: multiple sort keys
-    if o.len() > 0 {
+    if !o.is_empty() {
         seq.sort_by_cached_key(|k| {
             // TODO: Don't panic
             let key_seq = ContextBuilder::from(ctxt)
@@ -495,10 +495,8 @@ impl NodeMatch {
                     KindTest::PI => matches!(n.node_type(), NodeType::ProcessingInstruction),
                     KindTest::Comment => matches!(n.node_type(), NodeType::Comment),
                     KindTest::Text => matches!(n.node_type(), NodeType::Text),
-                    KindTest::Any => match n.node_type() {
-                        NodeType::Document => false,
-                        _ => true,
-                    },
+                    //Note: This one is matching not NodeType::Document
+                    KindTest::Any => !matches!(n.node_type(), NodeType::Document),
                     KindTest::Attribute
                     | KindTest::SchemaElement
                     | KindTest::SchemaAttribute

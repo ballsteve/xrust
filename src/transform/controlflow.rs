@@ -93,10 +93,10 @@ pub fn for_each<
             }
             Ok(result)
         }
-        Some(Grouping::By(b)) => group_by(ctxt, stctxt, &b, s, body, o),
-        Some(Grouping::Adjacent(a)) => group_adjacent(ctxt, stctxt, &a, s, body, o),
-        Some(Grouping::StartingWith(v)) => group_starting_with(ctxt, stctxt, &v, s, body, o),
-        Some(Grouping::EndingWith(v)) => group_ending_with(ctxt, stctxt, &v, s, body, o),
+        Some(Grouping::By(b)) => group_by(ctxt, stctxt, b, s, body, o),
+        Some(Grouping::Adjacent(a)) => group_adjacent(ctxt, stctxt, a, s, body, o),
+        Some(Grouping::StartingWith(v)) => group_starting_with(ctxt, stctxt, v, s, body, o),
+        Some(Grouping::EndingWith(v)) => group_ending_with(ctxt, stctxt, v, s, body, o),
     }
 }
 

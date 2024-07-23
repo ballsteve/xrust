@@ -132,7 +132,7 @@ pub fn system_property<
             (Some(XSLTNS), "xsd-version") => Ok(vec![Item::Value(Rc::new(Value::from(1.1)))]),
             _ => Err(Error::new(
                 ErrorKind::Unknown,
-                format!("unknown property \"{}\"", qn.to_string()),
+                format!("unknown property \"{}\"", qn),
             )),
         }
     } else {
@@ -260,7 +260,7 @@ pub(crate) fn tr_error<N: Node>(
     kind: &ErrorKind,
     msg: &String,
 ) -> Result<Sequence<N>, Error> {
-    Err(Error::new(kind.clone(), msg.clone()))
+    Err(Error::new(*kind, msg.clone()))
 }
 
 pub(crate) fn not_implemented<N: Node>(

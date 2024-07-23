@@ -88,7 +88,6 @@ use crate::value::*;
 use crate::xdmerror::*;
 use std::convert::TryFrom;
 use url::Url;
-use crate::parser::xpath::nodetests::nodetest;
 
 const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
@@ -444,7 +443,8 @@ where
             let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
             let pat = Pattern::try_from(m.to_string())?;
             let u = c.get_attribute(&QualifiedName::new(None, None, "use".to_string()));
-            Ok(keys.push((name, pat, parse::<N>(&u.to_string())?)))
+            keys.push((name, pat, parse::<N>(&u.to_string())?));
+            Ok(())
         })?;
 
     let mut newctxt = ContextBuilder::new()
@@ -861,7 +861,7 @@ fn to_transform<N: Node>(
                         Some(e) => Result::Err(e),
                         None => Ok(Transform::Switch(
                             clauses,
-                            otherwise.map_or(Box::new(Transform::Empty), |o| Box::new(o)),
+                            otherwise.map_or(Box::new(Transform::Empty), Box::new),
                         )),
                     }
                 }

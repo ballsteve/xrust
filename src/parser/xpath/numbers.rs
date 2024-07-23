@@ -71,7 +71,7 @@ fn additive_expr<'a, N: Node + 'a>(
                 let mut e: Vec<ArithmeticOperand<N>> = b
                     .iter()
                     .map(|(c, d)| {
-                        ArithmeticOperand::new(c.clone(), Transform::Arithmetic(d.clone()))
+                        ArithmeticOperand::new(*c, Transform::Arithmetic(d.clone()))
                     })
                     .collect();
                 a.append(&mut e);

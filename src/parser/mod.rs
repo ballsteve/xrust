@@ -60,6 +60,11 @@ pub struct ParserConfig {
     pub namespace_nodes: bool,
 }
 
+impl Default for ParserConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl ParserConfig {
     pub fn new() -> Self {
         ParserConfig {
@@ -113,7 +118,7 @@ pub struct ParserState<N: Node> {
 
 impl<N: Node> ParserState<N> {
     pub fn new(doc: Option<N>, parser_config: Option<ParserConfig>) -> Self {
-        let pc = if parser_config.is_some(){
+        let pc = if let Some(..) = parser_config {
             parser_config.unwrap()
         } else {
             ParserConfig::new()

@@ -512,7 +512,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                             at_names.sort();
                             if at_names.iter().fold(true, |mut acc, qn| {
                                 if acc {
-                                    acc = self.get_attribute(&qn) == other.get_attribute(&qn);
+                                    acc = self.get_attribute(qn) == other.get_attribute(qn);
                                     acc
                                 } else { acc }
                             }) {

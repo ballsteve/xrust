@@ -197,7 +197,7 @@ impl ItemNode for RNode {
     }
 
     fn get_id(&self) -> String {
-        format!("{:#p}", &(**self).0 as *const NodeInner)
+        format!("{:#p}", &(self).0 as *const NodeInner)
     }
 
     fn to_string(&self) -> String {
@@ -288,7 +288,7 @@ impl ItemNode for RNode {
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self> {
         match &self.0 {
             NodeInner::Element(_, _, att, _, _) => {
-                att.borrow().get(a).map_or(None, |v| Some(v.clone()))
+                att.borrow().get(a).cloned()
             }
             _ => None,
         }
@@ -637,11 +637,8 @@ impl ItemNode for RNode {
             NodeInner::Document(_, e, _) => {
                 let mut result = self.shallow_copy()?;
                 for n in e.borrow_mut().iter() {
-                    match n.get_canonical() {
-                        Ok(rn) => {
-                            result.push(rn)?
-                        }
-                        Err(_) => {}
+                    if let Ok(rn) = n.get_canonical() {
+                        result.push(rn)?
                     }
                 }
                 Ok(result)
@@ -681,11 +678,9 @@ impl ItemNode for RNode {
                 })?;
 
                 self.child_iter().try_for_each(|c| {
-                    match c.get_canonical() {
-                        Ok(rn) => {result.push(rn)?}
-                        Err(_) => {}
+                    if let Ok(rn) = c.get_canonical() {
+                        result.push(rn)?
                     }
-                    //result.push(c.get_canonical()?)?;
                     Ok::<(), Error>(())
                 })?;
 
@@ -726,17 +721,17 @@ impl Debug for Node {
                 write!(
                     f,
                     "element-type node \"{}\"@[{}]",
-                    qn.to_string(),
+                    qn,
                     format_attrs(&attrs.clone())
                 )
             }
             NodeInner::Attribute(_, qn, _) => {
-                write!(f, "attribute-type node \"{}\"", qn.to_string())
+                write!(f, "attribute-type node \"{}\"", qn)
             }
-            NodeInner::Text(_, v) => write!(f, "text-type node \"{}\"", v.to_string()),
-            NodeInner::Comment(_, v) => write!(f, "comment-type node \"{}\"", v.to_string()),
+            NodeInner::Text(_, v) => write!(f, "text-type node \"{}\"", v),
+            NodeInner::Comment(_, v) => write!(f, "comment-type node \"{}\"", v),
             NodeInner::ProcessingInstruction(_, qn, _) => {
-                write!(f, "PI-type node \"{}\"", qn.to_string())
+                write!(f, "PI-type node \"{}\"", qn)
             }
             NodeInner::Namespace(_, pre, uri) => {
                 write!(
@@ -753,7 +748,7 @@ impl Debug for Node {
 fn format_attrs(ats: &HashMap<Rc<QualifiedName>, RNode>) -> String {
     let mut result = String::new();
     ats.iter().for_each(|(k, v)| {
-        result.push_str(format!(" {}='{}'", k.to_string(), v.to_string()).as_str())
+        result.push_str(format!(" {}='{}'", k, v.to_string()).as_str())
     });
     result
 }
@@ -802,11 +797,8 @@ fn detach(n: RNode) {
             match &doc.0 {
                 NodeInner::Document(_, _, u) => {
                     let i = u.borrow().iter().position(|x| Rc::ptr_eq(x, &n));
-                    match i {
-                        Some(i) => {
-                            u.borrow_mut().remove(i);
-                        }
-                        None => {} // nothing to do. should this be an error?
+                    if let Some(i) = i {
+                        u.borrow_mut().remove(i);
                     }
                 }
                 _ => panic!("not a document"),
@@ -844,7 +836,7 @@ fn push_node(parent: &RNode, child: RNode) -> Result<(), Error> {
 // Find the document order of ancestors
 fn doc_order(n: &RNode) -> Vec<usize> {
     match &n.0 {
-        NodeInner::Document(_, _, _) => vec![1 as usize],
+        NodeInner::Document(_, _, _) => vec![1usize],
         NodeInner::Attribute(_, _, _) => {
             let mut a = doc_order(&n.parent().unwrap());
             a.push(2);
@@ -865,7 +857,7 @@ fn doc_order(n: &RNode) -> Vec<usize> {
                 a.push(idx + 2);
                 a
             }
-            None => vec![1 as usize],
+            None => vec![1usize],
         },
     }
 }
@@ -889,13 +881,11 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
             ))
         }
     };
-    idx.map_or(
-        Err(Error::new(
-            ErrorKind::Unknown,
-            std::string::String::from("unable to find child"),
-        )),
-        Ok,
-    )
+    idx.ok_or(Error::new(
+        ErrorKind::Unknown,
+        std::string::String::from("unable to find child"),
+    ))
+
 }
 
 // This handles the XML serialisation of the document.
@@ -921,7 +911,7 @@ fn to_xml_int(
             let mut declared = ns.clone();
             let mut newns: Vec<(String, Option<String>)> = vec![];
             // First, the element itself
-            namespace_check(&qn, &declared).iter().for_each(|m| {
+            namespace_check(qn, &declared).iter().for_each(|m| {
                 newns.push(m.clone());
                 declared.push(m.clone())
             });
@@ -1017,7 +1007,7 @@ fn namespace_check(
     let mut result = None;
     if let Some(qnuri) = qn.get_nsuri_ref() {
         // Has this namespace already been declared?
-        if ns.iter().find(|(u, _)| u == qnuri).is_some() {
+        if ns.iter().any(|(u, _)| u == qnuri) {
             // Namespace has been declared, but with the same prefix?
             // TODO: see forest.rs for example implementation
         } else {
@@ -1192,7 +1182,7 @@ impl Iterator for Attributes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        self.it.as_mut().map_or(None, |i| i.next().map(|(_, n)| n))
+        self.it.as_mut().and_then(|i| i.next().map(|(_, n)| n))
     }
 }
 

@@ -14,16 +14,16 @@ use std::path::Path;
 use std::rc::Rc;
 use url::Url;
 
-use xrust::item::{Item, Node, NodeType, SequenceTrait};
+use xrust::item::{Item, Node, SequenceTrait};
 use xrust::parser::xml::parse;
 use xrust::qname::QualifiedName;
-use xrust::transform::context::{StaticContext, StaticContextBuilder};
+use xrust::transform::context::StaticContextBuilder;
 use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
-//use earleybird::grammar::Grammar;
+
 use earleybird::ixml_grammar::{ixml_grammar, ixml_tree_to_grammar};
 use earleybird::parser::{Content, Parser};
 use indextree::{Arena, NodeId};

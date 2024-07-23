@@ -101,7 +101,7 @@ fn double_literal_frac<'a, N: Node + 'a>(
                 Ok(m) => Value::Double(m),
                 Err(_) => panic!("unable to convert to double"),
             };
-            Transform::Literal(Item::Value(Rc::new(Value::from(i))))
+            Transform::Literal(Item::Value(Rc::new(i)))
         },
     ))
 }
@@ -120,7 +120,7 @@ fn double_literal_comp<'a, N: Node + 'a>(
                 Ok(m) => Value::Double(m),
                 Err(_) => panic!("unable to convert to double"),
             };
-            Transform::Literal(Item::Value(Rc::new(Value::from(i))))
+            Transform::Literal(Item::Value(Rc::new(i)))
         },
     ))
 }

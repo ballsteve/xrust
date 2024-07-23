@@ -226,7 +226,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                             })
                         });
                         bcc.iter().filter(|e| nm.matches(*e)).for_each(|g| {
-                            acc.push_node(&g);
+                            acc.push_node(g);
                         });
                         Ok(acc)
                     }
@@ -250,7 +250,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                             })
                         });
                         bcc.iter().filter(|e| nm.matches(*e)).for_each(|g| {
-                            acc.push_node(&g);
+                            acc.push_node(g);
                         });
                         Ok(acc)
                     }
@@ -262,7 +262,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                     }
                     Axis::SelfAttribute => {
                         if n.node_type() == NodeType::Attribute {
-                            acc.push_node(&n)
+                            acc.push_node(n)
                         }
                         Ok(acc)
                     }
