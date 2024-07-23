@@ -2,20 +2,18 @@
 //!
 //! Suggested by Micah Dubinko.
 
-use std::collections::HashMap;
 use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 use std::rc::Rc;
 
-use url::Url;
 use xrust::ErrorKind;
 
-use xrust::item::{Item, Node, NodeType, SequenceTrait};
+use xrust::item::{Item, SequenceTrait};
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
-use xrust::transform::context::{ContextBuilder, StaticContext, StaticContextBuilder};
+use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::xdmerror::Error;
 

@@ -3,7 +3,6 @@
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
-use xrust::output::OutputDefinition;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};

@@ -129,7 +129,7 @@ impl<N: Node> Context<N> {
             self.keys.insert(name.clone(), vec![(m, u)]);
         }
         // Initialise the key values store with an empty hashmap
-        if let Some(_) = self.key_values.get_mut(&name) {
+        if self.key_values.get_mut(&name).is_some() {
             // Already initialised
         } else {
             self.key_values.insert(name, HashMap::new());
@@ -155,7 +155,7 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
-    pub fn attribute_set(&mut self, name: QualifiedName, body: Vec<Transform<N>>) {
+    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {
 
     }
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
@@ -317,10 +317,10 @@ impl<N: Node> Context<N> {
                     }
                     Ok(cand)
                 })?;
-        if candidates.len() != 0 {
+        if !candidates.is_empty() {
             // Find the template(s) with the lowest priority.
 
-            candidates.sort_unstable_by(|a, b| (*a).cmp(&*b));
+            candidates.sort_unstable_by(|a, b| (*a).cmp(b));
             Ok(candidates)
         } else {
             Err(Error::new(
@@ -623,10 +623,10 @@ where
 ///   QualifiedName::new(None, None, String::from("Example")),
 ///   Box::new(Transform::SequenceItems(vec![
 ///    Transform::Message(
-///    	Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
-///    	None,
-///    	Box::new(Transform::Empty),
-///    	Box::new(Transform::Empty),
+///        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
+///        None,
+///        Box::new(Transform::Empty),
+///        Box::new(Transform::Empty),
 ///    ),
 ///    Transform::Literal(Item::Value(Rc::new(Value::from("element content")))),
 ///   ]))

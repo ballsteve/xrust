@@ -69,12 +69,12 @@ fn take_until_balanced<N: Node>(
                     col: counter,
                 });
             }
-            match (input[pos..].find(&open), input[pos..].find(&close)) {
+            match (input[pos..].find(open), input[pos..].find(close)) {
                 (Some(0), _) => {
                     bracket_counter += 1;
                     pos += open.len();
                     //let _: Vec<_> = (&mut input).take(open.len()).collect();
-                    match (input[pos..].find(&open), input[pos..].find(&close)) {
+                    match (input[pos..].find(open), input[pos..].find(close)) {
                         (_, None) => {
                             // Scenario 1
                             return Err(ParseError::Unbalanced);

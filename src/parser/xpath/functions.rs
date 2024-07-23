@@ -74,7 +74,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 "position" => Transform::Position,
                 "last" => Transform::Last,
                 "count" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::Count(Box::new(Transform::Empty))
                     } else if a.len() == 1 {
                         Transform::Count(Box::new(a.pop().unwrap()))
@@ -84,7 +84,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "local-name" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::LocalName(None)
                     } else if a.len() == 1 {
                         Transform::LocalName(Some(Box::new(a.pop().unwrap())))
@@ -94,7 +94,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "name" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::Name(None)
                     } else if a.len() == 1 {
                         Transform::Name(Some(Box::new(a.pop().unwrap())))
@@ -171,7 +171,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "normalize-space" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::NormalizeSpace(None)
                     } else if a.len() == 1 {
                         Transform::NormalizeSpace(Some(Box::new(a.pop().unwrap())))
@@ -198,7 +198,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "generate-id" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::GenerateId(None)
                     } else if a.len() == 1 {
                         Transform::GenerateId(Some(Box::new(a.pop().unwrap())))
@@ -227,7 +227,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "true" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::True
                     } else {
                         // Too many arguments
@@ -235,7 +235,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "false" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::False
                     } else {
                         // Too many arguments
@@ -291,7 +291,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "current-date-time" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::CurrentDateTime
                     } else {
                         // Too many arguments
@@ -299,7 +299,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "current-date" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::CurrentDate
                     } else {
                         // Too many arguments
@@ -307,7 +307,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "current-time" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::CurrentTime
                     } else {
                         // Too many arguments
@@ -384,7 +384,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "format-number" => {
-                    if a.len() == 0 || a.len() == 1 {
+                    if a.is_empty() || a.len() == 1 {
                         // Too few arguments
                         Transform::Error(ErrorKind::ParseError, String::from("too few arguments"))
                     } else if a.len() == 2 {
@@ -406,7 +406,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "current-group" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::CurrentGroup
                     } else {
                         // Too many arguments
@@ -414,7 +414,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "current-grouping-key" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::CurrentGroupingKey
                     } else {
                         // Too many arguments
@@ -452,7 +452,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     }
                 }
                 "available-system-properties" => {
-                    if a.len() == 0 {
+                    if a.is_empty() {
                         Transform::AvailableSystemProperties
                     } else {
                         // Wrong # arguments
@@ -482,7 +482,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 }
                 _ => Transform::Error(
                     ErrorKind::ParseError,
-                    format!("undefined function \"{}\"", qn.to_string()),
+                    format!("undefined function \"{}\"", qn),
                 ), // TODO: user-defined functions
             },
             NodeTest::Name(NameTest {

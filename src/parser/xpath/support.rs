@@ -19,7 +19,7 @@ pub(crate) fn get_nt_localname(nt: &NodeTest) -> String {
 pub(crate) fn digit0<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
-        match input.find(|c| !(c >= '0' && c <= '9')) {
+        match input.find(|c| !('0'..='9').contains(&c)) {
             Some(0) => Err(ParseError::Combinator),
             Some(pos) => {
                 //let result = (&mut input).take(pos).collect::<String>();
@@ -39,8 +39,8 @@ pub(crate) fn digit0<N: Node>(
 pub(crate) fn digit1<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
-        if input.starts_with(|c| (c >= '0' && c <= '9')) {
-            match input.find(|c| !(c >= '0' && c <= '9')) {
+        if input.starts_with(|c| ('0'..='9').contains(&c)) {
+            match input.find(|c| !('0'..='9').contains(&c)) {
                 Some(0) => Ok(((&input[1..], state), input[..1].to_string())),
                 Some(pos) => Ok(((&input[pos..], state), input[..pos].to_string())),
                 None => Ok((("", state), input.to_string())),

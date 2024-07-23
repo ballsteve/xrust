@@ -39,7 +39,7 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
             Ok(((input1, state1), (_, n, av, _, _))) => {
                 let mut ens = n.get_nsuri();
                 //match state1.namespace.pop() {
-                match state1.namespaces_ref().iter().last().clone() {
+                match state1.namespaces_ref().iter().last() {
                     None => {
                         //No namespace to assign.
                     }
@@ -147,7 +147,7 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
             Ok(((input1, state1), (_, n, av, _, _, c, _, _, _, _))) => {
                 let mut ens = n.get_nsuri();
                 //match state1.namespace.pop() {
-                match state1.namespaces_ref().iter().last().clone() {
+                match state1.namespaces_ref().iter().last() {
                     None => {
                         //No namespace to assign.
                     }
@@ -206,7 +206,7 @@ pub(crate) fn content<N: Node>(
         Ok((state1, (c, v))) => {
             let mut new: Vec<N> = Vec::new();
             let mut notex: Vec<String> = Vec::new();
-            if let Some(..) = c {
+            if c.is_some() {
                 notex.push(c.unwrap());
             }
             if !v.is_empty() {
@@ -230,7 +230,7 @@ pub(crate) fn content<N: Node>(
                             }
                         }
                     }
-                    if let Some(..) = d {
+                    if d.is_some() {
                         notex.push(d.unwrap())
                     }
                 }

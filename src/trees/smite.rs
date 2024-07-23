@@ -50,6 +50,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
+use regex::Regex;
 
 /// A node in a tree.
 pub type RNode = Rc<Node>;
@@ -152,6 +153,9 @@ impl PartialEq for Node {
                     v == o_v
                 } else { false }
             }
+            (NodeInner::ProcessingInstruction(_,name,v), NodeInner::ProcessingInstruction(_,o_name,o_v)) => {
+                name == o_name && v == o_v
+            }
             _ => { false }
         }
     }
@@ -168,7 +172,7 @@ impl ItemNode for RNode {
             NodeInner::Text(_, _) => NodeType::Text,
             NodeInner::Comment(_, _) => NodeType::Comment,
             NodeInner::ProcessingInstruction(_, _, _) => NodeType::ProcessingInstruction,
-            NodeInner::Namespace(_, _, _) => NodeType::Namespace,
+            NodeInner::Namespace(_,_,_) => NodeType::Namespace
         }
     }
     fn name(&self) -> QualifiedName {
@@ -193,7 +197,7 @@ impl ItemNode for RNode {
     }
 
     fn get_id(&self) -> String {
-        format!("{:#p}", &(**self).0 as *const NodeInner)
+        format!("{:#p}", &(self).0 as *const NodeInner)
     }
 
     fn to_string(&self) -> String {
@@ -284,7 +288,7 @@ impl ItemNode for RNode {
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self> {
         match &self.0 {
             NodeInner::Element(_, _, att, _, _) => {
-                att.borrow().get(a).map_or(None, |v| Some(v.clone()))
+                att.borrow().get(a).cloned()
             }
             _ => None,
         }
@@ -632,12 +636,23 @@ impl ItemNode for RNode {
         match &self.0 {
             NodeInner::Document(_, e, _) => {
                 let mut result = self.shallow_copy()?;
-                result.push(e.borrow_mut().first().unwrap().get_canonical()?)?;
+                for n in e.borrow_mut().iter() {
+                    if let Ok(rn) = n.get_canonical() {
+                        result.push(rn)?
+                    }
+                }
                 Ok(result)
             }
+            NodeInner::ProcessingInstruction(_, qn, v) => {
+                let d = self.owner_document();
+                let mut w = v.clone();
+                if let Value::String(s) = (*v.clone()).clone() {
+                    w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n").replace("  "," ").to_string()))
+                }
+                Ok(d.new_processing_instruction((*Rc::clone(qn)).clone(), w)?)
+            }
             NodeInner::Comment(_, _)
-            | NodeInner::ProcessingInstruction(_, _, _)
-            | NodeInner::Namespace(_, _, _) => Err(Error::new(
+            | NodeInner::Namespace(_,_,_) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
@@ -645,7 +660,7 @@ impl ItemNode for RNode {
                 let d = self.owner_document();
                 let mut w = v.clone();
                 if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n")))
+                    w = Rc::new(Value::String(s.replace("\r\n", "\n")))
                 }
                 Ok(d.new_text(w)?)
             }
@@ -655,13 +670,17 @@ impl ItemNode for RNode {
 
                 let d = result.owner_document();
                 self.attribute_iter().try_for_each(|a| {
-                    result.add_attribute(d.new_attribute(a.name(), a.value())?)?;
+                    //Replace any number of spaces with a single space.
+                    let re = Regex::new(r"\s+").unwrap();
+                    result.add_attribute(d.new_attribute(a.name(), Rc::new(Value::String(re.replace_all(a.clone().value().to_string().trim(), " ").to_string())) )?)?;
                     //result.add_attribute(a.get_canonical()?)?;
                     Ok::<(), Error>(())
                 })?;
 
                 self.child_iter().try_for_each(|c| {
-                    result.push(c.get_canonical()?)?;
+                    if let Ok(rn) = c.get_canonical() {
+                        result.push(rn)?
+                    }
                     Ok::<(), Error>(())
                 })?;
 
@@ -702,17 +721,17 @@ impl Debug for Node {
                 write!(
                     f,
                     "element-type node \"{}\"@[{}]",
-                    qn.to_string(),
+                    qn,
                     format_attrs(&attrs.clone())
                 )
             }
             NodeInner::Attribute(_, qn, _) => {
-                write!(f, "attribute-type node \"{}\"", qn.to_string())
+                write!(f, "attribute-type node \"{}\"", qn)
             }
-            NodeInner::Text(_, v) => write!(f, "text-type node \"{}\"", v.to_string()),
-            NodeInner::Comment(_, v) => write!(f, "comment-type node \"{}\"", v.to_string()),
+            NodeInner::Text(_, v) => write!(f, "text-type node \"{}\"", v),
+            NodeInner::Comment(_, v) => write!(f, "comment-type node \"{}\"", v),
             NodeInner::ProcessingInstruction(_, qn, _) => {
-                write!(f, "PI-type node \"{}\"", qn.to_string())
+                write!(f, "PI-type node \"{}\"", qn)
             }
             NodeInner::Namespace(_, pre, uri) => {
                 write!(
@@ -729,7 +748,7 @@ impl Debug for Node {
 fn format_attrs(ats: &HashMap<Rc<QualifiedName>, RNode>) -> String {
     let mut result = String::new();
     ats.iter().for_each(|(k, v)| {
-        result.push_str(format!(" {}='{}'", k.to_string(), v.to_string()).as_str())
+        result.push_str(format!(" {}='{}'", k, v.to_string()).as_str())
     });
     result
 }
@@ -778,11 +797,8 @@ fn detach(n: RNode) {
             match &doc.0 {
                 NodeInner::Document(_, _, u) => {
                     let i = u.borrow().iter().position(|x| Rc::ptr_eq(x, &n));
-                    match i {
-                        Some(i) => {
-                            u.borrow_mut().remove(i);
-                        }
-                        None => {} // nothing to do. should this be an error?
+                    if let Some(i) = i {
+                        u.borrow_mut().remove(i);
                     }
                 }
                 _ => panic!("not a document"),
@@ -820,7 +836,7 @@ fn push_node(parent: &RNode, child: RNode) -> Result<(), Error> {
 // Find the document order of ancestors
 fn doc_order(n: &RNode) -> Vec<usize> {
     match &n.0 {
-        NodeInner::Document(_, _, _) => vec![1 as usize],
+        NodeInner::Document(_, _, _) => vec![1usize],
         NodeInner::Attribute(_, _, _) => {
             let mut a = doc_order(&n.parent().unwrap());
             a.push(2);
@@ -841,7 +857,7 @@ fn doc_order(n: &RNode) -> Vec<usize> {
                 a.push(idx + 2);
                 a
             }
-            None => vec![1 as usize],
+            None => vec![1usize],
         },
     }
 }
@@ -865,13 +881,11 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
             ))
         }
     };
-    idx.map_or(
-        Err(Error::new(
-            ErrorKind::Unknown,
-            std::string::String::from("unable to find child"),
-        )),
-        Ok,
-    )
+    idx.ok_or(Error::new(
+        ErrorKind::Unknown,
+        std::string::String::from("unable to find child"),
+    ))
+
 }
 
 // This handles the XML serialisation of the document.
@@ -897,7 +911,7 @@ fn to_xml_int(
             let mut declared = ns.clone();
             let mut newns: Vec<(String, Option<String>)> = vec![];
             // First, the element itself
-            namespace_check(&qn, &declared).iter().for_each(|m| {
+            namespace_check(qn, &declared).iter().for_each(|m| {
                 newns.push(m.clone());
                 declared.push(m.clone())
             });
@@ -993,7 +1007,7 @@ fn namespace_check(
     let mut result = None;
     if let Some(qnuri) = qn.get_nsuri_ref() {
         // Has this namespace already been declared?
-        if ns.iter().find(|(u, _)| u == qnuri).is_some() {
+        if ns.iter().any(|(u, _)| u == qnuri) {
             // Namespace has been declared, but with the same prefix?
             // TODO: see forest.rs for example implementation
         } else {
@@ -1168,7 +1182,7 @@ impl Iterator for Attributes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        self.it.as_mut().map_or(None, |i| i.next().map(|(_, n)| n))
+        self.it.as_mut().and_then(|i| i.next().map(|(_, n)| n))
     }
 }
 

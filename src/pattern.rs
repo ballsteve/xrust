@@ -143,7 +143,7 @@ impl<N: Node> Pattern<N> {
 
 fn find_node<N: Node>(a: &Axis, i: &Item<N>) -> Option<Item<N>> {
     match a {
-        Axis::SelfDocument => match &*i {
+        Axis::SelfDocument => match i {
             Item::Node(n) => {
                 if n.node_type() == NodeType::Document {
                     Some(i.clone())
@@ -154,7 +154,7 @@ fn find_node<N: Node>(a: &Axis, i: &Item<N>) -> Option<Item<N>> {
             _ => None,
         },
         Axis::SelfAxis => Some(i.clone()),
-        Axis::Parent => match &*i {
+        Axis::Parent => match i {
             Item::Node(n) => n.parent().map(|p| Item::Node(p)),
             _ => None,
         },
@@ -167,7 +167,7 @@ fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Item<N>) -> bool {
         true, // all steps have succeeded so far
         |q| {
             let ((term, nonterm), nt) = q.t.as_ref().unwrap();
-            if is_match(&term, &nt, i) {
+            if is_match(term, nt, i) {
                 find_node(nonterm, i).map_or(
                     false, // couldn't find the next node
                     |p| nonterminal(q.next.clone(), &p),
@@ -183,7 +183,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
     match a {
         Axis::SelfDocument => {
             // Select item only if it is a document-type node
-            match &*i {
+            match i {
                 Item::Node(n) => {
                     if n.node_type() == NodeType::Document {
                         nt.matches(i)
@@ -200,7 +200,7 @@ fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
         }
         Axis::Parent => {
             // Select the parent node
-            match &*i {
+            match i {
                 Item::Node(n) => n.parent().map_or(false, |p| nt.matches(&Item::Node(p))),
                 _ => false,
             }
@@ -253,13 +253,13 @@ impl PathBuilder {
 impl<N: Node> TryFrom<&str> for Pattern<N> {
     type Error = Error;
     fn try_from(e: &str) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
-        if e == "" {
+        if e.is_empty() {
             Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("empty string is not allowed as an XPath pattern"),
             ))
         } else {
-            let state = ParserState::new(None, None, None);
+            let state = ParserState::new(None, None);
             match pattern::<N>((e, state)) {
                 Ok(((rem, _), f)) => {
                     if rem.is_empty() {

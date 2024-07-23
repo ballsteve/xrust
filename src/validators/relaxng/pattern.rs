@@ -1,10 +1,9 @@
 use std::collections::HashMap;
 use std::rc::Rc;
-use crate::{Context, Error, Item};
-use crate::parser::ParserConfig;
+use crate::{Error, Item};
 use crate::trees::smite::{Node as SmiteNode, RNode};
 use crate::parser::xml::{parse as xmlparse, parse_with_ns};
-use crate::transform::context::{StaticContext, StaticContextBuilder};
+use crate::transform::context::{StaticContextBuilder};
 use crate::xslt::from_document;
 
 pub(crate) type Param = (String, String);

@@ -8,7 +8,7 @@ use english_numbers::{Formatting, convert};
 use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait, NodeType};
-use crate::pattern::{Pattern, Path, PathBuilder};
+use crate::pattern::{Pattern, PathBuilder};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{ArithmeticOperand, ArithmeticOperator, Axis, Transform, NodeTest, KindTest, NameTest, WildcardOrName};
@@ -57,14 +57,14 @@ pub fn generate_integers<
         if let Item::Node(m) = &n[0] {
 
             // Determine the count pattern
-            let count_pat = (&num.count).clone().unwrap_or(Pattern::Selection(
+            let count_pat = (num.count).clone().unwrap_or(Pattern::Selection(
                 match m.node_type() {
                     NodeType::Element => {
                         PathBuilder::new()
                             .step(
                                 Axis::SelfAxis,
                                 Axis::SelfAxis,
-                                NodeTest::Name(NameTest::new(m.name().get_nsuri().map(|ns| WildcardOrName::Name(ns)), None, Some(WildcardOrName::Name(m.name().get_localname()))))
+                                NodeTest::Name(NameTest::new(m.name().get_nsuri().map( WildcardOrName::Name), None, Some(WildcardOrName::Name(m.name().get_localname()))))
                             )
                             .build()
                     }
@@ -124,10 +124,10 @@ pub fn generate_integers<
                 .collect();
             Ok(vec![Item::Value(Rc::new(Value::from(1 + result.len())))])
         } else {
-            return Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
+            Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
         }
     } else {
-        return Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
+        Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
     }
 }
 
@@ -284,7 +284,7 @@ pub(crate) fn tr_range<
 ) -> Result<Sequence<N>, Error> {
     let s = ctxt.dispatch(stctxt, start)?;
     let e = ctxt.dispatch(stctxt, end)?;
-    if s.len() == 0 || e.len() == 0 {
+    if s.is_empty() || e.is_empty() {
         // Empty sequence is the result
         return Ok(vec![]);
     }
@@ -348,7 +348,7 @@ pub(crate) fn arithmetic<
             ArithmeticOperator::Multiply => acc *= u,
             ArithmeticOperator::Divide => acc /= u,
             ArithmeticOperator::IntegerDivide => acc /= u, // TODO: convert to integer
-            ArithmeticOperator::Modulo => acc = acc % u,
+            ArithmeticOperator::Modulo => acc %= u,
         }
     }
     Ok(vec![Item::Value(Rc::new(Value::from(acc)))])

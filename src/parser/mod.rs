@@ -55,10 +55,16 @@ pub struct ParserConfig {
     /// How many recursive layers on entity expansion. Default is 8 levels.
     pub entitydepth: usize,
     /// Default is false, sets the parser to generate XDM namespace nodes on elements.
-    /// Does not affect namespaces on elements and attributes.
+    /// Namespaces will still be applied to elements and attributes, and on elements where
+    /// The namespace declaration is present, this value only affects inherited namespace nodes.
     pub namespace_nodes: bool,
 }
 
+impl Default for ParserConfig {
+    fn default() -> Self {
+        Self::new()
+    }
+}
 impl ParserConfig {
     pub fn new() -> Self {
         ParserConfig {
@@ -69,6 +75,7 @@ impl ParserConfig {
         }
     }
 }
+
 
 #[derive(Clone)]
 pub struct ParserState<N: Node> {
@@ -82,6 +89,8 @@ pub struct ParserState<N: Node> {
     track the namespace when no alias is declared with the namespace.
      */
     namespace: Vec<HashMap<String, String>>,
+    /* Do we add the parents namespace nodes to an element? */
+    namespace_nodes: bool,
     standalone: bool,
     xmlversion: String,
     /*
@@ -108,25 +117,28 @@ pub struct ParserState<N: Node> {
 }
 
 impl<N: Node> ParserState<N> {
-    pub fn new(doc: Option<N>, resolver: Option<URLResolver>, docloc: Option<String>) -> Self {
+    pub fn new(doc: Option<N>, parser_config: Option<ParserConfig>) -> Self {
+        let pc = if let Some(..) = parser_config {
+            parser_config.unwrap()
+        } else {
+            ParserConfig::new()
+        };
         ParserState {
             doc,
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
-            /*
-            The below hashmap
-             */
             namespace: vec![],
-            maxentitydepth: 4,
+            namespace_nodes: pc.namespace_nodes,
+            maxentitydepth: pc.entitydepth,
             currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,
             //stack: vec![],
             //limit: None,
-            ext_dtd_resolver: resolver,
+            ext_dtd_resolver: pc.ext_dtd_resolver,
             ext_entities_to_parse: vec![],
-            docloc,
+            docloc: pc.docloc,
             currentlyexternal: false,
         }
     }

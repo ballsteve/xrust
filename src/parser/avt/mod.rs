@@ -19,7 +19,7 @@ use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*
 pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
-    let state = ParserState::new(None, None, None);
+    let state = ParserState::new(None, None);
     match avt_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
@@ -92,7 +92,7 @@ fn braced_expr<'a, N: Node + 'a>(
     //        |(_, e, _)| e
     //    ))
     Box::new(move |(input, state)| match input.get(0..1) {
-        Some("{") => match input.find("}") {
+        Some("{") => match input.find('}') {
             None => Err(ParseError::Combinator),
             Some(ind) => match expr()((input.get(1..ind).unwrap(), state.clone())) {
                 Ok((_, result)) => Ok(((input.get(ind..).map_or("", |r| r), state), result)),

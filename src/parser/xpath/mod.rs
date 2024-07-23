@@ -82,7 +82,7 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
         return Ok(Transform::Empty);
     }
 
-    let state = ParserState::new(None, None, None);
+    let state = ParserState::new(None, None);
     match xpath_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {

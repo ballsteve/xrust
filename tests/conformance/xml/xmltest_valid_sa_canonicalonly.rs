@@ -6,7 +6,6 @@ James Clark XMLTEST cases - Standalone
 
 */
 
-use std::convert::TryFrom;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::xml;

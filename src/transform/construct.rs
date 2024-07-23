@@ -249,7 +249,7 @@ pub(crate) fn set_attribute<
                 let od = n.owner_document();
                 let attval = ctxt.dispatch(stctxt, v)?;
                 if attval.len() == 1 {
-                    match attval.get(0) {
+                    match attval.first() {
                         Some(Item::Value(av)) => {
                             n.add_attribute(od.new_attribute(atname.clone(), av.clone())?)?;
                         }

@@ -8,7 +8,6 @@ mod reference;
 mod strings;
 mod xmldecl;
 
-use crate::externals::URLResolver;
 use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -27,8 +26,6 @@ pub fn parse<N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
-    //entityresolver: Option<URLResolver>,
-    //docloc: Option<String>,
 ) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;
     Ok(xmldoc)
@@ -38,16 +35,8 @@ pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
-    //entityresolver: Option<URLResolver>,
-    //docloc: Option<String>,
 ) -> Result<(N, Vec<HashMap<String, String>>), Error> {
-    let pc = if config.is_none(){
-        ParserConfig::new()
-    } else {
-        config.unwrap()
-    };
-
-    let state = ParserState::new(Some(doc), pc.ext_dtd_resolver, pc.docloc);
+    let state = ParserState::new(Some(doc), config);
     match document((input, state)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespaces_ref().clone())),
         Err(err) => {

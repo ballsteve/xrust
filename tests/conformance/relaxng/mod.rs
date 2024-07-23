@@ -1,10 +1,8 @@
 mod jamesclark;
 
-
-use std::fs;
 use std::rc::Rc;
 use xrust::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::xml;
 use xrust::trees::smite::{Node as SmiteNode};
 use xrust::validators::relaxng::validate_relaxng;
 

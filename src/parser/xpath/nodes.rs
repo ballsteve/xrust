@@ -1,7 +1,7 @@
 //! Functions that produces nodes, or sets of nodes.
 
 use crate::item::Node;
-use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
+use crate::parser::combinators::alt::{alt2, alt4, alt5};
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
