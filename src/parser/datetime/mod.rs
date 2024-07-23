@@ -79,7 +79,7 @@ fn close_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, S
 }
 
 pub fn parse<N: Node>(e: &str) -> Result<String, Error> {
-    let state: ParserState<N> = ParserState::new(None, None, None);
+    let state: ParserState<N> = ParserState::new(None, None);
     match picture()((e, state)) {
         Ok(((rem, _), value)) => {
             if rem.is_empty() {

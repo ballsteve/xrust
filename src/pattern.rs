@@ -259,7 +259,7 @@ impl<N: Node> TryFrom<&str> for Pattern<N> {
                 String::from("empty string is not allowed as an XPath pattern"),
             ))
         } else {
-            let state = ParserState::new(None, None, None);
+            let state = ParserState::new(None, None);
             match pattern::<N>((e, state)) {
                 Ok(((rem, _), f)) => {
                     if rem.is_empty() {

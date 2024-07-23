@@ -33,11 +33,11 @@ mod tests {
     #[test]
     fn parser_delimited_test1() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = delimited(tag("<"), tag("doc"), tag(">"));
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None, None)), ())),
+            Ok((("", ParserState::new(None, None)), ())),
             parse_doc((testdoc, teststate))
         );
     }

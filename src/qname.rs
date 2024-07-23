@@ -158,7 +158,7 @@ impl Hash for QualifiedName {
 impl TryFrom<&str> for QualifiedName {
     type Error = Error;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+        let state: ParserState<Nullo> = ParserState::new(None, None);
         match eqname()((s, state)) {
             Ok((_, qn)) => Ok(qn),
             Err(_) => Err(Error::new(
@@ -175,7 +175,7 @@ impl TryFrom<&str> for QualifiedName {
 impl TryFrom<(&str, &Vec<HashMap<String, String>>)> for QualifiedName {
     type Error = Error;
     fn try_from(s: (&str, &Vec<HashMap<String, String>>)) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+        let state: ParserState<Nullo> = ParserState::new(None, None);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.get_prefix().is_some() && !qn.get_nsuri_ref().is_some() {

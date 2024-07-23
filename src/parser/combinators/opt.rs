@@ -24,10 +24,10 @@ mod tests {
     #[test]
     fn parser_opt_test1() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = opt(tag("<"));
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), Some(()))),
+            Ok((("doc>", ParserState::new(None, None)), Some(()))),
             parse_doc((testdoc, teststate))
         );
     }
@@ -35,10 +35,10 @@ mod tests {
     #[test]
     fn parser_opt_test2() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = opt(tag(">"));
         assert_eq!(
-            Ok((("<doc>", ParserState::new(None, None, None)), None)),
+            Ok((("<doc>", ParserState::new(None, None)), None)),
             parse_doc((testdoc, teststate))
         );
     }

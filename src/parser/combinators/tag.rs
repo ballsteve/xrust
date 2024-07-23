@@ -69,10 +69,10 @@ mod tests {
     #[test]
     fn parser_tag_test1() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = tag("<");
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), ())),
+            Ok((("doc>", ParserState::new(None, None)), ())),
             parse_doc((testdoc, teststate))
         );
     }
@@ -80,7 +80,7 @@ mod tests {
     #[test]
     fn parser_tag_test2() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = tag(">");
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)));
     }
@@ -88,13 +88,13 @@ mod tests {
     #[test]
     fn parser_tag_test3() {
         let testdoc = "<?ProcessingInstruction?>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = tag("<?");
         assert_eq!(
             Ok((
                 (
                     "ProcessingInstruction?>",
-                    ParserState::new(None, None, None)
+                    ParserState::new(None, None)
                 ),
                 ()
             )),
@@ -105,28 +105,28 @@ mod tests {
     #[test]
     fn parser_char_test1() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anychar('<');
         assert_eq!(
-            Ok((("doc>", ParserState::new(None, None, None)), ())),
+            Ok((("doc>", ParserState::new(None, None)), ())),
             parse_doc((testdoc, teststate))
         )
     }
     #[test]
     fn parser_char_test2() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anychar('>');
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)))
     }
     #[test]
     fn parser_anytag_test1() {
         let testdoc = "<doc>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
             Ok((
-                ("doc>", ParserState::new(None, None, None)),
+                ("doc>", ParserState::new(None, None)),
                 "<".to_string()
             )),
             parse_doc((testdoc, teststate))
@@ -135,10 +135,10 @@ mod tests {
     #[test]
     fn parser_anytag_test2() {
         let testdoc = "<=>";
-        let teststate: ParserState<Nullo> = ParserState::new(None, None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
-            Ok(((">", ParserState::new(None, None, None)), "<=".to_string())),
+            Ok(((">", ParserState::new(None, None)), "<=".to_string())),
             parse_doc((testdoc, teststate))
         )
     }

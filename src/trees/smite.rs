@@ -50,6 +50,7 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
+use regex::Regex;
 
 /// A node in a tree.
 pub type RNode = Rc<Node>;
@@ -152,6 +153,9 @@ impl PartialEq for Node {
                     v == o_v
                 } else { false }
             }
+            (NodeInner::ProcessingInstruction(_,name,v), NodeInner::ProcessingInstruction(_,o_name,o_v)) => {
+                name == o_name && v == o_v
+            }
             _ => { false }
         }
     }
@@ -168,7 +172,7 @@ impl ItemNode for RNode {
             NodeInner::Text(_, _) => NodeType::Text,
             NodeInner::Comment(_, _) => NodeType::Comment,
             NodeInner::ProcessingInstruction(_, _, _) => NodeType::ProcessingInstruction,
-            NodeInner::Namespace(_, _, _) => NodeType::Namespace,
+            NodeInner::Namespace(_,_,_) => NodeType::Namespace
         }
     }
     fn name(&self) -> QualifiedName {
@@ -632,12 +636,26 @@ impl ItemNode for RNode {
         match &self.0 {
             NodeInner::Document(_, e, _) => {
                 let mut result = self.shallow_copy()?;
-                result.push(e.borrow_mut().first().unwrap().get_canonical()?)?;
+                for n in e.borrow_mut().iter() {
+                    match n.get_canonical() {
+                        Ok(rn) => {
+                            result.push(rn)?
+                        }
+                        Err(_) => {}
+                    }
+                }
                 Ok(result)
             }
+            NodeInner::ProcessingInstruction(_, qn, v) => {
+                let d = self.owner_document();
+                let mut w = v.clone();
+                if let Value::String(s) = (*v.clone()).clone() {
+                    w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n").replace("  "," ").to_string()))
+                }
+                Ok(d.new_processing_instruction((*Rc::clone(qn)).clone(), w)?)
+            }
             NodeInner::Comment(_, _)
-            | NodeInner::ProcessingInstruction(_, _, _)
-            | NodeInner::Namespace(_, _, _) => Err(Error::new(
+            | NodeInner::Namespace(_,_,_) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
@@ -645,7 +663,7 @@ impl ItemNode for RNode {
                 let d = self.owner_document();
                 let mut w = v.clone();
                 if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n")))
+                    w = Rc::new(Value::String(s.replace("\r\n", "\n")))
                 }
                 Ok(d.new_text(w)?)
             }
@@ -655,13 +673,19 @@ impl ItemNode for RNode {
 
                 let d = result.owner_document();
                 self.attribute_iter().try_for_each(|a| {
-                    result.add_attribute(d.new_attribute(a.name(), a.value())?)?;
+                    //Replace any number of spaces with a single space.
+                    let re = Regex::new(r"\s+").unwrap();
+                    result.add_attribute(d.new_attribute(a.name(), Rc::new(Value::String(re.replace_all(a.clone().value().to_string().trim(), " ").to_string())) )?)?;
                     //result.add_attribute(a.get_canonical()?)?;
                     Ok::<(), Error>(())
                 })?;
 
                 self.child_iter().try_for_each(|c| {
-                    result.push(c.get_canonical()?)?;
+                    match c.get_canonical() {
+                        Ok(rn) => {result.push(rn)?}
+                        Err(_) => {}
+                    }
+                    //result.push(c.get_canonical()?)?;
                     Ok::<(), Error>(())
                 })?;
 

@@ -19,7 +19,7 @@ use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*
 pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
-    let state = ParserState::new(None, None, None);
+    let state = ParserState::new(None, None);
     match avt_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
