@@ -23,7 +23,6 @@ use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
-
 use earleybird::ixml_grammar::{ixml_grammar, ixml_tree_to_grammar};
 use earleybird::parser::{Content, Parser};
 use indextree::{Arena, NodeId};

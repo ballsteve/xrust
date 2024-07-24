@@ -76,7 +76,6 @@ impl ParserConfig {
     }
 }
 
-
 #[derive(Clone)]
 pub struct ParserState<N: Node> {
     doc: Option<N>,

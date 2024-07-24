@@ -49,6 +49,7 @@ use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
+use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::hash_map::IntoIter;
@@ -56,7 +57,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
-use regex::Regex;
 
 /// A node in a tree.
 pub type RNode = Rc<Node>;
@@ -123,11 +123,23 @@ impl PartialEq for Node {
     fn eq(&self, other: &Self) -> bool {
         match (&self.0, &other.0) {
             (NodeInner::Document(_, c, _), NodeInner::Document(_, d, _)) => {
-                c.borrow().iter().zip(d.borrow().iter())
-                    .fold(true,|mut acc, (c, d)| if acc {acc = c == d; acc} else {acc})
+                c.borrow()
+                    .iter()
+                    .zip(d.borrow().iter())
+                    .fold(true, |mut acc, (c, d)| {
+                        if acc {
+                            acc = c == d;
+                            acc
+                        } else {
+                            acc
+                        }
+                    })
                 // TODO: use a method that terminates early on non-equality
             }
-            (NodeInner::Element(_, name, atts, c, _), NodeInner::Element(_, o_name, o_atts, d, _)) => {
+            (
+                NodeInner::Element(_, name, atts, c, _),
+                NodeInner::Element(_, o_name, o_atts, d, _),
+            ) => {
                 if name == o_name {
                     // Attributes must match
                     let b_atts = atts.borrow();
@@ -139,30 +151,47 @@ impl PartialEq for Node {
                             if acc {
                                 acc = b_atts.get(qn) == b_o_atts.get(qn);
                                 acc
-                            } else { acc }
+                            } else {
+                                acc
+                            }
                         }) {
                             // Content
-                            c.borrow().iter()
-                                .zip(d.borrow().iter())
-                                .fold(true,|mut acc, (c, d)| if acc {acc = c == d; acc} else {acc})
+                            c.borrow().iter().zip(d.borrow().iter()).fold(
+                                true,
+                                |mut acc, (c, d)| {
+                                    if acc {
+                                        acc = c == d;
+                                        acc
+                                    } else {
+                                        acc
+                                    }
+                                },
+                            )
                             // TODO: use a method that terminates early on non-equality
-                        } else { false }
-                    } else { false }
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
                     // Content must match
-                } else { false }
+                } else {
+                    false
+                }
             }
-            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => {
-                v == u
-            }
+            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => v == u,
             (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
                 if name == o_name {
                     v == o_v
-                } else { false }
+                } else {
+                    false
+                }
             }
-            (NodeInner::ProcessingInstruction(_,name,v), NodeInner::ProcessingInstruction(_,o_name,o_v)) => {
-                name == o_name && v == o_v
-            }
-            _ => { false }
+            (
+                NodeInner::ProcessingInstruction(_, name, v),
+                NodeInner::ProcessingInstruction(_, o_name, o_v),
+            ) => name == o_name && v == o_v,
+            _ => false,
         }
     }
 }
@@ -178,7 +207,7 @@ impl ItemNode for RNode {
             NodeInner::Text(_, _) => NodeType::Text,
             NodeInner::Comment(_, _) => NodeType::Comment,
             NodeInner::ProcessingInstruction(_, _, _) => NodeType::ProcessingInstruction,
-            NodeInner::Namespace(_,_,_) => NodeType::Namespace
+            NodeInner::Namespace(_, _, _) => NodeType::Namespace,
         }
     }
     fn name(&self) -> QualifiedName {
@@ -293,9 +322,7 @@ impl ItemNode for RNode {
     }
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self> {
         match &self.0 {
-            NodeInner::Element(_, _, att, _, _) => {
-                att.borrow().get(a).cloned()
-            }
+            NodeInner::Element(_, _, att, _, _) => att.borrow().get(a).cloned(),
             _ => None,
         }
     }
@@ -662,12 +689,16 @@ impl ItemNode for RNode {
                 let d = self.owner_document();
                 let mut w = v.clone();
                 if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n").replace("  "," ").to_string()))
+                    w = Rc::new(Value::String(
+                        s.replace("\r\n", "\n")
+                            .replace("\n\n", "\n")
+                            .replace("  ", " ")
+                            .to_string(),
+                    ))
                 }
                 Ok(d.new_processing_instruction((*Rc::clone(qn)).clone(), w)?)
             }
-            NodeInner::Comment(_, _)
-            | NodeInner::Namespace(_,_,_) => Err(Error::new(
+            NodeInner::Comment(_, _) | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
                 "invalid node type".to_string(),
             )),
@@ -687,7 +718,15 @@ impl ItemNode for RNode {
                 self.attribute_iter().try_for_each(|a| {
                     //Replace any number of spaces with a single space.
                     let re = Regex::new(r"\s+").unwrap();
-                    result.add_attribute(d.new_attribute(a.name(), Rc::new(Value::String(re.replace_all(a.clone().value().to_string().trim(), " ").to_string())) )?)?;
+                    result.add_attribute(
+                        d.new_attribute(
+                            a.name(),
+                            Rc::new(Value::String(
+                                re.replace_all(a.clone().value().to_string().trim(), " ")
+                                    .to_string(),
+                            )),
+                        )?,
+                    )?;
                     //result.add_attribute(a.get_canonical()?)?;
                     Ok::<(), Error>(())
                 })?;
@@ -762,9 +801,8 @@ impl Debug for Node {
 
 fn format_attrs(ats: &HashMap<Rc<QualifiedName>, RNode>) -> String {
     let mut result = String::new();
-    ats.iter().for_each(|(k, v)| {
-        result.push_str(format!(" {}='{}'", k, v.to_string()).as_str())
-    });
+    ats.iter()
+        .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.to_string()).as_str()));
     result
 }
 
@@ -900,7 +938,6 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
         ErrorKind::Unknown,
         std::string::String::from("unable to find child"),
     ))
-
 }
 
 // This handles the XML serialisation of the document.

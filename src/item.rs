@@ -496,9 +496,18 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                 if other.node_type() == NodeType::Document {
                     self.child_iter()
                         .zip(other.child_iter())
-                        .fold(true,|mut acc, (c, d)| if acc {acc = Node::eq(&c, &d); acc} else {acc})
+                        .fold(true, |mut acc, (c, d)| {
+                            if acc {
+                                acc = Node::eq(&c, &d);
+                                acc
+                            } else {
+                                acc
+                            }
+                        })
                     // TODO: use a method that terminates early on non-equality
-                } else { false }
+                } else {
+                    false
+                }
             }
             NodeType::Element => {
                 // names must match,
@@ -507,39 +516,57 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                 if other.node_type() == NodeType::Element {
                     if self.name() == other.name() {
                         // Attributes
-                        let mut at_names: Vec<QualifiedName> = self.attribute_iter()
-                            .map(|a| a.name())
-                            .collect();
+                        let mut at_names: Vec<QualifiedName> =
+                            self.attribute_iter().map(|a| a.name()).collect();
                         if at_names.len() == other.attribute_iter().count() {
                             at_names.sort();
                             if at_names.iter().fold(true, |mut acc, qn| {
                                 if acc {
                                     acc = self.get_attribute(qn) == other.get_attribute(qn);
                                     acc
-                                } else { acc }
+                                } else {
+                                    acc
+                                }
                             }) {
                                 // Content
-                                self.child_iter()
-                                    .zip(other.child_iter())
-                                    .fold(true,|mut acc, (c, d)| if acc {acc = Node::eq(&c, &d); acc} else {acc})
+                                self.child_iter().zip(other.child_iter()).fold(
+                                    true,
+                                    |mut acc, (c, d)| {
+                                        if acc {
+                                            acc = Node::eq(&c, &d);
+                                            acc
+                                        } else {
+                                            acc
+                                        }
+                                    },
+                                )
                                 // TODO: use a method that terminates early on non-equality
-                            } else { false }
+                            } else {
+                                false
+                            }
                         } else {
                             false
                         }
-                    } else { false }
-                } else { false }
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
             }
             NodeType::Text => {
                 if other.node_type() == NodeType::Text {
                     self.value() == other.value()
-                } else { false }
+                } else {
+                    false
+                }
             }
             NodeType::ProcessingInstruction => {
                 if other.node_type() == NodeType::ProcessingInstruction {
-                    self.name() == other.name() &&
-                    self.value() == other.value()
-                } else { false }
+                    self.name() == other.name() && self.value() == other.value()
+                } else {
+                    false
+                }
             }
             _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
         }

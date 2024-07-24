@@ -79,8 +79,8 @@ use crate::pattern::Pattern;
 use crate::qname::*;
 use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
+use crate::transform::numbers::{Level, Numbering};
 use crate::transform::template::Template;
-use crate::transform::numbers::{Numbering, Level};
 use crate::transform::{
     Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
 };
@@ -320,10 +320,12 @@ where
         })
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
-            let eqname =
-                QualifiedName::try_from((name.to_string().as_str(), &stylens))?;
+            let eqname = QualifiedName::try_from((name.to_string().as_str(), &stylens))?;
             if eqname.to_string().is_empty() {
-                return Err(Error::new(ErrorKind::DynamicAbsent, "attribute sets must have a name"))
+                return Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    "attribute sets must have a name",
+                ));
             }
             // xsl:attribute children
             // TODO: check that there are no other children
@@ -966,11 +968,18 @@ fn to_transform<N: Node>(
                             Ok(body)
                         })?;
                     // Process @xsl:use-attribute-sets
-                    let use_atts = n.get_attribute(&QualifiedName::new(Some(XSLTNS.to_string()), None, "use-attribute-sets"));
+                    let use_atts = n.get_attribute(&QualifiedName::new(
+                        Some(XSLTNS.to_string()),
+                        None,
+                        "use-attribute-sets",
+                    ));
                     let mut attrs = vec![];
                     use_atts.to_string().split_whitespace().try_for_each(|a| {
                         let eqa = QualifiedName::try_from((a, ns))?;
-                        attr_sets.get(&eqa).iter().cloned()
+                        attr_sets
+                            .get(&eqa)
+                            .iter()
+                            .cloned()
                             .for_each(|a| attrs.append(&mut a.clone()));
                         Ok(())
                     })?;
@@ -1053,21 +1062,25 @@ fn to_transform<N: Node>(
                 (Some(XSLTNS), "element") => {
                     let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
                     if m.to_string().is_empty() {
-                        return Err(Error::new(
-                            ErrorKind::TypeError,
-                            "missing name attribute",
-                        ));
+                        return Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
                     }
                     let mut content = n.child_iter().try_fold(vec![], |mut body, e| {
                         body.push(to_transform(e, ns, attr_sets)?);
                         Ok(body)
                     })?;
                     // Process @xsl:use-attribute-sets
-                    let use_atts = n.get_attribute(&QualifiedName::new(Some(XSLTNS.to_string()), None, "use-attribute-sets"));
+                    let use_atts = n.get_attribute(&QualifiedName::new(
+                        Some(XSLTNS.to_string()),
+                        None,
+                        "use-attribute-sets",
+                    ));
                     let mut attrs = vec![];
                     use_atts.to_string().split_whitespace().try_for_each(|a| {
                         let eqa = QualifiedName::try_from((a, ns))?;
-                        attr_sets.get(&eqa).iter().cloned()
+                        attr_sets
+                            .get(&eqa)
+                            .iter()
+                            .cloned()
                             .for_each(|a| attrs.append(&mut a.clone()));
                         Ok(())
                     })?;
@@ -1149,21 +1162,18 @@ fn to_transform<N: Node>(
                     ))
                 }
                 (Some(XSLTNS), "number") => {
-                    let value =
-                        n.get_attribute(&QualifiedName::new(None, None, "value"));
-                    let sel =
-                        n.get_attribute(&QualifiedName::new(None, None, "select"));
-                    let level =
-                        n.get_attribute(&QualifiedName::new(None, None, "level"));
+                    let value = n.get_attribute(&QualifiedName::new(None, None, "value"));
+                    let sel = n.get_attribute(&QualifiedName::new(None, None, "select"));
+                    let level = n.get_attribute(&QualifiedName::new(None, None, "level"));
                     if level.to_string() != "" && level.to_string() != "single" {
-                        return Err(Error::new(ErrorKind::NotImplemented, "only single level numbering is supported"))
+                        return Err(Error::new(
+                            ErrorKind::NotImplemented,
+                            "only single level numbering is supported",
+                        ));
                     }
-                    let count =
-                        n.get_attribute(&QualifiedName::new(None, None, "count"));
-                    let from =
-                        n.get_attribute(&QualifiedName::new(None, None, "from"));
-                    let format =
-                        n.get_attribute(&QualifiedName::new(None, None, "format"));
+                    let count = n.get_attribute(&QualifiedName::new(None, None, "count"));
+                    let from = n.get_attribute(&QualifiedName::new(None, None, "from"));
+                    let format = n.get_attribute(&QualifiedName::new(None, None, "format"));
                     // TODO: lang, letter-value, ordinal, start-at, grouping-separator, grouping-size
                     if value.to_string().is_empty() {
                         // Compute place marker
@@ -1172,19 +1182,29 @@ fn to_transform<N: Node>(
                                 Box::new(Transform::Empty), // start-at (TODO)
                                 Box::new(if sel.to_string().is_empty() {
                                     Transform::ContextItem
-                                } else {parse::<N>(&sel.to_string())?}), // select
+                                } else {
+                                    parse::<N>(&sel.to_string())?
+                                }), // select
                                 Box::new(Numbering::new(
                                     Level::Single, // TODO: parse level attribute value
-                                    if count.to_string().is_empty() {None} else {
+                                    if count.to_string().is_empty() {
+                                        None
+                                    } else {
                                         Some(Pattern::try_from(count.to_string())?)
                                     },
-                                    if from.to_string().is_empty() {None} else {
+                                    if from.to_string().is_empty() {
+                                        None
+                                    } else {
                                         Some(Pattern::try_from(from.to_string())?)
-                                    }
+                                    },
                                 )),
                             )),
                             Box::new(Transform::Literal(Item::Value(
-                                if format.to_string().is_empty() {Rc::new(Value::from("1"))} else {format}
+                                if format.to_string().is_empty() {
+                                    Rc::new(Value::from("1"))
+                                } else {
+                                    format
+                                },
                             ))),
                         ))
                     } else {
@@ -1192,23 +1212,36 @@ fn to_transform<N: Node>(
                         Ok(Transform::FormatInteger(
                             Box::new(parse::<N>(&value.to_string())?),
                             Box::new(Transform::Literal(Item::Value(
-                                if format.to_string().is_empty() {Rc::new(Value::from("1"))} else {format}
+                                if format.to_string().is_empty() {
+                                    Rc::new(Value::from("1"))
+                                } else {
+                                    format
+                                },
                             ))),
                         ))
                     }
                 }
-                (Some(XSLTNS), "decimal-format") => Ok(Transform::NotImplemented(String::from("unsupported XSL element \"decimal-format\""))),
+                (Some(XSLTNS), "decimal-format") => Ok(Transform::NotImplemented(String::from(
+                    "unsupported XSL element \"decimal-format\"",
+                ))),
                 (Some(XSLTNS), u) => Ok(Transform::NotImplemented(format!(
                     "unsupported XSL element \"{}\"",
                     u
                 ))),
                 (u, a) => {
                     // Process @xsl:use-attribute-sets
-                    let use_atts = n.get_attribute(&QualifiedName::new(Some(XSLTNS.to_string()), None, "use-attribute-sets"));
+                    let use_atts = n.get_attribute(&QualifiedName::new(
+                        Some(XSLTNS.to_string()),
+                        None,
+                        "use-attribute-sets",
+                    ));
                     let mut attrs = vec![];
                     use_atts.to_string().split_whitespace().try_for_each(|a| {
                         let eqa = QualifiedName::try_from((a, ns))?;
-                        attr_sets.get(&eqa).iter().cloned()
+                        attr_sets
+                            .get(&eqa)
+                            .iter()
+                            .cloned()
                             .for_each(|a| attrs.append(&mut a.clone()));
                         Ok(())
                     })?;
@@ -1217,9 +1250,9 @@ fn to_transform<N: Node>(
                     n.attribute_iter()
                         .filter(|e| e.name().get_nsuri_ref() != Some(XSLTNS))
                         .try_for_each(|e| {
-                        content.push(to_transform(e, ns, attr_sets)?);
-                        Ok::<(), Error>(())
-                    })?;
+                            content.push(to_transform(e, ns, attr_sets)?);
+                            Ok::<(), Error>(())
+                        })?;
                     n.child_iter().try_for_each(|e| {
                         content.push(to_transform(e, ns, attr_sets)?);
                         Ok::<(), Error>(())

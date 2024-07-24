@@ -395,11 +395,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         let b = a.pop().unwrap();
                         let c = a.pop().unwrap();
                         let d = a.pop().unwrap();
-                        Transform::FormatNumber(
-                            Box::new(d),
-                            Box::new(c),
-                            Some(Box::new(b)),
-                        )
+                        Transform::FormatNumber(Box::new(d), Box::new(c), Some(Box::new(b)))
                     } else {
                         // Too many arguments
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
@@ -462,24 +458,22 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         )
                     }
                 }
-                "document" => {
-                    match a.len() {
-                        0 => Transform::Document(Box::new(Transform::Empty), None),
-                        1 => {
-                            let u = a.pop().unwrap();
-                            Transform::Document(Box::new(u), None)
-                        },
-                        2 => {
-                            let b = a.pop().unwrap();
-                            let u = a.pop().unwrap();
-                            Transform::Document(Box::new(u), Some(Box::new(b)))
-                        },
-                        _ => Transform::Error(
-                            ErrorKind::ParseError,
-                            String::from("wrong number of arguments"),
-                        )
+                "document" => match a.len() {
+                    0 => Transform::Document(Box::new(Transform::Empty), None),
+                    1 => {
+                        let u = a.pop().unwrap();
+                        Transform::Document(Box::new(u), None)
                     }
-                }
+                    2 => {
+                        let b = a.pop().unwrap();
+                        let u = a.pop().unwrap();
+                        Transform::Document(Box::new(u), Some(Box::new(b)))
+                    }
+                    _ => Transform::Error(
+                        ErrorKind::ParseError,
+                        String::from("wrong number of arguments"),
+                    ),
+                },
                 _ => Transform::Error(
                     ErrorKind::ParseError,
                     format!("undefined function \"{}\"", qn),

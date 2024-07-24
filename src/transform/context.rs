@@ -152,9 +152,7 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
-    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {
-
-    }
+    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
@@ -444,7 +442,9 @@ impl<N: Node> Context<N> {
             Transform::FormatTime(t, p, l, c, q) => format_time(self, stctxt, t, p, l, c, q),
             Transform::FormatNumber(v, p, d) => format_number(self, stctxt, v, p, d),
             Transform::FormatInteger(i, s) => format_integer(self, stctxt, i, s),
-            Transform::GenerateIntegers(start_at, select, n) => generate_integers(self, stctxt, start_at, select, n),
+            Transform::GenerateIntegers(start_at, select, n) => {
+                generate_integers(self, stctxt, start_at, select, n)
+            }
             Transform::Key(n, v, _) => key(self, stctxt, n, v),
             Transform::SystemProperty(p) => system_property(self, stctxt, p),
             Transform::AvailableSystemProperties => available_system_properties(),

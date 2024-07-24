@@ -76,7 +76,9 @@ pub(crate) fn path_expr<'a, N: Node + 'a>(
 
 fn abbreviated_parent<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(map(tag(".."), |_| Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))))
+    Box::new(map(tag(".."), |_| {
+        Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))
+    }))
 }
 
 // ('//' RelativePathExpr?)
@@ -188,17 +190,16 @@ fn abbreviated_axisstep<'a, N: Node + 'a>(
 }
 pub fn no_input<'a, A: Clone + 'a, N: Node>(
     val: A,
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a
-{
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a {
     move |input| Ok((input, val.clone()))
 }
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
 fn forwardaxis<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {
-    Box::new(
-        alt2(
-            //    alt8(
-            map(pair(
+    Box::new(alt2(
+        //    alt8(
+        map(
+            pair(
                 // need alt8
                 alt2(
                     alt4(
@@ -215,10 +216,11 @@ fn forwardaxis<'a, N: Node + 'a>(
                     ),
                 ),
                 tag("::"),
-            ), |(a, _)| a),
-            map(tag("@"), |_| "attribute"),
+            ),
+            |(a, _)| a,
         ),
-    )
+        map(tag("@"), |_| "attribute"),
+    ))
 }
 
 // ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding-sibling' | 'preceding' ) '::'

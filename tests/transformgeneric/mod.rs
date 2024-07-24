@@ -7,8 +7,8 @@ use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
+use xrust::transform::numbers::{Level, Numbering};
 use xrust::transform::template::Template;
-use xrust::transform::numbers::{Numbering, Level};
 use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
     Order, Transform, WildcardOrName,
@@ -4682,9 +4682,9 @@ where
 }
 
 pub fn generic_tr_format_number_1<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     // XPath == format-number(123.456, "#.##")
     let x = Transform::FormatNumber(
@@ -4889,7 +4889,7 @@ where
         sd.new_element(QualifiedName::new(None, None, "Test"))
             .expect("unable to create element"),
     )
-        .expect("unable to add element");
+    .expect("unable to add element");
 
     let x = Transform::SequenceItems(vec![
         Transform::Compose(vec![
@@ -4900,7 +4900,12 @@ where
             Transform::LocalName(None),
         ]),
         Transform::Compose(vec![
-            Transform::Document(Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("urn:test"))))), None),
+            Transform::Document(
+                Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
+                    "urn:test",
+                ))))),
+                None,
+            ),
             Transform::Step(NodeMatch {
                 axis: Axis::Child,
                 nodetest: NodeTest::Kind(KindTest::Any),
@@ -4969,14 +4974,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("1"))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))
@@ -4997,14 +5002,16 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
-        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("0001"))))),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
+        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
+            "0001",
+        ))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))
@@ -5025,14 +5032,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("W"))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))
@@ -5053,14 +5060,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("w"))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))
@@ -5081,14 +5088,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("Ww"))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))
@@ -5109,14 +5116,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("i"))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))
@@ -5137,14 +5144,14 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-
     let x = Transform::FormatInteger(
-        Box::new(Transform::SequenceItems(vec![Transform::Literal(Item::Value(Rc::new(Value::Integer(42))))])),
+        Box::new(Transform::SequenceItems(vec![Transform::Literal(
+            Item::Value(Rc::new(Value::Integer(42))),
+        )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("I"))))),
     );
 
-    let ctxt = ContextBuilder::new()
-        .build();
+    let ctxt = ContextBuilder::new().build();
     let mut stctxt = StaticContextBuilder::new()
         .fetcher(|_url| Ok(String::from("<External>document</External>")))
         .message(|_| Ok(()))

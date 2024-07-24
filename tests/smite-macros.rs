@@ -17,4 +17,3 @@ item_node_tests!(smite::make_empty_doc, smite::make_doc, smite::make_sd_raw);
 fn node_get_attr_node() {
     node::get_attr_node::<RNode, _>(smite::make_empty_doc).expect("test failed")
 }
-

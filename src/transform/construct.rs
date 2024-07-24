@@ -328,7 +328,7 @@ pub(crate) fn copy<
                         Item::Node(n) => match n.node_type() {
                             NodeType::Attribute => im.add_attribute(n.clone())?,
                             _ => im.push(n.clone())?,
-                        }
+                        },
                         _ => {
                             return Err(Error::new(
                                 ErrorKind::NotImplemented,

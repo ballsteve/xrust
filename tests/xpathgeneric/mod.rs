@@ -1259,9 +1259,9 @@ where
 }
 
 pub fn generic_format_number_1<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
 {
     let s: Sequence<N> = no_src_no_result("format-number(456.789, '#.##')")?;
     assert_eq!(s.len(), 1);
@@ -1409,15 +1409,22 @@ where
     Ok(())
 }
 
-pub fn generic_document_1<N: Node, G, H, J>(make_empty_doc: G, make_doc: H, make_from_str: J) -> Result<(), Error>
-    where
-        G: Fn() -> N,
-        H: Fn() -> Item<N>,
-        J: Fn(&str) -> Result<N, Error>,
+pub fn generic_document_1<N: Node, G, H, J>(
+    make_empty_doc: G,
+    make_doc: H,
+    make_from_str: J,
+) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+    J: Fn(&str) -> Result<N, Error>,
 {
     let mut msgs: Vec<String> = vec![];
     let mut stctxt = StaticContextBuilder::new()
-        .message(|m| {msgs.push(m.to_string()); Ok(())})
+        .message(|m| {
+            msgs.push(m.to_string());
+            Ok(())
+        })
         .fetcher(|_| Ok(String::from("<Test>external document</Test>")))
         .parser(|s| make_from_str(s))
         .build();
@@ -1426,7 +1433,10 @@ pub fn generic_document_1<N: Node, G, H, J>(make_empty_doc: G, make_doc: H, make
         .context(vec![make_doc()])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse("document('urn:example.org/test')").expect("unable to parse XPath expression"))
+        .dispatch(
+            &mut stctxt,
+            &parse("document('urn:example.org/test')").expect("unable to parse XPath expression"),
+        )
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     assert_eq!(seq.to_string(), "external document");

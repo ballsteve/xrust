@@ -92,10 +92,7 @@ mod tests {
         let parse_doc = tag("<?");
         assert_eq!(
             Ok((
-                (
-                    "ProcessingInstruction?>",
-                    ParserState::new(None, None)
-                ),
+                ("ProcessingInstruction?>", ParserState::new(None, None)),
                 ()
             )),
             parse_doc((testdoc, teststate))
@@ -125,10 +122,7 @@ mod tests {
         let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
-            Ok((
-                ("doc>", ParserState::new(None, None)),
-                "<".to_string()
-            )),
+            Ok((("doc>", ParserState::new(None, None)), "<".to_string())),
             parse_doc((testdoc, teststate))
         )
     }

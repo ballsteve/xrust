@@ -246,7 +246,7 @@ fn xpath_fncall_startswith_pos() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_startswith_neg() {
@@ -254,7 +254,7 @@ fn xpath_fncall_startswith_neg() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_contains_pos() {
@@ -272,7 +272,7 @@ fn xpath_fncall_substring_2arg() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_substring_3arg() {
@@ -280,7 +280,7 @@ fn xpath_fncall_substring_3arg() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_substringbefore_pos() {
@@ -288,7 +288,7 @@ fn xpath_fncall_substringbefore_pos() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_substringbefore_neg() {
@@ -296,7 +296,7 @@ fn xpath_fncall_substringbefore_neg() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_substringafter_pos_1() {
@@ -304,7 +304,7 @@ fn xpath_fncall_substringafter_pos_1() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_substringafter_pos_2() {
@@ -312,7 +312,7 @@ fn xpath_fncall_substringafter_pos_2() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_substringafter_neg() {
@@ -320,7 +320,7 @@ fn xpath_fncall_substringafter_neg() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_normalizespace() {
@@ -328,7 +328,7 @@ fn xpath_fncall_normalizespace() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_fncall_translate() {
@@ -456,7 +456,7 @@ fn xpath_sys_prop_product_vers() {
         smite::make_empty_doc,
         smite::make_sd,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xpath_key_1() {
@@ -470,7 +470,10 @@ fn xpath_format_number_1() {
 }
 #[test]
 fn xpath_document_1() {
-    xpathgeneric::generic_document_1::<RNode, _, _, _>(smite::make_empty_doc, smite::make_sd, smite::make_from_str)
-        .expect("test failed")
+    xpathgeneric::generic_document_1::<RNode, _, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+        smite::make_from_str,
+    )
+    .expect("test failed")
 }
-

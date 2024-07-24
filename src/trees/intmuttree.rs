@@ -42,6 +42,7 @@ use crate::externals::URLResolver;
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
 use crate::parser::xml::parse;
+use crate::parser::ParserConfig;
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
@@ -52,7 +53,6 @@ use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
-use crate::parser::ParserConfig;
 
 //pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
@@ -172,7 +172,6 @@ impl Document {
 impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
     fn try_from(s: (String, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
-
         let mut pc = ParserConfig::new();
         pc.ext_dtd_resolver = s.1;
         pc.docloc = s.2;

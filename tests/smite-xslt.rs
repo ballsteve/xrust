@@ -191,7 +191,7 @@ fn xslt_document_1() {
         smite::make_from_str_with_ns,
         smite::make_sd_cooked,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xslt_number_1() {
@@ -200,7 +200,7 @@ fn xslt_number_1() {
         smite::make_from_str_with_ns,
         smite::make_sd_cooked,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xslt_attr_set_1() {
@@ -209,7 +209,7 @@ fn xslt_attr_set_1() {
         smite::make_from_str_with_ns,
         smite::make_sd_cooked,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xslt_attr_set_2() {
@@ -218,7 +218,7 @@ fn xslt_attr_set_2() {
         smite::make_from_str_with_ns,
         smite::make_sd_cooked,
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn xslt_attr_set_3() {
@@ -227,5 +227,5 @@ fn xslt_attr_set_3() {
         smite::make_from_str_with_ns,
         smite::make_sd_cooked,
     )
-        .expect("test failed")
+    .expect("test failed")
 }

@@ -844,13 +844,12 @@ pub fn generic_document_1<N: Node, G, H, J>(
     parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
-    where
-        G: Fn(&str) -> Result<N, Error>,
-        H: Fn() -> Result<N, Error>,
-        J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
-    let srcdoc =
-        parse_from_str("<Test><internal>on the inside</internal></Test>")?;
+    let srcdoc = parse_from_str("<Test><internal>on the inside</internal></Test>")?;
     let (styledoc, stylens) = parse_from_str_with_ns(
         r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/>|<xsl:apply-templates select='document("urn::test.org/test")'/></xsl:template>
@@ -861,7 +860,11 @@ pub fn generic_document_1<N: Node, G, H, J>(
     )?;
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
-        .fetcher(|_url| Ok(String::from("<Outside><external>from outside</external></Outside>")))
+        .fetcher(|_url| {
+            Ok(String::from(
+                "<Outside><external>from outside</external></Outside>",
+            ))
+        })
         .parser(|s| parse_from_str(s))
         .build();
     let mut ctxt = from_document(
@@ -874,9 +877,7 @@ pub fn generic_document_1<N: Node, G, H, J>(
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     let result = ctxt.evaluate(&mut stctxt)?;
-    if result.to_string()
-        == "found internal element|found external element"
-    {
+    if result.to_string() == "found internal element|found external element" {
         Ok(())
     } else {
         Err(Error::new(ErrorKind::Unknown, format!("got result \"{}\", expected \"onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour\"", result.to_string())))
@@ -893,8 +894,7 @@ where
     H: Fn() -> Result<N, Error>,
     J: Fn(&str) -> Result<(N, Vec<HashMap<String, String>>), Error>,
 {
-    let srcdoc =
-        parse_from_str("<Test><t>one</t><t>two</t><t>three</t></Test>")?;
+    let srcdoc = parse_from_str("<Test><t>one</t><t>two</t><t>three</t></Test>")?;
     let (styledoc, stylens) = parse_from_str_with_ns(
         r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
@@ -943,7 +943,10 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    assert_eq!(result.to_xml(), "<Level1 bar='from set foo'></Level1><Level1 bar='from set foo'></Level1>");
+    assert_eq!(
+        result.to_xml(),
+        "<Level1 bar='from set foo'></Level1><Level1 bar='from set foo'></Level1>"
+    );
     Ok(())
 }
 
@@ -995,6 +998,9 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    assert_eq!(result.to_xml(), "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>");
+    assert_eq!(
+        result.to_xml(),
+        "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>"
+    );
     Ok(())
 }

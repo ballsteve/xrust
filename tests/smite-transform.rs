@@ -780,8 +780,11 @@ fn tr_format_time() {
 }
 #[test]
 fn tr_format_number_1() {
-    transformgeneric::generic_tr_format_number_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
-        .expect("test failed")
+    transformgeneric::generic_tr_format_number_1::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+    .expect("test failed")
 }
 #[test]
 fn tr_key_1() {
@@ -820,7 +823,7 @@ fn tr_generate_ints_1() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_1() {
@@ -829,7 +832,7 @@ fn tr_format_int_1() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_2() {
@@ -838,7 +841,7 @@ fn tr_format_int_2() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_3() {
@@ -847,7 +850,7 @@ fn tr_format_int_3() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_4() {
@@ -856,7 +859,7 @@ fn tr_format_int_4() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_5() {
@@ -865,7 +868,7 @@ fn tr_format_int_5() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_6() {
@@ -874,7 +877,7 @@ fn tr_format_int_6() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }
 #[test]
 fn tr_format_int_7() {
@@ -883,5 +886,5 @@ fn tr_format_int_7() {
         smite::make_sd,
         Box::new(smite::make_from_str),
     )
-        .expect("test failed")
+    .expect("test failed")
 }

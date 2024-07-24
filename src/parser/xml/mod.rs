@@ -21,12 +21,7 @@ use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use std::collections::HashMap;
 
-
-pub fn parse<N: Node>(
-    doc: N,
-    input: &str,
-    config: Option<ParserConfig>,
-) -> Result<N, Error> {
+pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;
     Ok(xmldoc)
 }

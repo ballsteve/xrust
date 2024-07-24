@@ -20,8 +20,11 @@ fn validsa001() {
         Description:Test demonstrates an Element Type Declaration with Mixed Content.
     */
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/001.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/001.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -38,8 +41,11 @@ fn validsa002() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/002.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/002.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -56,8 +62,11 @@ fn validsa003() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/003.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/003.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -74,8 +83,11 @@ fn validsa004() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/004.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/004.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -92,8 +104,11 @@ fn validsa005() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/005.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/005.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -110,8 +125,11 @@ fn validsa006() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/006.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/006.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -128,8 +146,11 @@ fn validsa007() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/007.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/007.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -146,8 +167,11 @@ fn validsa008() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/008.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/008.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -164,8 +188,11 @@ fn validsa009() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/009.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/009.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -182,8 +209,11 @@ fn validsa010() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/010.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/010.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -200,19 +230,20 @@ fn validsa011() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/011.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/011.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
     assert!(parseresult.is_ok());
 }
 
-
 #[test]
 #[ignore]
 fn validsa012() {
-
     /* This test is deliberately ignored. Although these are valid XML documents,
     XML without namespaces is not something we wish to handle. */
 
@@ -224,14 +255,16 @@ fn validsa012() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/012.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/012.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
     assert!(parseresult.is_ok());
 }
-
 
 #[test]
 fn validsa013() {
@@ -243,8 +276,11 @@ fn validsa013() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/013.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/013.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -261,8 +297,11 @@ fn validsa014() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/014.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/014.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -279,8 +318,11 @@ fn validsa015() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/015.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/015.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -297,8 +339,11 @@ fn validsa016() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/016.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/016.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -315,8 +360,11 @@ fn validsa017() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -333,8 +381,11 @@ fn validsa018() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/018.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/018.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -351,8 +402,11 @@ fn validsa019() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/019.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/019.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -369,8 +423,11 @@ fn validsa020() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/020.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/020.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -387,8 +444,11 @@ fn validsa021() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/021.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/021.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -405,8 +465,11 @@ fn validsa022() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/022.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/022.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -423,8 +486,11 @@ fn validsa023() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/023.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/023.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -441,8 +507,11 @@ fn validsa024() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/024.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/024.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -459,8 +528,11 @@ fn validsa025() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/025.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/025.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -477,8 +549,11 @@ fn validsa026() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/026.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/026.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -495,8 +570,11 @@ fn validsa027() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/027.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/027.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -513,8 +591,11 @@ fn validsa028() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/028.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/028.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -531,8 +612,11 @@ fn validsa029() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/029.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/029.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -549,8 +633,11 @@ fn validsa030() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/030.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/030.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -567,8 +654,11 @@ fn validsa031() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/031.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/031.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -585,8 +675,11 @@ fn validsa032() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/032.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/032.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -603,8 +696,11 @@ fn validsa033() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/033.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/033.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -621,8 +717,11 @@ fn validsa034() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/034.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/034.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -639,8 +738,11 @@ fn validsa035() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/035.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/035.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -657,8 +759,11 @@ fn validsa036() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/036.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/036.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -675,8 +780,11 @@ fn validsa017a() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017a.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017a.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -693,8 +801,11 @@ fn validsa037() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/037.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/037.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -711,8 +822,11 @@ fn validsa038() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/038.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/038.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -729,8 +843,11 @@ fn validsa039() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/039.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/039.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -747,8 +864,11 @@ fn validsa040() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/040.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/040.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -765,8 +885,11 @@ fn validsa041() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/041.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/041.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -783,8 +906,11 @@ fn validsa042() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/042.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/042.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -801,8 +927,11 @@ fn validsa043() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/043.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/043.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -819,8 +948,11 @@ fn validsa044() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/044.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/044.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -837,8 +969,11 @@ fn validsa045() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/045.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/045.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -855,8 +990,11 @@ fn validsa046() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/046.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/046.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -873,8 +1011,11 @@ fn validsa047() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/047.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/047.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -891,8 +1032,11 @@ fn validsa048() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/048.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/048.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -909,8 +1053,11 @@ fn validsa049() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/049.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/049.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -927,8 +1074,11 @@ fn validsa050() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/050.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/050.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -945,8 +1095,11 @@ fn validsa051() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/051.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/051.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -963,8 +1116,11 @@ fn validsa052() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/052.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/052.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -981,8 +1137,11 @@ fn validsa053() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/053.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/053.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -999,8 +1158,11 @@ fn validsa054() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/054.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/054.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1017,8 +1179,11 @@ fn validsa055() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/055.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/055.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1035,8 +1200,11 @@ fn validsa056() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/056.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/056.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1053,8 +1221,11 @@ fn validsa057() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/057.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/057.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1071,8 +1242,11 @@ fn validsa058() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/058.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/058.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1089,8 +1263,11 @@ fn validsa059() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/059.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/059.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1107,8 +1284,11 @@ fn validsa060() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/060.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/060.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1125,8 +1305,11 @@ fn validsa061() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/061.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/061.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1143,8 +1326,11 @@ fn validsa062() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/062.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/062.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1161,8 +1347,11 @@ fn validsa063() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/063.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/063.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1179,8 +1368,11 @@ fn validsa064() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/064.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/064.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1197,8 +1389,11 @@ fn validsa065() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/065.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/065.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1215,8 +1410,11 @@ fn validsa066() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/066.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/066.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1233,8 +1431,11 @@ fn validsa067() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/067.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/067.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1251,8 +1452,11 @@ fn validsa068() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/068.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/068.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1269,8 +1473,11 @@ fn validsa069() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/069.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/069.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1287,8 +1494,11 @@ fn validsa070() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/070.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/070.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1305,8 +1515,11 @@ fn validsa071() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/071.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/071.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1323,8 +1536,11 @@ fn validsa072() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/072.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/072.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1341,8 +1557,11 @@ fn validsa073() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/073.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/073.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1359,8 +1578,11 @@ fn validsa074() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/074.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/074.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1377,8 +1599,11 @@ fn validsa075() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/075.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/075.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1395,8 +1620,11 @@ fn validsa076() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/076.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/076.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1413,8 +1641,11 @@ fn validsa077() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/077.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/077.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1431,8 +1662,11 @@ fn validsa078() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/078.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/078.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1449,8 +1683,11 @@ fn validsa079() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/079.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/079.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1467,8 +1704,11 @@ fn validsa080() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/080.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/080.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1485,8 +1725,11 @@ fn validsa081() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/081.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/081.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1503,8 +1746,11 @@ fn validsa082() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/082.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/082.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1521,8 +1767,11 @@ fn validsa083() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/083.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/083.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1539,8 +1788,11 @@ fn validsa084() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/084.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/084.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1557,8 +1809,11 @@ fn validsa085() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/085.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/085.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1575,8 +1830,11 @@ fn validsa086() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/086.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/086.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1593,8 +1851,11 @@ fn validsa087() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/087.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/087.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1611,8 +1872,11 @@ fn validsa088() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/088.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/088.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1629,8 +1893,11 @@ fn validsa089() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/089.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/089.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1647,8 +1914,11 @@ fn validsa090() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/090.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/090.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1665,8 +1935,11 @@ fn validsa091() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/091.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/091.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1683,8 +1956,11 @@ fn validsa092() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/092.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/092.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1701,8 +1977,11 @@ fn validsa093() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/093.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/093.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1719,8 +1998,11 @@ fn validsa094() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/094.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/094.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1737,8 +2019,11 @@ fn validsa095() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/095.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/095.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1755,8 +2040,11 @@ fn validsa096() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/096.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/096.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1773,8 +2061,11 @@ fn validsa097() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1791,8 +2082,11 @@ fn validsa098() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/098.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/098.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1809,8 +2103,11 @@ fn validsa099() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/099.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/099.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1827,8 +2124,11 @@ fn validsa100() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1845,8 +2145,11 @@ fn validsa101() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/101.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/101.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1863,8 +2166,11 @@ fn validsa102() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/102.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/102.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1881,8 +2187,11 @@ fn validsa103() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/103.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/103.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1899,8 +2208,11 @@ fn validsa104() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/104.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/104.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1917,8 +2229,11 @@ fn validsa105() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/105.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/105.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1935,8 +2250,11 @@ fn validsa106() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/106.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/106.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1953,8 +2271,11 @@ fn validsa107() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/107.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/107.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1971,8 +2292,11 @@ fn validsa108() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/108.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/108.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -1989,8 +2313,11 @@ fn validsa109() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/109.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/109.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2007,8 +2334,11 @@ fn validsa110() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/110.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/110.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2025,8 +2355,11 @@ fn validsa111() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/111.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/111.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2043,8 +2376,11 @@ fn validsa112() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/112.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/112.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2061,8 +2397,11 @@ fn validsa113() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/113.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/113.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2079,8 +2418,11 @@ fn validsa114() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/114.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/114.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2097,8 +2439,11 @@ fn validsa115() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/115.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/115.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2115,8 +2460,11 @@ fn validsa116() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/116.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/116.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2133,8 +2481,11 @@ fn validsa117() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/117.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/117.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2151,8 +2502,11 @@ fn validsa118() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/118.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/118.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 
@@ -2169,8 +2523,11 @@ fn validsa119() {
     */
 
     let testxml = Rc::new(Node::new());
-    let parseresult = xml::parse(testxml, 
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/119.xml").unwrap().as_str(),
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/119.xml")
+            .unwrap()
+            .as_str(),
         None,
     );
 

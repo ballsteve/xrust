@@ -3,22 +3,26 @@
 use std::rc::Rc;
 use url::Url;
 
+use english_numbers::{convert, Formatting};
 use formato::Formato;
-use english_numbers::{Formatting, convert};
 use italian_numbers::roman_converter;
 
-use crate::item::{Item, Node, Sequence, SequenceTrait, NodeType};
-use crate::pattern::{Pattern, PathBuilder};
+use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
+use crate::pattern::{PathBuilder, Pattern};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
-use crate::transform::{ArithmeticOperand, ArithmeticOperator, Axis, Transform, NodeTest, KindTest, NameTest, WildcardOrName};
+use crate::transform::{
+    ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
+    WildcardOrName,
+};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// Level value for xsl:number. See XSLT 12.3.
 #[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub enum Level {
-    #[default] Single,
+    #[default]
+    Single,
     Multiple,
     Any,
 }
@@ -32,7 +36,7 @@ pub struct Numbering<N: Node> {
 }
 impl<N: Node> Numbering<N> {
     pub fn new(level: Level, count: Option<Pattern<N>>, from: Option<Pattern<N>>) -> Self {
-        Numbering{level, count, from}
+        Numbering { level, count, from }
     }
 }
 
@@ -51,34 +55,46 @@ pub fn generate_integers<
 ) -> Result<Sequence<N>, Error> {
     // This implements "single" level. "multiple" and "any" are TODO
     if num.level != Level::Single {
-        return Err(Error::new(ErrorKind::NotImplemented, "only single level is implemented"))
+        return Err(Error::new(
+            ErrorKind::NotImplemented,
+            "only single level is implemented",
+        ));
     }
 
     // The select expression must evaluate to a single node item (XSLT error XTTE1000)
     let n = ctxt.dispatch(stctxt, select)?;
     if n.len() == 1 {
         if let Item::Node(m) = &n[0] {
-
             // Determine the count pattern
-            let count_pat = (num.count).clone().unwrap_or(Pattern::Selection(
-                match m.node_type() {
-                    NodeType::Element => {
-                        PathBuilder::new()
+            let count_pat =
+                (num.count)
+                    .clone()
+                    .unwrap_or(Pattern::Selection(match m.node_type() {
+                        NodeType::Element => PathBuilder::new()
                             .step(
                                 Axis::SelfAxis,
                                 Axis::SelfAxis,
-                                NodeTest::Name(NameTest::new(m.name().get_nsuri().map( WildcardOrName::Name), None, Some(WildcardOrName::Name(m.name().get_localname()))))
+                                NodeTest::Name(NameTest::new(
+                                    m.name().get_nsuri().map(WildcardOrName::Name),
+                                    None,
+                                    Some(WildcardOrName::Name(m.name().get_localname())),
+                                )),
                             )
-                            .build()
-                    }
-                    NodeType::Text => {
-                        PathBuilder::new()
-                            .step(Axis::SelfAxis, Axis::SelfAxis, NodeTest::Kind(KindTest::Text))
-                            .build()
-                    }
-                    _ => return Err(Error::new(ErrorKind::TypeError, "cannot match this type of node"))
-                }
-            ));
+                            .build(),
+                        NodeType::Text => PathBuilder::new()
+                            .step(
+                                Axis::SelfAxis,
+                                Axis::SelfAxis,
+                                NodeTest::Kind(KindTest::Text),
+                            )
+                            .build(),
+                        _ => {
+                            return Err(Error::new(
+                                ErrorKind::TypeError,
+                                "cannot match this type of node",
+                            ))
+                        }
+                    }));
 
             // let a = $S/ancestor-or-self::node()[matches-count(.)][1]
             // TODO: Don't Panic
@@ -91,15 +107,19 @@ pub fn generate_integers<
                     .collect()
             };
             if a.is_empty() {
-                return Ok(vec![])
+                return Ok(vec![]);
             }
             // let f = $S/ancestor-or-self::node()[matches-from(.)][1]
             // TODO: Don't Panic
             let f: Vec<N> = if let Some(fr) = &num.from.clone() {
                 m.ancestor_iter()
-                    .filter(|i| {if i.node_type() == NodeType::Document {true} else {
-                        fr.matches(ctxt, stctxt, &Item::Node(i.clone()))
-                    }})
+                    .filter(|i| {
+                        if i.node_type() == NodeType::Document {
+                            true
+                        } else {
+                            fr.matches(ctxt, stctxt, &Item::Node(i.clone()))
+                        }
+                    })
                     .take(1)
                     .collect()
             } else {
@@ -107,30 +127,37 @@ pub fn generate_integers<
                 vec![m.owner_document().clone()]
             };
             if f.is_empty() {
-                return Ok(vec![])
+                return Ok(vec![]);
             }
             // let af = $a[ancestor-or-self::node()[. is $f]]
             let af_test: Vec<N> = if a[0].is_same(&f[0]) {
                 vec![a[0].clone()]
             } else {
-                a[0].ancestor_iter()
-                    .filter(|i| i.is_same(&f[0]))
-                    .collect()
+                a[0].ancestor_iter().filter(|i| i.is_same(&f[0])).collect()
             };
-            let af = if af_test.is_empty() {vec![]} else {a};
+            let af = if af_test.is_empty() { vec![] } else { a };
             if af.is_empty() {
-                return Ok(vec![])
+                return Ok(vec![]);
             }
             // 1 + count($af/preceding-sibling::node()[matches-count(.)])
-            let result: Vec<N> = af[0].prev_iter()
+            let result: Vec<N> = af[0]
+                .prev_iter()
                 .filter(|i| count_pat.matches(ctxt, stctxt, &Item::Node(i.clone())))
                 .collect();
             Ok(vec![Item::Value(Rc::new(Value::from(1 + result.len())))])
         } else {
-            Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
+            Err(Error::new_with_code(
+                ErrorKind::TypeError,
+                "not a singleton node",
+                Some(QualifiedName::new(None, None, "XTTE1000")),
+            ))
         }
     } else {
-        Err(Error::new_with_code(ErrorKind::TypeError, "not a singleton node", Some(QualifiedName::new(None, None, "XTTE1000"))))
+        Err(Error::new_with_code(
+            ErrorKind::TypeError,
+            "not a singleton node",
+            Some(QualifiedName::new(None, None, "XTTE1000")),
+        ))
     }
 }
 
@@ -376,13 +403,15 @@ pub fn format_number<
         1 => {
             // First try converting to an integer
             match n[0].to_int() {
-                Ok(i) => {
-                    Ok(vec![Item::Value(Rc::new(Value::String(i.formato(p.as_str()))))])
-                }
+                Ok(i) => Ok(vec![Item::Value(Rc::new(Value::String(
+                    i.formato(p.as_str()),
+                )))]),
                 _ => {
                     // Otherwise convert to double.
                     // NB. This can't fail. At worst it returns NaN.
-                    Ok(vec![Item::Value(Rc::new(Value::String(n[0].to_double().formato(p.as_str()))))])
+                    Ok(vec![Item::Value(Rc::new(Value::String(
+                        n[0].to_double().formato(p.as_str()),
+                    )))])
                 }
             }
         }
@@ -429,28 +458,30 @@ pub fn format_integer<
                                 if p.eq(&'0') {
                                     pit.next();
                                     token.push('0');
-                                } else if p.eq(&'1'){
+                                } else if p.eq(&'1') {
                                     pit.next();
                                     token.push('1');
                                 } else {
-                                    break
+                                    break;
                                 }
                             } else {
-                                break
+                                break;
                             }
                         }
                         if let Some(num) = nit.next() {
-                            result.push_str(format!("{:0>1$}", num.to_int()?.to_string(), token.len()).as_str());
-                        }  else {
-                            break
+                            result.push_str(
+                                format!("{:0>1$}", num.to_int()?.to_string(), token.len()).as_str(),
+                            );
+                        } else {
+                            break;
                         }
                     }
                     '1' => {
                         // 1, 2, 3, ...
                         if let Some(num) = nit.next() {
                             result.push_str(num.to_int()?.to_string().as_str())
-                        }  else {
-                            break
+                        } else {
+                            break;
                         }
                     }
                     'A' => {
@@ -463,36 +494,50 @@ pub fn format_integer<
                         // i, ii, iii, iv, v, vi, ...
                         if let Some(num) = nit.next() {
                             result.push_str(
-                                roman_converter(
-                                u16::try_from(num.to_int()?).map_err(|e| Error::new(ErrorKind::ParseError, e.to_string()))?
-                                ).map_err(|e| Error::new(ErrorKind::ParseError, e))?
-                                .to_lowercase().as_str()
+                                roman_converter(u16::try_from(num.to_int()?).map_err(|e| {
+                                    Error::new(ErrorKind::ParseError, e.to_string())
+                                })?)
+                                .map_err(|e| Error::new(ErrorKind::ParseError, e))?
+                                .to_lowercase()
+                                .as_str(),
                             )
-                        }  else {
-                            break
+                        } else {
+                            break;
                         }
                     }
                     'I' => {
                         // I, II, III, IV, V, VI, ...
                         if let Some(num) = nit.next() {
                             result.push_str(
-                                roman_converter(
-                                    u16::try_from(num.to_int()?).map_err(|e| Error::new(ErrorKind::ParseError, e.to_string()))?
-                                ).map_err(|e| Error::new(ErrorKind::ParseError, e))?
-                                    .as_str()
+                                roman_converter(u16::try_from(num.to_int()?).map_err(|e| {
+                                    Error::new(ErrorKind::ParseError, e.to_string())
+                                })?)
+                                .map_err(|e| Error::new(ErrorKind::ParseError, e))?
+                                .as_str(),
                             )
-                        }  else {
-                            break
+                        } else {
+                            break;
                         }
                     }
                     'w' => {
                         // one, two, three, ...
                         if let Some(num) = nit.next() {
-                            result.push_str(convert(num.to_int()?,
-                                                    Formatting{title_case: false, spaces: true, conjunctions: false, commas: false, dashes: false}
-                            ).to_string().as_str())
+                            result.push_str(
+                                convert(
+                                    num.to_int()?,
+                                    Formatting {
+                                        title_case: false,
+                                        spaces: true,
+                                        conjunctions: false,
+                                        commas: false,
+                                        dashes: false,
+                                    },
+                                )
+                                .to_string()
+                                .as_str(),
+                            )
                         } else {
-                            break
+                            break;
                         }
                     }
                     'W' => {
@@ -501,20 +546,43 @@ pub fn format_integer<
                             // One, Two, Three, ...
                             pit.next();
                             if let Some(num) = nit.next() {
-                                result.push_str(convert(num.to_int()?,
-                                                        Formatting{title_case: true, spaces: true, conjunctions: false, commas: false, dashes: false}
-                                ).to_string().as_str())
+                                result.push_str(
+                                    convert(
+                                        num.to_int()?,
+                                        Formatting {
+                                            title_case: true,
+                                            spaces: true,
+                                            conjunctions: false,
+                                            commas: false,
+                                            dashes: false,
+                                        },
+                                    )
+                                    .to_string()
+                                    .as_str(),
+                                )
                             } else {
-                                break
+                                break;
                             }
                         } else {
                             // ONE, TWO, THREE, ...
                             if let Some(num) = nit.next() {
-                                result.push_str(convert(num.to_int()?,
-                                                        Formatting{title_case: false, spaces: true, conjunctions: false, commas: false, dashes: false}
-                                ).to_string().to_uppercase().as_str())
+                                result.push_str(
+                                    convert(
+                                        num.to_int()?,
+                                        Formatting {
+                                            title_case: false,
+                                            spaces: true,
+                                            conjunctions: false,
+                                            commas: false,
+                                            dashes: false,
+                                        },
+                                    )
+                                    .to_string()
+                                    .to_uppercase()
+                                    .as_str(),
+                                )
                             } else {
-                                break
+                                break;
                             }
                         }
                     }
@@ -527,7 +595,7 @@ pub fn format_integer<
                 result.push(d)
             }
         } else {
-            break
+            break;
         }
     }
 
