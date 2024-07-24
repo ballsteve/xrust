@@ -11,7 +11,7 @@ fn make_rnode(n: u64) -> RNode {
     let mut a = Rc::new(SmiteNode::new());
     let mut b = a.new_element(QualifiedName::new(None, None, String::from("Test")))
         .expect("unable to create element");
-    a.push(b.clone());
+    a.push(b.clone()).expect("unable to add node");
     (1..n).for_each(|i| {
         let mut l1 = a.new_element(QualifiedName::new(None, None, String::from("Level-1")))
             .expect("unable to create element");
