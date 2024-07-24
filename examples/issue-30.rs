@@ -8,13 +8,14 @@ use std::io::Read;
 use std::path::Path;
 use std::rc::Rc;
 
-use xrust::item::{Item, Node, NodeType, SequenceTrait};
-use xrust::parser::xpath::parse;
-use xrust::transform::context::{ContextBuilder, StaticContext};
-use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
-use xrust::xdmerror::Error;
+use xrust::ErrorKind;
 
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+use xrust::item::{Item, SequenceTrait};
+use xrust::parser::xml::parse as xmlparse;
+use xrust::parser::xpath::parse;
+use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
+use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::xdmerror::Error;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -61,22 +62,24 @@ fn main() {
         Ok(_) => {}
     };
     // Parse the XML into a RNode
-    // content[0] is the root node
-    let root = Document::try_from((srcxml, None, None))
-        .expect("unable to parse XML")
-        .content[0]
-        .clone();
-    let mut doc = NodeBuilder::new(NodeType::Document).build();
-    doc.push(root).expect("unable to append root node");
+    let root = Rc::new(SmiteNode::new());
+    xmlparse(root.clone(), srcxml.as_str(), None).expect("unable to parse XML");
 
-    // Create a transformation context
+    // Create a dynamic transformation context
     let context = ContextBuilder::new()
-        .current(vec![Rc::new(Item::Node(doc))])
+        .context(vec![Item::Node(root)])
+        .build();
+    // Create a static transformation contact
+    // with dummy callbacks
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
 
     // Let 'er rip!
     let result = context
-        .dispatch(&mut StaticContext::<F>::new(), &xpath)
+        .dispatch(&mut stctxt, &xpath)
         .expect("failed to evaluate XPath");
 
     // Serialise the result document as XML

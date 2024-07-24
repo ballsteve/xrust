@@ -16,26 +16,28 @@ To evaluate the transformation we need a Context with a source document as its c
 
 ```rust
 # use std::rc::Rc;
-# use xrust::xdmerror::Error;
+# use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
-use xrust::trees::intmuttree::{Document, NodeBuilder};
+use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
-use xrust::transform::context::{Context, ContextBuilder, StaticContext};
-# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 
 let t = parse("/child::A/child::B/child::C")
     .expect("unable to parse XPath expression");
 
-let source = Document::try_from(("<A><B><C/></B><B><C/></B></A>".to_string(), None, None))
-    .expect("unable to parse XML")
-    .content[0]
-    .clone();
-let mut doc = NodeBuilder::new(NodeType::Document).build();
-doc.push(source).expect("unable to attach root node");
-let context = ContextBuilder::new()
-    .current(vec![Rc::new(Item::Node(doc))])
+let source = Rc::new(SmiteNode::new());
+xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
+    .expect("unable to parse XML");
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Ok(String::new()))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
     .build();
-let sequence = context.dispatch(&mut StaticContext::<F>::new(), &t)
+let context = ContextBuilder::new()
+    .context(vec![Item::Node(source)])
+    .build();
+let sequence = context.dispatch(&mut static_context, &t)
     .expect("evaluation failed");
 assert_eq!(sequence.len(), 2);
 assert_eq!(sequence.to_xml(), "<C></C><C></C>")
@@ -68,13 +70,13 @@ use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::flwr::{for_expr, if_expr, let_expr};
 use crate::parser::xpath::logic::or_expr;
 use crate::parser::xpath::support::noop;
-use crate::parser::{ParseError, ParseInput, ParseResult, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserState};
 
 use crate::item::Node;
 use crate::transform::Transform;
-use crate::xdmerror;
+use crate::xdmerror::{Error, ErrorKind};
 
-pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
+pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
     // Shortcut for empty
     if input.is_empty() {
         return Ok(Transform::Empty);
@@ -84,31 +86,31 @@ pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, xdmerror::Error> {
     match xpath_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
-            ParseError::Combinator => Result::Err(xdmerror::Error::new(
-                xdmerror::ErrorKind::ParseError,
-                "Unrecoverable parser error.".to_string(),
+            ParseError::Combinator => Err(Error::new(
+                ErrorKind::ParseError,
+                format!(
+                    "Unrecoverable parser error while parsing XPath expression \"{}\"",
+                    input
+                ),
             )),
-            ParseError::NotWellFormed => Result::Err(xdmerror::Error::new(
-                xdmerror::ErrorKind::ParseError,
-                "Unrecognised extra characters.".to_string(),
+            ParseError::NotWellFormed(e) => Err(Error::new(
+                ErrorKind::ParseError,
+                format!("Unrecognised extra characters: \"{}\"", e),
             )),
-            ParseError::MissingNameSpace => Result::Err(xdmerror::Error::new(
-                xdmerror::ErrorKind::ParseError,
+            ParseError::MissingNameSpace => Err(Error::new(
+                ErrorKind::ParseError,
                 "Missing namespace declaration.".to_string(),
             )),
-            ParseError::Notimplemented => Result::Err(xdmerror::Error::new(
-                xdmerror::ErrorKind::ParseError,
+            ParseError::Notimplemented => Err(Error::new(
+                ErrorKind::ParseError,
                 "Unimplemented feature.".to_string(),
             )),
-            _ => Err(xdmerror::Error::new(
-                xdmerror::ErrorKind::Unknown,
-                "Unknown error".to_string(),
-            )),
+            _ => Err(Error::new(ErrorKind::Unknown, "Unknown error".to_string())),
         },
     }
 }
 
-fn xpath_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
+fn xpath_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
     match expr::<N>()(input) {
         Err(err) => Err(err),
         Ok(((input1, state1), e)) => {
@@ -116,14 +118,18 @@ fn xpath_expr<N: Node>(input: ParseInput) -> ParseResult<Transform<N>> {
             if input1.is_empty() {
                 Ok(((input1, state1), e))
             } else {
-                Err(ParseError::NotWellFormed)
+                Err(ParseError::NotWellFormed(format!(
+                    "Unrecognised extra characters: \"{}\"",
+                    input1
+                )))
             }
         }
     }
 }
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-pub fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+pub fn expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
@@ -141,7 +147,7 @@ pub fn expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transfo
 
 pub(crate) fn expr_wrapper<N: Node>(
     b: bool,
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>>> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError>> {
     Box::new(move |input| {
         if b {
             expr::<N>()(input)
@@ -152,13 +158,14 @@ pub(crate) fn expr_wrapper<N: Node>(
 }
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
-fn expr_single<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
-    Box::new(alt4(or_expr(), let_expr(), for_expr(), if_expr()))
+fn expr_single<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+    Box::new(alt4(let_expr(), for_expr(), if_expr(), or_expr()))
 }
 
 pub(crate) fn expr_single_wrapper<N: Node>(
     b: bool,
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>>> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError>> {
     Box::new(move |input| {
         if b {
             expr_single::<N>()(input)

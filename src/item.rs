@@ -12,6 +12,7 @@ use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
+use crate::xmldecl::XMLDecl;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
@@ -22,7 +23,7 @@ use std::rc::Rc;
 /// The Rust impementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
-pub type Sequence<N> = Vec<Rc<Item<N>>>;
+pub type Sequence<N> = Vec<Item<N>>;
 
 pub trait SequenceTrait<N: Node> {
     /// Return the string value of the [Sequence].
@@ -38,11 +39,11 @@ pub trait SequenceTrait<N: Node> {
     /// Convert the [Sequence] to an integer. The [Sequence] must be a singleton value.
     fn to_int(&self) -> Result<i64, Error>;
     /// Push an [Node] to the [Sequence]
-    fn push_node(&mut self, n: N);
+    fn push_node(&mut self, n: &N);
     /// Push a [Value] to the [Sequence]
-    fn push_value(&mut self, v: Value);
-    /// Push an [Item] to the [Sequence]
-    fn push_item(&mut self, i: &Rc<Item<N>>);
+    fn push_value(&mut self, v: &Rc<Value>);
+    /// Push an [Item] to the [Sequence]. This clones the item.
+    fn push_item(&mut self, i: &Item<N>);
 }
 
 impl<N: Node> SequenceTrait<N> for Sequence<N> {
@@ -78,19 +79,19 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         }
         r
     }
-    /// Push a document's [Node] on to the [Sequence]
-    fn push_node(&mut self, n: N) {
-        self.push(Rc::new(Item::Node(n)));
+    /// Push a document's [Node] on to the [Sequence]. This clones the node.
+    fn push_node(&mut self, n: &N) {
+        self.push(Item::Node(n.clone()));
     }
-    /// Push a [Value] on to the [Sequence]
-    fn push_value(&mut self, v: Value) {
-        self.push(Rc::new(Item::Value(v)));
+    /// Push a [Value] on to the [Sequence].
+    fn push_value(&mut self, v: &Rc<Value>) {
+        self.push(Item::Value(Rc::clone(v)));
     }
     //fn new_function(&self, f: Function) -> Sequence {
     //}
     /// Push an [Item] on to the [Sequence]. This clones the Item.
-    fn push_item(&mut self, i: &Rc<Item<N>>) {
-        self.push(Rc::clone(i));
+    fn push_item(&mut self, i: &Item<N>) {
+        self.push(i.clone());
     }
 
     /// Calculate the effective boolean value of the Sequence
@@ -98,11 +99,11 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         if self.is_empty() {
             false
         } else {
-            match *self[0] {
+            match self[0] {
                 Item::Node(..) => true,
                 _ => {
                     if self.len() == 1 {
-                        (*self[0]).to_bool()
+                        self[0].to_bool()
                     } else {
                         false // should be a type error
                     }
@@ -116,7 +117,7 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         if self.len() == 1 {
             self[0].to_int()
         } else {
-            Result::Err(Error::new(
+            Err(Error::new(
                 ErrorKind::TypeError,
                 String::from("type error: sequence is not a singleton"),
             ))
@@ -126,12 +127,12 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
 
 impl<N: Node> From<Value> for Sequence<N> {
     fn from(v: Value) -> Self {
-        vec![Rc::new(Item::Value(v))]
+        vec![Item::Value(Rc::new(v))]
     }
 }
 impl<N: Node> From<Item<N>> for Sequence<N> {
     fn from(i: Item<N>) -> Self {
-        vec![Rc::new(i)]
+        vec![i]
     }
 }
 
@@ -147,6 +148,7 @@ pub enum NodeType {
     Comment,
     ProcessingInstruction,
     Reference,
+    Namespace,
     #[default]
     Unknown,
 }
@@ -162,6 +164,7 @@ impl NodeType {
             NodeType::ProcessingInstruction => "Processing-Instruction",
             NodeType::Comment => "Comment",
             NodeType::Reference => "Reference",
+            NodeType::Namespace => "Namespace",
             NodeType::Unknown => "--None--",
         }
     }
@@ -184,8 +187,8 @@ pub enum Item<N: Node> {
     /// Functions are not yet supported
     Function,
 
-    /// A scalar value
-    Value(Value),
+    /// A scalar value. These are in an Rc since they are frequently shared.
+    Value(Rc<Value>),
 }
 
 impl<N: item::Node> fmt::Display for Item<N> {
@@ -282,7 +285,9 @@ impl<N: Node> Item<N> {
                 Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
                 _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
-            Item::Node(..) => other.compare(&Item::Value(Value::String(self.to_string())), op),
+            Item::Node(..) => {
+                other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op)
+            }
             _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
     }
@@ -352,9 +357,10 @@ impl<N: Node> fmt::Debug for Item<N> {
             Item::Node(n) => {
                 write!(
                     f,
-                    "node type item (node type {}, name \"{}\")",
-                    n.node_type().to_string(),
-                    n.name()
+                    "node type item ({:?})",
+                    n //                    "node type item (node type {}, name \"{}\")",
+                      //                    n.node_type().to_string(),
+                      //                    n.name()
                 )
             }
             Item::Function => {
@@ -372,7 +378,11 @@ impl<N: Node> fmt::Debug for Item<N> {
 /// Some nodes have names, such as elements. Some nodes have values, such as text or comments. Some have both a name and a value, such as attributes and processing instructions.
 ///
 /// Element nodes have children and attributes.
-pub trait Node: Clone {
+///
+/// Nodes must implement the PartialEq trait. This allows two (sub-)trees to be compared. The comparison is against the XML Infoset of each tree;
+/// i.e. do the trees contain the same information, but not necessarily the same string representation.
+/// For example, the order of attributes does not matter.
+pub trait Node: Clone + PartialEq + fmt::Debug {
     type NodeIterator: Iterator<Item = Self>;
 
     /// Get the type of the node
@@ -380,7 +390,10 @@ pub trait Node: Clone {
     /// Get the name of the node. If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
     fn name(&self) -> QualifiedName;
     /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
-    fn value(&self) -> Value;
+    fn value(&self) -> Rc<Value>;
+
+    /// Get a unique identifier for this node.
+    fn get_id(&self) -> String;
 
     /// Get the string value of the node. See XPath ???
     fn to_string(&self) -> String;
@@ -437,18 +450,22 @@ pub trait Node: Clone {
     /// An iterator over the attributes of an element
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
-    fn get_attribute(&self, a: &QualifiedName) -> Value;
+    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
+    /// Get an attribute of the node. If the node is not an element returns None. Otherwise returns the attribute node. If the node does not have an attribute of the given name, returns None.
+    fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
-    fn new_text(&self, v: Value) -> Result<Self, Error>;
+    fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
-    fn new_comment(&self, v: Value) -> Result<Self, Error>;
+    fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error>;
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error>;
+    /// Create a namespace node
+    fn new_namespace(&self, ns: String, prefix: Option<String>) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;
@@ -463,6 +480,95 @@ pub trait Node: Clone {
     fn shallow_copy(&self) -> Result<Self, Error>;
     /// Deep copy the node, i.e. the node itself and it's attributes and descendants. The resulting top-level node is unattached.
     fn deep_copy(&self) -> Result<Self, Error>;
-    /// Canonical XML representation of the node
+    /// Canonical XML representation of the node.
     fn get_canonical(&self) -> Result<Self, Error>;
+    /// Get the XML Declaration for the document.
+    fn xmldecl(&self) -> XMLDecl;
+    /// Set the XML Declaration for the document.
+    fn set_xmldecl(&mut self, d: XMLDecl) -> Result<(), Error>;
+    /// Add a namespace to this element-type node.
+    /// NOTE: Does NOT assign a namespace to the element.
+    fn add_namespace(&self, ns: Self) -> Result<(), Error>;
+    /// Compare two trees. If a non-document node is used, then the descendant subtrees are compared.
+    fn eq(&self, other: &Self) -> bool {
+        match self.node_type() {
+            NodeType::Document => {
+                if other.node_type() == NodeType::Document {
+                    self.child_iter()
+                        .zip(other.child_iter())
+                        .fold(true, |mut acc, (c, d)| {
+                            if acc {
+                                acc = Node::eq(&c, &d);
+                                acc
+                            } else {
+                                acc
+                            }
+                        })
+                    // TODO: use a method that terminates early on non-equality
+                } else {
+                    false
+                }
+            }
+            NodeType::Element => {
+                // names must match,
+                // attributes must match (order doesn't matter),
+                // content must match
+                if other.node_type() == NodeType::Element {
+                    if self.name() == other.name() {
+                        // Attributes
+                        let mut at_names: Vec<QualifiedName> =
+                            self.attribute_iter().map(|a| a.name()).collect();
+                        if at_names.len() == other.attribute_iter().count() {
+                            at_names.sort();
+                            if at_names.iter().fold(true, |mut acc, qn| {
+                                if acc {
+                                    acc = self.get_attribute(qn) == other.get_attribute(qn);
+                                    acc
+                                } else {
+                                    acc
+                                }
+                            }) {
+                                // Content
+                                self.child_iter().zip(other.child_iter()).fold(
+                                    true,
+                                    |mut acc, (c, d)| {
+                                        if acc {
+                                            acc = Node::eq(&c, &d);
+                                            acc
+                                        } else {
+                                            acc
+                                        }
+                                    },
+                                )
+                                // TODO: use a method that terminates early on non-equality
+                            } else {
+                                false
+                            }
+                        } else {
+                            false
+                        }
+                    } else {
+                        false
+                    }
+                } else {
+                    false
+                }
+            }
+            NodeType::Text => {
+                if other.node_type() == NodeType::Text {
+                    self.value() == other.value()
+                } else {
+                    false
+                }
+            }
+            NodeType::ProcessingInstruction => {
+                if other.node_type() == NodeType::ProcessingInstruction {
+                    self.name() == other.name() && self.value() == other.value()
+                } else {
+                    false
+                }
+            }
+            _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
+        }
+    }
 }

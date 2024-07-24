@@ -11,6 +11,7 @@ mod pedecl;
 pub(crate) mod pereference;
 mod textdecl;
 
+use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::map::map;
@@ -25,9 +26,10 @@ use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::textdecl::textdecl;
 use crate::parser::xml::qname::name;
 use crate::parser::xml::reference::reference;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn doctypedecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple8(
         tag("<!DOCTYPE"),
         whitespace1(),
@@ -58,11 +60,11 @@ pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             for (k, (v, _)) in state1.clone().dtd.generalentities {
                 if v != *"<" {
                     /* A single < on its own will generate an error if used, but doesn't actually generate a not well formed error! */
-                    if let Err(ParseError::NotWellFormed) = reference()((
+                    if let Err(ParseError::NotWellFormed(v)) = reference()((
                         ["&".to_string(), k, ";".to_string()].join("").as_str(),
                         state1.clone(),
                     )) {
-                        return Err(ParseError::NotWellFormed);
+                        return Err(ParseError::NotWellFormed(v));
                     }
                 }
             }
@@ -72,7 +74,7 @@ pub(crate) fn doctypedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
     }
 }
 
-fn externalid() -> impl Fn(ParseInput) -> ParseResult<()> {
+fn externalid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         match alt2(
             map(
@@ -127,7 +129,8 @@ fn externalid() -> impl Fn(ParseInput) -> ParseResult<()> {
     }
 }
 
-fn textexternalid() -> impl Fn(ParseInput) -> ParseResult<String> {
+fn textexternalid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+{
     move |(input, state)| {
         match alt2(
             map(

@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="foo">
+ <data type="string" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+   <param name="minLength">2</param>
+ </data>
+</element>

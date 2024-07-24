@@ -5,7 +5,7 @@ use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, NodeMatch, Transform};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
-use std::rc::Rc;
+use url::Url;
 
 /// The root node of the context item.
 pub(crate) fn root<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -17,13 +17,13 @@ pub(crate) fn root<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
     } else {
         // TODO: check all context items.
         // If any of them is not a Node then error.
-        match &*ctxt.cur[0] {
+        match &ctxt.cur[0] {
             Item::Node(n) => match n.node_type() {
-                NodeType::Document => Ok(vec![Rc::new(Item::Node(n.clone()))]),
+                NodeType::Document => Ok(vec![Item::Node(n.clone())]),
                 _ => n
                     .ancestor_iter()
                     .last()
-                    .map_or(Ok(vec![]), |m| Ok(vec![Rc::new(Item::Node(m))])),
+                    .map_or(Ok(vec![]), |m| Ok(vec![Item::Node(m)])),
             },
             _ => Err(Error::new(
                 ErrorKind::ContextNotNode,
@@ -46,23 +46,61 @@ pub(crate) fn context<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> 
 
 /// Each transform in the supplied vector is evaluated.
 /// The sequence returned by a transform is used as the context for the next transform.
-pub(crate) fn compose<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+/// See also XSLT 20.4.1 for how the current item is set.
+pub(crate) fn compose<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
-    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
-        ContextBuilder::from(ctxt)
-            .current(seq)
-            .build()
-            .dispatch(stctxt, t)
-    })
+    let mut context = ctxt.cur.clone();
+    let mut current;
+    if ctxt.previous_context.is_none() {
+        if ctxt.cur.is_empty() {
+            current = None
+        } else {
+            current = Some(context[ctxt.i].clone())
+        }
+    } else {
+        current = ctxt.previous_context.clone()
+    }
+    let mut it = steps.iter();
+    loop {
+        if let Some(t) = it.next() {
+            // previous context is the last step's context.
+            // If the initial previous context is None, then the current context is also the previous context (XSLT 20.4.1)
+            let new = ContextBuilder::from(ctxt)
+                .context(context.clone())
+                .previous_context(current)
+                .build()
+                .dispatch(stctxt, t)?;
+            if context.len() > ctxt.i {
+                current = Some(context[ctxt.i].clone());
+            } else {
+                current = None
+            }
+            context = new;
+        } else {
+            break;
+        }
+    }
+    Ok(context)
+    //    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
+    //        ContextBuilder::from(ctxt)
+    //            .current(seq)
+    //            .build()
+    //            .dispatch(stctxt, t)
+    //    })
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
 pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequence<N>, Error> {
     match ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
-        match &**i {
+        match i {
             Item::Node(n) => {
                 match nm.axis {
                     Axis::SelfAxis => {
@@ -85,7 +123,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                         let mut s = n.child_iter().filter(|c| nm.matches(c)).fold(
                             Sequence::new(),
                             |mut c, a| {
-                                c.push_node(a.clone());
+                                c.push_node(&a);
                                 c
                             },
                         );
@@ -94,7 +132,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                     }
                     Axis::Parent => match n.parent() {
                         Some(p) => {
-                            acc.push_node(p.clone());
+                            acc.push_node(&p);
                             Ok(acc)
                         }
                         None => Ok(acc),
@@ -115,7 +153,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                     Axis::Descendant => {
                         n.descend_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
 
                         Ok(acc)
                     }
@@ -125,30 +163,30 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                         }
                         n.descend_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
                         Ok(acc)
                     }
                     Axis::DescendantOrSelfOrRoot => {
-                        acc.push_node(n.owner_document().clone());
+                        acc.push_node(&n.owner_document());
                         if nm.matches(n) {
                             acc.push(i.clone())
                         }
                         n.descend_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
                         Ok(acc)
                     }
                     Axis::Ancestor => {
                         n.ancestor_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
 
                         Ok(acc)
                     }
                     Axis::AncestorOrSelf => {
                         n.ancestor_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
                         if nm.matches(n) {
                             acc.push(i.clone())
                         }
@@ -157,14 +195,14 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                     Axis::FollowingSibling => {
                         n.next_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
 
                         Ok(acc)
                     }
                     Axis::PrecedingSibling => {
                         n.prev_iter()
                             .filter(|c| nm.matches(c))
-                            .for_each(|c| acc.push_node(c.clone()));
+                            .for_each(|c| acc.push_node(&c));
 
                         Ok(acc)
                     }
@@ -188,7 +226,7 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                             })
                         });
                         bcc.iter().filter(|e| nm.matches(*e)).for_each(|g| {
-                            acc.push_node(g.clone());
+                            acc.push_node(g);
                         });
                         Ok(acc)
                     }
@@ -212,19 +250,19 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
                             })
                         });
                         bcc.iter().filter(|e| nm.matches(*e)).for_each(|g| {
-                            acc.push_node(g.clone());
+                            acc.push_node(g);
                         });
                         Ok(acc)
                     }
                     Axis::Attribute => {
                         n.attribute_iter()
                             .filter(|a| nm.matches(a))
-                            .for_each(|a| acc.push_node(a.clone()));
+                            .for_each(|a| acc.push_node(&a));
                         Ok(acc)
                     }
                     Axis::SelfAttribute => {
                         if n.node_type() == NodeType::Attribute {
-                            acc.push_node(n.clone())
+                            acc.push_node(n)
                         }
                         Ok(acc)
                     }
@@ -255,28 +293,34 @@ pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequenc
     }
 }
 
-fn get_node_unchecked<N: Node>(i: &Rc<Item<N>>) -> &N {
-    match &**i {
+fn get_node_unchecked<N: Node>(i: &Item<N>) -> &N {
+    match i {
         Item::Node(n) => n,
         _ => panic!("not a node"),
     }
 }
-fn get_node<N: Node>(i: &Rc<Item<N>>) -> Result<&N, Error> {
-    match &**i {
+fn get_node<N: Node>(i: &Item<N>) -> Result<&N, Error> {
+    match i {
         Item::Node(n) => Ok(n),
         _ => Err(Error::new(ErrorKind::Unknown, String::from("not a node"))),
     }
 }
 
 /// Remove items that don't match the predicate.
-pub(crate) fn filter<N: Node, F: FnMut(&str) -> Result<(), Error>>(
+pub(crate) fn filter<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<F>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
         if ContextBuilder::from(ctxt)
-            .current(vec![i.clone()])
+            .context(vec![i.clone()])
+            .previous_context(ctxt.previous_context.clone())
             .build()
             .dispatch(stctxt, predicate)?
             .to_bool()

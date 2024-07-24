@@ -1,6 +1,8 @@
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::item::Node;
+use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn take_one() -> impl Fn(ParseInput) -> ParseResult<char> {
+pub(crate) fn take_one<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, char), ParseError> {
     move |(input, state)| {
         let c = input.chars().next();
         match c {
@@ -10,17 +12,19 @@ pub(crate) fn take_one() -> impl Fn(ParseInput) -> ParseResult<char> {
     }
 }
 
-pub(crate) fn take_until(s: &'static str) -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn take_until<N: Node>(
+    s: &'static str,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| match input.find(s) {
         None => Err(ParseError::Combinator),
         Some(ind) => Ok(((&input[ind..], state), input[0..ind].to_string())),
     }
 }
 
-pub(crate) fn take_until_either_or(
+pub(crate) fn take_until_either_or<N: Node>(
     s1: &'static str,
     s2: &'static str,
-) -> impl Fn(ParseInput) -> ParseResult<String> {
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let r1 = input.find(s1);
         let r2 = input.find(s2);
@@ -36,10 +40,10 @@ pub(crate) fn take_until_either_or(
     }
 }
 
-pub(crate) fn take_until_either_or_min1(
+pub(crate) fn take_until_either_or_min1<N: Node>(
     s1: &'static str,
     s2: &'static str,
-) -> impl Fn(ParseInput) -> ParseResult<String> {
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let r1 = input.find(s1);
         let r2 = input.find(s2);
@@ -73,7 +77,8 @@ pub(crate) fn take_until_either_or_min1(
     }
 }
 
-pub(crate) fn take_until_end() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn take_until_end<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| Ok((("", state), input.to_string()))
 }
 
@@ -81,7 +86,9 @@ pub(crate) fn take_until_end() -> impl Fn(ParseInput) -> ParseResult<String> {
 /// If there is no character that fails the condition,
 /// then if the input is empty returns ParseError::Combinator (i.e. no match),
 /// otherwise returns the input.
-pub(crate) fn take_while<F>(condition: F) -> impl Fn(ParseInput) -> ParseResult<String>
+pub(crate) fn take_while<F, N: Node>(
+    condition: F,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
 //TODO REPLACE WITH ORDINARY TAKE_WHILE
 where
     F: Fn(char) -> bool,
@@ -104,11 +111,11 @@ where
 /// then if the input is empty returns ParseError::Combinator (i.e. no match),
 /// otherwise returns the input.
 #[allow(dead_code)]
-pub(crate) fn take_while_m_n<F>(
+pub(crate) fn take_while_m_n<F, N: Node>(
     min: usize,
     max: usize,
     condition: F,
-) -> impl Fn(ParseInput) -> ParseResult<String>
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
 where
     F: Fn(char) -> bool,
 {
@@ -140,11 +147,12 @@ mod tests {
         take_until, take_until_either_or, take_while, take_while_m_n,
     };
     use crate::parser::{ParseError, ParserState};
+    use crate::trees::nullo::Nullo;
 
     #[test]
     fn parser_take_until_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until(">");
         assert_eq!(
             Ok(((">", ParserState::new(None, None)), "<doc".to_string())),
@@ -154,7 +162,7 @@ mod tests {
     #[test]
     fn parser_take_until_test2() {
         let testdoc = "<document";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until(">");
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)));
     }
@@ -162,7 +170,7 @@ mod tests {
     #[test]
     fn parser_take_until_test3() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until("oc");
         assert_eq!(
             Ok((("oc>", ParserState::new(None, None)), "<d".to_string())),
@@ -173,7 +181,7 @@ mod tests {
     #[test]
     fn parser_take_until_test4() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until("doc");
         assert_eq!(
             Ok((("doc>", ParserState::new(None, None)), "<".to_string())),
@@ -184,7 +192,7 @@ mod tests {
     #[test]
     fn parser_take_while_test1() {
         let testdoc = "AAAAABCCCCC";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_while(|c| c != 'B');
         assert_eq!(
             Ok((
@@ -198,7 +206,7 @@ mod tests {
     #[test]
     fn parser_take_while_test2() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_while(|c| c != 'B' && c != 'C');
         assert_eq!(
             Ok((("BCDEFGH", ParserState::new(None, None)), "A".to_string())),
@@ -209,7 +217,7 @@ mod tests {
     #[test]
     fn parser_take_while_test3() {
         let testdoc = "v1\"></doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_while(|c| c != '&' && c != '"');
         assert_eq!(
             Ok((
@@ -223,7 +231,7 @@ mod tests {
     #[test]
     fn parser_take_until_either_or1() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until_either_or("DE", "FG");
         assert_eq!(
             Ok((("DEFGH", ParserState::new(None, None)), "ABC".to_string())),
@@ -234,7 +242,7 @@ mod tests {
     #[test]
     fn parser_take_until_either_or2() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until_either_or("AA", "BB");
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)));
     }
@@ -242,7 +250,7 @@ mod tests {
     #[test]
     fn parser_take_until_either_or3() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until_either_or("EF", "FF");
         assert_eq!(
             Ok((("EFGH", ParserState::new(None, None)), "ABCD".to_string())),
@@ -253,7 +261,7 @@ mod tests {
     #[test]
     fn parser_take_until_either_or4() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until_either_or("ABD", "GH");
         assert_eq!(
             Ok((("GH", ParserState::new(None, None)), "ABCDEF".to_string())),
@@ -264,7 +272,7 @@ mod tests {
     #[test]
     fn parser_take_until_either_or5() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_until_either_or("BC", "BC");
         assert_eq!(
             Ok((("BCDEFGH", ParserState::new(None, None)), "A".to_string())),
@@ -275,7 +283,7 @@ mod tests {
     #[test]
     fn parser_take_while_m_n_1() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_while_m_n(2, 4, |c| c.is_uppercase());
         assert_eq!(
             Ok((("EFGH", ParserState::new(None, None)), "ABCD".to_string())),
@@ -285,7 +293,7 @@ mod tests {
     #[test]
     fn parser_take_while_m_n_2() {
         let testdoc = "ABCDEFGH";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = take_while_m_n(2, 4, |c| c.is_lowercase());
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)));
     }

@@ -1,7 +1,7 @@
 //! Functions that produces nodes, or sets of nodes.
 
 use crate::item::Node;
-use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
+use crate::parser::combinators::alt::{alt2, alt4, alt5};
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -10,16 +10,17 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::whitespace::xpwhitespace;
-use crate::parser::{ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::expressions::postfix_expr;
 use crate::parser::xpath::nodetests::nodetest;
+use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::types::instanceof_expr;
-use crate::transform::{Axis, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
+use crate::transform::{Axis, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
 pub(crate) fn union_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         separated_list1(
             map(
@@ -40,7 +41,7 @@ pub(crate) fn union_expr<'a, N: Node + 'a>(
 
 // IntersectExceptExpr ::= InstanceOfExpr ( ('intersect' | 'except') InstanceOfExpr)*
 fn intersectexcept_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             instanceof_expr::<N>(),
@@ -64,17 +65,25 @@ fn intersectexcept_expr<'a, N: Node + 'a>(
 }
 
 pub(crate) fn path_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
-    Box::new(alt3(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+    Box::new(alt4(
+        abbreviated_parent(),
         absolutedescendant_expr::<N>(),
         absolutepath_expr::<N>(),
         relativepath_expr::<N>(),
     ))
 }
 
+fn abbreviated_parent<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+    Box::new(map(tag(".."), |_| {
+        Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))
+    }))
+}
+
 // ('//' RelativePathExpr?)
 fn absolutedescendant_expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(pair(tag("//"), relativepath_expr::<N>()), |(_, r)| {
         Transform::Compose(vec![
             Transform::Step(NodeMatch {
@@ -91,8 +100,8 @@ fn absolutedescendant_expr<'a, N: Node + 'a>(
 }
 
 // ('/' RelativePathExpr?)
-fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+fn absolutepath_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(tag("/"), opt(relativepath_expr::<N>())),
         |(_, r)| match r {
@@ -103,8 +112,8 @@ fn absolutepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
 }
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
-fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a>
-{
+fn relativepath_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
         pair(
             step_expr::<N>(),
@@ -146,51 +155,77 @@ fn relativepath_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResul
     ))
 }
 
-fn step_expr<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+// StepExpr ::= PostfixExpr | AxisStep
+fn step_expr<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt2(postfix_expr::<N>(), axisstep::<N>()))
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
-fn axisstep<'a, N: Node + 'a>() -> Box<dyn Fn(ParseInput) -> ParseResult<Transform<N>> + 'a> {
+fn axisstep<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(map(
-        pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
-        |(a, n)| {
-            Transform::Step(NodeMatch {
-                axis: Axis::from(a),
-                nodetest: n,
-            })
+        pair(
+            alt2(
+                pair(alt2(forwardaxis(), reverseaxis()), nodetest()),
+                pair(abbreviated_axisstep(), nodetest()),
+            ),
+            predicate_list(),
+        ),
+        |((a, n), pl)| {
+            Transform::Compose(vec![
+                Transform::Step(NodeMatch {
+                    axis: Axis::from(a),
+                    nodetest: n,
+                }),
+                pl,
+            ])
         },
     ))
 }
 
+fn abbreviated_axisstep<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {
+    Box::new(no_input("child"))
+}
+pub fn no_input<'a, A: Clone + 'a, N: Node>(
+    val: A,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a {
+    move |input| Ok((input, val.clone()))
+}
 // ForwardAxis ::= ('child' | 'descendant' | 'attribute' | 'self' | 'descendant-or-self' | 'following-sibling' | 'following' | 'namespace') '::'
-fn forwardaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
-    Box::new(map(
+fn forwardaxis<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {
+    Box::new(alt2(
         //    alt8(
-        pair(
-            // need alt8
-            alt2(
-                alt4(
-                    map(tag("child"), |_| "child"),
-                    map(tag("descendant"), |_| "descendant"),
-                    map(tag("descendant-or-self"), |_| "descendant-or-self"),
-                    map(tag("attribute"), |_| "attribute"),
+        map(
+            pair(
+                // need alt8
+                alt2(
+                    alt4(
+                        map(tag("child"), |_| "child"),
+                        map(tag("descendant"), |_| "descendant"),
+                        map(tag("descendant-or-self"), |_| "descendant-or-self"),
+                        map(tag("attribute"), |_| "attribute"),
+                    ),
+                    alt4(
+                        map(tag("self"), |_| "self"),
+                        map(tag("following"), |_| "following"),
+                        map(tag("following-sibling"), |_| "following-sibling"),
+                        map(tag("namespace"), |_| "namespace"),
+                    ),
                 ),
-                alt4(
-                    map(tag("self"), |_| "self"),
-                    map(tag("following"), |_| "following"),
-                    map(tag("following-sibling"), |_| "following-sibling"),
-                    map(tag("namespace"), |_| "namespace"),
-                ),
+                tag("::"),
             ),
-            tag("::"),
+            |(a, _)| a,
         ),
-        |(a, _)| a,
+        map(tag("@"), |_| "attribute"),
     ))
 }
 
 // ReverseAxis ::= ('parent' | 'ancestor' | 'ancestor-or-self' | 'preceding-sibling' | 'preceding' ) '::'
-fn reverseaxis() -> Box<dyn Fn(ParseInput) -> ParseResult<&'static str>> {
+fn reverseaxis<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {
     Box::new(map(
         //    alt8(
         pair(

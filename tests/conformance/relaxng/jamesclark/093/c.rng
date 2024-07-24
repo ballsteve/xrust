@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rng:grammar xmlns:rng="http://relaxng.org/ns/structure/1.0">
+  <comment/>
+  <comment/>
+  <rng:start>
+    <comment/>
+    <rng:element>
+      <comment/>
+      <comment/>
+      <rng:name>foo</rng:name>
+      <comment/>
+      <rng:data type="string"/>
+      <comment/>
+    </rng:element>
+    <comment/>
+  </rng:start>
+  <comment/>
+</rng:grammar>

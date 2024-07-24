@@ -1,3 +1,4 @@
+use crate::item::Node;
 use crate::parser::combinators::alt::{alt3, alt4};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -13,9 +14,10 @@ use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::dtd::textexternalid;
 use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+{
     move |input| match wellformed_ver(
         tuple7(
             tag("<!ENTITY"),
@@ -40,7 +42,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
             deal with later, after that we just store the entity as a string and parse again when called.
              */
             if !state2.currentlyexternal && s.contains('%') {
-                return Err(ParseError::NotWellFormed);
+                return Err(ParseError::NotWellFormed(s));
             }
 
             let entityparse = map(
@@ -70,7 +72,7 @@ pub(crate) fn gedecl() -> impl Fn(ParseInput) -> ParseResult<()> {
                     if !state2.currentlyexternal {
                         match intsubset()((res.as_str(), state2.clone())) {
                             Ok(_) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed),
+                            Err(_) => return Err(ParseError::NotWellFormed(res)),
                         }
                     };
 

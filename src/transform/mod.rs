@@ -8,66 +8,77 @@ The following transformation implements the expression "1 + 1". The result is (h
 
 ```rust
 # use std::rc::Rc;
-# use xrust::xdmerror::Error;
-# use xrust::trees::intmuttree::RNode;
+# use xrust::xdmerror::{Error, ErrorKind};
+# use xrust::trees::smite::{RNode, Node as SmiteNode};
 use xrust::value::Value;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::transform::{Transform, ArithmeticOperand, ArithmeticOperator};
-use xrust::transform::context::{Context, StaticContext};
-# type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
+use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
 
 let xform = Transform::Arithmetic(vec![
         ArithmeticOperand::new(
             ArithmeticOperator::Noop,
-            Transform::Literal(Rc::new(Item::<RNode>::Value(Value::from(1))))
+            Transform::Literal(Item::<RNode>::Value(Rc::new(Value::from(1))))
         ),
         ArithmeticOperand::new(
             ArithmeticOperator::Add,
-            Transform::Literal(Rc::new(Item::<RNode>::Value(Value::from(1))))
+            Transform::Literal(Item::<RNode>::Value(Rc::new(Value::from(1))))
         )
     ]);
+let mut static_context = StaticContextBuilder::new()
+    .message(|_| Ok(()))
+    .fetcher(|_| Ok(String::new()))
+    .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+    .build();
 let sequence = Context::new()
-    .dispatch(&mut StaticContext::<F>::new(), &xform)
+    .dispatch(&mut static_context, &xform)
     .expect("evaluation failed");
 assert_eq!(sequence.to_string(), "2")
 ```
 */
 
 pub(crate) mod booleans;
+pub mod callable;
 pub(crate) mod construct;
 pub mod context;
 pub(crate) mod controlflow;
 pub(crate) mod datetime;
 pub(crate) mod functions;
 pub(crate) mod grouping;
+mod keys;
 pub(crate) mod logic;
 pub(crate) mod misc;
 pub(crate) mod navigate;
-pub(crate) mod numbers;
+pub mod numbers;
 pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
 
 #[allow(unused_imports)]
 use crate::item::Sequence;
-use crate::item::{Item, Node, NodeType};
+use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
+use crate::transform::callable::ActualParameters;
+use crate::transform::context::{Context, ContextBuilder, StaticContext};
+use crate::transform::numbers::Numbering;
 use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use std::convert::TryFrom;
 use std::fmt;
-use std::fmt::Formatter;
-use std::rc::Rc;
+use std::fmt::{Debug, Formatter};
+use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub enum Transform<N: Node> {
     /// Produces the root node of the tree containing the context item.
     Root,
     /// Produces a copy of the context item.
     ContextItem,
+    /// Produces a copy of the current item (see XSLT 20.4.1).
+    CurrentItem,
 
     /// A path in a tree. Each element of the outer vector is a step in the path.
     /// The result of each step becomes the new context for the next step.
@@ -84,11 +95,13 @@ pub enum Transform<N: Node> {
     /// An empty sequence
     Empty,
     /// A literal, atomic value.
-    Literal(Rc<Item<N>>),
+    Literal(Item<N>),
     /// A literal element. Consists of the element name and content.
     LiteralElement(QualifiedName, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
+    /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
+    LiteralText(Box<Transform<N>>, bool),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(QualifiedName, Box<Transform<N>>),
@@ -130,11 +143,20 @@ pub enum Transform<N: Node> {
     /// A branching transformation. Consists of (test, body) clauses and an otherwise clause.
     Switch(Vec<(Transform<N>, Transform<N>)>, Box<Transform<N>>),
 
-    /// Evaluate a transformation for each selected item, with possible grouping.
-    ForEach(Option<Grouping<N>>, Box<Transform<N>>, Box<Transform<N>>),
+    /// Evaluate a transformation for each selected item, with possible grouping and sorting.
+    ForEach(
+        Option<Grouping<N>>,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Vec<(Order, Transform<N>)>,
+    ),
     /// Find a template that matches an item and evaluate its body with the item as the context.
-    /// Consists of the selector for items to be matched.
-    ApplyTemplates(Box<Transform<N>>),
+    /// Consists of the selector for items to be matched, the mode, and sort keys.
+    ApplyTemplates(
+        Box<Transform<N>>,
+        Option<QualifiedName>,
+        Vec<(Order, Transform<N>)>,
+    ),
     /// Find templates at the next import level and evaluate its body.
     ApplyImports,
     NextMatch,
@@ -176,6 +198,7 @@ pub enum Transform<N: Node> {
     SubstringAfter(Box<Transform<N>>, Box<Transform<N>>),
     NormalizeSpace(Option<Box<Transform<N>>>),
     Translate(Box<Transform<N>>, Box<Transform<N>>, Box<Transform<N>>),
+    GenerateId(Option<Box<Transform<N>>>),
     Boolean(Box<Transform<N>>),
     Not(Box<Transform<N>>),
     True,
@@ -209,15 +232,41 @@ pub enum Transform<N: Node> {
         Option<Box<Transform<N>>>,
         Option<Box<Transform<N>>>,
     ),
+    FormatNumber(
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
+    ),
+    /// Convert a number to a string.
+    /// This is one half of the functionality of xsl:number, as well as format-integer().
+    /// See XSLT 12.4.
+    /// First argument is the integer to be formatted.
+    /// Second argument is the format specification.
+    FormatInteger(Box<Transform<N>>, Box<Transform<N>>),
+    /// Generate a sequence of integers. This is one half of the functionality of xsl:number.
+    /// First argument is the start-at specification.
+    /// Second argument is the select expression.
+    /// Third argument is the level.
+    /// Fourth argument is the count pattern.
+    /// Fifth argument is the from pattern.
+    GenerateIntegers(Box<Transform<N>>, Box<Transform<N>>, Box<Numbering<N>>),
     CurrentGroup,
     CurrentGroupingKey,
-    /// A user-defined callable. Consists of a name, an argument list, and a body.
-    /// TODO: merge with Call?
-    UserDefined(
-        QualifiedName,
-        Vec<(String, Transform<N>)>,
+    /// Look up a key. The first argument is the key name, the second argument is the key value,
+    /// the third argument is the top of the tree for the resulting nodes.
+    Key(
         Box<Transform<N>>,
+        Box<Transform<N>>,
+        Option<Box<Transform<N>>>,
     ),
+    /// Get information about the processor
+    SystemProperty(Box<Transform<N>>),
+    AvailableSystemProperties,
+    /// Read an external document
+    Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
+
+    /// Invoke a callable component. Consists of a name, an actual argument list.
+    Invoke(QualifiedName, ActualParameters<N>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -235,19 +284,28 @@ pub enum Transform<N: Node> {
     Error(ErrorKind, String),
 }
 
-impl<N: Node> fmt::Display for Transform<N> {
+impl<N: Node> Debug for Transform<N> {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         match self {
             Transform::Root => write!(f, "root node"),
             Transform::ContextItem => write!(f, "context item"),
+            Transform::CurrentItem => write!(f, "current item"),
             Transform::SequenceItems(v) => write!(f, "Sequence of {} items", v.len()),
-            Transform::Compose(v) => write!(f, "Compose {} steps", v.len()),
+            Transform::Compose(v) => {
+                write!(f, "Compose {} steps [", v.len()).expect("unable to format step");
+                v.iter().for_each(|s| {
+                    s.fmt(f).expect("unable to format step");
+                    write!(f, "; ").expect("unable to format step")
+                });
+                write!(f, "]")
+            }
             Transform::Step(nm) => write!(f, "Step matching {}", nm),
             Transform::Filter(_) => write!(f, "Filter"),
             Transform::Empty => write!(f, "Empty"),
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
             Transform::Element(_, _) => write!(f, "constructed element"),
+            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {})", b),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::LiteralProcessingInstruction(_, _) => {
@@ -256,10 +314,10 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Copy(_, _) => write!(f, "shallow copy"),
             Transform::DeepCopy(_) => write!(f, "deep copy"),
             Transform::GeneralComparison(o, v, u) => {
-                write!(f, "general comparison {} of {} and {}", o, v, u)
+                write!(f, "general comparison {} of {:?} and {:?}", o, v, u)
             }
             Transform::ValueComparison(o, v, u) => {
-                write!(f, "value comparison {} of {} and {}", o, v, u)
+                write!(f, "value comparison {} of {:?} and {:?}", o, v, u)
             }
             Transform::Concat(o) => write!(f, "Concatenate {} operands", o.len()),
             Transform::Range(_, _) => write!(f, "range"),
@@ -268,9 +326,11 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Or(o) => write!(f, "OR {} operands", o.len()),
             Transform::Loop(_, _) => write!(f, "loop"),
             Transform::Switch(c, _) => write!(f, "switch {} clauses", c.len()),
-            Transform::ForEach(_g, _, _) => write!(f, "for-each"),
+            Transform::ForEach(_g, _, _, o) => write!(f, "for-each ({} sort keys)", o.len()),
             Transform::Union(v) => write!(f, "union of {} operands", v.len()),
-            Transform::ApplyTemplates(_) => write!(f, "Apply templates"),
+            Transform::ApplyTemplates(_, m, o) => {
+                write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
+            }
             Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),
@@ -282,40 +342,89 @@ impl<N: Node> fmt::Display for Transform<N> {
             Transform::Count(_s) => write!(f, "count()"),
             Transform::Name(_n) => write!(f, "name()"),
             Transform::LocalName(_n) => write!(f, "local-name()"),
-            Transform::String(s) => write!(f, "string({})", s),
-            Transform::StartsWith(s, t) => write!(f, "starts-with({}, {})", s, t),
-            Transform::EndsWith(s, t) => write!(f, "ends-with({}, {})", s, t),
-            Transform::Contains(s, t) => write!(f, "contains({}, {})", s, t),
-            Transform::Substring(s, t, _l) => write!(f, "substring({}, {}, ...)", s, t),
-            Transform::SubstringBefore(s, t) => write!(f, "substring-before({}, {})", s, t),
-            Transform::SubstringAfter(s, t) => write!(f, "substring-after({}, {})", s, t),
+            Transform::String(s) => write!(f, "string({:?})", s),
+            Transform::StartsWith(s, t) => write!(f, "starts-with({:?}, {:?})", s, t),
+            Transform::EndsWith(s, t) => write!(f, "ends-with({:?}, {:?})", s, t),
+            Transform::Contains(s, t) => write!(f, "contains({:?}, {:?})", s, t),
+            Transform::Substring(s, t, _l) => write!(f, "substring({:?}, {:?}, ...)", s, t),
+            Transform::SubstringBefore(s, t) => write!(f, "substring-before({:?}, {:?})", s, t),
+            Transform::SubstringAfter(s, t) => write!(f, "substring-after({:?}, {:?})", s, t),
             Transform::NormalizeSpace(_s) => write!(f, "normalize-space()"),
-            Transform::Translate(s, t, u) => write!(f, "translate({}, {}, {})", s, t, u),
-            Transform::Boolean(b) => write!(f, "boolean({})", b),
-            Transform::Not(b) => write!(f, "not({})", b),
+            Transform::Translate(s, t, u) => write!(f, "translate({:?}, {:?}, {:?})", s, t, u),
+            Transform::GenerateId(_) => write!(f, "generate-id()"),
+            Transform::Boolean(b) => write!(f, "boolean({:?})", b),
+            Transform::Not(b) => write!(f, "not({:?})", b),
             Transform::True => write!(f, "true"),
             Transform::False => write!(f, "false"),
-            Transform::Number(n) => write!(f, "number({})", n),
-            Transform::Sum(n) => write!(f, "sum({})", n),
-            Transform::Floor(n) => write!(f, "floor({})", n),
-            Transform::Ceiling(n) => write!(f, "ceiling({})", n),
-            Transform::Round(n, _p) => write!(f, "round({},...)", n),
+            Transform::Number(n) => write!(f, "number({:?})", n),
+            Transform::Sum(n) => write!(f, "sum({:?})", n),
+            Transform::Floor(n) => write!(f, "floor({:?})", n),
+            Transform::Ceiling(n) => write!(f, "ceiling({:?})", n),
+            Transform::Round(n, _p) => write!(f, "round({:?},...)", n),
             Transform::CurrentDateTime => write!(f, "current-date-time"),
             Transform::CurrentDate => write!(f, "current-date"),
             Transform::CurrentTime => write!(f, "current-time"),
             Transform::FormatDateTime(p, q, _, _, _) => {
-                write!(f, "format-date-time({}, {}, ...)", p, q)
+                write!(f, "format-date-time({:?}, {:?}, ...)", p, q)
             }
-            Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({}, {}, ...)", p, q),
-            Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({}, {}, ...)", p, q),
+            Transform::FormatDate(p, q, _, _, _) => write!(f, "format-date({:?}, {:?}, ...)", p, q),
+            Transform::FormatTime(p, q, _, _, _) => write!(f, "format-time({:?}, {:?}, ...)", p, q),
+            Transform::FormatNumber(v, p, _) => write!(f, "format-number({:?}, {:?})", v, p),
+            Transform::FormatInteger(i, s) => write!(f, "format-integer({:?}, {:?})", i, s),
+            Transform::GenerateIntegers(_start_at, _select, _n) => write!(f, "generate-integers"),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
-            Transform::UserDefined(qn, _a, _b) => write!(f, "user-defined \"{}\"", qn),
+            Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
+            Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
+            Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
+            Transform::Document(uris, _) => write!(f, "document({:?})", uris),
+            Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
     }
+}
+
+/// The sort order
+#[derive(Clone, PartialEq, Debug)]
+pub enum Order {
+    Ascending,
+    Descending,
+}
+
+/// Performing sorting of a [Sequence] using the given sort keys.
+pub(crate) fn do_sort<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    seq: &mut Sequence<N>,
+    o: &Vec<(Order, Transform<N>)>,
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+) -> Result<(), Error> {
+    // Optionally sort the select sequence
+    // TODO: multiple sort keys
+    if !o.is_empty() {
+        seq.sort_by_cached_key(|k| {
+            // TODO: Don't panic
+            let key_seq = ContextBuilder::from(ctxt)
+                .context(vec![k.clone()])
+                .build()
+                .dispatch(stctxt, &o[0].1)
+                .expect("unable to determine key value");
+            // Assume string data type for now
+            // TODO: support number data type
+            // TODO: support all data types
+            key_seq.to_string()
+        });
+        if o[0].0 == Order::Descending {
+            seq.reverse();
+        }
+    }
+    Ok(())
 }
 
 /// Determine how a collection is to be divided into groups.
@@ -356,8 +465,8 @@ impl NodeMatch {
     pub fn new(axis: Axis, nodetest: NodeTest) -> Self {
         NodeMatch { axis, nodetest }
     }
-    pub fn matches_item<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches_item<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(n) => self.matches(n),
             _ => false,
         }
@@ -386,10 +495,8 @@ impl NodeMatch {
                     KindTest::PI => matches!(n.node_type(), NodeType::ProcessingInstruction),
                     KindTest::Comment => matches!(n.node_type(), NodeType::Comment),
                     KindTest::Text => matches!(n.node_type(), NodeType::Text),
-                    KindTest::Any => match n.node_type() {
-                        NodeType::Document => false,
-                        _ => true,
-                    },
+                    //Note: This one is matching not NodeType::Document
+                    KindTest::Any => !matches!(n.node_type(), NodeType::Document),
                     KindTest::Attribute
                     | KindTest::SchemaElement
                     | KindTest::SchemaAttribute
@@ -413,8 +520,8 @@ pub enum NodeTest {
 }
 
 impl NodeTest {
-    pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(_) => match self {
                 NodeTest::Kind(k) => k.matches(i),
                 NodeTest::Name(nm) => nm.matches(i),
@@ -527,8 +634,8 @@ impl fmt::Display for KindTest {
 
 impl KindTest {
     /// Does an item match the Kind Test?
-    pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(n) => {
                 match (self, n.node_type()) {
                     (KindTest::Document, NodeType::Document) => true,
@@ -585,8 +692,8 @@ impl NameTest {
     }
     /// Does an Item match this name test? To match, the item must be a node, have a name,
     /// have the namespace URI and local name be equal or a wildcard
-    pub fn matches<N: Node>(&self, i: &Rc<Item<N>>) -> bool {
-        match &**i {
+    pub fn matches<N: Node>(&self, i: &Item<N>) -> bool {
+        match i {
             Item::Node(n) => {
                 match n.node_type() {
                     NodeType::Element | NodeType::ProcessingInstruction | NodeType::Attribute => {

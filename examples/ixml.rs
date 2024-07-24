@@ -14,15 +14,15 @@ use std::path::Path;
 use std::rc::Rc;
 use url::Url;
 
-use xrust::item::{Item, Node, NodeType, SequenceTrait};
+use xrust::item::{Item, Node, SequenceTrait};
+use xrust::parser::xml::parse;
 use xrust::qname::QualifiedName;
-use xrust::transform::context::StaticContext;
-use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
+use xrust::transform::context::StaticContextBuilder;
+use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
-//use earleybird::grammar::Grammar;
 use earleybird::ixml_grammar::{ixml_grammar, ixml_tree_to_grammar};
 use earleybird::parser::{Content, Parser};
 use indextree::{Arena, NodeId};
@@ -30,7 +30,7 @@ use indextree::{Arena, NodeId};
 // A quick-and-dirty converter from an indextree to an Xrust intmuttree RNode.
 // A better solution will be to define a trait in IXML that is used to build the tree directly.
 fn to_rnode(arena: &Arena<Content>) -> RNode {
-    let t = NodeBuilder::new(NodeType::Document).build();
+    let t = Rc::new(SmiteNode::new());
     let root = arena.iter().next().unwrap();
     let root_id = arena.get_node_id(root).unwrap();
     for child in root_id.children(arena) {
@@ -61,7 +61,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                         let new_attr = t
                             .new_attribute(
                                 QualifiedName::new(None, None, attr_name.clone()),
-                                Value::from(attr_value.clone()),
+                                Rc::new(Value::from(attr_value.clone())),
                             )
                             .expect("unable to create attribute node");
                         t.add_attribute(new_attr).expect("unable to append node");
@@ -75,24 +75,20 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                 let new = t
                     .new_attribute(
                         QualifiedName::new(None, None, name.clone()),
-                        Value::from(value.clone()),
+                        Rc::new(Value::from(value.clone())),
                     )
                     .expect("unable to create attribute node");
                 t.add_attribute(new).expect("unable to append node");
             }
             Content::Text(value) => {
                 let new = t
-                    .new_text(Value::from(value.clone()))
+                    .new_text(Rc::new(Value::from(value.clone())))
                     .expect("unable to create text node");
                 t.push(new).expect("unable to append node");
             }
         }
     }
 }
-
-// This type is for the callback in the static context.
-// We're not using a callback in this example, so make the type as simple as possible.
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -119,12 +115,8 @@ fn main() {
         Ok(_) => {}
     };
 
-    let mut style = NodeBuilder::new(NodeType::Document).build();
-    let style_doc =
-        Document::try_from((stylexml.trim(), None, None)).expect("failed to parse XSL stylesheet");
-    style
-        .push(style_doc.content[0].clone())
-        .expect("unable to append style nodes");
+    let style = Rc::new(SmiteNode::new());
+    parse(style.clone(), stylexml.trim(), None).expect("failed to parse XSL stylesheet");
 
     // Read the Markdown text file
     let srcpath = Path::new(&args[2]);
@@ -185,7 +177,6 @@ eol = "X".
         .expect("unable to parse input");
     // Translate the temporary tree into an Xrust RNode
     let md = to_rnode(&md_arena);
-    eprintln!("Input parsed to: {}", md.to_xml());
 
     // Now compile the XSL Stylesheet
     let pwd = std::env::current_dir().expect("unable to get current directory");
@@ -195,6 +186,7 @@ eol = "X".
         .expect("unable to convert pwd");
     let mut ctxt = from_document(
         style,
+        vec![],
         Some(
             Url::parse(format!("file://{}/{}", pwds, &args[1]).as_str())
                 .expect("unable to parse stylesheet URL"),
@@ -215,13 +207,21 @@ eol = "X".
     .expect("failed to compile XSL stylesheet");
 
     // Set the Markdown RNode document as the context
-    ctxt.context(vec![Rc::new(Item::Node(md))], 0);
+    ctxt.context(vec![Item::Node(md)], 0);
     // Create a document for the result tree
-    ctxt.result_document(NodeBuilder::new(NodeType::Document).build());
+    ctxt.result_document(Rc::new(SmiteNode::new()));
+
+    // Create a static transformation contact
+    // with dummy callbacks
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
 
     // Let 'er rip!
     let resultdoc = ctxt
-        .evaluate(&mut StaticContext::<F>::new())
+        .evaluate(&mut stctxt)
         .expect("failed to evaluate stylesheet");
 
     // Serialise the result document as XML

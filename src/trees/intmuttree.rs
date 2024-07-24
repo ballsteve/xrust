@@ -1,14 +1,15 @@
 /*! # A tree structure for XDM
 
-This module implements the Item module's [Node] trait.
+This module implements the Item module's [Node](crate::item::Node) trait.
 
 This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
-To create a tree, use [NodeBuilder] to make a Document-type node. To add a node, first create it using [NodeBuilder], then use a trait method to attach it to the tree.
+To create a tree, use [NodeBuilder](crate::trees::intmuttree::NodeBuilder) to make a Document-type node. To add a node, first create it using [NodeBuilder](crate::trees::intmuttree::NodeBuilder), then use a trait method to attach it to the tree.
 
-NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
+NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode](crate::trees::intmuttree::RNode).
 
 ```rust
+use std::rc::Rc;
 use xrust::trees::intmuttree::{Document, NodeBuilder, RNode};
 use xrust::item::{Node, NodeType};
 use xrust::qname::QualifiedName;
@@ -30,17 +31,18 @@ doc.push(top.clone())
 
 top.push(
     NodeBuilder::new(NodeType::Text)
-    .value(Value::from("content of the element"))
+    .value(Rc::new(Value::from("content of the element")))
     .build()
 ).expect("unable to append child node");
 
 assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 */
 
+use crate::externals::URLResolver;
 use crate::item::{Node as ItemNode, NodeType};
 use crate::output::OutputDefinition;
-use crate::parser;
-use crate::parser::xml::XMLDocument;
+use crate::parser::xml::parse;
+use crate::parser::ParserConfig;
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::*;
@@ -52,7 +54,7 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
 
-pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
+//pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 /// An XML document.
 #[derive(Clone, Default)]
@@ -120,7 +122,7 @@ impl Document {
             }
         }
 
-        XMLDocument {
+        Document {
             xmldecl: Some(d),
             prologue: p,
             content: c,
@@ -167,16 +169,28 @@ impl Document {
      */
 }
 
-impl TryFrom<(String, Option<ExtDTDresolver>, Option<String>)> for Document {
+impl TryFrom<(String, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(s: (String, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
-        parser::xml::parse(s.0.as_str(), s.1, s.2)
+    fn try_from(s: (String, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
+        let mut pc = ParserConfig::new();
+        pc.ext_dtd_resolver = s.1;
+        pc.docloc = s.2;
+        let doc = NodeBuilder::new(NodeType::Document).build();
+        parse(doc.clone(), s.0.as_str(), Some(pc))?;
+        let result = DocumentBuilder::new().content(vec![doc]).build();
+        Ok(result)
     }
 }
-impl TryFrom<(&str, Option<ExtDTDresolver>, Option<String>)> for Document {
+impl TryFrom<(&str, Option<URLResolver>, Option<String>)> for Document {
     type Error = Error;
-    fn try_from(s: (&str, Option<ExtDTDresolver>, Option<String>)) -> Result<Self, Self::Error> {
-        parser::xml::parse(s.0, s.1, s.2)
+    fn try_from(s: (&str, Option<URLResolver>, Option<String>)) -> Result<Self, Self::Error> {
+        let mut pc = ParserConfig::new();
+        pc.ext_dtd_resolver = s.1;
+        pc.docloc = s.2;
+        let doc = NodeBuilder::new(NodeType::Document).build();
+        parse(doc.clone(), s.0, Some(pc))?;
+        let result = DocumentBuilder::new().content(vec![doc]).build();
+        Ok(result)
     }
 }
 
@@ -270,7 +284,7 @@ pub struct Node {
     // name is mutable only so that the namespace URI can be set once the document is parsed.
     // If we can build a better parser then the RefCell can be removed.
     name: RefCell<Option<QualifiedName>>,
-    value: Option<Value>,
+    value: Option<Rc<Value>>,
     pi_name: Option<String>,
     dtd: Option<DTD>,
     reference: Option<QualifiedName>,
@@ -316,8 +330,14 @@ impl ItemNode for RNode {
             .as_ref()
             .map_or(QualifiedName::new(None, None, String::new()), |n| n.clone())
     }
-    fn value(&self) -> Value {
-        self.value.as_ref().map_or(Value::from(""), |v| v.clone())
+    fn value(&self) -> Rc<Value> {
+        self.value
+            .as_ref()
+            .map_or(Rc::new(Value::from("")), |v| v.clone())
+    }
+
+    fn get_id(&self) -> String {
+        format!("{:p}", &**self as *const Node)
     }
 
     fn to_string(&self) -> String {
@@ -410,37 +430,54 @@ impl ItemNode for RNode {
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(Attributes::new(self))
     }
-    fn get_attribute(&self, a: &QualifiedName) -> Value {
+    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value> {
         self.attributes
             .borrow()
             .get(a)
-            .map_or(Value::from(""), |v| v.value.as_ref().unwrap().clone())
+            .map_or(Rc::new(Value::from("")), |v| {
+                v.value.as_ref().unwrap().clone()
+            })
+    }
+    fn get_attribute_node(&self, a: &QualifiedName) -> Option<RNode> {
+        self.attributes
+            .borrow()
+            .get(a)
+            .map_or(None, |v| Some(v.clone()))
     }
 
     fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Element).name(qn).build())
     }
-    fn new_text(&self, v: Value) -> Result<Self, Error> {
+    fn new_text(&self, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Text).value(v).build())
     }
-    fn new_attribute(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+    fn new_attribute(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Attribute)
             .name(qn)
             .value(v)
             .build())
     }
-    fn new_comment(&self, v: Value) -> Result<Self, Error> {
+    fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::Comment).value(v).build())
     }
-    fn new_processing_instruction(&self, qn: QualifiedName, v: Value) -> Result<Self, Error> {
+    fn new_processing_instruction(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error> {
         Ok(NodeBuilder::new(NodeType::ProcessingInstruction)
             .name(qn)
             .value(v)
             .build())
     }
+    fn new_namespace(&self, _ns: String, _prefix: Option<String>) -> Result<Self, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not supported"))
+    }
 
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {
+        if n.node_type() == NodeType::Document {
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("document type nodes cannot be inserted into a tree"),
+            ));
+        }
         *n.parent.borrow_mut() = Some(Rc::downgrade(self));
         self.children.borrow_mut().push(n);
         Ok(())
@@ -478,8 +515,16 @@ impl ItemNode for RNode {
     }
     /// Insert a node into the child list immediately before this node.
     fn insert_before(&mut self, mut insert: Self) -> Result<(), Error> {
+        if insert.node_type() == NodeType::Document {
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("document type nodes cannot be inserted into a tree"),
+            ));
+        }
+
         // Detach the node first. Ignore any error, it's OK if the node is not attached anywhere.
         _ = insert.pop();
+
         // Get the parent of this node. It is an error if there is no parent.
         let parent = self.parent().ok_or_else(|| {
             Error::new(
@@ -487,6 +532,7 @@ impl ItemNode for RNode {
                 String::from("unable to insert before: node is an orphan"),
             )
         })?;
+
         // Find the child node's index in the parent's child list
         let idx = find_index(&parent, self)?;
         // Insert the node at position of self, shifting insert right
@@ -527,12 +573,10 @@ impl ItemNode for RNode {
         match self.node_type() {
             NodeType::Comment => Err(Error::new(ErrorKind::TypeError, "".to_string())),
             NodeType::Text => {
-                let v = match self.value() {
-                    Value::String(s) => {
-                        Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n"))
-                    }
-                    e => e,
-                };
+                let mut v: Rc<Value> = self.value();
+                if let Value::String(s) = &*v {
+                    v = Rc::new(Value::String(s.replace("\r\n", "\n").replace("\n\n", "\n")))
+                }
                 let result = NodeBuilder::new(self.node_type())
                     .name(self.name())
                     .value(v)
@@ -558,6 +602,19 @@ impl ItemNode for RNode {
                 Ok(result)
             }
         }
+    }
+    fn xmldecl(&self) -> crate::xmldecl::XMLDecl {
+        crate::xmldecl::XMLDeclBuilder::new().build()
+    }
+    fn set_xmldecl(&mut self, _: crate::xmldecl::XMLDecl) -> Result<(), Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    }
+
+    fn add_namespace(&self, _ns: Self) -> Result<(), Error> {
+        todo!()
     }
 }
 
@@ -954,7 +1011,7 @@ impl NodeBuilder {
         *self.0.name.borrow_mut() = Some(qn);
         self
     }
-    pub fn value(mut self, v: Value) -> Self {
+    pub fn value(mut self, v: Rc<Value>) -> Self {
         self.0.value = Some(v);
         self
     }
@@ -1177,14 +1234,14 @@ mod tests {
         let at = root
             .new_attribute(
                 QualifiedName::new(None, None, String::from("mode")),
-                Value::from("testing"),
+                Rc::new(Value::from("testing")),
             )
             .expect("unable to create attribute node");
         child.add_attribute(at).expect("unable to add attribute");
 
         assert_eq!(
             child.get_attribute(&QualifiedName::new(None, None, String::from("mode"))),
-            Value::from("testing")
+            Value::from("testing").into()
         )
     }
     #[test]
@@ -1197,14 +1254,14 @@ mod tests {
         let at = root
             .new_attribute(
                 QualifiedName::new(None, None, String::from("mode")),
-                Value::from("testing"),
+                Rc::new(Value::from("testing")),
             )
             .expect("unable to create attribute node");
         child.add_attribute(at).expect("unable to add attribute");
 
         assert_eq!(
             child.get_attribute(&QualifiedName::new(None, None, String::from("foo"))),
-            Value::from("")
+            Value::from("").into()
         )
     }
 
@@ -1222,7 +1279,7 @@ mod tests {
             child.push(l1.clone()).expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from(i))
+                    .value(Rc::new(Value::from(i)))
                     .build(),
             )
             .expect("unable to append child");
@@ -1244,7 +1301,7 @@ mod tests {
             child.push(l1.clone()).expect("unable to append child");
             l1.push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from(i))
+                    .value(Rc::new(Value::from(i)))
                     .build(),
             )
             .expect("unable to append child");
@@ -1272,14 +1329,14 @@ mod tests {
             .add_attribute(
                 NodeBuilder::new(NodeType::Attribute)
                     .name(QualifiedName::new(None, None, String::from("id")))
-                    .value(Value::from("foo"))
+                    .value(Rc::new(Value::from("foo")))
                     .build(),
             )
             .expect("unable to add attribute");
         child
             .push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from("1234"))
+                    .value(Rc::new(Value::from("1234")))
                     .build(),
             )
             .expect("unable to add text node");
@@ -1305,14 +1362,14 @@ mod tests {
             .add_attribute(
                 NodeBuilder::new(NodeType::Attribute)
                     .name(QualifiedName::new(None, None, String::from("id")))
-                    .value(Value::from("foo"))
+                    .value(Rc::new(Value::from("foo")))
                     .build(),
             )
             .expect("unable to add attribute");
         child
             .push(
                 NodeBuilder::new(NodeType::Text)
-                    .value(Value::from("1234"))
+                    .value(Rc::new(Value::from("1234")))
                     .build(),
             )
             .expect("unable to add text node");
@@ -1338,7 +1395,7 @@ mod tests {
             .add_attribute(
                 NodeBuilder::new(NodeType::Attribute)
                     .name(QualifiedName::new(None, None, String::from("id")))
-                    .value(Value::from("foo"))
+                    .value(Rc::new(Value::from("foo")))
                     .build(),
             )
             .expect("unable to add attribute");
@@ -1352,7 +1409,7 @@ mod tests {
         child.push(l1.clone()).expect("unable to add node");
         l1.push(
             NodeBuilder::new(NodeType::Text)
-                .value(Value::from("1234"))
+                .value(Rc::new(Value::from("1234")))
                 .build(),
         )
         .expect("unable to add text node");

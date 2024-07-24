@@ -1,13 +1,14 @@
 use std::cmp::Ordering;
 
+use crate::item::Node;
 use crate::parser::combinators::alt::alt4;
 use crate::parser::combinators::many::{many0, many1};
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 
-pub fn whitespace0() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub fn whitespace0<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     //TODO add support for xml:space
     map(
         many0(alt4(tag(" "), tag("\t"), tag("\r"), tag("\n"))),
@@ -15,7 +16,8 @@ pub fn whitespace0() -> impl Fn(ParseInput) -> ParseResult<()> {
     )
 }
 
-pub(crate) fn whitespace1() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn whitespace1<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     //TODO add support for xml:space
     map(
         many1(alt4(tag(" "), tag("\t"), tag("\r"), tag("\n"))),
@@ -23,7 +25,8 @@ pub(crate) fn whitespace1() -> impl Fn(ParseInput) -> ParseResult<()> {
     )
 }
 
-pub(crate) fn xpwhitespace() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn xpwhitespace<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     map(
         tuple3(
             whitespace0(),
@@ -49,10 +52,10 @@ pub(crate) fn xpwhitespace() -> impl Fn(ParseInput) -> ParseResult<()> {
 /// * There is no open delimiter. In this case, consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
 /// * There is an open delimiter. If the open occurs after the close, then consume up to and including the close delimiter. If the bracket count is 1 then return Ok, otherwise error.
 /// * The open delimiter occurs before the close. In this case, increment the bracket count and continue after the open delimiter.
-fn take_until_balanced(
+fn take_until_balanced<N: Node>(
     open: &'static str,
     close: &'static str,
-) -> impl Fn(ParseInput) -> ParseResult<()> {
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         let mut pos = 0;
         let mut counter = 0;
@@ -66,12 +69,12 @@ fn take_until_balanced(
                     col: counter,
                 });
             }
-            match (input[pos..].find(&open), input[pos..].find(&close)) {
+            match (input[pos..].find(open), input[pos..].find(close)) {
                 (Some(0), _) => {
                     bracket_counter += 1;
                     pos += open.len();
                     //let _: Vec<_> = (&mut input).take(open.len()).collect();
-                    match (input[pos..].find(&open), input[pos..].find(&close)) {
+                    match (input[pos..].find(open), input[pos..].find(close)) {
                         (_, None) => {
                             // Scenario 1
                             return Err(ParseError::Unbalanced);

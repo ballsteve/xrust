@@ -1,10 +1,12 @@
+use crate::item::Node;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::take_until;
 use crate::parser::xml::dtd::extsubset::extsubsetdecl;
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn pereference<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -31,12 +33,12 @@ pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
                             match extsubsetdecl()((e2.as_str(), tempstate)) {
                                 Ok(((outstr, _), _)) => {
                                     if !outstr.is_empty() {
-                                        Err(ParseError::NotWellFormed)
+                                        Err(ParseError::NotWellFormed(outstr.to_string()))
                                     } else {
                                         Ok(((input1, state1), ()))
                                     }
                                 }
-                                Err(_) => Err(ParseError::NotWellFormed),
+                                Err(_) => Err(ParseError::NotWellFormed(e2)),
                             }
                         }
                     }
@@ -52,7 +54,8 @@ pub(crate) fn pereference() -> impl Fn(ParseInput) -> ParseResult<()> {
     }
 }
 
-pub(crate) fn petextreference() -> impl Fn(ParseInput) -> ParseResult<String> {
+pub(crate) fn petextreference<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     move |(input, state)| {
         let e = delimited(tag("%"), take_until(";"), tag(";"))((input, state));
         match e {
@@ -60,7 +63,9 @@ pub(crate) fn petextreference() -> impl Fn(ParseInput) -> ParseResult<String> {
             Ok(((input1, state1), entitykey)) => {
                 match state1.currentlyexternal {
                     /* Are we in an external DTD? Param entities not allowed anywhere else. */
-                    false => Err(ParseError::NotWellFormed),
+                    false => Err(ParseError::NotWellFormed(String::from(
+                        "parameter entity not allowed outside of external DTD",
+                    ))),
                     true => {
                         match state1.clone().dtd.paramentities.get(&entitykey as &str) {
                             Some((entval, _)) => {

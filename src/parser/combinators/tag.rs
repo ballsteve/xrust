@@ -1,6 +1,9 @@
-use crate::parser::{ParseError, ParseInput, ParseResult};
+use crate::item::Node;
+use crate::parser::{ParseError, ParseInput};
 
-pub fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
+pub fn tag<N: Node>(
+    expected: &str,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> + '_ {
     move |(input, state)| match input.get(0..expected.len()) {
         None => Err(ParseError::Combinator),
         Some(chars) => {
@@ -15,7 +18,9 @@ pub fn tag(expected: &str) -> impl Fn(ParseInput) -> ParseResult<()> + '_ {
 
 /// Return the longest possible of one of the given tags.
 /// If there are multiple tags of the same length, the first one that matches will be returned.
-pub(crate) fn anytag(s: Vec<&str>) -> impl Fn(ParseInput) -> ParseResult<String> + '_ {
+pub(crate) fn anytag<N: Node>(
+    s: Vec<&str>,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> + '_ {
     move |(input, state)| {
         // NB. this algorithm could probably be optimised
         let u = s.iter().fold("", |result, t| {
@@ -35,7 +40,7 @@ pub(crate) fn anytag(s: Vec<&str>) -> impl Fn(ParseInput) -> ParseResult<String>
                 result
             }
         });
-        if u == "" {
+        if u.is_empty() {
             Err(ParseError::Combinator)
         } else {
             Ok(((&input[u.len()..], state), u.to_string()))
@@ -43,7 +48,9 @@ pub(crate) fn anytag(s: Vec<&str>) -> impl Fn(ParseInput) -> ParseResult<String>
     }
 }
 
-pub(crate) fn anychar(expected: char) -> impl Fn(ParseInput) -> ParseResult<()> {
+pub(crate) fn anychar<N: Node>(
+    expected: char,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |(input, state)| {
         if input.starts_with(expected) {
             Ok(((&input[1..], state), ()))
@@ -57,11 +64,12 @@ pub(crate) fn anychar(expected: char) -> impl Fn(ParseInput) -> ParseResult<()> 
 mod tests {
     use crate::parser::combinators::tag::{anychar, anytag, tag};
     use crate::parser::{ParseError, ParserState};
+    use crate::trees::nullo::Nullo;
 
     #[test]
     fn parser_tag_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = tag("<");
         assert_eq!(
             Ok((("doc>", ParserState::new(None, None)), ())),
@@ -72,7 +80,7 @@ mod tests {
     #[test]
     fn parser_tag_test2() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = tag(">");
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)));
     }
@@ -80,7 +88,7 @@ mod tests {
     #[test]
     fn parser_tag_test3() {
         let testdoc = "<?ProcessingInstruction?>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = tag("<?");
         assert_eq!(
             Ok((
@@ -94,7 +102,7 @@ mod tests {
     #[test]
     fn parser_char_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anychar('<');
         assert_eq!(
             Ok((("doc>", ParserState::new(None, None)), ())),
@@ -104,14 +112,14 @@ mod tests {
     #[test]
     fn parser_char_test2() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anychar('>');
         assert_eq!(Err(ParseError::Combinator), parse_doc((testdoc, teststate)))
     }
     #[test]
     fn parser_anytag_test1() {
         let testdoc = "<doc>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
             Ok((("doc>", ParserState::new(None, None)), "<".to_string())),
@@ -121,7 +129,7 @@ mod tests {
     #[test]
     fn parser_anytag_test2() {
         let testdoc = "<=>";
-        let teststate = ParserState::new(None, None);
+        let teststate: ParserState<Nullo> = ParserState::new(None, None);
         let parse_doc = anytag(vec![">", ">=", "<=", "<"]);
         assert_eq!(
             Ok(((">", ParserState::new(None, None)), "<=".to_string())),

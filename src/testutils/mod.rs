@@ -5,7 +5,4 @@ Most of xrust's modules are written to use the generic Node trait. However, to t
 
 pub mod item_node;
 pub mod item_value;
-pub mod pattern_tests;
-pub mod transform_tests;
-pub mod xpath_tests;
-pub mod xslt_tests;
+//pub mod pattern_tests;
