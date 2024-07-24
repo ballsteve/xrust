@@ -14,6 +14,7 @@ pub fn make_empty_doc() -> RNode {
     Rc::new(SmiteNode::new())
 }
 
+#[allow(dead_code)]
 pub fn make_doc(n: QualifiedName, v: Value) -> RNode {
     let mut d = Rc::new(SmiteNode::new());
     let mut child = d.new_element(n).expect("unable to create element");
@@ -28,6 +29,7 @@ pub fn make_doc(n: QualifiedName, v: Value) -> RNode {
     d
 }
 
+#[allow(dead_code)]
 pub fn make_sd_raw() -> RNode {
     let doc = Rc::new(SmiteNode::new());
     xmlparse(doc.clone(),
@@ -35,19 +37,23 @@ pub fn make_sd_raw() -> RNode {
              None).expect("unable to parse XML");
     doc
 }
+#[allow(dead_code)]
 pub fn make_sd_cooked() -> Result<RNode, Error> {
     Ok(make_sd_raw())
 }
+#[allow(dead_code)]
 pub fn make_sd() -> Item<RNode> {
     Item::Node(make_sd_raw())
 }
 
+#[allow(dead_code)]
 pub fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = Rc::new(SmiteNode::new());
     xmlparse(doc.clone(), s, None)?;
     Ok(doc)
 }
 
+#[allow(dead_code)]
 pub fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
     let doc = Rc::new(SmiteNode::new());
     let r = parse_with_ns(doc.clone(), s, None)?;

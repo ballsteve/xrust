@@ -119,6 +119,9 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
+    fn new_namespace(&self, _ns: String, _prefix: Option<String>) -> Result<Self, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
     fn push(&mut self, _: Self) -> Result<(), Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,

@@ -16,7 +16,7 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 /// Level value for xsl:number. See XSLT 12.3.
-#[derive(Copy, Clone, Debug, Default)]
+#[derive(Copy, Clone, Debug, Default, PartialEq)]
 pub enum Level {
     #[default] Single,
     Multiple,
@@ -50,6 +50,9 @@ pub fn generate_integers<
     num: &Numbering<N>,
 ) -> Result<Sequence<N>, Error> {
     // This implements "single" level. "multiple" and "any" are TODO
+    if num.level != Level::Single {
+        return Err(Error::new(ErrorKind::NotImplemented, "only single level is implemented"))
+    }
 
     // The select expression must evaluate to a single node item (XSLT error XTTE1000)
     let n = ctxt.dispatch(stctxt, select)?;

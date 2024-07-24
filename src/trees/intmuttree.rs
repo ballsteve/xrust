@@ -467,6 +467,9 @@ impl ItemNode for RNode {
             .value(v)
             .build())
     }
+    fn new_namespace(&self, _ns: String, _prefix: Option<String>) -> Result<Self, Error> {
+        Err(Error::new(ErrorKind::NotImplemented, "not supported"))
+    }
 
     /// Append a node to the child list
     fn push(&mut self, n: RNode) -> Result<(), Error> {

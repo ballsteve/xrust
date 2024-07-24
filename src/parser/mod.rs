@@ -90,7 +90,7 @@ pub struct ParserState<N: Node> {
      */
     namespace: Vec<HashMap<String, String>>,
     /* Do we add the parents namespace nodes to an element? */
-    namespace_nodes: bool,
+    //namespace_nodes: bool,
     standalone: bool,
     xmlversion: String,
     /*
@@ -129,7 +129,7 @@ impl<N: Node> ParserState<N> {
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
             namespace: vec![],
-            namespace_nodes: pc.namespace_nodes,
+            //namespace_nodes: pc.namespace_nodes,
             maxentitydepth: pc.entitydepth,
             currententitydepth: 1,
             currentcol: 1,

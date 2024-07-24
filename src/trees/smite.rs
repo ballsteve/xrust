@@ -304,6 +304,15 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
+    fn new_namespace(&self, ns: String, prefix: Option<String>) -> Result<Self, Error> {
+        let ns_node = Rc::new(Node(NodeInner::Namespace(
+            RefCell::new(Rc::downgrade(&self.owner_document())),
+            prefix,
+            ns,
+        )));
+        unattached(self, ns_node.clone());
+        Ok(ns_node)
+    }
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error> {
         let child = Rc::new(Node(NodeInner::Text(
             RefCell::new(Rc::downgrade(&self.owner_document())),

@@ -102,7 +102,7 @@ This is the status of compliance to the XDM, XPath, XQuery, and XSLT standards.
 | Path expression: Node tests                     | yes     |       |
 | Path expression: Predicates within steps        | yes     |       |
 | Path expression: Unabbreviated syntax           | yes     |       |
-| Path expression: Abbreviated syntax             | no      |       |
+| Path expression: Abbreviated syntax             | yes     |       |
 | Sequence expression: constructing sequences     | yes     |       |
 | Sequence expression: combining node sequences   | yes     |       |
 | Arithmetic expressions:                         | yes     |       |
@@ -196,15 +196,15 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:attribute/@separator                     | no      |                                                               |
 | xsl:attribute/@type                          | no      |                                                               |
 | xsl:attribute/@validation                    | no      |                                                               |
-| xsl:attribute-set                            | no      |                                                               |
-| xsl:attribute-set/@name                      | no      |                                                               |
+| xsl:attribute-set                            | yes     |                                                               |
+| xsl:attribute-set/@name                      | yes     |                                                               |
 | xsl:attribute-set/@use-attribute-sets        | no      |                                                               |
 | xsl:attribute-set/@visibility                | no      |                                                               |
 | xsl:attribute-set/@streamable                | no      |                                                               |
 | xsl:break                                    | no      |                                                               |
 | xsl:break/@select                            | no      |                                                               |
-| xsl:call-template                            | no      |                                                               |
-| xsl:call-template/@name                      | no      |                                                               |
+| xsl:call-template                            | yes     |                                                               |
+| xsl:call-template/@name                      | yes     |                                                               |
 | xsl:catch                                    | no      |                                                               |
 | xsl:catch/@select                            | no      |                                                               |
 | xsl:catch/@errors                            | no      |                                                               |
@@ -372,7 +372,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:on-non-empty                             | no      |                                                               |
 | xsl:on-non-empty/@select                     | no      |                                                               |
 | xsl:otherwise                                | yes     |                                                               |
-| xsl:output                                   | no      |                                                               |
+| xsl:output                                   | yes     |                                                               |
 | xsl:output/@name                             | no      |                                                               |
 | xsl:output/@method                           | no      |                                                               |
 | xsl:output/@allow-duplicate-names            | no      |                                                               |
@@ -427,8 +427,8 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:perform-sort/@select                     | no      |                                                               |
 | xsl:preserve-space                           | yes     | More work to do to support import priorities                  |
 | xsl:preserve-space/@elements                 | yes     |                                                               |
-| xsl:processing-instruction                   | no      |                                                               |
-| xsl:processing-instruction/@name             | no      |                                                               |
+| xsl:processing-instruction                   | yes     |                                                               |
+| xsl:processing-instruction/@name             | yes     |                                                               |
 | xsl:processing-instruction/@select           | no      |                                                               |
 | xsl:result-document                          | no      |                                                               |
 | xsl:result-document/@format                  | no      |                                                               |
@@ -492,7 +492,7 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | xsl:template/@match                          | yes     |                                                               |
 | xsl:template/@name                           | yes     |                                                               |
 | xsl:template/@priority                       | yes     |                                                               |
-| xsl:template/@mode                           | no      |                                                               |
+| xsl:template/@mode                           | yes     |                                                               |
 | xsl:template/@as                             | no      |                                                               |
 | xsl:template/@visibility                     | no      |                                                               |
 | xsl:text                                     | yes     |                                                               |

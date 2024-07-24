@@ -68,8 +68,6 @@ pub struct Context<N: Node> {
     pub(crate) keys: HashMap<String, Vec<(Pattern<N>, Transform<N>)>>,
     // The calculated values of keys.
     pub(crate) key_values: HashMap<String, HashMap<String, Vec<N>>>,
-    // Named attribute sets
-    pub(crate) attr_sets: HashMap<String, Vec<Transform<N>>>,
     // Output control
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
@@ -94,7 +92,6 @@ impl<N: Node> Context<N> {
             current_group: Sequence::new(),
             keys: HashMap::new(),
             key_values: HashMap::new(),
-            attr_sets: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: vec![],
@@ -480,7 +477,6 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             key_values: HashMap::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
-            attr_sets: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
             namespaces: vec![],
