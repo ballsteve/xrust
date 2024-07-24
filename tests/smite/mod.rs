@@ -10,6 +10,7 @@ use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::value::Value;
 use xrust::xdmerror::Error;
 
+#[allow(dead_code)]
 pub fn make_empty_doc() -> RNode {
     Rc::new(SmiteNode::new())
 }

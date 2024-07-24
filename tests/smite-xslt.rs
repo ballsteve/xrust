@@ -1,5 +1,3 @@
-use xrust::item::Node;
-
 mod smite;
 mod xsltgeneric;
 
