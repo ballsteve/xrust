@@ -1,12 +1,12 @@
 /*! # A tree structure for XDM
 
-This module implements the Item module's [Node] trait.
+This module implements the Item module's [Node](crate::item::Node) trait.
 
 This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
-To create a tree, use [NodeBuilder] to make a Document-type node. To add a node, first create it using [NodeBuilder], then use a trait method to attach it to the tree.
+To create a tree, use [NodeBuilder](crate::trees::intmuttree::NodeBuilder) to make a Document-type node. To add a node, first create it using [NodeBuilder](crate::trees::intmuttree::NodeBuilder), then use a trait method to attach it to the tree.
 
-NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
+NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode](crate::trees::intmuttree::RNode).
 
 ```rust
 use std::rc::Rc;

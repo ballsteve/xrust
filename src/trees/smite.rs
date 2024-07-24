@@ -1,12 +1,14 @@
 /*! # A tree structure for XDM
 
-This module implements the Item module's [Node] trait.
+This module implements the Item module's [Node](crate::item::Node) trait.
 
 This implementation uses interior mutability to create and manage a tree structure that is both mutable and fully navigable.
 
-To create a tree, use [NodeBuilder] to make a Document-type node. To add a node, first create it using [NodeBuilder], then use a trait method to attach it to the tree.
+To create a tree, use [Node::new()](crate::trees::smite::Node) to make a Document-type node.
+To add a node, first create it using a creation method, defined by the [Node](crate::item::Node) trait, such as new_element() or new_text(),
+then use the push(), insert_before(), or add_attribute() method to attach it to a node in the tree.
 
-NB. The Item module's Node trait is implemented for Rc\<intmuttree::Node\>. For convenience, this is defined as the type [RNode].
+NB. The Item module's Node trait is implemented for Rc\<smite::Node\>. For convenience, this is defined as the type [RNode](crate::trees::smite::RNode).
 
 ```rust
 use std::rc::Rc;
@@ -18,17 +20,21 @@ use xrust::xdmerror::Error;
 
 pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
-
 // A document always has a NodeType::Document node as the toplevel node.
 let mut doc = Rc::new(SmiteNode::new());
 
+// Create an element-type node. Upon creation, it is *not* attached to the tree.
 let mut top = doc.new_element(
-    QualifiedName::new(None, None, String::from("Top-Level"))
+    QualifiedName::new(None, None, "Top-Level")
 ).expect("unable to create element node");
-// Nodes are Rc-shared, so it is cheap to clone them
+
+// Nodes are Rc-shared, so it is cheap to clone them.
+// Now attach the element node to the tree.
+// In this case, it is being attached to the document node, so it will become the root element.
 doc.push(top.clone())
     .expect("unable to append child node");
 
+// Now create a text node and attach it to the root element.
 top.push(
     doc.new_text(Rc::new(Value::from("content of the element")))
         .expect("unable to create text node")
