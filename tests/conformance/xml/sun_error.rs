@@ -29,5 +29,3 @@ fn uri01() {
 
     assert!(parseresult.is_err());
 }
-
-

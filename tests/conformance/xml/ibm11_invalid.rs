@@ -52,5 +52,3 @@ fn ibm11valid_p46ibm46i02xml() {
 
     assert!(parseresult.is_err());
 }
-
-

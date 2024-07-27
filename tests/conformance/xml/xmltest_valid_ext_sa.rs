@@ -6,7 +6,7 @@ James Clark XMLTEST cases - Standalone
     This contains case that are standalone and have references to external general entities .
 */
 
-use crate::conformance::{dtdfileresolve};
+use crate::conformance::dtdfileresolve;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
@@ -45,7 +45,7 @@ fn validextsa001() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -80,7 +80,7 @@ fn validextsa002() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -115,7 +115,7 @@ fn validextsa003() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -150,7 +150,7 @@ fn validextsa004() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -185,7 +185,7 @@ fn validextsa005() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -220,7 +220,7 @@ fn validextsa006() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -256,7 +256,7 @@ fn validextsa007() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -292,7 +292,7 @@ fn validextsa008() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -327,7 +327,7 @@ fn validextsa009() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -362,7 +362,7 @@ fn validextsa011() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -397,7 +397,7 @@ fn validextsa012() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -433,7 +433,7 @@ fn validextsa013() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -469,6 +469,5 @@ fn validextsa014() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
-

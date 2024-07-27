@@ -9,7 +9,6 @@ use std::rc::Rc;
 use xrust::parser::xml;
 use xrust::trees::smite::Node as SmiteNode;
 
-
 #[test]
 fn rmtns10009() {
     /*

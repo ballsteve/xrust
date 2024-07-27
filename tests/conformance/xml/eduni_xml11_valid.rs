@@ -4,12 +4,12 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
 */
 
+use crate::conformance::non_utf8_file_reader;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::xml;
 use xrust::trees::smite::Node as SmiteNode;
 use xrust::Node;
-use crate::conformance::non_utf8_file_reader;
 
 #[test]
 #[ignore]
@@ -40,7 +40,7 @@ fn rmt006() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -71,7 +71,7 @@ fn rmt007() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -87,8 +87,7 @@ fn rmt010() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml").as_str(),
         None,
     );
     let canonicalxml = Rc::new(SmiteNode::new());
@@ -102,7 +101,7 @@ fn rmt010() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -133,7 +132,7 @@ fn rmt012() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -149,8 +148,7 @@ fn rmt022() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml").as_str(),
         None,
     );
     let canonicalxml = Rc::new(SmiteNode::new());
@@ -164,7 +162,7 @@ fn rmt022() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -180,8 +178,7 @@ fn rmt023() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml").as_str(),
         None,
     );
     let canonicalxml = Rc::new(SmiteNode::new());
@@ -195,7 +192,7 @@ fn rmt023() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -226,7 +223,7 @@ fn rmt024() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -258,7 +255,7 @@ fn rmt025() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -290,7 +287,7 @@ fn rmt026() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -322,7 +319,7 @@ fn rmt027() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -354,7 +351,7 @@ fn rmt028() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -386,7 +383,7 @@ fn rmt029() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -402,8 +399,7 @@ fn rmt031() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml").as_str(),
         None,
     );
     let canonicalxml = Rc::new(SmiteNode::new());
@@ -417,7 +413,7 @@ fn rmt031() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -448,7 +444,7 @@ fn rmt033() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -479,7 +475,7 @@ fn rmt034() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -510,7 +506,7 @@ fn rmt035() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -526,8 +522,7 @@ fn rmt040() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml").as_str(),
         None,
     );
     let canonicalxml = Rc::new(SmiteNode::new());
@@ -541,7 +536,7 @@ fn rmt040() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -572,7 +567,7 @@ fn rmt043() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -603,7 +598,7 @@ fn rmt044() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -634,7 +629,7 @@ fn rmt045() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -650,8 +645,7 @@ fn rmt047() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml").as_str(),
         None,
     );
     let canonicalxml = Rc::new(SmiteNode::new());
@@ -665,7 +659,7 @@ fn rmt047() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -697,7 +691,7 @@ fn rmt049() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -728,7 +722,7 @@ fn rmt050() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -759,7 +753,7 @@ fn rmt051() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -791,5 +785,5 @@ fn rmt054() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }

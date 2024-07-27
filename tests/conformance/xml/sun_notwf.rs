@@ -527,7 +527,7 @@ fn dtd07() {
         Test ID:dtd07
         Test URI:not-wf/dtd07.xml
         Spec Sections:4.3.1 [77]
-        Description:        Text declarations (which optionally begin any external entity)        are required to have "encoding=...". 
+        Description:        Text declarations (which optionally begin any external entity)        are required to have "encoding=...".
     */
 
     let mut pc = ParserConfig::new();

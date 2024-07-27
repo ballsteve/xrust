@@ -4,7 +4,7 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
  */
 
-use crate::conformance::{dtdfileresolve};
+use crate::conformance::dtdfileresolve;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};

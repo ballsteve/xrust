@@ -119,8 +119,6 @@ fn ibminvalid_p68ibm68i04xml() {
     assert!(parseresult.is_err());
 }
 
-
-
 #[test]
 #[ignore]
 fn ibminvalid_p69ibm69i01xml() {
@@ -208,9 +206,3 @@ fn ibminvalid_p69ibm69i04xml() {
 
     assert!(parseresult.is_err());
 }
-
-    
-    
-        
-    
-

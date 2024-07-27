@@ -139,9 +139,6 @@ fn ibm11valid_p02ibm02v06xml() {
     assert!(parseresult.is_ok());
 }
 
-
-
-
 #[test]
 #[ignore]
 fn ibm11valid_p03ibm03v01xml() {
@@ -171,7 +168,7 @@ fn ibm11valid_p03ibm03v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -203,7 +200,7 @@ fn ibm11valid_p03ibm03v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -235,7 +232,7 @@ fn ibm11valid_p03ibm03v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -267,7 +264,7 @@ fn ibm11valid_p03ibm03v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -299,7 +296,7 @@ fn ibm11valid_p03ibm03v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -331,7 +328,7 @@ fn ibm11valid_p03ibm03v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -363,7 +360,7 @@ fn ibm11valid_p03ibm03v07xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -394,7 +391,7 @@ fn ibm11valid_p03ibm03v08xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -426,11 +423,8 @@ fn ibm11valid_p03ibm03v09xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
-
-
-
 
 #[test]
 #[ignore]
@@ -454,9 +448,6 @@ fn ibm11valid_p04ibm04v01xml() {
     assert!(parseresult.is_ok());
 }
 
-
-
-
 #[test]
 fn ibm11valid_p04ibm04av01xml() {
     /*
@@ -477,9 +468,6 @@ fn ibm11valid_p04ibm04av01xml() {
 
     assert!(parseresult.is_ok());
 }
-
-
-
 
 #[test]
 #[ignore]
@@ -590,9 +578,6 @@ fn ibm11valid_p05ibm05v05xml() {
     assert!(parseresult.is_ok());
 }
 
-
-
-
 #[test]
 fn ibm11valid_p047ibm07v01xml() {
     /*
@@ -613,9 +598,6 @@ fn ibm11valid_p047ibm07v01xml() {
 
     assert!(parseresult.is_ok());
 }
-
-
-
 
 #[test]
 #[ignore]

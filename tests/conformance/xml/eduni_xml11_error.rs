@@ -4,11 +4,11 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
 */
 
+use crate::conformance::non_utf8_file_reader;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::xml;
 use xrust::trees::smite::Node as SmiteNode;
-use crate::conformance::non_utf8_file_reader;
 
 #[test]
 fn rmt008() {
@@ -64,8 +64,7 @@ fn rmt055() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml").as_str(),
         None,
     );
 

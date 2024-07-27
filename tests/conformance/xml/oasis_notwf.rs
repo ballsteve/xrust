@@ -129,8 +129,7 @@ fn op02fail10() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail10.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail10.xml").as_str(),
         None,
     );
 
@@ -149,8 +148,7 @@ fn op02fail11() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail11.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail11.xml").as_str(),
         None,
     );
 
@@ -169,8 +167,7 @@ fn op02fail12() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail12.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail12.xml").as_str(),
         None,
     );
 
@@ -189,8 +186,7 @@ fn op02fail13() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail13.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail13.xml").as_str(),
         None,
     );
 
@@ -209,8 +205,7 @@ fn op02fail14() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail14.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail14.xml").as_str(),
         None,
     );
 
@@ -229,8 +224,7 @@ fn op02fail15() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail15.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail15.xml").as_str(),
         None,
     );
 
@@ -249,8 +243,7 @@ fn op02fail16() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail16.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail16.xml").as_str(),
         None,
     );
 
@@ -269,8 +262,7 @@ fn op02fail17() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail17.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail17.xml").as_str(),
         None,
     );
 
@@ -289,8 +281,7 @@ fn op02fail18() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail18.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail18.xml").as_str(),
         None,
     );
 
@@ -309,8 +300,7 @@ fn op02fail19() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail19.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail19.xml").as_str(),
         None,
     );
 
@@ -329,8 +319,7 @@ fn op02fail2() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail2.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail2.xml").as_str(),
         None,
     );
 
@@ -349,8 +338,7 @@ fn op02fail20() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail20.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail20.xml").as_str(),
         None,
     );
 
@@ -369,8 +357,7 @@ fn op02fail21() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail21.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail21.xml").as_str(),
         None,
     );
 
@@ -389,8 +376,7 @@ fn op02fail22() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail22.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail22.xml").as_str(),
         None,
     );
 
@@ -409,8 +395,7 @@ fn op02fail23() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail23.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail23.xml").as_str(),
         None,
     );
 
@@ -429,8 +414,7 @@ fn op02fail24() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail24.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail24.xml").as_str(),
         None,
     );
 
@@ -449,8 +433,7 @@ fn op02fail25() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail25.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail25.xml").as_str(),
         None,
     );
 
@@ -469,8 +452,7 @@ fn op02fail26() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail26.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail26.xml").as_str(),
         None,
     );
 
@@ -489,8 +471,7 @@ fn op02fail27() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail27.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail27.xml").as_str(),
         None,
     );
 
@@ -509,8 +490,7 @@ fn op02fail28() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail28.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail28.xml").as_str(),
         None,
     );
 
@@ -529,8 +509,7 @@ fn op02fail29() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail29.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail29.xml").as_str(),
         None,
     );
 
@@ -549,8 +528,7 @@ fn op02fail3() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail3.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail3.xml").as_str(),
         None,
     );
 
@@ -569,8 +547,7 @@ fn op02fail30() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail30.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail30.xml").as_str(),
         None,
     );
 
@@ -589,8 +566,7 @@ fn op02fail31() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail31.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail31.xml").as_str(),
         None,
     );
 
@@ -609,8 +585,7 @@ fn op02fail4() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail4.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail4.xml").as_str(),
         None,
     );
 
@@ -629,8 +604,7 @@ fn op02fail5() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail5.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail5.xml").as_str(),
         None,
     );
 
@@ -649,8 +623,7 @@ fn op02fail6() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail6.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail6.xml").as_str(),
         None,
     );
 
@@ -669,8 +642,7 @@ fn op02fail7() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail7.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail7.xml").as_str(),
         None,
     );
 
@@ -689,8 +661,7 @@ fn op02fail8() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail8.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail8.xml").as_str(),
         None,
     );
 
@@ -709,8 +680,7 @@ fn op02fail9() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail9.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/oasis/p02fail9.xml").as_str(),
         None,
     );
 

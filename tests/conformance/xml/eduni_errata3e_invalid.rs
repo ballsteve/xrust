@@ -9,7 +9,6 @@ use std::rc::Rc;
 use xrust::parser::xml;
 use xrust::trees::smite::Node as SmiteNode;
 
-
 #[test]
 #[ignore]
 fn rmte3e06a() {
@@ -53,7 +52,6 @@ fn rmte3e06b() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn rmte3e06c() {
@@ -76,7 +74,6 @@ fn rmte3e06c() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn rmte3e06d() {
     /*
@@ -97,7 +94,6 @@ fn rmte3e06d() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -121,7 +117,6 @@ fn rmte3e06e() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn rmte3e06f() {
@@ -143,7 +138,6 @@ fn rmte3e06f() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -167,7 +161,6 @@ fn rmte3e06g() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn rmte3e06h() {
@@ -190,11 +183,6 @@ fn rmte3e06h() {
     assert!(parseresult.is_err());
 }
 
-
-
-
-
-
 #[test]
 fn rmte3e13() {
     /*
@@ -215,4 +203,3 @@ fn rmte3e13() {
 
     assert!(parseresult.is_err());
 }
-

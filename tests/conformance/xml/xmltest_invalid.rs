@@ -6,7 +6,7 @@ James Clark XMLTEST cases
 
 */
 
-use crate::conformance::{dtdfileresolve};
+use crate::conformance::dtdfileresolve;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};

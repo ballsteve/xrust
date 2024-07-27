@@ -188,7 +188,7 @@ fn rmte2e18() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -220,7 +220,7 @@ fn rmte2e19() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]

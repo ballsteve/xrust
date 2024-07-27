@@ -1,4 +1,4 @@
-use crate::conformance::{dtdfileresolve};
+use crate::conformance::dtdfileresolve;
 use std::fs;
 use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
@@ -34,7 +34,7 @@ fn pe01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -65,7 +65,7 @@ fn dtd00() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -96,7 +96,7 @@ fn dtd01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -127,7 +127,7 @@ fn element() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -159,7 +159,7 @@ fn ext01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -191,7 +191,7 @@ fn ext02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -208,7 +208,7 @@ fn notsa01() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/sun/valid/".to_string());
 
-        let testxml = Rc::new(SmiteNode::new());
+    let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/not-sa01.xml")
@@ -227,7 +227,7 @@ fn notsa01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -259,7 +259,7 @@ fn notsa02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -291,7 +291,7 @@ fn notsa03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -323,7 +323,7 @@ fn notsa04() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -355,7 +355,7 @@ fn notation01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -387,7 +387,7 @@ fn optional() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -418,7 +418,7 @@ fn required00() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -449,7 +449,7 @@ fn sa01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -481,7 +481,7 @@ fn sa02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -513,7 +513,7 @@ fn sa03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -545,7 +545,7 @@ fn sa04() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -561,7 +561,7 @@ fn sa05() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/sun/valid/".to_string());
 
-        let testxml = Rc::new(SmiteNode::new());
+    let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/valid/sa05.xml")
@@ -580,7 +580,7 @@ fn sa05() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -612,7 +612,7 @@ fn vsgml01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -643,7 +643,7 @@ fn vlang01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -674,7 +674,7 @@ fn vlang02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -705,7 +705,7 @@ fn vlang03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -736,7 +736,7 @@ fn vlang04() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -767,7 +767,7 @@ fn vlang05() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -798,9 +798,8 @@ fn vlang06() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
-
 
 #[test]
 #[ignore]
@@ -831,9 +830,8 @@ fn vpe00() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
-
 
 #[test]
 fn vpe03() {
@@ -863,9 +861,8 @@ fn vpe03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
-
 
 #[test]
 #[ignore]
@@ -896,5 +893,5 @@ fn vpe02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert!(parseresult.unwrap().get_canonical().unwrap() == canonicalparseresult.unwrap());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }

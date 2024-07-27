@@ -81,7 +81,6 @@ fn hstbh004() {
         Description:hex charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -102,7 +101,6 @@ fn hstlhs007() {
         Spec Sections:4.3.3
         Description:UTF-8 BOM plus xml decl of iso-8859-1 incompatible
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -126,7 +124,6 @@ fn hstlhs008() {
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-16 coding) incompatible
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -148,7 +145,6 @@ fn hstlhs009() {
         Spec Sections:4.3.3
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-8 coding) incompatible
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(

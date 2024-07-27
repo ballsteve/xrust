@@ -262,7 +262,6 @@ fn ibm11notwf_p02ibm02n12xml() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn ibm11notwf_p02ibm02n14xml() {
     /*
@@ -1497,9 +1496,6 @@ fn ibm11notwf_p02ibm02n71xml() {
     assert!(parseresult.is_err());
 }
 
-
-
-
 #[test]
 fn ibm11notwf_p04ibm04n01xml() {
     /*
@@ -2083,9 +2079,6 @@ fn ibm11notwf_p04ibm04n28xml() {
 
     assert!(parseresult.is_err());
 }
-
-
-
 
 #[test]
 fn ibm11notwf_p04aibm04an01xml() {
@@ -2671,9 +2664,6 @@ fn ibm11notwf_p04aibm04an28xml() {
     assert!(parseresult.is_err());
 }
 
-
-
-
 #[test]
 fn ibm11notwf_p05ibm05n01xml() {
     /*
@@ -2799,10 +2789,6 @@ fn ibm11notwf_p05ibm05n06xml() {
 
     assert!(parseresult.is_err());
 }
-
-
-
-
 
 #[test]
 fn ibm11notwf_p77ibm77n01xml() {

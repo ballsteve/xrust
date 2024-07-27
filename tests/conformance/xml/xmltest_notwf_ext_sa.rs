@@ -6,12 +6,10 @@ James Clark XMLTEST cases
 
 */
 
-
 use std::fs;
 use std::rc::Rc;
-use xrust::parser::{xml};
+use xrust::parser::xml;
 use xrust::trees::smite::Node as SmiteNode;
-
 
 #[test]
 #[ignore]

@@ -18,7 +18,6 @@ fn rmtns10001() {
         Description:Namespace name test: a perfectly good http URI
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -39,7 +38,6 @@ fn rmtns10002() {
         Spec Sections:2
         Description:Namespace name test: a syntactically plausible URI with a fictitious scheme
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -62,7 +60,6 @@ fn rmtns10003() {
         Description:Namespace name test: a perfectly good http URI with a fragment
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -83,7 +80,6 @@ fn rmtns10007() {
         Spec Sections:1
         Description:Namespace inequality test: different capitalization
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -106,7 +102,6 @@ fn rmtns10008() {
         Description:Namespace inequality test: different escaping
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -128,7 +123,6 @@ fn htns10047() {
         Description:Reserved name: _not_ an error
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -149,7 +143,6 @@ fn htns10048() {
         Spec Sections:NE03
         Description:Reserved name: _not_ an error
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(

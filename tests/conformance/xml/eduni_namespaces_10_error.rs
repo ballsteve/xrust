@@ -18,7 +18,6 @@ fn rmtns10004() {
         Description:Namespace name test: a relative URI (deprecated)
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -41,7 +40,6 @@ fn rmtns10005() {
         Description:Namespace name test: a same-document relative URI (deprecated)
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -63,7 +61,6 @@ fn rmtns10006() {
         Spec Sections:2
         Description:Namespace name test: an http IRI that is not a URI
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(

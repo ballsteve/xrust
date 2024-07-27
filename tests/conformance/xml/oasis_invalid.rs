@@ -36,7 +36,6 @@ fn op01pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op01pass3() {
@@ -89,7 +88,6 @@ fn op03pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn op04pass1() {
     /*
@@ -115,7 +113,6 @@ fn op04pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn op05pass1() {
     /*
@@ -140,7 +137,6 @@ fn op05pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -168,7 +164,6 @@ fn op06fail1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op08fail1() {
@@ -194,7 +189,6 @@ fn op08fail1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -222,7 +216,6 @@ fn op08fail2() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op10pass1() {
@@ -248,7 +241,6 @@ fn op10pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -276,7 +268,6 @@ fn op14pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op15pass1() {
@@ -302,7 +293,6 @@ fn op15pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -330,7 +320,6 @@ fn op16pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op16pass2() {
@@ -356,7 +345,6 @@ fn op16pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -384,7 +372,6 @@ fn op16pass3() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op18pass1() {
@@ -410,7 +397,6 @@ fn op18pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -438,7 +424,6 @@ fn op22pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op22pass2() {
@@ -464,7 +449,6 @@ fn op22pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -492,7 +476,6 @@ fn op22pass3() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op23pass1() {
@@ -518,7 +501,6 @@ fn op23pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -546,7 +528,6 @@ fn op23pass2() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op23pass3() {
@@ -572,7 +553,6 @@ fn op23pass3() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -600,7 +580,6 @@ fn op23pass4() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op24pass1() {
@@ -626,7 +605,6 @@ fn op24pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -654,7 +632,6 @@ fn op24pass2() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op24pass3() {
@@ -680,7 +657,6 @@ fn op24pass3() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -708,7 +684,6 @@ fn op24pass4() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op25pass1() {
@@ -734,7 +709,6 @@ fn op25pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -762,8 +736,6 @@ fn op25pass2() {
     assert!(parseresult.is_err());
 }
 
-
-
 #[test]
 #[ignore]
 fn op26pass1() {
@@ -789,7 +761,6 @@ fn op26pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -817,7 +788,6 @@ fn op27pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op27pass2() {
@@ -843,7 +813,6 @@ fn op27pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -871,7 +840,6 @@ fn op27pass3() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op27pass4() {
@@ -897,7 +865,6 @@ fn op27pass4() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -925,7 +892,6 @@ fn op32pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op32pass2() {
@@ -951,7 +917,6 @@ fn op32pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -979,7 +944,6 @@ fn op39pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op39pass2() {
@@ -1005,7 +969,6 @@ fn op39pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1033,7 +996,6 @@ fn op40pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op40pass2() {
@@ -1059,7 +1021,6 @@ fn op40pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1087,7 +1048,6 @@ fn op40pass3() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op40pass4() {
@@ -1113,7 +1073,6 @@ fn op40pass4() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1141,7 +1100,6 @@ fn op41pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op41pass2() {
@@ -1167,7 +1125,6 @@ fn op41pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1195,7 +1152,6 @@ fn op42pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op42pass2() {
@@ -1221,7 +1177,6 @@ fn op42pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1249,7 +1204,6 @@ fn op44pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op44pass2() {
@@ -1275,7 +1229,6 @@ fn op44pass2() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1303,7 +1256,6 @@ fn op44pass3() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op44pass4() {
@@ -1329,7 +1281,6 @@ fn op44pass4() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]
@@ -1357,7 +1308,6 @@ fn op44pass5() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 #[ignore]
 fn op66pass1() {
@@ -1384,7 +1334,6 @@ fn op66pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn op74pass1() {
     /*
@@ -1410,7 +1359,6 @@ fn op74pass1() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn op75pass1() {
     /*
@@ -1435,7 +1383,6 @@ fn op75pass1() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 #[ignore]

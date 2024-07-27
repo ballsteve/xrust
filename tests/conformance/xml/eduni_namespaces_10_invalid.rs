@@ -19,7 +19,6 @@ fn rmtns10017() {
         Description:Simple legal case: no namespaces
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -41,7 +40,6 @@ fn rmtns10018() {
         Spec Sections:5.2
         Description:Simple legal case: default namespace
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -65,7 +63,6 @@ fn rmtns10019() {
         Description:Simple legal case: prefixed element
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -87,7 +84,6 @@ fn rmtns10020() {
         Spec Sections:4
         Description:Simple legal case: prefixed attribute
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -111,7 +107,6 @@ fn rmtns10021() {
         Description:Simple legal case: default namespace and unbinding
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -133,7 +128,6 @@ fn rmtns10022() {
         Spec Sections:5.2
         Description:Simple legal case: default namespace and rebinding
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -157,7 +151,6 @@ fn rmtns10024() {
         Description:Simple legal case: prefix rebinding
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -179,7 +172,6 @@ fn rmtns10027() {
         Spec Sections:2
         Description:Reserved prefixes and namespaces: using the xml prefix undeclared
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -203,7 +195,6 @@ fn rmtns10028() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix correctly
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -225,7 +216,6 @@ fn rmtns10034() {
         Spec Sections:NE05
         Description:Reserved prefixes and namespaces: binding a reserved prefix
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -249,7 +239,6 @@ fn rmtns10037() {
         Description:Attribute uniqueness: different attributes with same local name
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -271,7 +260,6 @@ fn rmtns10038() {
         Spec Sections:5.3
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -295,7 +283,6 @@ fn rmtns10039() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, with default namespace
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -317,7 +304,6 @@ fn rmtns10040() {
         Spec Sections:5.3
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, with default namespace and element in default namespace
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -341,7 +327,6 @@ fn rmtns10041() {
         Description:Attribute uniqueness: prefixed and unprefixed attributes with same local name, element in same namespace as prefixed attribute
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -364,7 +349,6 @@ fn rmtns10045() {
         Description:Colon in ID attribute name
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -386,7 +370,6 @@ fn rmtns10046() {
         Spec Sections:NE08
         Description:Colon in ID attribute name
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(

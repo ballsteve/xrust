@@ -6531,11 +6531,3 @@ fn ibmvalid_p89ibm89n05xml() {
 
     assert!(parseresult.is_ok());
 }
-
-
-
-
-
-
-
-

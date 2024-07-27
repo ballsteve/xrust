@@ -39,7 +39,6 @@ fn rmtns11002() {
         Description:Namespace inequality test: different escaping of non-ascii letter
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -60,7 +59,6 @@ fn rmtns11003() {
         Spec Sections:6.1
         Description:1.1 style prefix unbinding
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
@@ -83,7 +81,6 @@ fn rmtns11004() {
         Description:1.1 style prefix unbinding and rebinding
     */
 
-
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
@@ -104,7 +101,6 @@ fn rmtns11006() {
         Spec Sections:2.1
         Description:Test whether non-Latin-1 characters are accepted in IRIs, and whether they are correctly distinguished
     */
-
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(

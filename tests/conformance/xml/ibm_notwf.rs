@@ -695,8 +695,7 @@ fn ibmnotwf_p02ibm02n30xml() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n30.xml").as_str(),
         None,
     );
 
@@ -716,8 +715,7 @@ fn ibmnotwf_p02ibm02n31xml() {
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n31.xml")
-            .as_str(),
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/ibm/not-wf/P02/ibm02n31.xml").as_str(),
         None,
     );
 
@@ -766,9 +764,6 @@ fn ibmnotwf_p02ibm02n33xml() {
     assert!(parseresult.is_err());
 }
 
-
-
-
 #[test]
 fn ibmnotwf_p03ibm03n01xml() {
     /*
@@ -789,9 +784,6 @@ fn ibmnotwf_p03ibm03n01xml() {
 
     assert!(parseresult.is_err());
 }
-
-
-
 
 #[test]
 fn ibmnotwf_p04ibm04n01xml() {
@@ -1926,9 +1918,6 @@ fn ibmnotwf_p16ibm16n04xml() {
 
     assert!(parseresult.is_err());
 }
-
-
-
 
 #[test]
 fn ibmnotwf_p17ibm17n01xml() {
@@ -3601,7 +3590,6 @@ fn ibmnotwf_p41ibm41n06xml() {
     assert!(parseresult.is_err());
 }
 
-
 #[test]
 fn ibmnotwf_p41ibm41n07xml() {
     /*
@@ -3769,9 +3757,6 @@ fn ibmnotwf_p41ibm41n14xml() {
 
     assert!(parseresult.is_err());
 }
-
-
-
 
 #[test]
 fn ibmnotwf_p42ibm42n01xml() {
@@ -7112,9 +7097,6 @@ fn ibmnotwf_p68ibm68n10xml() {
     assert!(parseresult.is_err());
 }
 
-
-
-
 #[test]
 fn ibmnotwf_p69ibm69n01xml() {
     /*
@@ -7198,7 +7180,6 @@ fn ibmnotwf_p69ibm69n04xml() {
 
     assert!(parseresult.is_err());
 }
-
 
 #[test]
 fn ibmnotwf_p69ibm69n06xml() {
