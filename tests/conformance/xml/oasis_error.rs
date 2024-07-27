@@ -1,6 +1,6 @@
 /*
 
-Sun Microsystems test cases
+OASIS/NIST test cases
 
 */
 
@@ -10,18 +10,19 @@ use xrust::parser::xml;
 use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
-fn uri01() {
+#[ignore]
+fn op11pass1() {
     /*
-        Test ID:uri01
-        Test URI:not-wf/uri01.xml
-        Spec Sections:4.2.2 [75]
-        Description:        SYSTEM ids may not have URI fragments
+        Test ID:o-p11pass1
+        Test URI:p11pass1.xml
+        Spec Sections:2.3, 4.2.2 [11]
+        Description:system literals may not contain URI fragments
     */
 
     let testxml = Rc::new(SmiteNode::new());
     let parseresult = xml::parse(
         testxml,
-        fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/uri01.xml")
+        fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p11pass1.xml")
             .unwrap()
             .as_str(),
         None,
@@ -29,5 +30,6 @@ fn uri01() {
 
     assert!(parseresult.is_err());
 }
+
 
 

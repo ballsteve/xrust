@@ -1,10 +1,13 @@
 /*
-Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
- */
 
-use std::convert::TryFrom;
+Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
+
+*/
+
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
 fn rmtns10004() {
@@ -15,12 +18,17 @@ fn rmtns10004() {
         Description:Namespace name test: a relative URI (deprecated)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/004.xml").unwrap(),
+
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/004.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -33,12 +41,17 @@ fn rmtns10005() {
         Description:Namespace name test: a same-document relative URI (deprecated)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/005.xml").unwrap(),
+
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/005.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -51,10 +64,15 @@ fn rmtns10006() {
         Description:Namespace name test: an http IRI that is not a URI
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/006.xml").unwrap(),
+
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/006.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

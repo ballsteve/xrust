@@ -1,11 +1,14 @@
 /*
-Richard Tobin's XML 1.1 test suite 13 Feb 2003
- */
 
-use crate::conformance::non_utf8_file_reader;
-use std::convert::TryFrom;
+Richard Tobin's XML 1.1 test suite 13 Feb 2003
+
+*/
+
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
+use crate::conformance::non_utf8_file_reader;
 
 #[test]
 fn rmt008() {
@@ -16,12 +19,16 @@ fn rmt008() {
         Description:an implausibly-versioned document
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/008.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/008.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -33,12 +40,16 @@ fn rmt009() {
         Description:External general entity has implausible version number
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/009.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/009.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -50,12 +61,15 @@ fn rmt055() {
         Description:Has a Latin-1 NEL in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = Document::try_from((
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml"),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml")
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -67,12 +81,16 @@ fn rmt056() {
         Description:Has a UTF-8 NEL in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/056.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/056.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -84,10 +102,14 @@ fn rmt057() {
         Description:Has a UTF-8 LSEP in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/057.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/057.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

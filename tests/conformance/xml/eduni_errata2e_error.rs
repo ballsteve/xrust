@@ -1,10 +1,14 @@
 /*
+
 Richard Tobin's XML 1.0 2nd edition errata test suite.
+
 */
 
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
+
 
 #[test]
 #[ignore]
@@ -16,13 +20,16 @@ fn rmte2e34() {
         Description:A non-deterministic content model is an error even if the element type is not used.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E34.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E34.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -34,12 +41,16 @@ fn rmte2e55() {
         Description:A reference to an unparsed entity in an entity value is an error rather than forbidden (unless the entity is referenced, of course)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E55.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E55.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -51,10 +62,14 @@ fn rmte2e57() {
         Description:A value other than preserve or default for xml:space is an error
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E57.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E57.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
