@@ -1,11 +1,13 @@
 /*
+
 Richard Tobin's XML 1.0 2nd edition errata test suite.
+
 */
 
-use crate::conformance::non_utf8_file_reader;
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
 #[ignore]
@@ -17,13 +19,16 @@ fn rmte2e27() {
         Description:Contains an irregular UTF-8 sequence (i.e. a surrogate pair)
     */
 
-    let testxml = Document::try_from((
-        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/errata-2e/E27.xml"),
-        //fs::read_to_string().unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E27.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -35,12 +40,16 @@ fn rmte2e38() {
         Description:XML 1.0 document refers to 1.1 entity
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E38.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E38.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -52,10 +61,15 @@ fn rmte2e61() {
         Spec Sections:E61
         Description:(From John Cowan) An encoding declaration in ASCII specifying an encoding that is not compatible with ASCII (so the document is not in its declared encoding). It should generate a fatal error.
     */
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E61.xml").unwrap(),
+
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E61.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

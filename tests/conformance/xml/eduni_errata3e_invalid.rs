@@ -1,10 +1,13 @@
 /*
-Richard Tobin's XML 1.0 3rd edition errata test suite 1 June 2006
- */
 
-use std::convert::TryFrom;
+Richard Tobin's XML 1.0 3rd edition errata test suite 1 June 2006
+
+*/
+
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
 #[ignore]
@@ -16,12 +19,16 @@ fn rmte3e06a() {
         Description:Default values for IDREF attributes must match Name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06a.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06a.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -33,12 +40,16 @@ fn rmte3e06b() {
         Description:Default values for ENTITY attributes must match Name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06b.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06b.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -51,16 +62,19 @@ fn rmte3e06c() {
         Description:Default values for IDREFS attributes must match Names.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06c.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06c.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore]
 fn rmte3e06d() {
     /*
         Test ID:rmt-e3e-06d
@@ -69,16 +83,20 @@ fn rmte3e06d() {
         Description:Default values for ENTITIES attributes must match Names.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06d.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06d.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //Need to build DTD validation
+#[ignore]
 fn rmte3e06e() {
     /*
         Test ID:rmt-e3e-06e
@@ -87,12 +105,16 @@ fn rmte3e06e() {
         Description:Default values for NMTOKEN attributes must match Nmtoken.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06e.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06e.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -105,16 +127,20 @@ fn rmte3e06f() {
         Description:Default values for NMTOKENS attributes must match Nmtokens.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06f.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06f.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //Need to build DTD validation
+#[ignore]
 fn rmte3e06g() {
     /*
         Test ID:rmt-e3e-06g
@@ -123,16 +149,20 @@ fn rmte3e06g() {
         Description:Default values for NOTATION attributes must match one of the enumerated values.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06g.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06g.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //Need to build DTD validation
+#[ignore]
 fn rmte3e06h() {
     /*
         Test ID:rmt-e3e-06h
@@ -141,12 +171,16 @@ fn rmte3e06h() {
         Description:Default values for enumerated attributes must match one of the enumerated values.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06h.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E06h.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -158,10 +192,14 @@ fn rmte3e13() {
         Description:Even internal parameter entity references are enough to make undeclared entities into mere validity errors rather than well-formedness errors.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E13.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E13.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

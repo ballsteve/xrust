@@ -1,14 +1,17 @@
 /*
+
 Richard Tobin's XML 1.0 2nd edition errata test suite.
+
 */
 
 use crate::conformance::dtdfileresolve;
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::{xml, ParserConfig};
+use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
-#[ignore] //Need to build DTD validation
+#[ignore]
 fn rmte2e2a() {
     /*
         Test ID:rmt-e2e-2a
@@ -17,16 +20,20 @@ fn rmte2e2a() {
         Description:Duplicate token in enumerated attribute declaration
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2a.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2a.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //Need to build DTD validation
+#[ignore]
 fn rmte2e2b() {
     /*
         Test ID:rmt-e2e-2b
@@ -35,12 +42,16 @@ fn rmte2e2b() {
         Description:Duplicate token in NOTATION attribute declaration
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2b.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2b.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -52,12 +63,16 @@ fn rmte2e9b() {
         Description:An attribute default must be syntactically correct even if unused
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9b.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9b.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -69,16 +84,24 @@ fn rmte2e14() {
         Description:Declarations mis-nested wrt parameter entities are just validity errors (but note that some parsers treat some such errors as fatal)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml").unwrap(),
-        Some(dtdfileresolve()),
-        Some("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml".to_string()),
-    ));
-    assert!(testxml.is_err());
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string());
+
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //no DTD validation
+#[ignore]
 fn rmte2e15a() {
     /*
         Test ID:rmt-e2e-15a
@@ -87,16 +110,20 @@ fn rmte2e15a() {
         Description:Empty content can't contain an entity reference
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15a.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15a.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //No DTD validation
+#[ignore]
 fn rmte2e15b() {
     /*
         Test ID:rmt-e2e-15b
@@ -105,16 +132,20 @@ fn rmte2e15b() {
         Description:Empty content can't contain a comment
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15b.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15b.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //No DTD validation
+#[ignore]
 fn rmte2e15c() {
     /*
         Test ID:rmt-e2e-15c
@@ -123,16 +154,20 @@ fn rmte2e15c() {
         Description:Empty content can't contain a PI
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15c.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15c.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //No DTD validation
+#[ignore]
 fn rmte2e15d() {
     /*
         Test ID:rmt-e2e-15d
@@ -141,16 +176,20 @@ fn rmte2e15d() {
         Description:Empty content can't contain whitespace
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15d.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15d.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore] //No DTD validation
+#[ignore]
 fn rmte2e15g() {
     /*
         Test ID:rmt-e2e-15g
@@ -159,12 +198,16 @@ fn rmte2e15g() {
         Description:Element content can't contain character reference to whitespace
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15g.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15g.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -177,12 +220,16 @@ fn rmte2e15h() {
         Description:Element content can't contain entity reference if replacement text is character reference to whitespace
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15h.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15h.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -195,10 +242,14 @@ fn rmte2e20() {
         Description:Tokens, after normalization, must be separated by space, not other whitespace characters
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E20.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E20.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

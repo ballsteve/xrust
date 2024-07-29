@@ -2,9 +2,10 @@
 Richard Tobin's XML 1.0 3rd edition errata test suite 1 June 2006
  */
 
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
 fn rmte3e12() {
@@ -15,10 +16,14 @@ fn rmte3e12() {
         Description:Default values for attributes may not contain references to external entities.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E12.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-3e/E12.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

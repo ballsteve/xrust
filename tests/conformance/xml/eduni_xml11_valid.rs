@@ -1,10 +1,15 @@
 /*
-Richard Tobin's XML 1.1 test suite 13 Feb 2003
- */
 
-use std::convert::TryFrom;
+Richard Tobin's XML 1.1 test suite 13 Feb 2003
+
+*/
+
+use crate::conformance::non_utf8_file_reader;
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
+use xrust::Node;
 
 #[test]
 #[ignore]
@@ -16,12 +21,26 @@ fn rmt006() {
         Description:Second-level external general entity has later version number than first-level, but not later than document, so not an error.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/006.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/006.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/006.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -33,12 +52,26 @@ fn rmt007() {
         Description:A vanilla XML 1.1 document
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/007.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/007.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/007.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -51,12 +84,24 @@ fn rmt010() {
         Description:Contains a C1 control, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml").as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/010.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -68,12 +113,26 @@ fn rmt012() {
         Description:Contains a DEL, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/012.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/012.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/012.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -86,12 +145,24 @@ fn rmt022() {
         Description:Has a NEL character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml").as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/022.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -104,12 +175,24 @@ fn rmt023() {
         Description:Has a NEL character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml").as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/023.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -121,15 +204,30 @@ fn rmt024() {
         Description:Has an LSEP character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/024.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/024.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/024.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
+#[ignore]
 fn rmt025() {
     /*
         Test ID:rmt-025
@@ -138,12 +236,26 @@ fn rmt025() {
         Description:Has an LSEP character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/025.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/025.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/025.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -156,12 +268,26 @@ fn rmt026() {
         Description:Has CR-NEL; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/026.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/026.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/026.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -174,15 +300,30 @@ fn rmt027() {
         Description:Has CR-NEL; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/027.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/027.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/027.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
+#[ignore]
 fn rmt028() {
     /*
         Test ID:rmt-028
@@ -191,15 +332,30 @@ fn rmt028() {
         Description:Has CR-LSEP; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1. Note that CR and LSEP are not combined into a single LF
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/028.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/028.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/028.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
+#[ignore]
 fn rmt029() {
     /*
         Test ID:rmt-029
@@ -208,12 +364,26 @@ fn rmt029() {
         Description:Has CR-LSEP; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/029.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/029.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/029.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -226,16 +396,27 @@ fn rmt031() {
         Description:Has a NEL character in an NMTOKENS attribute; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml").as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/031.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
-#[ignore]
 fn rmt033() {
     /*
         Test ID:rmt-033
@@ -244,16 +425,29 @@ fn rmt033() {
         Description:Has an LSEP character in an NMTOKENS attribute; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/033.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/033.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/033.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
-#[ignore]
 fn rmt034() {
     /*
         Test ID:rmt-034
@@ -262,16 +456,29 @@ fn rmt034() {
         Description:Has an NMTOKENS attribute containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/034.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/034.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/034.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
-#[ignore]
 fn rmt035() {
     /*
         Test ID:rmt-035
@@ -280,12 +487,26 @@ fn rmt035() {
         Description:Has an NMTOKENS attribute containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/035.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/035.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/035.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -298,16 +519,27 @@ fn rmt040() {
         Description:Contains a C1 control character (partial line up), legal in XML 1.0 but not 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml").as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/040.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
-#[ignore]
 fn rmt043() {
     /*
         Test ID:rmt-043
@@ -316,12 +548,26 @@ fn rmt043() {
         Description:Contains a character reference to a C0 control character (form-feed), legal in XML 1.1 but not 1.0
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/043.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/043.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/043.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -333,12 +579,26 @@ fn rmt044() {
         Description:Contains a character reference to a C1 control character (partial line up), legal in both XML 1.0 and 1.1 (but for different reasons)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/044.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/044.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/044.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -350,12 +610,26 @@ fn rmt045() {
         Description:Contains a character reference to a C1 control character (partial line up), legal in both XML 1.0 and 1.1 (but for different reasons)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/045.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/045.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/045.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -368,15 +642,28 @@ fn rmt047() {
         Description:Has a NEL character in element content whitespace; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml").as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/047.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
+#[ignore]
 fn rmt049() {
     /*
         Test ID:rmt-049
@@ -385,12 +672,26 @@ fn rmt049() {
         Description:has an LSEP character in element content whitespace; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/049.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/049.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/049.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -402,12 +703,26 @@ fn rmt050() {
         Description:Has element content whitespace containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/050.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/050.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/050.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -419,12 +734,26 @@ fn rmt051() {
         Description:Has element content whitespace containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/051.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/051.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/051.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -437,10 +766,24 @@ fn rmt054() {
         Description:Contains a character reference to a C0 control character (form-feed) in an entity value. This will be legal (in XML 1.1) when the entity declaration is parsed, but what about when it is used? According to the grammar in the CR spec, it should be illegal (because the replacement text must match "content"), but this is probably not intended. This will be fixed in the PR version.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/054.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/054.xml")
+            .unwrap()
+            .as_str(),
         None,
+    );
+    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/054.xml")
+            .unwrap()
+            .as_str(),
         None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
 }

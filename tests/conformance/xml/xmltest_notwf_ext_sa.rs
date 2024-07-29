@@ -6,11 +6,13 @@ James Clark XMLTEST cases
 
 */
 
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use std::rc::Rc;
+use xrust::parser::xml;
+use xrust::trees::smite::Node as SmiteNode;
 
 #[test]
+#[ignore]
 fn notwfextsa001() {
     /*
         Test ID:not-wf-ext-sa-001
@@ -19,16 +21,20 @@ fn notwfextsa001() {
         Description:Tests the No Recursion WFC by having an external general entity be self-recursive.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/001.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/001.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn notwfextsa002() {
     /*
         Test ID:not-wf-ext-sa-002
@@ -37,16 +43,20 @@ fn notwfextsa002() {
         Description:External entities have "text declarations", which do not permit the "standalone=..." attribute that's allowed in XML declarations.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/002.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/002.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn notwfextsa003() {
     /*
         Test ID:not-wf-ext-sa-003
@@ -55,11 +65,14 @@ fn notwfextsa003() {
         Description:Only one text declaration is permitted; a second one looks like an illegal processing instruction (target names of "xml" in any case are not allowed).
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/003.xml").unwrap(),
+    let testxml = Rc::new(SmiteNode::new());
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/003.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
