@@ -571,4 +571,5 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
             _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
         }
     }
+    fn namespace_iter(&self) -> Self::NodeIterator;
 }

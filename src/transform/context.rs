@@ -73,7 +73,7 @@ pub struct Context<N: Node> {
     pub(crate) base_url: Option<Url>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
     // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
-    pub(crate) namespaces: Vec<HashMap<String, String>>,
+    pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
 }
 
 impl<N: Node> Context<N> {
@@ -103,11 +103,11 @@ impl<N: Node> Context<N> {
         self.i = i;
     }
     /// Sets the XML Namespaces.
-    pub fn namespaces(&mut self, ns: Vec<HashMap<String, String>>) {
+    pub fn namespaces(&mut self, ns: Vec<HashMap<Option<String>, String>>) {
         self.namespaces = ns;
     }
     /// Gets the XML Namespaces.
-    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
+    pub fn namespaces_ref(&self) -> &Vec<HashMap<Option<String>, String>> {
         &self.namespaces
     }
     /// Sets the "current" item.
@@ -549,7 +549,7 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
-    pub fn namespaces(mut self, ns: Vec<HashMap<String, String>>) -> Self {
+    pub fn namespaces(mut self, ns: Vec<HashMap<Option<String>, String>>) -> Self {
         self.0.namespaces = ns;
         self
     }

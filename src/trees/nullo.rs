@@ -59,6 +59,9 @@ impl Node for Nullo {
     fn child_iter(&self) -> Self::NodeIterator {
         Box::new(NulloIter::new())
     }
+    fn namespace_iter(&self) -> Self::NodeIterator {
+        Box::new(NulloIter::new())
+    }
     fn ancestor_iter(&self) -> Self::NodeIterator {
         Box::new(NulloIter::new())
     }
