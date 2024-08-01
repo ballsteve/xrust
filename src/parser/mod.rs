@@ -127,10 +127,9 @@ pub struct ParserState<N: Node> {
 
     dtd: DTD,
     /*
-    The namespaces are tracked in a hashmap of vectors, each prefix tracking which namespace you
-    are dealing with in case aliases are redeclared in the child elements.
-    NOTE: the "xmlns" vector in this hashmap is NOT the real xml namespace prefix, it is used to
-    track the namespace when no alias is declared with the namespace.
+        The namespaces are tracked in a vector of hashmaps, added and removed as you go up and down
+        paths in the document.
+        NOTE: the "None" key in this hashmap is used to track the namespace when no alias is declared.
      */
     namespace: Vec<HashMap<Option<String>, String>>,
     /* Do we add the parents namespace nodes to an element? */
