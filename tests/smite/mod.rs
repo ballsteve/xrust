@@ -55,7 +55,9 @@ pub fn make_from_str(s: &str) -> Result<RNode, Error> {
 }
 
 #[allow(dead_code)]
-pub fn make_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<Option<String>, String>>), Error> {
+pub fn make_from_str_with_ns(
+    s: &str,
+) -> Result<(RNode, Vec<HashMap<Option<String>, String>>), Error> {
     let doc = Rc::new(SmiteNode::new());
     let r = parse_with_ns(doc.clone(), s, None)?;
     Ok(r)

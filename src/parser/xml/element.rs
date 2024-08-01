@@ -39,7 +39,7 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
             Ok(((input1, mut state1), (_, n, (av, namespaces), _, _))) => {
                 let mut ens = n.get_nsuri();
                 match state1.namespace.pop() {
-                //match state1.namespaces_ref().iter().last() {
+                    //match state1.namespaces_ref().iter().last() {
                     None => {
                         //No namespace to assign.
                     }
@@ -129,7 +129,7 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                         //No namespace to assign.
                     }
                     Some(ns) => {
-                        let ns_to_check = n.get_prefix();//.unwrap_or_else(|| "xmlns".to_string());
+                        let ns_to_check = n.get_prefix(); //.unwrap_or_else(|| "xmlns".to_string());
                         if ns_to_check == Some("xml".to_string()) {
                             ens = Some("http://www.w3.org/XML/1998/namespace".to_string());
                         } else {
@@ -147,8 +147,9 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                     }
                 };
                 let d = state1.doc.clone().unwrap();
-                let mut e = d.new_element(QualifiedName::new(ens, n.get_prefix(), n.get_localname()))
-                        .expect("unable to create element");
+                let mut e = d
+                    .new_element(QualifiedName::new(ens, n.get_prefix(), n.get_localname()))
+                    .expect("unable to create element");
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
                 //Add namespace nodes

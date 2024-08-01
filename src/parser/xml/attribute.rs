@@ -18,8 +18,12 @@ use crate::value::Value;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub(crate) fn attributes<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Vec<N>, HashMap<Option<String>, String>)), ParseError> {
+pub(crate) fn attributes<N: Node>() -> impl Fn(
+    ParseInput<N>,
+) -> Result<
+    (ParseInput<N>, (Vec<N>, HashMap<Option<String>, String>)),
+    ParseError,
+> {
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
             let n: HashMap<Option<String>, String> = HashMap::new();
@@ -90,19 +94,16 @@ pub(crate) fn attributes<N: Node>(
                     )));
                 }
 
-                if qn.get_prefix() == Some("xmlns".to_string())
-                {
+                if qn.get_prefix() == Some("xmlns".to_string()) {
                     namespaces.insert(Some(qn.get_localname()), val.to_string());
                     resnsnodes.insert(Some(qn.get_localname()), val.to_string());
                 };
-                if qn.get_localname() == *"xmlns" && !val.is_empty()
-                {
+                if qn.get_localname() == *"xmlns" && !val.is_empty() {
                     namespaces.insert(None, val.to_string());
                     resnsnodes.insert(None, val.to_string());
                 };
                 //If the namespace is set like xmlns="", we remove from the list
-                if qn.get_localname() == *"xmlns" && val.is_empty()
-                {
+                if qn.get_localname() == *"xmlns" && val.is_empty() {
                     namespaces.remove(&None);
                     resnsnodes.remove(&None);
                 };

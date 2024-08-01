@@ -1246,26 +1246,20 @@ impl Iterator for Attributes {
 
 pub struct NamespaceNodes {
     ns: Vec<RNode>,
-    cur: usize
+    cur: usize,
 }
 impl NamespaceNodes {
     fn new(n: &RNode) -> Self {
         if let NodeInner::Element(_, _, _, _, namespaces) = &n.0 {
             let b = namespaces.borrow();
-            let mut res= vec![];
+            let mut res = vec![];
             for (_, ns) in b.iter() {
                 res.push(ns.clone())
             }
-            NamespaceNodes {
-                ns: res,
-                cur:0
-            }
+            NamespaceNodes { ns: res, cur: 0 }
         } else {
             // Other types of nodes don't have namespace nodes, so always return empty sequence
-            NamespaceNodes {
-                ns: vec![],
-                cur:0
-            }
+            NamespaceNodes { ns: vec![], cur: 0 }
         }
     }
 }
@@ -1281,7 +1275,7 @@ impl Iterator for NamespaceNodes {
             None => None,
         }
     }
-    }
+}
 
 #[cfg(test)]
 mod tests {

@@ -172,7 +172,10 @@ impl<N: Node> ParserState<N> {
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
-            namespace: vec![HashMap::from([(Some("xml".to_string()), "http://www.w3.org/XML/1998/namespace".to_string())])],
+            namespace: vec![HashMap::from([(
+                Some("xml".to_string()),
+                "http://www.w3.org/XML/1998/namespace".to_string(),
+            )])],
             namespace_nodes: pc.namespace_nodes,
             maxentitydepth: pc.entitydepth,
             currententitydepth: 1,
