@@ -18,12 +18,23 @@ use crate::value::Value;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-pub(crate) fn attributes<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn attributes<N: Node>() -> impl Fn(
+    ParseInput<N>,
+) -> Result<
+    (ParseInput<N>, (Vec<N>, HashMap<Option<String>, String>)),
+    ParseError,
+> {
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
-            let n: HashMap<String, String> = HashMap::new();
+            let n: HashMap<Option<String>, String> = HashMap::new();
             let mut namespaces = state1.namespace.last().unwrap_or(&n).clone();
+
+            let mut resnsnodes = if state1.namespace_nodes {
+                state1.namespace.last().unwrap_or(&n).clone()
+            } else {
+                HashMap::new()
+            };
+
             for (qn, val) in nodes.clone() {
                 //Return error if someone attempts to redefine namespaces.
                 if (qn.get_prefix() == Some("xmlns".to_string()))
@@ -83,10 +94,18 @@ pub(crate) fn attributes<N: Node>(
                     )));
                 }
 
-                if (qn.get_prefix() == Some("xmlns".to_string()))
-                    || (qn.get_localname() == *"xmlns")
-                {
-                    namespaces.insert(qn.get_localname(), val.to_string());
+                if qn.get_prefix() == Some("xmlns".to_string()) {
+                    namespaces.insert(Some(qn.get_localname()), val.to_string());
+                    resnsnodes.insert(Some(qn.get_localname()), val.to_string());
+                };
+                if qn.get_localname() == *"xmlns" && !val.is_empty() {
+                    namespaces.insert(None, val.to_string());
+                    resnsnodes.insert(None, val.to_string());
+                };
+                //If the namespace is set like xmlns="", we remove from the list
+                if qn.get_localname() == *"xmlns" && val.is_empty() {
+                    namespaces.remove(&None);
+                    resnsnodes.remove(&None);
                 };
 
                 //Check if the xml:space attribute is present and if so, does it have
@@ -113,7 +132,7 @@ pub(crate) fn attributes<N: Node>(
                     if let Some(ns) = qn.get_prefix() {
                         if ns == *"xml" {
                             let _ = qn.resolve(&vec![HashMap::from([(
-                                "xml".to_string(),
+                                Some("xml".to_string()),
                                 "http://www.w3.org/XML/1998/namespace".to_string(),
                             )])]);
                         } else {
@@ -140,7 +159,7 @@ pub(crate) fn attributes<N: Node>(
                     }
                 }
             }
-            Ok(((input1, state1), resnodes))
+            Ok(((input1, state1), (resnodes, resnsnodes)))
         }
         Err(err) => Err(err),
     }

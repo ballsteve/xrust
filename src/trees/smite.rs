@@ -81,8 +81,8 @@ enum NodeInner {
     Namespace(
         RefCell<Weak<Node>>, //Parent
         Option<String>,      //Prefix
-        String,
-    ), //URI
+        String,              //URI
+    ),
 }
 pub struct Node(NodeInner);
 
@@ -310,6 +310,9 @@ impl ItemNode for RNode {
     }
     fn attribute_iter(&self) -> Self::NodeIterator {
         Box::new(Attributes::new(self))
+    }
+    fn namespace_iter(&self) -> Self::NodeIterator {
+        Box::new(NamespaceNodes::new(self))
     }
     fn get_attribute(&self, a: &QualifiedName) -> Rc<Value> {
         match &self.0 {
@@ -553,9 +556,10 @@ impl ItemNode for RNode {
                 detach(ns.clone());
                 // Now add to this parent
                 // TODO: deal with same name being redefined
-                if let NodeInner::Namespace(_, _, _) = &ns.0 {
-                    let _ = n.borrow_mut().insert(ns.name().get_prefix(), ns.clone());
+                if let NodeInner::Namespace(_, alias, _) = &m.0 {
+                    let _ = n.borrow_mut().insert(alias.clone(), ns.clone());
                 }
+
                 make_parent(ns, self.clone());
                 Ok(())
             }
@@ -833,6 +837,7 @@ fn make_parent(n: RNode, b: RNode) {
         | NodeInner::Attribute(p, _, _)
         | NodeInner::Text(p, _)
         | NodeInner::Comment(p, _)
+        | NodeInner::Namespace(p, _, _)
         | NodeInner::ProcessingInstruction(p, _, _) => *p.borrow_mut() = Rc::downgrade(&b),
         _ => panic!("unable to change parent"),
     }
@@ -845,6 +850,7 @@ fn detach(n: RNode) {
         | NodeInner::Attribute(p, _, _)
         | NodeInner::Text(p, _)
         | NodeInner::Comment(p, _)
+        | NodeInner::Namespace(p, _, _)
         | NodeInner::ProcessingInstruction(p, _, _) => {
             let doc = Weak::upgrade(&p.borrow()).unwrap();
             match &doc.0 {
@@ -1235,6 +1241,39 @@ impl Iterator for Attributes {
 
     fn next(&mut self) -> Option<RNode> {
         self.it.as_mut().and_then(|i| i.next().map(|(_, n)| n))
+    }
+}
+
+pub struct NamespaceNodes {
+    ns: Vec<RNode>,
+    cur: usize,
+}
+impl NamespaceNodes {
+    fn new(n: &RNode) -> Self {
+        if let NodeInner::Element(_, _, _, _, namespaces) = &n.0 {
+            let b = namespaces.borrow();
+            let mut res = vec![];
+            for (_, ns) in b.iter() {
+                res.push(ns.clone())
+            }
+            NamespaceNodes { ns: res, cur: 0 }
+        } else {
+            // Other types of nodes don't have namespace nodes, so always return empty sequence
+            NamespaceNodes { ns: vec![], cur: 0 }
+        }
+    }
+}
+impl Iterator for NamespaceNodes {
+    type Item = RNode;
+
+    fn next(&mut self) -> Option<RNode> {
+        match self.ns.get(self.cur) {
+            Some(ns) => {
+                self.cur += 1;
+                Some(ns.clone())
+            }
+            None => None,
+        }
     }
 }
 

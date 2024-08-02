@@ -122,7 +122,7 @@ pub trait XSLT: Node {
 /// They are not included in this module since some environments, in particular Wasm, do not have I/O facilities.
 pub fn from_document<N: Node, F, G>(
     styledoc: N,
-    stylens: Vec<HashMap<String, String>>,
+    stylens: Vec<HashMap<Option<String>, String>>,
     base: Option<Url>,
     f: F,
     g: G,
@@ -650,7 +650,7 @@ where
 /// Compile a node in a template to a sequence [Combinator]
 fn to_transform<N: Node>(
     n: N,
-    ns: &Vec<HashMap<String, String>>,
+    ns: &Vec<HashMap<Option<String>, String>>,
     attr_sets: &HashMap<QualifiedName, Vec<Transform<N>>>,
 ) -> Result<Transform<N>, Error> {
     match n.node_type() {

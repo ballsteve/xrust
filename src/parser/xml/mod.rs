@@ -30,7 +30,7 @@ pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
-) -> Result<(N, Vec<HashMap<String, String>>), Error> {
+) -> Result<(N, Vec<HashMap<Option<String>, String>>), Error> {
     let state = ParserState::new(Some(doc), config);
     match document((input, state)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespaces_ref().clone())),

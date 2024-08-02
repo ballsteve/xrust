@@ -52,11 +52,56 @@ pub struct ParserConfig {
     /// The location of the string being parsed, which can be provided to your resolver to work out
     /// relative URLs
     pub docloc: Option<String>,
-    /// How many recursive layers on entity expansion. Default is 8 levels.
+    /// Recursive entity depth, please note that setting this to a high value may leave
+    /// you prone to the "billion laughs" attack. Set to eight by default.
     pub entitydepth: usize,
-    /// Default is false, sets the parser to generate XDM namespace nodes on elements.
-    /// Namespaces will still be applied to elements and attributes, and on elements where
-    /// The namespace declaration is present, this value only affects inherited namespace nodes.
+    ///        Description: The XDM3 specifies that namespace nodes are optional, and only really required
+    ///        if you intend to implement the namespace axis.
+    ///
+    ///        Consider a document like:
+    ///
+    ///        \<doc
+    ///              xmlns:a="namespace1"
+    ///              xmlns:b="namespace2"
+    ///              xmlns:c="namespace3"
+    ///              xmlns:d="namespace4"
+    ///              xmlns:e="namespace5"
+    ///          \>
+    ///          \<element1/\>
+    ///          \<element2/\>
+    ///          \<element3/\>
+    ///          \<!-- cut --\>
+    ///          \<element4998/\>
+    ///          \<element4999/\>
+    ///          \<element5000/\>
+    ///        \</doc\>
+    ///
+    ///        If the parser were to create all the namespace nodes required for the above document,
+    ///        we would need to create tens of thousands of nodes that may not serve any purpose.
+    ///
+    ///        The namespace_nodes value is false by default, set it to true for the parser to create the
+    ///        proper namespace nodes on each element.
+    ///
+    ///        However, we do want to track namespaces for custom function declarations, a document like:
+    ///
+    ///        \<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
+    ///                        xmlns:xs="http://www.w3.org/2001/XMLSchema"
+    ///                        xmlns:xr="xRust"
+    ///                        \>
+    ///            \<xsl:function name="xr:myfun" as="xs:integer"\>
+    ///                \<xsl:param name="input" as="xs:integer"/\>
+    ///                \<xsl:value-of select="$input + 2"/\>
+    ///            \</xsl:function\>
+    ///        \</xsl:stylesheet\>
+    ///
+    ///        still needs to track the "xRust" namespace.
+    ///
+    ///        For this reason, regardless of the configured setting, namespace nodes will still be created
+    ///        for each element where a namespace has been declared.
+    ///
+    ///        If this setting is true, the "xml" namespace node (http://www.w3.org/XML/1998/namespace)
+    ///        will be added regardless of it being declared or not.
+    ///
     pub namespace_nodes: bool,
 }
 
@@ -82,14 +127,13 @@ pub struct ParserState<N: Node> {
 
     dtd: DTD,
     /*
-    The namespaces are tracked in a hashmap of vectors, each prefix tracking which namespace you
-    are dealing with in case aliases are redeclared in the child elements.
-    NOTE: the "xmlns" vector in this hashmap is NOT the real xml namespace prefix, it is used to
-    track the namespace when no alias is declared with the namespace.
+        The namespaces are tracked in a vector of hashmaps, added and removed as you go up and down
+        paths in the document.
+        NOTE: the "None" key in this hashmap is used to track the namespace when no alias is declared.
      */
-    namespace: Vec<HashMap<String, String>>,
+    namespace: Vec<HashMap<Option<String>, String>>,
     /* Do we add the parents namespace nodes to an element? */
-    //namespace_nodes: bool,
+    namespace_nodes: bool,
     standalone: bool,
     xmlversion: String,
     /*
@@ -127,8 +171,11 @@ impl<N: Node> ParserState<N> {
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
-            namespace: vec![],
-            //namespace_nodes: pc.namespace_nodes,
+            namespace: vec![HashMap::from([(
+                Some("xml".to_string()),
+                "http://www.w3.org/XML/1998/namespace".to_string(),
+            )])],
+            namespace_nodes: pc.namespace_nodes,
             maxentitydepth: pc.entitydepth,
             currententitydepth: 1,
             currentcol: 1,
@@ -161,7 +208,7 @@ impl<N: Node> ParserState<N> {
         self.doc.clone()
     }
     /// Get a copy of all namespaces
-    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
+    pub fn namespaces_ref(&self) -> &Vec<HashMap<Option<String>, String>> {
         &self.namespace
     }
     pub fn resolve(self, locdir: Option<String>, uri: String) -> Result<String, Error> {

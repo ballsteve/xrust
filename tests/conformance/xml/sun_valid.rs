@@ -34,7 +34,10 @@ fn pe01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -65,7 +68,10 @@ fn dtd00() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -96,7 +102,10 @@ fn dtd01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -127,7 +136,10 @@ fn element() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -159,7 +171,10 @@ fn ext01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -191,7 +206,10 @@ fn ext02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -227,7 +245,10 @@ fn notsa01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -259,7 +280,10 @@ fn notsa02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -291,7 +315,10 @@ fn notsa03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -323,7 +350,10 @@ fn notsa04() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -355,7 +385,10 @@ fn notation01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -387,7 +420,10 @@ fn optional() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -418,7 +454,10 @@ fn required00() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -449,7 +488,10 @@ fn sa01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -481,7 +523,10 @@ fn sa02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -513,7 +558,10 @@ fn sa03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -545,7 +593,10 @@ fn sa04() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -580,7 +631,10 @@ fn sa05() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -612,7 +666,10 @@ fn vsgml01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -643,7 +700,10 @@ fn vlang01() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -674,7 +734,10 @@ fn vlang02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -705,7 +768,10 @@ fn vlang03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -736,7 +802,10 @@ fn vlang04() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -767,7 +836,10 @@ fn vlang05() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -798,7 +870,10 @@ fn vlang06() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -830,7 +905,10 @@ fn vpe00() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -861,7 +939,10 @@ fn vpe03() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -893,5 +974,8 @@ fn vpe02() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    assert_eq!(parseresult.unwrap().get_canonical().unwrap(), canonicalparseresult.unwrap());
+    assert_eq!(
+        parseresult.unwrap().get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }

@@ -36,27 +36,27 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
             tag("/>"),
         )(input)
         {
-            Ok(((input1, state1), (_, n, av, _, _))) => {
+            Ok(((input1, mut state1), (_, n, (av, namespaces), _, _))) => {
                 let mut ens = n.get_nsuri();
-                //match state1.namespace.pop() {
-                match state1.namespaces_ref().iter().last() {
+                match state1.namespace.pop() {
+                    //match state1.namespaces_ref().iter().last() {
                     None => {
                         //No namespace to assign.
                     }
                     Some(ns) => {
-                        let ns_to_check = n.get_prefix().unwrap_or_else(|| "xmlns".to_string());
-                        if ns_to_check == *"xml" {
+                        let ns_to_check = n.get_prefix(); //.unwrap_or_else(|| "xmlns".to_string());
+                        if ns_to_check == Some("xml".to_string()) {
                             ens = Some("http://www.w3.org/XML/1998/namespace".to_string())
                         } else {
-                            match ns.get(&*ns_to_check) {
+                            match ns.get(&ns_to_check) {
                                 None => {
-                                    if ns_to_check != *"xmlns" {
+                                    if ns_to_check.is_some() {
                                         return Err(ParseError::MissingNameSpace);
                                     }
                                 }
                                 Some(nsuri) => {
                                     /* In XML 1.1, you cannot set a namespace alias to empty and then use it. */
-                                    if ns_to_check != *"xmlns"
+                                    if ns_to_check.is_some()
                                         && nsuri.is_empty()
                                         && state1.xmlversion == "1.1"
                                     {
@@ -79,39 +79,16 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
                 //Add namespace nodes
-                /*
-                match namespaces {
-                    None => {
-                        //No namespace to assign, we only assign the XML prefix.
-                        e.add_namespace(
-                            e.new_namespace(
-                                "xml".to_string(),
-                                "http://www.w3.org/XML/1998/namespace".to_string()
-                            ).unwrap()
-                        ).expect("unable to add namespace node");
-                    }
-                    Some(ns) => {
-                        ns.iter().for_each(|(p, u)| {
-                            e.add_namespace(
-                                e.new_namespace(
-                                    p.to_string(),
-                                    u.to_string()
-                                ).unwrap()
-                            ).expect("unable to add namespace node");
-                        });
-                        //Check if XML NS was added, add if not.
-                        if ns.get("xml").is_none() {
-                            e.add_namespace(
-                                e.new_namespace(
-                                    "xml".to_string(),
-                                    "http://www.w3.org/XML/1998/namespace".to_string()
-                                ).unwrap()
-                            ).expect("unable to add namespace node");
-                        }
-                    }
+                for (nsname, nsuri) in namespaces {
+                    let nsn = state1
+                        .doc
+                        .clone()
+                        .unwrap()
+                        .new_namespace(nsuri, nsname)
+                        .expect("unable to create Namespace Node");
+                    e.add_namespace(nsn).expect("unable to add Namespace Node");
                 }
 
-                 */
                 Ok(((input1, state1.clone()), e))
             }
             Err(err) => Err(err),
@@ -144,7 +121,7 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
             |(_, n, _a, _, _, _c, _, e, _, _)| n.to_string() == e.to_string(),
         )(input)
         {
-            Ok(((input1, state1), (_, n, av, _, _, c, _, _, _, _))) => {
+            Ok(((input1, state1), (_, n, (av, namespaces), _, _, c, _, _, _, _))) => {
                 let mut ens = n.get_nsuri();
                 //match state1.namespace.pop() {
                 match state1.namespaces_ref().iter().last() {
@@ -152,13 +129,13 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                         //No namespace to assign.
                     }
                     Some(ns) => {
-                        let ns_to_check = n.get_prefix().unwrap_or_else(|| "xmlns".to_string());
-                        if ns_to_check == *"xml" {
+                        let ns_to_check = n.get_prefix(); //.unwrap_or_else(|| "xmlns".to_string());
+                        if ns_to_check == Some("xml".to_string()) {
                             ens = Some("http://www.w3.org/XML/1998/namespace".to_string());
                         } else {
-                            match ns.get(&*ns_to_check) {
+                            match ns.get(&ns_to_check) {
                                 None => {
-                                    if ns_to_check != *"xmlns" {
+                                    if ns_to_check.is_some() {
                                         return Err(ParseError::MissingNameSpace);
                                     }
                                 }
@@ -169,14 +146,20 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                         }
                     }
                 };
-                let mut e = state1
-                    .doc
-                    .clone()
-                    .unwrap()
+                let d = state1.doc.clone().unwrap();
+                let mut e = d
                     .new_element(QualifiedName::new(ens, n.get_prefix(), n.get_localname()))
                     .expect("unable to create element");
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
+                //Add namespace nodes
+                for (nsname, nsuri) in namespaces {
+                    let nsn = d
+                        .new_namespace(nsuri, nsname)
+                        .expect("unable to create Namespace Node");
+                    e.add_namespace(nsn).expect("unable to add Namespace Node");
+                }
+                // Add child nodes
                 c.iter().for_each(|d| {
                     e.push(d.clone()).expect("unable to add node");
                 });

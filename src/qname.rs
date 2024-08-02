@@ -51,14 +51,17 @@ impl QualifiedName {
     /// then find the prefix in the supplied namespaces and use the corresponding URI.
     /// If the qualified name already has a namespace URI, then this method has no effect.
     /// If the qualified name has no prefix, then this method has no effect.
-    pub fn resolve(&mut self, namespaces: &Vec<HashMap<String, String>>) -> Result<(), Error> {
+    pub fn resolve(
+        &mut self,
+        namespaces: &Vec<HashMap<Option<String>, String>>,
+    ) -> Result<(), Error> {
         match (&self.prefix, &self.nsuri) {
             (Some(p), None) => namespaces.iter().last().map_or(
                 Err(Error::new(
                     ErrorKind::DynamicAbsent,
                     format!("no namespaces to resolve prefix \"{}\"", p),
                 )),
-                |v| match v.get(p) {
+                |v| match v.get(&Some(p.clone())) {
                     Some(u) => {
                         self.nsuri = Some(u.clone());
                         Ok(())
@@ -172,20 +175,17 @@ impl TryFrom<&str> for QualifiedName {
 /// Parse a string to create a [QualifiedName].
 /// Resolve prefix against a set of XML Namespace declarations
 /// QualifiedName ::= (prefix ":")? local-name
-impl TryFrom<(&str, &Vec<HashMap<String, String>>)> for QualifiedName {
+impl TryFrom<(&str, &Vec<HashMap<Option<String>, String>>)> for QualifiedName {
     type Error = Error;
-    fn try_from(s: (&str, &Vec<HashMap<String, String>>)) -> Result<Self, Self::Error> {
+    fn try_from(s: (&str, &Vec<HashMap<Option<String>, String>>)) -> Result<Self, Self::Error> {
         let state: ParserState<Nullo> = ParserState::new(None, None);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.get_prefix().is_some() && qn.get_nsuri_ref().is_none() {
-                    match s
-                        .1
-                        .iter()
-                        .try_for_each(|h| match h.get(&qn.get_prefix().unwrap()) {
-                            Some(ns) => ControlFlow::Break(ns.clone()),
-                            None => ControlFlow::Continue(()),
-                        }) {
+                    match s.1.iter().try_for_each(|h| match h.get(&qn.get_prefix()) {
+                        Some(ns) => ControlFlow::Break(ns.clone()),
+                        None => ControlFlow::Continue(()),
+                    }) {
                         ControlFlow::Break(ns) => Ok(QualifiedName::new(
                             Some(ns),
                             Some(qn.get_prefix().unwrap()),
