@@ -51,13 +51,13 @@ fn parser_config_namespace_nodes_1() {
         .next()
         .unwrap();
 
-    assert_eq!(doc.namespace_iter().count(), 6);
-    assert_eq!(element1.namespace_iter().count(), 0);
-    assert_eq!(element2.namespace_iter().count(), 1);
-    assert_eq!(element3.namespace_iter().count(), 1);
-    assert_eq!(element4.namespace_iter().count(), 1);
-    assert_eq!(element5.namespace_iter().count(), 0);
-    assert_eq!(element6.namespace_iter().count(), 0);
+    assert_eq!(doc.namespace_iter().count(), 7);
+    assert_eq!(element1.namespace_iter().count(), 7);
+    assert_eq!(element2.namespace_iter().count(), 7);
+    assert_eq!(element3.namespace_iter().count(), 8);
+    assert_eq!(element4.namespace_iter().count(), 8);
+    assert_eq!(element5.namespace_iter().count(), 7);
+    assert_eq!(element6.namespace_iter().count(), 7);
 }
 
 #[test]
@@ -156,6 +156,6 @@ fn parser_config_namespace_nodes_3() {
     assert_eq!(element2.namespace_iter().count(), 7);
     assert_eq!(element3.namespace_iter().count(), 8);
     assert_eq!(element4.namespace_iter().count(), 8);
-    assert_eq!(element5.namespace_iter().count(), 6);
-    assert_eq!(element6.namespace_iter().count(), 6);
+    assert_eq!(element5.namespace_iter().count(), 7);
+    assert_eq!(element6.namespace_iter().count(), 7);
 }

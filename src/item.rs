@@ -571,5 +571,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
             _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
         }
     }
+    /// An iterator over the namespace nodes of an element. Note: These nodes are calculated
+    /// at the time the iterator is called, it is not guaranteed that the namespace nodes returned
+    /// will specify the current element node as their parent.
     fn namespace_iter(&self) -> Self::NodeIterator;
 }
