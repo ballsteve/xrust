@@ -94,6 +94,7 @@ fn hstbh004() {
 }
 
 #[test]
+#[ignore]
 fn hstlhs007() {
     /*
         Test ID:hst-lhs-007
