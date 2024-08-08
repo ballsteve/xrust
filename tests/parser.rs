@@ -3,7 +3,7 @@
 University of Edinburgh XML 1.0 4th edition errata test suite.
 
 */
-
+use std::fs;
 use std::rc::Rc;
 use xrust::item::NodeType;
 use xrust::parser::{xml, ParserConfig};
@@ -158,4 +158,22 @@ fn parser_config_namespace_nodes_3() {
     assert_eq!(element4.namespace_iter().count(), 8);
     assert_eq!(element5.namespace_iter().count(), 7);
     assert_eq!(element6.namespace_iter().count(), 7);
+}
+
+
+#[test]
+fn parser_issue_94() {
+    /*
+        Github issue number 94
+
+        Although rare, UTF-8 strings can start with a byte order mark, we strip this automatically.
+    */
+
+    let data = fs::read_to_string("tests/xml/issue-94.xml").unwrap();
+    let source = Rc::new(SmiteNode::new());
+
+    let parseresult = xml::parse(source.clone(), &data, None);
+
+    assert!(parseresult.is_ok())
+
 }
