@@ -160,7 +160,6 @@ fn parser_config_namespace_nodes_3() {
     assert_eq!(element6.namespace_iter().count(), 7);
 }
 
-
 #[test]
 fn parser_issue_94() {
     /*
@@ -175,5 +174,4 @@ fn parser_issue_94() {
     let parseresult = xml::parse(source.clone(), &data, None);
 
     assert!(parseresult.is_ok())
-
 }

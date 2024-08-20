@@ -218,12 +218,10 @@ impl ItemNode for RNode {
                 let r: QualifiedName = (*qn.clone()).clone();
                 r
             }
-            NodeInner::Namespace(_,p,_) => {
-                match p {
-                    None => QualifiedName::new(None, None, String::from("")),
-                    Some(pf) => {QualifiedName::new(None, None, String::from(pf))}
-                }
-            }
+            NodeInner::Namespace(_, p, _) => match p {
+                None => QualifiedName::new(None, None, String::from("")),
+                Some(pf) => QualifiedName::new(None, None, String::from(pf)),
+            },
             _ => QualifiedName::new(None, None, String::from("")),
         }
     }
@@ -1257,21 +1255,20 @@ pub struct NamespaceNodes {
 impl NamespaceNodes {
     fn new(n: &RNode) -> Self {
         if let NodeInner::Element(_, _, _, _, namespaces) = &n.0 {
-
-            let parent_nsnodes = match n.parent(){
-                Some(p) => {
-                    p.namespace_iter()
-                }
-                None => {
-                    Box::new(NamespaceNodes { ns: vec![], cur: 0 }) }
+            let parent_nsnodes = match n.parent() {
+                Some(p) => p.namespace_iter(),
+                None => Box::new(NamespaceNodes { ns: vec![], cur: 0 }),
             };
 
-            let xns = n.new_namespace("http://www.w3.org/XML/1998/namespace".to_string(),Some("xml".to_string()))
+            let xns = n
+                .new_namespace(
+                    "http://www.w3.org/XML/1998/namespace".to_string(),
+                    Some("xml".to_string()),
+                )
                 .expect("Unable to generate xml namespace");
 
             let mut nshm = HashMap::new();
             nshm.insert(Some("xml".to_string()), xns);
-
 
             for node in parent_nsnodes {
                 if node.name().get_localname().is_empty() {

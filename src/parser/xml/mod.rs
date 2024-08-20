@@ -11,6 +11,7 @@ mod xmldecl;
 use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
+use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple4;
 use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::element::element;
@@ -20,7 +21,6 @@ use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use std::collections::HashMap;
-use crate::parser::combinators::tag::tag;
 
 pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;
@@ -149,7 +149,6 @@ fn prolog<N: Node>(
     )
 }
 
-fn utf8bom<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>{
+fn utf8bom<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     tag("\u{feff}")
 }
