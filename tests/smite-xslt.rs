@@ -229,3 +229,30 @@ fn xslt_attr_set_3() {
     )
     .expect("test failed")
 }
+#[test]
+fn xslt_issue_96_abs() {
+    xsltgeneric::issue_96_abs(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_issue_96_rel() {
+    xsltgeneric::issue_96_rel(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
+fn xslt_issue_96_mixed() {
+    xsltgeneric::issue_96_mixed(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}

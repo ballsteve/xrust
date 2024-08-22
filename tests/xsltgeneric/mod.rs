@@ -20,8 +20,14 @@ where
     H: Fn() -> Result<N, Error>,
     J: Fn(&str) -> Result<(N, Vec<HashMap<Option<String>, String>>), Error>,
 {
-    let srcdoc = parse_from_str(src.as_ref())?;
-    let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())?;
+    let srcdoc = parse_from_str(src.as_ref()).map_err(|e| {
+        Error::new(
+            e.kind,
+            format!("error parsing source document: {}", e.message),
+        )
+    })?;
+    let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())
+        .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -1001,6 +1007,78 @@ where
     assert_eq!(
         result.to_xml(),
         "<Element bar='from set foo'>one</Element><Element bar='from set foo'>two</Element>"
+    );
+    Ok(())
+}
+
+pub fn issue_96_abs<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<Option<String>, String>>), Error>,
+{
+    let result = test_rig(
+        "<Example><Level1>one</Level1><Level1>two</Level1></Example>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='/Example'>found an Example element</xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(result.to_xml(), "found an Example element");
+    Ok(())
+}
+
+pub fn issue_96_rel<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<Option<String>, String>>), Error>,
+{
+    let result = test_rig(
+        "<Example><Level1>one</Level1><Level1>two</Level1></Example>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='Example'>found an Example element</xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(result.to_xml(), "found an Example element");
+    Ok(())
+}
+
+pub fn issue_96_mixed<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Vec<HashMap<Option<String>, String>>), Error>,
+{
+    let result = test_rig(
+        "<Example><Level1>one</Level1><Level1>two</Level1></Example>",
+        r#"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+  <xsl:template match='child::Example/Level1'>found a Level1 element</xsl:template>
+</xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(
+        result.to_xml(),
+        "found a Level1 elementfound a Level1 element"
     );
     Ok(())
 }
