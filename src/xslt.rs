@@ -48,7 +48,6 @@ let mut static_context = StaticContextBuilder::new()
 // Compile the stylesheet
 let mut ctxt = from_document(
     style,
-    vec![],
     None,
     make_from_str,
     |_| Ok(String::new())
@@ -122,7 +121,6 @@ pub trait XSLT: Node {
 /// They are not included in this module since some environments, in particular Wasm, do not have I/O facilities.
 pub fn from_document<N: Node, F, G>(
     styledoc: N,
-    stylens: Vec<HashMap<Option<String>, String>>,
     base: Option<Url>,
     f: F,
     g: G,
@@ -320,7 +318,7 @@ where
         })
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
-            let eqname = QualifiedName::try_from((name.to_string().as_str(), &stylens))?;
+            let eqname = QualifiedName::try_from((name.to_string().as_str(), &c.get_namespaces()))?;
             if eqname.to_string().is_empty() {
                 return Err(Error::new(
                     ErrorKind::DynamicAbsent,
@@ -337,7 +335,7 @@ where
                         && c.name().get_localname() == "attribute"
                 })
                 .try_for_each(|a| {
-                    attrs.push(to_transform(a, &stylens, &attr_sets)?);
+                    attrs.push(to_transform(a, &c.get_namespaces(), &attr_sets)?);
                     Ok(())
                 })?;
             attr_sets.insert(eqname, attrs);
@@ -367,7 +365,7 @@ where
             let mut body = vec![];
             let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
             c.child_iter().try_for_each(|d| {
-                body.push(to_transform(d, &stylens, &attr_sets)?);
+                body.push(to_transform(d, &c.get_namespaces(), &attr_sets)?);
                 Ok::<(), Error>(())
             })?;
             //sc.static_analysis(&mut pat);
@@ -423,7 +421,7 @@ where
                 vec![import],
                 None,
                 mode.map(|n| {
-                    QualifiedName::try_from((n.to_string().as_str(), &stylens))
+                    QualifiedName::try_from((n.to_string().as_str(), &c.get_namespaces()))
                         .expect("unable to resolve qualified name")
                 }), // TODO: don't panic
             ));
@@ -496,7 +494,6 @@ where
         ))
         .template_all(templates)
         .output_definition(od)
-        .namespaces(stylens.clone())
         .build();
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
@@ -539,7 +536,7 @@ where
                             // xsl:param content is the sequence constructor
                             let mut body = vec![];
                             c.child_iter().try_for_each(|d| {
-                                body.push(to_transform(d, &stylens, &attr_sets)?);
+                                body.push(to_transform(d, &c.get_namespaces(), &attr_sets)?);
                                 Ok(())
                             })?;
                             params.push((
@@ -566,7 +563,7 @@ where
                         && c.name().get_localname() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d, &stylens, &attr_sets)?);
+                    body.push(to_transform(d, &c.get_namespaces(), &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -631,7 +628,7 @@ where
                         && c.name().get_localname() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d, &stylens, &attr_sets)?);
+                    body.push(to_transform(d, &c.get_namespaces(), &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -650,7 +647,7 @@ where
 /// Compile a node in a template to a sequence [Combinator]
 fn to_transform<N: Node>(
     n: N,
-    ns: &Vec<HashMap<Option<String>, String>>,
+    ns: &Rc<HashMap<String, Rc<Value>>>,
     attr_sets: &HashMap<QualifiedName, Vec<Transform<N>>>,
 ) -> Result<Transform<N>, Error> {
     match n.node_type() {

@@ -17,6 +17,7 @@ use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
+use std::collections::HashMap;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -387,9 +388,13 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
 
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
-    /// Get the name of the node. If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
+    /// Get the name of the node.
+    /// If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
+    /// If the node is a namespace-type node, then the local part of the nae is the namespace prefix. An unprefixed namespace has the empty string as its name.
     fn name(&self) -> QualifiedName;
-    /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
+    /// Get the value of the node.
+    /// If the node doesn't have a value, then returns a [Value] that is an empty string.
+    /// If the node is a namespace-type node, then the value is the namespace URI.
     fn value(&self) -> Rc<Value>;
 
     /// Get a unique identifier for this node.
@@ -575,4 +580,14 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// at the time the iterator is called, it is not guaranteed that the namespace nodes returned
     /// will specify the current element node as their parent.
     fn namespace_iter(&self) -> Self::NodeIterator;
+    /// Get the set of in-scope namespaces for a node. Returns a HashMap keyed by prefix.
+    fn get_namespaces(&self) -> Rc<HashMap<String, Rc<Value>>> {
+        Rc::new(self.namespace_iter().fold(
+            HashMap::new(),
+            |mut in_scope, ns| {
+                in_scope.insert(ns.name().get_localname().clone(), ns.value().clone());
+                in_scope
+            }
+        ))
+    }
 }

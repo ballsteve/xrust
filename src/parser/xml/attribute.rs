@@ -131,12 +131,25 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 if qn.get_prefix() != Some("xmlns".to_string()) && qn.get_localname() != *"xmlns" {
                     if let Some(ns) = qn.get_prefix() {
                         if ns == *"xml" {
-                            let _ = qn.resolve(&vec![HashMap::from([(
-                                Some("xml".to_string()),
+                            let _ = qn.resolve(&Rc::new(HashMap::from([(
+                                "xml".to_string(),
                                 "http://www.w3.org/XML/1998/namespace".to_string(),
-                            )])]);
+                            )])));
                         } else {
-                            let _ = qn.resolve(&state1.namespace);
+                            // We need to copy the namespace declarations into the set of in-scope namespaces.
+                            // Can this be made more efficient?
+                            let in_scope_ns = Rc::new(state1.namespace.iter()
+                                .fold(HashMap::new(), |mut final_ns, ns| {
+                                    ns.iter().for_each(|(k, v)| {
+                                        if let Some(j) = k {
+                                            final_ns.insert(j.clone(), v.clone());
+                                        } else {
+                                            final_ns.insert(String::new(), v.clone());
+                                        }
+                                    });
+                                    final_ns
+                                }));
+                            let _ = qn.resolve(&in_scope_ns);
                             if qn.get_nsuri().is_none() {
                                 return Err(ParseError::MissingNameSpace);
                             }

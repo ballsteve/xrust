@@ -1,16 +1,17 @@
 //! Support for Qualified Names.
 
+use crate::value::Value;
 use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
 use crate::trees::nullo::Nullo;
 use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
+use std::rc::Rc;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::ops::ControlFlow;
 
 #[derive(Clone)]
 pub struct QualifiedName {
@@ -53,24 +54,18 @@ impl QualifiedName {
     /// If the qualified name has no prefix, then this method has no effect.
     pub fn resolve(
         &mut self,
-        namespaces: &Vec<HashMap<Option<String>, String>>,
+        namespaces: &Rc<HashMap<String, Rc<Value>>>,
     ) -> Result<(), Error> {
         match (&self.prefix, &self.nsuri) {
-            (Some(p), None) => namespaces.iter().last().map_or(
+            (Some(p), None) => namespaces.get(p).map_or(
                 Err(Error::new(
                     ErrorKind::DynamicAbsent,
-                    format!("no namespaces to resolve prefix \"{}\"", p),
+                    format!("no namespace corresponding to prefix \"{}\"", p),
                 )),
-                |v| match v.get(&Some(p.clone())) {
-                    Some(u) => {
-                        self.nsuri = Some(u.clone());
-                        Ok(())
-                    }
-                    None => Err(Error::new(
-                        ErrorKind::DynamicAbsent,
-                        format!("no namespace corresponding to prefix \"{}\"", p),
-                    )),
-                },
+                |u| {
+                    self.nsuri = Some(u.to_string());
+                    Ok(())
+                }
             ),
             _ => Ok(()),
         }
@@ -175,19 +170,16 @@ impl TryFrom<&str> for QualifiedName {
 /// Parse a string to create a [QualifiedName].
 /// Resolve prefix against a set of XML Namespace declarations
 /// QualifiedName ::= (prefix ":")? local-name
-impl TryFrom<(&str, &Vec<HashMap<Option<String>, String>>)> for QualifiedName {
+impl TryFrom<(&str, &Rc<HashMap<String, String>>)> for QualifiedName {
     type Error = Error;
-    fn try_from(s: (&str, &Vec<HashMap<Option<String>, String>>)) -> Result<Self, Self::Error> {
+    fn try_from(s: (&str, &Rc<HashMap<String, String>>)) -> Result<Self, Self::Error> {
         let state: ParserState<Nullo> = ParserState::new(None, None);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.get_prefix().is_some() && qn.get_nsuri_ref().is_none() {
-                    match s.1.iter().try_for_each(|h| match h.get(&qn.get_prefix()) {
-                        Some(ns) => ControlFlow::Break(ns.clone()),
-                        None => ControlFlow::Continue(()),
-                    }) {
-                        ControlFlow::Break(ns) => Ok(QualifiedName::new(
-                            Some(ns),
+                    match s.1.get(&qn.get_prefix().unwrap()) {
+                        Some(ns) => Ok(QualifiedName::new(
+                            Some(ns.clone()),
                             Some(qn.get_prefix().unwrap()),
                             qn.get_localname(),
                         )),

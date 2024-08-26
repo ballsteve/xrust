@@ -72,16 +72,16 @@ enum NodeInner {
         Rc<QualifiedName>,   // name
         RefCell<HashMap<Rc<QualifiedName>, RNode>>, // attributes
         RefCell<Vec<RNode>>, // children
-        RefCell<HashMap<Option<String>, RNode>>, // namespaces
+        Rc<RefCell<HashMap<Option<Rc<Value>>, RNode>>>, // namespaces
     ),
     Text(RefCell<Weak<Node>>, Rc<Value>),
     Attribute(RefCell<Weak<Node>>, Rc<QualifiedName>, Rc<Value>),
     Comment(RefCell<Weak<Node>>, Rc<Value>),
     ProcessingInstruction(RefCell<Weak<Node>>, Rc<QualifiedName>, Rc<Value>),
     Namespace(
-        RefCell<Weak<Node>>, //Parent
-        Option<String>,      //Prefix
-        String,              //URI
+        RefCell<Weak<Node>>, // Parent
+        Option<Rc<Value>>,   // Prefix
+        Rc<Value>,           // URI
     ),
 }
 pub struct Node(NodeInner);

@@ -54,6 +54,7 @@ pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
 
+use std::collections::HashMap;
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
@@ -68,6 +69,7 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::convert::TryFrom;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
+use std::rc::Rc;
 use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
@@ -165,15 +167,15 @@ pub enum Transform<N: Node> {
     Union(Vec<Transform<N>>),
 
     /// Evaluate a named template or function, with arguments.
-    /// Consists of the body of the template/function and the actual arguments (variable declarations).
-    Call(Box<Transform<N>>, Vec<Transform<N>>),
+    /// Consists of the body of the template/function, the actual arguments (variable declarations), and in-scope namespace declarations.
+    Call(Box<Transform<N>>, Vec<Transform<N>>, Rc<HashMap<String, Rc<Value>>>),
 
     /// Declare a variable in the current context.
-    /// Consists of the variable name, its value, and a transformation to perform with the variable in scope.
-    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>),
+    /// Consists of the variable name, its value, a transformation to perform with the variable in scope, and in-scope namespace declarations.
+    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, Rc<HashMap<String, Rc<Value>>>),
     /// Reference a variable.
     /// The result is the value stored for that variable in the current context and current scope.
-    VariableReference(String),
+    VariableReference(String, Rc<HashMap<String, Rc<Value>>>),
 
     /// Set the value of an attribute. The context item must be an element-type node.
     /// Consists of the name of the attribute and its value. The [Sequence] produced will be cast to a [Value].
@@ -253,20 +255,22 @@ pub enum Transform<N: Node> {
     CurrentGroup,
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
-    /// the third argument is the top of the tree for the resulting nodes.
+    /// the third argument is the top of the tree for the resulting nodes,
+    /// the fourth argument is the in-scope namespaces.
     Key(
         Box<Transform<N>>,
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
+        Rc<HashMap<String, Rc<Value>>>,
     ),
     /// Get information about the processor
-    SystemProperty(Box<Transform<N>>),
+    SystemProperty(Box<Transform<N>>, Rc<HashMap<String, Rc<Value>>>),
     AvailableSystemProperties,
     /// Read an external document
     Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
-    /// Invoke a callable component. Consists of a name, an actual argument list.
-    Invoke(QualifiedName, ActualParameters<N>),
+    /// Invoke a callable component. Consists of a name, an actual argument list, and in-scope namespace declarations.
+    Invoke(QualifiedName, ActualParameters<N>, Rc<HashMap<String, Rc<Value>>>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -331,11 +335,11 @@ impl<N: Node> Debug for Transform<N> {
             Transform::ApplyTemplates(_, m, o) => {
                 write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
             }
-            Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
+            Transform::Call(_, a, _) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),
-            Transform::VariableDeclaration(n, _, _) => write!(f, "declare variable \"{}\"", n),
-            Transform::VariableReference(n) => write!(f, "reference variable \"{}\"", n),
+            Transform::VariableDeclaration(n, _, _, _) => write!(f, "declare variable \"{}\"", n),
+            Transform::VariableReference(n, _) => write!(f, "reference variable \"{}\"", n),
             Transform::SetAttribute(n, _) => write!(f, "set attribute named \"{}\"", n),
             Transform::Position => write!(f, "position"),
             Transform::Last => write!(f, "last"),
@@ -374,11 +378,11 @@ impl<N: Node> Debug for Transform<N> {
             Transform::GenerateIntegers(_start_at, _select, _n) => write!(f, "generate-integers"),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
-            Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
-            Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
+            Transform::Key(s, _, _, _) => write!(f, "key({:?}, ...)", s),
+            Transform::SystemProperty(p, _) => write!(f, "system-properties({:?})", p),
             Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
             Transform::Document(uris, _) => write!(f, "document({:?})", uris),
-            Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
+            Transform::Invoke(qn, _a, _) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),

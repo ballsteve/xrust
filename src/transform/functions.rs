@@ -1,5 +1,6 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
+use std::collections::HashMap;
 use pkg_version::*;
 use std::rc::Rc;
 use url::Url;
@@ -86,10 +87,11 @@ pub fn system_property<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Box<Transform<N>>,
+    ns: Rc<HashMap<String, String>>,
 ) -> Result<Sequence<N>, Error> {
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
-        let qn = QualifiedName::try_from((prop.to_string().as_str(), ctxt.namespaces_ref()))?;
+        let qn = QualifiedName::try_from((prop.to_string().as_str(), &ns))?;
         match (qn.get_nsuri_ref(), qn.get_localname().as_str()) {
             (Some(XSLTNS), "version") => Ok(vec![Item::Value(Rc::new(Value::from("0.9")))]),
             (Some(XSLTNS), "vendor") => Ok(vec![Item::Value(Rc::new(Value::from(

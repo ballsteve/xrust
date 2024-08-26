@@ -73,7 +73,7 @@ pub struct Context<N: Node> {
     pub(crate) base_url: Option<Url>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
     // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
-    pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
+    //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
 }
 
 impl<N: Node> Context<N> {
@@ -94,21 +94,12 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
-            namespaces: vec![],
         }
     }
     /// Sets the context item.
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
         self.cur = s;
         self.i = i;
-    }
-    /// Sets the XML Namespaces.
-    pub fn namespaces(&mut self, ns: Vec<HashMap<Option<String>, String>>) {
-        self.namespaces = ns;
-    }
-    /// Gets the XML Namespaces.
-    pub fn namespaces_ref(&self) -> &Vec<HashMap<Option<String>, String>> {
-        &self.namespaces
     }
     /// Sets the "current" item.
     pub fn previous_context(&mut self, i: Item<N>) {
@@ -227,7 +218,7 @@ impl<N: Node> Context<N> {
     ///     .fetcher(|_| Ok(String::new()))
     ///     .parser(|s| Ok(make_from_str(s)))
     ///     .build();
-    /// let mut context = from_document(style, vec![], None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
+    /// let mut context = from_document(style, None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
     /// context.context(vec![sd], 0);
     /// context.result_document(make_from_str("<Result/>"));
     /// let sequence = context.evaluate(&mut stctxt).expect("evaluation failed");
@@ -402,10 +393,10 @@ impl<N: Node> Context<N> {
             Transform::ApplyTemplates(s, m, o) => apply_templates(self, stctxt, s, m, o),
             Transform::ApplyImports => apply_imports(self, stctxt),
             Transform::NextMatch => next_match(self, stctxt),
-            Transform::VariableDeclaration(n, v, f) => {
+            Transform::VariableDeclaration(n, v, f, _) => {
                 declare_variable(self, stctxt, n.clone(), v, f)
             }
-            Transform::VariableReference(n) => reference_variable(self, n),
+            Transform::VariableReference(n, _) => reference_variable(self, n),
             Transform::Position => position(self),
             Transform::Last => last(self),
             Transform::Count(s) => tr_count(self, stctxt, s),
@@ -445,11 +436,11 @@ impl<N: Node> Context<N> {
             Transform::GenerateIntegers(start_at, select, n) => {
                 generate_integers(self, stctxt, start_at, select, n)
             }
-            Transform::Key(n, v, _) => key(self, stctxt, n, v),
-            Transform::SystemProperty(p) => system_property(self, stctxt, p),
+            Transform::Key(n, v, _, _) => key(self, stctxt, n, v),
+            Transform::SystemProperty(p, _) => system_property(self, stctxt, p),
             Transform::AvailableSystemProperties => available_system_properties(),
             Transform::Document(uris, base) => document(self, stctxt, uris, base),
-            Transform::Invoke(qn, a) => invoke(self, stctxt, qn, a),
+            Transform::Invoke(qn, a, _) => invoke(self, stctxt, qn, a),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
@@ -479,7 +470,6 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
-            namespaces: vec![],
         }
     }
 }
@@ -547,10 +537,6 @@ impl<N: Node> ContextBuilder<N> {
     }
     pub fn base_url(mut self, b: Url) -> Self {
         self.0.base_url = Some(b);
-        self
-    }
-    pub fn namespaces(mut self, ns: Vec<HashMap<Option<String>, String>>) -> Self {
-        self.0.namespaces = ns;
         self
     }
     pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
