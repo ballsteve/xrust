@@ -361,7 +361,19 @@ where
         })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
-            let pat = Pattern::try_from(m.to_string())?;
+            let pat = Pattern::try_from(m.to_string()).map_err(|e| {
+                Error::new(
+                    e.kind,
+                    format!(
+                        "Error parsing match pattern \"{}\": {}",
+                        m.to_string(),
+                        e.message
+                    ),
+                )
+            })?;
+            if pat.is_err() {
+                return Err(pat.get_err().unwrap());
+            }
             let mut body = vec![];
             let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
             c.child_iter().try_for_each(|d| {
@@ -382,7 +394,7 @@ where
                             _ => 1.0,
                         },
                         Pattern::Selection(s) => {
-                            let ((t, nt), q) = s.clone().t.unwrap();
+                            let (t, nt, q) = s[0].get_ref();
                             // If "/" then -0.5
                             match (t, nt) {
                                 (Axis::SelfAttribute, _) => -0.5,

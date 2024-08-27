@@ -69,7 +69,7 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
-use crate::item::{Item, Node, NodeType, SequenceTrait};
+use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::nodetests::{nodetest, qualname_test};
@@ -105,6 +105,20 @@ pub enum Pattern<N: Node> {
 }
 
 impl<N: Node> Pattern<N> {
+    /// Returns whether the Pattern is of type error.
+    pub fn is_err(&self) -> bool {
+        match self {
+            Pattern::Error(_) => true,
+            _ => false,
+        }
+    }
+    pub fn get_err(&self) -> Option<Error> {
+        if let Pattern::Error(e) = self {
+            Some(e.clone())
+        } else {
+            None
+        }
+    }
     /// Returns whether the given item matches the pattern.
     /// TODO: return dynamic errors
     pub fn matches<
@@ -127,10 +141,26 @@ impl<N: Node> Pattern<N> {
             Pattern::Selection(p) => {
                 // First step is the terminal case,
                 // next steps are non-terminal
-                p.t.as_ref().map_or(false, |((term, nonterm), nt)| {
-                    if is_match(term, nt, i) {
-                        // TODO: select item depending on non-terminal axis
-                        find_node(nonterm, i).map_or(false, |f| nonterminal(p.next.clone(), &f))
+                let mut pit = p.iter();
+                pit.next().map_or(false, |q| {
+                    if is_match(&q.terminal, &q.nt, i) {
+                        let mut seq: Sequence<N> = find_seq(&q.non_terminal, i);
+                        loop {
+                            if let Some(s) = pit.next() {
+                                let new_seq = seq
+                                    .iter()
+                                    .filter(|f| is_match(&s.terminal, &s.nt, f))
+                                    .fold(vec![], |mut acc, m| {
+                                        let mut new_seq = find_seq(&s.non_terminal, m);
+                                        acc.append(&mut new_seq);
+                                        acc
+                                    });
+                                seq = new_seq;
+                            } else {
+                                break;
+                            }
+                        }
+                        !seq.is_empty()
                     } else {
                         false
                     }
@@ -141,42 +171,25 @@ impl<N: Node> Pattern<N> {
     }
 }
 
-fn find_node<N: Node>(a: &Axis, i: &Item<N>) -> Option<Item<N>> {
+fn find_seq<N: Node>(a: &Axis, i: &Item<N>) -> Sequence<N> {
     match a {
         Axis::SelfDocument => match i {
             Item::Node(n) => {
                 if n.node_type() == NodeType::Document {
-                    Some(i.clone())
+                    vec![i.clone()]
                 } else {
-                    None
+                    vec![]
                 }
             }
-            _ => None,
+            _ => vec![],
         },
-        Axis::SelfAxis => Some(i.clone()),
+        Axis::SelfAxis => vec![i.clone()],
         Axis::Parent => match i {
-            Item::Node(n) => n.parent().map(|p| Item::Node(p)),
-            _ => None,
+            Item::Node(n) => n.parent().map_or(vec![], |p| vec![Item::Node(p)]),
+            _ => vec![],
         },
-        _ => None, // todo
+        _ => vec![], // todo
     }
-}
-
-fn nonterminal<N: Node>(p: Option<Rc<Path>>, i: &Item<N>) -> bool {
-    p.map_or(
-        true, // all steps have succeeded so far
-        |q| {
-            let ((term, nonterm), nt) = q.t.as_ref().unwrap();
-            if is_match(term, nt, i) {
-                find_node(nonterm, i).map_or(
-                    false, // couldn't find the next node
-                    |p| nonterminal(q.next.clone(), &p),
-                )
-            } else {
-                false
-            }
-        },
-    )
 }
 
 fn is_match<N: Node>(a: &Axis, nt: &NodeTest, i: &Item<N>) -> bool {
@@ -219,33 +232,28 @@ impl<N: Node> Debug for Pattern<N> {
     }
 }
 
-#[derive(Clone, Default, Debug)]
-pub struct Path {
-    //    Each step in the Path consists of (terminal, non-terminal) axes and a NodeTest
-    // If next == None, then the terminal axis is used.
-    // Otherwise the non-terminal axis applies.
-    pub t: Option<((Axis, Axis), NodeTest)>,
-    pub next: Option<Rc<Path>>,
+//    Each step in the Path consists of (terminal, non-terminal) axes and a NodeTest
+// If this is the last step, then the terminal axis is used.
+// Otherwise the non-terminal axis applies.
+pub type Path = Vec<Step>;
+
+#[derive(Clone, Debug)]
+pub struct Step {
+    terminal: Axis,
+    non_terminal: Axis,
+    nt: NodeTest,
 }
 
-impl Path {
-    pub fn new() -> Self {
-        //Path { t: None, next: None }
-        Default::default()
+impl Step {
+    pub fn new(terminal: Axis, non_terminal: Axis, nt: NodeTest) -> Self {
+        Step {
+            terminal,
+            non_terminal,
+            nt,
+        }
     }
-}
-
-pub struct PathBuilder(Path);
-impl PathBuilder {
-    pub fn new() -> Self {
-        PathBuilder(Path::new())
-    }
-    pub fn step(mut self, t: Axis, l: Axis, nt: NodeTest) -> Self {
-        self.0.t = Some(((t, l), nt));
-        self
-    }
-    pub fn build(self) -> Path {
-        self.0
+    pub fn get_ref(&self) -> (&Axis, &Axis, &NodeTest) {
+        (&self.terminal, &self.non_terminal, &self.nt)
     }
 }
 
@@ -279,9 +287,7 @@ impl<N: Node> TryFrom<&str> for Pattern<N> {
 
 impl<'a, N: Node> TryFrom<String> for Pattern<N> {
     type Error = Error;
-    fn try_from(
-        e: String,
-    ) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&'a str>>::Error> {
+    fn try_from(e: String) -> Result<Self, <Pattern<N> as TryFrom<&'a str>>::Error> {
         Pattern::try_from(e.as_str())
     }
 }
@@ -437,20 +443,24 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
         |(d, r)| match (d, r) {
             ("/", None) => {
                 // Matches the root node
-                Pattern::Selection(
-                    PathBuilder::new()
-                        .step(
-                            Axis::SelfDocument,
-                            Axis::SelfDocument,
-                            NodeTest::Kind(KindTest::Document),
-                        )
-                        .build(),
-                )
+                Pattern::Selection(vec![Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )])
             }
-            ("/", Some(_a)) => Pattern::Error(Error::new(
-                ErrorKind::NotImplemented,
-                String::from("absolute path in a pattern has not been implemented"),
-            )),
+            ("/", Some(a)) => {
+                if let Pattern::Selection(mut b) = a {
+                    b.push(Step::new(
+                        Axis::SelfDocument,
+                        Axis::SelfDocument,
+                        NodeTest::Kind(KindTest::Document),
+                    ));
+                    Pattern::Selection(b)
+                } else {
+                    panic!("pattern must be a selection")
+                }
+            }
             _ => Pattern::Error(Error::new(
                 ErrorKind::Unknown,
                 String::from("unable to parse pattern"),
@@ -478,20 +488,20 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
                 // this is the terminal step
                 a
             } else {
-                let mut ap = match a {
-                    Pattern::Selection(p) => p,
-                    _ => panic!("relative path may only contain steps"),
-                };
-                for (_c, d) in b {
-                    match d {
-                        Pattern::Selection(mut p) => {
-                            p.next = Some(Rc::new(ap));
-                            ap = p.clone();
+                if let Pattern::Selection(mut ap) = a {
+                    // TODO: handle "//" separator
+                    for (_c, d) in b {
+                        match d {
+                            Pattern::Selection(p) => {
+                                p.into_iter().for_each(|s| ap.insert(0, s));
+                            }
+                            _ => panic!("relative path can only contain steps"),
                         }
-                        _ => panic!("relative path can only contain steps"),
                     }
+                    Pattern::Selection(ap)
+                } else {
+                    panic!("pattern must be a selection")
                 }
-                Pattern::Selection(ap)
             }
         },
     ))
@@ -538,18 +548,37 @@ fn axis_step_pattern<'a, N: Node + 'a>(
 
 // ForwardStepP ::= (ForwardAxisP NodeTest) | AbbrevForwardStep
 // Returns the node test, the terminal axis and the non-terminal axis
-// TODO: abbreviated step
 fn forward_step_pattern<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
     Box::new(map(
-        tuple2(forward_axis_pattern(), nodetest()),
-        |((a, c), nt)| Pattern::Selection(PathBuilder::new().step(a, c, nt).build()),
+        alt2(
+            tuple2(forward_axis_pattern(), nodetest()),
+            abbrev_forward_step(),
+        ),
+        |((a, c), nt)| Pattern::Selection(vec![Step::new(a, c, nt)]),
     ))
+}
+
+// AbbrevForwardStep ::= "@"? NodeTest
+fn abbrev_forward_step<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, ((Axis, Axis), NodeTest)), ParseError> + 'a>
+{
+    Box::new(map(tuple2(opt(tag("@")), nodetest()), |(a, nt)| {
+        a.map_or_else(
+            || {
+                // not an attribute
+                ((Axis::SelfAxis, Axis::Parent), nt.clone())
+            },
+            |_| {
+                // attribute
+                ((Axis::SelfAttribute, Axis::Parent), nt.clone())
+            },
+        )
+    }))
 }
 
 // ForwardAxisP ::= ("child" | "descendant" | "attribute" | "self" | "descendant-or-self" | "namespace" ) "::"
 // Returns a pair: the axis to match this step, and the axis for the previous step
-// TODO: abbreviated step
 fn forward_axis_pattern<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Axis, Axis)), ParseError> + 'a> {
     Box::new(map(

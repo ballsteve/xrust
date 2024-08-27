@@ -43,6 +43,22 @@ fn pattern_sel_2_neg() {
     patterngeneric::pattern_sel_2_neg::<RNode, _>(smite::make_empty_doc).expect("test failed")
 }
 #[test]
+fn pattern_abbrev_1_pos() {
+    patterngeneric::pattern_abbrev_1_pos::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
+fn pattern_abbrev_1_neg() {
+    patterngeneric::pattern_abbrev_1_neg::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
+fn pattern_abbrev_2_pos() {
+    patterngeneric::pattern_abbrev_2_pos::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
+fn pattern_abbrev_2_neg() {
+    patterngeneric::pattern_abbrev_2_neg::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
 fn pattern_sel_text_kind_1_pos() {
     patterngeneric::pattern_sel_text_kind_1_pos::<RNode, _>(smite::make_empty_doc)
         .expect("test failed")
