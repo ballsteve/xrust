@@ -6,6 +6,7 @@ use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
+use core::hash::{Hash, Hasher};
 use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::Decimal;
 #[cfg(test)]
@@ -177,6 +178,13 @@ impl fmt::Display for Value {
         f.write_str(result.as_str())
     }
 }
+
+impl Hash for Value {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        format!("{:?}", self).hash(state)
+    }
+}
+impl Eq for Value {}
 
 impl Value {
     /// Give the effective boolean value.
@@ -483,7 +491,7 @@ impl From<QualifiedName> for Value {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NonPositiveInteger(i64);
 impl TryFrom<i64> for NonPositiveInteger {
     type Error = Error;
@@ -504,7 +512,7 @@ impl fmt::Display for NonPositiveInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct PositiveInteger(i64);
 impl TryFrom<i64> for PositiveInteger {
     type Error = Error;
@@ -525,7 +533,7 @@ impl fmt::Display for PositiveInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NonNegativeInteger(i64);
 impl TryFrom<i64> for NonNegativeInteger {
     type Error = Error;
@@ -546,7 +554,7 @@ impl fmt::Display for NonNegativeInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NegativeInteger(i64);
 impl TryFrom<i64> for NegativeInteger {
     type Error = Error;
@@ -567,7 +575,7 @@ impl fmt::Display for NegativeInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NormalizedString(String);
 impl TryFrom<&str> for NormalizedString {
     type Error = Error;

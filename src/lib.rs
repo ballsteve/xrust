@@ -81,21 +81,20 @@ pub use value::Value;
 pub mod item;
 pub use item::{Item, Node, Sequence, SequenceTrait};
 
-pub mod pattern;
-pub use pattern::Pattern;
+//pub mod pattern;
+//pub use pattern::Pattern;
 
-#[cfg(feature = "xslt")]
-pub mod xslt;
+//#[cfg(feature = "xslt")]
+//pub mod xslt;
 
 pub mod parser;
 
-pub mod transform;
-pub use transform::context::Context;
-pub use transform::template::Template;
-pub use transform::Transform;
+//pub mod transform;
+//pub use transform::context::Context;
+//pub use transform::template::Template;
+//pub use transform::Transform;
 
 pub mod trees;
-pub use trees::intmuttree::Document;
 
-pub mod testutils;
+//pub mod testutils;
 //pub mod validators;

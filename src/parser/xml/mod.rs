@@ -8,6 +8,7 @@ mod reference;
 mod strings;
 mod xmldecl;
 
+use std::rc::Rc;
 use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -21,6 +22,7 @@ use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use std::collections::HashMap;
+use crate::value::Value;
 
 pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;
@@ -31,7 +33,7 @@ pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
-) -> Result<(N, Vec<HashMap<Option<String>, String>>), Error> {
+) -> Result<(N, Rc<HashMap<Option<Rc<Value>>, N>>), Error> {
     let state = ParserState::new(Some(doc), config);
     match document((input, state)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespaces_ref().clone())),

@@ -11,17 +11,19 @@ use xrust::value::Value;
 fn make_rnode(n: u64) -> RNode {
     let mut a = Rc::new(SmiteNode::new());
     let mut b = a
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     a.push(b.clone()).expect("unable to add node");
     (1..n).for_each(|i| {
+        let l1name = Rc::new(Value::from("Level-1"));
         let mut l1 = a
-            .new_element(QualifiedName::new(None, None, String::from("Level-1")))
+            .new_element(Rc::new(QualifiedName::new_from_values(None, None, l1name.clone())))
             .expect("unable to create element");
         b.push(l1.clone()).expect("unable to add node");
+        let l2name = Rc::new(Value::from("Level-2"));
         (1..n).for_each(|k| {
             let mut l2 = a
-                .new_element(QualifiedName::new(None, None, String::from("Level-2")))
+                .new_element(Rc::new(QualifiedName::new_from_values(None, None, l2name.clone())))
                 .expect("unable to create element");
             l1.push(l2.clone()).expect("unable to add node");
             l2.push(

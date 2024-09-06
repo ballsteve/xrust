@@ -13,7 +13,7 @@ use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::anychar;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
-use crate::parser::xpath::support::none_of;
+use crate::parser::combinators::support::none_of;
 use crate::parser::{ParseError, ParseInput, ParserState};
 use crate::xdmerror::*;
 

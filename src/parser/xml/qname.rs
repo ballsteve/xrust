@@ -1,3 +1,5 @@
+use std::rc::Rc;
+use crate::value::Value;
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::many1;
@@ -7,7 +9,7 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_one, take_while};
 use crate::parser::combinators::tuple::{tuple2, tuple3};
-use crate::parser::xpath::support::none_of;
+use crate::parser::combinators::support::none_of;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::common::{is_namechar, is_namestartchar, is_ncnamechar, is_ncnamestartchar};

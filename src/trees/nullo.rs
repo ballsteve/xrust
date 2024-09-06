@@ -23,8 +23,8 @@ impl Node for Nullo {
     fn node_type(&self) -> NodeType {
         NodeType::Unknown
     }
-    fn name(&self) -> QualifiedName {
-        QualifiedName::new(None, None, String::new())
+    fn name(&self) -> Rc<QualifiedName> {
+        Rc::new(QualifiedName::new(None, None, String::new()))
     }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
@@ -92,7 +92,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_element(&self, _: QualifiedName) -> Result<Self, Error> {
+    fn new_element(&self, _: Rc<QualifiedName>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -104,7 +104,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_attribute(&self, _: QualifiedName, _: Rc<Value>) -> Result<Self, Error> {
+    fn new_attribute(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -116,13 +116,13 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_processing_instruction(&self, _: QualifiedName, _: Rc<Value>) -> Result<Self, Error> {
+    fn new_processing_instruction(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
         ))
     }
-    fn new_namespace(&self, _ns: String, _prefix: Option<String>) -> Result<Self, Error> {
+    fn new_namespace(&self, _ns: Rc<Value>, _prefix: Option<Rc<Value>>) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
     }
     fn push(&mut self, _: Self) -> Result<(), Error> {

@@ -25,7 +25,7 @@ let mut doc = Rc::new(SmiteNode::new());
 
 // Create an element-type node. Upon creation, it is *not* attached to the tree.
 let mut top = doc.new_element(
-    QualifiedName::new(None, None, "Top-Level")
+    Rc::new(QualifiedName::new(None, None, "Top-Level"))
 ).expect("unable to create element node");
 
 // Nodes are Rc-shared, so it is cheap to clone them.
@@ -52,7 +52,7 @@ use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use std::collections::hash_map::IntoIter;
+use std::collections::hash_map::{IntoIter, Iter};
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
@@ -72,7 +72,7 @@ enum NodeInner {
         Rc<QualifiedName>,   // name
         RefCell<HashMap<Rc<QualifiedName>, RNode>>, // attributes
         RefCell<Vec<RNode>>, // children
-        Rc<RefCell<HashMap<Option<Rc<Value>>, RNode>>>, // namespaces
+        Rc<RefCell<HashMap<Option<Rc<Value>>, RNode>>>, // namespace declarations
     ),
     Text(RefCell<Weak<Node>>, Rc<Value>),
     Attribute(RefCell<Weak<Node>>, Rc<QualifiedName>, Rc<Value>),
@@ -95,15 +95,15 @@ impl Node {
             RefCell::new(vec![]),
         ))
     }
-    pub fn set_nsuri(&mut self, uri: String) -> Result<(), Error> {
+    pub fn set_nsuri(&mut self, uri: Rc<Value>) -> Result<(), Error> {
         match &self.0 {
             NodeInner::Element(p, qn, att, c, ns) => {
                 self.0 = NodeInner::Element(
                     p.clone(),
-                    Rc::new(QualifiedName::new(
+                    Rc::new(QualifiedName::new_from_values(
                         Some(uri),
-                        qn.get_prefix(),
-                        qn.get_localname(),
+                        qn.prefix(),
+                        qn.localname(),
                     )),
                     att.clone(),
                     c.clone(),
@@ -210,19 +210,18 @@ impl ItemNode for RNode {
             NodeInner::Namespace(_, _, _) => NodeType::Namespace,
         }
     }
-    fn name(&self) -> QualifiedName {
+    fn name(&self) -> Rc<QualifiedName> {
         match &self.0 {
             NodeInner::Element(_, qn, _, _, _)
             | NodeInner::ProcessingInstruction(_, qn, _)
             | NodeInner::Attribute(_, qn, _) => {
-                let r: QualifiedName = (*qn.clone()).clone();
-                r
+                qn.clone()
             }
             NodeInner::Namespace(_, p, _) => match p {
-                None => QualifiedName::new(None, None, String::from("")),
-                Some(pf) => QualifiedName::new(None, None, String::from(pf)),
+                None => Rc::new(QualifiedName::new(None, None, "")),
+                Some(pf) => Rc::new(QualifiedName::new(None, None, pf.to_string())),
             },
-            _ => QualifiedName::new(None, None, String::from("")),
+            _ => Rc::new(QualifiedName::new(None, None, "")),
         }
     }
     fn value(&self) -> Rc<Value> {
@@ -231,7 +230,8 @@ impl ItemNode for RNode {
             | NodeInner::Comment(_, v)
             | NodeInner::ProcessingInstruction(_, _, v)
             | NodeInner::Attribute(_, _, v) => v.clone(),
-            _ => Rc::new(Value::from(String::from(""))),
+            NodeInner::Namespace(_, _, ns) => ns.clone(),
+            _ => Rc::new(Value::from("")),
         }
     }
 
@@ -255,10 +255,10 @@ impl ItemNode for RNode {
         }
     }
     fn to_xml(&self) -> String {
-        to_xml_int(self, &OutputDefinition::new(), vec![], 0)
+        to_xml_int(self, &OutputDefinition::new(), 0)
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> std::string::String {
-        to_xml_int(self, od, vec![], 0)
+        to_xml_int(self, od, 0)
     }
     fn is_same(&self, other: &Self) -> bool {
         Rc::ptr_eq(self, other)
@@ -316,7 +316,7 @@ impl ItemNode for RNode {
         Box::new(Attributes::new(self))
     }
     fn namespace_iter(&self) -> Self::NodeIterator {
-        Box::new(NamespaceNodes::new(self))
+        Box::new(NamespaceNodes::new(self.clone()))
     }
     fn get_attribute(&self, a: &QualifiedName) -> Rc<Value> {
         match &self.0 {
@@ -333,18 +333,18 @@ impl ItemNode for RNode {
             _ => None,
         }
     }
-    fn new_element(&self, qn: QualifiedName) -> Result<Self, Error> {
+    fn new_element(&self, qn: Rc<QualifiedName>) -> Result<Self, Error> {
         let child = Rc::new(Node(NodeInner::Element(
             RefCell::new(Rc::downgrade(&self.owner_document())),
-            Rc::new(qn),
+            qn,
             RefCell::new(HashMap::new()),
             RefCell::new(vec![]),
-            RefCell::new(HashMap::new()),
+            Rc::new(RefCell::new(HashMap::new())),
         )));
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_namespace(&self, ns: String, prefix: Option<String>) -> Result<Self, Error> {
+    fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error> {
         let ns_node = Rc::new(Node(NodeInner::Namespace(
             RefCell::new(Rc::downgrade(&self.owner_document())),
             prefix,
@@ -361,10 +361,10 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_attribute(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error> {
+    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error> {
         let att = Rc::new(Node(NodeInner::Attribute(
             RefCell::new(Rc::downgrade(self)),
-            Rc::new(qn.clone()),
+            qn.clone(),
             v,
         )));
         unattached(self, att.clone());
@@ -378,10 +378,10 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_processing_instruction(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error> {
+    fn new_processing_instruction(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error> {
         let child = Rc::new(Node(NodeInner::ProcessingInstruction(
             RefCell::new(Rc::downgrade(&self.owner_document())),
-            Rc::new(qn.clone()),
+            qn.clone(),
             v,
         )));
         unattached(self, child.clone());
@@ -397,7 +397,7 @@ impl ItemNode for RNode {
             return Err(Error::new(
                 ErrorKind::TypeError,
                 String::from(
-                    "document, namespace or attribute type nodes cannot be inserted as a child",
+                    "document, namespace, or attribute type nodes cannot be inserted as a child",
                 ),
             ));
         }
@@ -541,7 +541,7 @@ impl ItemNode for RNode {
     }
     /// Add a namespace to this element-type node.
     /// NOTE: does NOT update the namespace values of the element itself.
-    //TODO confirm what the behaviour of this should be.
+    // TODO: confirm what the behaviour of this should be.
     fn add_namespace(&self, ns: Self) -> Result<(), Error> {
         if ns.node_type() != NodeType::Namespace {
             return Err(Error::new(
@@ -618,19 +618,20 @@ impl ItemNode for RNode {
     }
     fn shallow_copy(&self) -> Result<Self, Error> {
         // All new nodes are parentless, i.e. they are unattached to the tree
+        // The new element will have the same set of in-scope namespaces as the original element.
         match &self.0 {
             NodeInner::Document(x, _, _) => Ok(Rc::new(Node(NodeInner::Document(
                 x.clone(),
                 RefCell::new(vec![]),
                 RefCell::new(vec![]),
             )))),
-            NodeInner::Element(p, qn, _, _, _) => {
+            NodeInner::Element(p, qn, _, _, ns) => {
                 let new = Rc::new(Node(NodeInner::Element(
                     p.clone(),
                     qn.clone(),
                     RefCell::new(HashMap::new()),
                     RefCell::new(vec![]),
-                    RefCell::new(HashMap::new()),
+                    ns.clone(),
                 )));
                 unattached(self, new.clone());
                 Ok(new)
@@ -704,7 +705,7 @@ impl ItemNode for RNode {
                             .to_string(),
                     ))
                 }
-                Ok(d.new_processing_instruction((*Rc::clone(qn)).clone(), w)?)
+                Ok(d.new_processing_instruction(qn.clone(), w)?)
             }
             NodeInner::Comment(_, _) | NodeInner::Namespace(_, _, _) => Err(Error::new(
                 ErrorKind::TypeError,
@@ -799,7 +800,7 @@ impl Debug for Node {
                 write!(
                     f,
                     "namespace-type node \"{}:{}\"",
-                    pre.clone().unwrap_or("".to_string()),
+                    pre.clone().map_or("".to_string(), |v| v.to_string()),
                     uri
                 )
             }
@@ -951,59 +952,31 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 }
 
 // This handles the XML serialisation of the document.
-// "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
 // "indent" is the current level of identation.
 fn to_xml_int(
     node: &RNode,
     od: &OutputDefinition,
-    ns: Vec<(String, Option<String>)>,
     indent: usize,
 ) -> String {
     match &node.0 {
         NodeInner::Document(_, _, _) => node.child_iter().fold(String::new(), |mut result, c| {
-            result.push_str(to_xml_int(&c, od, ns.clone(), indent + 2).as_str());
+            result.push_str(to_xml_int(&c, od, indent + 2).as_str());
             result
         }),
-        NodeInner::Element(_, qn, _, _, _) => {
+        NodeInner::Element(_, qn, _, _, ns) => {
             let mut result = String::from("<");
             result.push_str(qn.to_string().as_str());
 
-            // Check if any XML Namespaces need to be declared
-            // newns is a vector of (prefix, namespace URI) pairs
-            let mut declared = ns.clone();
-            let mut newns: Vec<(String, Option<String>)> = vec![];
-            // First, the element itself
-            namespace_check(qn, &declared).iter().for_each(|m| {
-                newns.push(m.clone());
-                declared.push(m.clone())
-            });
-            // Next, it's attributes
-            node.attribute_iter().for_each(|a| {
-                namespace_check(&a.name(), &declared).iter().for_each(|m| {
-                    newns.push(m.clone());
-                    declared.push(m.clone())
-                })
-            });
-            // Finally, it's child elements
-            node.child_iter()
-                .filter(|c| c.node_type() == NodeType::Element)
-                .for_each(|c| {
-                    namespace_check(&c.name(), &declared).iter().for_each(|m| {
-                        newns.push(m.clone());
-                        declared.push(m.clone())
-                    })
-                });
-            newns.iter().for_each(|(u, p)| {
-                result.push_str(" xmlns");
-                if let Some(q) = p {
-                    result.push(':');
-                    result.push_str(q.as_str());
-                }
-                result.push_str("='");
-                result.push_str(u);
-                result.push('\'');
+            // Namespace declarations
+            ns.borrow().iter().for_each(|(pre, nsuri)| {
+                let pre_str = pre.as_ref().map_or_else(
+                    || format!(" xmlns='{}'", nsuri.to_string()),
+                    |p| format!(" xmlns:{}='{}'", p, nsuri.to_string()),
+                );
+                result.push_str(pre_str.as_str());
             });
 
+            // Attributes
             node.attribute_iter().for_each(|a| {
                 result.push_str(
                     format!(" {}='{}'", a.name().to_string().as_str(), a.value()).as_str(),
@@ -1030,7 +1003,7 @@ fn to_xml_int(
                     result.push('\n');
                     (0..indent).for_each(|_| result.push(' '))
                 }
-                result.push_str(to_xml_int(&c, od, newns.clone(), indent + 2).as_str())
+                result.push_str(to_xml_int(&c, od, indent + 2).as_str())
             });
             if do_indent && indent > 1 {
                 result.push('\n');
@@ -1058,26 +1031,6 @@ fn to_xml_int(
         }
         _ => String::new(),
     }
-}
-
-// Checks if this node's name is in a namespace that has already been declared.
-// Returns a namespace to be declared if required, (URI, prefix).
-fn namespace_check(
-    qn: &QualifiedName,
-    ns: &Vec<(String, Option<String>)>,
-) -> Option<(String, Option<String>)> {
-    let mut result = None;
-    if let Some(qnuri) = qn.get_nsuri_ref() {
-        // Has this namespace already been declared?
-        if ns.iter().any(|(u, _)| u == qnuri) {
-            // Namespace has been declared, but with the same prefix?
-            // TODO: see forest.rs for example implementation
-        } else {
-            // Namespace has not been declared, so this element must declare it
-            result = Some((qnuri.to_string(), qn.get_prefix()))
-        }
-    }
-    result
 }
 
 pub struct Children {
@@ -1248,48 +1201,27 @@ impl Iterator for Attributes {
     }
 }
 
+// Return the in-scope namespaces
+// NB. Prefixed namespaces cannot be undeclared (XML Namespaces, 3rd Edition, section 5)
+// TODO: handle undeclaring a default namespace. i.e. xmlns=""
 pub struct NamespaceNodes {
-    ns: Vec<RNode>,
-    cur: usize,
+    cur_element: RNode,
+    ancestor_it: Box<dyn Iterator<Item=RNode>>,
+    ns_it: Option<IntoIter<Option<Rc<Value>>, RNode>>,
 }
 impl NamespaceNodes {
-    fn new(n: &RNode) -> Self {
-        if let NodeInner::Element(_, _, _, _, namespaces) = &n.0 {
-            let parent_nsnodes = match n.parent() {
-                Some(p) => p.namespace_iter(),
-                None => Box::new(NamespaceNodes { ns: vec![], cur: 0 }),
-            };
-
-            let xns = n
-                .new_namespace(
-                    "http://www.w3.org/XML/1998/namespace".to_string(),
-                    Some("xml".to_string()),
-                )
-                .expect("Unable to generate xml namespace");
-
-            let mut nshm = HashMap::new();
-            nshm.insert(Some("xml".to_string()), xns);
-
-            for node in parent_nsnodes {
-                if node.name().get_localname().is_empty() {
-                    nshm.insert(None, node);
-                } else {
-                    nshm.insert(Some(node.name().get_localname()), node);
+    fn new(n: RNode) -> Self {
+        match &n.0 {
+            NodeInner::Document(_, _, _) => NamespaceNodes { cur_element: n.clone(), ancestor_it: n.ancestor_iter(), ns_it: None },
+            NodeInner::Element(_, _, _, _, ns) => {
+                let nsit = ns.borrow().clone().into_iter();
+                NamespaceNodes {
+                    cur_element: n.clone(),
+                    ancestor_it: n.clone().ancestor_iter(),
+                    ns_it: Some(nsit)
                 }
-            }
-            let b = namespaces.borrow();
-            for (nsp, ns) in b.iter() {
-                nshm.insert(nsp.clone(), ns.clone());
-            }
-
-            let mut res = vec![];
-            for (_, ns) in nshm.iter() {
-                res.push(ns.clone())
-            }
-            NamespaceNodes { ns: res, cur: 0 }
-        } else {
-            // Other types of nodes don't have namespace nodes, so always return empty sequence
-            NamespaceNodes { ns: vec![], cur: 0 }
+            },
+            _ => NamespaceNodes { cur_element: n.parent().unwrap(), ancestor_it: n.parent().unwrap().ancestor_iter(), ns_it: None }
         }
     }
 }
@@ -1297,14 +1229,105 @@ impl Iterator for NamespaceNodes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        match self.ns.get(self.cur) {
-            Some(ns) => {
-                self.cur += 1;
-                Some(ns.clone())
-            }
-            None => None,
-        }
+        find_ns(self)
     }
+}
+// Recursively ascend the ancestors looking for the first namespace node
+fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
+    if nn.cur_element.node_type() == NodeType::Element {
+        if nn.ns_it.is_some() {
+            // Iterating through the current element's namespace declarations
+            let mut nsiter = nn.ns_it.take().unwrap();
+            match nsiter.next() {
+                Some((_, n)) => {
+                    nn.ns_it = Some(nsiter);
+                    Some(n.clone())
+                }
+                None => {
+                    // Move to the parent
+                    match nn.ancestor_it.next() {
+                        Some(c) => {
+                            nn.cur_element = c;
+                            // nn.ns_it = None; take() has already done this
+                            find_ns(nn)
+                        }
+                        None => None,
+                    }
+                }
+            }
+        } else {
+            // Haven't looked at this element's namespaces yet
+            if let NodeInner::Element(_, _, _, _, ns) = &nn.cur_element.0 {
+                let mut nsiter = ns.borrow().clone().into_iter();
+                match nsiter.next() {
+                    Some((_, n)) => {
+                        nn.ns_it = Some(nsiter);
+                        Some(n.clone())
+                    }
+                    None => {
+                        nn.ns_it = None;
+                        match nn.ancestor_it.next() {
+                            Some(b) => {
+                                nn.cur_element = b;
+                                find_ns(nn)
+                            }
+                            None => None,
+                        }
+                    }
+                }
+            } else {
+                // can't happen
+                None
+            }
+        }
+    } else {
+        None
+    }
+    /*match &nn.cur_element.0 {
+        NodeInner::Element(_, _, _, _, ns) => {
+            match nn.ns_it {
+                Some(ref mut nsiter) => {
+                    // Iterating through the current element's namespace declarations
+                    match nsiter.next() {
+                        Some((_, n)) => {
+                            Some(n.clone())
+                        }
+                        None => {
+                            // Move to the parent
+                            match nn.ancestor_it.next() {
+                                Some(c) => {
+                                    nn.cur_element = c;
+                                    nn.ns_it = None;
+                                    find_ns(nn)
+                                }
+                                None => None,
+                            }
+                        }
+                    }
+                }
+                None => {
+                    // Haven't looked at this element's namespaces yet
+                    nn.ns_it = Some(ns.borrow().clone().into_iter());
+                    match nn.ns_it.as_ref().unwrap().next() {
+                        Some((_, n)) => {
+                            Some(n.clone())
+                        }
+                        None => {
+                            nn.ns_it = None;
+                            match nn.ancestor_it.next() {
+                                Some(b) => {
+                                    nn.cur_element = b;
+                                    find_ns(nn)
+                                }
+                                None => None,
+                            }
+                        }
+                    }
+                }
+            }
+        }
+        _ => None,
+    }*/
 }
 
 #[cfg(test)]
@@ -1329,7 +1352,7 @@ mod tests {
     fn smite_element_1() {
         let mut root = Rc::new(Node::new());
         let c = root
-            .new_element(QualifiedName::new(None, None, String::from("Test")))
+            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
             .expect("unable to create element node");
         root.push(c).expect("unable to add node");
         assert_eq!(root.to_xml(), "<Test></Test>")
@@ -1338,11 +1361,11 @@ mod tests {
     fn smite_element_2() {
         let mut root = Rc::new(Node::new());
         let mut child1 = root
-            .new_element(QualifiedName::new(None, None, String::from("Test")))
+            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
             .expect("unable to create element node");
         root.push(child1.clone()).expect("unable to add node");
         let child2 = child1
-            .new_element(QualifiedName::new(None, None, String::from("MoreTest")))
+            .new_element(Rc::new(QualifiedName::new(None, None, "MoreTest")))
             .expect("unable to create child element");
         child1.push(child2).expect("unable to add node");
         assert_eq!(root.to_xml(), "<Test><MoreTest></MoreTest></Test>")
@@ -1352,11 +1375,11 @@ mod tests {
     fn smite_generate_id_1() {
         let mut root = Rc::new(Node::new());
         let mut child1 = root
-            .new_element(QualifiedName::new(None, None, String::from("Test")))
+            .new_element(Rc::new(QualifiedName::new(None, None, "Test")))
             .expect("unable to create element node");
         root.push(child1.clone()).expect("unable to add node");
         let child2 = child1
-            .new_element(QualifiedName::new(None, None, String::from("MoreTest")))
+            .new_element(Rc::new(QualifiedName::new(None, None, "MoreTest")))
             .expect("unable to create child element");
         child1.push(child2.clone()).expect("unable to add node");
         assert_ne!(child1.get_id(), child2.get_id())

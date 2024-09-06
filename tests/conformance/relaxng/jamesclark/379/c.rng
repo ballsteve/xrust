@@ -1,4 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<element xmlns:e="http://www.example.com/1" xmlns="http://relaxng.org/ns/structure/1.0" name="e:foo">
-  <value type="QName" ns="http://www.example.com/2" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">xyzzy</value>
-</element>

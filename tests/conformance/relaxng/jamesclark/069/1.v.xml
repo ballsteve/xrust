@@ -1,5 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!DOCTYPE foo [
-<!ENTITY dii "<&#xE14;&#xE35;/>">
-]>
-<foo>&dii;</foo>
