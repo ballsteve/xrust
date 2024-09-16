@@ -76,13 +76,14 @@ use crate::item::Node;
 use crate::transform::Transform;
 use crate::xdmerror::{Error, ErrorKind};
 
-pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
+/// Parse an XPath expression to produce a [Transform]. The optional [Node] is used to resolve XML Namespaces.
+pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> {
     // Shortcut for empty
     if input.is_empty() {
         return Ok(Transform::Empty);
     }
 
-    let state = ParserState::new(None, None);
+    let state = ParserState::new(None, n, None);
     match xpath_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {

@@ -1,5 +1,6 @@
 //! Functions that produce tests for nodes.
 
+use std::rc::Rc;
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt5};
 use crate::parser::combinators::map::map;
@@ -10,6 +11,7 @@ use crate::parser::{ParseError, ParseInput};
 use crate::transform::{KindTest, NameTest, NodeTest, WildcardOrName};
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xml::qname::{ncname, qualname};
+use crate::value::Value;
 
 pub(crate) fn qualname_test<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
@@ -21,7 +23,7 @@ fn unprefixed_name<'a, N: Node + 'a>(
         NodeTest::Name(NameTest {
             ns: None,
             prefix: None,
-            name: Some(WildcardOrName::Name(localpart)),
+            name: Some(WildcardOrName::Name(Rc::new(Value::from(localpart)))),
         })
     }))
 }
@@ -32,8 +34,8 @@ fn prefixed_name<'a, N: Node + 'a>(
         |(prefix, _, localpart)| {
             NodeTest::Name(NameTest {
                 ns: None,
-                prefix: Some(prefix),
-                name: Some(WildcardOrName::Name(localpart)),
+                prefix: Some(Rc::new(Value::from(prefix))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from(localpart)))),
             })
         },
     ))

@@ -290,7 +290,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
-        m: &Option<QualifiedName>,
+        m: &Option<Rc<QualifiedName>>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates =
             self.templates
@@ -437,10 +437,10 @@ impl<N: Node> Context<N> {
                 generate_integers(self, stctxt, start_at, select, n)
             }
             Transform::Key(n, v, _, _) => key(self, stctxt, n, v),
-            Transform::SystemProperty(p, _) => system_property(self, stctxt, p),
+            Transform::SystemProperty(p, ns) => system_property(self, stctxt, p, ns),
             Transform::AvailableSystemProperties => available_system_properties(),
             Transform::Document(uris, base) => document(self, stctxt, uris, base),
-            Transform::Invoke(qn, a, _) => invoke(self, stctxt, qn, a),
+            Transform::Invoke(qn, a, ns) => invoke(self, stctxt, qn, a, ns),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),

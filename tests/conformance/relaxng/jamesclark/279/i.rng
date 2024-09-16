@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0" name="foo">
+  <data type="token" datatypeLibrary="">
+    <param name="length">2</param>
+  </data>
+</element>

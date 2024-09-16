@@ -73,21 +73,18 @@ impl QualifiedName {
     /// then find the prefix in the supplied namespaces and use the corresponding URI.
     /// If the qualified name already has a namespace URI, then this method has no effect.
     /// If the qualified name has no prefix, then this method has no effect.
-    pub fn resolve<N: Node>(
+    pub fn resolve<F>(
         &mut self,
-        namespaces: &Rc<HashMap<Option<Rc<Value>>, N>>,
-    ) -> Result<(), Error> {
+        mapper: F,
+    ) -> Result<(), Error>
+    where
+        F: Fn(Option<Rc<Value>>) -> Result<Rc<Value>, Error>,
+    {
         match (&self.prefix, &self.nsuri) {
-            (Some(p), None) => namespaces.get(&Some(p.clone())).map_or(
-                Err(Error::new(
-                    ErrorKind::DynamicAbsent,
-                    format!("no namespace corresponding to prefix \"{}\"", p),
-                )),
-                |u| {
-                    self.nsuri = Some(u.value().clone());
-                    Ok(())
-                }
-            ),
+            (Some(p), None) => {
+                self.nsuri = Some(mapper(Some(p.clone()))?.clone());
+                Ok(())
+            },
             _ => Ok(()),
         }
     }
@@ -177,7 +174,7 @@ impl Hash for QualifiedName {
 impl TryFrom<&str> for QualifiedName {
     type Error = Error;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None);
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
         match eqname()((s, state)) {
             Ok((_, qn)) => Ok(qn),
             Err(_) => Err(Error::new(
@@ -189,18 +186,19 @@ impl TryFrom<&str> for QualifiedName {
 }
 
 /// Parse a string to create a [QualifiedName].
-/// Resolve prefix against a set of XML Namespace declarations
+/// Resolve prefix against a set of XML Namespace declarations.
+/// This method can be used when there is no XSL stylesheet to derive the namespaces.
 /// QualifiedName ::= (prefix ":")? local-name
-impl<N: Node> TryFrom<(&str, &Rc<HashMap<Rc<Value>, N>>)> for QualifiedName {
+impl TryFrom<(&str, Rc<HashMap<Option<Rc<Value>>, Rc<Value>>>)> for QualifiedName {
     type Error = Error;
-    fn try_from(s: (&str, &Rc<HashMap<Rc<Value>, N>>)) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None);
+    fn try_from(s: (&str, Rc<HashMap<Option<Rc<Value>>, Rc<Value>>>)) -> Result<Self, Self::Error> {
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.prefix().is_some() && qn.namespace_uri().is_none() {
-                    match s.1.get(&qn.prefix().unwrap()) {
+                    match s.1.get(&qn.prefix()) {
                         Some(ns) => Ok(QualifiedName::new_from_values(
-                            Some(ns.value().clone()),
+                            Some(ns.clone()),
                             qn.prefix(),
                             qn.localname().clone(),
                         )),
@@ -209,6 +207,39 @@ impl<N: Node> TryFrom<(&str, &Rc<HashMap<Rc<Value>, N>>)> for QualifiedName {
                             format!("unable to match prefix \"{}\"", qn.prefix_to_string().unwrap()),
                         )),
                     }
+                } else {
+                    Ok(qn)
+                }
+            }
+            Err(_) => Err(Error::new(
+                ErrorKind::ParseError,
+                String::from("unable to parse qualified name"),
+            )),
+        }
+    }
+}
+
+/// Parse a string to create a [QualifiedName].
+/// Resolve prefix against a set of XML Namespace declarations.
+/// This method can be used when there is an XSL stylesheet to derive the namespaces.
+/// QualifiedName ::= (prefix ":")? local-name
+impl<N: Node> TryFrom<(&str, N)> for QualifiedName {
+    type Error = Error;
+    fn try_from(s: (&str, N)) -> Result<Self, Self::Error> {
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+        match eqname()((s.0, state)) {
+            Ok((_, qn)) => {
+                if qn.prefix().is_some() && qn.namespace_uri().is_none() {
+                    s.1.namespace_iter()
+                        .find(|ns| ns.name().localname() == qn.prefix().unwrap())
+                        .map_or(
+                            Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespace matching prefix \"{}\"", qn.prefix_to_string().unwrap()))),
+                            |ns| Ok(QualifiedName::new_from_values(
+                                Some(ns.value()),
+                                qn.prefix(),
+                                qn.localname(),
+                            ))
+                        )
                 } else {
                     Ok(qn)
                 }

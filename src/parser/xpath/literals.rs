@@ -12,7 +12,7 @@ use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::{anychar, tag};
 use crate::parser::combinators::tuple::{tuple3, tuple4};
-use crate::parser::xpath::support::{digit0, digit1, none_of};
+use crate::parser::combinators::support::{digit0, digit1, none_of};
 use crate::parser::{ParseError, ParseInput};
 use crate::transform::Transform;
 use crate::value::Value;

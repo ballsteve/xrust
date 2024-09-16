@@ -17,6 +17,7 @@ use crate::qname::QualifiedName;
 use crate::value::Value;
 use std::collections::HashMap;
 use std::rc::Rc;
+use crate::{Error, ErrorKind};
 
 /// Parse all of the attributes in an element's start tag.
 /// Returns (attribute nodes, namespace declaration nodes).
@@ -154,7 +155,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                     } else {
                         Some(prefix)
                     };
-                    new_ns_hm.insert(o, nsnode.clone());
+                    new_ns_hm.insert(o, nsnode.value());
                 });
                 state1.namespace = Rc::new(new_ns_hm);
             } // else just reuse the existing hashmap
@@ -169,7 +170,10 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 let qn_prefix = qn.prefix_to_string().map_or(String::from(""), |s| s);
                 let qn_localname = qn.localname_to_string();
                 if qn_prefix != "xmlns" && qn_localname != "xmlns" {
-                    if qn.resolve(&state1.namespace).is_err() {
+                    if qn.resolve(|p| state1.namespace.get(&p).map_or(
+                        Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
+                        |r| Ok(r.clone())
+                    )).is_err() {
                         return Err(ParseError::MissingNameSpace);
                     }
 

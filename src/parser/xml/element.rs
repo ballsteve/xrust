@@ -1,4 +1,5 @@
 use crate::item::{Node, NodeType};
+use crate::xdmerror::{Error, ErrorKind};
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -37,7 +38,10 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
         )(input)
         {
             Ok(((input1, state1), (_, mut n, (av, namespaces), _, _))) => {
-                if n.resolve(state1.namespaces_ref()).is_err() {
+                if n.resolve(|p| state1.namespace.get(&p).map_or(
+                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
+                    |r| Ok(r.clone())
+                )).is_err() {
                     return Err(ParseError::MissingNameSpace);
                 }
                 let e = state1
@@ -83,7 +87,10 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
         )(input)
         {
             Ok(((input1, state1), (_, mut n, (av, namespaces), _, _, c, _, _, _, _))) => {
-                if n.resolve(state1.namespaces_ref()).is_err() {
+                if n.resolve(|p| state1.namespace.get(&p).map_or(
+                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
+                    |r| Ok(r.clone())
+                )).is_err() {
                     return Err(ParseError::MissingNameSpace);
                 }
                 let d = state1.doc.clone().unwrap();

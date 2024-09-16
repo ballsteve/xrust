@@ -72,6 +72,13 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
+/// In some circumstances, a transformation must resolve a qualified name.
+/// To do this, it must have a copy of the in-scope namespaces.
+/// This type represents a mapping from prefix to Namespace URI.
+/// The "None" prefix is for the default namespace.
+pub type NamespaceMap = Rc<HashMap<Option<Rc<Value>>, Rc<Value>>>;
+// TODO: should be default namespace be represented by the empty string prefix?
+
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
 pub enum Transform<N: Node> {
@@ -99,14 +106,14 @@ pub enum Transform<N: Node> {
     /// A literal, atomic value.
     Literal(Item<N>),
     /// A literal element. Consists of the element name and content.
-    LiteralElement(QualifiedName, Box<Transform<N>>),
+    LiteralElement(Rc<QualifiedName>, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
     /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
     LiteralText(Box<Transform<N>>, bool),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
-    LiteralAttribute(QualifiedName, Box<Transform<N>>),
+    LiteralAttribute(Rc<QualifiedName>, Box<Transform<N>>),
     /// A literal comment. Consists of the value.
     LiteralComment(Box<Transform<N>>),
     /// A literal processing instruction. Consists of the name and value.
@@ -156,7 +163,7 @@ pub enum Transform<N: Node> {
     /// Consists of the selector for items to be matched, the mode, and sort keys.
     ApplyTemplates(
         Box<Transform<N>>,
-        Option<QualifiedName>,
+        Option<Rc<QualifiedName>>,
         Vec<(Order, Transform<N>)>,
     ),
     /// Find templates at the next import level and evaluate its body.
@@ -168,18 +175,18 @@ pub enum Transform<N: Node> {
 
     /// Evaluate a named template or function, with arguments.
     /// Consists of the body of the template/function, the actual arguments (variable declarations), and in-scope namespace declarations.
-    Call(Box<Transform<N>>, Vec<Transform<N>>, Rc<HashMap<String, Rc<Value>>>),
+    Call(Box<Transform<N>>, Vec<Transform<N>>, NamespaceMap),
 
     /// Declare a variable in the current context.
     /// Consists of the variable name, its value, a transformation to perform with the variable in scope, and in-scope namespace declarations.
-    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, Rc<HashMap<String, Rc<Value>>>),
+    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, NamespaceMap),
     /// Reference a variable.
     /// The result is the value stored for that variable in the current context and current scope.
-    VariableReference(String, Rc<HashMap<String, Rc<Value>>>),
+    VariableReference(String, NamespaceMap),
 
     /// Set the value of an attribute. The context item must be an element-type node.
     /// Consists of the name of the attribute and its value. The [Sequence] produced will be cast to a [Value].
-    SetAttribute(QualifiedName, Box<Transform<N>>),
+    SetAttribute(Rc<QualifiedName>, Box<Transform<N>>),
 
     /// XPath functions
     Position,
@@ -261,16 +268,16 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
-        Rc<HashMap<String, Rc<Value>>>,
+        NamespaceMap,
     ),
     /// Get information about the processor
-    SystemProperty(Box<Transform<N>>, Rc<HashMap<String, Rc<Value>>>),
+    SystemProperty(Box<Transform<N>>, NamespaceMap),
     AvailableSystemProperties,
     /// Read an external document
     Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list, and in-scope namespace declarations.
-    Invoke(QualifiedName, ActualParameters<N>, Rc<HashMap<String, Rc<Value>>>),
+    Invoke(Rc<QualifiedName>, ActualParameters<N>, NamespaceMap),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -390,6 +397,18 @@ impl<N: Node> Debug for Transform<N> {
     }
 }
 
+/// A convenience function to create a namespace mapping from a [Node].
+pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> NamespaceMap {
+    if let Some(nn) = n {
+        Rc::new(nn.namespace_iter().fold(HashMap::new(), |mut hm, ns| {
+            hm.insert(Some(ns.name().localname()), ns.value());
+            hm
+        }))
+    } else {
+        Rc::new(HashMap::new())
+    }
+}
+
 /// The sort order
 #[derive(Clone, PartialEq, Debug)]
 pub enum Order {
@@ -484,7 +503,7 @@ impl NodeMatch {
                         match &t.name {
                             Some(a) => match a {
                                 WildcardOrName::Wildcard => true,
-                                WildcardOrName::Name(s) => *s == n.name().get_localname(),
+                                WildcardOrName::Name(s) => *s == n.name().localname(),
                             },
                             None => false,
                         }
@@ -561,7 +580,7 @@ impl TryFrom<&str> for NodeTest {
                     }))
                 } else {
                     Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Name(tok[0].to_string())),
+                        name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[0])))),
                         ns: None,
                         prefix: None,
                     }))
@@ -578,7 +597,7 @@ impl TryFrom<&str> for NodeTest {
                         }))
                     } else {
                         Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Name(tok[1].to_string())),
+                            name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[1])))),
                             ns: Some(WildcardOrName::Wildcard),
                             prefix: None,
                         }))
@@ -587,13 +606,13 @@ impl TryFrom<&str> for NodeTest {
                     Ok(NodeTest::Name(NameTest {
                         name: Some(WildcardOrName::Wildcard),
                         ns: None,
-                        prefix: Some(tok[0].to_string()),
+                        prefix: Some(Rc::new(Value::from(tok[0]))),
                     }))
                 } else {
                     Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Name(tok[1].to_string())),
+                        name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[1])))),
                         ns: None,
-                        prefix: Some(tok[0].to_string()),
+                        prefix: Some(Rc::new(Value::from(tok[0]))),
                     }))
                 }
             }
@@ -682,14 +701,14 @@ impl KindTest {
 #[derive(Clone, Debug)]
 pub struct NameTest {
     pub ns: Option<WildcardOrName>,
-    pub prefix: Option<String>,
+    pub prefix: Option<Rc<Value>>,
     pub name: Option<WildcardOrName>,
 }
 
 impl NameTest {
     pub fn new(
         ns: Option<WildcardOrName>,
-        prefix: Option<String>,
+        prefix: Option<Rc<Value>>,
         name: Option<WildcardOrName>,
     ) -> Self {
         NameTest { ns, prefix, name }
@@ -701,17 +720,19 @@ impl NameTest {
             Item::Node(n) => {
                 match n.node_type() {
                     NodeType::Element | NodeType::ProcessingInstruction | NodeType::Attribute => {
+                        // TODO: avoid converting the values into strings just for comparison
+                        // Value interning should fix this
                         match (
                             self.ns.as_ref(),
                             self.name.as_ref(),
-                            n.name().get_nsuri_ref(),
-                            n.name().get_localname().as_str(),
+                            n.name().namespace_uri(),
+                            n.name().localname_to_string().as_str(),
                         ) {
                             (None, None, _, _) => false,
                             (None, Some(WildcardOrName::Wildcard), None, _) => true,
                             (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
                             (None, Some(WildcardOrName::Name(_)), None, "") => false,
-                            (None, Some(WildcardOrName::Name(wn)), None, qn) => wn == qn,
+                            (None, Some(WildcardOrName::Name(wn)), None, qn) => wn.to_string() == qn,
                             (None, Some(WildcardOrName::Name(_)), Some(_), _) => false,
                             (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
                             (
@@ -731,14 +752,14 @@ impl NameTest {
                                 Some(WildcardOrName::Name(wn)),
                                 _,
                                 qn,
-                            ) => wn == qn,
+                            ) => wn.to_string() == qn,
                             (Some(WildcardOrName::Name(_)), Some(_), None, _) => false,
                             (
                                 Some(WildcardOrName::Name(wnsuri)),
                                 Some(WildcardOrName::Name(wn)),
                                 Some(qnsuri),
                                 qn,
-                            ) => wnsuri == qnsuri && wn == qn,
+                            ) => wnsuri.clone() == qnsuri && wn.to_string() == qn,
                             _ => false, // maybe should panic?
                         }
                     }
@@ -767,7 +788,7 @@ impl fmt::Display for NameTest {
 #[derive(Clone, Debug)]
 pub enum WildcardOrName {
     Wildcard,
-    Name(String),
+    Name(Rc<Value>),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<element xmlns="http://relaxng.org/ns/structure/1.0">
+  <name ns="">foo</name>
+  <group>
+    <element>
+      <name ns="">bar</name>
+      <empty/>
+    </element>
+    <element>
+      <name ns="">baz</name>
+      <empty/>
+    </element>
+  </group>
+</element>

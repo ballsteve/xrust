@@ -1,0 +1,12 @@
+<doc>
+  <section1>
+    <heading>A Level-1 Heading</heading>
+    <para>The first paragraph.</para>
+    <para>The second paragraph.</para>
+    <section2>
+      <heading>A Level-2 Heading</heading>
+      <para>The first paragraph after the sub-heading.</para>
+    </section2>
+  </section1>
+</doc>
+

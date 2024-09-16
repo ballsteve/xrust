@@ -267,8 +267,36 @@ impl<N: Node> TryFrom<&str> for Pattern<N> {
                 String::from("empty string is not allowed as an XPath pattern"),
             ))
         } else {
-            let state = ParserState::new(None, None);
+            let state = ParserState::new(None, None, None);
             match pattern::<N>((e, state)) {
+                Ok(((rem, _), f)) => {
+                    if rem.is_empty() {
+                        Ok(f)
+                    } else {
+                        Err(Error::new(
+                            ErrorKind::Unknown,
+                            format!("extra characters found: \"{:?}\"", rem),
+                        ))
+                    }
+                }
+                Err(err) => Err(Error::new(ErrorKind::Unknown, format!("{:?}", err))),
+            }
+        }
+    }
+}
+
+/// Compile an XPath pattern. Uses the supplied [Node] to resolve in-scope XML Namespaces.
+impl<N: Node> TryFrom<(&str, N)> for Pattern<N> {
+    type Error = Error;
+    fn try_from(e: (&str, N)) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
+        if e.0.is_empty() {
+            Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("empty string is not allowed as an XPath pattern"),
+            ))
+        } else {
+            let state = ParserState::new(None, Some(e.1), None);
+            match pattern::<N>((e.0, state)) {
                 Ok(((rem, _), f)) => {
                     if rem.is_empty() {
                         Ok(f)
@@ -289,6 +317,12 @@ impl<'a, N: Node> TryFrom<String> for Pattern<N> {
     type Error = Error;
     fn try_from(e: String) -> Result<Self, <Pattern<N> as TryFrom<&'a str>>::Error> {
         Pattern::try_from(e.as_str())
+    }
+}
+impl<'a, N: Node> TryFrom<(String, N)> for Pattern<N> {
+    type Error = Error;
+    fn try_from(e: (String, N)) -> Result<Self, <Pattern<N> as TryFrom<(&'a str, N)>>::Error> {
+        Pattern::try_from((e.0.as_str(), e.1))
     }
 }
 
@@ -659,35 +693,35 @@ fn outer_function_name<'a, N: Node + 'a>(
             NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("doc"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("doc")))),
             })
         }),
         map(tag("id"), |_| {
             NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("id"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("id")))),
             })
         }),
         map(tag("element-with-id"), |_| {
             NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("element-with-id"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("element-with-id")))),
             })
         }),
         map(tag("key"), |_| {
             NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("key"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("key")))),
             })
         }),
         map(tag("root"), |_| {
             NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("root"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("root")))),
             })
         }),
         map(qualname_test(), |q| q),

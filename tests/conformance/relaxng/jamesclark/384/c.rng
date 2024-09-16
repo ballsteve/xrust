@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<grammar xmlns="http://relaxng.org/ns/structure/1.0" datatypeLibrary="http://www.w3.org/2001/XMLSchema-datatypes">
+
+<start>
+  <element name="foo"><ref name="content"/></element>
+</start>
+
+<define name="content">
+  <list>
+    <oneOrMore>
+      <choice>
+        <group>
+	  <ref name="d"/>
+	  <ref name="d"/>
+	</group>
+        <group>
+	  <value>rgb</value>
+	  <ref name="d"/>
+	  <ref name="d"/>
+	  <ref name="d"/>
+	</group>
+      </choice>
+    </oneOrMore>
+  </list>
+</define>
+
+<define name="d">
+  <data type="double">
+    <param name="minInclusive">0</param>
+    <param name="maxInclusive">1</param>
+  </data>
+</define>
+
+</grammar>

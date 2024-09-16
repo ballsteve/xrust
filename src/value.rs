@@ -2,6 +2,7 @@
 //!
 //! An atomic value that is an item in a sequence.
 
+use std::rc::Rc;
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
@@ -145,6 +146,8 @@ pub enum Value {
     //anyURI,
     /// Qualified Name
     QName(QualifiedName),
+    /// Rc-shared Qualified Name
+    RQName(Rc<QualifiedName>),
     //NOTATION
 }
 
@@ -173,6 +176,7 @@ impl fmt::Display for Value {
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
             Value::QName(q) => q.to_string(),
+            Value::RQName(q) => q.to_string(),
             _ => "".to_string(),
         };
         f.write_str(result.as_str())
@@ -271,6 +275,7 @@ impl Value {
             Value::ENTITY => "ENTITY",
             Value::Boolean(_) => "boolean",
             Value::QName(_) => "QName",
+            Value::RQName(_) => "QName",
         }
     }
     pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
@@ -347,7 +352,16 @@ impl Value {
             }
             Value::QName(q) => match (op, other) {
                 (Operator::Equal, Value::QName(r)) => Ok(*q == *r),
+                (Operator::Equal, Value::RQName(r)) => Ok(*q == **r),
                 (Operator::NotEqual, Value::QName(r)) => Ok(*q != *r),
+                (Operator::NotEqual, Value::RQName(r)) => Ok(*q != **r),
+                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+            },
+            Value::RQName(q) => match (op, other) {
+                (Operator::Equal, Value::QName(r)) => Ok(**q == *r),
+                (Operator::Equal, Value::RQName(r)) => Ok(**q == **r),
+                (Operator::NotEqual, Value::QName(r)) => Ok(**q != *r),
+                (Operator::NotEqual, Value::RQName(r)) => Ok(**q != **r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             _ => Result::Err(Error::new(
@@ -488,6 +502,11 @@ impl From<bool> for Value {
 impl From<QualifiedName> for Value {
     fn from(q: QualifiedName) -> Self {
         Value::QName(q)
+    }
+}
+impl From<Rc<QualifiedName>> for Value {
+    fn from(q: Rc<QualifiedName>) -> Self {
+        Value::RQName(q)
     }
 }
 

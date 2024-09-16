@@ -30,7 +30,7 @@ pub(crate) fn literal_element<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &QualifiedName,
+    qn: &Rc<QualifiedName>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -82,7 +82,7 @@ pub(crate) fn element<
     let r = ctxt.rd.clone().unwrap();
 
     let qnavt = QualifiedName::try_from(ctxt.dispatch(stctxt, qn)?.to_string().as_str())?;
-    let mut e = r.new_element(qnavt)?;
+    let mut e = r.new_element(Rc::new(qnavt))?;
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
         // Item could be a Node or text
         match i {
@@ -150,7 +150,7 @@ pub(crate) fn literal_attribute<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &QualifiedName,
+    qn: &Rc<QualifiedName>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -215,7 +215,7 @@ pub(crate) fn literal_processing_instruction<
     }
 
     let pi = ctxt.rd.clone().unwrap().new_processing_instruction(
-        QualifiedName::new(None, None, ctxt.dispatch(stctxt, name)?.to_string()),
+        Rc::new(QualifiedName::new(None, None, ctxt.dispatch(stctxt, name)?.to_string())),
         Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
     )?;
     Ok(vec![Item::Node(pi)])
@@ -234,7 +234,7 @@ pub(crate) fn set_attribute<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    atname: &QualifiedName,
+    atname: &Rc<QualifiedName>,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
