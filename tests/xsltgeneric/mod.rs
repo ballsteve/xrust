@@ -35,7 +35,6 @@ where
         .build();
     let mut ctxt = from_document(
         styledoc,
-        stylens,
         None,
         |s| parse_from_str(s),
         |_| Ok(String::new()),
@@ -71,7 +70,6 @@ where
         .build();
     let mut ctxt = from_document(
         styledoc,
-        stylens,
         None,
         |s| parse_from_str(s),
         |_| Ok(String::new()),
@@ -825,7 +823,6 @@ where
         .build();
     let mut ctxt = from_document(
         styledoc,
-        stylens,
         Some(
             Url::parse(format!("file://{}/tests/xsl/including.xsl", pwds.as_str()).as_str())
                 .expect("unable to parse URL"),
@@ -875,7 +872,6 @@ where
         .build();
     let mut ctxt = from_document(
         styledoc,
-        stylens,
         None,
         |s| parse_from_str(s),
         |_| Ok(String::new()),
@@ -915,7 +911,6 @@ where
         .build();
     let mut ctxt = from_document(
         styledoc,
-        stylens,
         None,
         |s| parse_from_str(s),
         |_| Ok(String::new()),

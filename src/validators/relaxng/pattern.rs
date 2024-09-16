@@ -4,6 +4,7 @@ use crate::{Error, Item};
 use crate::trees::smite::{Node as SmiteNode, RNode};
 use crate::parser::xml::{parse as xmlparse, parse_with_ns};
 use crate::transform::context::{StaticContextBuilder};
+use crate::transform::NamespaceMap;
 use crate::xslt::from_document;
 
 pub(crate) type Param = (String, String);
@@ -524,7 +525,6 @@ pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>
         .build();
     let mut c = from_document(
         styledoc,
-        stylens,
         None,
         |s| Ok(Rc::new(SmiteNode::new())),
         |_| Ok(String::new()),
@@ -563,7 +563,7 @@ fn parse_from_str(s: &str) -> Result<RNode, Error> {
     Ok(doc)
 }
 
-fn parse_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
+fn parse_from_str_with_ns(s: &str) -> Result<(RNode, NamespaceMap), Error> {
     let doc = Rc::new(SmiteNode::new());
     let r = parse_with_ns(doc.clone(), s, None)?;
     Ok(r)

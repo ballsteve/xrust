@@ -13,7 +13,7 @@ pub(crate) fn derive(doc: &RNode, pat: RNode, refs: &HashMap<String, RNode>) -> 
 }
 
 pub(crate) fn is_nullable(pat: RNode) -> bool {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "empty" => true,
         "text" => true,
         "group" => {
@@ -47,9 +47,9 @@ pub(crate) fn is_nullable(pat: RNode) -> bool {
     }
 }
 
-fn contains(nc: RNode, qn: QualifiedName) -> bool {
+fn contains(nc: RNode, qn: Rc<QualifiedName>) -> bool {
     //println!("containsnc-{:?}", nc.clone());
-    match nc.name().get_localname().as_str() {
+    match nc.name().localname_to_string().as_str() {
         "anyName" => true,
         "anyNameExcept" => {
             let name = nc.first_child().unwrap();
@@ -57,21 +57,21 @@ fn contains(nc: RNode, qn: QualifiedName) -> bool {
         }
         "NSName" => {
             let nsuri = nc.first_child().unwrap();
-            Some(nsuri.to_string()) == qn.get_nsuri()
+            Some(nsuri.to_string()) == qn.namespace_uri_to_string()
         }
         "NSNameExcept" => {
             let mut c = nc.child_iter();
             let ns1 = c.next().unwrap();
             let n = c.next().unwrap();
-            (Some(ns1.to_string()) == qn.get_nsuri()) && !contains(n, qn)
+            (Some(ns1.to_string()) == qn.namespace_uri_to_string()) && !contains(n, qn)
         }
         "name" => {
             let ln1 = nc.first_child().unwrap();
-            let ns1 = nc.get_attribute(&QualifiedName::new(None, None, "ns".to_string()));
+            let ns1 = nc.get_attribute(&QualifiedName::new(None, None, "ns"));
             if ns1.to_string().is_empty() {
-                qn.get_nsuri().is_none() && (ln1.to_string() == qn.get_localname())
+                qn.namespace_uri().is_none() && (ln1.to_string() == qn.localname_to_string())
             } else {
-                (Some(ns1.to_string()) == qn.get_nsuri()) && (ln1.to_string() == qn.get_localname())
+                (Some(ns1.to_string()) == qn.namespace_uri_to_string()) && (ln1.to_string() == qn.localname_to_string())
             }
         }
         "NameClassChoice" => {
@@ -94,7 +94,7 @@ fn child_deriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
         | NodeType::Unknown
         | NodeType::Namespace => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
         NodeType::Text => text_deriv(pat, cn.value().to_string()),
         NodeType::Element => {
@@ -130,18 +130,18 @@ fn child_deriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode {
     }
 }
 
-fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNode>) -> RNode {
+fn start_tag_open_deriv(pat: RNode, q: Rc<QualifiedName>, refs: &HashMap<String, RNode>) -> RNode {
     //println!("stod-{:?}",pat.name().get_localname().as_str());
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "ref" => {
             //We lookup the reference, and use that for the pattern going forward
-            let patname = pat.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+            let patname = pat.get_attribute(&QualifiedName::new(None, None, "name"));
             let newpat = refs.get(patname.to_string().as_str());
             match newpat {
                 //TODO proper error checking
                 None => pat
                     .owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap(),
                 Some(rn) => start_tag_open_deriv(rn.clone(), q, refs),
             }
@@ -154,12 +154,12 @@ fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNo
                 after(
                     p,
                     pat.owner_document()
-                        .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                        .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                         .unwrap(),
                 )
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed".to_string())))
                     .unwrap()
             }
         }
@@ -179,7 +179,7 @@ fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNo
                     |pat: RNode| {
                         let mut i = pat
                             .owner_document()
-                            .new_element(QualifiedName::new(None, None, "interleave".to_string()))
+                            .new_element(Rc::new(QualifiedName::new(None, None, "interleave")))
                             .unwrap();
                         let _ = i.push(pat);
                         let _ = i.push(p2.clone());
@@ -191,7 +191,7 @@ fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNo
                     |pat: RNode| {
                         let mut i = pat
                             .owner_document()
-                            .new_element(QualifiedName::new(None, None, "interleave".to_string()))
+                            .new_element(Rc::new(QualifiedName::new(None, None, "interleave")))
                             .unwrap();
                         let _ = i.push(pat);
                         let _ = i.push(p1.clone());
@@ -210,7 +210,7 @@ fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNo
                         choice(
                             pat.clone(),
                             pat.owner_document()
-                                .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                                .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                                 .unwrap(),
                         ),
                     )
@@ -243,13 +243,13 @@ fn start_tag_open_deriv(pat: RNode, q: QualifiedName, refs: &HashMap<String, RNo
         }
         _ => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
     }
 }
 
 fn att_deriv(pat: RNode, att: RNode) -> RNode {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
@@ -287,7 +287,7 @@ fn att_deriv(pat: RNode, att: RNode) -> RNode {
                 choice(
                     pat.clone(),
                     pat.owner_document()
-                        .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                        .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                         .unwrap(),
                 ),
             )
@@ -299,23 +299,23 @@ fn att_deriv(pat: RNode, att: RNode) -> RNode {
             let p1 = i.next().unwrap();
             if contains(nc, qn) && value_match(p1, av.to_string()) {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                     .unwrap()
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap()
             }
         }
         _ => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
     }
 }
 
 fn start_tag_close_deriv(pat: RNode) -> RNode {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
@@ -346,7 +346,7 @@ fn start_tag_close_deriv(pat: RNode) -> RNode {
         }
         "attribute" => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
         _ => pat,
     }
@@ -378,7 +378,7 @@ fn children_deriv(pat: RNode, cn: RNode, refs: &HashMap<String, RNode>) -> RNode
 }
 
 fn end_tag_deriv(pat: RNode) -> RNode {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
@@ -393,19 +393,19 @@ fn end_tag_deriv(pat: RNode) -> RNode {
                 p2
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap()
             }
         }
         _ => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
     }
 }
 
 fn text_deriv(pat: RNode, s: String) -> RNode {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "choice" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
@@ -445,7 +445,7 @@ fn text_deriv(pat: RNode, s: String) -> RNode {
                 choice(
                     pat.clone(),
                     pat.owner_document()
-                        .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                        .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                         .unwrap(),
                 ),
             )
@@ -455,17 +455,17 @@ fn text_deriv(pat: RNode, s: String) -> RNode {
             let dtlib = pat.get_attribute(&QualifiedName::new(
                 None,
                 None,
-                "datatypeLibrary".to_string(),
+                "datatypeLibrary",
             ));
-            let dtname = pat.get_attribute(&QualifiedName::new(None, None, "type".to_string()));
+            let dtname = pat.get_attribute(&QualifiedName::new(None, None, "type"));
             let v = pat.value().to_string();
             if datatype_equal((dtlib, dtname), v, s) {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                     .unwrap()
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap()
             }
         }
@@ -476,11 +476,11 @@ fn text_deriv(pat: RNode, s: String) -> RNode {
             let params = vec![];
             if data_type_allows(dt, params, s) {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                     .unwrap()
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap()
             }
         }
@@ -491,11 +491,11 @@ fn text_deriv(pat: RNode, s: String) -> RNode {
             let params = vec![];
             if data_type_allows(dt, params, s.clone()) && !is_nullable(text_deriv(pat.clone(), s)) {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                     .unwrap()
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap()
             }
         }
@@ -503,17 +503,17 @@ fn text_deriv(pat: RNode, s: String) -> RNode {
             let p = pat.first_child().unwrap();
             if is_nullable(list_deriv(p, stringsplit(s))) {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "empty".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "empty")))
                     .unwrap()
             } else {
                 pat.owner_document()
-                    .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
                     .unwrap()
             }
         }
         _ => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
     }
 }
@@ -549,7 +549,7 @@ pub fn apply_after<F1>(f: F1, pat: RNode) -> RNode
 where
     F1: Fn(RNode) -> RNode + Clone,
 {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "after" => {
             let mut pc = pat.child_iter();
             let p1 = pc.next().unwrap();
@@ -565,7 +565,7 @@ where
         "notAllowed" => pat,
         _ => pat
             .owner_document()
-            .new_element(QualifiedName::new(None, None, "notAllowed".to_string()))
+            .new_element(Rc::new(QualifiedName::new(None, None, "notAllowed")))
             .unwrap(),
     }
 }
@@ -578,15 +578,15 @@ fn choice(pat1: RNode, pat2: RNode) -> RNode {
         choice p1 p2 = Choice p1 p2
     */
     match (
-        pat1.name().get_localname().as_str(),
-        pat2.name().get_localname().as_str(),
+        pat1.name().localname_to_string().as_str(),
+        pat2.name().localname_to_string().as_str(),
     ) {
         ("notAllowed", _) => pat2,
         (_, "notAllowed") => pat1,
         (_, _) => {
             let mut c = pat1
                 .owner_document()
-                .new_element(QualifiedName::new(None, None, "choice".to_string()))
+                .new_element(Rc::new(QualifiedName::new(None, None, "choice")))
                 .unwrap();
             let _ = c.push(pat1);
             let _ = c.push(pat2);
@@ -596,8 +596,8 @@ fn choice(pat1: RNode, pat2: RNode) -> RNode {
 }
 fn group(pat1: RNode, pat2: RNode) -> RNode {
     match (
-        pat1.name().get_localname().as_str(),
-        pat2.name().get_localname().as_str(),
+        pat1.name().localname_to_string().as_str(),
+        pat2.name().localname_to_string().as_str(),
     ) {
         ("notAllowed", _) => pat1,
         (_, "notAllowed") => pat2,
@@ -606,7 +606,7 @@ fn group(pat1: RNode, pat2: RNode) -> RNode {
         (_, _) => {
             let mut g = pat1
                 .owner_document()
-                .new_element(QualifiedName::new(None, None, "group".to_string()))
+                .new_element(Rc::new(QualifiedName::new(None, None, "group")))
                 .unwrap();
             let _ = g.push(pat1);
             let _ = g.push(pat2);
@@ -618,15 +618,15 @@ fn after(pat1: RNode, pat2: RNode) -> RNode {
     //println!("afterpat1-{:?}",pat1.name().get_localname().as_str());
     //println!("afterpat2-{:?}",pat2.name().get_localname().as_str());
     match (
-        pat1.name().get_localname().as_str(),
-        pat2.name().get_localname().as_str(),
+        pat1.name().localname_to_string().as_str(),
+        pat2.name().localname_to_string().as_str(),
     ) {
         (_, "notAllowed") => pat2,
         ("notAllowed", _) => pat1,
         (_, _) => {
             let mut a = pat1
                 .owner_document()
-                .new_element(QualifiedName::new(None, None, "after".to_string()))
+                .new_element(Rc::new(QualifiedName::new(None, None, "after")))
                 .unwrap();
             let _ = a.push(pat1);
             let _ = a.push(pat2);
@@ -636,8 +636,8 @@ fn after(pat1: RNode, pat2: RNode) -> RNode {
 }
 fn interleave(pat1: RNode, pat2: RNode) -> RNode {
     match (
-        pat1.name().get_localname().as_str(),
-        pat2.name().get_localname().as_str(),
+        pat1.name().localname_to_string().as_str(),
+        pat2.name().localname_to_string().as_str(),
     ) {
         ("notAllowed", _) => pat1,
         (_, "notAllowed") => pat2,
@@ -646,7 +646,7 @@ fn interleave(pat1: RNode, pat2: RNode) -> RNode {
         (_, _) => {
             let mut i = pat1
                 .owner_document()
-                .new_element(QualifiedName::new(None, None, "interleave".to_string()))
+                .new_element(Rc::new(QualifiedName::new(None, None, "interleave")))
                 .unwrap();
             let _ = i.push(pat1);
             let _ = i.push(pat2);
@@ -668,11 +668,11 @@ fn strip(c: RNode) -> bool {
     }
 }
 fn one_or_more(pat: RNode) -> RNode {
-    match pat.name().get_localname().as_str() {
+    match pat.name().localname_to_string().as_str() {
         "notAllowed" => pat,
         _ => {
             let mut o = Rc::new(SmiteNode::new())
-                .new_element(QualifiedName::new(None, None, "oneOrMore".to_string()))
+                .new_element(Rc::new(QualifiedName::new(None, None, "oneOrMore")))
                 .unwrap();
             let _ = o.push(pat);
             o
@@ -680,8 +680,8 @@ fn one_or_more(pat: RNode) -> RNode {
     }
 }
 fn data_type_allows(dt: RNode, _params: Vec<Param>, _s: String) -> bool {
-    let _datatypens = dt.name().get_nsuri();
-    let datatype = dt.name().get_localname();
+    let _datatypens = dt.name().namespace_uri();
+    let datatype = dt.name().localname_to_string();
     match datatype.as_str() {
         "string" => true,
         "token" => true,
