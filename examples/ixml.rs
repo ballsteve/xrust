@@ -48,7 +48,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
             }
             Content::Element(name) => {
                 let new = t
-                    .new_element(QualifiedName::new(None, None, name.clone()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, name.clone())))
                     .expect("unable to create element node");
                 t.push(new.clone()).expect("unable to append node");
                 for attr in n
@@ -60,7 +60,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                     {
                         let new_attr = t
                             .new_attribute(
-                                QualifiedName::new(None, None, attr_name.clone()),
+                                Rc::new(QualifiedName::new(None, None, attr_name.clone())),
                                 Rc::new(Value::from(attr_value.clone())),
                             )
                             .expect("unable to create attribute node");
@@ -74,7 +74,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
             Content::Attribute(name, value) => {
                 let new = t
                     .new_attribute(
-                        QualifiedName::new(None, None, name.clone()),
+                        Rc::new(QualifiedName::new(None, None, name.clone())),
                         Rc::new(Value::from(value.clone())),
                     )
                     .expect("unable to create attribute node");
@@ -186,7 +186,6 @@ eol = "X".
         .expect("unable to convert pwd");
     let mut ctxt = from_document(
         style,
-        vec![],
         Some(
             Url::parse(format!("file://{}/{}", pwds, &args[1]).as_str())
                 .expect("unable to parse stylesheet URL"),

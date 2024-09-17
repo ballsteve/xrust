@@ -1,5 +1,6 @@
 //! Tests for transform module defined generically
 
+use std::collections::HashMap;
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
@@ -287,7 +288,7 @@ where
         nodetest: NodeTest::Name(NameTest::new(
             None,
             None,
-            Some(WildcardOrName::Name(String::from("Test1"))),
+            Some(WildcardOrName::Name(Rc::new(Value::from("Test1")))),
         )),
     }))));
     let x2 = Transform::GenerateId(Some(Box::new(Transform::Step(NodeMatch {
@@ -295,7 +296,7 @@ where
         nodetest: NodeTest::Name(NameTest::new(
             None,
             None,
-            Some(WildcardOrName::Name(String::from("Test2"))),
+            Some(WildcardOrName::Name(Rc::new(Value::from("Test2")))),
         )),
     }))));
     let mut sd = make_empty_doc();
@@ -837,8 +838,8 @@ where
             ]),
         )],
         Box::new(Transform::Concat(vec![
-            Transform::VariableReference(String::from("x")),
-            Transform::VariableReference(String::from("x")),
+            Transform::VariableReference(String::from("x"), Rc::new(HashMap::new())),
+            Transform::VariableReference(String::from("x"), Rc::new(HashMap::new())),
         ])),
     );
     let mut stctxt = StaticContextBuilder::new()
@@ -1042,7 +1043,7 @@ where
         nodetest: NodeTest::Name(NameTest {
             ns: None,
             prefix: None,
-            name: Some(WildcardOrName::Name(String::from("Level-1"))),
+            name: Some(WildcardOrName::Name(Rc::new(Value::from("Level-1")))),
         }),
     });
 
@@ -1103,7 +1104,7 @@ where
         nodetest: NodeTest::Name(NameTest {
             ns: None,
             prefix: None,
-            name: Some(WildcardOrName::Name(String::from("Level-1"))),
+            name: Some(WildcardOrName::Name(Rc::new(Value::from("Level-1")))),
         }),
     });
 
@@ -1157,7 +1158,7 @@ where
         nodetest: NodeTest::Name(NameTest {
             ns: None,
             prefix: None,
-            name: Some(WildcardOrName::Name(String::from("Level-1"))),
+            name: Some(WildcardOrName::Name(Rc::new(Value::from("Level-1")))),
         }),
     });
 
@@ -2428,7 +2429,8 @@ where
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "bar",
         ))))),
-        Box::new(Transform::VariableReference("foo".to_string())),
+        Box::new(Transform::VariableReference("foo".to_string(), Rc::new(HashMap::new()))),
+        Rc::new(HashMap::new()),
     );
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
@@ -2455,7 +2457,7 @@ where
             nodetest: NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("a"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("a")))),
             }),
         }),
         Transform::Step(NodeMatch {
@@ -2463,7 +2465,7 @@ where
             nodetest: NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(String::from("b"))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from("b")))),
             }),
         }),
     ]);
@@ -4722,6 +4724,7 @@ where
             "blue",
         ))))),
         None,
+        Rc::new(HashMap::new()),
     );
     let mut sd = make_empty_doc();
     let mut top = sd
@@ -4791,23 +4794,24 @@ where
     let x = Transform::Invoke(
         Rc::new(QualifiedName::new(None, None, String::from("mycallable"))),
         ActualParameters::Named(vec![(
-            Rc::new(QualifiedName::new(None, None, String::from("param1"))),
+            QualifiedName::new(None, None, String::from("param1")),
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from("value 1")))),
         )]),
+        Rc::new(HashMap::new()),
     );
 
     let ctxt = ContextBuilder::new()
         .callable(
-            Rc::new(QualifiedName::new(None, None, String::from("mycallable"))),
+            QualifiedName::new(None, None, String::from("mycallable")),
             Callable::new(
                 Transform::SequenceItems(vec![
                     Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                         "found parameter, value: ",
                     )))),
-                    Transform::VariableReference("param1".to_string()),
+                    Transform::VariableReference("param1".to_string(), Rc::new(HashMap::new())),
                 ]),
                 FormalParameters::Named(vec![(
-                    Rc::new(QualifiedName::new(None, None, String::from("param1"))),
+                    QualifiedName::new(None, None, String::from("param1")),
                     None,
                 )]),
             ),
@@ -4839,27 +4843,28 @@ where
         ActualParameters::Positional(vec![Transform::Literal(Item::<N>::Value(Rc::new(
             Value::from("value 1"),
         )))]),
+        Rc::new(HashMap::new()),
     );
 
     let ctxt = ContextBuilder::new()
         .callable(
-            Rc::new(QualifiedName::new(
+            QualifiedName::new(
                 Some("http://example.org/".to_string()),
                 None,
                 String::from("my_func"),
-            )),
+            ),
             Callable::new(
                 Transform::SequenceItems(vec![
                     Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                         "found parameter, value: ",
                     )))),
-                    Transform::VariableReference("param1".to_string()),
+                    Transform::VariableReference("param1".to_string(), Rc::new(HashMap::new())),
                 ]),
-                FormalParameters::Positional(vec![Rc::new(QualifiedName::new(
+                FormalParameters::Positional(vec![QualifiedName::new(
                     None,
                     None,
                     String::from("param1"),
-                ))]),
+                )]),
             ),
         )
         .build();

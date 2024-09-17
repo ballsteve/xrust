@@ -1,4 +1,4 @@
-//mod conformance;
+mod conformance;
 
 //use std::convert::TryFrom;
 //use std::fs;
