@@ -1,3 +1,5 @@
+use std::rc::Rc;
+use crate::value::Value;
 use crate::item::{Node, NodeType};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::parser::combinators::alt::{alt2, alt4};
@@ -14,9 +16,6 @@ use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
-use crate::value::Value;
-use std::rc::Rc;
 
 // Element ::= EmptyElemTag | STag content ETag
 pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>

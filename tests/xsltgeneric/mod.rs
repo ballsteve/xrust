@@ -13,7 +13,7 @@ fn test_rig<N: Node, G, H, J>(
     src: impl AsRef<str>,
     style: impl AsRef<str>,
     parse_from_str: G,
-    parse_from_str_with_ns: J,
+    _parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<Sequence<N>, Error>
 where
@@ -27,7 +27,7 @@ where
             format!("error parsing source document: {}", e.message),
         )
     })?;
-    let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())
+    let styledoc = parse_from_str(style.as_ref())
         .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
@@ -50,7 +50,7 @@ fn test_msg_rig<N: Node, G, H, J>(
     src: impl AsRef<str>,
     style: impl AsRef<str>,
     parse_from_str: G,
-    parse_from_str_with_ns: J,
+    _parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(Sequence<N>, Vec<String>), Error>
 where
@@ -59,7 +59,7 @@ where
     J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str(src.as_ref())?;
-    let (styledoc, stylens) = parse_from_str_with_ns(style.as_ref())?;
+    let styledoc = parse_from_str(style.as_ref())?;
     let mut msgs: Vec<String> = vec![];
     let mut stctxt = StaticContextBuilder::new()
         .message(|m| {
@@ -794,7 +794,7 @@ where
 
 pub fn generic_include<N: Node, G, H, J>(
     parse_from_str: G,
-    parse_from_str_with_ns: J,
+    _parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
 where
@@ -804,7 +804,7 @@ where
 {
     let srcdoc =
         parse_from_str("<Test>one<Level1/>two<Level2/>three<Level3/>four<Level4/></Test>")?;
-    let (styledoc, stylens) = parse_from_str_with_ns(
+    let styledoc = parse_from_str(
         "<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:include href='included.xsl'/>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
@@ -845,7 +845,7 @@ where
 
 pub fn generic_document_1<N: Node, G, H, J>(
     parse_from_str: G,
-    parse_from_str_with_ns: J,
+    _parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
 where
@@ -854,7 +854,7 @@ where
     J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str("<Test><internal>on the inside</internal></Test>")?;
-    let (styledoc, stylens) = parse_from_str_with_ns(
+    let styledoc = parse_from_str(
         r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/>|<xsl:apply-templates select='document("urn::test.org/test")'/></xsl:template>
   <xsl:template match='child::internal'>found internal element</xsl:template>
@@ -889,7 +889,7 @@ where
 
 pub fn generic_number_1<N: Node, G, H, J>(
     parse_from_str: G,
-    parse_from_str_with_ns: J,
+    _parse_from_str_with_ns: J,
     make_doc: H,
 ) -> Result<(), Error>
 where
@@ -898,7 +898,7 @@ where
     J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
 {
     let srcdoc = parse_from_str("<Test><t>one</t><t>two</t><t>three</t></Test>")?;
-    let (styledoc, stylens) = parse_from_str_with_ns(
+    let styledoc = parse_from_str(
         r##"<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
   <xsl:template match='child::Test'><xsl:apply-templates/></xsl:template>
   <xsl:template match='child::t'>t element <xsl:number/></xsl:template>

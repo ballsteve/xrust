@@ -1,7 +1,7 @@
 //! Functions for handling variables.
 
 use crate::item::Node;
-use crate::parser::combinators::map::{map, map_with_state};
+use crate::parser::combinators::map::map_with_state;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 //use crate::parser::combinators::debug::inspect;

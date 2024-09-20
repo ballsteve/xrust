@@ -1,19 +1,19 @@
-use crate::item::{Node, NodeType};
-use crate::output::OutputDefinition;
-use crate::qname::QualifiedName;
-use crate::value::Value;
-use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
-use std::cmp::Ordering;
-use std::fmt;
-use std::ptr::NonNull;
 /// A null tree implementation
 ///
 /// This tree implementation implements nothing.
 /// The parser combinator is generic in [Node].
 /// Occasionally, a module using the parser, but not needing a [Node],
 /// nevertheless requires a concrete type that has the [Node] trait.
+
+use std::cmp::Ordering;
+use std::fmt;
 use std::rc::Rc;
+use crate::item::{Node, NodeType};
+use crate::output::OutputDefinition;
+use crate::qname::QualifiedName;
+use crate::value::Value;
+use crate::xdmerror::{Error, ErrorKind};
+use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
 
 #[derive(Clone)]
 pub struct Nullo();

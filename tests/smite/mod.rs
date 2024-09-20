@@ -1,6 +1,5 @@
 // Support functions for smite tests
 
-use std::collections::HashMap;
 use std::rc::Rc;
 
 use xrust::item::{Item, Node};

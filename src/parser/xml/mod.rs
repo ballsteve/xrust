@@ -9,7 +9,6 @@ mod strings;
 mod xmldecl;
 
 use std::rc::Rc;
-use std::collections::HashMap;
 use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -22,7 +21,6 @@ use crate::parser::xml::xmldecl::xmldecl;
 use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
-use crate::value::Value;
 use crate::namespace::NamespaceMap;
 
 pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {

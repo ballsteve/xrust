@@ -1,6 +1,5 @@
 //! Tests for transform module defined generically
 
-use std::collections::HashMap;
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};

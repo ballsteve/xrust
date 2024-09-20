@@ -1,6 +1,5 @@
 pub mod relaxng;
 
-use std::rc::Rc;
 use crate::item::Node;
 use crate::trees::smite::RNode;
 use crate::parser::xml;

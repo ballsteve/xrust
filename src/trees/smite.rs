@@ -52,7 +52,7 @@ use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use std::collections::hash_map::{IntoIter, Iter};
+use std::collections::hash_map::IntoIter;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};

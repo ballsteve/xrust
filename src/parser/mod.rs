@@ -7,7 +7,7 @@ This parser combinator passes a context into the function, which includes the st
 use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
-use std::cell::{Ref, RefCell};
+use std::cell::RefCell;
 use crate::externals::URLResolver;
 use crate::value::Value;
 use crate::item::Node;
@@ -186,24 +186,16 @@ impl<N: Node> ParserState<N> {
         };
         let xnsprefix = Rc::new(Value::from("xml"));
         let xnsuri = Rc::new(Value::from("http://www.w3.org/XML/1998/namespace"));
-        let ns = doc.as_ref().map_or_else(
-            || {
-                // No document
-                Rc::new(NamespaceMap::new())
-            },
-            |d| {
-                let mut ns = NamespaceMap::new();
-                ns.insert(Some(xnsprefix.clone()), xnsuri.clone());
-                Rc::new(ns)
-            }
-        );
+        let mut ns_map = NamespaceMap::new();
+        ns_map.insert(Some(xnsprefix.clone()), xnsuri.clone());
+
         ParserState {
             doc,
             cur,
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
-            namespace: ns,
+            namespace: Rc::new(ns_map),
             interned_values: Rc::new(RefCell::new(HashMap::from([
                 (String::from("xml"), xnsprefix.clone()),
                 (String::from("http://www.w3.org/XML/1998/namespace"), xnsuri.clone()),

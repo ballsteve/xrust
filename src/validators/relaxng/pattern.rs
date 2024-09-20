@@ -1,11 +1,9 @@
 use std::collections::HashMap;
-use std::rc::Rc;
 use crate::xdmerror::Error;
 use crate::item::{Node, Item};
 use crate::trees::smite::RNode;
-use crate::parser::xml::{parse as xmlparse, parse_with_ns};
+use crate::parser::xml::{parse as xmlparse};
 use crate::transform::context::{StaticContextBuilder};
-use crate::namespace::NamespaceMap;
 use crate::xslt::from_document;
 
 pub(crate) type Param = (String, String);
@@ -17,8 +15,6 @@ pub(crate) enum PatternError<'a>{
     MissingName,
     Other(&'a str)
 }
-
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>), PatternError> {
     //TODO implement
@@ -518,16 +514,16 @@ pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>
 
 </xsl:stylesheet>"#;
 
-    let (styledoc, stylens) = parse_from_str_with_ns(patternprepper).expect("TODO: panic message");
+    let styledoc = parse_from_str(patternprepper).expect("TODO: panic message");
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
         .parser(|_s| Ok(RNode::new_document()))
-        .fetcher(|url| Ok(String::new()))
+        .fetcher(|_url| Ok(String::new()))
         .build();
-    let mut c = from_document(
+    let c = from_document(
         styledoc,
         None,
-        |s| Ok(RNode::new_document()),
+        |_s| Ok(RNode::new_document()),
         |_| Ok(String::new()),
     );
     match c {
@@ -562,10 +558,4 @@ fn parse_from_str(s: &str) -> Result<RNode, Error> {
     let doc = RNode::new_document();
     xmlparse(doc.clone(), s, None)?;
     Ok(doc)
-}
-
-fn parse_from_str_with_ns(s: &str) -> Result<(RNode, Rc<NamespaceMap>), Error> {
-    let doc = RNode::new_document();
-    let r = parse_with_ns(doc.clone(), s, None)?;
-    Ok(r)
 }

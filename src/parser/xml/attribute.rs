@@ -16,7 +16,6 @@ use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::namespace::NamespaceMap;
-use std::collections::HashMap;
 use std::rc::Rc;
 use crate::{Error, ErrorKind};
 

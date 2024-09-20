@@ -12,9 +12,6 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
-use crate::value::Value;
-use std::rc::Rc;
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
 pub(crate) fn processing_instruction<N: Node>(

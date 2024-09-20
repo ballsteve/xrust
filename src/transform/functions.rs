@@ -1,6 +1,5 @@
 //! These functions are for features defined in XPath Functions 1.0 and 2.0.
 
-use std::collections::HashMap;
 use pkg_version::*;
 use std::rc::Rc;
 use url::Url;

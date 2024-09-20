@@ -54,7 +54,11 @@ pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
 
-use std::collections::HashMap;
+use std::convert::TryFrom;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+use std::rc::Rc;
+use url::Url;
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
@@ -67,11 +71,6 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use std::convert::TryFrom;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
-use std::rc::Rc;
-use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
