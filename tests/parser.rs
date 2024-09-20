@@ -5,10 +5,9 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 */
 use std::fs;
 use std::rc::Rc;
-use xrust::item::NodeType;
+use xrust::item::{Node, NodeType};
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
-use xrust::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn parser_config_namespace_nodes_1() {
@@ -31,7 +30,7 @@ fn parser_config_namespace_nodes_1() {
     let mut pc = ParserConfig::new();
     pc.namespace_nodes = false;
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(testxml, doc, Some(pc));
 
     assert!(parseresult.is_ok());
@@ -81,7 +80,7 @@ fn parser_config_namespace_nodes_2() {
     let mut pc = ParserConfig::new();
     pc.namespace_nodes = true;
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(testxml, doc, Some(pc));
 
     assert!(parseresult.is_ok());
@@ -131,7 +130,7 @@ fn parser_config_namespace_nodes_3() {
     let mut pc = ParserConfig::new();
     pc.namespace_nodes = true;
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(testxml, doc, Some(pc));
 
     assert!(parseresult.is_ok());
@@ -169,7 +168,7 @@ fn parser_issue_94() {
     */
 
     let data = fs::read_to_string("tests/xml/issue-94.xml").unwrap();
-    let source = Rc::new(SmiteNode::new());
+    let source = RNode::new_document();
 
     let parseresult = xml::parse(source.clone(), &data, None);
 

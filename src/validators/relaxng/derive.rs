@@ -1,9 +1,8 @@
-use crate::item::NodeType;
+use crate::item::{Node, NodeType};
 use crate::qname::QualifiedName;
-use crate::trees::smite::Node as SmiteNode;
 use crate::trees::smite::RNode;
 use crate::validators::relaxng::pattern::Param;
-use crate::{Node, Value};
+use crate::value::Value;
 use std::collections::HashMap;
 use std::rc::Rc;
 
@@ -671,7 +670,7 @@ fn one_or_more(pat: RNode) -> RNode {
     match pat.name().localname_to_string().as_str() {
         "notAllowed" => pat,
         _ => {
-            let mut o = Rc::new(SmiteNode::new())
+            let mut o = RNode::new_document()
                 .new_element(Rc::new(QualifiedName::new(None, None, "oneOrMore")))
                 .unwrap();
             let _ = o.push(pat);

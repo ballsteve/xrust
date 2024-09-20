@@ -23,7 +23,7 @@ use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use crate::value::Value;
-use crate::transform::NamespaceMap;
+use crate::namespace::NamespaceMap;
 
 pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;
@@ -34,7 +34,7 @@ pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
-) -> Result<(N, NamespaceMap), Error> {
+) -> Result<(N, Rc<NamespaceMap>), Error> {
     let state = ParserState::new(Some(doc), None, config);
     match document((input, state)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespace.clone())),

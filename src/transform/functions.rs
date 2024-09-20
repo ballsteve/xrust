@@ -87,7 +87,7 @@ pub fn system_property<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Box<Transform<N>>,
-    ns: &NamespaceMap,
+    ns: &Rc<NamespaceMap>,
 ) -> Result<Sequence<N>, Error> {
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {

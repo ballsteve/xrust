@@ -12,7 +12,7 @@ NB. The Item module's Node trait is implemented for Rc\<smite::Node\>. For conve
 
 ```rust
 use std::rc::Rc;
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 use xrust::item::{Node as ItemNode, NodeType};
 use xrust::qname::QualifiedName;
 use xrust::value::Value;
@@ -21,7 +21,7 @@ use xrust::xdmerror::Error;
 pub(crate) type ExtDTDresolver = fn(Option<String>, String) -> Result<String, Error>;
 
 // A document always has a NodeType::Document node as the toplevel node.
-let mut doc = Rc::new(SmiteNode::new());
+let mut doc = RNode::new_document();
 
 // Create an element-type node. Upon creation, it is *not* attached to the tree.
 let mut top = doc.new_element(
@@ -88,7 +88,7 @@ pub struct Node(NodeInner);
 
 impl Node {
     /// Only documents are created new. All other types of nodes are created using new_* methods.
-    pub fn new() -> Self {
+    fn new() -> Self {
         Node(NodeInner::Document(
             RefCell::new(None),
             RefCell::new(vec![]),
@@ -198,6 +198,10 @@ impl PartialEq for Node {
 
 impl ItemNode for RNode {
     type NodeIterator = Box<dyn Iterator<Item = RNode>>;
+
+    fn new_document() -> Self {
+        Rc::new(Node::new())
+    }
 
     fn node_type(&self) -> NodeType {
         match &self.0 {
@@ -1205,23 +1209,27 @@ impl Iterator for Attributes {
 // NB. Prefixed namespaces cannot be undeclared (XML Namespaces, 3rd Edition, section 5)
 // TODO: handle undeclaring a default namespace. i.e. xmlns=""
 pub struct NamespaceNodes {
+    in_scope: Vec<Option<Rc<Value>>>, // namespaces that are already in scope, masking outer declarations
     cur_element: RNode,
     ancestor_it: Box<dyn Iterator<Item=RNode>>,
     ns_it: Option<IntoIter<Option<Rc<Value>>, RNode>>,
+    xmlns: bool, // The undeclared, but always in-scope, "xml" namespace
 }
+
 impl NamespaceNodes {
     fn new(n: RNode) -> Self {
         match &n.0 {
-            NodeInner::Document(_, _, _) => NamespaceNodes { cur_element: n.clone(), ancestor_it: n.ancestor_iter(), ns_it: None },
             NodeInner::Element(_, _, _, _, ns) => {
                 let nsit = ns.borrow().clone().into_iter();
                 NamespaceNodes {
+                    in_scope: vec![],
                     cur_element: n.clone(),
                     ancestor_it: n.clone().ancestor_iter(),
-                    ns_it: Some(nsit)
+                    ns_it: Some(nsit),
+                    xmlns: false,
                 }
             },
-            _ => NamespaceNodes { cur_element: n.parent().unwrap(), ancestor_it: n.parent().unwrap().ancestor_iter(), ns_it: None }
+            _ => NamespaceNodes { in_scope: vec![], cur_element: n.parent().unwrap(), ancestor_it: n.parent().unwrap().ancestor_iter(), ns_it: None, xmlns: false }
         }
     }
 }
@@ -1229,29 +1237,55 @@ impl Iterator for NamespaceNodes {
     type Item = RNode;
 
     fn next(&mut self) -> Option<RNode> {
-        find_ns(self)
+        find_ns(self).or_else(
+            || if self.xmlns {
+                    None
+                } else {
+                    self.xmlns = true;
+                    Some(self.cur_element.owner_document().new_namespace(
+                        Rc::new(Value::from("http://www.w3.org/XML/1998/namespace")),
+                        Some(Rc::new(Value::from("xml")))
+                    ).expect("unable to create namespace node"))
+                }
+        )
     }
 }
 // Recursively ascend the ancestors looking for the first namespace node
 fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
-    if nn.cur_element.node_type() == NodeType::Element {
+    if nn.cur_element.node_type() == NodeType::Element  {
         if nn.ns_it.is_some() {
             // Iterating through the current element's namespace declarations
             let mut nsiter = nn.ns_it.take().unwrap();
             match nsiter.next() {
                 Some((_, n)) => {
-                    nn.ns_it = Some(nsiter);
-                    Some(n.clone())
+                    // Is there an inner scope?
+                    let np = n.name().localname();
+                    let npo = if np.to_string().is_empty() {
+                        None
+                    } else {
+                        Some(np.clone())
+                    };
+                    if let Some(_) = nn.in_scope.iter().find(|f| f.is_none() && npo.is_none() || f.as_ref().is_some_and(|g| *g == np)) {
+                        // Yes, so don't include this outer scope declaration
+                        nn.ns_it = Some(nsiter);
+                        find_ns(nn)
+                    } else {
+                        // No, so this declaration is the inner scope
+                        nn.in_scope.push(Some(n.name().localname().clone()));
+                        nn.ns_it = Some(nsiter);
+                        Some(n.clone())
+                    }
                 }
                 None => {
                     // Move to the parent
+                    nn.ns_it = None;
                     match nn.ancestor_it.next() {
                         Some(c) => {
                             nn.cur_element = c;
                             // nn.ns_it = None; take() has already done this
                             find_ns(nn)
                         }
-                        None => None,
+                        None => None
                     }
                 }
             }
@@ -1261,8 +1295,22 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
                 let mut nsiter = ns.borrow().clone().into_iter();
                 match nsiter.next() {
                     Some((_, n)) => {
-                        nn.ns_it = Some(nsiter);
-                        Some(n.clone())
+                        // Is there an inner scope?
+                        let np = n.name().localname();
+                        let npo = if np.to_string().is_empty() {
+                            None
+                        } else {
+                            Some(np.clone())
+                        };
+                        if let Some(_) = nn.in_scope.iter().find(|f| f.is_none() && npo.is_none() || f.as_ref().is_some_and(|g| *g == np)) {
+                            nn.ns_it = Some(nsiter);
+                            find_ns(nn)
+                        } else {
+                            // No, so this declaration is the inner scope
+                            nn.in_scope.push(Some(n.name().localname().clone()));
+                            nn.ns_it = Some(nsiter);
+                            Some(n.clone())
+                        }
                     }
                     None => {
                         nn.ns_it = None;
@@ -1283,51 +1331,6 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
     } else {
         None
     }
-    /*match &nn.cur_element.0 {
-        NodeInner::Element(_, _, _, _, ns) => {
-            match nn.ns_it {
-                Some(ref mut nsiter) => {
-                    // Iterating through the current element's namespace declarations
-                    match nsiter.next() {
-                        Some((_, n)) => {
-                            Some(n.clone())
-                        }
-                        None => {
-                            // Move to the parent
-                            match nn.ancestor_it.next() {
-                                Some(c) => {
-                                    nn.cur_element = c;
-                                    nn.ns_it = None;
-                                    find_ns(nn)
-                                }
-                                None => None,
-                            }
-                        }
-                    }
-                }
-                None => {
-                    // Haven't looked at this element's namespaces yet
-                    nn.ns_it = Some(ns.borrow().clone().into_iter());
-                    match nn.ns_it.as_ref().unwrap().next() {
-                        Some((_, n)) => {
-                            Some(n.clone())
-                        }
-                        None => {
-                            nn.ns_it = None;
-                            match nn.ancestor_it.next() {
-                                Some(b) => {
-                                    nn.cur_element = b;
-                                    find_ns(nn)
-                                }
-                                None => None,
-                            }
-                        }
-                    }
-                }
-            }
-        }
-        _ => None,
-    }*/
 }
 
 #[cfg(test)]

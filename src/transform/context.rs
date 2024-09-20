@@ -602,7 +602,7 @@ where
 ///
 /// let mut message = String::from("no message received");
 /// let xform = Transform::LiteralElement(
-///   QualifiedName::new(None, None, String::from("Example")),
+///   Rc::new(QualifiedName::new(None, None, String::from("Example"))),
 ///   Box::new(Transform::SequenceItems(vec![
 ///    Transform::Message(
 ///        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),

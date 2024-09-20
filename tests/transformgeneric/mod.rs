@@ -4,6 +4,7 @@ use std::collections::HashMap;
 use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
+use xrust::namespace::NamespaceMap;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
@@ -838,8 +839,8 @@ where
             ]),
         )],
         Box::new(Transform::Concat(vec![
-            Transform::VariableReference(String::from("x"), Rc::new(HashMap::new())),
-            Transform::VariableReference(String::from("x"), Rc::new(HashMap::new())),
+            Transform::VariableReference(String::from("x"), Rc::new(NamespaceMap::new())),
+            Transform::VariableReference(String::from("x"), Rc::new(NamespaceMap::new())),
         ])),
     );
     let mut stctxt = StaticContextBuilder::new()
@@ -2429,8 +2430,8 @@ where
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "bar",
         ))))),
-        Box::new(Transform::VariableReference("foo".to_string(), Rc::new(HashMap::new()))),
-        Rc::new(HashMap::new()),
+        Box::new(Transform::VariableReference("foo".to_string(), Rc::new(NamespaceMap::new()))),
+        Rc::new(NamespaceMap::new()),
     );
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
@@ -4724,7 +4725,7 @@ where
             "blue",
         ))))),
         None,
-        Rc::new(HashMap::new()),
+        Rc::new(NamespaceMap::new()),
     );
     let mut sd = make_empty_doc();
     let mut top = sd
@@ -4797,7 +4798,7 @@ where
             QualifiedName::new(None, None, String::from("param1")),
             Transform::Literal(Item::<N>::Value(Rc::new(Value::from("value 1")))),
         )]),
-        Rc::new(HashMap::new()),
+        Rc::new(NamespaceMap::new()),
     );
 
     let ctxt = ContextBuilder::new()
@@ -4808,7 +4809,7 @@ where
                     Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                         "found parameter, value: ",
                     )))),
-                    Transform::VariableReference("param1".to_string(), Rc::new(HashMap::new())),
+                    Transform::VariableReference("param1".to_string(), Rc::new(NamespaceMap::new())),
                 ]),
                 FormalParameters::Named(vec![(
                     QualifiedName::new(None, None, String::from("param1")),
@@ -4843,7 +4844,7 @@ where
         ActualParameters::Positional(vec![Transform::Literal(Item::<N>::Value(Rc::new(
             Value::from("value 1"),
         )))]),
-        Rc::new(HashMap::new()),
+        Rc::new(NamespaceMap::new()),
     );
 
     let ctxt = ContextBuilder::new()
@@ -4858,7 +4859,7 @@ where
                     Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                         "found parameter, value: ",
                     )))),
-                    Transform::VariableReference("param1".to_string(), Rc::new(HashMap::new())),
+                    Transform::VariableReference("param1".to_string(), Rc::new(NamespaceMap::new())),
                 ]),
                 FormalParameters::Positional(vec![QualifiedName::new(
                     None,

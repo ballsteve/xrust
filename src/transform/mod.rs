@@ -59,6 +59,7 @@ use std::collections::HashMap;
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
+use crate::namespace::NamespaceMap;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::numbers::Numbering;
@@ -71,13 +72,6 @@ use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
-
-/// In some circumstances, a transformation must resolve a qualified name.
-/// To do this, it must have a copy of the in-scope namespaces.
-/// This type represents a mapping from prefix to Namespace URI.
-/// The "None" prefix is for the default namespace.
-pub type NamespaceMap = Rc<HashMap<Option<Rc<Value>>, Rc<Value>>>;
-// TODO: should be default namespace be represented by the empty string prefix?
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -175,14 +169,14 @@ pub enum Transform<N: Node> {
 
     /// Evaluate a named template or function, with arguments.
     /// Consists of the body of the template/function, the actual arguments (variable declarations), and in-scope namespace declarations.
-    Call(Box<Transform<N>>, Vec<Transform<N>>, NamespaceMap),
+    Call(Box<Transform<N>>, Vec<Transform<N>>, Rc<NamespaceMap>),
 
     /// Declare a variable in the current context.
     /// Consists of the variable name, its value, a transformation to perform with the variable in scope, and in-scope namespace declarations.
-    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, NamespaceMap),
+    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, Rc<NamespaceMap>),
     /// Reference a variable.
     /// The result is the value stored for that variable in the current context and current scope.
-    VariableReference(String, NamespaceMap),
+    VariableReference(String, Rc<NamespaceMap>),
 
     /// Set the value of an attribute. The context item must be an element-type node.
     /// Consists of the name of the attribute and its value. The [Sequence] produced will be cast to a [Value].
@@ -268,16 +262,16 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
-        NamespaceMap,
+        Rc<NamespaceMap>,
     ),
     /// Get information about the processor
-    SystemProperty(Box<Transform<N>>, NamespaceMap),
+    SystemProperty(Box<Transform<N>>, Rc<NamespaceMap>),
     AvailableSystemProperties,
     /// Read an external document
     Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
     /// Invoke a callable component. Consists of a name, an actual argument list, and in-scope namespace declarations.
-    Invoke(Rc<QualifiedName>, ActualParameters<N>, NamespaceMap),
+    Invoke(Rc<QualifiedName>, ActualParameters<N>, Rc<NamespaceMap>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -398,14 +392,14 @@ impl<N: Node> Debug for Transform<N> {
 }
 
 /// A convenience function to create a namespace mapping from a [Node].
-pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> NamespaceMap {
+pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
     if let Some(nn) = n {
-        Rc::new(nn.namespace_iter().fold(HashMap::new(), |mut hm, ns| {
+        Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
             hm.insert(Some(ns.name().localname()), ns.value());
             hm
         }))
     } else {
-        Rc::new(HashMap::new())
+        Rc::new(NamespaceMap::new())
     }
 }
 

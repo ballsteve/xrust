@@ -9,10 +9,9 @@ James Clark XMLTEST cases - Standalone
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
-use xrust::Node;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -28,7 +27,7 @@ fn validnotsa001() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/001.xml")
@@ -36,7 +35,7 @@ fn validnotsa001() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/001.xml")
@@ -67,7 +66,7 @@ fn validnotsa002() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/002.xml")
@@ -75,7 +74,7 @@ fn validnotsa002() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/002.xml")
@@ -106,7 +105,7 @@ fn validnotsa003() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/003.xml")
@@ -114,7 +113,7 @@ fn validnotsa003() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/003.xml")
@@ -145,7 +144,7 @@ fn validnotsa004() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/004.xml")
@@ -153,7 +152,7 @@ fn validnotsa004() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/004.xml")
@@ -184,7 +183,7 @@ fn validnotsa005() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/005.xml")
@@ -192,7 +191,7 @@ fn validnotsa005() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/005.xml")
@@ -223,7 +222,7 @@ fn validnotsa006() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/006.xml")
@@ -231,7 +230,7 @@ fn validnotsa006() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/006.xml")
@@ -262,7 +261,7 @@ fn validnotsa007() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/007.xml")
@@ -270,7 +269,7 @@ fn validnotsa007() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/007.xml")
@@ -301,7 +300,7 @@ fn validnotsa008() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/008.xml")
@@ -309,7 +308,7 @@ fn validnotsa008() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/008.xml")
@@ -340,7 +339,7 @@ fn validnotsa009() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/009.xml")
@@ -348,7 +347,7 @@ fn validnotsa009() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/009.xml")
@@ -379,7 +378,7 @@ fn validnotsa010() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/010.xml")
@@ -387,7 +386,7 @@ fn validnotsa010() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/010.xml")
@@ -418,7 +417,7 @@ fn validnotsa011() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/011.xml")
@@ -426,7 +425,7 @@ fn validnotsa011() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/011.xml")
@@ -457,7 +456,7 @@ fn validnotsa012() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/012.xml")
@@ -465,7 +464,7 @@ fn validnotsa012() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/012.xml")
@@ -496,7 +495,7 @@ fn validnotsa013() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/013.xml")
@@ -504,7 +503,7 @@ fn validnotsa013() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/013.xml")
@@ -535,7 +534,7 @@ fn validnotsa014() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/014.xml")
@@ -543,7 +542,7 @@ fn validnotsa014() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/014.xml")
@@ -574,7 +573,7 @@ fn validnotsa015() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/015.xml")
@@ -582,7 +581,7 @@ fn validnotsa015() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/015.xml")
@@ -613,7 +612,7 @@ fn validnotsa016() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/016.xml")
@@ -621,7 +620,7 @@ fn validnotsa016() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/016.xml")
@@ -652,7 +651,7 @@ fn validnotsa017() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/017.xml")
@@ -660,7 +659,7 @@ fn validnotsa017() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/017.xml")
@@ -691,7 +690,7 @@ fn validnotsa018() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/018.xml")
@@ -699,7 +698,7 @@ fn validnotsa018() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/018.xml")
@@ -730,7 +729,7 @@ fn validnotsa019() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/019.xml")
@@ -738,7 +737,7 @@ fn validnotsa019() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/019.xml")
@@ -769,7 +768,7 @@ fn validnotsa020() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/020.xml")
@@ -777,7 +776,7 @@ fn validnotsa020() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/020.xml")
@@ -808,7 +807,7 @@ fn validnotsa021() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/021.xml")
@@ -816,7 +815,7 @@ fn validnotsa021() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/021.xml")
@@ -847,7 +846,7 @@ fn validnotsa023() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/023.xml")
@@ -855,7 +854,7 @@ fn validnotsa023() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/023.xml")
@@ -886,7 +885,7 @@ fn validnotsa024() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/024.xml")
@@ -894,7 +893,7 @@ fn validnotsa024() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/024.xml")
@@ -925,7 +924,7 @@ fn validnotsa025() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/025.xml")
@@ -933,7 +932,7 @@ fn validnotsa025() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/025.xml")
@@ -964,7 +963,7 @@ fn validnotsa026() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/026.xml")
@@ -972,7 +971,7 @@ fn validnotsa026() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/026.xml")
@@ -1003,7 +1002,7 @@ fn validnotsa027() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/027.xml")
@@ -1011,7 +1010,7 @@ fn validnotsa027() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/027.xml")
@@ -1042,7 +1041,7 @@ fn validnotsa028() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/028.xml")
@@ -1050,7 +1049,7 @@ fn validnotsa028() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/028.xml")
@@ -1081,7 +1080,7 @@ fn validnotsa029() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/029.xml")
@@ -1089,7 +1088,7 @@ fn validnotsa029() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/029.xml")
@@ -1120,7 +1119,7 @@ fn validnotsa030() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/030.xml")
@@ -1128,7 +1127,7 @@ fn validnotsa030() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/030.xml")
@@ -1159,7 +1158,7 @@ fn validnotsa031() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/031.xml")
@@ -1167,7 +1166,7 @@ fn validnotsa031() {
             .as_str(),
         Some(pc),
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/out/031.xml")

@@ -5,9 +5,9 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn invalidbo7() {
@@ -18,7 +18,7 @@ fn invalidbo7() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (big-endian)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
@@ -39,7 +39,7 @@ fn invalidbo8() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (little-endian)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
@@ -60,7 +60,7 @@ fn invalidbo9() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (utf-8)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
@@ -87,7 +87,7 @@ fn xrmt008() {
         Description:a document with version=1.7, illegal in XML 1.0 through 4th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml")

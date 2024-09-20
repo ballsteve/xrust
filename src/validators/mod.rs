@@ -1,7 +1,8 @@
 pub mod relaxng;
 
 use std::rc::Rc;
-use crate::trees::smite::{RNode, Node as SmiteNode};
+use crate::item::Node;
+use crate::trees::smite::RNode;
 use crate::parser::xml;
 use crate::validators::relaxng::validate_relaxng;
 
@@ -22,7 +23,7 @@ pub enum ValidationError{
 pub(crate) fn validate(doc: &RNode, s: Schema) -> Result<(), ValidationError>  {
     match s {
         Schema::RelaxNG(schema) => {
-            let schemadoc = Rc::new(SmiteNode::new());
+            let schemadoc = RNode::new_document();
             let _ = xml::parse(schemadoc.clone(), schema.as_str(), None);
             validate_relaxng(doc, &schemadoc)
         }

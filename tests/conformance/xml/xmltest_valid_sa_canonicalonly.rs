@@ -7,9 +7,9 @@ James Clark XMLTEST cases - Standalone
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn validsa001() {
@@ -19,7 +19,7 @@ fn validsa001() {
         Spec Sections:3.2.2 [51]
         Description:Test demonstrates an Element Type Declaration with Mixed Content.
     */
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/001.xml")
@@ -40,7 +40,7 @@ fn validsa002() {
         Description:Test demonstrates that whitespace is permitted after the tag name in a Start-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/002.xml")
@@ -61,7 +61,7 @@ fn validsa003() {
         Description:Test demonstrates that whitespace is permitted after the tag name in an End-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/003.xml")
@@ -82,7 +82,7 @@ fn validsa004() {
         Description:Test demonstrates a valid attribute specification within a Start-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/004.xml")
@@ -103,7 +103,7 @@ fn validsa005() {
         Description:Test demonstrates a valid attribute specification within a Start-tag thatcontains whitespace on both sides of the equal sign.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/005.xml")
@@ -124,7 +124,7 @@ fn validsa006() {
         Description:Test demonstrates that the AttValue within a Start-tag can use a single quote as a delimter.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/006.xml")
@@ -145,7 +145,7 @@ fn validsa007() {
         Description:Test demonstrates numeric character references can be used for element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/007.xml")
@@ -166,7 +166,7 @@ fn validsa008() {
         Description:Test demonstrates character references can be used for element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/008.xml")
@@ -187,7 +187,7 @@ fn validsa009() {
         Description:Test demonstrates that PubidChar can be used for element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/009.xml")
@@ -208,7 +208,7 @@ fn validsa010() {
         Description:Test demonstrates that whitespace is valid after the Attribute in a Start-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/010.xml")
@@ -229,7 +229,7 @@ fn validsa011() {
         Description:Test demonstrates mutliple Attibutes within the Start-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/011.xml")
@@ -256,7 +256,7 @@ fn validsa012() {
         Description:Uses a legal XML 1.0 name consisting of a single colon character (disallowed by the latest XML Namespaces draft).
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/012.xml")
@@ -278,7 +278,7 @@ fn validsa013() {
         Description:Test demonstrates that the Attribute in a Start-tag can consist of numerals along with special characters.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/013.xml")
@@ -299,7 +299,7 @@ fn validsa014() {
         Description:Test demonstrates that all lower case letters are valid for the Attribute in a Start-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/014.xml")
@@ -320,7 +320,7 @@ fn validsa015() {
         Description:Test demonstrates that all upper case letters are valid for the Attribute in a Start-tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/015.xml")
@@ -341,7 +341,7 @@ fn validsa016() {
         Description:Test demonstrates that Processing Instructions are valid element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/016.xml")
@@ -362,7 +362,7 @@ fn validsa017() {
         Description:Test demonstrates that Processing Instructions are valid element content and there can be more than one.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017.xml")
@@ -383,7 +383,7 @@ fn validsa018() {
         Description:Test demonstrates that CDATA sections are valid element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/018.xml")
@@ -404,7 +404,7 @@ fn validsa019() {
         Description:Test demonstrates that CDATA sections are valid element content and thatampersands may occur in their literal form.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/019.xml")
@@ -425,7 +425,7 @@ fn validsa020() {
         Description:Test demonstractes that CDATA sections are valid element content and thateveryting between the CDStart and CDEnd is recognized as character data not markup.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/020.xml")
@@ -446,7 +446,7 @@ fn validsa021() {
         Description:Test demonstrates that comments are valid element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/021.xml")
@@ -467,7 +467,7 @@ fn validsa022() {
         Description:Test demonstrates that comments are valid element content and that all characters before the double-hypen right angle combination are considered part of thecomment.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/022.xml")
@@ -488,7 +488,7 @@ fn validsa023() {
         Description:Test demonstrates that Entity References are valid element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/023.xml")
@@ -509,7 +509,7 @@ fn validsa024() {
         Description:Test demonstrates that Entity References are valid element content and also demonstrates a valid Entity Declaration.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/024.xml")
@@ -530,7 +530,7 @@ fn validsa025() {
         Description:Test demonstrates an Element Type Declaration and that the contentspec can be of mixed content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/025.xml")
@@ -551,7 +551,7 @@ fn validsa026() {
         Description:Test demonstrates an Element Type Declaration and that EMPTY is a valid contentspec.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/026.xml")
@@ -572,7 +572,7 @@ fn validsa027() {
         Description:Test demonstrates an Element Type Declaration and that ANY is a valid contenspec.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/027.xml")
@@ -593,7 +593,7 @@ fn validsa028() {
         Description:Test demonstrates a valid prolog that uses double quotes as delimeters around the VersionNum.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/028.xml")
@@ -614,7 +614,7 @@ fn validsa029() {
         Description:Test demonstrates a valid prolog that uses single quotes as delimters around the VersionNum.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/029.xml")
@@ -635,7 +635,7 @@ fn validsa030() {
         Description:Test demonstrates a valid prolog that contains whitespace on both sides of the equal sign in the VersionInfo.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/030.xml")
@@ -656,7 +656,7 @@ fn validsa031() {
         Description:Test demonstrates a valid EncodingDecl within the prolog.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/031.xml")
@@ -677,7 +677,7 @@ fn validsa032() {
         Description:Test demonstrates a valid SDDecl within the prolog.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/032.xml")
@@ -698,7 +698,7 @@ fn validsa033() {
         Description:Test demonstrates that both a EncodingDecl and SDDecl are valid within the prolog.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/033.xml")
@@ -719,7 +719,7 @@ fn validsa034() {
         Description:Test demonstrates the correct syntax for an Empty element tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/034.xml")
@@ -740,7 +740,7 @@ fn validsa035() {
         Description:Test demonstrates that whitespace is permissible after the name in an Empty element tag.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/035.xml")
@@ -761,7 +761,7 @@ fn validsa036() {
         Description:Test demonstrates a valid processing instruction.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/036.xml")
@@ -782,7 +782,7 @@ fn validsa017a() {
         Description:Test demonstrates that two apparently wrong Processing Instructions make aright one, with very odd content "some data ? > <?".
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/017a.xml")
@@ -803,7 +803,7 @@ fn validsa037() {
         Description:Test demonstrates a valid comment and that it may appear anywhere in the document including at the end.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/037.xml")
@@ -824,7 +824,7 @@ fn validsa038() {
         Description:Test demonstrates a valid comment and that it may appear anywhere in the document including the beginning.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/038.xml")
@@ -845,7 +845,7 @@ fn validsa039() {
         Description:Test demonstrates a valid processing instruction and that it may appear at the beginning of the document.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/039.xml")
@@ -866,7 +866,7 @@ fn validsa040() {
         Description:Test demonstrates an Attribute List declaration that uses a StringType as the AttType.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/040.xml")
@@ -887,7 +887,7 @@ fn validsa041() {
         Description:Test demonstrates an Attribute List declaration that uses a StringType as the AttType and also expands the CDATA attribute with a character reference.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/041.xml")
@@ -908,7 +908,7 @@ fn validsa042() {
         Description:Test demonstrates an Attribute List declaration that uses a StringType as the AttType and also expands the CDATA attribute with a character reference. The test also shows that the leading zeros in the character reference are ignored.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/042.xml")
@@ -929,7 +929,7 @@ fn validsa043() {
         Description:An element's attributes may be declared before its content model; and attribute values may contain newlines.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/043.xml")
@@ -950,7 +950,7 @@ fn validsa044() {
         Description:Test demonstrates that the empty-element tag must be use for an elements that are declared EMPTY.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/044.xml")
@@ -971,7 +971,7 @@ fn validsa045() {
         Description:Tests whether more than one definition can be provided for the same attribute of a given element type with the first declaration being binding.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/045.xml")
@@ -992,7 +992,7 @@ fn validsa046() {
         Description:Test demonstrates that when more than one AttlistDecl is provided for a given element type, the contents of all those provided are merged.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/046.xml")
@@ -1013,7 +1013,7 @@ fn validsa047() {
         Description:Test demonstrates that extra whitespace is normalized into single space character.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/047.xml")
@@ -1034,7 +1034,7 @@ fn validsa048() {
         Description:Test demonstrates that character data is valid element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/048.xml")
@@ -1055,7 +1055,7 @@ fn validsa049() {
         Description:Test demonstrates that characters outside of normal ascii range can be used as element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/049.xml")
@@ -1076,7 +1076,7 @@ fn validsa050() {
         Description:Test demonstrates that characters outside of normal ascii range can be used as element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/050.xml")
@@ -1097,7 +1097,7 @@ fn validsa051() {
         Description:The document is encoded in UTF-16 and uses some name characters well outside of the normal ASCII range.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/051.xml")
@@ -1118,7 +1118,7 @@ fn validsa052() {
         Description:The document is encoded in UTF-8 and the text inside the root element uses two non-ASCII characters, encoded in UTF-8 and each of which expands to a Unicode surrogate pair.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/052.xml")
@@ -1139,7 +1139,7 @@ fn validsa053() {
         Description:Tests inclusion of a well-formed internal entity, which holds an element required by the content model.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/053.xml")
@@ -1160,7 +1160,7 @@ fn validsa054() {
         Description:Test demonstrates that extra whitespace within Start-tags and End-tags are nomalized into single spaces.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/054.xml")
@@ -1181,7 +1181,7 @@ fn validsa055() {
         Description:Test demonstrates that extra whitespace within a processing instruction willnormalized into s single space character.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/055.xml")
@@ -1202,7 +1202,7 @@ fn validsa056() {
         Description:Test demonstrates an Attribute List declaration that uses a StringType as the AttType and also expands the CDATA attribute with a character reference. The test also shows that the leading zeros in the character reference are ignored.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/056.xml")
@@ -1223,7 +1223,7 @@ fn validsa057() {
         Description:Test demonstrates an element content model whose element can occur zero or more times.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/057.xml")
@@ -1244,7 +1244,7 @@ fn validsa058() {
         Description:Test demonstrates that extra whitespace be normalized into a single space character in an attribute of type NMTOKENS.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/058.xml")
@@ -1265,7 +1265,7 @@ fn validsa059() {
         Description:Test demonstrates an Element Type Declaration that uses the contentspec of EMPTY. The element cannot have any contents and must always appear as an empty element in the document. The test also shows an Attribute-list declaration with multiple AttDef's.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/059.xml")
@@ -1286,7 +1286,7 @@ fn validsa060() {
         Description:Test demonstrates the use of decimal Character References within element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/060.xml")
@@ -1307,7 +1307,7 @@ fn validsa061() {
         Description:Test demonstrates the use of decimal Character References within element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/061.xml")
@@ -1328,7 +1328,7 @@ fn validsa062() {
         Description:Test demonstrates the use of hexadecimal Character References within element.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/062.xml")
@@ -1349,7 +1349,7 @@ fn validsa063() {
         Description:The document is encoded in UTF-8 and the name of the root element type uses non-ASCII characters.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/063.xml")
@@ -1370,7 +1370,7 @@ fn validsa064() {
         Description:Tests in-line handling of two legal character references, which each expand to a Unicode surrogate pair.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/064.xml")
@@ -1391,7 +1391,7 @@ fn validsa065() {
         Description:Tests ability to define an internal entity which can't legally be expanded (contains an unquoted <).
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/065.xml")
@@ -1412,7 +1412,7 @@ fn validsa066() {
         Description:Expands a CDATA attribute with a character reference.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/066.xml")
@@ -1433,7 +1433,7 @@ fn validsa067() {
         Description:Test demonstrates the use of decimal character references within element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/067.xml")
@@ -1454,7 +1454,7 @@ fn validsa068() {
         Description:Tests definition of an internal entity holding a carriage return character reference, which must not be normalized before reporting to the application. Line break normalization only occurs when parsing external parsed entities.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/068.xml")
@@ -1475,7 +1475,7 @@ fn validsa069() {
         Description:Verifies that an XML parser will parse a NOTATION declaration; the output phase of this test ensures that it's reported to the application.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/069.xml")
@@ -1496,7 +1496,7 @@ fn validsa070() {
         Description:Verifies that internal parameter entities are correctly expanded within the internal subset.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/070.xml")
@@ -1517,7 +1517,7 @@ fn validsa071() {
         Description:Test demonstrates that an AttlistDecl can use ID as the TokenizedType within the Attribute type. The test also shows that IMPLIED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/071.xml")
@@ -1538,7 +1538,7 @@ fn validsa072() {
         Description:Test demonstrates that an AttlistDecl can use IDREF as the TokenizedType within the Attribute type. The test also shows that IMPLIED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/072.xml")
@@ -1559,7 +1559,7 @@ fn validsa073() {
         Description:Test demonstrates that an AttlistDecl can use IDREFS as the TokenizedType within the Attribute type. The test also shows that IMPLIED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/073.xml")
@@ -1580,7 +1580,7 @@ fn validsa074() {
         Description:Test demonstrates that an AttlistDecl can use ENTITY as the TokenizedType within the Attribute type. The test also shows that IMPLIED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/074.xml")
@@ -1601,7 +1601,7 @@ fn validsa075() {
         Description:Test demonstrates that an AttlistDecl can use ENTITIES as the TokenizedType within the Attribute type. The test also shows that IMPLIED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/075.xml")
@@ -1622,7 +1622,7 @@ fn validsa076() {
         Description:Verifies that an XML parser will parse a NOTATION attribute; the output phase of this test ensures that both notations are reported to the application.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/076.xml")
@@ -1643,7 +1643,7 @@ fn validsa077() {
         Description:Test demonstrates that an AttlistDecl can use an EnumeratedType within the Attribute type. The test also shows that IMPLIED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/077.xml")
@@ -1664,7 +1664,7 @@ fn validsa078() {
         Description:Test demonstrates that an AttlistDecl can use an StringType of CDATA within the Attribute type. The test also shows that REQUIRED is a valid DefaultDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/078.xml")
@@ -1685,7 +1685,7 @@ fn validsa079() {
         Description:Test demonstrates that an AttlistDecl can use an StringType of CDATA within the Attribute type. The test also shows that FIXED is a valid DefaultDecl and that a value can be given to the attribute in the Start-tag as well as the AttListDecl.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/079.xml")
@@ -1706,7 +1706,7 @@ fn validsa080() {
         Description:Test demonstrates that an AttlistDecl can use an StringType of CDATA within the Attribute type. The test also shows that FIXED is a valid DefaultDecl and that an value can be given to the attribute.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/080.xml")
@@ -1727,7 +1727,7 @@ fn validsa081() {
         Description:Test demonstrates the use of the optional character following a name or list to govern the number of times an element or content particles in the list occur.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/081.xml")
@@ -1748,7 +1748,7 @@ fn validsa082() {
         Description:Tests that an external PE may be defined (but not referenced).
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/082.xml")
@@ -1769,7 +1769,7 @@ fn validsa083() {
         Description:Tests that an external PE may be defined (but not referenced).
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/083.xml")
@@ -1790,7 +1790,7 @@ fn validsa084() {
         Description:Test demonstrates that although whitespace can be used to set apart markup for greater readability it is not necessary.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/084.xml")
@@ -1811,7 +1811,7 @@ fn validsa085() {
         Description:Parameter and General entities use different namespaces, so there can be an entity of each type with a given name.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/085.xml")
@@ -1832,7 +1832,7 @@ fn validsa086() {
         Description:Tests whether entities may be declared more than once, with the first declaration being the binding one.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/086.xml")
@@ -1853,7 +1853,7 @@ fn validsa087() {
         Description:Tests whether character references in internal entities are expanded early enough, by relying on correct handling to make the entity be well formed.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/087.xml")
@@ -1874,7 +1874,7 @@ fn validsa088() {
         Description:Tests whether entity references in internal entities are expanded late enough, by relying on correct handling to make the expanded text be valid. (If it's expanded too early, the entity will parse as an element that's not valid in that context.)
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/088.xml")
@@ -1895,7 +1895,7 @@ fn validsa089() {
         Description:Tests entity expansion of three legal character references, which each expand to a Unicode surrogate pair.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/089.xml")
@@ -1916,7 +1916,7 @@ fn validsa090() {
         Description:Verifies that an XML parser will parse a NOTATION attribute; the output phase of this test ensures that the notation is reported to the application.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/090.xml")
@@ -1937,7 +1937,7 @@ fn validsa091() {
         Description:Verifies that an XML parser will parse an ENTITY attribute; the output phase of this test ensures that the notation is reported to the application, and for validating parsers it further tests that the entity is so reported.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/091.xml")
@@ -1958,7 +1958,7 @@ fn validsa092() {
         Description:Test demostrates that extra whitespace is normalized into a single space character.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/092.xml")
@@ -1979,7 +1979,7 @@ fn validsa093() {
         Description:Test demonstrates that extra whitespace is not intended for inclusion in the delivered version of the document.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/093.xml")
@@ -2000,7 +2000,7 @@ fn validsa094() {
         Description:Attribute defaults with a DTD have special parsing rules, different from other strings. That means that characters found there may look like an undefined parameter entity reference "within a markup declaration", but they aren't ... so they can't be violating the PEs in Internal Subset WFC.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/094.xml")
@@ -2021,7 +2021,7 @@ fn validsa095() {
         Description:Basically an output test, this requires extra whitespace to be normalized into a single space character in an attribute of type NMTOKENS.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/095.xml")
@@ -2042,7 +2042,7 @@ fn validsa096() {
         Description:Test demonstrates that extra whitespace is normalized into a single space character in an attribute of type NMTOKENS.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/096.xml")
@@ -2063,7 +2063,7 @@ fn validsa097() {
         Description:Basically an output test, this tests whether an externally defined attribute declaration (with a default) takes proper precedence over a subsequent internal declaration.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/097.xml")
@@ -2084,7 +2084,7 @@ fn validsa098() {
         Description:Test demonstrates that extra whitespace within a processing instruction is converted into a single space character.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/098.xml")
@@ -2105,7 +2105,7 @@ fn validsa099() {
         Description:Test demonstrates the name of the encoding can be composed of lowercase characters.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/099.xml")
@@ -2126,7 +2126,7 @@ fn validsa100() {
         Description:Makes sure that PUBLIC identifiers may have some strange characters. NOTE: The XML editors have said that the XML specification errata will specify that parameter entity expansion does not occur in PUBLIC identifiers, so that the '%' character will not flag a malformed parameter entity reference.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/100.xml")
@@ -2147,7 +2147,7 @@ fn validsa101() {
         Description:This tests whether entity expansion is (incorrectly) done while processing entity declarations; if it is, the entity value literal will terminate prematurely.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/101.xml")
@@ -2168,7 +2168,7 @@ fn validsa102() {
         Description:Test demonstrates that a CDATA attribute can pass a double quote as its value.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/102.xml")
@@ -2189,7 +2189,7 @@ fn validsa103() {
         Description:Test demonstrates that an attribute can pass a less than sign as its value.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/103.xml")
@@ -2210,7 +2210,7 @@ fn validsa104() {
         Description:Test demonstrates that extra whitespace within an Attribute of a Start-tag is normalized to a single space character.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/104.xml")
@@ -2231,7 +2231,7 @@ fn validsa105() {
         Description:Basically an output test, this requires a CDATA attribute with a tab character to be passed through as one space.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/105.xml")
@@ -2252,7 +2252,7 @@ fn validsa106() {
         Description:Basically an output test, this requires a CDATA attribute with a newline character to be passed through as one space.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/106.xml")
@@ -2273,7 +2273,7 @@ fn validsa107() {
         Description:Basically an output test, this requires a CDATA attribute with a return character to be passed through as one space.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/107.xml")
@@ -2294,7 +2294,7 @@ fn validsa108() {
         Description:This tests normalization of end-of-line characters (CRLF) within entities to LF, primarily as an output test.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/108.xml")
@@ -2315,7 +2315,7 @@ fn validsa109() {
         Description:Test demonstrates that an attribute can have a null value.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/109.xml")
@@ -2336,7 +2336,7 @@ fn validsa110() {
         Description:Basically an output test, this requires that a CDATA attribute with a CRLF be normalized to one space.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/110.xml")
@@ -2357,7 +2357,7 @@ fn validsa111() {
         Description:Character references expanding to spaces doesn't affect treatment of attributes.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/111.xml")
@@ -2378,7 +2378,7 @@ fn validsa112() {
         Description:Test demonstrates shows the use of content particles within the element content.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/112.xml")
@@ -2399,7 +2399,7 @@ fn validsa113() {
         Description:Test demonstrates that it is not an error to have attributes declared for an element not itself declared.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/113.xml")
@@ -2420,7 +2420,7 @@ fn validsa114() {
         Description:Test demonstrates that all text within a valid CDATA section is considered text and not recognized as markup.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/114.xml")
@@ -2441,7 +2441,7 @@ fn validsa115() {
         Description:Test demonstrates that an entity reference is processed by recursively processing the replacement text of the entity.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/115.xml")
@@ -2462,7 +2462,7 @@ fn validsa116() {
         Description:Test demonstrates that a line break within CDATA will be normalized.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/116.xml")
@@ -2483,7 +2483,7 @@ fn validsa117() {
         Description:Test demonstrates that entity expansion is done while processing entity declarations.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/117.xml")
@@ -2504,7 +2504,7 @@ fn validsa118() {
         Description:Test demonstrates that entity expansion is done while processing entity declarations.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/118.xml")
@@ -2525,7 +2525,7 @@ fn validsa119() {
         Description:Comments may contain any legal XML characters; only the string "--" is disallowed.
     */
 
-    let testxml = Rc::new(Node::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/valid/sa/out/119.xml")

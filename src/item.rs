@@ -389,6 +389,10 @@ impl<N: Node> fmt::Debug for Item<N> {
 pub trait Node: Clone + PartialEq + fmt::Debug {
     type NodeIterator: Iterator<Item = Self>;
 
+    /// Create a Document-type node.
+    /// All other types of nodes are created using type-specific methods (new_element, new_text, etc).
+    fn new_document() -> Self;
+
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
     /// Get the name of the node.

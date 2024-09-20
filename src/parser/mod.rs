@@ -14,7 +14,7 @@ use crate::item::Node;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::DTD;
 use crate::qname::QualifiedName;
-use crate::transform::NamespaceMap;
+use crate::namespace::NamespaceMap;
 
 pub(crate) mod avt;
 pub mod combinators;
@@ -140,7 +140,7 @@ pub struct ParserState<N: Node> {
         The HashMap is Rc-shared. If an element does not declare any new namespaces then it shares its parent's HashMap.
         NOTE: the "None" key in this hashmap is used to track the namespace when no alias is declared, i.e. unprefixed names.
      */
-    namespace: NamespaceMap, // (prefix, namespace node)
+    namespace: Rc<NamespaceMap>, // (prefix, namespace node)
     /*
         Interning of values.
         Strings (represented in xrust as a Value) are often repeated.
@@ -189,10 +189,10 @@ impl<N: Node> ParserState<N> {
         let ns = doc.as_ref().map_or_else(
             || {
                 // No document
-                Rc::new(HashMap::new())
+                Rc::new(NamespaceMap::new())
             },
             |d| {
-                let mut ns = HashMap::new();
+                let mut ns = NamespaceMap::new();
                 ns.insert(Some(xnsprefix.clone()), xnsuri.clone());
                 Rc::new(ns)
             }

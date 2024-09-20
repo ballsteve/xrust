@@ -5,9 +5,9 @@ Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmtns10009() {
@@ -18,7 +18,7 @@ fn rmtns10009() {
         Description:Namespace equality test: plain repetition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/009.xml")
@@ -39,7 +39,7 @@ fn rmtns10010() {
         Description:Namespace equality test: use of character reference
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/010.xml")
@@ -60,7 +60,7 @@ fn rmtns10011() {
         Description:Namespace equality test: use of entity reference
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/011.xml")
@@ -81,7 +81,7 @@ fn rmtns10012() {
         Description:Namespace inequality test: equal after attribute value normalization
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/012.xml")
@@ -102,7 +102,7 @@ fn rmtns10013() {
         Description:Bad QName syntax: multiple colons
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/013.xml")
@@ -123,7 +123,7 @@ fn rmtns10014() {
         Description:Bad QName syntax: colon at end
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/014.xml")
@@ -144,7 +144,7 @@ fn rmtns10015() {
         Description:Bad QName syntax: colon at start
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/015.xml")
@@ -165,7 +165,7 @@ fn rmtns10016() {
         Description:Bad QName syntax: xmlns:
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/016.xml")
@@ -186,7 +186,7 @@ fn rmtns10023() {
         Description:Illegal use of 1.1-style prefix unbinding in 1.0 document
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/023.xml")
@@ -207,7 +207,7 @@ fn rmtns10025() {
         Description:Unbound element prefix
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/025.xml")
@@ -228,7 +228,7 @@ fn rmtns10026() {
         Description:Unbound attribute prefix
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/026.xml")
@@ -249,7 +249,7 @@ fn rmtns10029() {
         Description:Reserved prefixes and namespaces: declaring the xml prefix incorrectly
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/029.xml")
@@ -270,7 +270,7 @@ fn rmtns10030() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xml namespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/030.xml")
@@ -291,7 +291,7 @@ fn rmtns10031() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with its correct URI (illegal)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/031.xml")
@@ -312,7 +312,7 @@ fn rmtns10032() {
         Description:Reserved prefixes and namespaces: declaring the xmlns prefix with an incorrect URI
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/032.xml")
@@ -333,7 +333,7 @@ fn rmtns10033() {
         Description:Reserved prefixes and namespaces: binding another prefix to the xmlns namespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/033.xml")
@@ -354,7 +354,7 @@ fn rmtns10035() {
         Description:Attribute uniqueness: repeated identical attribute
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/035.xml")
@@ -375,7 +375,7 @@ fn rmtns10036() {
         Description:Attribute uniqueness: repeated attribute with different prefixes
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/036.xml")
@@ -396,7 +396,7 @@ fn rmtns10042() {
         Description:Colon in PI name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/042.xml")
@@ -417,7 +417,7 @@ fn rmtns10043() {
         Description:Colon in entity name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/043.xml")
@@ -438,7 +438,7 @@ fn rmtns10044() {
         Description:Colon in entity name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/044.xml")

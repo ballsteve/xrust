@@ -7,6 +7,7 @@ use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
 use crate::trees::nullo::Nullo;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::namespace::NamespaceMap;
 use core::hash::{Hash, Hasher};
 use std::rc::Rc;
 use std::cmp::Ordering;
@@ -189,16 +190,16 @@ impl TryFrom<&str> for QualifiedName {
 /// Resolve prefix against a set of XML Namespace declarations.
 /// This method can be used when there is no XSL stylesheet to derive the namespaces.
 /// QualifiedName ::= (prefix ":")? local-name
-impl TryFrom<(&str, Rc<HashMap<Option<Rc<Value>>, Rc<Value>>>)> for QualifiedName {
+impl TryFrom<(&str, Rc<NamespaceMap>)> for QualifiedName {
     type Error = Error;
-    fn try_from(s: (&str, Rc<HashMap<Option<Rc<Value>>, Rc<Value>>>)) -> Result<Self, Self::Error> {
+    fn try_from(s: (&str, Rc<NamespaceMap>)) -> Result<Self, Self::Error> {
         let state: ParserState<Nullo> = ParserState::new(None, None, None);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
                 if qn.prefix().is_some() && qn.namespace_uri().is_none() {
                     match s.1.get(&qn.prefix()) {
                         Some(ns) => Ok(QualifiedName::new_from_values(
-                            Some(ns.clone()),
+                            Some(ns),
                             qn.prefix(),
                             qn.localname().clone(),
                         )),

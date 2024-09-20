@@ -6,9 +6,9 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
 use crate::conformance::non_utf8_file_reader;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmt008() {
@@ -19,7 +19,7 @@ fn rmt008() {
         Description:an implausibly-versioned document
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/008.xml")
@@ -40,7 +40,7 @@ fn rmt009() {
         Description:External general entity has implausible version number
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/009.xml")
@@ -61,7 +61,7 @@ fn rmt055() {
         Description:Has a Latin-1 NEL in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/055.xml").as_str(),
@@ -80,7 +80,7 @@ fn rmt056() {
         Description:Has a UTF-8 NEL in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/056.xml")
@@ -101,7 +101,7 @@ fn rmt057() {
         Description:Has a UTF-8 LSEP in the XML declaration (to be made an error in PR)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/057.xml")

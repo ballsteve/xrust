@@ -15,6 +15,7 @@ use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::value::Value;
+use crate::namespace::NamespaceMap;
 use std::collections::HashMap;
 use std::rc::Rc;
 use crate::{Error, ErrorKind};
@@ -144,7 +145,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
             //state1.namespace.push(namespaces.clone());
             if !new_namespaces.is_empty() {
                 // We will build a new namespace hashmap
-                let mut new_ns_hm = HashMap::new();
+                let mut new_ns_hm = NamespaceMap::new();
                 state1.namespace.iter().for_each(|(old_prefix, old_nsuri)| {
                     new_ns_hm.insert(old_prefix.clone(), old_nsuri.clone());
                 });

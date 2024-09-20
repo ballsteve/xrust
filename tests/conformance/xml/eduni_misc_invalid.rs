@@ -5,9 +5,9 @@ Bjoern Hoehrmann via HST 2013-09-18
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -19,7 +19,7 @@ fn hstbh005() {
         Description:xmlns:xml is an attribute as far as validation is concerned and must be declared
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/005.xml")
@@ -41,7 +41,7 @@ fn hstbh006() {
         Description:xmlns:foo is an attribute as far as validation is concerned and must be declared
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/006.xml")

@@ -98,3 +98,4 @@ pub mod trees;
 
 pub mod testutils;
 pub mod validators;
+pub mod namespace;

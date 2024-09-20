@@ -5,9 +5,9 @@ Richard Tobin's XML Namespaces 1.1 test suite 14 Feb 2003
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmtns11005() {
@@ -18,7 +18,7 @@ fn rmtns11005() {
         Description:Illegal use of prefix that has been unbound
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml")
@@ -39,7 +39,7 @@ fn htbhns11007() {
         Description:Attempt to unbind xmlns 'namespace'
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml")
@@ -60,7 +60,7 @@ fn htbhns11008() {
         Description:Attempt to unbind xml namespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml")

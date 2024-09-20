@@ -6,6 +6,7 @@ use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
 use std::cmp::Ordering;
 use std::fmt;
+use std::ptr::NonNull;
 /// A null tree implementation
 ///
 /// This tree implementation implements nothing.
@@ -20,6 +21,7 @@ pub struct Nullo();
 impl Node for Nullo {
     type NodeIterator = Box<dyn Iterator<Item = Nullo>>;
 
+    fn new_document() -> Self { Nullo() }
     fn node_type(&self) -> NodeType {
         NodeType::Unknown
     }

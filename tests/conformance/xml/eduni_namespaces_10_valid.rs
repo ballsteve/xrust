@@ -5,9 +5,9 @@ Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmtns10001() {
@@ -18,7 +18,7 @@ fn rmtns10001() {
         Description:Namespace name test: a perfectly good http URI
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/001.xml")
@@ -39,7 +39,7 @@ fn rmtns10002() {
         Description:Namespace name test: a syntactically plausible URI with a fictitious scheme
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml")
@@ -60,7 +60,7 @@ fn rmtns10003() {
         Description:Namespace name test: a perfectly good http URI with a fragment
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/003.xml")
@@ -81,7 +81,7 @@ fn rmtns10007() {
         Description:Namespace inequality test: different capitalization
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/007.xml")
@@ -102,7 +102,7 @@ fn rmtns10008() {
         Description:Namespace inequality test: different escaping
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/008.xml")
@@ -123,7 +123,7 @@ fn htns10047() {
         Description:Reserved name: _not_ an error
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/047.xml")
@@ -144,7 +144,7 @@ fn htns10048() {
         Description:Reserved name: _not_ an error
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/048.xml")

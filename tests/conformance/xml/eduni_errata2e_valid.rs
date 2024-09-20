@@ -6,10 +6,9 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
-use xrust::Node;
+use xrust::trees::smite::RNode;
+use xrust::item::Node;
 
 #[test]
 #[ignore]
@@ -21,7 +20,7 @@ fn rmte2e9a() {
         Description:An unused attribute default need only be syntactically correct
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9a.xml")
@@ -42,7 +41,7 @@ fn rmte2e15e() {
         Description:Element content can contain entity reference if replacement text is whitespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15e.xml")
@@ -63,7 +62,7 @@ fn rmte2e15f() {
         Description:Element content can contain entity reference if replacement text is whitespace, even if it came from a character reference in the literal entity value
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15f.xml")
@@ -84,7 +83,7 @@ fn rmte2e15i() {
         Description:Element content can contain a comment
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15i.xml")
@@ -105,7 +104,7 @@ fn rmte2e15j() {
         Description:Element content can contain a PI
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15j.xml")
@@ -126,7 +125,7 @@ fn rmte2e15k() {
         Description:Mixed content can contain a comment
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15k.xml")
@@ -147,7 +146,7 @@ fn rmte2e15l() {
         Description:Mixed content can contain a PI
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15l.xml")
@@ -169,7 +168,7 @@ fn rmte2e18() {
         Description:External entity containing start of entity declaration is base URI for system identifier
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
@@ -177,7 +176,7 @@ fn rmte2e18() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E18.xml")
@@ -204,7 +203,7 @@ fn rmte2e19() {
         Description:Parameter entities and character references are included-in-literal, but general entities are bypassed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
@@ -212,7 +211,7 @@ fn rmte2e19() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E19.xml")
@@ -239,7 +238,7 @@ fn rmte2e22() {
         Description:UTF-8 entities may start with a BOM
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E22.xml")
@@ -260,7 +259,7 @@ fn rmte2e24() {
         Description:Either the built-in entity or a character reference can be used to represent greater-than after two close-square-brackets
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E24.xml")
@@ -281,7 +280,7 @@ fn rmte2e29() {
         Description:Three-letter language codes are allowed
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E29.xml")
@@ -303,7 +302,7 @@ fn rmte2e36() {
         Description:An external ATTLIST declaration does not make a document non-standalone if the normalization would have been the same without the declaration
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E36.xml")
@@ -324,7 +323,7 @@ fn rmte2e41() {
         Description:An xml:lang attribute may be empty
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E41.xml")
@@ -345,7 +344,7 @@ fn rmte2e48() {
         Description:ANY content allows character data
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E48.xml")
@@ -367,7 +366,7 @@ fn rmte2e50() {
         Description:All line-ends are normalized, even those not passed to the application. NB this can only be tested effectively in XML 1.1, since CR is in the S production; in 1.1 we can use NEL which isn't.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E50.xml")
@@ -392,7 +391,7 @@ fn rmte2e60() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E60.xml")
