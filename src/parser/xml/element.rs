@@ -3,7 +3,7 @@ use crate::value::Value;
 use crate::item::{Node, NodeType};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::parser::combinators::alt::{alt2, alt4};
-use crate::parser::combinators::many::many0;
+use crate::parser::combinators::many::many0nsreset;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
@@ -43,11 +43,17 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                 )).is_err() {
                     return Err(ParseError::MissingNameSpace);
                 }
+                let elementname = state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
+                if state1.xmlversion=="1.1"
+                    && elementname.namespace_uri_to_string() == Some("".to_string())
+                    && elementname.prefix_to_string().is_some(){
+                    return Err(ParseError::MissingNameSpace);
+                }
                 let e = state1
                     .doc
                     .clone()
                     .unwrap()
-                    .new_element(state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname()))
+                    .new_element(elementname)
                     .expect("unable to create element");
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
@@ -93,8 +99,15 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                     return Err(ParseError::MissingNameSpace);
                 }
                 let d = state1.doc.clone().unwrap();
+
+                let elementname = state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
+                if state1.xmlversion=="1.1"
+                    && elementname.namespace_uri_to_string() == Some("".to_string())
+                    && elementname.prefix_to_string().is_some(){
+                    return Err(ParseError::MissingNameSpace);
+                }
                 let mut e = d
-                    .new_element(state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname()))
+                    .new_element(elementname)
                     .expect("unable to create element");
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
@@ -116,7 +129,7 @@ pub(crate) fn content<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
     move |(input, state)| match tuple2(
         opt(chardata()),
-        many0(tuple2(
+        many0nsreset(tuple2(
             alt4(
                 map(processing_instruction(), |e| vec![e]),
                 map(comment(), |e| vec![e]),

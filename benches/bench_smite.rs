@@ -9,7 +9,7 @@ use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::value::Value;
 
 fn make_rnode(n: u64) -> RNode {
-    let mut a = Rc::new(SmiteNode::new());
+    let mut a = RNode::new_document();
     let mut b = a
         .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
@@ -44,7 +44,7 @@ fn parse_doc(n: u64) -> RNode {
         a.push_str("</pre:child>\n");
     });
     a.push_str("</pre:top_level>\n");
-    let doc = Rc::new(SmiteNode::new());
+    let doc = RNode::new_document();
     parse(doc.clone(), a.as_str(), None).expect("failed to parse XML");
     doc
 }

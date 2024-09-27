@@ -19,8 +19,8 @@ impl NamespaceMap {
         map.insert(Some(Rc::new(Value::from("xml"))), Rc::new(Value::from("http://www.w3.org/XML/1998/namespace")));
         NamespaceMap(map)
     }
-    pub fn insert(&mut self, prefix: Option<Rc<Value>>, uri: Rc<Value>) {
-        self.0.insert(prefix, uri);
+    pub fn insert(&mut self, prefix: Option<Rc<Value>>, uri: Rc<Value>) -> Option<Rc<Value>> {
+        self.0.insert(prefix, uri)
     }
     pub fn get(&self, prefix: &Option<Rc<Value>>) -> Option<Rc<Value>> {
         self.0.get(prefix).cloned()

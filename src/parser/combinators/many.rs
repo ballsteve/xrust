@@ -20,6 +20,31 @@ where
     }
 }
 
+///This is a special combinator, it will reset namespaces on the parser state between iterations
+///It is only intended for use when parsing the children of an element node.
+pub fn many0nsreset<P, R, N: Node>(
+    parser: P,
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R>), ParseError>
+where
+    P: Fn(ParseInput<N>) -> Result<(ParseInput<N>, R), ParseError>,
+{
+    //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
+
+    move | (mut input, mut state)| {
+        let mut result = Vec::new();
+        let namespaces = state.namespace.clone();
+
+        while let Ok(((input2, mut state2), next_item)) = parser((input, state.clone())) {
+            result.push(next_item);
+            input = input2;
+            state2.namespace = namespaces.clone();
+            state = state2;
+        }
+
+        Ok(((input, state), result))
+    }
+}
+
 pub fn many1<P, R, N: Node>(
     parser: P,
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<R>), ParseError>

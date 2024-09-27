@@ -1,3 +1,4 @@
+use std::collections::HashSet;
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
@@ -45,6 +46,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
             // To do this, we need to know whether new namespaces are being declared,
             // so put these in a vector.
             let mut new_namespaces = vec![];
+            let mut new_namespace_prefixes = HashSet::new();
 
             for (qn, val) in nodes.clone() {
                 // Cache qn, val string values for faster comparison
@@ -91,7 +93,8 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 }
                 // Default namespace cannot be http://www.w3.org/XML/1998/namespace
                 // Default namespace cannot be http://www.w3.org/2000/xmlns/
-                if qn_prefix_str == "xmlns"
+                if qn_prefix_str == ""
+                    && qn_localname == "xmlns"
                     && (val_str == "http://www.w3.org/XML/1998/namespace"
                         || val_str == "http://www.w3.org/2000/xmlns/")
                 {
@@ -113,11 +116,27 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
 
                 if qn_prefix_str == "xmlns" {
                     new_namespaces.push(doc.new_namespace(val.clone(), Some(qn.localname())).expect("unable to create namespace node"));
+                    match new_namespace_prefixes.insert(Some(qn.localname())) {
+                        true => {}
+                        false => {
+                            return Err(ParseError::NotWellFormed(String::from(
+                                "duplicate namespace declaration",
+                            )));
+                        }
+                    }
                     //namespaces.insert(Some(qn.get_localname()), val.to_string());
                     //resnsnodes.insert(Some(qn.get_localname()), val.to_string());
                 };
                 if qn_localname == "xmlns" && !val_str.is_empty() {
                     new_namespaces.push(doc.new_namespace(val.clone(), None).expect("unable to create default namespace node"));
+                    match new_namespace_prefixes.insert(None) {
+                        true => {}
+                        false => {
+                            return Err(ParseError::NotWellFormed(String::from(
+                                "duplicate namespace declaration",
+                            )));
+                        }
+                    }
                     //namespaces.insert(None, val.to_string());
                     //resnsnodes.insert(None, val.to_string());
                 };
@@ -165,7 +184,9 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
             // SRB: TODO: partition the nodes vector based on whether the attribute has a prefix (and is not a namespace declaration)
             // Then loop through the prefixed attributes after the namespaces have been processed
             let mut resnodes = vec![];
-            //let mut resnodenames = vec![];
+            //This vec tracks duplicate attrs
+            let mut resnodenames = vec![];
+
             for (mut qn, attrval) in nodes {
                 let qn_prefix = qn.prefix_to_string().map_or(String::from(""), |s| s);
                 let qn_localname = qn.localname_to_string();
@@ -176,18 +197,29 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                     )).is_err() {
                         return Err(ParseError::MissingNameSpace);
                     }
-
+                    if qn_prefix != "xmlns" && qn_prefix != "" {
+                        match qn.namespace_uri() {
+                            None => {
+                                return Err(ParseError::MissingNameSpace);
+                            }
+                            Some(u) => {
+                                if u.to_string().is_empty() {
+                                    return Err(ParseError::MissingNameSpace);
+                                }
+                            }
+                        }
+                    }
                     let newatt = doc
-                        .new_attribute(Rc::new(qn), attrval)
+                        .new_attribute(Rc::new(qn.clone()), attrval)
                         .expect("unable to create attribute");
                     resnodes.push(newatt);
 
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
-                    //if resnodenames.contains(&(qn.get_nsuri(), qn.get_localname())) {
-                        //return Err(ParseError::NotWellFormed(String::from("missing namespace")));
-                    //} else {
-                        //resnodenames.push((qn.get_nsuri(), qn.get_localname()));
-                    //}
+                    if resnodenames.contains(&(qn.namespace_uri(), qn.localname())) {
+                        return Err(ParseError::NotWellFormed(String::from("duplicate attributes")));
+                    } else {
+                        resnodenames.push((qn.namespace_uri(), qn.localname()));
+                    }
                 }
             }
             Ok(((input1, state1), (resnodes, new_namespaces)))
