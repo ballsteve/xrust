@@ -267,10 +267,10 @@ impl<N: Node> Item<N> {
     }
 
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-    pub fn name(&self) -> QualifiedName {
+    pub fn name(&self) -> Rc<QualifiedName> {
         match self {
             Item::Node(n) => n.name(),
-            _ => QualifiedName::new(None, None, "".to_string()),
+            _ => Rc::new(QualifiedName::new(None, None, "")),
         }
     }
 
@@ -379,17 +379,28 @@ impl<N: Node> fmt::Debug for Item<N> {
 ///
 /// Element nodes have children and attributes.
 ///
+/// Element nodes may have a Namespace node attached. This is the declaration of an XML Namespace.
+/// The namespace-iter() methods iterates over all in-scope namespaces, which will include namespaces that are declared on ancestor elements.
+///
 /// Nodes must implement the PartialEq trait. This allows two (sub-)trees to be compared. The comparison is against the XML Infoset of each tree;
 /// i.e. do the trees contain the same information, but not necessarily the same string representation.
 /// For example, the order of attributes does not matter.
 pub trait Node: Clone + PartialEq + fmt::Debug {
     type NodeIterator: Iterator<Item = Self>;
 
+    /// Create a Document-type node.
+    /// All other types of nodes are created using type-specific methods (new_element, new_text, etc).
+    fn new_document() -> Self;
+
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
-    /// Get the name of the node. If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
-    fn name(&self) -> QualifiedName;
-    /// Get the value of the node. If the node doesn't have a value, then returns a [Value] that is an empty string.
+    /// Get the name of the node.
+    /// If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
+    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix. An unprefixed namespace has the empty string as its name.
+    fn name(&self) -> Rc<QualifiedName>;
+    /// Get the value of the node.
+    /// If the node doesn't have a value, then returns a [Value] that is an empty string.
+    /// If the node is a namespace-type node, then the value is the namespace URI.
     fn value(&self) -> Rc<Value>;
 
     /// Get a unique identifier for this node.
@@ -455,17 +466,17 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
-    fn new_element(&self, qn: QualifiedName) -> Result<Self, Error>;
+    fn new_element(&self, qn: Rc<QualifiedName>) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(&self, qn: QualifiedName, v: Rc<Value>) -> Result<Self, Error>;
-    /// Create a namespace node
-    fn new_namespace(&self, ns: String, prefix: Option<String>) -> Result<Self, Error>;
+    fn new_processing_instruction(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
+    /// Create a namespace node for an XML Namespace declaration.
+    fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;
@@ -486,8 +497,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn xmldecl(&self) -> XMLDecl;
     /// Set the XML Declaration for the document.
     fn set_xmldecl(&mut self, d: XMLDecl) -> Result<(), Error>;
-    /// Add a namespace to this element-type node.
-    /// NOTE: Does NOT assign a namespace to the element.
+    /// Add a namespace declaration to this element-type node.
+    /// NOTE: Does NOT assign a namespace to the element. The element's name defines its namespace.
     fn add_namespace(&self, ns: Self) -> Result<(), Error>;
     /// Compare two trees. If a non-document node is used, then the descendant subtrees are compared.
     fn eq(&self, other: &Self) -> bool {
@@ -516,7 +527,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                 if other.node_type() == NodeType::Element {
                     if self.name() == other.name() {
                         // Attributes
-                        let mut at_names: Vec<QualifiedName> =
+                        let mut at_names: Vec<Rc<QualifiedName>> =
                             self.attribute_iter().map(|a| a.name()).collect();
                         if at_names.len() == other.attribute_iter().count() {
                             at_names.sort();
@@ -571,8 +582,9 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
             _ => self.node_type() == other.node_type(), // Other types of node do not affect the equality
         }
     }
-    /// An iterator over the namespace nodes of an element. Note: These nodes are calculated
-    /// at the time the iterator is called, it is not guaranteed that the namespace nodes returned
+    /// An iterator over the in-scope namespace nodes of an element.
+    /// Note: These nodes are calculated at the time the iterator is called,.
+    /// It is not guaranteed that the namespace nodes returned
     /// will specify the current element node as their parent.
     fn namespace_iter(&self) -> Self::NodeIterator;
 }

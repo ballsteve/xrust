@@ -5,9 +5,9 @@ Richard Tobin's XML Namespaces 1.0/1.1 2nd edition test suite 1 June 2006
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmtnse1013a() {
@@ -18,7 +18,7 @@ fn rmtnse1013a() {
         Description:The xml namespace must not be declared as the default namespace.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13a.xml")
@@ -39,7 +39,7 @@ fn rmtnse1013b() {
         Description:The xmlns namespace must not be declared as the default namespace.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13b.xml")
@@ -60,7 +60,7 @@ fn rmtnse1013c() {
         Description:Elements must not have the prefix xmlns.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/errata-1e/NE13c.xml")

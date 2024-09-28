@@ -27,9 +27,7 @@ pub fn local_name<
             // Get the name of the context item
             // TODO: handle the case of there not being a context item
             match ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
-                    m.name().get_localname(),
-                )))]),
+                Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname().clone())]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
@@ -42,9 +40,7 @@ pub fn local_name<
             match n.len() {
                 0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
                 1 => match n[0] {
-                    Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
-                        m.name().get_localname(),
-                    )))]),
+                    Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname())]),
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("type error: not a node"),
@@ -75,9 +71,7 @@ pub fn name<
             // Get the name of the context item
             // TODO: handle the case of there being no context item
             match ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
-                    m.name().to_string(),
-                )))]),
+                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(m.name().clone())))]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),

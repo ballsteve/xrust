@@ -5,9 +5,9 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -19,7 +19,7 @@ fn rmte2e34() {
         Description:A non-deterministic content model is an error even if the element type is not used.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E34.xml")
@@ -40,7 +40,7 @@ fn rmte2e55() {
         Description:A reference to an unparsed entity in an entity value is an error rather than forbidden (unless the entity is referenced, of course)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E55.xml")
@@ -61,7 +61,7 @@ fn rmte2e57() {
         Description:A value other than preserve or default for xml:space is an error
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E57.xml")

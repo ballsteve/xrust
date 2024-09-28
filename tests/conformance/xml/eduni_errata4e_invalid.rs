@@ -5,9 +5,9 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn invalidbo1() {
@@ -18,7 +18,7 @@ fn invalidbo1() {
         Description:Byte order mark in general entity should go away (big-endian)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml")
@@ -39,7 +39,7 @@ fn invalidbo2() {
         Description:Byte order mark in general entity should go away (little-endian)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml")
@@ -60,7 +60,7 @@ fn invalidbo3() {
         Description:Byte order mark in general entity should go away (utf-8)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml")
@@ -81,7 +81,7 @@ fn invalidbo4() {
         Description:Two byte order marks in general entity produce only one (big-endian)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml")
@@ -102,7 +102,7 @@ fn invalidbo5() {
         Description:Two byte order marks in general entity produce only one (little-endian)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml")
@@ -123,7 +123,7 @@ fn invalidbo6() {
         Description:Two byte order marks in general entity produce only one (utf-8)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml")
@@ -152,7 +152,7 @@ fn invalidsa140() {
         Description:Character '&#x309a;' is a CombiningChar, not a Letter, but as of 5th edition, may begin a name (c.f. xmltest/not-wf/sa/140.xml).
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml")
@@ -182,7 +182,7 @@ fn invalidsa141() {
         Description:As of 5th edition, character #x0E5C is legal in XML names (c.f. xmltest/not-wf/sa/141.xml).
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml")
@@ -212,7 +212,7 @@ fn xrmt5014() {
         Description:Has a "long s" in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml")
@@ -242,7 +242,7 @@ fn xrmt5016() {
         Description:Has a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml")
@@ -272,7 +272,7 @@ fn xrmt5019() {
         Description:Has the last legal namechar in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/019.xml")
@@ -295,7 +295,7 @@ fn ibminvalid_p89ibm89n06xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x0EC7 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml")
@@ -317,7 +317,7 @@ fn ibminvalid_p89ibm89n07xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3006 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml")
@@ -339,7 +339,7 @@ fn ibminvalid_p89ibm89n08xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3030 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml")
@@ -361,7 +361,7 @@ fn ibminvalid_p89ibm89n09xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3036 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml")
@@ -383,7 +383,7 @@ fn ibminvalid_p89ibm89n10xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x309C occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml")
@@ -405,7 +405,7 @@ fn ibminvalid_p89ibm89n11xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x309F occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml")
@@ -427,7 +427,7 @@ fn ibminvalid_p89ibm89n12xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x30FF occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml")

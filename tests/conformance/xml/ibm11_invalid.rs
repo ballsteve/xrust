@@ -5,9 +5,9 @@ IBM test cases
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -19,7 +19,7 @@ fn ibm11valid_p46ibm46i01xml() {
         Description:An element with Element-Only content contains the character #x85 (NEL not a whitespace character as defined by S).
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/invalid/P46/ibm46i01.xml")
@@ -41,7 +41,7 @@ fn ibm11valid_p46ibm46i02xml() {
         Description:An element with Element-Only content contains the character #x2028 (LESP not a whitespace character as defined by S).
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/invalid/P46/ibm46i02.xml")

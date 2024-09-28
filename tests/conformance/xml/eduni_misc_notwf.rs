@@ -5,9 +5,9 @@ Bjoern Hoehrmann via HST 2013-09-18
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn hstbh001() {
@@ -18,7 +18,7 @@ fn hstbh001() {
         Description:decimal charref > 10FFFF, indeed > max 32 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/001.xml")
@@ -39,7 +39,7 @@ fn hstbh002() {
         Description:hex charref > 10FFFF, indeed > max 32 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/002.xml")
@@ -60,7 +60,7 @@ fn hstbh003() {
         Description:decimal charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/003.xml")
@@ -81,7 +81,7 @@ fn hstbh004() {
         Description:hex charref > 10FFFF, indeed > max 64 bit integer, checking for recovery from possible overflow
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/004.xml")
@@ -103,7 +103,7 @@ fn hstlhs007() {
         Description:UTF-8 BOM plus xml decl of iso-8859-1 incompatible
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/007.xml")
@@ -125,7 +125,7 @@ fn hstlhs008() {
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-16 coding) incompatible
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/008.xml")
@@ -147,7 +147,7 @@ fn hstlhs009() {
         Description:UTF-16 BOM plus xml decl of utf-8 (using UTF-8 coding) incompatible
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/009.xml")

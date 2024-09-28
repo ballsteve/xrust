@@ -73,9 +73,9 @@ pub fn generate_integers<
                         Axis::SelfAxis,
                         Axis::SelfAxis,
                         NodeTest::Name(NameTest::new(
-                            m.name().get_nsuri().map(WildcardOrName::Name),
+                            m.name().namespace_uri().map(WildcardOrName::Name),
                             None,
-                            Some(WildcardOrName::Name(m.name().get_localname())),
+                            Some(WildcardOrName::Name(m.name().localname())),
                         )),
                     ),
                     NodeType::Text => Step::new(

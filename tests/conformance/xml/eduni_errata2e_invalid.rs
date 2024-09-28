@@ -6,9 +6,9 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -20,7 +20,7 @@ fn rmte2e2a() {
         Description:Duplicate token in enumerated attribute declaration
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2a.xml")
@@ -42,7 +42,7 @@ fn rmte2e2b() {
         Description:Duplicate token in NOTATION attribute declaration
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E2b.xml")
@@ -63,7 +63,7 @@ fn rmte2e9b() {
         Description:An attribute default must be syntactically correct even if unused
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E9b.xml")
@@ -88,7 +88,7 @@ fn rmte2e14() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-2e/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E14.xml")
@@ -110,7 +110,7 @@ fn rmte2e15a() {
         Description:Empty content can't contain an entity reference
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15a.xml")
@@ -132,7 +132,7 @@ fn rmte2e15b() {
         Description:Empty content can't contain a comment
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15b.xml")
@@ -154,7 +154,7 @@ fn rmte2e15c() {
         Description:Empty content can't contain a PI
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15c.xml")
@@ -176,7 +176,7 @@ fn rmte2e15d() {
         Description:Empty content can't contain whitespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15d.xml")
@@ -198,7 +198,7 @@ fn rmte2e15g() {
         Description:Element content can't contain character reference to whitespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15g.xml")
@@ -220,7 +220,7 @@ fn rmte2e15h() {
         Description:Element content can't contain entity reference if replacement text is character reference to whitespace
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E15h.xml")
@@ -242,7 +242,7 @@ fn rmte2e20() {
         Description:Tokens, after normalization, must be separated by space, not other whitespace characters
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-2e/E20.xml")

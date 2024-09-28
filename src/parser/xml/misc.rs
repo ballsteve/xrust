@@ -12,9 +12,6 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
-use crate::value::Value;
-use std::rc::Rc;
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
 pub(crate) fn processing_instruction<N: Node>(
@@ -35,8 +32,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            QualifiedName::new(None, None, n),
-                            Rc::new(Value::String("".to_string())),
+                            state.get_qualified_name(None, None, state.get_value(n)),
+                            state.get_value("".to_string()),
                         )
                         .expect("unable to create processing instruction"),
                     Some((_, v)) => state
@@ -44,8 +41,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            QualifiedName::new(None, None, n),
-                            Rc::new(Value::String(v)),
+                            state.get_qualified_name(None, None, state.get_value(n)),
+                            state.get_value(v),
                         )
                         .expect("unable to create processing instruction"),
                 },
@@ -94,7 +91,7 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         .doc
                         .as_ref()
                         .unwrap()
-                        .new_comment(Rc::new(Value::String(v)))
+                        .new_comment(state.get_value(v))
                         .expect("unable to create comment")
                 },
             ),

@@ -8,9 +8,9 @@ James Clark XMLTEST cases
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -26,7 +26,7 @@ fn invalid002() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/002.xml")
@@ -51,7 +51,7 @@ fn invalid005() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/005.xml")
@@ -77,7 +77,7 @@ fn invalid006() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/valid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/006.xml")
@@ -102,7 +102,7 @@ fn invalidnotsa022() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/invalid/not-sa/022.xml")

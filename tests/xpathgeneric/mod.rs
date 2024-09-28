@@ -18,7 +18,7 @@ fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
-    Context::new().dispatch(&mut stctxt, &parse(e.as_ref())?)
+    Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
 }
 
 fn dispatch_rig<N: Node, G, H>(
@@ -40,7 +40,7 @@ where
         .context(vec![make_doc()])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse(e.as_ref())?)
+        .dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
 }
 
 pub fn generic_empty<N: Node>() -> Result<(), Error> {
@@ -434,7 +434,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("parent::a")?)?;
+                .dispatch(&mut stctxt, &parse("parent::a", None)?)?;
             assert_eq!(s.len(), 1);
             assert_eq!(s[0].name().to_string(), "a")
         }
@@ -461,7 +461,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("..")?)?;
+                .dispatch(&mut stctxt, &parse("..", None)?)?;
             assert_eq!(s.len(), 1);
             assert_eq!(s[0].name().to_string(), "a")
         }
@@ -489,7 +489,7 @@ where
                 .context(vec![Item::Node(l)])
                 .result_document(rd)
                 .build()
-                .dispatch(&mut stctxt, &parse("ancestor::*")?)?;
+                .dispatch(&mut stctxt, &parse("ancestor::*", None)?)?;
             assert_eq!(s.len(), 3);
         }
         _ => panic!("unable to unpack node"),
@@ -537,7 +537,7 @@ where
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse(".")?)?;
+        .dispatch(&mut stctxt, &parse(".", None)?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_string(), "foobar");
     Ok(())
@@ -558,7 +558,7 @@ where
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
         .result_document(rd)
         .build()
-        .dispatch(&mut stctxt, &parse("(1)")?)?;
+        .dispatch(&mut stctxt, &parse("(1)", None)?)?;
     assert_eq!(s.len(), 1);
     assert_eq!(s[0].to_int().unwrap(), 1);
     Ok(())
@@ -844,7 +844,7 @@ where
             .context(vec![Item::Node(top)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(&mut stctxt, &parse("current()/child::a")?)
+            .dispatch(&mut stctxt, &parse("current()/child::a", None)?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1)
     } else {
@@ -1248,7 +1248,7 @@ where
             .context(vec![Item::Node(l)])
             .previous_context(Some(sd))
             .build()
-            .dispatch(&mut stctxt, &parse("count(ancestor::*)")?)
+            .dispatch(&mut stctxt, &parse("count(ancestor::*)", None)?)
             .expect("evaluation failed");
         assert_eq!(s.len(), 1);
         assert_eq!(s.to_int().expect("unable to get int from sequence"), 3)
@@ -1281,12 +1281,12 @@ where
     H: Fn() -> Item<N>,
 {
     let e: Transform<N> =
-        parse("test:my_func(123)").expect("failed to parse expression \"test:my_func(123)\"");
+        parse("test:my_func(123)", None).expect("failed to parse expression \"test:my_func(123)\"");
     match e {
-        Transform::Invoke(qn, ap) => {
+        Transform::Invoke(qn, ap, _) => {
             assert_eq!(
                 qn,
-                QualifiedName::new(None, Some("test".to_string()), "my_func".to_string())
+                Rc::new(QualifiedName::new(None, Some("test".to_string()), "my_func".to_string()))
             );
             match ap {
                 ActualParameters::Positional(v) => {
@@ -1435,7 +1435,7 @@ where
         .build()
         .dispatch(
             &mut stctxt,
-            &parse("document('urn:example.org/test')").expect("unable to parse XPath expression"),
+            &parse("document('urn:example.org/test')", None).expect("unable to parse XPath expression"),
         )
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
@@ -1450,15 +1450,15 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let e: Transform<N> = parse("key('mykey', 'blue')")
+    let e: Transform<N> = parse("key('mykey', 'blue')", None)
         .expect("failed to parse expression \"key('mykey', 'blue'))\"");
     let mut sd = make_empty_doc();
     let mut top = sd
-        .new_element(QualifiedName::new(None, None, String::from("Top")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Top"))))
         .expect("unable to create element");
     sd.push(top.clone()).expect("unable to add node");
     let mut red1 = sd
-        .new_element(QualifiedName::new(None, None, String::from("one")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("one"))))
         .expect("unable to create element");
     red1.push(
         sd.new_text(Rc::new(Value::from("red")))
@@ -1467,7 +1467,7 @@ where
     .expect("unable to create element");
     top.push(red1).expect("unable to add node");
     let mut blue1 = sd
-        .new_element(QualifiedName::new(None, None, String::from("two")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("two"))))
         .expect("unable to create element");
     blue1
         .push(
@@ -1477,7 +1477,7 @@ where
         .expect("unable to create element");
     top.push(blue1).expect("unable to add node");
     let mut yellow1 = sd
-        .new_element(QualifiedName::new(None, None, String::from("three")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("three"))))
         .expect("unable to create element");
     yellow1
         .push(

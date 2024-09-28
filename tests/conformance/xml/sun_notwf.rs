@@ -5,9 +5,9 @@ Sun Microsystems test cases
 */
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn notwfsa03() {
@@ -18,7 +18,7 @@ fn notwfsa03() {
         Description:Tests the Entity Declared WFC, ensuring that a reference to externally defined entity causes a well-formedness error.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/not-sa03.xml")
@@ -39,7 +39,7 @@ fn attlist01() {
         Description:SGML's NUTOKEN is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist01.xml")
@@ -60,7 +60,7 @@ fn attlist02() {
         Description:SGML's NUTOKENS attribute type is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist02.xml")
@@ -81,7 +81,7 @@ fn attlist03() {
         Description:Comma doesn't separate enumerations, unlike in SGML.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist03.xml")
@@ -102,7 +102,7 @@ fn attlist04() {
         Description:SGML's NUMBER attribute type is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist04.xml")
@@ -123,7 +123,7 @@ fn attlist05() {
         Description:SGML's NUMBERS attribute type is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist05.xml")
@@ -144,7 +144,7 @@ fn attlist06() {
         Description:SGML's NAME attribute type is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist06.xml")
@@ -165,7 +165,7 @@ fn attlist07() {
         Description:SGML's NAMES attribute type is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist07.xml")
@@ -186,7 +186,7 @@ fn attlist08() {
         Description:SGML's #CURRENT is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist08.xml")
@@ -207,7 +207,7 @@ fn attlist09() {
         Description:SGML's #CONREF is not allowed.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist09.xml")
@@ -228,7 +228,7 @@ fn attlist10() {
         Description:Whitespace required between attributes
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist10.xml")
@@ -249,7 +249,7 @@ fn attlist11() {
         Description:Whitespace required between attributes
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/attlist11.xml")
@@ -274,7 +274,7 @@ fn cond01() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond01.xml")
@@ -299,7 +299,7 @@ fn cond02() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/cond02.xml")
@@ -320,7 +320,7 @@ fn content01() {
         Description:No whitespace before "?" in content model
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content01.xml")
@@ -341,7 +341,7 @@ fn content02() {
         Description:No whitespace before "*" in content model
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content02.xml")
@@ -362,7 +362,7 @@ fn content03() {
         Description:No whitespace before "+" in content model
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/content03.xml")
@@ -383,7 +383,7 @@ fn decl01() {
         Description:External entities may not have standalone decls.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/decl01.xml")
@@ -404,7 +404,7 @@ fn nwfdtd00() {
         Description:Comma mandatory in content model
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd00.xml")
@@ -425,7 +425,7 @@ fn nwfdtd01() {
         Description:Can't mix comma and vertical bar in content models
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd01.xml")
@@ -446,7 +446,7 @@ fn dtd02() {
         Description:PE name immediately after "%"
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd02.xml")
@@ -467,7 +467,7 @@ fn dtd03() {
         Description:PE name immediately followed by ";"
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd03.xml")
@@ -488,7 +488,7 @@ fn dtd04() {
         Description:PUBLIC literal must be quoted
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd04.xml")
@@ -509,7 +509,7 @@ fn dtd05() {
         Description:SYSTEM identifier must be quoted
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd05.xml")
@@ -534,7 +534,7 @@ fn dtd07() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/sun/not-wf/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/dtd07.xml")
@@ -555,7 +555,7 @@ fn element00() {
         Description:EOF in middle of incomplete ETAG
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element00.xml")
@@ -576,7 +576,7 @@ fn element01() {
         Description:EOF in middle of incomplete ETAG
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element01.xml")
@@ -597,7 +597,7 @@ fn element02() {
         Description:Illegal markup (<%@ ... %>)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element02.xml")
@@ -618,7 +618,7 @@ fn element03() {
         Description:Illegal markup (<% ... %>)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element03.xml")
@@ -639,7 +639,7 @@ fn element04() {
         Description:Illegal markup (<!ELEMENT ... >)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/element04.xml")
@@ -660,7 +660,7 @@ fn encoding01() {
         Description:Illegal character " " in encoding name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding01.xml")
@@ -681,7 +681,7 @@ fn encoding02() {
         Description:Illegal character "/" in encoding name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding02.xml")
@@ -702,7 +702,7 @@ fn encoding03() {
         Description:Illegal character reference in encoding name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding03.xml")
@@ -723,7 +723,7 @@ fn encoding04() {
         Description:Illegal character ":" in encoding name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding04.xml")
@@ -744,7 +744,7 @@ fn encoding05() {
         Description:Illegal character "@" in encoding name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding05.xml")
@@ -765,7 +765,7 @@ fn encoding06() {
         Description:Illegal character "+" in encoding name
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding06.xml")
@@ -786,7 +786,7 @@ fn encoding07() {
         Description:Text declarations (which optionally begin any external entity)are required to have "encoding=...".
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/encoding07.xml")
@@ -807,7 +807,7 @@ fn pi() {
         Description:No space between PI target name and data
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pi.xml")
@@ -828,7 +828,7 @@ fn pubid01() {
         Description:Illegal entity ref in public ID
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid01.xml")
@@ -849,7 +849,7 @@ fn pubid02() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid02.xml")
@@ -870,7 +870,7 @@ fn pubid03() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid03.xml")
@@ -891,7 +891,7 @@ fn pubid04() {
         Description:Illegal characters in public ID
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid04.xml")
@@ -912,7 +912,7 @@ fn pubid05() {
         Description:SGML-ism: public ID without system ID
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/pubid05.xml")
@@ -933,7 +933,7 @@ fn sgml01() {
         Description:SGML-ism: omitted end tag for EMPTY content
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml01.xml")
@@ -954,7 +954,7 @@ fn sgml02() {
         Description:XML declaration must be at the very beginning of a document;it"s not a processing instruction
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml02.xml")
@@ -975,7 +975,7 @@ fn sgml03() {
         Description:Comments may not contain "--"
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml03.xml")
@@ -996,7 +996,7 @@ fn sgml04() {
         Description:ATTLIST declarations apply to only one element, unlike SGML
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml04.xml")
@@ -1017,7 +1017,7 @@ fn sgml05() {
         Description:ELEMENT declarations apply to only one element, unlike SGML
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml05.xml")
@@ -1038,7 +1038,7 @@ fn sgml06() {
         Description:ATTLIST declarations are never global, unlike in SGML
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml06.xml")
@@ -1059,7 +1059,7 @@ fn sgml07() {
         Description:SGML Tag minimization specifications are not allowed
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml07.xml")
@@ -1080,7 +1080,7 @@ fn sgml08() {
         Description:SGML Tag minimization specifications are not allowed
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml08.xml")
@@ -1101,7 +1101,7 @@ fn sgml09() {
         Description:SGML Content model exception specifications are not allowed
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml09.xml")
@@ -1122,7 +1122,7 @@ fn sgml10() {
         Description:SGML Content model exception specifications are not allowed
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml10.xml")
@@ -1143,7 +1143,7 @@ fn sgml11() {
         Description:CDATA is not a valid content model spec
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml11.xml")
@@ -1164,7 +1164,7 @@ fn sgml12() {
         Description:RCDATA is not a valid content model spec
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml12.xml")
@@ -1185,7 +1185,7 @@ fn sgml13() {
         Description:SGML Unordered content models not allowed
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/sgml13.xml")

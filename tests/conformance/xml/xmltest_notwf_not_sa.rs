@@ -9,9 +9,9 @@ James Clark XMLTEST cases - Standalone
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn notwfnotsa001() {
@@ -26,7 +26,7 @@ fn notwfnotsa001() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/001.xml")
@@ -51,7 +51,7 @@ fn notwfnotsa002() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/002.xml")
@@ -76,7 +76,7 @@ fn notwfnotsa003() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/003.xml")
@@ -101,7 +101,7 @@ fn notwfnotsa004() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/004.xml")
@@ -126,7 +126,7 @@ fn notwfnotsa005() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/005.xml")
@@ -151,7 +151,7 @@ fn notwfnotsa006() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/006.xml")
@@ -176,7 +176,7 @@ fn notwfnotsa007() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/007.xml")
@@ -201,7 +201,7 @@ fn notwfnotsa008() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/008.xml")
@@ -226,7 +226,7 @@ fn notwfnotsa009() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/not-sa/009.xml")

@@ -7,9 +7,9 @@ James Clark XMLTEST cases
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -21,7 +21,7 @@ fn notwfextsa001() {
         Description:Tests the No Recursion WFC by having an external general entity be self-recursive.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/001.xml")
@@ -43,7 +43,7 @@ fn notwfextsa002() {
         Description:External entities have "text declarations", which do not permit the "standalone=..." attribute that's allowed in XML declarations.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/002.xml")
@@ -65,7 +65,7 @@ fn notwfextsa003() {
         Description:Only one text declaration is permitted; a second one looks like an illegal processing instruction (target names of "xml" in any case are not allowed).
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/xmltest/not-wf/ext-sa/003.xml")

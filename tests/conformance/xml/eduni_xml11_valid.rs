@@ -6,10 +6,9 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
 use crate::conformance::non_utf8_file_reader;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
-use xrust::Node;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -21,7 +20,7 @@ fn rmt006() {
         Description:Second-level external general entity has later version number than first-level, but not later than document, so not an error.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/006.xml")
@@ -29,7 +28,7 @@ fn rmt006() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/006.xml")
@@ -55,7 +54,7 @@ fn rmt007() {
         Description:A vanilla XML 1.1 document
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/007.xml")
@@ -63,7 +62,7 @@ fn rmt007() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/007.xml")
@@ -90,13 +89,13 @@ fn rmt010() {
         Description:Contains a C1 control, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/010.xml").as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/010.xml")
@@ -122,7 +121,7 @@ fn rmt012() {
         Description:Contains a DEL, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/012.xml")
@@ -130,7 +129,7 @@ fn rmt012() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/012.xml")
@@ -157,13 +156,13 @@ fn rmt022() {
         Description:Has a NEL character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/022.xml").as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/022.xml")
@@ -190,13 +189,13 @@ fn rmt023() {
         Description:Has a NEL character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/023.xml").as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/023.xml")
@@ -222,7 +221,7 @@ fn rmt024() {
         Description:Has an LSEP character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/024.xml")
@@ -230,7 +229,7 @@ fn rmt024() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/024.xml")
@@ -257,7 +256,7 @@ fn rmt025() {
         Description:Has an LSEP character; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/025.xml")
@@ -265,7 +264,7 @@ fn rmt025() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/025.xml")
@@ -292,7 +291,7 @@ fn rmt026() {
         Description:Has CR-NEL; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/026.xml")
@@ -300,7 +299,7 @@ fn rmt026() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/026.xml")
@@ -327,7 +326,7 @@ fn rmt027() {
         Description:Has CR-NEL; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/027.xml")
@@ -335,7 +334,7 @@ fn rmt027() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/027.xml")
@@ -362,7 +361,7 @@ fn rmt028() {
         Description:Has CR-LSEP; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1. Note that CR and LSEP are not combined into a single LF
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/028.xml")
@@ -370,7 +369,7 @@ fn rmt028() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/028.xml")
@@ -397,7 +396,7 @@ fn rmt029() {
         Description:Has CR-LSEP; legal in both XML 1.0 and 1.1, but different canonical output because of normalization in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/029.xml")
@@ -405,7 +404,7 @@ fn rmt029() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/029.xml")
@@ -432,13 +431,13 @@ fn rmt031() {
         Description:Has a NEL character in an NMTOKENS attribute; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/031.xml").as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/031.xml")
@@ -464,7 +463,7 @@ fn rmt033() {
         Description:Has an LSEP character in an NMTOKENS attribute; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/033.xml")
@@ -472,7 +471,7 @@ fn rmt033() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/033.xml")
@@ -498,7 +497,7 @@ fn rmt034() {
         Description:Has an NMTOKENS attribute containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/034.xml")
@@ -506,7 +505,7 @@ fn rmt034() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/034.xml")
@@ -532,7 +531,7 @@ fn rmt035() {
         Description:Has an NMTOKENS attribute containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/035.xml")
@@ -540,7 +539,7 @@ fn rmt035() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/035.xml")
@@ -567,13 +566,13 @@ fn rmt040() {
         Description:Contains a C1 control character (partial line up), legal in XML 1.0 but not 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/040.xml").as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/040.xml")
@@ -599,7 +598,7 @@ fn rmt043() {
         Description:Contains a character reference to a C0 control character (form-feed), legal in XML 1.1 but not 1.0
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/043.xml")
@@ -607,7 +606,7 @@ fn rmt043() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/043.xml")
@@ -633,7 +632,7 @@ fn rmt044() {
         Description:Contains a character reference to a C1 control character (partial line up), legal in both XML 1.0 and 1.1 (but for different reasons)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/044.xml")
@@ -641,7 +640,7 @@ fn rmt044() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/044.xml")
@@ -667,7 +666,7 @@ fn rmt045() {
         Description:Contains a character reference to a C1 control character (partial line up), legal in both XML 1.0 and 1.1 (but for different reasons)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/045.xml")
@@ -675,7 +674,7 @@ fn rmt045() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/045.xml")
@@ -702,13 +701,13 @@ fn rmt047() {
         Description:Has a NEL character in element content whitespace; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         non_utf8_file_reader("tests/conformance/xml/xmlconf/eduni/xml-1.1/047.xml").as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/047.xml")
@@ -735,7 +734,7 @@ fn rmt049() {
         Description:has an LSEP character in element content whitespace; well-formed in both XML 1.0 and 1.1, but valid only in 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/049.xml")
@@ -743,7 +742,7 @@ fn rmt049() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/049.xml")
@@ -769,7 +768,7 @@ fn rmt050() {
         Description:Has element content whitespace containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/050.xml")
@@ -777,7 +776,7 @@ fn rmt050() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/050.xml")
@@ -803,7 +802,7 @@ fn rmt051() {
         Description:Has element content whitespace containing a CR character that comes from a character reference in an internal entity. Because CR is in the S production, this is valid in both XML 1.0 and 1.1.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/051.xml")
@@ -811,7 +810,7 @@ fn rmt051() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/051.xml")
@@ -838,7 +837,7 @@ fn rmt054() {
         Description:Contains a character reference to a C0 control character (form-feed) in an entity value. This will be legal (in XML 1.1) when the entity declaration is parsed, but what about when it is used? According to the grammar in the CR spec, it should be illegal (because the replacement text must match "content"), but this is probably not intended. This will be fixed in the PR version.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/054.xml")
@@ -846,7 +845,7 @@ fn rmt054() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/out/054.xml")

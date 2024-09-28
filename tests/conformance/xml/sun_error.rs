@@ -5,9 +5,9 @@ Sun Microsystems test cases
 */
 
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::xml;
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn uri01() {
@@ -18,7 +18,7 @@ fn uri01() {
         Description:        SYSTEM ids may not have URI fragments
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/sun/not-wf/uri01.xml")

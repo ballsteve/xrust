@@ -2,10 +2,12 @@
 //!
 //! An atomic value that is an item in a sequence.
 
+use std::rc::Rc;
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
+use core::hash::{Hash, Hasher};
 use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::Decimal;
 #[cfg(test)]
@@ -144,6 +146,8 @@ pub enum Value {
     //anyURI,
     /// Qualified Name
     QName(QualifiedName),
+    /// Rc-shared Qualified Name
+    RQName(Rc<QualifiedName>),
     //NOTATION
 }
 
@@ -172,11 +176,19 @@ impl fmt::Display for Value {
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
             Value::QName(q) => q.to_string(),
+            Value::RQName(q) => q.to_string(),
             _ => "".to_string(),
         };
         f.write_str(result.as_str())
     }
 }
+
+impl Hash for Value {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        format!("{:?}", self).hash(state)
+    }
+}
+impl Eq for Value {}
 
 impl Value {
     /// Give the effective boolean value.
@@ -263,6 +275,7 @@ impl Value {
             Value::ENTITY => "ENTITY",
             Value::Boolean(_) => "boolean",
             Value::QName(_) => "QName",
+            Value::RQName(_) => "QName",
         }
     }
     pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
@@ -339,7 +352,16 @@ impl Value {
             }
             Value::QName(q) => match (op, other) {
                 (Operator::Equal, Value::QName(r)) => Ok(*q == *r),
+                (Operator::Equal, Value::RQName(r)) => Ok(*q == **r),
                 (Operator::NotEqual, Value::QName(r)) => Ok(*q != *r),
+                (Operator::NotEqual, Value::RQName(r)) => Ok(*q != **r),
+                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
+            },
+            Value::RQName(q) => match (op, other) {
+                (Operator::Equal, Value::QName(r)) => Ok(**q == *r),
+                (Operator::Equal, Value::RQName(r)) => Ok(**q == **r),
+                (Operator::NotEqual, Value::QName(r)) => Ok(**q != *r),
+                (Operator::NotEqual, Value::RQName(r)) => Ok(**q != **r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             _ => Result::Err(Error::new(
@@ -482,8 +504,13 @@ impl From<QualifiedName> for Value {
         Value::QName(q)
     }
 }
+impl From<Rc<QualifiedName>> for Value {
+    fn from(q: Rc<QualifiedName>) -> Self {
+        Value::RQName(q)
+    }
+}
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NonPositiveInteger(i64);
 impl TryFrom<i64> for NonPositiveInteger {
     type Error = Error;
@@ -504,7 +531,7 @@ impl fmt::Display for NonPositiveInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct PositiveInteger(i64);
 impl TryFrom<i64> for PositiveInteger {
     type Error = Error;
@@ -525,7 +552,7 @@ impl fmt::Display for PositiveInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NonNegativeInteger(i64);
 impl TryFrom<i64> for NonNegativeInteger {
     type Error = Error;
@@ -546,7 +573,7 @@ impl fmt::Display for NonNegativeInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NegativeInteger(i64);
 impl TryFrom<i64> for NegativeInteger {
     type Error = Error;
@@ -567,7 +594,7 @@ impl fmt::Display for NegativeInteger {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, Hash)]
 pub struct NormalizedString(String);
 impl TryFrom<&str> for NormalizedString {
     type Error = Error;

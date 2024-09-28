@@ -6,10 +6,9 @@ IBM test cases
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
-use xrust::Node;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn ibm11valid_p02ibm02v01xml() {
@@ -20,7 +19,7 @@ fn ibm11valid_p02ibm02v01xml() {
         Description:This test case covers legal character ranges plus discrete legal characters for production 02 of the XML1.1 sepcification.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v01.xml")
@@ -41,7 +40,7 @@ fn ibm11valid_p02ibm02v02xml() {
         Description:This test case covers control characters x1 to x1F and x7F to x9F which should only appear as character references.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v02.xml")
@@ -63,7 +62,7 @@ fn ibm11valid_p02ibm02v03xml() {
         Description:This test case covers control characters x1 to x1F and x7F to x9F which appear as character references as an entity's replacement text.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v03.xml")
@@ -84,7 +83,7 @@ fn ibm11valid_p02ibm02v04xml() {
         Description:This test case contains embeded whitespace characters some form the range 1 - 1F.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v04.xml")
@@ -105,7 +104,7 @@ fn ibm11valid_p02ibm02v05xml() {
         Description:This test case contains valid char references that match the char production.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v05.xml")
@@ -127,7 +126,7 @@ fn ibm11valid_p02ibm02v06xml() {
         Description:This test case contains valid char references in the CDATA section, comment and processing instruction of an external entity that match the char production.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v06.xml")
@@ -149,7 +148,7 @@ fn ibm11valid_p03ibm03v01xml() {
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v01.xml")
@@ -157,7 +156,7 @@ fn ibm11valid_p03ibm03v01xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v01.xml")
@@ -184,7 +183,7 @@ fn ibm11valid_p03ibm03v02xml() {
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v02.xml")
@@ -192,7 +191,7 @@ fn ibm11valid_p03ibm03v02xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v02.xml")
@@ -219,7 +218,7 @@ fn ibm11valid_p03ibm03v03xml() {
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v03.xml")
@@ -227,7 +226,7 @@ fn ibm11valid_p03ibm03v03xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v03.xml")
@@ -254,7 +253,7 @@ fn ibm11valid_p03ibm03v04xml() {
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v04.xml")
@@ -262,7 +261,7 @@ fn ibm11valid_p03ibm03v04xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v04.xml")
@@ -289,7 +288,7 @@ fn ibm11valid_p03ibm03v05xml() {
         Description:The two character sequence #x0D #x85 in a document entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v05.xml")
@@ -297,7 +296,7 @@ fn ibm11valid_p03ibm03v05xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v05.xml")
@@ -324,7 +323,7 @@ fn ibm11valid_p03ibm03v06xml() {
         Description:The single character sequence #x85 in a document entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v06.xml")
@@ -332,7 +331,7 @@ fn ibm11valid_p03ibm03v06xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v06.xml")
@@ -359,7 +358,7 @@ fn ibm11valid_p03ibm03v07xml() {
         Description:The single character sequence #x2028 in a document entity must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v07.xml")
@@ -367,7 +366,7 @@ fn ibm11valid_p03ibm03v07xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v07.xml")
@@ -393,7 +392,7 @@ fn ibm11valid_p03ibm03v08xml() {
         Description:The single character sequence #x85 in the XMLDecl must be normalized to a single newline.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v08.xml")
@@ -401,7 +400,7 @@ fn ibm11valid_p03ibm03v08xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v08.xml")
@@ -428,7 +427,7 @@ fn ibm11valid_p03ibm03v09xml() {
         Description:The single character sequence #x2028 in the XMLDecl must be normalized to a single newline. (This test is questionable)
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v09.xml")
@@ -436,7 +435,7 @@ fn ibm11valid_p03ibm03v09xml() {
             .as_str(),
         None,
     );
-    let canonicalxml = Rc::new(SmiteNode::new());
+    let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
         canonicalxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/out/ibm03v09.xml")
@@ -463,7 +462,7 @@ fn ibm11valid_p04ibm04v01xml() {
         Description:This test case covers legal NameStartChars character ranges plus discrete legal characters for production 04.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04/ibm04v01.xml")
@@ -484,7 +483,7 @@ fn ibm11valid_p04ibm04av01xml() {
         Description:This test case covers legal NameChars character ranges plus discrete legal characters for production 04a.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P04a/ibm04av01.xml")
@@ -506,7 +505,7 @@ fn ibm11valid_p05ibm05v01xml() {
         Description:This test case covers legal Element Names as per production 5.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v01.xml")
@@ -528,7 +527,7 @@ fn ibm11valid_p05ibm05v02xml() {
         Description:This test case covers legal PITarget (Names) as per production 5.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v02.xml")
@@ -550,7 +549,7 @@ fn ibm11valid_p05ibm05v03xml() {
         Description:This test case covers legal Attribute (Names) as per production 5.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v03.xml")
@@ -571,7 +570,7 @@ fn ibm11valid_p05ibm05v04xml() {
         Description:This test case covers legal ID/IDREF (Names) as per production 5.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v04.xml")
@@ -593,7 +592,7 @@ fn ibm11valid_p05ibm05v05xml() {
         Description:This test case covers legal ENTITY (Names) as per production 5.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P05/ibm05v05.xml")
@@ -614,7 +613,7 @@ fn ibm11valid_p047ibm07v01xml() {
         Description:This test case covers legal NMTOKEN Name character ranges plus discrete legal characters for production 7.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P07/ibm07v01.xml")
@@ -640,7 +639,7 @@ fn ibm11valid_p77ibm77v01xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v01.xml")
@@ -666,7 +665,7 @@ fn ibm11valid_p77ibm77v02xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v02.xml")
@@ -692,7 +691,7 @@ fn ibm11valid_p77ibm77v03xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v03.xml")
@@ -714,7 +713,7 @@ fn ibm11valid_p77ibm77v04xml() {
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external entity is 1.0. The character #xD6 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v04.xml")
@@ -736,7 +735,7 @@ fn ibm11valid_p77ibm77v05xml() {
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external entity is 1.0. The character #x1FFF which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v05.xml")
@@ -758,7 +757,7 @@ fn ibm11valid_p77ibm77v06xml() {
         Description:The VersionNum of the document entity is 1.1 whereas the VersionNum of the external entity is 1.0. The character #xF901 which is a valid XML 1.1 but an invalid XML 1.0 character is present in both documents.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v06.xml")
@@ -784,7 +783,7 @@ fn ibm11valid_p77ibm77v07xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v07.xml")
@@ -810,7 +809,7 @@ fn ibm11valid_p77ibm77v08xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v08.xml")
@@ -836,7 +835,7 @@ fn ibm11valid_p77ibm77v09xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v09.xml")
@@ -858,7 +857,7 @@ fn ibm11valid_p77ibm77v10xml() {
         Description:The VersionNum of the document and external entity is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xF6.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v10.xml")
@@ -880,7 +879,7 @@ fn ibm11valid_p77ibm77v11xml() {
         Description:The VersionNum of the document and external entity is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v11.xml")
@@ -902,7 +901,7 @@ fn ibm11valid_p77ibm77v12xml() {
         Description:The VersionNum of the document and external entity is 1.1 and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v12.xml")
@@ -928,7 +927,7 @@ fn ibm11valid_p77ibm77v13xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v13.xml")
@@ -954,7 +953,7 @@ fn ibm11valid_p77ibm77v14xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v14.xml")
@@ -980,7 +979,7 @@ fn ibm11valid_p77ibm77v15xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v15.xml")
@@ -1002,7 +1001,7 @@ fn ibm11valid_p77ibm77v16xml() {
         Description:The VersionNum of the document entity is 1.1 but the external entity does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #x2FF.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v16.xml")
@@ -1024,7 +1023,7 @@ fn ibm11valid_p77ibm77v17xml() {
         Description:The VersionNum of the document entity is 1.1 but the external entity does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #x1FFF.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v17.xml")
@@ -1046,7 +1045,7 @@ fn ibm11valid_p77ibm77v18xml() {
         Description:The VersionNum of the document entity is 1.1 but the external entity does not contain a textDecl and both contain the valid XML1.1 but invalid XML1.0 character #xF901.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v18.xml")
@@ -1072,7 +1071,7 @@ fn ibm11valid_p77ibm77v19xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v19.xml")
@@ -1098,7 +1097,7 @@ fn ibm11valid_p77ibm77v20xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v20.xml")
@@ -1124,7 +1123,7 @@ fn ibm11valid_p77ibm77v21xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v21.xml")
@@ -1146,7 +1145,7 @@ fn ibm11valid_p77ibm77v22xml() {
         Description:The VersionNum of the document and the external entity is 1.1. The entity contains a reference to the character #x7F.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v22.xml")
@@ -1168,7 +1167,7 @@ fn ibm11valid_p77ibm77v23xml() {
         Description:The VersionNum of the document and the external entity is 1.1. The entity contains a reference to the character #x80.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v23.xml")
@@ -1190,7 +1189,7 @@ fn ibm11valid_p77ibm77v24xml() {
         Description:The VersionNum of the document and the external entity is 1.1. The entity contains a reference to the character #x9F.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v24.xml")
@@ -1216,7 +1215,7 @@ fn ibm11valid_p77ibm77v25xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v25.xml")
@@ -1242,7 +1241,7 @@ fn ibm11valid_p77ibm77v26xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v26.xml")
@@ -1268,7 +1267,7 @@ fn ibm11valid_p77ibm77v27xml() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v27.xml")
@@ -1290,7 +1289,7 @@ fn ibm11valid_p77ibm77v28xml() {
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external entity. The replacement text of an entity declared in the external DTD contains a reference to the character #x7F, #x80, #x9F.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v28.xml")
@@ -1312,7 +1311,7 @@ fn ibm11valid_p77ibm77v29xml() {
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external entity. The replacement text of an entity declared in the external DTD contains a reference to the character #x85, #x8F.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v29.xml")
@@ -1334,7 +1333,7 @@ fn ibm11valid_p77ibm77v30xml() {
         Description:The VersionNum of the document is 1.1 and the textDecl is missing in the external entity. The replacement text of an entity declared in the external DTD contains a reference to the character #x1, #x7F.
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P77/ibm77v30.xml")

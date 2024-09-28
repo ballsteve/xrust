@@ -24,11 +24,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -36,7 +36,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -65,11 +65,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -77,7 +77,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -107,11 +107,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -119,7 +119,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -149,11 +149,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -161,7 +161,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -191,11 +191,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -203,7 +203,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -233,11 +233,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -245,7 +245,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -276,11 +276,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -288,7 +288,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -319,11 +319,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("NotATest")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("NotATest"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -331,7 +331,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -361,11 +361,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -373,7 +373,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -402,11 +402,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -414,7 +414,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -444,11 +444,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -456,7 +456,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -485,11 +485,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -497,7 +497,7 @@ where
         .expect("unable to create text node");
     a.push(t_a).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd
@@ -528,11 +528,11 @@ where
     // Setup a source document
     let mut sd = make_empty_doc();
     let mut t = sd
-        .new_element(QualifiedName::new(None, None, String::from("Test")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
         .expect("unable to create element");
     sd.push(t.clone()).expect("unable to append child");
     let mut a = sd
-        .new_element(QualifiedName::new(None, None, String::from("a")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
         .expect("unable to create element");
     t.push(a.clone()).expect("unable to append child");
     let t_a = sd
@@ -540,7 +540,7 @@ where
         .expect("unable to create text node");
     a.push(t_a.clone()).expect("unable to append text node");
     let mut b = sd
-        .new_element(QualifiedName::new(None, None, String::from("b")))
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
         .expect("unable to create element");
     t.push(b.clone()).expect("unable to append child");
     let t_b = sd

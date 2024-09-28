@@ -1,8 +1,8 @@
 use std::collections::HashMap;
-use std::rc::Rc;
-use crate::{Error, Item};
-use crate::trees::smite::{Node as SmiteNode, RNode};
-use crate::parser::xml::{parse as xmlparse, parse_with_ns};
+use crate::xdmerror::Error;
+use crate::item::{Node, Item};
+use crate::trees::smite::RNode;
+use crate::parser::xml::{parse as xmlparse};
 use crate::transform::context::{StaticContextBuilder};
 use crate::xslt::from_document;
 
@@ -15,8 +15,6 @@ pub(crate) enum PatternError<'a>{
     MissingName,
     Other(&'a str)
 }
-
-type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 
 pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>), PatternError> {
     //TODO implement
@@ -516,23 +514,22 @@ pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>
 
 </xsl:stylesheet>"#;
 
-    let (styledoc, stylens) = parse_from_str_with_ns(patternprepper).expect("TODO: panic message");
+    let styledoc = parse_from_str(patternprepper).expect("TODO: panic message");
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
-        .parser(|_s| Ok(Rc::new(SmiteNode::new())))
-        .fetcher(|url| Ok(String::new()))
+        .parser(|_s| Ok(RNode::new_document()))
+        .fetcher(|_url| Ok(String::new()))
         .build();
-    let mut c = from_document(
+    let c = from_document(
         styledoc,
-        stylens,
         None,
-        |s| Ok(Rc::new(SmiteNode::new())),
+        |_s| Ok(RNode::new_document()),
         |_| Ok(String::new()),
     );
     match c {
         Ok(mut ctxt) => {
             ctxt.context(vec![Item::Node(schemadoc.clone())], 0);
-            ctxt.result_document(Rc::new(SmiteNode::new()));
+            ctxt.result_document(RNode::new_document());
             ctxt.populate_key_values(&mut stctxt, schemadoc.clone()).expect("TODO: panic message");
             let rest =  ctxt.evaluate(&mut stctxt);
             println!("res-{:?}",rest);
@@ -554,17 +551,11 @@ pub(super) fn prepare(schemadoc: &RNode) -> Result<(RNode, HashMap<String,RNode>
 
          */
     //println!("res-{:?}",rest);
-    Ok((Rc::new(SmiteNode::new()), HashMap::new()))
+    Ok((RNode::new_document(), HashMap::new()))
 }
 
 fn parse_from_str(s: &str) -> Result<RNode, Error> {
-    let doc = Rc::new(SmiteNode::new());
+    let doc = RNode::new_document();
     xmlparse(doc.clone(), s, None)?;
     Ok(doc)
-}
-
-fn parse_from_str_with_ns(s: &str) -> Result<(RNode, Vec<HashMap<String, String>>), Error> {
-    let doc = Rc::new(SmiteNode::new());
-    let r = parse_with_ns(doc.clone(), s, None)?;
-    Ok(r)
 }

@@ -6,9 +6,9 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use std::rc::Rc;
 use xrust::parser::{xml, ParserConfig};
-use xrust::trees::smite::Node as SmiteNode;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmt001() {
@@ -23,7 +23,7 @@ fn rmt001() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/001.xml")
@@ -48,7 +48,7 @@ fn rmt002() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/002.xml")
@@ -73,7 +73,7 @@ fn rmt003() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/003.xml")
@@ -98,7 +98,7 @@ fn rmt004() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/004.xml")
@@ -123,7 +123,7 @@ fn rmt005() {
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/xml-1.1/".to_string());
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/005.xml")
@@ -145,7 +145,7 @@ fn rmt011() {
         Description:Contains a C1 control, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/011.xml")
@@ -166,7 +166,7 @@ fn rmt013() {
         Description:Contains a DEL, legal in XML 1.0, illegal in XML 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/013.xml")
@@ -193,7 +193,7 @@ fn rmt014() {
         Description:Has a "long s" in a name, legal in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/014.xml")
@@ -221,7 +221,7 @@ fn rmt016() {
         Description:Has a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/016.xml")
@@ -249,7 +249,7 @@ fn rmt019() {
         Description:Has the last legal namechar in XML 1.1, illegal in XML 1.0 thru 4th edition
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/019.xml")
@@ -271,7 +271,7 @@ fn rmt020() {
         Description:Has the first character after the last legal namechar in XML 1.1, illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/020.xml")
@@ -292,7 +292,7 @@ fn rmt021() {
         Description:Has the first character after the last legal namechar in XML 1.1, illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/021.xml")
@@ -313,7 +313,7 @@ fn rmt038() {
         Description:Contains a C0 control character (form-feed), illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/038.xml")
@@ -334,7 +334,7 @@ fn rmt039() {
         Description:Contains a C0 control character (form-feed), illegal in both XML 1.0 and 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/039.xml")
@@ -356,7 +356,7 @@ fn rmt041() {
         Description:Contains a C1 control character (partial line up), legal in XML 1.0 but not 1.1
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/041.xml")
@@ -377,7 +377,7 @@ fn rmt042() {
         Description:Contains a character reference to a C0 control character (form-feed), legal in XML 1.1 but not 1.0
     */
 
-    let testxml = Rc::new(SmiteNode::new());
+    let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/xml-1.1/042.xml")
