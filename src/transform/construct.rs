@@ -21,6 +21,7 @@ pub(crate) fn literal<N: Node>(_ctxt: &Context<N>, val: &Item<N>) -> Result<Sequ
 }
 
 /// Creates a singleton sequence with a new element node.
+/// Also create a Namespace node, if required.
 /// The transform is evaluated to create the content of the element.
 pub(crate) fn literal_element<
     N: Node,
@@ -42,11 +43,22 @@ pub(crate) fn literal_element<
     let r = ctxt.rd.clone().unwrap();
 
     let mut e = r.new_element(qn.clone())?;
+
+    // If the element is in a namespace, check if the namespace is in scope.
+    // If not, create and add a Namespace node for that namespace.
+    // Issue: the tree is being created from the bottom up, so we can't know if an ancestor will declare the namespace.
+    // This will result in lots of redundant Namespace nodes.
+    if let Some(ns) = qn.namespace_uri() {
+        e.add_namespace(r.new_namespace(ns, qn.prefix())?)?;
+    }
+
+    // Create the content of the new element
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
         // Item could be a Node or text
         match i {
             Item::Node(t) => match t.node_type() {
-                NodeType::Attribute => e.add_attribute(t.clone()),
+                NodeType::Attribute => e.add_attribute(t.clone()), // TODO: Also check namespace of attribute
+                NodeType::Namespace => e.add_namespace(t.clone()),
                 _ => e.push(t.deep_copy()?),
             },
             _ => {
@@ -56,6 +68,9 @@ pub(crate) fn literal_element<
             }
         }
     })?;
+
+    // TODO: remove redundant namespace declarations from the newly added child elements
+
     Ok(vec![Item::Node(e)])
 }
 

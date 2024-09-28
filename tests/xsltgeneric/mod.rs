@@ -606,9 +606,9 @@ where
         make_doc,
     )?;
     if result.to_xml()
-        == r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd' xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>
-    <int:head>XSLT in Rust</int:head>
-    <int:body>A simple document.</int:body>
+        == r#"<dat:dataPack xmlns:dat='http://www.stormware.cz/schema/version_2/data.xsd'>
+    <int:head xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>XSLT in Rust</int:head>
+    <int:body xmlns:int='http://www.stormware.cz/schema/version_2/intDoc.xsd'>A simple document.</int:body>
 </dat:dataPack>"# {
         Ok(())
     } else {
