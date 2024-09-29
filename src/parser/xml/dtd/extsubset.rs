@@ -9,7 +9,7 @@ use crate::parser::xml::dtd::attlistdecl::attlistdecl;
 use crate::parser::xml::dtd::conditionals::conditionalsect;
 use crate::parser::xml::dtd::elementdecl::elementdecl;
 use crate::parser::xml::dtd::gedecl::gedecl;
-use crate::parser::xml::dtd::notation::ndatadecl;
+use crate::parser::xml::dtd::notation::NotationDecl;
 use crate::parser::xml::dtd::pedecl::pedecl;
 use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::dtd::textdecl::textdecl;
@@ -46,7 +46,7 @@ pub(crate) fn extsubsetdecl<N: Node>(
         attlistdecl(),
         pedecl(),
         gedecl(),
-        ndatadecl(),
+        NotationDecl(),
         whitespace1(),
         map(comment(), |_| ()),
         map(processing_instruction(), |_| ()),

@@ -18,7 +18,7 @@ fn validextsa001() {
         Test ID:valid-ext-sa-001
         Test URI:valid/ext-sa/001.xml
         Spec Sections:2.11
-        Description:A combination of carriage return line feed in an external entity mustbe normalized to a single newline.
+        Description:A combination of carriage return line feed in an external entity must be normalized to a single newline.
     */
 
     let mut pc = ParserConfig::new();
