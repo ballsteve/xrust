@@ -16,6 +16,8 @@ use crate::parser::xml::misc::{comment, processing_instruction};
 use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
+use crate::qname::QualifiedName;
+use crate::xmldecl::DefaultDecl;
 
 // Element ::= EmptyElemTag | STag content ETag
 pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
@@ -49,12 +51,53 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                     && elementname.prefix_to_string().is_some(){
                     return Err(ParseError::MissingNameSpace);
                 }
-                let e = state1
+                let d = state1
                     .doc
                     .clone()
-                    .unwrap()
+                    .unwrap();
+                let e = d
                     .new_element(elementname)
                     .expect("unable to create element");
+
+                //Looking up the DTD, seeing if there are any attributes we should populate
+                //Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
+                if state1.attr_defaults {
+                    match state1.dtd.attlists.get(&QualifiedName::new_from_values(None, n.prefix(), n.localname())){
+                        None => {
+
+                        }
+                        Some(atts) => {
+                            for (mut attname, (_, defdecl, _)) in atts.iter(){
+                                match defdecl {
+                                    DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
+                                        let mut at = attname.clone();
+                                        match at.prefix() {
+                                            None => {}
+                                            Some(_) => {
+                                                if at.resolve(|p| state1.namespace.get(&p).map_or(
+                                                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
+                                                    |r| Ok(r.clone())
+                                                )).is_err() {
+                                                    return Err(ParseError::MissingNameSpace);
+                                                }
+                                            }
+                                        }
+                                        let newattr = d.new_attribute(
+                                            Rc::new(at),
+                                            Rc::new(Value::String(s.clone()))
+                                        ).expect("unable to create attlist attribute");
+                                        e.add_attribute(newattr)
+                                            .expect("unable to add attlist attribute");
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //This will overwrite any attributes added above
+                //TODO merge into a single set of attributes before creating.
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
                 namespaces.iter().for_each(|nn| e.add_namespace(nn.clone()).expect("unable to add namespace node"));
@@ -109,6 +152,46 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                 let mut e = d
                     .new_element(elementname)
                     .expect("unable to create element");
+
+                //Looking up the DTD, seeing if there are any attributes we should populate
+                //Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
+                if state1.attr_defaults {
+                    match state1.dtd.attlists.get(&QualifiedName::new_from_values(None, n.prefix(), n.localname())){
+                        None => {
+
+                        }
+                        Some(atts) => {
+                            for (mut attname, (_, defdecl, _)) in atts.iter(){
+                                match defdecl {
+                                    DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
+                                        let mut at = attname.clone();
+                                        match at.prefix() {
+                                            None => {}
+                                            Some(_) => {
+                                                if at.resolve(|p| state1.namespace.get(&p).map_or(
+                                                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
+                                                    |r| Ok(r.clone())
+                                                )).is_err() {
+                                                    return Err(ParseError::MissingNameSpace);
+                                                }
+                                            }
+                                        }
+                                        let newattr = d.new_attribute(
+                                            Rc::new(at),
+                                            Rc::new(Value::String(s.clone()))
+                                        ).expect("unable to create attlist attribute");
+                                        e.add_attribute(newattr)
+                                            .expect("unable to add attlist attribute");
+                                    }
+                                    _ => {}
+                                }
+                            }
+                        }
+                    }
+                }
+
+                //This will overwrite any attributes added above
+                //TODO merge into a single set of attributes before creating.
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
                 namespaces.iter()

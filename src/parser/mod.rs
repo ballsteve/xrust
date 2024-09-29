@@ -60,54 +60,10 @@ pub struct ParserConfig {
     /// Recursive entity depth, please note that setting this to a high value may leave
     /// you prone to the "billion laughs" attack. Set to eight by default.
     pub entitydepth: usize,
-    ///        Description: The XDM3 specifies that namespace nodes are optional, and only really required
-    ///        if you intend to implement the namespace axis.
-    ///
-    ///        Consider a document like:
-    ///
-    ///        \<doc
-    ///              xmlns:a="namespace1"
-    ///              xmlns:b="namespace2"
-    ///              xmlns:c="namespace3"
-    ///              xmlns:d="namespace4"
-    ///              xmlns:e="namespace5"
-    ///          \>
-    ///          \<element1/\>
-    ///          \<element2/\>
-    ///          \<element3/\>
-    ///          \<!-- cut --\>
-    ///          \<element4998/\>
-    ///          \<element4999/\>
-    ///          \<element5000/\>
-    ///        \</doc\>
-    ///
-    ///        If the parser were to create all the namespace nodes required for the above document,
-    ///        we would need to create tens of thousands of nodes that may not serve any purpose.
-    ///
-    ///        The namespace_nodes value is false by default, set it to true for the parser to create the
-    ///        proper namespace nodes on each element.
-    ///
-    ///        However, we do want to track namespaces for custom function declarations, a document like:
-    ///
-    ///        \<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform"
-    ///                        xmlns:xs="http://www.w3.org/2001/XMLSchema"
-    ///                        xmlns:xr="xRust"
-    ///                        \>
-    ///            \<xsl:function name="xr:myfun" as="xs:integer"\>
-    ///                \<xsl:param name="input" as="xs:integer"/\>
-    ///                \<xsl:value-of select="$input + 2"/\>
-    ///            \</xsl:function\>
-    ///        \</xsl:stylesheet\>
-    ///
-    ///        still needs to track the "xRust" namespace.
-    ///
-    ///        For this reason, regardless of the configured setting, namespace nodes will still be created
-    ///        for each element where a namespace has been declared.
-    ///
-    ///        If this setting is true, the "xml" namespace node (http://www.w3.org/XML/1998/namespace)
-    ///        will be added regardless of it being declared or not.
-    ///
-    pub namespace_nodes: bool,
+    /// Creates attributes as specified in ATTLIST declarations in the DTD. Currently only adds
+    /// attributes where a default or fixed value is declared, does not enforce anything.
+    /// Set to true by default.
+    pub attr_defaults: bool,
 }
 
 impl Default for ParserConfig {
@@ -120,8 +76,8 @@ impl ParserConfig {
         ParserConfig {
             ext_dtd_resolver: None,
             docloc: None,
-            namespace_nodes: false,
             entitydepth: 8,
+            attr_defaults: true
         }
     }
 }
@@ -134,6 +90,8 @@ pub struct ParserState<N: Node> {
     cur: Option<N>,
 
     dtd: DTD,
+    // Do we add DTD specified attributes or not
+    attr_defaults: bool,
     /*
         The in-scope namespaces are tracked in a hashmap.
         This is used during XML document creation.
@@ -150,8 +108,6 @@ pub struct ParserState<N: Node> {
     interned_values: Rc<RefCell<HashMap<String, Rc<Value>>>>,
     // Intern QualifiedNames. Map (Option<Namespace URI>, local-part) -> QN
     interned_names: Rc<RefCell<HashMap<(Option<Rc<Value>>, Rc<Value>), Rc<QualifiedName>>>>,
-    /* Do we add the parents namespace nodes to an element? */
-    namespace_nodes: bool,
     standalone: bool,
     xmlversion: String,
     /*
@@ -175,6 +131,7 @@ pub struct ParserState<N: Node> {
     so we need to track when we are currently in the main document or outside it.
      */
     currentlyexternal: bool,
+
 }
 
 impl<N: Node> ParserState<N> {
@@ -201,8 +158,8 @@ impl<N: Node> ParserState<N> {
                 (String::from("http://www.w3.org/XML/1998/namespace"), xnsuri.clone()),
             ]))),
             interned_names: Rc::new(RefCell::new(HashMap::new())),
-            namespace_nodes: pc.namespace_nodes,
             maxentitydepth: pc.entitydepth,
+            attr_defaults: pc.attr_defaults,
             currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,

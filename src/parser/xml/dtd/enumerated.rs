@@ -1,3 +1,4 @@
+use crate::xmldecl::AttType;
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::many::many0;
@@ -11,21 +12,31 @@ use crate::parser::{ParseError, ParseInput};
 
 //EnumeratedType ::= NotationType | Enumeration
 pub(crate) fn enumeratedtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
     alt2(notationtype(), enumeration())
 }
 
 //Enumeration ::= '(' S? Nmtoken (S? '|' S? Nmtoken)* S? ')'
-fn enumeration<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+fn enumeration<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
     map(
         tuple6(
             tag("("),
             whitespace0(),
             nmtoken(),
-            many0(tuple4(whitespace0(), tag("|"), whitespace0(), nmtoken())),
+            many0(
+                map(
+                    tuple4(whitespace0(), tag("|"), whitespace0(), nmtoken()),
+                    |(_,_,_,nmt)| {
+                        nmt
+                    }
+                )
+            ),
             whitespace0(),
             tag(")"),
         ),
-        |_x| (),
+        |(_,_,nm, mut nms,_,_)|{
+            nms.push(nm);
+            AttType::ENUMERATION(nms)
+        }
     )
 }
