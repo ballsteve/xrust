@@ -789,7 +789,7 @@ impl Node {
 	Ok(())
     }
 
-    /// Creates an interator for the ancestors of this node.
+    /// Creates an iterator for the ancestors of this node.
     pub fn ancestor_iter(&self) -> Ancestors {
 	Ancestors::new(self.0, self.1)
     }

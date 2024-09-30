@@ -20,7 +20,7 @@ use std::rc::Rc;
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
-/// The Rust impementation is a Vector of reference counted [Item]s.
+/// The Rust implementation is a Vector of reference counted [Item]s.
 ///
 /// See [SequenceTrait] for methods.
 pub type Sequence<N> = Vec<Item<N>>;

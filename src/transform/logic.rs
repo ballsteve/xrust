@@ -99,7 +99,7 @@ pub(crate) fn general_comparison<
     Ok(vec![Item::Value(Rc::new(Value::from(b)))])
 }
 
-/// Value comparison of two singelton sequences.
+/// Value comparison of two singleton sequences.
 pub(crate) fn value_comparison<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
