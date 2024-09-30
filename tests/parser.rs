@@ -26,7 +26,7 @@ fn parser_config_namespace_nodes_1() {
                  </element5>
              </doc>"#;
 
-    let mut pc = ParserConfig::new();
+    let pc = ParserConfig::new();
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(testxml, doc, Some(pc));
@@ -69,7 +69,7 @@ fn parser_config_default_attrs_1() {
     ]>
     <doc/>"#;
 
-    let mut pc1 = ParserConfig::new();
+    let  pc1 = ParserConfig::new();
     let testxml1 = RNode::new_document();
     let parseresult1 = xml::parse(testxml1, doc, Some(pc1));
 

@@ -171,6 +171,7 @@ where
     }
 }
 
+#[allow(dead_code)]
 pub(crate) fn alt7<P1, P2, P3, P4, P5, P6, P7, A, N: Node>(
     parser1: P1,
     parser2: P2,

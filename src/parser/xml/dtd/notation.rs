@@ -91,7 +91,7 @@ pub(crate) fn notationpublicid<N: Node>(
     )
 }
 
-pub(crate) fn NotationDecl<N: Node>(
+pub(crate) fn notation_decl<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple7(
         tag("<!NOTATION"),
@@ -115,6 +115,7 @@ pub(crate) fn NotationDecl<N: Node>(
     }
 }
 
+#[allow(dead_code)]
 pub(crate) fn ndatadecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
 {
     map(

@@ -1,8 +1,7 @@
 use std::fs;
-use std::rc::Rc;
 use xrust::Node;
 use xrust::parser::xml;
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 
 #[test]
 fn serializer_issue_98() {
