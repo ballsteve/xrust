@@ -956,7 +956,7 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 }
 
 // This handles the XML serialisation of the document.
-// "indent" is the current level of identation.
+// "indent" is the current level of indentation.
 fn to_xml_int(
     node: &RNode,
     od: &OutputDefinition,
