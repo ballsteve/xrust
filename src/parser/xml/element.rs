@@ -67,7 +67,7 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
 
                         }
                         Some(atts) => {
-                            for (mut attname, (_, defdecl, _)) in atts.iter(){
+                            for (attname, (_, defdecl, _)) in atts.iter(){
                                 match defdecl {
                                     DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
                                         let mut at = attname.clone();
@@ -161,7 +161,7 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
 
                         }
                         Some(atts) => {
-                            for (mut attname, (_, defdecl, _)) in atts.iter(){
+                            for (attname, (_, defdecl, _)) in atts.iter(){
                                 match defdecl {
                                     DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
                                         let mut at = attname.clone();

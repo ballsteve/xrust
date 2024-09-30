@@ -52,11 +52,13 @@ use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
-use std::collections::hash_map::IntoIter;
-use std::collections::HashMap;
+use std::collections::btree_map::IntoIter;
+use std::collections::BTreeMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
+use crate::qname;
+use crate::trees::smite;
 
 /// A node in a tree.
 pub type RNode = Rc<Node>;
@@ -70,9 +72,9 @@ enum NodeInner {
     Element(
         RefCell<Weak<Node>>, // Parent: must be a Document or an Element
         Rc<QualifiedName>,   // name
-        RefCell<HashMap<Rc<QualifiedName>, RNode>>, // attributes
+        RefCell<BTreeMap<Rc<QualifiedName>, RNode>>, // attributes
         RefCell<Vec<RNode>>, // children
-        Rc<RefCell<HashMap<Option<Rc<Value>>, RNode>>>, // namespace declarations
+        Rc<RefCell<BTreeMap<Option<Rc<Value>>, RNode>>>, // namespace declarations
     ),
     Text(RefCell<Weak<Node>>, Rc<Value>),
     Attribute(RefCell<Weak<Node>>, Rc<QualifiedName>, Rc<Value>),
@@ -341,9 +343,9 @@ impl ItemNode for RNode {
         let child = Rc::new(Node(NodeInner::Element(
             RefCell::new(Rc::downgrade(&self.owner_document())),
             qn,
-            RefCell::new(HashMap::new()),
+            RefCell::new(BTreeMap::new()),
             RefCell::new(vec![]),
-            Rc::new(RefCell::new(HashMap::new())),
+            Rc::new(RefCell::new(BTreeMap::new())),
         )));
         unattached(self, child.clone());
         Ok(child)
@@ -457,7 +459,7 @@ impl ItemNode for RNode {
                     Some(p) => {
                         match &p.0 {
                             NodeInner::Element(_, _, _, _, namespaces) => {
-                                namespaces.borrow_mut().remove(prefix).ok_or(Error::new(
+                                namespaces.borrow_mut().remove_entry(prefix).ok_or(Error::new(
                                     ErrorKind::DynamicAbsent,
                                     String::from("unable to find namespace"),
                                 ))?;
@@ -633,7 +635,7 @@ impl ItemNode for RNode {
                 let new = Rc::new(Node(NodeInner::Element(
                     p.clone(),
                     qn.clone(),
-                    RefCell::new(HashMap::new()),
+                    RefCell::new(BTreeMap::new()),
                     RefCell::new(vec![]),
                     ns.clone(),
                 )));
@@ -812,7 +814,7 @@ impl Debug for Node {
     }
 }
 
-fn format_attrs(ats: &HashMap<Rc<QualifiedName>, RNode>) -> String {
+fn format_attrs(ats: &BTreeMap<Rc<QualifiedName>, RNode>) -> String {
     let mut result = String::new();
     ats.iter()
         .for_each(|(k, v)| result.push_str(format!(" {}='{}'", k, v.to_string()).as_str()));
@@ -1181,8 +1183,8 @@ impl Iterator for Siblings {
     }
 }
 
-pub struct Attributes {
-    it: Option<IntoIter<Rc<QualifiedName>, RNode>>,
+pub struct Attributes{
+    it: Option<<BTreeMap<Rc<qname::QualifiedName>, Rc<smite::Node>> as IntoIterator>::IntoIter>
 }
 impl Attributes {
     fn new(n: &RNode) -> Self {

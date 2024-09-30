@@ -424,6 +424,35 @@ impl PartialOrd for Value {
     }
 }
 
+//This is ONLY being used for namespace node sorting for the purposes of serializing
+//Feel free to change it.
+//We can change between versions, so long as each execution on that version is consistent.
+impl Ord for Value {
+    fn cmp(&self, other: &Value) -> Ordering {
+        match self {
+            Value::String(s) => {
+                let o: String = other.to_string();
+                s.cmp(&o)
+            }
+            Value::Boolean(_) => Ordering::Equal,
+            Value::Decimal(d) => match other {
+                Value::Decimal(e) => d.cmp(e),
+                _ => Ordering::Equal, // type error?
+            },
+            Value::Integer(d) => match other {
+                Value::Integer(e) => d.cmp(e),
+                _ => Ordering::Equal, // type error?
+            },
+            Value::Double(d) => match other {
+                Value::Double(e) => d.partial_cmp(e).unwrap_or_else(|| Ordering::Equal),
+                _ => Ordering::Equal, // type error?
+            },
+            _ => Ordering::Equal,
+        }
+    }
+}
+
+
 impl From<String> for Value {
     fn from(s: String) -> Self {
         Value::String(s)
