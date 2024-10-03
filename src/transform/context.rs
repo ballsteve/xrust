@@ -196,13 +196,13 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
-    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::trees::smite::RNode;
     /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   let mut d = RNode::new_document();
     ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
@@ -324,12 +324,12 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
-    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::trees::smite::RNode;
     /// use xrust::parser::xml::parse;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   let mut d = RNode::new_document();
     ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
@@ -595,8 +595,8 @@ where
 /// use xrust::{Error, ErrorKind};
 /// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
-/// use xrust::item::{Item, Sequence, SequenceTrait, NodeType};
-/// use xrust::trees::smite::{RNode, Node};
+/// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
+/// use xrust::trees::smite::RNode;
 /// use xrust::transform::Transform;
 /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 ///
@@ -614,7 +614,7 @@ where
 ///   ]))
 /// );
 /// let mut context = ContextBuilder::new()
-///    .result_document(Rc::new(Node::new()))
+///    .result_document(RNode::new_document())
 ///    .build();
 /// let mut static_context = StaticContextBuilder::new()
 ///    .message(|m| {message = String::from(m); Ok(())})
