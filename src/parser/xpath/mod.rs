@@ -26,7 +26,7 @@ use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticCo
 let t = parse("/child::A/child::B/child::C", None)
     .expect("unable to parse XPath expression");
 
-let source = RNode::new_document();;
+let source = RNode::new_document();
 xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
     .expect("unable to parse XML");
 let mut static_context = StaticContextBuilder::new()
