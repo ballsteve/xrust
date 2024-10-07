@@ -20,15 +20,17 @@ let p: Pattern<N> = Pattern::try_from("child::foobar")
 An [Item] can then be tested to see if it matches the [Pattern]. To do that, it is necessary to have a transformation [Context].
 
 ```rust
-# use std::rc::Rc;use xrust::ErrorKind;
+# use std::rc::Rc;
+# use xrust::ErrorKind;
 # use xrust::xdmerror::Error;
 # use xrust::item::{Item, NodeType};
 # use xrust::pattern::Pattern;
 # use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
-# use xrust::trees::smite::{RNode, Node};
+# use xrust::Node;
+# use xrust::trees::smite::RNode;
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 let p = Pattern::try_from("/").expect("unable to compile pattern");
-let n = Item::Node(Rc::new(Node::new()));
+let n = Item::Node(RNode::new_document());
 
 // Create a static context
 let mut static_context = StaticContextBuilder::new()
@@ -47,10 +49,11 @@ assert_eq!(p.matches(&Context::new(), &mut static_context, &n), true)
 # use xrust::item::{Item, NodeType};
 # use xrust::pattern::Pattern;
 # use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
-# use xrust::trees::smite::{RNode, Node};
+# use xrust::Node;
+# use xrust::trees::smite::RNode;
 # type F = Box<dyn FnMut(&str) -> Result<(), Error>>;
 let p = Pattern::try_from("child::foobar").expect("unable to compile pattern");
-let n = Item::Node(Rc::new(Node::new()));
+let n = Item::Node(RNode::new_document());
 // Create a static context
 # let mut static_context = StaticContextBuilder::new()
 #    .message(|_| Ok(()))

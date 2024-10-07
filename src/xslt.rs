@@ -13,13 +13,13 @@ use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
 use xrust::transform::context::{StaticContext, StaticContextBuilder};
-use xrust::trees::smite::{RNode, Node as SmiteNode};
+use xrust::trees::smite::RNode;
 use xrust::parser::xml::parse;
 use xrust::xslt::from_document;
 
 // A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let doc = Rc::new(SmiteNode::new());
+    let doc = RNode::new_document();
     let e = parse(doc.clone(), s, None)?;
     Ok(doc)
 }
@@ -56,7 +56,7 @@ let mut ctxt = from_document(
 // Set the source document as the context item
 ctxt.context(vec![src], 0);
 // Make an empty result document
-ctxt.result_document(Rc::new(SmiteNode::new()));
+ctxt.result_document(RNode::new_document());
 
 // Let 'er rip!
 // Evaluate the transformation
