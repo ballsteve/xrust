@@ -6,7 +6,7 @@ An XPath expression parser using the xrust parser combinator that produces a xru
 use xrust::parser::xpath::parse;
 # use xrust::item::Node;
 # fn do_parse<N: Node>() {
-let t = parse::<N>("/child::A/child::B/child::C").expect("unable to parse XPath expression");
+let t = parse::<N>("/child::A/child::B/child::C", None).expect("unable to parse XPath expression");
 # }
 ```
 
@@ -23,10 +23,10 @@ use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 
-let t = parse("/child::A/child::B/child::C")
+let t = parse("/child::A/child::B/child::C", None)
     .expect("unable to parse XPath expression");
 
-let source = Rc::new(SmiteNode::new());
+let source = RNode::new_document();;
 xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
     .expect("unable to parse XML");
 let mut static_context = StaticContextBuilder::new()
