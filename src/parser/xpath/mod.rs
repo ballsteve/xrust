@@ -18,7 +18,7 @@ To evaluate the transformation we need a Context with a source document as its c
 # use std::rc::Rc;
 # use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};

@@ -1375,6 +1375,34 @@ where
     Ok(())
 }
 
+pub fn generic_navigate_predicate_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let sd = make_doc();
+    if let Item::Node(d) = sd {
+        let xform = parse("../*[@id eq 'b6']", None).expect("parsing failed");
+        let mut stctxt = StaticContextBuilder::new()
+            .message(|_| Ok(()))
+            .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .build();
+        let s = ContextBuilder::new()
+            .context(vec![Item::Node(d.first_child().unwrap().first_child().unwrap())])
+            .result_document(rd)
+            .build()
+            .dispatch(&mut stctxt, &xform).expect("transform failed");
+        s.iter().for_each(|x| eprintln!("got item {:?}", x));
+        assert_eq!(s.len(), 1);
+        assert_eq!(s[0].name().to_string(), "b");
+        Ok(())
+    } else {
+        panic!("unable to unpack node")
+    }
+}
+
 // System properties
 
 pub fn generic_sys_prop_vers_qual<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
