@@ -4715,6 +4715,7 @@ fn ibmvalid_p66ibm66v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+    eprintln!("left=='{:?}' right=='{:?}'", parseresult.clone().unwrap().get_canonical().unwrap(), canonicalparseresult.clone().unwrap());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
         canonicalparseresult.unwrap()

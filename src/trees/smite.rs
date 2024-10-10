@@ -125,6 +125,7 @@ impl PartialEq for Node {
     fn eq(&self, other: &Self) -> bool {
         match (&self.0, &other.0) {
             (NodeInner::Document(_, c, _), NodeInner::Document(_, d, _)) => {
+                eprintln!("smite eq two docs");
                 c.borrow()
                     .iter()
                     .zip(d.borrow().iter())
@@ -142,6 +143,7 @@ impl PartialEq for Node {
                 NodeInner::Element(_, name, atts, c, _),
                 NodeInner::Element(_, o_name, o_atts, d, _),
             ) => {
+                eprintln!("smite eq two elements - {} vs {}", name.to_string(), o_name.to_string());
                 if name == o_name {
                     // Attributes must match
                     let b_atts = atts.borrow();
@@ -181,7 +183,9 @@ impl PartialEq for Node {
                     false
                 }
             }
-            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => v == u,
+            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => {
+                eprintln!("smite eq two texts - are same? {:?}", v == u);
+                v == u},
             (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
                 if name == o_name {
                     v == o_v
