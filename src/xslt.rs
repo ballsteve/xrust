@@ -291,6 +291,8 @@ where
                             String::from("import"),
                         )),
                         Rc::new(Value::from(1)),
+                        false,
+                        false
                     )?;
                     newnode.add_attribute(newat)?;
                     c.insert_before(newnode)?;

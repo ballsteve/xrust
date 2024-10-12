@@ -62,6 +62,8 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                             .new_attribute(
                                 Rc::new(QualifiedName::new(None, None, attr_name.clone())),
                                 Rc::new(Value::from(attr_value.clone())),
+                                false,
+                                false
                             )
                             .expect("unable to create attribute node");
                         t.add_attribute(new_attr).expect("unable to append node");
@@ -76,6 +78,8 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                     .new_attribute(
                         Rc::new(QualifiedName::new(None, None, name.clone())),
                         Rc::new(Value::from(value.clone())),
+                        false,
+                        false
                     )
                     .expect("unable to create attribute node");
                 t.add_attribute(new).expect("unable to append node");

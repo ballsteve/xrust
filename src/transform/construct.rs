@@ -178,6 +178,8 @@ pub(crate) fn literal_attribute<
     let a = ctxt.rd.clone().unwrap().new_attribute(
         qn.clone(),
         Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
+        false, // is_id
+        false
     )?;
     Ok(vec![Item::Node(a)])
 }
@@ -266,12 +268,14 @@ pub(crate) fn set_attribute<
                 if attval.len() == 1 {
                     match attval.first() {
                         Some(Item::Value(av)) => {
-                            n.add_attribute(od.new_attribute(atname.clone(), av.clone())?)?;
+                            n.add_attribute(od.new_attribute(atname.clone(), av.clone(), false, false)?)?;
                         }
                         _ => {
                             n.add_attribute(od.new_attribute(
                                 atname.clone(),
                                 Rc::new(Value::from(attval.to_string())),
+                                false,
+                                false
                             )?)?;
                         }
                     }
@@ -279,6 +283,8 @@ pub(crate) fn set_attribute<
                     n.add_attribute(od.new_attribute(
                         atname.clone(),
                         Rc::new(Value::from(attval.to_string())),
+                        false,
+                        false
                     )?)?;
                 }
             }

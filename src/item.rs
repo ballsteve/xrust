@@ -431,6 +431,10 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn is_element(&self) -> bool {
         self.node_type() == NodeType::Element
     }
+    /// Check if a node is an XML ID
+    fn is_id(&self) -> bool;
+    /// Check if a node is an  XML IDREF or IDREFS
+    fn is_idrefs(&self) -> bool;
 
     /// An iterator over the children of the node
     fn child_iter(&self) -> Self::NodeIterator;
@@ -470,7 +474,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>, is_id: bool, is_idrefs: bool) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
