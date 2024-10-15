@@ -125,7 +125,6 @@ impl PartialEq for Node {
     fn eq(&self, other: &Self) -> bool {
         match (&self.0, &other.0) {
             (NodeInner::Document(_, c, _), NodeInner::Document(_, d, _)) => {
-                eprintln!("smite eq two docs");
                 c.borrow()
                     .iter()
                     .zip(d.borrow().iter())
@@ -143,7 +142,6 @@ impl PartialEq for Node {
                 NodeInner::Element(_, name, atts, c, _),
                 NodeInner::Element(_, o_name, o_atts, d, _),
             ) => {
-                eprintln!("smite eq two elements - {} vs {}", name.to_string(), o_name.to_string());
                 if name == o_name {
                     // Attributes must match
                     let b_atts = atts.borrow();
@@ -183,9 +181,7 @@ impl PartialEq for Node {
                     false
                 }
             }
-            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => {
-                eprintln!("smite eq two texts - are same? {:?}", v == u);
-                v == u},
+            (NodeInner::Text(_, v), NodeInner::Text(_, u)) => v == u,
             (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
                 if name == o_name {
                     v == o_v
@@ -693,6 +689,7 @@ impl ItemNode for RNode {
         })?;
         Ok(new)
     }
+    // For special character escaping rules, see section 3.4.
     fn get_canonical(&self) -> Result<Self, Error> {
         match &self.0 {
             NodeInner::Document(_, e, _) => {
@@ -709,10 +706,10 @@ impl ItemNode for RNode {
                 let mut w = v.clone();
                 if let Value::String(s) = (*v.clone()).clone() {
                     w = Rc::new(Value::String(
-                        s.replace("\r\n", "\n")
-                            .replace("\n\n", "\n")
-                            .replace("  ", " ")
-                            .to_string(),
+                        s.replace("&", "&amp;")
+                            .replace("<", "&lt;")
+                            .replace(">", "&gt;")
+                            .replace("\r", "&#D;")
                     ))
                 }
                 Ok(d.new_processing_instruction(qn.clone(), w)?)
@@ -725,11 +722,26 @@ impl ItemNode for RNode {
                 let d = self.owner_document();
                 let mut w = v.clone();
                 if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(s.replace("\r\n", "\n")))
+                    w = Rc::new(Value::String(
+                        s.replace("&", "&amp;")
+                        .replace("<", "&lt;")
+                        .replace(">", "&gt;")
+                        .replace("\r", "&#xD;")
+                    ))
                 }
                 Ok(d.new_text(w)?)
             }
-            NodeInner::Attribute(_, _, _) => self.shallow_copy(),
+            NodeInner::Attribute(_, qn, v) => {
+                //self.shallow_copy()
+                let d = self.owner_document();
+                let w = v.to_string();
+                Ok(d.new_attribute(qn.clone(), Rc::new(Value::String(w.replace("&", "&amp;")
+                    .replace("<", "&lt;")
+                    .replace("\"", "&quot;")
+                    .replace("\r", "&#xD;")
+                    .replace("\t", "&#x9;")
+                    .replace("\n", "&#xA;"))))?)
+            }
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
 
