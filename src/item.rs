@@ -139,6 +139,8 @@ impl<N: Node> From<Item<N>> for Sequence<N> {
 /// All [Node]s have a type. The type of the [Node] determines what components are meaningful, such as name and content.
 ///
 /// Every document must have a single node as it's toplevel node that is of type "Document".
+///
+/// Namespace nodes represent the declaration of an XML Namespace.
 #[derive(Copy, Clone, Eq, PartialEq, Debug, Default)]
 pub enum NodeType {
     Document,
@@ -380,7 +382,7 @@ impl<N: Node> fmt::Debug for Item<N> {
 /// Element nodes have children and attributes.
 ///
 /// Element nodes may have a Namespace node attached. This is the declaration of an XML Namespace.
-/// The namespace-iter() methods iterates over all in-scope namespaces, which will include namespaces that are declared on ancestor elements.
+/// The namespace-iter() method iterates over all in-scope namespaces, which will include namespaces that are declared on ancestor elements.
 ///
 /// Nodes must implement the PartialEq trait. This allows two (sub-)trees to be compared. The comparison is against the XML Infoset of each tree;
 /// i.e. do the trees contain the same information, but not necessarily the same string representation.
@@ -583,7 +585,7 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
         }
     }
     /// An iterator over the in-scope namespace nodes of an element.
-    /// Note: These nodes are calculated at the time the iterator is called,.
+    /// Note: These nodes are calculated at the time the iterator is created.
     /// It is not guaranteed that the namespace nodes returned
     /// will specify the current element node as their parent.
     fn namespace_iter(&self) -> Self::NodeIterator;
