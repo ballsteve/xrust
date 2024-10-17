@@ -101,3 +101,167 @@ fn parser_issue_94() {
 
     assert!(parseresult.is_ok())
 }
+
+#[test]
+fn parser_config_id_1() {
+
+    /*
+        Conformance tests will determine if the XML IDs are properly tracked by the parser,
+        this tests only that it can be disabled.
+    */
+
+    let doc = r#"<!DOCTYPE root [
+    <!ELEMENT doc ANY>
+    <!ELEMENT element1 EMPTY>
+    <!ATTLIST element1
+	id	ID	#IMPLIED
+	idref	IDREF	#IMPLIED
+	>
+]>
+<doc>
+    <element1 id="a1"/>
+    <element1 id="a1"/>
+</doc>
+"#;
+
+
+    let pc = ParserConfig::new();
+
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(testxml, doc, Some(pc));
+
+    assert!(parseresult.is_err());
+
+    let mut pc2 = ParserConfig::new();
+    pc2.id_tracking = false;
+
+    let testxml2 = RNode::new_document();
+    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+
+    assert!(parseresult2.is_ok());
+}
+
+#[test]
+fn parser_config_id_2() {
+
+    /*
+        Conformance tests will determine if the XML IDs are properly tracked by the parser,
+        this tests only that it can be disabled.
+    */
+
+    let doc = r#"<!DOCTYPE root [
+    <!ELEMENT doc ANY>
+    <!ELEMENT element1 EMPTY>
+    <!ATTLIST element1
+	id	ID	#IMPLIED
+	idref	IDREF	#IMPLIED
+	>
+]>
+<doc>
+    <element1 idref="a1"/>
+</doc>
+"#;
+
+
+    let pc = ParserConfig::new();
+
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(testxml, doc, Some(pc));
+
+    assert!(parseresult.is_err());
+
+    let mut pc2 = ParserConfig::new();
+    pc2.id_tracking = false;
+
+    let testxml2 = RNode::new_document();
+    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+
+    assert!(parseresult2.is_ok());
+}
+
+#[test]
+fn parser_config_id_3() {
+
+    /*
+        Conformance tests will determine if the XML IDs are properly tracked by the parser,
+        this tests only that it can be disabled.
+
+        When we disable XML ID tracking, the is-id and is-idrefs properties will not populate.
+    */
+
+    let doc = r#"<!DOCTYPE root [
+    <!ELEMENT doc ANY>
+    <!ATTLIST doc
+	id	ID	#IMPLIED
+	idref	IDREF	#IMPLIED
+	>
+]>
+<doc id="a1"/>
+"#;
+
+
+    let pc = ParserConfig::new();
+
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(testxml, doc, Some(pc));
+
+    assert!(parseresult.is_ok());
+    println!("{:?}",parseresult.clone().unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_id());
+    assert_eq!(parseresult.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_id(), true);
+
+    let mut pc2 = ParserConfig::new();
+    pc2.id_tracking = false;
+
+    let testxml2 = RNode::new_document();
+    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+
+    assert!(parseresult2.is_ok());
+    println!("{:?}",parseresult2.clone().unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_id());
+    assert_eq!(parseresult2.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_id(), false);
+
+}
+
+#[test]
+fn parser_config_id_4() {
+
+    /*
+        Conformance tests will determine if the XML IDs are properly tracked by the parser,
+        this tests only that it can be disabled.
+
+        When we disable XML ID tracking, the is-id and is-idrefs properties will not populate.
+    */
+
+    let doc = r#"<!DOCTYPE root [
+    <!ELEMENT doc ANY>
+    <!ATTLIST doc
+	idref	IDREF	#IMPLIED
+	>
+	<!ELEMENT element1 EMPTY>
+    <!ATTLIST element1
+	id	ID	#IMPLIED
+	>
+]>
+<doc idref="a1">
+    <element1 id="a1"/>
+</doc>
+"#;
+
+
+    let pc = ParserConfig::new();
+
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(testxml, doc, Some(pc));
+
+    assert!(parseresult.is_ok());
+    assert_eq!(parseresult.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_idrefs(), true);
+
+    let mut pc2 = ParserConfig::new();
+    pc2.id_tracking = false;
+
+    let testxml2 = RNode::new_document();
+    let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
+
+    assert!(parseresult2.is_ok());
+    assert_eq!(parseresult2.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_idrefs(), false);
+
+}

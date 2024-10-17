@@ -25,7 +25,7 @@ use crate::{Error, ErrorKind};
 pub(crate) fn attributes<N: Node>() -> impl Fn(
     ParseInput<N>,
 ) -> Result<
-    (ParseInput<N>, (Vec<N>, Vec<N>)),
+    (ParseInput<N>, (Vec<(QualifiedName, Rc<Value>)>, Vec<N>)),
     ParseError,
 > {
     move |input| match many0(attribute())(input) {
@@ -209,10 +209,11 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                             }
                         }
                     }
-                    let newatt = doc
-                        .new_attribute(Rc::new(qn.clone()), attrval)
-                        .expect("unable to create attribute");
-                    resnodes.push(newatt);
+                    /*
+                        We don't return fully completed attributes here because we need to do some
+                        DTD checking on the element to assign properties such as IS_ID to the attribute
+                    */
+                    resnodes.push((qn.clone(), attrval));
 
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
                     if resnodenames.contains(&(qn.namespace_uri(), qn.localname())) {

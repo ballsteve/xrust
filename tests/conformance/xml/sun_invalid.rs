@@ -362,7 +362,6 @@ fn id07() {
 }
 
 #[test]
-#[ignore]
 fn id08() {
     /*
         Test ID:id08
@@ -379,12 +378,10 @@ fn id08() {
             .as_str(),
         None,
     );
-
     assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore]
 fn id09() {
     /*
         Test ID:id09

@@ -77,7 +77,13 @@ enum NodeInner {
         Rc<RefCell<BTreeMap<Option<Rc<Value>>, RNode>>>, // namespace declarations
     ),
     Text(RefCell<Weak<Node>>, Rc<Value>),
-    Attribute(RefCell<Weak<Node>>, Rc<QualifiedName>, Rc<Value>),
+    Attribute(
+        RefCell<Weak<Node>>, // Parent: must be an element
+        Rc<QualifiedName>,   // name
+        Rc<Value>, // attribute value
+        bool, // is ID
+        bool, // is IDREF
+    ),
     Comment(RefCell<Weak<Node>>, Rc<Value>),
     ProcessingInstruction(RefCell<Weak<Node>>, Rc<QualifiedName>, Rc<Value>),
     Namespace(
@@ -186,7 +192,8 @@ impl PartialEq for Node {
             (NodeInner::Text(_, v), NodeInner::Text(_, u)) => {
                 eprintln!("smite eq two texts - are same? {:?}", v == u);
                 v == u},
-            (NodeInner::Attribute(_, name, v), NodeInner::Attribute(_, o_name, o_v)) => {
+            //TODO Check if ID/IDREFs properties should be used in comparison tests.
+            (NodeInner::Attribute(_, name, v,_,_), NodeInner::Attribute(_, o_name, o_v,_,_)) => {
                 if name == o_name {
                     v == o_v
                 } else {
@@ -213,7 +220,7 @@ impl ItemNode for RNode {
         match &self.0 {
             NodeInner::Document(_, _, _) => NodeType::Document,
             NodeInner::Element(_, _, _, _, _) => NodeType::Element,
-            NodeInner::Attribute(_, _, _) => NodeType::Attribute,
+            NodeInner::Attribute(_, _, _, _, _) => NodeType::Attribute,
             NodeInner::Text(_, _) => NodeType::Text,
             NodeInner::Comment(_, _) => NodeType::Comment,
             NodeInner::ProcessingInstruction(_, _, _) => NodeType::ProcessingInstruction,
@@ -224,7 +231,7 @@ impl ItemNode for RNode {
         match &self.0 {
             NodeInner::Element(_, qn, _, _, _)
             | NodeInner::ProcessingInstruction(_, qn, _)
-            | NodeInner::Attribute(_, qn, _) => {
+            | NodeInner::Attribute(_, qn, _, _, _) => {
                 qn.clone()
             }
             NodeInner::Namespace(_, p, _) => match p {
@@ -239,7 +246,7 @@ impl ItemNode for RNode {
             NodeInner::Text(_, v)
             | NodeInner::Comment(_, v)
             | NodeInner::ProcessingInstruction(_, _, v)
-            | NodeInner::Attribute(_, _, v) => v.clone(),
+            | NodeInner::Attribute(_, _, v, _, _) => v.clone(),
             NodeInner::Namespace(_, _, ns) => ns.clone(),
             _ => Rc::new(Value::from("")),
         }
@@ -257,7 +264,7 @@ impl ItemNode for RNode {
                     acc
                 })
             }
-            NodeInner::Attribute(_, _, v)
+            NodeInner::Attribute(_, _, v, _, _)
             | NodeInner::Text(_, v)
             | NodeInner::Comment(_, v)
             | NodeInner::ProcessingInstruction(_, _, v) => v.to_string(),
@@ -371,11 +378,14 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error> {
+    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>, is_id: bool, is_idrefs: bool) -> Result<Self, Error> {
+        //TODO if the attribute is xml:id then is_id needs to be set to true, regardless of what is_id is set to.
         let att = Rc::new(Node(NodeInner::Attribute(
             RefCell::new(Rc::downgrade(self)),
             qn.clone(),
             v,
+            is_id,
+            is_idrefs // is_idrefs
         )));
         unattached(self, att.clone());
         Ok(att)
@@ -427,7 +437,7 @@ impl ItemNode for RNode {
                     String::from("cannot remove document node"),
                 ))
             }
-            NodeInner::Attribute(parent, qn, _) => {
+            NodeInner::Attribute(parent, qn, _, _, _) => {
                 // Remove this node from the attribute hashmap
                 match Weak::upgrade(&parent.borrow()) {
                     Some(p) => {
@@ -537,7 +547,7 @@ impl ItemNode for RNode {
                 detach(m.clone());
                 // Now add to this parent
                 // TODO: deal with same name being redefined
-                if let NodeInner::Attribute(_, qn, _) = &m.0 {
+                if let NodeInner::Attribute(_, qn, _, _, _) = &m.0 {
                     let _ = patt.borrow_mut().insert(qn.clone(), m.clone());
                 }
                 make_parent(m, self.clone());
@@ -646,10 +656,12 @@ impl ItemNode for RNode {
                 unattached(self, new.clone());
                 Ok(new)
             }
-            NodeInner::Attribute(p, qn, v) => Ok(Rc::new(Node(NodeInner::Attribute(
+            NodeInner::Attribute(p, qn, v, is_id, is_idrefs) => Ok(Rc::new(Node(NodeInner::Attribute(
                 p.clone(),
                 qn.clone(),
                 v.clone(),
+                *is_id,
+                *is_idrefs
             )))),
             NodeInner::Text(p, v) => {
                 let new = Rc::new(Node(NodeInner::Text(p.clone(), v.clone())));
@@ -729,7 +741,7 @@ impl ItemNode for RNode {
                 }
                 Ok(d.new_text(w)?)
             }
-            NodeInner::Attribute(_, _, _) => self.shallow_copy(),
+            NodeInner::Attribute(_, _, _, _, _) => self.shallow_copy(),
             NodeInner::Element(_, _, _, _, _) => {
                 let mut result = self.shallow_copy()?;
 
@@ -744,6 +756,8 @@ impl ItemNode for RNode {
                                 re.replace_all(a.clone().value().to_string().trim(), " ")
                                     .to_string(),
                             )),
+                            false,
+                            false
                         )?,
                     )?;
                     //result.add_attribute(a.get_canonical()?)?;
@@ -783,6 +797,26 @@ impl ItemNode for RNode {
             _ => self.owner_document().xmldecl(),
         }
     }
+
+    fn is_id(&self) -> bool {
+        match &self.0 {
+            //TODO Add Element XML ID support
+            NodeInner::Attribute(_, _, _, is_id, _) => {
+                *is_id
+            }
+            _ => false
+        }
+    }
+
+    fn is_idrefs(&self) -> bool {
+        match &self.0 {
+            //TODO Add Element XML ID REF support
+            NodeInner::Attribute(_, _, _, _, is_idrefs) => {
+                *is_idrefs
+            }
+            _ => false
+        }
+    }
 }
 
 impl Debug for Node {
@@ -798,7 +832,7 @@ impl Debug for Node {
                     format_attrs(&attrs.clone())
                 )
             }
-            NodeInner::Attribute(_, qn, _) => {
+            NodeInner::Attribute(_, qn, _, _, _) => {
                 write!(f, "attribute-type node \"{}\"", qn)
             }
             NodeInner::Text(_, v) => write!(f, "text-type node \"{}\"", v),
@@ -849,7 +883,7 @@ fn unattached(d: &RNode, n: RNode) {
 fn make_parent(n: RNode, b: RNode) {
     match &n.0 {
         NodeInner::Element(p, _, _, _, _)
-        | NodeInner::Attribute(p, _, _)
+        | NodeInner::Attribute(p, _, _, _, _)
         | NodeInner::Text(p, _)
         | NodeInner::Comment(p, _)
         | NodeInner::Namespace(p, _, _)
@@ -862,7 +896,7 @@ fn make_parent(n: RNode, b: RNode) {
 fn detach(n: RNode) {
     match &n.0 {
         NodeInner::Element(p, _, _, _, _)
-        | NodeInner::Attribute(p, _, _)
+        | NodeInner::Attribute(p, _, _, _, _)
         | NodeInner::Text(p, _)
         | NodeInner::Comment(p, _)
         | NodeInner::Namespace(p, _, _)
@@ -911,7 +945,7 @@ fn push_node(parent: &RNode, child: RNode) -> Result<(), Error> {
 fn doc_order(n: &RNode) -> Vec<usize> {
     match &n.0 {
         NodeInner::Document(_, _, _) => vec![1usize],
-        NodeInner::Attribute(_, _, _) => {
+        NodeInner::Attribute(_, _, _, _, _) => {
             let mut a = doc_order(&n.parent().unwrap());
             a.push(2);
             a
@@ -1089,7 +1123,7 @@ impl Iterator for Ancestors {
         let parent = match &self.cur.0 {
             NodeInner::Document(_, _, _) => None,
             NodeInner::Element(p, _, _, _, _)
-            | NodeInner::Attribute(p, _, _)
+            | NodeInner::Attribute(p, _, _, _, _)
             | NodeInner::Text(p, _)
             | NodeInner::Comment(p, _)
             | NodeInner::ProcessingInstruction(p, _, _)

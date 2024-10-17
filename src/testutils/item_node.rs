@@ -395,13 +395,17 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let a1 = sd.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("role"))),
-		Rc::new(Value::from("testing"))
+		Rc::new(Value::from("testing")),
+		false,
+		false
 	    ).expect("unable to create attribute");
 	    t.add_attribute(a1)
 		.expect("unable to add attribute");
 	    let a2 = sd.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("phase"))),
-		Rc::new(Value::from("one"))
+		Rc::new(Value::from("one")),
+		false,
+		false
 	    ).expect("unable to create element");
 	    t.add_attribute(a2)
 		.expect("unable to add attribute");
@@ -466,13 +470,17 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let a1 = sd.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("role"))),
-		Rc::new(Value::from("testing"))
+		Rc::new(Value::from("testing")),
+		false,
+		false
 	    ).expect("unable to create attribute");
 	    t.add_attribute(a1)
 		.expect("unable to add attribute");
 	    let a2 = sd.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("phase"))),
-		Rc::new(Value::from("one"))
+		Rc::new(Value::from("one")),
+		false,
+		false
 	    ).expect("unable to create element");
 	    t.add_attribute(a2)
 		.expect("unable to add attribute");
@@ -487,11 +495,15 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let b1 = od.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("role"))),
-		Rc::new(Value::from("testing"))
+		Rc::new(Value::from("testing")),
+		false,
+		false
 	    ).expect("unable to create attribute");
 	    let b2 = od.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("phase"))),
-		Rc::new(Value::from("one"))
+		Rc::new(Value::from("one")),
+		false,
+		false
 	    ).expect("unable to create element");
 	    u.add_attribute(b2)
 		.expect("unable to add attribute");
@@ -511,13 +523,17 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let a1 = sd.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("role"))),
-		Rc::new(Value::from("testing"))
+		Rc::new(Value::from("testing")),
+		false,
+		false
 	    ).expect("unable to create attribute");
 	    t.add_attribute(a1)
 		.expect("unable to add attribute");
 	    let a2 = sd.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("phase"))),
-		Rc::new(Value::from("one"))
+		Rc::new(Value::from("one")),
+		false,
+		false
 	    ).expect("unable to create element");
 	    t.add_attribute(a2)
 		.expect("unable to add attribute");
@@ -532,11 +548,15 @@ macro_rules! item_node_tests (
 		.expect("unable to append child");
 	    let b1 = od.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("role"))),
-		Rc::new(Value::from("testing"))
+		Rc::new(Value::from("testing")),
+		false,
+		false
 	    ).expect("unable to create attribute");
 	    let b2 = od.new_attribute(
 		Rc::new(QualifiedName::new(None, None, String::from("phase"))),
-		Rc::new(Value::from("one"))
+		Rc::new(Value::from("one")),
+		false,
+		false
 	    ).expect("unable to create element");
 	    u.add_attribute(b2)
 		.expect("unable to add attribute");

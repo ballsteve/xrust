@@ -1901,6 +1901,8 @@ where
         .new_attribute(
             Rc::new(QualifiedName::new(None, None, String::from("name"))),
             Rc::new(Value::from("first")),
+            false,
+            false
         )
         .expect("unable to create attribute node");
     l1_1.add_attribute(a1)
@@ -1917,6 +1919,8 @@ where
         .new_attribute(
             Rc::new(QualifiedName::new(None, None, String::from("name"))),
             Rc::new(Value::from("second")),
+            false,
+            false
         )
         .expect("unable to create attribute node");
     l1_2.add_attribute(a2)
@@ -1967,6 +1971,8 @@ where
         .new_attribute(
             Rc::new(QualifiedName::new(None, None, String::from("name"))),
             Rc::new(Value::from("first")),
+            false,
+            false
         )
         .expect("unable to create attribute node");
     l1_1.add_attribute(a1)
@@ -1983,6 +1989,8 @@ where
         .new_attribute(
             Rc::new(QualifiedName::new(None, None, String::from("name"))),
             Rc::new(Value::from("second")),
+            false,
+            false
         )
         .expect("unable to create attribute node");
     l1_2.add_attribute(a2.clone())
@@ -2033,6 +2041,8 @@ where
         .new_attribute(
             Rc::new(QualifiedName::new(None, None, String::from("name"))),
             Rc::new(Value::from("first")),
+            false,
+            false
         )
         .expect("unable to create attribute node");
     l1_1.add_attribute(a1)
@@ -2049,6 +2059,8 @@ where
         .new_attribute(
             Rc::new(QualifiedName::new(None, None, String::from("name"))),
             Rc::new(Value::from("second")),
+            false,
+            false
         )
         .expect("unable to create attribute node");
     l1_2.add_attribute(a2.clone())

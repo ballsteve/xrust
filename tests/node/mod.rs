@@ -16,11 +16,15 @@ where
     let a1 = sd.new_attribute(
         Rc::new(QualifiedName::new(None, None, String::from("role"))),
         Rc::new(Value::from("testing")),
+        false,
+        false
     )?;
     t.add_attribute(a1)?;
     let a2 = sd.new_attribute(
         Rc::new(QualifiedName::new(None, None, String::from("phase"))),
         Rc::new(Value::from("one")),
+        false,
+        false
     )?;
     t.add_attribute(a2)?;
 

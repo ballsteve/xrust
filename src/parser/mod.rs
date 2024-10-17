@@ -4,7 +4,7 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::fmt;
 use std::rc::Rc;
 use std::cell::RefCell;
@@ -49,6 +49,7 @@ pub enum ParseError {
     Unbalanced,
     Notimplemented,
     ExtDTDLoadError,
+    IDError(String)
 }
 
 pub struct ParserConfig {
@@ -64,6 +65,8 @@ pub struct ParserConfig {
     /// attributes where a default or fixed value is declared, does not enforce anything.
     /// Set to true by default.
     pub attr_defaults: bool,
+    /// Track and assign XML IDs based on the DTDs.
+    pub id_tracking: bool
 }
 
 impl Default for ParserConfig {
@@ -77,7 +80,8 @@ impl ParserConfig {
             ext_dtd_resolver: None,
             docloc: None,
             entitydepth: 8,
-            attr_defaults: true
+            attr_defaults: true,
+            id_tracking: true
         }
     }
 }
@@ -92,6 +96,15 @@ pub struct ParserState<N: Node> {
     dtd: DTD,
     // Do we add DTD specified attributes or not
     attr_defaults: bool,
+    /*
+        ID tracking:
+        ids_read covers all IDs for duplicate checking. Where an IDREF is found and the ID is not
+        yet encountered, we pull into ids_pending and will review those when we have finished
+        parsing the document.
+    */
+    id_tracking: bool,
+    ids_read: HashSet<Rc<Value>>,
+    ids_pending: HashSet<Rc<Value>>,
     /*
         The in-scope namespaces are tracked in a hashmap.
         This is used during XML document creation.
@@ -160,6 +173,9 @@ impl<N: Node> ParserState<N> {
             interned_names: Rc::new(RefCell::new(HashMap::new())),
             maxentitydepth: pc.entitydepth,
             attr_defaults: pc.attr_defaults,
+            id_tracking: pc.id_tracking,
+            ids_read: Default::default(),
+            ids_pending: Default::default(),
             currententitydepth: 1,
             currentcol: 1,
             currentrow: 1,

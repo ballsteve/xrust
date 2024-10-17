@@ -444,7 +444,6 @@ fn ibminvalid_p56ibm56i06xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p56ibm56i07xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i07.xml
@@ -466,7 +465,6 @@ fn ibminvalid_p56ibm56i07xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p56ibm56i08xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i08.xml
@@ -488,7 +486,6 @@ fn ibminvalid_p56ibm56i08xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p56ibm56i09xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i09.xml
@@ -510,7 +507,6 @@ fn ibminvalid_p56ibm56i09xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p56ibm56i10xml() {
     /*
         Test ID:ibm-invalid-P56-ibm56i10.xml

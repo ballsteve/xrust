@@ -106,7 +106,7 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_attribute(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
+    fn new_attribute(&self, _: Rc<QualifiedName>, _: Rc<Value>, _: bool, _:bool) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -178,6 +178,14 @@ impl Node for Nullo {
             ErrorKind::NotImplemented,
             String::from("not implemented"),
         ))
+    }
+
+    fn is_id(&self) -> bool {
+        false
+    }
+
+    fn is_idrefs(&self) -> bool {
+        false
     }
 }
 
