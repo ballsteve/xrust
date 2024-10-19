@@ -264,8 +264,8 @@ pub fn ext_function<N: Node>(
     let func = match ctxt.x_path_ext_functions.get(&func_name) {
         Some(func) => func,
         None =>  return Err(Error::new(
-            ErrorKind::Unknown,
-            "function not found".to_string(),
+            ErrorKind::ParseError,
+            format!("undefined function \"{}\"", &func_name),
         )),
     };
     func(arguments)
