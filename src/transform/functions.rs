@@ -256,6 +256,21 @@ pub fn document<
     }
 }
 
+pub fn ext_function<N: Node>(
+    ctxt: &Context<N>,
+    func_name: String,
+    arguments: &Vec<Transform<N>>,
+) -> Result<Sequence<N>, Error> {
+    let func = match ctxt.x_path_ext_functions.get(&func_name) {
+        Some(func) => func,
+        None =>  return Err(Error::new(
+            ErrorKind::Unknown,
+            "function not found".to_string(),
+        )),
+    };
+    func(arguments)
+}
+
 pub(crate) fn tr_error<N: Node>(
     _ctxt: &Context<N>,
     kind: &ErrorKind,

@@ -71,6 +71,7 @@ pub struct Context<N: Node> {
     // Output control
     pub(crate) od: OutputDefinition,
     pub(crate) base_url: Option<Url>,
+    pub(crate) x_path_ext_functions: HashMap<String, fn(arguments: &Vec<Transform<N>>) -> Result<Sequence<N>, Error>>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
     // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
     //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
@@ -94,8 +95,14 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            x_path_ext_functions: HashMap::new(),
         }
     }
+
+    pub fn register_ext_function(&mut self, func_name: String, func: fn(arguments: &Vec<Transform<N>>) -> Result<Sequence<N>, Error>) {
+        self.x_path_ext_functions.insert(func_name.clone(), func);
+    }
+
     /// Sets the context item.
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
         self.cur = s;
@@ -444,6 +451,7 @@ impl<N: Node> Context<N> {
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
+            Transform::Extension(s, p) => ext_function(self, s.to_string(), p),
             _ => Err(Error::new(
                 ErrorKind::NotImplemented,
                 "not implemented".to_string(),
@@ -470,6 +478,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            x_path_ext_functions: HashMap::new(),
         }
     }
 }

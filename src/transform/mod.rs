@@ -239,6 +239,10 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
     ),
+    Extension(
+        String,
+        Vec<Transform<N>>
+    ),
     /// Convert a number to a string.
     /// This is one half of the functionality of xsl:number, as well as format-integer().
     /// See XSLT 12.4.
@@ -386,6 +390,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
+            Transform::Extension(n, p) => write!(f, "Extension: \"{}\"", n),
         }
     }
 }

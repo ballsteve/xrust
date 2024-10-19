@@ -475,10 +475,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         String::from("wrong number of arguments"),
                     ),
                 },
-                _ => Transform::Error(
-                    ErrorKind::ParseError,
-                    format!("undefined function \"{}\"", qn),
-                ), // TODO: user-defined functions
+                _ => Transform::Extension(localpart.to_string(), a)
             },
             NodeTest::Name(NameTest {
                 name: Some(WildcardOrName::Name(localpart)),
