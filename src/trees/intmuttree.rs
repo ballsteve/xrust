@@ -616,6 +616,10 @@ impl ItemNode for RNode {
     fn add_namespace(&self, _ns: Self) -> Result<(), Error> {
         todo!()
     }
+
+    fn namespace_iter(&self) -> Self::NodeIterator {
+        todo!()
+    }
 }
 
 impl Debug for Node {
@@ -662,7 +666,7 @@ fn doc_order(n: &RNode) -> Vec<usize> {
 
 // This handles the XML serialisation of the document.
 // "ns" is the list of XML Namespaces that have been declared in an ancestor: (URI, prefix).
-// "indent" is the current level of identation.
+// "indent" is the current level of indentation.
 fn to_xml_int(
     node: &RNode,
     od: &OutputDefinition,

@@ -6,7 +6,7 @@ An XPath expression parser using the xrust parser combinator that produces a xru
 use xrust::parser::xpath::parse;
 # use xrust::item::Node;
 # fn do_parse<N: Node>() {
-let t = parse::<N>("/child::A/child::B/child::C").expect("unable to parse XPath expression");
+let t = parse::<N>("/child::A/child::B/child::C", None).expect("unable to parse XPath expression");
 # }
 ```
 
@@ -18,15 +18,15 @@ To evaluate the transformation we need a Context with a source document as its c
 # use std::rc::Rc;
 # use xrust::xdmerror::{Error, ErrorKind};
 use xrust::item::{Sequence, SequenceTrait, Item, Node, NodeType};
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 
-let t = parse("/child::A/child::B/child::C")
+let t = parse("/child::A/child::B/child::C", None)
     .expect("unable to parse XPath expression");
 
-let source = Rc::new(SmiteNode::new());
+let source = RNode::new_document();
 xmlparse(source.clone(), "<A><B><C/></B><B><C/></B></A>", None)
     .expect("unable to parse XML");
 let mut static_context = StaticContextBuilder::new()
@@ -76,13 +76,14 @@ use crate::item::Node;
 use crate::transform::Transform;
 use crate::xdmerror::{Error, ErrorKind};
 
-pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
+/// Parse an XPath expression to produce a [Transform]. The optional [Node] is used to resolve XML Namespaces.
+pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> {
     // Shortcut for empty
     if input.is_empty() {
         return Ok(Transform::Empty);
     }
 
-    let state = ParserState::new(None, None);
+    let state = ParserState::new(None, n, None);
     match xpath_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {

@@ -15,11 +15,11 @@ pub(crate) fn chardata<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
         many1(alt3(
-            wellformed_ver(
+            map(wellformed_ver(
                 chardata_cdata(),
                 |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
                 |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
-            ),
+            ),|s| { s.replace("\r\n","\n").replace("\r","\n") }),
             map(
                 wellformed_ver(
                     chardata_unicode_codepoint(),
@@ -28,11 +28,11 @@ pub(crate) fn chardata<N: Node>(
                 ), //XML 1.1
                 |c| c.to_string(),
             ),
-            wellformed_ver(
+            map(wellformed_ver(
                 chardata_literal(),
                 |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
                 |s| !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
-            ),
+            ),|s| { s.replace("\r\n","\n").replace("\r","\n") }),
             // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
         )),
         |v| v.concat(),

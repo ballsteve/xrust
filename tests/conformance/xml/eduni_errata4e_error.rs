@@ -1,10 +1,13 @@
 /*
+
 University of Edinburgh XML 1.0 4th edition errata test suite.
+
 */
 
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use xrust::parser::xml;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn invalidbo7() {
@@ -15,14 +18,16 @@ fn invalidbo7() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (big-endian)
     */
 
-    let testxml = Document::try_from((
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_be.xml")
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -34,14 +39,16 @@ fn invalidbo8() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (little-endian)
     */
 
-    let testxml = Document::try_from((
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbomboom_le.xml")
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -53,14 +60,16 @@ fn invalidbo9() {
         Description:A byte order mark and a backwards one in general entity cause an illegal char. error (utf-8)
     */
 
-    let testxml = Document::try_from((
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bomboom.xml")
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 /*
@@ -78,11 +87,15 @@ fn xrmt008() {
         Description:a document with version=1.7, illegal in XML 1.0 through 4th edition
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/008.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 */

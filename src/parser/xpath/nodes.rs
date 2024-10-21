@@ -1,7 +1,7 @@
 //! Functions that produces nodes, or sets of nodes.
 
 use crate::item::Node;
-use crate::parser::combinators::alt::{alt2, alt4, alt5};
+use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -66,19 +66,11 @@ fn intersectexcept_expr<'a, N: Node + 'a>(
 
 pub(crate) fn path_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt4(
-        abbreviated_parent(),
+    Box::new(alt3(
         absolutedescendant_expr::<N>(),
         absolutepath_expr::<N>(),
         relativepath_expr::<N>(),
     ))
-}
-
-fn abbreviated_parent<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(map(tag(".."), |_| {
-        Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))
-    }))
 }
 
 // ('//' RelativePathExpr?)
@@ -158,7 +150,7 @@ fn relativepath_expr<'a, N: Node + 'a>(
 // StepExpr ::= PostfixExpr | AxisStep
 fn step_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt2(postfix_expr::<N>(), axisstep::<N>()))
+    Box::new(alt3(abbreviated_parent::<N>(), postfix_expr::<N>(), axisstep::<N>()))
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList
@@ -183,6 +175,20 @@ fn axisstep<'a, N: Node + 'a>(
         },
     ))
 }
+
+fn abbreviated_parent<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+    Box::new(map(tag(".."), |_| {
+        Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))
+    }))
+}
+/*fn abbreviated_parent<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, (&'static str, NodeTest)), ParseError> + 'a> {
+    Box::new(map(
+        tag(".."),
+    |_| ("parent", NodeTest::Kind(KindTest::Any))
+    ))
+}*/
 
 fn abbreviated_axisstep<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {

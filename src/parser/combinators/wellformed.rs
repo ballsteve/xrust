@@ -32,7 +32,7 @@ where
 {
     /*
        Some well formed constraints (specifically character checks) are dependant on XML versions.
-       This just selects the constrain based on the version in the state.
+       This just selects the constraint based on the version in the state.
     */
     move |input| match parser(input) {
         Ok(((input2, state2), result)) => {

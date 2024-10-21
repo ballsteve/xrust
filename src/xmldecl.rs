@@ -99,10 +99,10 @@ impl XMLDeclBuilder {
 #[derive(Clone, PartialEq)]
 pub struct DTD {
     pub(crate) elements: HashMap<String, DTDDecl>,
-    pub(crate) attlists: HashMap<String, DTDDecl>,
+    pub(crate) attlists: HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>,// Boolean for is_editable;
     pub(crate) notations: HashMap<String, DTDDecl>,
     pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
-    pub(crate) paramentities: HashMap<String, (String, bool)>,
+    pub(crate) paramentities: HashMap<String, (String, bool)>,// Boolean for is_editable;
     publicid: Option<String>,
     systemid: Option<String>,
     name: Option<String>,
@@ -139,8 +139,29 @@ impl Default for DTD {
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DTDDecl {
     Element(QualifiedName, String),
-    Attlist(QualifiedName, String),
     Notation(QualifiedName, String),
     GeneralEntity(QualifiedName, String),
     ParamEntity(QualifiedName, String),
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) enum AttType {
+    CDATA,
+    ID,
+    IDREF,
+    IDREFS,
+    ENTITY,
+    ENTITIES,
+    NMTOKEN,
+    NMTOKENS,
+    NOTATION(Vec<String>),
+    ENUMERATION(Vec<String>)
+}
+
+#[derive(Clone, Debug, Eq, PartialEq)]
+pub(crate) enum DefaultDecl {
+    Required,
+    Implied,
+    FIXED(String),
+    Default(String)
 }

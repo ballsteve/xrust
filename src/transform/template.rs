@@ -18,7 +18,7 @@ pub struct Template<N: Node> {
     pub(crate) priority: Option<f64>,
     pub(crate) import: Vec<usize>,
     pub(crate) document_order: Option<usize>,
-    pub(crate) mode: Option<QualifiedName>,
+    pub(crate) mode: Option<Rc<QualifiedName>>,
 }
 
 impl<N: Node> Template<N> {
@@ -28,7 +28,7 @@ impl<N: Node> Template<N> {
         priority: Option<f64>,
         import: Vec<usize>,
         document_order: Option<usize>,
-        mode: Option<QualifiedName>,
+        mode: Option<Rc<QualifiedName>>,
     ) -> Self {
         Template {
             pattern,
@@ -98,7 +98,7 @@ pub(crate) fn apply_templates<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
-    m: &Option<QualifiedName>,
+    m: &Option<Rc<QualifiedName>>,
     o: &Vec<(Order, Transform<N>)>, // sort keys
 ) -> Result<Sequence<N>, Error> {
     // s is the select expression. Evaluate it, and then iterate over its items.

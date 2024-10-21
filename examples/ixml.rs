@@ -18,7 +18,7 @@ use xrust::item::{Item, Node, SequenceTrait};
 use xrust::parser::xml::parse;
 use xrust::qname::QualifiedName;
 use xrust::transform::context::StaticContextBuilder;
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 use xrust::value::Value;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
@@ -30,7 +30,7 @@ use indextree::{Arena, NodeId};
 // A quick-and-dirty converter from an indextree to an Xrust intmuttree RNode.
 // A better solution will be to define a trait in IXML that is used to build the tree directly.
 fn to_rnode(arena: &Arena<Content>) -> RNode {
-    let t = Rc::new(SmiteNode::new());
+    let t = RNode::new_document();
     let root = arena.iter().next().unwrap();
     let root_id = arena.get_node_id(root).unwrap();
     for child in root_id.children(arena) {
@@ -48,7 +48,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
             }
             Content::Element(name) => {
                 let new = t
-                    .new_element(QualifiedName::new(None, None, name.clone()))
+                    .new_element(Rc::new(QualifiedName::new(None, None, name.clone())))
                     .expect("unable to create element node");
                 t.push(new.clone()).expect("unable to append node");
                 for attr in n
@@ -60,7 +60,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
                     {
                         let new_attr = t
                             .new_attribute(
-                                QualifiedName::new(None, None, attr_name.clone()),
+                                Rc::new(QualifiedName::new(None, None, attr_name.clone())),
                                 Rc::new(Value::from(attr_value.clone())),
                             )
                             .expect("unable to create attribute node");
@@ -74,7 +74,7 @@ fn to_rnode_aux(arena: &Arena<Content>, n: NodeId, mut t: RNode) {
             Content::Attribute(name, value) => {
                 let new = t
                     .new_attribute(
-                        QualifiedName::new(None, None, name.clone()),
+                        Rc::new(QualifiedName::new(None, None, name.clone())),
                         Rc::new(Value::from(value.clone())),
                     )
                     .expect("unable to create attribute node");
@@ -115,7 +115,7 @@ fn main() {
         Ok(_) => {}
     };
 
-    let style = Rc::new(SmiteNode::new());
+    let style = RNode::new_document();
     parse(style.clone(), stylexml.trim(), None).expect("failed to parse XSL stylesheet");
 
     // Read the Markdown text file
@@ -186,7 +186,6 @@ eol = "X".
         .expect("unable to convert pwd");
     let mut ctxt = from_document(
         style,
-        vec![],
         Some(
             Url::parse(format!("file://{}/{}", pwds, &args[1]).as_str())
                 .expect("unable to parse stylesheet URL"),
@@ -209,7 +208,7 @@ eol = "X".
     // Set the Markdown RNode document as the context
     ctxt.context(vec![Item::Node(md)], 0);
     // Create a document for the result tree
-    ctxt.result_document(Rc::new(SmiteNode::new()));
+    ctxt.result_document(RNode::new_document());
 
     // Create a static transformation contact
     // with dummy callbacks

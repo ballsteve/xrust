@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<content att1="val1" xmlns:a="someothernamespace" att2="val2" xmlns="somenamespace" a:att4="val4" someatt="val5" other="valx">
+    <content2>text</content2>
+    <content3>text2</content3>
+    <content4 xmlns="thirdnamespace" a:something="test">text3</content4>
+    <content05 xmlns:a="fourthnamespace" a:somethingelse="test2">text4</content05>
+</content>

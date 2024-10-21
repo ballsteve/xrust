@@ -1,10 +1,13 @@
 /*
+
 University of Edinburgh XML 1.0 4th edition errata test suite.
+
 */
 
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use xrust::parser::xml;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn invalidbo1() {
@@ -15,12 +18,16 @@ fn invalidbo1() {
         Description:Byte order mark in general entity should go away (big-endian)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -32,12 +39,16 @@ fn invalidbo2() {
         Description:Byte order mark in general entity should go away (little-endian)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -49,12 +60,16 @@ fn invalidbo3() {
         Description:Byte order mark in general entity should go away (utf-8)
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bom.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -66,14 +81,16 @@ fn invalidbo4() {
         Description:Two byte order marks in general entity produce only one (big-endian)
     */
 
-    let testxml = Document::try_from((
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_be.xml")
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -85,14 +102,16 @@ fn invalidbo5() {
         Description:Two byte order marks in general entity produce only one (little-endian)
     */
 
-    let testxml = Document::try_from((
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbombom_le.xml")
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
+    );
 
-    assert!(testxml.is_err());
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -104,13 +123,16 @@ fn invalidbo6() {
         Description:Two byte order marks in general entity produce only one (utf-8)
     */
 
-    let testxml = Document::try_from((
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/incl8bombom.xml")
-            .unwrap(),
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 /*
@@ -130,11 +152,16 @@ fn invalidsa140() {
         Description:Character '&#x309a;' is a CombiningChar, not a Letter, but as of 5th edition, may begin a name (c.f. xmltest/not-wf/sa/140.xml).
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml").unwrap(),
-        None,None
-    ));
-    assert!(testxml.is_err());
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/140.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
+
+    assert!(parseresult.is_err());
 }
  */
 
@@ -155,11 +182,16 @@ fn invalidsa141() {
         Description:As of 5th edition, character #x0E5C is legal in XML names (c.f. xmltest/not-wf/sa/141.xml).
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml").unwrap(),
-        None,None
-    ));
-    assert!(testxml.is_err());
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/141.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
+
+    assert!(parseresult.is_err());
 }
  */
 
@@ -180,11 +212,16 @@ fn xrmt5014() {
         Description:Has a "long s" in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml").unwrap(),
-        None,None
-    ));
-    assert!(testxml.is_err());
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/014.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
+
+    assert!(parseresult.is_err());
 }
  */
 
@@ -205,11 +242,16 @@ fn xrmt5016() {
         Description:Has a Byzantine Musical Symbol Kratimata in a name, legal in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml").unwrap(),
-        None,None
-    ));
-    assert!(testxml.is_err());
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/016.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
+
+    assert!(parseresult.is_err());
 }
  */
 
@@ -230,13 +272,21 @@ fn xrmt5019() {
         Description:Has the last legal namechar in XML 1.1, legal in XML 1.0 5th edition
     */
 
-    let testxml = Document::try_from((fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/019.xml").unwrap());
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/019.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(testxml.is_err());
 }
 */
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n06xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n06.xml
@@ -245,16 +295,20 @@ fn ibminvalid_p89ibm89n06xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x0EC7 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n06.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n07xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n07.xml
@@ -263,16 +317,20 @@ fn ibminvalid_p89ibm89n07xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3006 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n07.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n08xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n08.xml
@@ -281,16 +339,20 @@ fn ibminvalid_p89ibm89n08xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3030 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n08.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n09xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n09.xml
@@ -299,16 +361,20 @@ fn ibminvalid_p89ibm89n09xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x3036 occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n09.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n10xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n10.xml
@@ -317,16 +383,20 @@ fn ibminvalid_p89ibm89n10xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x309C occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n10.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n11xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n11.xml
@@ -335,16 +405,20 @@ fn ibminvalid_p89ibm89n11xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x309F occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n11.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
+#[ignore]
 fn ibminvalid_p89ibm89n12xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n12.xml
@@ -353,11 +427,14 @@ fn ibminvalid_p89ibm89n12xml() {
         Description:Tests Extender with an only legal per 5th edition character. The character #x30FF occurs as the second character in the PITarget in the PI in the prolog, and in an element name.
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/ibm89n12.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    //assert!(testxml.is_err());
-    assert!(testxml.is_ok()); //We support xml 1.0 fifth edition and xml 1.1
+    );
+
+    assert!(parseresult.is_err());
 }

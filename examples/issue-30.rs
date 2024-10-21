@@ -6,15 +6,14 @@ use std::env;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::rc::Rc;
 
 use xrust::ErrorKind;
 
-use xrust::item::{Item, SequenceTrait};
+use xrust::item::{Item, Node, SequenceTrait};
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
-use xrust::trees::smite::{Node as SmiteNode, RNode};
+use xrust::trees::smite::RNode;
 use xrust::xdmerror::Error;
 
 fn main() {
@@ -43,7 +42,7 @@ fn main() {
         Ok(_) => {}
     };
     // Parse the XPath expression
-    let xpath = parse::<RNode>(expr.trim()).expect("XPath expression not recognised");
+    let xpath = parse::<RNode>(expr.trim(), None).expect("XPath expression not recognised");
 
     // Read the XML file
     let srcpath = Path::new(&args[2]);
@@ -62,7 +61,7 @@ fn main() {
         Ok(_) => {}
     };
     // Parse the XML into a RNode
-    let root = Rc::new(SmiteNode::new());
+    let root = RNode::new_document();
     xmlparse(root.clone(), srcxml.as_str(), None).expect("unable to parse XML");
 
     // Create a dynamic transformation context
