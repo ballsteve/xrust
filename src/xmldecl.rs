@@ -99,10 +99,11 @@ impl XMLDeclBuilder {
 #[derive(Clone, PartialEq)]
 pub struct DTD {
     pub(crate) elements: HashMap<String, DTDDecl>,
-    pub(crate) attlists: HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>,// Boolean for is_editable;
+    pub(crate) attlists:
+        HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>, // Boolean for is_editable;
     pub(crate) notations: HashMap<String, DTDDecl>,
     pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
-    pub(crate) paramentities: HashMap<String, (String, bool)>,// Boolean for is_editable;
+    pub(crate) paramentities: HashMap<String, (String, bool)>,   // Boolean for is_editable;
     publicid: Option<String>,
     systemid: Option<String>,
     name: Option<String>,
@@ -155,7 +156,7 @@ pub(crate) enum AttType {
     NMTOKEN,
     NMTOKENS,
     NOTATION(Vec<String>),
-    ENUMERATION(Vec<String>)
+    ENUMERATION(Vec<String>),
 }
 
 #[derive(Clone, Debug, Eq, PartialEq)]
@@ -163,5 +164,5 @@ pub(crate) enum DefaultDecl {
     Required,
     Implied,
     FIXED(String),
-    Default(String)
+    Default(String),
 }

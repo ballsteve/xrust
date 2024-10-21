@@ -1,7 +1,7 @@
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use xrust::parser::{xml, ParserConfig};
 use xrust::item::Node;
+use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -137,7 +137,7 @@ fn element() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -940,7 +940,7 @@ fn vpe03() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 

@@ -2,8 +2,8 @@ use std::rc::Rc;
 
 use criterion::{black_box, criterion_group, criterion_main, Criterion};
 
-use xrust::parser::xml::parse;
 use xrust::item::Node;
+use xrust::parser::xml::parse;
 use xrust::qname::QualifiedName;
 use xrust::trees::smite::{Node as SmiteNode, RNode};
 use xrust::value::Value;
@@ -11,19 +11,31 @@ use xrust::value::Value;
 fn make_rnode(n: u64) -> RNode {
     let mut a = RNode::new_document();
     let mut b = a
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))
+        .new_element(Rc::new(QualifiedName::new(
+            None,
+            None,
+            String::from("Test"),
+        )))
         .expect("unable to create element");
     a.push(b.clone()).expect("unable to add node");
     (1..n).for_each(|i| {
         let l1name = Rc::new(Value::from("Level-1"));
         let mut l1 = a
-            .new_element(Rc::new(QualifiedName::new_from_values(None, None, l1name.clone())))
+            .new_element(Rc::new(QualifiedName::new_from_values(
+                None,
+                None,
+                l1name.clone(),
+            )))
             .expect("unable to create element");
         b.push(l1.clone()).expect("unable to add node");
         let l2name = Rc::new(Value::from("Level-2"));
         (1..n).for_each(|k| {
             let mut l2 = a
-                .new_element(Rc::new(QualifiedName::new_from_values(None, None, l2name.clone())))
+                .new_element(Rc::new(QualifiedName::new_from_values(
+                    None,
+                    None,
+                    l2name.clone(),
+                )))
                 .expect("unable to create element");
             l1.push(l2.clone()).expect("unable to add node");
             l2.push(

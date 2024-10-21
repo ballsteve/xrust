@@ -30,7 +30,7 @@ where
 {
     //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
 
-    move | (mut input, mut state)| {
+    move |(mut input, mut state)| {
         let mut result = Vec::new();
         let namespaces = state.namespace.clone();
 

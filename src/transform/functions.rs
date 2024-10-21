@@ -7,7 +7,7 @@ use url::Url;
 use crate::item::{Item, Node, Sequence};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
-use crate::transform::{Transform, NamespaceMap};
+use crate::transform::{NamespaceMap, Transform};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::SequenceTrait;
@@ -91,7 +91,10 @@ pub fn system_property<
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
         let qn = QualifiedName::try_from((prop.to_string().as_str(), ns.clone()))?;
-        match (qn.namespace_uri_to_string().as_deref(), qn.localname_to_string().as_str()) {
+        match (
+            qn.namespace_uri_to_string().as_deref(),
+            qn.localname_to_string().as_str(),
+        ) {
             (Some(XSLTNS), "version") => Ok(vec![Item::Value(Rc::new(Value::from("0.9")))]),
             (Some(XSLTNS), "vendor") => Ok(vec![Item::Value(Rc::new(Value::from(
                 "Steve Ball, Daniel Murphy",

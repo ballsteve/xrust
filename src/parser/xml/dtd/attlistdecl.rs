@@ -1,4 +1,3 @@
-use std::collections::HashMap;
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3, alt9};
 use crate::parser::combinators::delimited::delimited;
@@ -10,14 +9,15 @@ use crate::parser::combinators::take::take_while;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
 use crate::parser::combinators::value::value;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
+use crate::parser::common::{is_ncnamechar, is_ncnamestartchar};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::dtd::enumerated::enumeratedtype;
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
-use crate::parser::common::{is_ncnamechar, is_ncnamestartchar};
 use crate::qname::QualifiedName;
 use crate::xmldecl::{AttType, DefaultDecl};
+use std::collections::HashMap;
 
 //AttlistDecl ::= '<!ATTLIST' S Name AttDef* S? '>'
 pub(crate) fn attlistdecl<N: Node>(
@@ -52,20 +52,22 @@ pub(crate) fn attlistdecl<N: Node>(
             for (qn, att, dfd) in ats {
                 match &dfd {
                     //We need to make sure that the default is valid, even if its not used.
-                    DefaultDecl::FIXED(s) | DefaultDecl::Default(s)=> {
+                    DefaultDecl::FIXED(s) | DefaultDecl::Default(s) => {
                         match att {
                             AttType::ID => {
                                 count_id_attrs += 1;
                                 let mut ch = s.chars();
-                                match ch.next(){
+                                match ch.next() {
                                     None => {}
                                     Some(c) => {
-                                        if is_ncnamestartchar(&c){
+                                        if is_ncnamestartchar(&c) {
                                             for cha in ch {
-                                                if !is_ncnamechar(&cha){
-                                                    return Err(ParseError::NotWellFormed(String::from(
-                                                        "DTD Attvalue default is invalid",
-                                                    )));
+                                                if !is_ncnamechar(&cha) {
+                                                    return Err(ParseError::NotWellFormed(
+                                                        String::from(
+                                                            "DTD Attvalue default is invalid",
+                                                        ),
+                                                    ));
                                                 }
                                             }
                                         } else {
@@ -78,15 +80,17 @@ pub(crate) fn attlistdecl<N: Node>(
                             }
                             AttType::IDREF => {
                                 let mut ch = s.chars();
-                                match ch.next(){
+                                match ch.next() {
                                     None => {}
                                     Some(c) => {
-                                        if is_ncnamestartchar(&c){
+                                        if is_ncnamestartchar(&c) {
                                             for cha in ch {
-                                                if !is_ncnamechar(&cha){
-                                                    return Err(ParseError::NotWellFormed(String::from(
-                                                        "DTD Attvalue default is invalid",
-                                                    )));
+                                                if !is_ncnamechar(&cha) {
+                                                    return Err(ParseError::NotWellFormed(
+                                                        String::from(
+                                                            "DTD Attvalue default is invalid",
+                                                        ),
+                                                    ));
                                                 }
                                             }
                                         } else {
@@ -99,23 +103,25 @@ pub(crate) fn attlistdecl<N: Node>(
                             }
                             AttType::IDREFS => {
                                 let names = s.split(" ");
-                                for name in names{
+                                for name in names {
                                     let mut ch = name.chars();
-                                    match ch.next(){
+                                    match ch.next() {
                                         None => {}
                                         Some(c) => {
-                                            if is_ncnamestartchar(&c){
+                                            if is_ncnamestartchar(&c) {
                                                 for cha in ch {
-                                                    if !is_ncnamechar(&cha){
-                                                        return Err(ParseError::NotWellFormed(String::from(
-                                                            "DTD Attvalue default is invalid",
-                                                        )));
+                                                    if !is_ncnamechar(&cha) {
+                                                        return Err(ParseError::NotWellFormed(
+                                                            String::from(
+                                                                "DTD Attvalue default is invalid",
+                                                            ),
+                                                        ));
                                                     }
                                                 }
                                             } else {
-                                                return Err(ParseError::NotWellFormed(String::from(
-                                                    "DTD Attvalue default is invalid",
-                                                )));
+                                                return Err(ParseError::NotWellFormed(
+                                                    String::from("DTD Attvalue default is invalid"),
+                                                ));
                                             }
                                         }
                                     }
@@ -123,15 +129,17 @@ pub(crate) fn attlistdecl<N: Node>(
                             }
                             AttType::ENTITY => {
                                 let mut ch = s.chars();
-                                match ch.next(){
+                                match ch.next() {
                                     None => {}
                                     Some(c) => {
-                                        if is_ncnamestartchar(&c){
+                                        if is_ncnamestartchar(&c) {
                                             for cha in ch {
-                                                if !is_ncnamechar(&cha){
-                                                    return Err(ParseError::NotWellFormed(String::from(
-                                                        "DTD Attvalue default is invalid",
-                                                    )));
+                                                if !is_ncnamechar(&cha) {
+                                                    return Err(ParseError::NotWellFormed(
+                                                        String::from(
+                                                            "DTD Attvalue default is invalid",
+                                                        ),
+                                                    ));
                                                 }
                                             }
                                         } else {
@@ -144,31 +152,33 @@ pub(crate) fn attlistdecl<N: Node>(
                             }
                             AttType::ENTITIES => {
                                 let entities = s.split(" ");
-                                for entity in entities{
+                                for entity in entities {
                                     let mut ch = entity.chars();
-                                    match ch.next(){
+                                    match ch.next() {
                                         None => {}
                                         Some(c) => {
-                                            if is_ncnamestartchar(&c){
+                                            if is_ncnamestartchar(&c) {
                                                 for cha in ch {
-                                                    if !is_ncnamechar(&cha){
-                                                        return Err(ParseError::NotWellFormed(String::from(
-                                                        "DTD Attvalue default is invalid",
-                                                        )));
+                                                    if !is_ncnamechar(&cha) {
+                                                        return Err(ParseError::NotWellFormed(
+                                                            String::from(
+                                                                "DTD Attvalue default is invalid",
+                                                            ),
+                                                        ));
                                                     }
                                                 }
                                             } else {
-                                                return Err(ParseError::NotWellFormed(String::from(
-                                                "DTD Attvalue default is invalid",
-                                                )));
+                                                return Err(ParseError::NotWellFormed(
+                                                    String::from("DTD Attvalue default is invalid"),
+                                                ));
                                             }
                                         }
                                     }
                                 }
                             }
-                            _ => {/*TODO complete the rest of these */}
+                            _ => { /*TODO complete the rest of these */ }
                         }
-                    },
+                    }
                     //else do nothing
                     _ => {}
                 }
@@ -182,54 +192,51 @@ pub(crate) fn attlistdecl<N: Node>(
 
             match state2.dtd.attlists.get(&n) {
                 None => {
-                    state2
-                        .dtd
-                        .attlists
-                        .insert(n, atts);
+                    state2.dtd.attlists.insert(n, atts);
                     Ok(((input2, state2), ()))
                 }
                 Some(al) => {
                     let mut newal = al.clone();
-                    for (attname, (atttype, defaultdecl, is_editable)) in atts.iter(){
-                        match newal.get(attname){
+                    for (attname, (atttype, defaultdecl, is_editable)) in atts.iter() {
+                        match newal.get(attname) {
                             None => {
                                 newal.insert(
-                                    attname.clone(), (atttype.clone(), defaultdecl.clone(), *is_editable)
+                                    attname.clone(),
+                                    (atttype.clone(), defaultdecl.clone(), *is_editable),
                                 );
                             }
                             Some((_, _, existing_is_editable)) => {
                                 if *existing_is_editable {
                                     newal.insert(
-                                        attname.clone(), (atttype.clone(), defaultdecl.clone(), *is_editable)
+                                        attname.clone(),
+                                        (atttype.clone(), defaultdecl.clone(), *is_editable),
                                     );
                                 }
                             }
                         }
                     }
-                    state2
-                        .dtd
-                        .attlists
-                        .insert(n, newal);
+                    state2.dtd.attlists.insert(n, newal);
                     Ok(((input2, state2), ()))
                 }
             }
 
+            /*
+                   state2
+                       .dtd
+                       .attlists
+                       .insert(n, atts);
+                   Ok(((input2, state2), ()))
 
-    /*
-            state2
-                .dtd
-                .attlists
-                .insert(n, atts);
-            Ok(((input2, state2), ()))
-
-     */
+            */
         }
         Err(err) => Err(err),
     }
 }
 
 //AttDef ::= S Name S AttType S DefaultDecl
-fn attdef<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, AttType, DefaultDecl)), ParseError> {
+fn attdef<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (QualifiedName, AttType, DefaultDecl)), ParseError>
+{
     map(
         tuple6(
             whitespace1(),
@@ -239,8 +246,8 @@ fn attdef<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Qualif
             whitespace1(),
             defaultdecl(),
         ),
-        |(_,an,_,at,_,dd)| {
-            let qn = if an.contains(':'){
+        |(_, an, _, at, _, dd)| {
+            let qn = if an.contains(':') {
                 let mut attnamesplit = an.split(":");
                 let prefix = Some(attnamesplit.next().unwrap().to_string());
                 let local = attnamesplit.collect::<String>();
@@ -271,7 +278,8 @@ fn atttype<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttTyp
 }
 
 //DefaultDecl ::= '#REQUIRED' | '#IMPLIED' | (('#FIXED' S)? AttValue)
-fn defaultdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DefaultDecl), ParseError> {
+fn defaultdecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DefaultDecl), ParseError> {
     alt3(
         value(tag("#REQUIRED"), DefaultDecl::Required),
         value(tag("#IMPLIED"), DefaultDecl::Implied),
@@ -285,9 +293,9 @@ fn defaultdecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, De
             ),
             |(x, y)| match x {
                 None => DefaultDecl::Default(y),
-                Some(_) => DefaultDecl::FIXED(y)
+                Some(_) => DefaultDecl::FIXED(y),
             },
-        )
+        ),
     )
 }
 

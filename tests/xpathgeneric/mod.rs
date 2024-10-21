@@ -1286,7 +1286,11 @@ where
         Transform::Invoke(qn, ap, _) => {
             assert_eq!(
                 qn,
-                Rc::new(QualifiedName::new(None, Some("test".to_string()), "my_func".to_string()))
+                Rc::new(QualifiedName::new(
+                    None,
+                    Some("test".to_string()),
+                    "my_func".to_string()
+                ))
             );
             match ap {
                 ActualParameters::Positional(v) => {
@@ -1375,7 +1379,10 @@ where
     Ok(())
 }
 
-pub fn generic_navigate_predicate_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+pub fn generic_navigate_predicate_1<N: Node, G, H>(
+    make_empty_doc: G,
+    make_doc: H,
+) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
@@ -1390,10 +1397,13 @@ where
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .build();
         let s = ContextBuilder::new()
-            .context(vec![Item::Node(d.first_child().unwrap().first_child().unwrap())])
+            .context(vec![Item::Node(
+                d.first_child().unwrap().first_child().unwrap(),
+            )])
             .result_document(rd)
             .build()
-            .dispatch(&mut stctxt, &xform).expect("transform failed");
+            .dispatch(&mut stctxt, &xform)
+            .expect("transform failed");
         s.iter().for_each(|x| eprintln!("got item {:?}", x));
         assert_eq!(s.len(), 1);
         assert_eq!(s[0].name().to_string(), "b");
@@ -1463,7 +1473,8 @@ where
         .build()
         .dispatch(
             &mut stctxt,
-            &parse("document('urn:example.org/test')", None).expect("unable to parse XPath expression"),
+            &parse("document('urn:example.org/test')", None)
+                .expect("unable to parse XPath expression"),
         )
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
@@ -1505,7 +1516,11 @@ where
         .expect("unable to create element");
     top.push(blue1).expect("unable to add node");
     let mut yellow1 = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("three"))))
+        .new_element(Rc::new(QualifiedName::new(
+            None,
+            None,
+            String::from("three"),
+        )))
         .expect("unable to create element");
     yellow1
         .push(

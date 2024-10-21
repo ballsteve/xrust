@@ -1,7 +1,4 @@
-use std::rc::Rc;
-use crate::value::Value;
 use crate::item::{Node, NodeType};
-use crate::xdmerror::{Error, ErrorKind};
 use crate::parser::combinators::alt::{alt2, alt4};
 use crate::parser::combinators::many::many0nsreset;
 use crate::parser::combinators::map::map;
@@ -17,7 +14,10 @@ use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
+use crate::value::Value;
+use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::DefaultDecl;
+use std::rc::Rc;
 
 // Element ::= EmptyElemTag | STag content ETag
 pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
@@ -39,22 +39,28 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
         )(input)
         {
             Ok(((input1, state1), (_, mut n, (av, namespaces), _, _))) => {
-                if n.resolve(|p| state1.namespace.get(&p).map_or(
-                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
-                    |r| Ok(r.clone())
-                )).is_err() {
+                if n.resolve(|p| {
+                    state1.namespace.get(&p).map_or(
+                        Err(Error::new(
+                            ErrorKind::DynamicAbsent,
+                            "no namespace for prefix",
+                        )),
+                        |r| Ok(r.clone()),
+                    )
+                })
+                .is_err()
+                {
                     return Err(ParseError::MissingNameSpace);
                 }
-                let elementname = state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
-                if state1.xmlversion=="1.1"
+                let elementname =
+                    state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
+                if state1.xmlversion == "1.1"
                     && elementname.namespace_uri_to_string() == Some("".to_string())
-                    && elementname.prefix_to_string().is_some(){
+                    && elementname.prefix_to_string().is_some()
+                {
                     return Err(ParseError::MissingNameSpace);
                 }
-                let d = state1
-                    .doc
-                    .clone()
-                    .unwrap();
+                let d = state1.doc.clone().unwrap();
                 let e = d
                     .new_element(elementname)
                     .expect("unable to create element");
@@ -62,30 +68,42 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                 //Looking up the DTD, seeing if there are any attributes we should populate
                 //Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
                 if state1.attr_defaults {
-                    match state1.dtd.attlists.get(&QualifiedName::new_from_values(None, n.prefix(), n.localname())){
-                        None => {
-
-                        }
+                    match state1.dtd.attlists.get(&QualifiedName::new_from_values(
+                        None,
+                        n.prefix(),
+                        n.localname(),
+                    )) {
+                        None => {}
                         Some(atts) => {
-                            for (attname, (_, defdecl, _)) in atts.iter(){
+                            for (attname, (_, defdecl, _)) in atts.iter() {
                                 match defdecl {
                                     DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
                                         let mut at = attname.clone();
                                         match at.prefix() {
                                             None => {}
                                             Some(_) => {
-                                                if at.resolve(|p| state1.namespace.get(&p).map_or(
-                                                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
-                                                    |r| Ok(r.clone())
-                                                )).is_err() {
+                                                if at
+                                                    .resolve(|p| {
+                                                        state1.namespace.get(&p).map_or(
+                                                            Err(Error::new(
+                                                                ErrorKind::DynamicAbsent,
+                                                                "no namespace for prefix",
+                                                            )),
+                                                            |r| Ok(r.clone()),
+                                                        )
+                                                    })
+                                                    .is_err()
+                                                {
                                                     return Err(ParseError::MissingNameSpace);
                                                 }
                                             }
                                         }
-                                        let newattr = d.new_attribute(
-                                            Rc::new(at),
-                                            Rc::new(Value::String(s.clone()))
-                                        ).expect("unable to create attlist attribute");
+                                        let newattr = d
+                                            .new_attribute(
+                                                Rc::new(at),
+                                                Rc::new(Value::String(s.clone())),
+                                            )
+                                            .expect("unable to create attlist attribute");
                                         e.add_attribute(newattr)
                                             .expect("unable to add attlist attribute");
                                     }
@@ -100,7 +118,10 @@ fn emptyelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), 
                 //TODO merge into a single set of attributes before creating.
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
-                namespaces.iter().for_each(|nn| e.add_namespace(nn.clone()).expect("unable to add namespace node"));
+                namespaces.iter().for_each(|nn| {
+                    e.add_namespace(nn.clone())
+                        .expect("unable to add namespace node")
+                });
 
                 Ok(((input1, state1.clone()), e))
             }
@@ -135,18 +156,27 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
         )(input)
         {
             Ok(((input1, state1), (_, mut n, (av, namespaces), _, _, c, _, _, _, _))) => {
-                if n.resolve(|p| state1.namespace.get(&p).map_or(
-                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
-                    |r| Ok(r.clone())
-                )).is_err() {
+                if n.resolve(|p| {
+                    state1.namespace.get(&p).map_or(
+                        Err(Error::new(
+                            ErrorKind::DynamicAbsent,
+                            "no namespace for prefix",
+                        )),
+                        |r| Ok(r.clone()),
+                    )
+                })
+                .is_err()
+                {
                     return Err(ParseError::MissingNameSpace);
                 }
                 let d = state1.doc.clone().unwrap();
 
-                let elementname = state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
-                if state1.xmlversion=="1.1"
+                let elementname =
+                    state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
+                if state1.xmlversion == "1.1"
                     && elementname.namespace_uri_to_string() == Some("".to_string())
-                    && elementname.prefix_to_string().is_some(){
+                    && elementname.prefix_to_string().is_some()
+                {
                     return Err(ParseError::MissingNameSpace);
                 }
                 let mut e = d
@@ -156,30 +186,42 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                 //Looking up the DTD, seeing if there are any attributes we should populate
                 //Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
                 if state1.attr_defaults {
-                    match state1.dtd.attlists.get(&QualifiedName::new_from_values(None, n.prefix(), n.localname())){
-                        None => {
-
-                        }
+                    match state1.dtd.attlists.get(&QualifiedName::new_from_values(
+                        None,
+                        n.prefix(),
+                        n.localname(),
+                    )) {
+                        None => {}
                         Some(atts) => {
-                            for (attname, (_, defdecl, _)) in atts.iter(){
+                            for (attname, (_, defdecl, _)) in atts.iter() {
                                 match defdecl {
                                     DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
                                         let mut at = attname.clone();
                                         match at.prefix() {
                                             None => {}
                                             Some(_) => {
-                                                if at.resolve(|p| state1.namespace.get(&p).map_or(
-                                                    Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
-                                                    |r| Ok(r.clone())
-                                                )).is_err() {
+                                                if at
+                                                    .resolve(|p| {
+                                                        state1.namespace.get(&p).map_or(
+                                                            Err(Error::new(
+                                                                ErrorKind::DynamicAbsent,
+                                                                "no namespace for prefix",
+                                                            )),
+                                                            |r| Ok(r.clone()),
+                                                        )
+                                                    })
+                                                    .is_err()
+                                                {
                                                     return Err(ParseError::MissingNameSpace);
                                                 }
                                             }
                                         }
-                                        let newattr = d.new_attribute(
-                                            Rc::new(at),
-                                            Rc::new(Value::String(s.clone()))
-                                        ).expect("unable to create attlist attribute");
+                                        let newattr = d
+                                            .new_attribute(
+                                                Rc::new(at),
+                                                Rc::new(Value::String(s.clone())),
+                                            )
+                                            .expect("unable to create attlist attribute");
                                         e.add_attribute(newattr)
                                             .expect("unable to add attlist attribute");
                                     }
@@ -194,7 +236,8 @@ fn taggedelem<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N),
                 //TODO merge into a single set of attributes before creating.
                 av.iter()
                     .for_each(|b| e.add_attribute(b.clone()).expect("unable to add attribute"));
-                namespaces.iter()
+                namespaces
+                    .iter()
                     .for_each(|b| e.add_namespace(b.clone()).expect("unable to add namespace"));
                 // Add child nodes
                 c.iter().for_each(|d| {

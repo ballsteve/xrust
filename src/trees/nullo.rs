@@ -1,19 +1,18 @@
-/// A null tree implementation
-///
-/// This tree implementation implements nothing.
-/// The parser combinator is generic in [Node].
-/// Occasionally, a module using the parser, but not needing a [Node],
-/// nevertheless requires a concrete type that has the [Node] trait.
-
-use std::cmp::Ordering;
-use std::fmt;
-use std::rc::Rc;
 use crate::item::{Node, NodeType};
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder};
+/// A null tree implementation
+///
+/// This tree implementation implements nothing.
+/// The parser combinator is generic in [Node].
+/// Occasionally, a module using the parser, but not needing a [Node],
+/// nevertheless requires a concrete type that has the [Node] trait.
+use std::cmp::Ordering;
+use std::fmt;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct Nullo();
@@ -21,7 +20,9 @@ pub struct Nullo();
 impl Node for Nullo {
     type NodeIterator = Box<dyn Iterator<Item = Nullo>>;
 
-    fn new_document() -> Self { Nullo() }
+    fn new_document() -> Self {
+        Nullo()
+    }
     fn node_type(&self) -> NodeType {
         NodeType::Unknown
     }
@@ -118,7 +119,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_processing_instruction(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
+    fn new_processing_instruction(
+        &self,
+        _: Rc<QualifiedName>,
+        _: Rc<Value>,
+    ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),

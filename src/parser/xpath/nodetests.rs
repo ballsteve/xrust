@@ -1,6 +1,5 @@
 //! Functions that produce tests for nodes.
 
-use std::rc::Rc;
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt5};
 use crate::parser::combinators::map::map;
@@ -9,6 +8,7 @@ use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::tuple3;
 use crate::parser::{ParseError, ParseInput};
 use crate::transform::{KindTest, NameTest, NodeTest, WildcardOrName};
+use std::rc::Rc;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xml::qname::{ncname, qualname};
 use crate::value::Value;

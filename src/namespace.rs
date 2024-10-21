@@ -2,10 +2,10 @@
 //!
 //! The [NamespaceMap] object represents a static mapping of prefix to namespace URI. Since namespaces don't change once they are declared, this object is usually Rc-shared.
 
-use std::collections::HashMap;
-use std::collections::hash_map::Iter;
-use std::rc::Rc;
 use crate::value::Value;
+use std::collections::hash_map::Iter;
+use std::collections::HashMap;
+use std::rc::Rc;
 
 /// In some circumstances, a transformation must resolve a qualified name.
 /// To do this, it must have a copy of the in-scope namespaces.
@@ -18,7 +18,10 @@ impl NamespaceMap {
     /// Create a new namespace mapping.
     pub fn new() -> Self {
         let mut map = HashMap::new();
-        map.insert(Some(Rc::new(Value::from("xml"))), Rc::new(Value::from("http://www.w3.org/XML/1998/namespace")));
+        map.insert(
+            Some(Rc::new(Value::from("xml"))),
+            Rc::new(Value::from("http://www.w3.org/XML/1998/namespace")),
+        );
         NamespaceMap(map)
     }
     /// Insert a mapping into the map.

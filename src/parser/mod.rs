@@ -4,17 +4,17 @@ A parser combinator, inspired by nom.
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
 */
 
+use crate::externals::URLResolver;
+use crate::item::Node;
+use crate::namespace::NamespaceMap;
+use crate::qname::QualifiedName;
+use crate::value::Value;
+use crate::xdmerror::{Error, ErrorKind};
+use crate::xmldecl::DTD;
+use std::cell::RefCell;
 use std::collections::HashMap;
 use std::fmt;
 use std::rc::Rc;
-use std::cell::RefCell;
-use crate::externals::URLResolver;
-use crate::value::Value;
-use crate::item::Node;
-use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::DTD;
-use crate::qname::QualifiedName;
-use crate::namespace::NamespaceMap;
 
 pub(crate) mod avt;
 pub mod combinators;
@@ -77,7 +77,7 @@ impl ParserConfig {
             ext_dtd_resolver: None,
             docloc: None,
             entitydepth: 8,
-            attr_defaults: true
+            attr_defaults: true,
         }
     }
 }
@@ -93,18 +93,18 @@ pub struct ParserState<N: Node> {
     // Do we add DTD specified attributes or not
     attr_defaults: bool,
     /*
-        The in-scope namespaces are tracked in a hashmap.
-        This is used during XML document creation.
-        The HashMap is Rc-shared. If an element does not declare any new namespaces then it shares its parent's HashMap.
-        NOTE: the "None" key in this hashmap is used to track the namespace when no alias is declared, i.e. unprefixed names.
-     */
+       The in-scope namespaces are tracked in a hashmap.
+       This is used during XML document creation.
+       The HashMap is Rc-shared. If an element does not declare any new namespaces then it shares its parent's HashMap.
+       NOTE: the "None" key in this hashmap is used to track the namespace when no alias is declared, i.e. unprefixed names.
+    */
     namespace: Rc<NamespaceMap>, // (prefix, namespace node)
     /*
-        Interning of values.
-        Strings (represented in xrust as a Value) are often repeated.
-        To cut down on data copying, we will intern the string and reuse it.
-        NB. in a future version, we will intern values globally so that equality can be tested by comparing pointers.
-     */
+       Interning of values.
+       Strings (represented in xrust as a Value) are often repeated.
+       To cut down on data copying, we will intern the string and reuse it.
+       NB. in a future version, we will intern values globally so that equality can be tested by comparing pointers.
+    */
     interned_values: Rc<RefCell<HashMap<String, Rc<Value>>>>,
     // Intern QualifiedNames. Map (Option<Namespace URI>, local-part) -> QN
     interned_names: Rc<RefCell<HashMap<(Option<Rc<Value>>, Rc<Value>), Rc<QualifiedName>>>>,
@@ -131,7 +131,6 @@ pub struct ParserState<N: Node> {
     so we need to track when we are currently in the main document or outside it.
      */
     currentlyexternal: bool,
-
 }
 
 impl<N: Node> ParserState<N> {
@@ -155,7 +154,10 @@ impl<N: Node> ParserState<N> {
             namespace: Rc::new(ns_map),
             interned_values: Rc::new(RefCell::new(HashMap::from([
                 (String::from("xml"), xnsprefix.clone()),
-                (String::from("http://www.w3.org/XML/1998/namespace"), xnsuri.clone()),
+                (
+                    String::from("http://www.w3.org/XML/1998/namespace"),
+                    xnsuri.clone(),
+                ),
             ]))),
             interned_names: Rc::new(RefCell::new(HashMap::new())),
             maxentitydepth: pc.entitydepth,
@@ -177,7 +179,9 @@ impl<N: Node> ParserState<N> {
         self.doc.clone()
     }
     /// Get the current node
-    pub fn current(&self) -> Option<N> { self.cur.clone() }
+    pub fn current(&self) -> Option<N> {
+        self.cur.clone()
+    }
     /// Get a copy of all namespaces
     pub fn namespaces_ref(&self) -> &NamespaceMap {
         &self.namespace
@@ -194,7 +198,7 @@ impl<N: Node> ParserState<N> {
     pub fn get_value(&self, s: String) -> Rc<Value> {
         {
             if let Some(u) = self.interned_values.borrow().get(&s) {
-                return u.clone()
+                return u.clone();
             }
         }
         // Otherwise this is a new entry
@@ -208,16 +212,26 @@ impl<N: Node> ParserState<N> {
         &self,
         nsuri: Option<Rc<Value>>,
         prefix: Option<Rc<Value>>,
-        local_part: Rc<Value>
+        local_part: Rc<Value>,
     ) -> Rc<QualifiedName> {
         {
-            if let Some(qn) = self.interned_names.borrow().get(&(nsuri.clone(), local_part.clone())) {
-                return qn.clone()
+            if let Some(qn) = self
+                .interned_names
+                .borrow()
+                .get(&(nsuri.clone(), local_part.clone()))
+            {
+                return qn.clone();
             }
         }
         // Otherwise this is a new entry
-        let newqn = Rc::new(QualifiedName::new_from_values(nsuri.clone(), prefix.clone(), local_part.clone()));
-        self.interned_names.borrow_mut().insert((nsuri, local_part), newqn.clone());
+        let newqn = Rc::new(QualifiedName::new_from_values(
+            nsuri.clone(),
+            prefix.clone(),
+            local_part.clone(),
+        ));
+        self.interned_names
+            .borrow_mut()
+            .insert((nsuri, local_part), newqn.clone());
         newqn
     }
 }

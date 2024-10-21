@@ -1,7 +1,7 @@
 use std::fs;
-use xrust::Node;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
+use xrust::Node;
 
 #[test]
 fn serializer_issue_98() {
@@ -20,15 +20,10 @@ fn serializer_issue_98() {
         let doc = xml::parse(RNode::new_document(), data.clone().as_str(), None).unwrap();
         let xml_output = doc.to_xml();
         if let Some(prev_xml_output) = &prev_xml_output {
-            assert_eq!(
-                &xml_output,
-                prev_xml_output,
-                "Failed on run {}", iteration
-            );
+            assert_eq!(&xml_output, prev_xml_output, "Failed on run {}", iteration);
         }
         prev_xml_output = Some(xml_output);
     }
-
 }
 
 #[test]
@@ -43,15 +38,13 @@ fn serializer_1() {
     let xml_output = doc.to_xml();
 
     /*
-        Note, xRust currently does not output self closing tags, if it does you'll need to update
-        this test with
+       Note, xRust currently does not output self closing tags, if it does you'll need to update
+       this test with
 
-        assert_eq!(xml_output, "<doc><child/></doc>");
-     */
+       assert_eq!(xml_output, "<doc><child/></doc>");
+    */
     assert_eq!(xml_output, "<doc><child></child></doc>");
-
 }
-
 
 #[test]
 fn serializer_2() {
@@ -65,13 +58,15 @@ fn serializer_2() {
     let xml_output = doc.to_xml();
 
     /*
-        Note, xRust currently does not output self closing tags, if it does you'll need to update
-        this test with
+       Note, xRust currently does not output self closing tags, if it does you'll need to update
+       this test with
 
-        assert_eq!(xml_output, "<doc xmlns='ns1'><child xmlns='ns2'/></doc>");
-     */
-    assert_eq!(xml_output, "<doc xmlns='ns1'><child xmlns='ns2'></child></doc>");
-
+       assert_eq!(xml_output, "<doc xmlns='ns1'><child xmlns='ns2'/></doc>");
+    */
+    assert_eq!(
+        xml_output,
+        "<doc xmlns='ns1'><child xmlns='ns2'></child></doc>"
+    );
 }
 
 #[test]
@@ -86,13 +81,15 @@ fn serializer_3() {
     let xml_output = doc.to_xml();
 
     /*
-        Note, xRust currently does not output self closing tags, if it does you'll need to update
-        this test with
+       Note, xRust currently does not output self closing tags, if it does you'll need to update
+       this test with
 
-        assert_eq!(xml_output, "<a:doc xmlns:a='ns1'><a:child xmlns:a='ns2'/></a:doc>");
-     */
-    assert_eq!(xml_output, "<a:doc xmlns:a='ns1'><a:child xmlns:a='ns2'></a:child></a:doc>");
-
+       assert_eq!(xml_output, "<a:doc xmlns:a='ns1'><a:child xmlns:a='ns2'/></a:doc>");
+    */
+    assert_eq!(
+        xml_output,
+        "<a:doc xmlns:a='ns1'><a:child xmlns:a='ns2'></a:child></a:doc>"
+    );
 }
 
 #[test]
@@ -112,24 +109,23 @@ fn serializer_4() {
     let xml_output = doc.to_xml();
 
     /*
-        Note, xRust currently does not output self closing tags, if it does you'll need to update
-        this test with
+            Note, xRust currently does not output self closing tags, if it does you'll need to update
+            this test with
 
-    assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' other='valx' someatt='val5' a:att4='val4'>
-    <content2>text</content2>
-    <content3/>
-    <content4 xmlns='thirdnamespace' a:something='test'>text3</content4>
-    <content05 xmlns:a='fourthnamespace' a:somethingelse='test2'>text4</content05>
-</content>");
+        assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' other='valx' someatt='val5' a:att4='val4'>
+        <content2>text</content2>
+        <content3/>
+        <content4 xmlns='thirdnamespace' a:something='test'>text3</content4>
+        <content05 xmlns:a='fourthnamespace' a:somethingelse='test2'>text4</content05>
+    </content>");
 
-     */
+         */
     assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' other='valx' someatt='val5' a:att4='val4'>
     <content2>text</content2>
     <content3></content3>
     <content4 xmlns='thirdnamespace' a:something='test'>text3</content4>
     <content05 xmlns:a='fourthnamespace' a:somethingelse='test2'>text4</content05>
 </content>");
-
 }
 
 #[test]
@@ -144,6 +140,8 @@ fn serializer_5() {
     let doc = xml::parse(RNode::new_document(), data, None).unwrap();
     let xml_output = doc.to_xml();
 
-    assert_eq!(xml_output, "<doc attr='&apos;'>XML escape test: &lt; &gt; &amp; &apos; &quot;</doc>");
-
+    assert_eq!(
+        xml_output,
+        "<doc attr='&apos;'>XML escape test: &lt; &gt; &amp; &apos; &quot;</doc>"
+    );
 }

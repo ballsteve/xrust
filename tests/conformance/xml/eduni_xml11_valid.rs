@@ -6,8 +6,8 @@ Richard Tobin's XML 1.1 test suite 13 Feb 2003
 
 use crate::conformance::non_utf8_file_reader;
 use std::fs;
-use xrust::parser::xml;
 use xrust::item::Node;
+use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -789,7 +789,7 @@ fn rmt050() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -823,7 +823,7 @@ fn rmt051() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 

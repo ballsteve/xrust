@@ -5,8 +5,8 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 */
 
 use std::fs;
-use xrust::parser::xml;
 use xrust::item::Node;
+use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
 #[test]

@@ -12,7 +12,7 @@ use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};
 use crate::parser::{ParseError, ParseInput};
-use crate::transform::{Transform, in_scope_namespaces};
+use crate::transform::{in_scope_namespaces, Transform};
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
 pub(crate) fn if_expr<'a, N: Node + 'a>(
@@ -98,13 +98,23 @@ pub(crate) fn let_expr<'a, N: Node + 'a>(
         ),
         |(mut v, _, e), state| {
             let (qn, f) = v.pop().unwrap();
-            let mut result = Transform::VariableDeclaration(qn, Box::new(f), Box::new(e), in_scope_namespaces(state.cur.clone()));
+            let mut result = Transform::VariableDeclaration(
+                qn,
+                Box::new(f),
+                Box::new(e),
+                in_scope_namespaces(state.cur.clone()),
+            );
             loop {
                 if v.is_empty() {
                     break;
                 } else {
                     let (qn, f) = v.pop().unwrap();
-                    let inter = Transform::VariableDeclaration(qn, Box::new(f), Box::new(result), in_scope_namespaces(state.cur.clone()));
+                    let inter = Transform::VariableDeclaration(
+                        qn,
+                        Box::new(f),
+                        Box::new(result),
+                        in_scope_namespaces(state.cur.clone()),
+                    );
                     result = inter;
                 }
             }

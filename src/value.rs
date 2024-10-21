@@ -2,7 +2,6 @@
 //!
 //! An atomic value that is an item in a sequence.
 
-use std::rc::Rc;
 use crate::qname::QualifiedName;
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
@@ -15,6 +14,7 @@ use rust_decimal_macros::dec;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Formatter;
+use std::rc::Rc;
 
 /// Comparison operators for values
 #[derive(Copy, Clone, Debug)]
@@ -451,7 +451,6 @@ impl Ord for Value {
         }
     }
 }
-
 
 impl From<String> for Value {
     fn from(s: String) -> Self {

@@ -10,8 +10,8 @@ James Clark XMLTEST cases - Standalone
 
 use crate::conformance::{dtdfileresolve, non_utf8_file_reader};
 use std::fs;
-use xrust::parser::{xml, ParserConfig};
 use xrust::item::Node;
+use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -282,7 +282,7 @@ fn validsa008() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -588,7 +588,7 @@ fn validsa017() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -622,7 +622,7 @@ fn validsa018() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -656,7 +656,7 @@ fn validsa019() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -690,7 +690,7 @@ fn validsa020() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -1265,7 +1265,7 @@ fn validsa017a() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -2316,7 +2316,7 @@ fn validsa067() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -2350,7 +2350,7 @@ fn validsa068() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -3032,7 +3032,7 @@ fn validsa088() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -3555,7 +3555,7 @@ fn validsa103() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -3930,7 +3930,7 @@ fn validsa114() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 

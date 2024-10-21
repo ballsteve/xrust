@@ -14,5 +14,5 @@ pub(crate) mod value;
 pub(crate) mod wellformed;
 pub mod whitespace;
 
-pub(crate) mod support;
 pub mod debug;
+pub(crate) mod support;

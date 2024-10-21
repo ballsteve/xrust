@@ -150,7 +150,11 @@ fn relativepath_expr<'a, N: Node + 'a>(
 // StepExpr ::= PostfixExpr | AxisStep
 fn step_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt3(abbreviated_parent::<N>(), postfix_expr::<N>(), axisstep::<N>()))
+    Box::new(alt3(
+        abbreviated_parent::<N>(),
+        postfix_expr::<N>(),
+        axisstep::<N>(),
+    ))
 }
 
 // AxisStep ::= (ReverseStep | ForwardStep) PredicateList

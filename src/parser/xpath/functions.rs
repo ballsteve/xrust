@@ -1,6 +1,5 @@
 //! Functions for functions.
 
-use std::rc::Rc;
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::list::separated_list0;
@@ -10,6 +9,7 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple3, tuple6};
 use crate::parser::combinators::whitespace::xpwhitespace;
+use std::rc::Rc;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xml::qname::qualname;
 use crate::parser::xpath::expr_single_wrapper;
@@ -19,7 +19,7 @@ use crate::parser::xpath::numbers::unary_expr;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
-use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName, in_scope_namespaces};
+use crate::transform::{in_scope_namespaces, NameTest, NodeTest, Transform, WildcardOrName};
 use crate::xdmerror::ErrorKind;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
@@ -422,12 +422,22 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     if a.len() == 2 {
                         let m = a.pop().unwrap();
                         let name = a.pop().unwrap();
-                        Transform::Key(Box::new(name), Box::new(m), None, in_scope_namespaces(state.cur.clone()))
+                        Transform::Key(
+                            Box::new(name),
+                            Box::new(m),
+                            None,
+                            in_scope_namespaces(state.cur.clone()),
+                        )
                     } else if a.len() == 3 {
                         let u = a.pop().unwrap();
                         let m = a.pop().unwrap();
                         let name = a.pop().unwrap();
-                        Transform::Key(Box::new(name), Box::new(m), Some(Box::new(u)), in_scope_namespaces(state.cur.clone()))
+                        Transform::Key(
+                            Box::new(name),
+                            Box::new(m),
+                            Some(Box::new(u)),
+                            in_scope_namespaces(state.cur.clone()),
+                        )
                     } else {
                         // Wrong # arguments
                         Transform::Error(
@@ -439,7 +449,10 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 "system-property" => {
                     if a.len() == 1 {
                         let p = a.pop().unwrap();
-                        Transform::SystemProperty(Box::new(p), in_scope_namespaces(state.cur.clone()))
+                        Transform::SystemProperty(
+                            Box::new(p),
+                            in_scope_namespaces(state.cur.clone()),
+                        )
                     } else {
                         // Wrong # arguments
                         Transform::Error(

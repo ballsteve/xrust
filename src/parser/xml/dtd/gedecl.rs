@@ -49,9 +49,16 @@ pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
                 tuple2(
                     map(
                         many0(alt4(
+                            //we leave the &#13; or #xD; as is, as it will be converted later if needed and we don't want the \r character stripped later.
                             map(
                                 wellformed_ver(chardata_unicode_codepoint(), is_char10, is_char11),
-                                |c| c.to_string(),
+                                |c| {
+                                    if c == '\r' {
+                                        "&#13;".to_string()
+                                    } else {
+                                        c.to_string()
+                                    }
+                                },
                             ),
                             petextreference(),
                             //General entity is ignored.

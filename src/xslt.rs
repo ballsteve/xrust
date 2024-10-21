@@ -81,7 +81,8 @@ use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::numbers::{Level, Numbering};
 use crate::transform::template::Template;
 use crate::transform::{
-    in_scope_namespaces, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
+    in_scope_namespaces, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform,
+    WildcardOrName,
 };
 use crate::value::*;
 use crate::xdmerror::*;
@@ -434,8 +435,10 @@ where
                 vec![import],
                 None,
                 mode.map(|n| {
-                    Rc::new(QualifiedName::try_from((n.to_string().as_str(), n))
-                        .expect("unable to resolve qualified name"))
+                    Rc::new(
+                        QualifiedName::try_from((n.to_string().as_str(), n))
+                            .expect("unable to resolve qualified name"),
+                    )
                 }), // TODO: don't panic
             ));
             Ok::<(), Error>(())
@@ -600,8 +603,7 @@ where
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
             // Name must have a namespace. See XSLT 10.3.1.
-            let eqname =
-                QualifiedName::try_from((name.to_string().as_str(), c.clone()))?;
+            let eqname = QualifiedName::try_from((name.to_string().as_str(), c.clone()))?;
             if eqname.namespace_uri().is_none() {
                 return Err(Error::new_with_code(
                     ErrorKind::StaticAbsent,
@@ -670,7 +672,10 @@ fn to_transform<N: Node>(
             n.to_string(),
         ))))),
         NodeType::Element => {
-            match (n.name().namespace_uri_to_string().as_deref(), n.name().localname_to_string().as_str()) {
+            match (
+                n.name().namespace_uri_to_string().as_deref(),
+                n.name().localname_to_string().as_str(),
+            ) {
                 (Some(XSLTNS), "text") => {
                     let doe = n.get_attribute(&QualifiedName::new(
                         None,
@@ -748,8 +753,10 @@ fn to_transform<N: Node>(
                         Ok(Transform::ApplyTemplates(
                             Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
                             m.map(|s| {
-                                Rc::new(QualifiedName::try_from((s.to_string().as_str(), n))
-                                    .expect("unable to resolve qualified name"))
+                                Rc::new(
+                                    QualifiedName::try_from((s.to_string().as_str(), n))
+                                        .expect("unable to resolve qualified name"),
+                                )
                             }),
                             sort_keys,
                         )) // TODO: don't panic
@@ -761,8 +768,10 @@ fn to_transform<N: Node>(
                                 NodeTest::Kind(KindTest::Any),
                             ))),
                             m.map(|s| {
-                                Rc::new(QualifiedName::try_from((s.to_string().as_str(), n))
-                                    .expect("unable to resolve qualified name"))
+                                Rc::new(
+                                    QualifiedName::try_from((s.to_string().as_str(), n))
+                                        .expect("unable to resolve qualified name"),
+                                )
                             }),
                             sort_keys,
                         )) // TODO: don't panic
@@ -906,34 +915,18 @@ fn to_transform<N: Node>(
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select"));
                     if !s.to_string().is_empty() {
                         match (
-                            n.get_attribute(&QualifiedName::new(
-                                None,
-                                None,
-                                "group-by",
-                            ))
-                            .to_string()
-                            .as_str(),
-                            n.get_attribute(&QualifiedName::new(
-                                None,
-                                None,
-                                "group-adjacent",
-                            ))
-                            .to_string()
-                            .as_str(),
-                            n.get_attribute(&QualifiedName::new(
-                                None,
-                                None,
-                                "group-starting-with",
-                            ))
-                            .to_string()
-                            .as_str(),
-                            n.get_attribute(&QualifiedName::new(
-                                None,
-                                None,
-                                "group-ending-with",
-                            ))
-                            .to_string()
-                            .as_str(),
+                            n.get_attribute(&QualifiedName::new(None, None, "group-by"))
+                                .to_string()
+                                .as_str(),
+                            n.get_attribute(&QualifiedName::new(None, None, "group-adjacent"))
+                                .to_string()
+                                .as_str(),
+                            n.get_attribute(&QualifiedName::new(None, None, "group-starting-with"))
+                                .to_string()
+                                .as_str(),
+                            n.get_attribute(&QualifiedName::new(None, None, "group-ending-with"))
+                                .to_string()
+                                .as_str(),
                         ) {
                             (by, "", "", "") => Ok(Transform::ForEach(
                                 Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()))?])),
@@ -1010,7 +1003,10 @@ fn to_transform<N: Node>(
                 (Some(XSLTNS), "copy-of") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select"));
                     if !s.to_string().is_empty() {
-                        Ok(Transform::DeepCopy(Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?)))
+                        Ok(Transform::DeepCopy(Box::new(parse::<N>(
+                            &s.to_string(),
+                            Some(n.clone()),
+                        )?)))
                     } else {
                         Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
                     }
@@ -1024,7 +1020,8 @@ fn to_transform<N: Node>(
                         n.child_iter()
                             .filter(|c| {
                                 c.is_element()
-                                    && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                                    && c.name().namespace_uri_to_string()
+                                        == Some(XSLTNS.to_string())
                                     && c.name().localname_to_string() == "with-param"
                             })
                             .try_for_each(|c| {
@@ -1123,10 +1120,7 @@ fn to_transform<N: Node>(
                             )?)),
                         ))
                     } else {
-                        Err(Error::new(
-                            ErrorKind::TypeError,
-                            "missing name attribute",
-                        ))
+                        Err(Error::new(ErrorKind::TypeError, "missing name attribute"))
                     }
                 }
                 (Some(XSLTNS), "comment") => Ok(Transform::LiteralComment(Box::new(
@@ -1155,8 +1149,7 @@ fn to_transform<N: Node>(
                     ))
                 }
                 (Some(XSLTNS), "message") => {
-                    let t =
-                        n.get_attribute(&QualifiedName::new(None, None, "terminate"));
+                    let t = n.get_attribute(&QualifiedName::new(None, None, "terminate"));
                     Ok(Transform::Message(
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
@@ -1380,8 +1373,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
                 m.name().localname_to_string().as_str(),
             ) {
                 (NodeType::Element, Some(XSLTNS), "strip-space") => {
-                    let v =
-                        m.get_attribute(&QualifiedName::new(None, None, "elements"));
+                    let v = m.get_attribute(&QualifiedName::new(None, None, "elements"));
                     if !v.to_string().is_empty() {
                         v.to_string().split_whitespace().try_for_each(|t| {
                             ss.push(NodeTest::try_from(t)?);
@@ -1395,8 +1387,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
                     }
                 }
                 (NodeType::Element, Some(XSLTNS), "preserve-space") => {
-                    let v =
-                        m.get_attribute(&QualifiedName::new(None, None, "elements"));
+                    let v = m.get_attribute(&QualifiedName::new(None, None, "elements"));
                     if !v.to_string().is_empty() {
                         v.to_string().split_whitespace().try_for_each(|t| {
                             ps.push(NodeTest::try_from(t)?);

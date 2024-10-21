@@ -8,8 +8,8 @@ mod reference;
 mod strings;
 mod xmldecl;
 
-use std::rc::Rc;
 use crate::item::Node;
+use crate::namespace::NamespaceMap;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
@@ -21,7 +21,7 @@ use crate::parser::xml::xmldecl::xmldecl;
 use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
-use crate::namespace::NamespaceMap;
+use std::rc::Rc;
 
 pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;

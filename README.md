@@ -65,7 +65,7 @@ Although the eventual desire is to implement all of XSLT v3.0 functionality, som
 
 ## Documentation
 
-See the [XSLT module](https://docs.rs/xrust/1.1.0/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
+See the [XSLT module](https://docs.rs/xrust/latest/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
 ## Examples
 
@@ -76,4 +76,9 @@ See the [XSLT module](https://docs.rs/xrust/1.1.0/xrust/xslt/index.html) for an 
 
 Status of [standards implementation](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
 
+## Release Notes
 
+| Releases | Notes                                                                                    |
+|--|------------------------------------------------------------------------------------------|
+| Version 1.1 | Added new_document() to Node trait. Tree documents can now be created in one step. eg. smite::RNode::new_document() |
+|  | XML Namespace support has been redesigned. Node names are now Rc-shared.                 |

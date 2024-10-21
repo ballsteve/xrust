@@ -291,7 +291,9 @@ impl<N: Node> TryFrom<&str> for Pattern<N> {
 /// Compile an XPath pattern. Uses the supplied [Node] to resolve in-scope XML Namespaces.
 impl<N: Node> TryFrom<(&str, N)> for Pattern<N> {
     type Error = Error;
-    fn try_from(e: (&str, N)) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
+    fn try_from(
+        e: (&str, N),
+    ) -> Result<Self, <crate::pattern::Pattern<N> as TryFrom<&str>>::Error> {
         if e.0.is_empty() {
             Err(Error::new(
                 ErrorKind::TypeError,
@@ -710,7 +712,9 @@ fn outer_function_name<'a, N: Node + 'a>(
             NodeTest::Name(NameTest {
                 ns: None,
                 prefix: None,
-                name: Some(WildcardOrName::Name(Rc::new(Value::from("element-with-id")))),
+                name: Some(WildcardOrName::Name(Rc::new(Value::from(
+                    "element-with-id",
+                )))),
             })
         }),
         map(tag("key"), |_| {
