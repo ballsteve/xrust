@@ -6,6 +6,7 @@ IBM test cases
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
+//use hexdump::hexdump;
 use xrust::parser::{xml, ParserConfig};
 use xrust::item::Node;
 use xrust::trees::smite::RNode;
@@ -917,7 +918,7 @@ fn ibmvalid_p14ibm14v02xml() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -1189,7 +1190,7 @@ fn ibmvalid_p16ibm16v03xml() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -1257,7 +1258,7 @@ fn ibmvalid_p18ibm18v01xml() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -1359,7 +1360,7 @@ fn ibmvalid_p20ibm20v02xml() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -4698,7 +4699,7 @@ fn ibmvalid_p66ibm66v01xml() {
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
-        testxml,
+        testxml.clone(),
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P66/ibm66v01.xml")
             .unwrap()
             .as_str(),
@@ -4706,7 +4707,7 @@ fn ibmvalid_p66ibm66v01xml() {
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
-        canonicalxml,
+        canonicalxml.clone(),
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P66/out/ibm66v01.xml")
             .unwrap()
             .as_str(),
@@ -4715,10 +4716,13 @@ fn ibmvalid_p66ibm66v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    eprintln!("left=='{:?}' right=='{:?}'", parseresult.clone().unwrap().get_canonical().unwrap(), canonicalparseresult.clone().unwrap());
+//    assert_eq!(
+//        parseresult.unwrap().get_canonical().unwrap(),
+//        canonicalparseresult.unwrap()
+//    );
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 

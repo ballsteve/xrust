@@ -39,6 +39,8 @@ formato = "0.2.0"
 english-numbers = "0.3.3"
 italian_numbers = "0.1.0"
 
+hexdump = "0.1.2"
+
 [dev-dependencies]
 criterion = "0.5.1"
 encoding_rs = "0.8.34"

@@ -789,7 +789,7 @@ fn rmt050() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
@@ -823,7 +823,7 @@ fn rmt051() {
     assert!(canonicalparseresult.is_ok());
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
+        canonicalparseresult.unwrap().get_canonical().unwrap()
     );
 }
 
