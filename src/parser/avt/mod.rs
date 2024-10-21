@@ -14,12 +14,13 @@ use crate::xdmerror::{Error, ErrorKind};
 use std::rc::Rc;
 //use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::expr;
-use crate::parser::xpath::support::none_of;
+use crate::parser::combinators::support::none_of;
 use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*
-pub fn parse<N: Node>(input: &str) -> Result<Transform<N>, Error> {
-    let state = ParserState::new(None, None);
+/// A [Node] is required to resolve in-scope XML Namespaces
+pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> {
+    let state = ParserState::new(None, n, None);
     match avt_expr((input, state)) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {

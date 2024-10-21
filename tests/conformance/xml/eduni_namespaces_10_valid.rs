@@ -1,10 +1,13 @@
 /*
-Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
- */
 
-use std::convert::TryFrom;
+Richard Tobin's XML Namespaces 1.0 test suite 14 Feb 2003
+
+*/
+
 use std::fs;
-use xrust::Document;
+use xrust::parser::xml;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmtns10001() {
@@ -15,12 +18,16 @@ fn rmtns10001() {
         Description:Namespace name test: a perfectly good http URI
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/001.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/001.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }
 
 #[test]
@@ -32,12 +39,16 @@ fn rmtns10002() {
         Description:Namespace name test: a syntactically plausible URI with a fictitious scheme
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/002.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }
 
 #[test]
@@ -49,12 +60,16 @@ fn rmtns10003() {
         Description:Namespace name test: a perfectly good http URI with a fragment
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/003.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/003.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }
 
 #[test]
@@ -66,12 +81,16 @@ fn rmtns10007() {
         Description:Namespace inequality test: different capitalization
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/007.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/007.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }
 
 #[test]
@@ -83,12 +102,16 @@ fn rmtns10008() {
         Description:Namespace inequality test: different escaping
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/008.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/008.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }
 
 #[test]
@@ -100,12 +123,16 @@ fn htns10047() {
         Description:Reserved name: _not_ an error
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/047.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/047.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }
 
 #[test]
@@ -117,10 +144,14 @@ fn htns10048() {
         Description:Reserved name: _not_ an error
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/048.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.0/048.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_ok());
+    );
+
+    assert!(parseresult.is_ok());
 }

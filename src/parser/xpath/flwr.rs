@@ -2,7 +2,7 @@
 
 use crate::item::Node;
 use crate::parser::combinators::list::separated_list1;
-use crate::parser::combinators::map::map;
+use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple10, tuple3, tuple5, tuple6};
@@ -12,7 +12,7 @@ use crate::parser::xpath::nodetests::qualname_test;
 use crate::parser::xpath::support::get_nt_localname;
 use crate::parser::xpath::{expr_single_wrapper, expr_wrapper};
 use crate::parser::{ParseError, ParseInput};
-use crate::transform::Transform;
+use crate::transform::{Transform, in_scope_namespaces};
 
 // IfExpr ::= 'if' '(' Expr ')' 'then' ExprSingle 'else' ExprSingle
 pub(crate) fn if_expr<'a, N: Node + 'a>(
@@ -90,21 +90,21 @@ fn simple_for_clause<'a, N: Node + 'a>() -> Box<
 // LetExpr ::= SimpleLetClause 'return' ExprSingle
 pub(crate) fn let_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(map(
+    Box::new(map_with_state(
         tuple3(
             simple_let_clause::<N>(),
             tuple3(xpwhitespace(), tag("return"), xpwhitespace()),
             expr_single_wrapper::<N>(true),
         ),
-        |(mut v, _, e)| {
+        |(mut v, _, e), state| {
             let (qn, f) = v.pop().unwrap();
-            let mut result = Transform::VariableDeclaration(qn, Box::new(f), Box::new(e));
+            let mut result = Transform::VariableDeclaration(qn, Box::new(f), Box::new(e), in_scope_namespaces(state.cur.clone()));
             loop {
                 if v.is_empty() {
                     break;
                 } else {
                     let (qn, f) = v.pop().unwrap();
-                    let inter = Transform::VariableDeclaration(qn, Box::new(f), Box::new(result));
+                    let inter = Transform::VariableDeclaration(qn, Box::new(f), Box::new(result), in_scope_namespaces(state.cur.clone()));
                     result = inter;
                 }
             }

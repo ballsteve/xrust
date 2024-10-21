@@ -11,11 +11,11 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
 use crate::parser::xml::qname::{name, qualname};
 use crate::parser::{ParseError, ParseInput};
-use crate::xmldecl::DTDDecl;
+use crate::xmldecl::{AttType, DTDDecl};
 
 //NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
 pub(crate) fn notationtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
     map(
         tuple8(
             tag("NOTATION"),
@@ -23,11 +23,19 @@ pub(crate) fn notationtype<N: Node>(
             tag("("),
             whitespace0(),
             name(),
-            many0(tuple4(whitespace0(), tag("|"), whitespace0(), name())),
+            many0(
+                map(
+                    tuple4(whitespace0(), tag("|"), whitespace0(), name()),
+                    |(_,_,_,n)| n
+                )
+            ),
             whitespace0(),
             tag(")"),
         ),
-        |_x| (),
+        |(_,_,_,_,nm, mut nms,_,_)| {
+            nms.push(nm);
+            AttType::NOTATION(nms)
+        },
     )
 }
 
@@ -37,7 +45,7 @@ pub(crate) fn notationpublicid<N: Node>(
         map(
             tuple3(
                 tag("SYSTEM"),
-                whitespace0(),
+                whitespace1(),
                 alt2(
                     delimited(tag("'"), take_until("'"), tag("'")),
                     delimited(tag("\""), take_until("\""), tag("\"")),
@@ -48,7 +56,7 @@ pub(crate) fn notationpublicid<N: Node>(
         map(
             tuple5(
                 tag("PUBLIC"),
-                whitespace0(),
+                whitespace1(),
                 alt2(
                     delimited(tag("'"), take_while(|c| is_pubid_char(&c)), tag("'")),
                     delimited(
@@ -68,7 +76,7 @@ pub(crate) fn notationpublicid<N: Node>(
         map(
             tuple3(
                 tag("PUBLIC"),
-                whitespace0(),
+                whitespace1(),
                 alt2(
                     delimited(tag("'"), take_while(|c| is_pubid_char(&c)), tag("'")),
                     delimited(
@@ -83,7 +91,7 @@ pub(crate) fn notationpublicid<N: Node>(
     )
 }
 
-pub(crate) fn ndatadecl<N: Node>(
+pub(crate) fn notation_decl<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
     move |input| match tuple7(
         tag("<!NOTATION"),
@@ -105,4 +113,21 @@ pub(crate) fn ndatadecl<N: Node>(
         }
         Err(err) => Err(err),
     }
+}
+
+#[allow(dead_code)]
+pub(crate) fn ndatadecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+{
+    map(
+        tuple4(
+            whitespace1(),
+            tag("NDATA"),
+            whitespace1(),
+            name()
+        ),
+        |(_,_,_,notation)|{
+            println!("notation");
+            notation
+        }
+    )
 }

@@ -1,6 +1,6 @@
 [package]
 name = "xrust"
-version = "1.0.0"
+version = "1.1.0"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath and XSLT"
@@ -23,21 +23,23 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-rust_decimal = "1.35.0"
-rust_decimal_macros = "1.35.0"
+rust_decimal = "1.36.0"
+rust_decimal_macros = "1.36.0"
 lexers = "0.1.4"
-unicode-segmentation = "1.11.0"
+unicode-segmentation = "1.12.0"
 chrono = "0.4.38"
 url = "2.5.2"
 pkg-version = "1.0.0"
 # This is for the forest tree implementation
 #generational-arena = "0.2"
-regex = "1.10.5"
+regex = "1.11.0"
 # For formatting numbers
 formato = "0.2.0"
 # For formatting integers
 english-numbers = "0.3.3"
 italian_numbers = "0.1.0"
+
+hexdump = "0.1.2"
 
 [dev-dependencies]
 criterion = "0.5.1"

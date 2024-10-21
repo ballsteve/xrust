@@ -1,7 +1,7 @@
 //! Various implementations of tree data structures.
 
 /// Interior Mutability Tree. This tree implementation is both mutable and fully navigable.
-pub mod intmuttree;
+//pub mod intmuttree;
 
 pub(crate) mod nullo;
 /// Interior Mutability Tuple-Struct with Enum.

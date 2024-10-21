@@ -73,7 +73,7 @@ pub struct Context<N: Node> {
     pub(crate) base_url: Option<Url>,
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
     // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
-    pub(crate) namespaces: Vec<HashMap<String, String>>,
+    //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
 }
 
 impl<N: Node> Context<N> {
@@ -94,21 +94,12 @@ impl<N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
-            namespaces: vec![],
         }
     }
     /// Sets the context item.
     pub fn context(&mut self, s: Sequence<N>, i: usize) {
         self.cur = s;
         self.i = i;
-    }
-    /// Sets the XML Namespaces.
-    pub fn namespaces(&mut self, ns: Vec<HashMap<String, String>>) {
-        self.namespaces = ns;
-    }
-    /// Gets the XML Namespaces.
-    pub fn namespaces_ref(&self) -> &Vec<HashMap<String, String>> {
-        &self.namespaces
     }
     /// Sets the "current" item.
     pub fn previous_context(&mut self, i: Item<N>) {
@@ -205,13 +196,13 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::Transform;
     /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
-    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::trees::smite::RNode;
     /// use xrust::parser::xml::parse;
     /// use xrust::xslt::from_document;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   let mut d = RNode::new_document();
     ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
@@ -227,7 +218,7 @@ impl<N: Node> Context<N> {
     ///     .fetcher(|_| Ok(String::new()))
     ///     .parser(|s| Ok(make_from_str(s)))
     ///     .build();
-    /// let mut context = from_document(style, vec![], None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
+    /// let mut context = from_document(style, None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
     /// context.context(vec![sd], 0);
     /// context.result_document(make_from_str("<Result/>"));
     /// let sequence = context.evaluate(&mut stctxt).expect("evaluation failed");
@@ -299,7 +290,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
-        m: &Option<QualifiedName>,
+        m: &Option<Rc<QualifiedName>>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates =
             self.templates
@@ -333,12 +324,12 @@ impl<N: Node> Context<N> {
     /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
     /// use xrust::transform::{Transform, NodeMatch, NodeTest, KindTest,  Axis};
     /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
-    /// use xrust::trees::smite::{RNode, Node as SmiteNode};
+    /// use xrust::trees::smite::RNode;
     /// use xrust::parser::xml::parse;
     ///
     /// // A little helper function to parse a string to a Document Node
     /// fn make_from_str(s: &str) -> RNode {
-    ///   let mut d = Rc::new(SmiteNode::new());
+    ///   let mut d = RNode::new_document();
     ///   parse(d.clone(), s, None)
     ///     .expect("failed to parse XML");
     ///   d
@@ -402,10 +393,10 @@ impl<N: Node> Context<N> {
             Transform::ApplyTemplates(s, m, o) => apply_templates(self, stctxt, s, m, o),
             Transform::ApplyImports => apply_imports(self, stctxt),
             Transform::NextMatch => next_match(self, stctxt),
-            Transform::VariableDeclaration(n, v, f) => {
+            Transform::VariableDeclaration(n, v, f, _) => {
                 declare_variable(self, stctxt, n.clone(), v, f)
             }
-            Transform::VariableReference(n) => reference_variable(self, n),
+            Transform::VariableReference(n, _) => reference_variable(self, n),
             Transform::Position => position(self),
             Transform::Last => last(self),
             Transform::Count(s) => tr_count(self, stctxt, s),
@@ -445,11 +436,11 @@ impl<N: Node> Context<N> {
             Transform::GenerateIntegers(start_at, select, n) => {
                 generate_integers(self, stctxt, start_at, select, n)
             }
-            Transform::Key(n, v, _) => key(self, stctxt, n, v),
-            Transform::SystemProperty(p) => system_property(self, stctxt, p),
+            Transform::Key(n, v, _, _) => key(self, stctxt, n, v),
+            Transform::SystemProperty(p, ns) => system_property(self, stctxt, p, ns),
             Transform::AvailableSystemProperties => available_system_properties(),
             Transform::Document(uris, base) => document(self, stctxt, uris, base),
-            Transform::Invoke(qn, a) => invoke(self, stctxt, qn, a),
+            Transform::Invoke(qn, a, ns) => invoke(self, stctxt, qn, a, ns),
             Transform::Message(b, s, e, t) => message(self, stctxt, b, s, e, t),
             Transform::Error(k, m) => tr_error(self, k, m),
             Transform::NotImplemented(s) => not_implemented(self, s),
@@ -479,7 +470,6 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
-            namespaces: vec![],
         }
     }
 }
@@ -549,10 +539,6 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
-    pub fn namespaces(mut self, ns: Vec<HashMap<String, String>>) -> Self {
-        self.0.namespaces = ns;
-        self
-    }
     pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
         self.0.callables.insert(qn, c);
         self
@@ -609,14 +595,14 @@ where
 /// use xrust::{Error, ErrorKind};
 /// use xrust::qname::QualifiedName;
 /// use xrust::value::Value;
-/// use xrust::item::{Item, Sequence, SequenceTrait, NodeType};
-/// use xrust::trees::smite::{RNode, Node};
+/// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
+/// use xrust::trees::smite::RNode;
 /// use xrust::transform::Transform;
 /// use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 ///
 /// let mut message = String::from("no message received");
 /// let xform = Transform::LiteralElement(
-///   QualifiedName::new(None, None, String::from("Example")),
+///   Rc::new(QualifiedName::new(None, None, String::from("Example"))),
 ///   Box::new(Transform::SequenceItems(vec![
 ///    Transform::Message(
 ///        Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("a message from the transformation"))))),
@@ -628,7 +614,7 @@ where
 ///   ]))
 /// );
 /// let mut context = ContextBuilder::new()
-///    .result_document(Rc::new(Node::new()))
+///    .result_document(RNode::new_document())
 ///    .build();
 /// let mut static_context = StaticContextBuilder::new()
 ///    .message(|m| {message = String::from(m); Ok(())})

@@ -8,7 +8,7 @@ use formato::Formato;
 use italian_numbers::roman_converter;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
-use crate::pattern::{PathBuilder, Pattern};
+use crate::pattern::{Pattern, Step};
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
@@ -66,35 +66,30 @@ pub fn generate_integers<
     if n.len() == 1 {
         if let Item::Node(m) = &n[0] {
             // Determine the count pattern
-            let count_pat =
-                (num.count)
-                    .clone()
-                    .unwrap_or(Pattern::Selection(match m.node_type() {
-                        NodeType::Element => PathBuilder::new()
-                            .step(
-                                Axis::SelfAxis,
-                                Axis::SelfAxis,
-                                NodeTest::Name(NameTest::new(
-                                    m.name().get_nsuri().map(WildcardOrName::Name),
-                                    None,
-                                    Some(WildcardOrName::Name(m.name().get_localname())),
-                                )),
-                            )
-                            .build(),
-                        NodeType::Text => PathBuilder::new()
-                            .step(
-                                Axis::SelfAxis,
-                                Axis::SelfAxis,
-                                NodeTest::Kind(KindTest::Text),
-                            )
-                            .build(),
-                        _ => {
-                            return Err(Error::new(
-                                ErrorKind::TypeError,
-                                "cannot match this type of node",
-                            ))
-                        }
-                    }));
+            let count_pat = (num.count)
+                .clone()
+                .unwrap_or(Pattern::Selection(vec![match m.node_type() {
+                    NodeType::Element => Step::new(
+                        Axis::SelfAxis,
+                        Axis::SelfAxis,
+                        NodeTest::Name(NameTest::new(
+                            m.name().namespace_uri().map(WildcardOrName::Name),
+                            None,
+                            Some(WildcardOrName::Name(m.name().localname())),
+                        )),
+                    ),
+                    NodeType::Text => Step::new(
+                        Axis::SelfAxis,
+                        Axis::SelfAxis,
+                        NodeTest::Kind(KindTest::Text),
+                    ),
+                    _ => {
+                        return Err(Error::new(
+                            ErrorKind::TypeError,
+                            "cannot match this type of node",
+                        ))
+                    }
+                }]));
 
             // let a = $S/ancestor-or-self::node()[matches-count(.)][1]
             // TODO: Don't Panic

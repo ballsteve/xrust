@@ -95,7 +95,7 @@ pub use transform::template::Template;
 pub use transform::Transform;
 
 pub mod trees;
-pub use trees::intmuttree::Document;
 
 pub mod testutils;
 //pub mod validators;
+pub mod namespace;

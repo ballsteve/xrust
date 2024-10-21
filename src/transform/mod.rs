@@ -54,10 +54,16 @@ pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
 
+use std::convert::TryFrom;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+use std::rc::Rc;
+use url::Url;
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::qname::QualifiedName;
+use crate::namespace::NamespaceMap;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::numbers::Numbering;
@@ -65,10 +71,6 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use std::convert::TryFrom;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
-use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -97,14 +99,14 @@ pub enum Transform<N: Node> {
     /// A literal, atomic value.
     Literal(Item<N>),
     /// A literal element. Consists of the element name and content.
-    LiteralElement(QualifiedName, Box<Transform<N>>),
+    LiteralElement(Rc<QualifiedName>, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
     /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
     LiteralText(Box<Transform<N>>, bool),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
-    LiteralAttribute(QualifiedName, Box<Transform<N>>),
+    LiteralAttribute(Rc<QualifiedName>, Box<Transform<N>>),
     /// A literal comment. Consists of the value.
     LiteralComment(Box<Transform<N>>),
     /// A literal processing instruction. Consists of the name and value.
@@ -154,7 +156,7 @@ pub enum Transform<N: Node> {
     /// Consists of the selector for items to be matched, the mode, and sort keys.
     ApplyTemplates(
         Box<Transform<N>>,
-        Option<QualifiedName>,
+        Option<Rc<QualifiedName>>,
         Vec<(Order, Transform<N>)>,
     ),
     /// Find templates at the next import level and evaluate its body.
@@ -165,19 +167,19 @@ pub enum Transform<N: Node> {
     Union(Vec<Transform<N>>),
 
     /// Evaluate a named template or function, with arguments.
-    /// Consists of the body of the template/function and the actual arguments (variable declarations).
-    Call(Box<Transform<N>>, Vec<Transform<N>>),
+    /// Consists of the body of the template/function, the actual arguments (variable declarations), and in-scope namespace declarations.
+    Call(Box<Transform<N>>, Vec<Transform<N>>, Rc<NamespaceMap>),
 
     /// Declare a variable in the current context.
-    /// Consists of the variable name, its value, and a transformation to perform with the variable in scope.
-    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>),
+    /// Consists of the variable name, its value, a transformation to perform with the variable in scope, and in-scope namespace declarations.
+    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, Rc<NamespaceMap>),
     /// Reference a variable.
     /// The result is the value stored for that variable in the current context and current scope.
-    VariableReference(String),
+    VariableReference(String, Rc<NamespaceMap>),
 
     /// Set the value of an attribute. The context item must be an element-type node.
     /// Consists of the name of the attribute and its value. The [Sequence] produced will be cast to a [Value].
-    SetAttribute(QualifiedName, Box<Transform<N>>),
+    SetAttribute(Rc<QualifiedName>, Box<Transform<N>>),
 
     /// XPath functions
     Position,
@@ -253,20 +255,22 @@ pub enum Transform<N: Node> {
     CurrentGroup,
     CurrentGroupingKey,
     /// Look up a key. The first argument is the key name, the second argument is the key value,
-    /// the third argument is the top of the tree for the resulting nodes.
+    /// the third argument is the top of the tree for the resulting nodes,
+    /// the fourth argument is the in-scope namespaces.
     Key(
         Box<Transform<N>>,
         Box<Transform<N>>,
         Option<Box<Transform<N>>>,
+        Rc<NamespaceMap>,
     ),
     /// Get information about the processor
-    SystemProperty(Box<Transform<N>>),
+    SystemProperty(Box<Transform<N>>, Rc<NamespaceMap>),
     AvailableSystemProperties,
     /// Read an external document
     Document(Box<Transform<N>>, Option<Box<Transform<N>>>),
 
-    /// Invoke a callable component. Consists of a name, an actual argument list.
-    Invoke(QualifiedName, ActualParameters<N>),
+    /// Invoke a callable component. Consists of a name, an actual argument list, and in-scope namespace declarations.
+    Invoke(Rc<QualifiedName>, ActualParameters<N>, Rc<NamespaceMap>),
 
     /// Emit a message. Consists of a select expression, a terminate attribute, an error-code, and a body.
     Message(
@@ -331,11 +335,11 @@ impl<N: Node> Debug for Transform<N> {
             Transform::ApplyTemplates(_, m, o) => {
                 write!(f, "Apply templates (mode {:?}, {} sort keys)", m, o.len())
             }
-            Transform::Call(_, a) => write!(f, "Call transform with {} arguments", a.len()),
+            Transform::Call(_, a, _) => write!(f, "Call transform with {} arguments", a.len()),
             Transform::ApplyImports => write!(f, "Apply imports"),
             Transform::NextMatch => write!(f, "next-match"),
-            Transform::VariableDeclaration(n, _, _) => write!(f, "declare variable \"{}\"", n),
-            Transform::VariableReference(n) => write!(f, "reference variable \"{}\"", n),
+            Transform::VariableDeclaration(n, _, _, _) => write!(f, "declare variable \"{}\"", n),
+            Transform::VariableReference(n, _) => write!(f, "reference variable \"{}\"", n),
             Transform::SetAttribute(n, _) => write!(f, "set attribute named \"{}\"", n),
             Transform::Position => write!(f, "position"),
             Transform::Last => write!(f, "last"),
@@ -374,15 +378,27 @@ impl<N: Node> Debug for Transform<N> {
             Transform::GenerateIntegers(_start_at, _select, _n) => write!(f, "generate-integers"),
             Transform::CurrentGroup => write!(f, "current-group"),
             Transform::CurrentGroupingKey => write!(f, "current-grouping-key"),
-            Transform::Key(s, _, _) => write!(f, "key({:?}, ...)", s),
-            Transform::SystemProperty(p) => write!(f, "system-properties({:?})", p),
+            Transform::Key(s, _, _, _) => write!(f, "key({:?}, ...)", s),
+            Transform::SystemProperty(p, _) => write!(f, "system-properties({:?})", p),
             Transform::AvailableSystemProperties => write!(f, "available-system-properties"),
             Transform::Document(uris, _) => write!(f, "document({:?})", uris),
-            Transform::Invoke(qn, _a) => write!(f, "invoke \"{}\"", qn),
+            Transform::Invoke(qn, _a, _) => write!(f, "invoke \"{}\"", qn),
             Transform::Message(_, _, _, _) => write!(f, "message"),
             Transform::NotImplemented(s) => write!(f, "Not implemented: \"{}\"", s),
             Transform::Error(k, s) => write!(f, "Error: {} \"{}\"", k, s),
         }
+    }
+}
+
+/// A convenience function to create a namespace mapping from a [Node].
+pub fn in_scope_namespaces<N: Node>(n: Option<N>) -> Rc<NamespaceMap> {
+    if let Some(nn) = n {
+        Rc::new(nn.namespace_iter().fold(NamespaceMap::new(), |mut hm, ns| {
+            hm.insert(Some(ns.name().localname()), ns.value());
+            hm
+        }))
+    } else {
+        Rc::new(NamespaceMap::new())
     }
 }
 
@@ -480,7 +496,7 @@ impl NodeMatch {
                         match &t.name {
                             Some(a) => match a {
                                 WildcardOrName::Wildcard => true,
-                                WildcardOrName::Name(s) => *s == n.name().get_localname(),
+                                WildcardOrName::Name(s) => *s == n.name().localname(),
                             },
                             None => false,
                         }
@@ -557,7 +573,7 @@ impl TryFrom<&str> for NodeTest {
                     }))
                 } else {
                     Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Name(tok[0].to_string())),
+                        name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[0])))),
                         ns: None,
                         prefix: None,
                     }))
@@ -574,7 +590,7 @@ impl TryFrom<&str> for NodeTest {
                         }))
                     } else {
                         Ok(NodeTest::Name(NameTest {
-                            name: Some(WildcardOrName::Name(tok[1].to_string())),
+                            name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[1])))),
                             ns: Some(WildcardOrName::Wildcard),
                             prefix: None,
                         }))
@@ -583,13 +599,13 @@ impl TryFrom<&str> for NodeTest {
                     Ok(NodeTest::Name(NameTest {
                         name: Some(WildcardOrName::Wildcard),
                         ns: None,
-                        prefix: Some(tok[0].to_string()),
+                        prefix: Some(Rc::new(Value::from(tok[0]))),
                     }))
                 } else {
                     Ok(NodeTest::Name(NameTest {
-                        name: Some(WildcardOrName::Name(tok[1].to_string())),
+                        name: Some(WildcardOrName::Name(Rc::new(Value::from(tok[1])))),
                         ns: None,
-                        prefix: Some(tok[0].to_string()),
+                        prefix: Some(Rc::new(Value::from(tok[0]))),
                     }))
                 }
             }
@@ -678,14 +694,14 @@ impl KindTest {
 #[derive(Clone, Debug)]
 pub struct NameTest {
     pub ns: Option<WildcardOrName>,
-    pub prefix: Option<String>,
+    pub prefix: Option<Rc<Value>>,
     pub name: Option<WildcardOrName>,
 }
 
 impl NameTest {
     pub fn new(
         ns: Option<WildcardOrName>,
-        prefix: Option<String>,
+        prefix: Option<Rc<Value>>,
         name: Option<WildcardOrName>,
     ) -> Self {
         NameTest { ns, prefix, name }
@@ -697,17 +713,19 @@ impl NameTest {
             Item::Node(n) => {
                 match n.node_type() {
                     NodeType::Element | NodeType::ProcessingInstruction | NodeType::Attribute => {
+                        // TODO: avoid converting the values into strings just for comparison
+                        // Value interning should fix this
                         match (
                             self.ns.as_ref(),
                             self.name.as_ref(),
-                            n.name().get_nsuri_ref(),
-                            n.name().get_localname().as_str(),
+                            n.name().namespace_uri(),
+                            n.name().localname_to_string().as_str(),
                         ) {
                             (None, None, _, _) => false,
                             (None, Some(WildcardOrName::Wildcard), None, _) => true,
                             (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
                             (None, Some(WildcardOrName::Name(_)), None, "") => false,
-                            (None, Some(WildcardOrName::Name(wn)), None, qn) => wn == qn,
+                            (None, Some(WildcardOrName::Name(wn)), None, qn) => wn.to_string() == qn,
                             (None, Some(WildcardOrName::Name(_)), Some(_), _) => false,
                             (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
                             (
@@ -727,14 +745,14 @@ impl NameTest {
                                 Some(WildcardOrName::Name(wn)),
                                 _,
                                 qn,
-                            ) => wn == qn,
+                            ) => wn.to_string() == qn,
                             (Some(WildcardOrName::Name(_)), Some(_), None, _) => false,
                             (
                                 Some(WildcardOrName::Name(wnsuri)),
                                 Some(WildcardOrName::Name(wn)),
                                 Some(qnsuri),
                                 qn,
-                            ) => wnsuri == qnsuri && wn == qn,
+                            ) => wnsuri.clone() == qnsuri && wn.to_string() == qn,
                             _ => false, // maybe should panic?
                         }
                     }
@@ -763,7 +781,7 @@ impl fmt::Display for NameTest {
 #[derive(Clone, Debug)]
 pub enum WildcardOrName {
     Wildcard,
-    Name(String),
+    Name(Rc<Value>),
 }
 
 #[derive(Copy, Clone, Debug, PartialEq)]

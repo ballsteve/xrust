@@ -1,10 +1,13 @@
 /*
-Richard Tobin's XML Namespaces 1.1 test suite 14 Feb 2003
- */
 
-use std::convert::TryFrom;
+Richard Tobin's XML Namespaces 1.1 test suite 14 Feb 2003
+
+*/
+
 use std::fs;
-use xrust::Document;
+use xrust::parser::xml;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 fn rmtns11005() {
@@ -15,12 +18,16 @@ fn rmtns11005() {
         Description:Illegal use of prefix that has been unbound
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/005.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -32,12 +39,16 @@ fn htbhns11007() {
         Description:Attempt to unbind xmlns 'namespace'
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/007.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -49,10 +60,14 @@ fn htbhns11008() {
         Description:Attempt to unbind xml namespace
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/namespaces/1.1/008.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }

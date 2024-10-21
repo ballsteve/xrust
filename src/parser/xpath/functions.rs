@@ -1,9 +1,10 @@
 //! Functions for functions.
 
+use std::rc::Rc;
 use crate::item::Node;
 use crate::parser::combinators::alt::alt2;
 use crate::parser::combinators::list::separated_list0;
-use crate::parser::combinators::map::map;
+use crate::parser::combinators::map::{map, map_with_state};
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
@@ -18,7 +19,7 @@ use crate::parser::xpath::numbers::unary_expr;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
-use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName};
+use crate::transform::{NameTest, NodeTest, Transform, WildcardOrName, in_scope_namespaces};
 use crate::xdmerror::ErrorKind;
 
 // ArrowExpr ::= UnaryExpr ( '=>' ArrowFunctionSpecifier ArgumentList)*
@@ -62,14 +63,14 @@ fn arrowfunctionspecifier<'a, N: Node + 'a>(
 // FunctionCall ::= EQName ArgumentList
 pub(crate) fn function_call<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(map(
+    Box::new(map_with_state(
         pair(qualname_test(), argumentlist::<N>()),
-        |(qn, mut a)| match qn {
+        |(qn, mut a), state| match qn {
             NodeTest::Name(NameTest {
                 name: Some(WildcardOrName::Name(ref localpart)),
                 ns: None,
                 prefix: None,
-            }) => match localpart.as_str() {
+            }) => match localpart.to_string().as_str() {
                 "current" => Transform::CurrentItem,
                 "position" => Transform::Position,
                 "last" => Transform::Last,
@@ -421,12 +422,12 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                     if a.len() == 2 {
                         let m = a.pop().unwrap();
                         let name = a.pop().unwrap();
-                        Transform::Key(Box::new(name), Box::new(m), None)
+                        Transform::Key(Box::new(name), Box::new(m), None, in_scope_namespaces(state.cur.clone()))
                     } else if a.len() == 3 {
                         let u = a.pop().unwrap();
                         let m = a.pop().unwrap();
                         let name = a.pop().unwrap();
-                        Transform::Key(Box::new(name), Box::new(m), Some(Box::new(u)))
+                        Transform::Key(Box::new(name), Box::new(m), Some(Box::new(u)), in_scope_namespaces(state.cur.clone()))
                     } else {
                         // Wrong # arguments
                         Transform::Error(
@@ -438,7 +439,7 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 "system-property" => {
                     if a.len() == 1 {
                         let p = a.pop().unwrap();
-                        Transform::SystemProperty(Box::new(p))
+                        Transform::SystemProperty(Box::new(p), in_scope_namespaces(state.cur.clone()))
                     } else {
                         // Wrong # arguments
                         Transform::Error(
@@ -484,16 +485,18 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                 ns: Some(WildcardOrName::Name(nsuri)),
                 prefix: p,
             }) => Transform::Invoke(
-                QualifiedName::new(Some(nsuri), p, localpart),
+                Rc::new(QualifiedName::new_from_values(Some(nsuri), p, localpart)),
                 ActualParameters::Positional(a),
+                in_scope_namespaces(state.cur.clone()),
             ),
             NodeTest::Name(NameTest {
                 name: Some(WildcardOrName::Name(localpart)),
                 ns: None,
                 prefix: p,
             }) => Transform::Invoke(
-                QualifiedName::new(None, p, localpart),
+                Rc::new(QualifiedName::new_from_values(None, p, localpart)),
                 ActualParameters::Positional(a),
+                in_scope_namespaces(state.cur.clone()),
             ),
             _ => Transform::Error(ErrorKind::Unknown, format!("unknown function \"{}\"", qn)),
         },

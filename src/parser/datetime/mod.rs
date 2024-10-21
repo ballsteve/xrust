@@ -13,7 +13,7 @@ use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::anychar;
 use crate::parser::combinators::tuple::{tuple2, tuple6};
-use crate::parser::xpath::support::none_of;
+use crate::parser::combinators::support::none_of;
 use crate::parser::{ParseError, ParseInput, ParserState};
 use crate::xdmerror::*;
 
@@ -79,7 +79,7 @@ fn close_escape<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, S
 }
 
 pub fn parse<N: Node>(e: &str) -> Result<String, Error> {
-    let state: ParserState<N> = ParserState::new(None, None);
+    let state: ParserState<N> = ParserState::new(None, None, None);
     match picture()((e, state)) {
         Ok(((rem, _), value)) => {
             if rem.is_empty() {

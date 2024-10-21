@@ -32,6 +32,25 @@ will result in the same internal format as:
 
 This approach means that the XPath and XSLT modules are simply mappings from their respective syntaxes to an χrust transformation.
 
+### Trees
+
+The "Tree" is the fundamental data object for transformations.
+χrust provides a tree implementation, smite, that is both mutable and fully navigable.
+By "fully navigable" we mean that from any given node you can access its children, parent, or attributes.
+It achieves mutability by using the interior mutability pattern.
+
+### XML Namespaces
+
+Support for XML Namespaces is in three parts:
+
+1. The XML parser uses a flat mapping (NamespaceMap) of prefix to URI while it constructs the set of in-scope namespaces.
+2. The smite tree implementation has a Namespace type node that represents an XML Namespace declaration.
+3. Transformations can store the flat mapping (NamespaceMap) of prefix to URI so it can use that, if required, during the transformation.
+
+There is a convenience routine that builds the flat mapping, i.e. a NamespaceMap, from the Namespace node declarations.
+
+NamespaceNode objects are Rc-shared because they are often used but don't change much.
+
 ## The Plan
 
 1. Complete the XPath 1.0 implementation. (Done!)
@@ -46,7 +65,7 @@ Although the eventual desire is to implement all of XSLT v3.0 functionality, som
 
 ## Documentation
 
-See the [XSLT module](https://docs.rs/xrust/0.10.0/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
+See the [XSLT module](https://docs.rs/xrust/1.1.0/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
 ## Examples
 
@@ -57,4 +76,9 @@ See the [XSLT module](https://docs.rs/xrust/0.10.0/xrust/xslt/index.html) for an
 
 Status of [standards implementation](https://github.com/ballsteve/xrust/blob/main/docs/compliance.md) for XDM, XPath, XQuery, and XSLT.
 
+## Release Notes
 
+| Releases | Notes                                                                                    |
+|--|------------------------------------------------------------------------------------------|
+| Version 1.1 | Added new_document() to Node trait. Tree documents can now be created in one step. eg. smite::RNode::new_document() |
+|  | XML Namespace support has been redesigned. Node names are now Rc-shared.                 |

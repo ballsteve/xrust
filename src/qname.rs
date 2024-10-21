@@ -1,74 +1,91 @@
 //! Support for Qualified Names.
+//! TODO: Intern names for speedy equality checks (compare pointers, rather than characters).
 
+use crate::value::Value;
+use crate::item::Node;
 use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
 use crate::trees::nullo::Nullo;
 use crate::xdmerror::{Error, ErrorKind};
+use crate::namespace::NamespaceMap;
 use core::hash::{Hash, Hasher};
+use std::rc::Rc;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::ops::ControlFlow;
 
 #[derive(Clone)]
 pub struct QualifiedName {
-    nsuri: Option<String>,
-    prefix: Option<String>,
-    localname: String,
+    nsuri: Option<Rc<Value>>,
+    prefix: Option<Rc<Value>>,
+    localname: Rc<Value>,
 }
 
 // TODO: we may need methods that return a string slice, rather than a copy of the string
 impl QualifiedName {
+    /// Builds a QualifiedName from String parts
     pub fn new(
         nsuri: Option<String>,
         prefix: Option<String>,
         localname: impl Into<String>,
     ) -> QualifiedName {
         QualifiedName {
+            nsuri: nsuri.map(|s| Rc::new(Value::from(s))),
+            prefix: prefix.map(|s| Rc::new(Value::from(s))),
+            localname: Rc::new(Value::from(localname.into())),
+        }
+    }
+    /// Builds a QualifiedName from shared components
+    pub fn new_from_values(
+        nsuri: Option<Rc<Value>>,
+        prefix: Option<Rc<Value>>,
+        localname: Rc<Value>,
+    ) -> QualifiedName {
+        QualifiedName {
             nsuri,
             prefix,
-            localname: localname.into(),
+            localname,
         }
     }
     pub fn as_ref(&self) -> &Self {
         self
     }
-    pub fn get_nsuri(&self) -> Option<String> {
+    pub fn namespace_uri(&self) -> Option<Rc<Value>> {
         self.nsuri.clone()
     }
-    pub fn get_nsuri_ref(&self) -> Option<&str> {
-        self.nsuri.as_ref().map(|x| x as _)
+    pub fn namespace_uri_to_string(&self) -> Option<String> {
+        self.nsuri.as_ref().map(|x| x.to_string())
     }
-    pub fn get_prefix(&self) -> Option<String> {
+    pub fn prefix(&self) -> Option<Rc<Value>> {
         self.prefix.clone()
     }
-    pub fn get_localname(&self) -> String {
+    pub fn prefix_to_string(&self) -> Option<String> {
+        self.prefix.as_ref().map(|x| x.to_string())
+    }
+    pub fn localname(&self) -> Rc<Value> {
         self.localname.clone()
+    }
+    pub fn localname_to_string(&self) -> String {
+        self.localname.to_string()
     }
     /// Fully resolve a qualified name. If the qualified name has a prefix but no namespace URI,
     /// then find the prefix in the supplied namespaces and use the corresponding URI.
     /// If the qualified name already has a namespace URI, then this method has no effect.
     /// If the qualified name has no prefix, then this method has no effect.
-    pub fn resolve(&mut self, namespaces: &Vec<HashMap<String, String>>) -> Result<(), Error> {
+    pub fn resolve<F>(
+        &mut self,
+        mapper: F,
+    ) -> Result<(), Error>
+    where
+        F: Fn(Option<Rc<Value>>) -> Result<Rc<Value>, Error>,
+    {
         match (&self.prefix, &self.nsuri) {
-            (Some(p), None) => namespaces.iter().last().map_or(
-                Err(Error::new(
-                    ErrorKind::DynamicAbsent,
-                    format!("no namespaces to resolve prefix \"{}\"", p),
-                )),
-                |v| match v.get(p) {
-                    Some(u) => {
-                        self.nsuri = Some(u.clone());
-                        Ok(())
-                    }
-                    None => Err(Error::new(
-                        ErrorKind::DynamicAbsent,
-                        format!("no namespace corresponding to prefix \"{}\"", p),
-                    )),
-                },
-            ),
+            (Some(p), None) => {
+                self.nsuri = Some(mapper(Some(p.clone()))?.clone());
+                Ok(())
+            },
             _ => Ok(()),
         }
     }
@@ -78,10 +95,10 @@ impl fmt::Display for QualifiedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let mut result = String::new();
         let _ = self.prefix.as_ref().map_or((), |p| {
-            result.push_str(p.as_str());
+            result.push_str(p.to_string().as_str());
             result.push(':');
         });
-        result.push_str(self.localname.as_str());
+        result.push_str(self.localname.to_string().as_str());
         f.write_str(result.as_str())
     }
 }
@@ -89,11 +106,11 @@ impl fmt::Display for QualifiedName {
 impl Debug for QualifiedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let _ = f.write_str("namespace ");
-        let _ = f.write_str(self.nsuri.as_ref().map_or("--none--", |ns| ns.as_str()));
+        let _ = f.write_str(self.nsuri.as_ref().map_or("--none--".to_string(), |ns| ns.to_string()).as_str());
         let _ = f.write_str(" prefix ");
-        let _ = f.write_str(self.prefix.as_ref().map_or("--none--", |p| p.as_str()));
+        let _ = f.write_str(self.prefix.as_ref().map_or("--none--".to_string(), |p| p.to_string()).as_str());
         let _ = f.write_str(" local part \"");
-        let _ = f.write_str(self.localname.as_str());
+        let _ = f.write_str(self.localname.to_string().as_str());
         f.write_str("\"")
     }
 }
@@ -108,12 +125,12 @@ impl PartialEq for QualifiedName {
                 other
                     .nsuri
                     .as_ref()
-                    .map_or_else(|| self.localname.eq(other.localname.as_str()), |_| false)
+                    .map_or_else(|| self.localname.eq(&other.localname), |_| false)
             },
             |ns| {
                 other.nsuri.as_ref().map_or_else(
                     || false,
-                    |ons| ns.eq(ons.as_str()) && self.localname.eq(other.localname.as_str()),
+                    |ons| ns.eq(ons) && self.localname.eq(&other.localname),
                 )
             },
         )
@@ -158,7 +175,7 @@ impl Hash for QualifiedName {
 impl TryFrom<&str> for QualifiedName {
     type Error = Error;
     fn try_from(s: &str) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None);
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
         match eqname()((s, state)) {
             Ok((_, qn)) => Ok(qn),
             Err(_) => Err(Error::new(
@@ -170,32 +187,60 @@ impl TryFrom<&str> for QualifiedName {
 }
 
 /// Parse a string to create a [QualifiedName].
-/// Resolve prefix against a set of XML Namespace declarations
+/// Resolve prefix against a set of XML Namespace declarations.
+/// This method can be used when there is no XSL stylesheet to derive the namespaces.
 /// QualifiedName ::= (prefix ":")? local-name
-impl TryFrom<(&str, &Vec<HashMap<String, String>>)> for QualifiedName {
+impl TryFrom<(&str, Rc<NamespaceMap>)> for QualifiedName {
     type Error = Error;
-    fn try_from(s: (&str, &Vec<HashMap<String, String>>)) -> Result<Self, Self::Error> {
-        let state: ParserState<Nullo> = ParserState::new(None, None);
+    fn try_from(s: (&str, Rc<NamespaceMap>)) -> Result<Self, Self::Error> {
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
         match eqname()((s.0, state)) {
             Ok((_, qn)) => {
-                if qn.get_prefix().is_some() && qn.get_nsuri_ref().is_none() {
-                    match s
-                        .1
-                        .iter()
-                        .try_for_each(|h| match h.get(&qn.get_prefix().unwrap()) {
-                            Some(ns) => ControlFlow::Break(ns.clone()),
-                            None => ControlFlow::Continue(()),
-                        }) {
-                        ControlFlow::Break(ns) => Ok(QualifiedName::new(
+                if qn.prefix().is_some() && qn.namespace_uri().is_none() {
+                    match s.1.get(&qn.prefix()) {
+                        Some(ns) => Ok(QualifiedName::new_from_values(
                             Some(ns),
-                            Some(qn.get_prefix().unwrap()),
-                            qn.get_localname(),
+                            qn.prefix(),
+                            qn.localname().clone(),
                         )),
                         _ => Err(Error::new(
                             ErrorKind::Unknown,
-                            format!("unable to match prefix \"{}\"", qn.get_prefix().unwrap()),
+                            format!("unable to match prefix \"{}\"", qn.prefix_to_string().unwrap()),
                         )),
                     }
+                } else {
+                    Ok(qn)
+                }
+            }
+            Err(_) => Err(Error::new(
+                ErrorKind::ParseError,
+                String::from("unable to parse qualified name"),
+            )),
+        }
+    }
+}
+
+/// Parse a string to create a [QualifiedName].
+/// Resolve prefix against a set of XML Namespace declarations.
+/// This method can be used when there is an XSL stylesheet to derive the namespaces.
+/// QualifiedName ::= (prefix ":")? local-name
+impl<N: Node> TryFrom<(&str, N)> for QualifiedName {
+    type Error = Error;
+    fn try_from(s: (&str, N)) -> Result<Self, Self::Error> {
+        let state: ParserState<Nullo> = ParserState::new(None, None, None);
+        match eqname()((s.0, state)) {
+            Ok((_, qn)) => {
+                if qn.prefix().is_some() && qn.namespace_uri().is_none() {
+                    s.1.namespace_iter()
+                        .find(|ns| ns.name().localname() == qn.prefix().unwrap())
+                        .map_or(
+                            Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespace matching prefix \"{}\"", qn.prefix_to_string().unwrap()))),
+                            |ns| Ok(QualifiedName::new_from_values(
+                                Some(ns.value()),
+                                qn.prefix(),
+                                qn.localname(),
+                            ))
+                        )
                 } else {
                     Ok(qn)
                 }
@@ -213,14 +258,21 @@ mod tests {
     use super::*;
 
     #[test]
-    fn unqualified() {
+    fn unqualified_raw() {
         assert_eq!(
-            QualifiedName::new(None, None, "foo".to_string()).to_string(),
+            QualifiedName::new(None, None, "foo").to_string(),
             "foo"
         )
     }
     #[test]
-    fn qualified() {
+    fn unqualified_rc() {
+        assert_eq!(
+            QualifiedName::new_from_values(None, None, Rc::new(Value::from("foo"))).to_string(),
+            "foo"
+        )
+    }
+    #[test]
+    fn qualified_raw() {
         assert_eq!(
             QualifiedName::new(
                 Some("http://example.org/whatsinaname/".to_string()),
@@ -232,25 +284,37 @@ mod tests {
         )
     }
     #[test]
+    fn qualified_rc() {
+        assert_eq!(
+            QualifiedName::new_from_values(
+                Some(Rc::new(Value::from("http://example.org/whatsinaname/"))),
+                Some(Rc::new(Value::from("x"))),
+                Rc::new(Value::from("foo"))
+            )
+                .to_string(),
+            "x:foo"
+        )
+    }
+    #[test]
     fn eqname() {
         let e = QualifiedName::try_from("Q{http://example.org/bar}foo")
             .expect("unable to parse EQName");
-        assert_eq!(e.get_localname(), "foo");
-        assert_eq!(e.get_nsuri_ref(), Some("http://example.org/bar"));
-        assert_eq!(e.get_prefix(), None)
+        assert_eq!(e.localname_to_string(), "foo");
+        assert_eq!(e.namespace_uri_to_string(), Some(String::from("http://example.org/bar")));
+        assert_eq!(e.prefix_to_string(), None)
     }
     #[test]
     fn hashmap() {
         let mut h = QHash::<String>::new();
         h.insert(
-            QualifiedName::new(None, None, "foo".to_string()),
+            QualifiedName::new(None, None, "foo"),
             String::from("this is unprefixed foo"),
         );
         h.insert(
             QualifiedName::new(
                 Some("http://example.org/whatsinaname/".to_string()),
                 Some("x".to_string()),
-                "foo".to_string(),
+                "foo",
             ),
             "this is x:foo".to_string(),
         );
@@ -258,7 +322,7 @@ mod tests {
             QualifiedName::new(
                 Some("http://example.org/whatsinaname/".to_string()),
                 Some("y".to_string()),
-                "bar".to_string(),
+                "bar",
             ),
             "this is y:bar".to_string(),
         );
@@ -266,9 +330,9 @@ mod tests {
         assert_eq!(h.len(), 3);
         assert_eq!(
             h.get(&QualifiedName {
-                nsuri: Some("http://example.org/whatsinaname/".to_string()),
-                prefix: Some("x".to_string()),
-                localname: "foo".to_string()
+                nsuri: Some(Rc::new(Value::from("http://example.org/whatsinaname/"))),
+                prefix: Some(Rc::new(Value::from("x"))),
+                localname: Rc::new(Value::from("foo")),
             }),
             Some(&"this is x:foo".to_string())
         );
@@ -276,7 +340,7 @@ mod tests {
             h.get(&QualifiedName {
                 nsuri: None,
                 prefix: None,
-                localname: "foo".to_string()
+                localname: Rc::new(Value::from("foo")),
             }),
             Some(&"this is unprefixed foo".to_string())
         );

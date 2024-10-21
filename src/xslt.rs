@@ -13,13 +13,13 @@ use xrust::qname::QualifiedName;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::transform::Transform;
 use xrust::transform::context::{StaticContext, StaticContextBuilder};
-use xrust::trees::smite::{RNode, Node as SmiteNode};
+use xrust::trees::smite::RNode;
 use xrust::parser::xml::parse;
 use xrust::xslt::from_document;
 
 // A little helper function to parse an XML document
 fn make_from_str(s: &str) -> Result<RNode, Error> {
-    let doc = Rc::new(SmiteNode::new());
+    let doc = RNode::new_document();
     let e = parse(doc.clone(), s, None)?;
     Ok(doc)
 }
@@ -48,7 +48,6 @@ let mut static_context = StaticContextBuilder::new()
 // Compile the stylesheet
 let mut ctxt = from_document(
     style,
-    vec![],
     None,
     make_from_str,
     |_| Ok(String::new())
@@ -57,7 +56,7 @@ let mut ctxt = from_document(
 // Set the source document as the context item
 ctxt.context(vec![src], 0);
 // Make an empty result document
-ctxt.result_document(Rc::new(SmiteNode::new()));
+ctxt.result_document(RNode::new_document());
 
 // Let 'er rip!
 // Evaluate the transformation
@@ -82,7 +81,7 @@ use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::numbers::{Level, Numbering};
 use crate::transform::template::Template;
 use crate::transform::{
-    Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
+    in_scope_namespaces, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest, Order, Transform, WildcardOrName,
 };
 use crate::value::*;
 use crate::xdmerror::*;
@@ -122,7 +121,6 @@ pub trait XSLT: Node {
 /// They are not included in this module since some environments, in particular Wasm, do not have I/O facilities.
 pub fn from_document<N: Node, F, G>(
     styledoc: N,
-    stylens: Vec<HashMap<String, String>>,
     base: Option<Url>,
     f: F,
     g: G,
@@ -136,9 +134,10 @@ where
     let mut rnit = styledoc.child_iter();
     let stylenode = match rnit.next() {
         Some(root) => {
-            if !(root.name().get_nsuri_ref() == Some(XSLTNS)
-                && (root.name().get_localname() == "stylesheet"
-                    || root.name().get_localname() == "transform"))
+            // TODO: intern strings so that comparison is fast
+            if !(root.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && (root.name().localname_to_string() == "stylesheet"
+                    || root.name().localname_to_string() == "transform"))
             {
                 return Result::Err(Error::new(
                     ErrorKind::TypeError,
@@ -174,9 +173,9 @@ where
             name: Some(WildcardOrName::Wildcard),
         })],
         &vec![NodeTest::Name(NameTest {
-            ns: Some(WildcardOrName::Name(XSLTNS.to_string())),
-            prefix: Some("xsl".to_string()),
-            name: Some(WildcardOrName::Name("text".to_string())),
+            ns: Some(WildcardOrName::Name(Rc::new(Value::from(XSLTNS)))),
+            prefix: Some(Rc::new(Value::from("xsl"))),
+            name: Some(WildcardOrName::Name(Rc::new(Value::from("text")))),
         })],
     )?;
 
@@ -184,11 +183,11 @@ where
     let mut od = OutputDefinition::new();
     if let Some(c) = stylenode.child_iter().find(|c| {
         !(c.is_element()
-            && c.name().get_nsuri_ref() == Some(XSLTNS)
-            && c.name().get_localname() == "output")
+            && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+            && c.name().localname_to_string() == "output")
     }) {
         let b: bool = matches!(
-            c.get_attribute(&QualifiedName::new(None, None, "indent".to_string()))
+            c.get_attribute(&QualifiedName::new(None, None, "indent"))
                 .to_string()
                 .as_str(),
             "yes" | "true" | "1"
@@ -206,11 +205,11 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "include"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string().as_str() == "include"
         })
         .try_for_each(|mut c| {
-            let h = c.get_attribute(&QualifiedName::new(None, None, "href".to_string()));
+            let h = c.get_attribute(&QualifiedName::new(None, None, "href"));
             let url = match base.clone().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |full| full.join(h.to_string().as_str()),
@@ -252,11 +251,11 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "import"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string().as_str() == "import"
         })
         .try_for_each(|mut c| {
-            let h = c.get_attribute(&QualifiedName::new(None, None, "href".to_string()));
+            let h = c.get_attribute(&QualifiedName::new(None, None, "href"));
             let url = match base.clone().map_or_else(
                 || Url::parse(h.to_string().as_str()),
                 |full| full.join(h.to_string().as_str()),
@@ -286,11 +285,11 @@ where
                     // Add the import precedence attribute
                     let newnode = mc.deep_copy()?;
                     let newat = styledoc.new_attribute(
-                        QualifiedName::new(
+                        Rc::new(QualifiedName::new(
                             Some(String::from("http://github.com/ballsteve/xrust")),
                             None,
                             String::from("import"),
-                        ),
+                        )),
                         Rc::new(Value::from(1)),
                     )?;
                     newnode.add_attribute(newat)?;
@@ -315,12 +314,12 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "attribute-set"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string() == "attribute-set"
         })
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
-            let eqname = QualifiedName::try_from((name.to_string().as_str(), &stylens))?;
+            let eqname = QualifiedName::try_from((name.to_string().as_str(), c.clone()))?;
             if eqname.to_string().is_empty() {
                 return Err(Error::new(
                     ErrorKind::DynamicAbsent,
@@ -333,11 +332,11 @@ where
             c.child_iter()
                 .filter(|c| {
                     c.is_element()
-                        && c.name().get_nsuri_ref() == Some(XSLTNS)
-                        && c.name().get_localname() == "attribute"
+                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                        && c.name().localname_to_string().as_str() == "attribute"
                 })
                 .try_for_each(|a| {
-                    attrs.push(to_transform(a, &stylens, &attr_sets)?);
+                    attrs.push(to_transform(a, &attr_sets)?);
                     Ok(())
                 })?;
             attr_sets.insert(eqname, attrs);
@@ -353,8 +352,8 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "template"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string() == "template"
         })
         .filter(|c| {
             !c.get_attribute(&QualifiedName::new(None, None, "match"))
@@ -363,11 +362,23 @@ where
         })
         .try_for_each(|c| {
             let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
-            let pat = Pattern::try_from(m.to_string())?;
+            let pat = Pattern::try_from(m.to_string()).map_err(|e| {
+                Error::new(
+                    e.kind,
+                    format!(
+                        "Error parsing match pattern \"{}\": {}",
+                        m.to_string(),
+                        e.message
+                    ),
+                )
+            })?;
+            if pat.is_err() {
+                return Err(pat.get_err().unwrap());
+            }
             let mut body = vec![];
             let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
             c.child_iter().try_for_each(|d| {
-                body.push(to_transform(d, &stylens, &attr_sets)?);
+                body.push(to_transform(d, &attr_sets)?);
                 Ok::<(), Error>(())
             })?;
             //sc.static_analysis(&mut pat);
@@ -384,7 +395,7 @@ where
                             _ => 1.0,
                         },
                         Pattern::Selection(s) => {
-                            let ((t, nt), q) = s.clone().t.unwrap();
+                            let (t, nt, q) = s[0].get_ref();
                             // If "/" then -0.5
                             match (t, nt) {
                                 (Axis::SelfAttribute, _) => -0.5,
@@ -423,8 +434,8 @@ where
                 vec![import],
                 None,
                 mode.map(|n| {
-                    QualifiedName::try_from((n.to_string().as_str(), &stylens))
-                        .expect("unable to resolve qualified name")
+                    Rc::new(QualifiedName::try_from((n.to_string().as_str(), n))
+                        .expect("unable to resolve qualified name"))
                 }), // TODO: don't panic
             ));
             Ok::<(), Error>(())
@@ -437,15 +448,15 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "key"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string() == "key"
         })
         .try_for_each(|c| {
-            let name = c.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
-            let m = c.get_attribute(&QualifiedName::new(None, None, "match".to_string()));
+            let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
+            let m = c.get_attribute(&QualifiedName::new(None, None, "match"));
             let pat = Pattern::try_from(m.to_string())?;
-            let u = c.get_attribute(&QualifiedName::new(None, None, "use".to_string()));
-            keys.push((name, pat, parse::<N>(&u.to_string())?));
+            let u = c.get_attribute(&QualifiedName::new(None, None, "use"));
+            keys.push((name, pat, parse::<N>(&u.to_string(), Some(c.clone()))?));
             Ok(())
         })?;
 
@@ -496,7 +507,6 @@ where
         ))
         .template_all(templates)
         .output_definition(od)
-        .namespaces(stylens.clone())
         .build();
     keys.iter()
         .for_each(|(name, m, u)| newctxt.declare_key(name.to_string(), m.clone(), u.clone()));
@@ -506,8 +516,8 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "template"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string() == "template"
         })
         .filter(|c| {
             !c.get_attribute(&QualifiedName::new(None, None, "name"))
@@ -523,8 +533,8 @@ where
             c.child_iter()
                 .filter(|c| {
                     c.is_element()
-                        && c.name().get_nsuri_ref() == Some(XSLTNS)
-                        && c.name().get_localname() == "param"
+                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                        && c.name().localname_to_string() == "param"
                 })
                 .try_for_each(|c| {
                     let p_name = c.get_attribute(&QualifiedName::new(None, None, "name"));
@@ -539,7 +549,7 @@ where
                             // xsl:param content is the sequence constructor
                             let mut body = vec![];
                             c.child_iter().try_for_each(|d| {
-                                body.push(to_transform(d, &stylens, &attr_sets)?);
+                                body.push(to_transform(d, &attr_sets)?);
                                 Ok(())
                             })?;
                             params.push((
@@ -551,7 +561,7 @@ where
                             // select attribute value is an expression
                             params.push((
                                 QualifiedName::new(None, None, p_name.to_string()),
-                                Some(parse::<N>(&sel.to_string())?),
+                                Some(parse::<N>(&sel.to_string(), Some(c.clone()))?),
                             ));
                             Ok(())
                         }
@@ -562,11 +572,11 @@ where
             c.child_iter()
                 .filter(|c| {
                     !(c.is_element()
-                        && c.name().get_nsuri_ref() == Some(XSLTNS)
-                        && c.name().get_localname() == "param")
+                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                        && c.name().localname_to_string() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d, &stylens, &attr_sets)?);
+                    body.push(to_transform(d, &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -584,15 +594,15 @@ where
         .child_iter()
         .filter(|c| {
             c.is_element()
-                && c.name().get_nsuri_ref() == Some(XSLTNS)
-                && c.name().get_localname() == "function"
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string() == "function"
         })
         .try_for_each(|c| {
             let name = c.get_attribute(&QualifiedName::new(None, None, "name"));
             // Name must have a namespace. See XSLT 10.3.1.
             let eqname =
-                QualifiedName::try_from((name.to_string().as_str(), newctxt.namespaces_ref()))?;
-            if eqname.get_nsuri_ref().is_none() {
+                QualifiedName::try_from((name.to_string().as_str(), c.clone()))?;
+            if eqname.namespace_uri().is_none() {
                 return Err(Error::new_with_code(
                     ErrorKind::StaticAbsent,
                     "function name must have a namespace",
@@ -606,8 +616,8 @@ where
             c.child_iter()
                 .filter(|c| {
                     c.is_element()
-                        && c.name().get_nsuri_ref() == Some(XSLTNS)
-                        && c.name().get_localname() == "param"
+                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                        && c.name().localname_to_string() == "param"
                 })
                 .try_for_each(|c| {
                     let p_name = c.get_attribute(&QualifiedName::new(None, None, "name"));
@@ -627,11 +637,11 @@ where
             c.child_iter()
                 .filter(|c| {
                     !(c.is_element()
-                        && c.name().get_nsuri_ref() == Some(XSLTNS)
-                        && c.name().get_localname() == "param")
+                        && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                        && c.name().localname_to_string() == "param")
                 })
                 .try_for_each(|d| {
-                    body.push(to_transform(d, &stylens, &attr_sets)?);
+                    body.push(to_transform(d, &attr_sets)?);
                     Ok::<(), Error>(())
                 })?;
             newctxt.callable_push(
@@ -650,15 +660,17 @@ where
 /// Compile a node in a template to a sequence [Combinator]
 fn to_transform<N: Node>(
     n: N,
-    ns: &Vec<HashMap<String, String>>,
     attr_sets: &HashMap<QualifiedName, Vec<Transform<N>>>,
 ) -> Result<Transform<N>, Error> {
+    // Define the in-scope namespaces once so they can be shared
+    let ns = in_scope_namespaces(Some(n.clone()));
+
     match n.node_type() {
         NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
             n.to_string(),
         ))))),
         NodeType::Element => {
-            match (n.name().get_nsuri_ref(), n.name().get_localname().as_str()) {
+            match (n.name().namespace_uri_to_string().as_deref(), n.name().localname_to_string().as_str()) {
                 (Some(XSLTNS), "text") => {
                     let doe = n.get_attribute(&QualifiedName::new(
                         None,
@@ -708,11 +720,11 @@ fn to_transform<N: Node>(
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
                             "yes" => Ok(Transform::LiteralText(
-                                Box::new(parse::<N>(&sel.to_string())?),
+                                Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
                                 true,
                             )),
                             "no" => Ok(Transform::LiteralText(
-                                Box::new(parse::<N>(&sel.to_string())?),
+                                Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
                                 false,
                             )),
                             _ => Err(Error::new(
@@ -723,7 +735,7 @@ fn to_transform<N: Node>(
                         }
                     } else {
                         Ok(Transform::LiteralText(
-                            Box::new(parse::<N>(&sel.to_string())?),
+                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
                             false,
                         ))
                     }
@@ -734,10 +746,10 @@ fn to_transform<N: Node>(
                     let sort_keys = get_sort_keys(&n)?;
                     if !sel.to_string().is_empty() {
                         Ok(Transform::ApplyTemplates(
-                            Box::new(parse::<N>(&sel.to_string())?),
+                            Box::new(parse::<N>(&sel.to_string(), Some(n.clone()))?),
                             m.map(|s| {
-                                QualifiedName::try_from((s.to_string().as_str(), ns))
-                                    .expect("unable to resolve qualified name")
+                                Rc::new(QualifiedName::try_from((s.to_string().as_str(), n))
+                                    .expect("unable to resolve qualified name"))
                             }),
                             sort_keys,
                         )) // TODO: don't panic
@@ -749,8 +761,8 @@ fn to_transform<N: Node>(
                                 NodeTest::Kind(KindTest::Any),
                             ))),
                             m.map(|s| {
-                                QualifiedName::try_from((s.to_string().as_str(), ns))
-                                    .expect("unable to resolve qualified name")
+                                Rc::new(QualifiedName::try_from((s.to_string().as_str(), n))
+                                    .expect("unable to resolve qualified name"))
                             }),
                             sort_keys,
                         )) // TODO: don't panic
@@ -760,7 +772,7 @@ fn to_transform<N: Node>(
                 (Some(XSLTNS), "sequence") => {
                     let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
                     if !s.to_string().is_empty() {
-                        Ok(parse::<N>(&s.to_string())?)
+                        Ok(parse::<N>(&s.to_string(), Some(n.clone()))?)
                     } else {
                         Result::Err(Error::new(
                             ErrorKind::TypeError,
@@ -769,15 +781,15 @@ fn to_transform<N: Node>(
                     }
                 }
                 (Some(XSLTNS), "if") => {
-                    let t = n.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
+                    let t = n.get_attribute(&QualifiedName::new(None, None, "test"));
                     if !t.to_string().is_empty() {
                         Ok(Transform::Switch(
                             vec![(
-                                parse::<N>(&t.to_string())?,
+                                parse::<N>(&t.to_string(), Some(n.clone()))?,
                                 Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e, ns, attr_sets)?);
+                                        body.push(to_transform(e, attr_sets)?);
                                         Ok(body)
                                     },
                                 )?),
@@ -802,19 +814,19 @@ fn to_transform<N: Node>(
                             // fail on anything else (apart from whitespace, comments, PIs)
                             match m.node_type() {
                                 NodeType::Element => {
-                                    match (m.name().get_nsuri_ref(), m.name().get_localname().as_str()) {
+                                    match (m.name().namespace_uri_to_string().as_deref(), m.name().localname_to_string().as_str()) {
                                         (Some(XSLTNS), "when") => {
                                             if otherwise.is_none() {
-                                                let t = m.get_attribute(&QualifiedName::new(None, None, "test".to_string()));
+                                                let t = m.get_attribute(&QualifiedName::new(None, None, "test"));
                                                 if !t.to_string().is_empty() {
                                                     clauses.push((
-                                                        parse::<N>(&t.to_string())?,
+                                                        parse::<N>(&t.to_string(), Some(n.clone()))?,
                                                         Transform::SequenceItems(
                                                             m.child_iter()
                                                                 .try_fold(
                                                                     vec![],
                                                                     |mut body, e| {
-                                                                        body.push(to_transform(e, ns, attr_sets)?);
+                                                                        body.push(to_transform(e, attr_sets)?);
                                                                         Ok(body)
                                                                     },
                                                                 )?
@@ -833,7 +845,7 @@ fn to_transform<N: Node>(
                                                     .try_fold(
                                                         vec![],
                                                         |mut o, e| {
-                                                            o.push(to_transform(e, ns, attr_sets)?);
+                                                            o.push(to_transform(e, attr_sets)?);
                                                             Ok(o)
                                                         },
                                                     )?));
@@ -872,11 +884,11 @@ fn to_transform<N: Node>(
                     if !s.to_string().is_empty() {
                         Ok(Transform::ForEach(
                             None,
-                            Box::new(parse::<N>(&s.to_string())?),
+                            Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
-                                    body.push(to_transform(e, ns, attr_sets)?);
+                                    body.push(to_transform(e, attr_sets)?);
                                     Ok(body)
                                 },
                             )?)),
@@ -891,57 +903,57 @@ fn to_transform<N: Node>(
                 }
                 (Some(XSLTNS), "for-each-group") => {
                     let ord = get_sort_keys(&n)?;
-                    let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
+                    let s = n.get_attribute(&QualifiedName::new(None, None, "select"));
                     if !s.to_string().is_empty() {
                         match (
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
-                                "group-by".to_string(),
+                                "group-by",
                             ))
                             .to_string()
                             .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
-                                "group-adjacent".to_string(),
+                                "group-adjacent",
                             ))
                             .to_string()
                             .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
-                                "group-starting-with".to_string(),
+                                "group-starting-with",
                             ))
                             .to_string()
                             .as_str(),
                             n.get_attribute(&QualifiedName::new(
                                 None,
                                 None,
-                                "group-ending-with".to_string(),
+                                "group-ending-with",
                             ))
                             .to_string()
                             .as_str(),
                         ) {
                             (by, "", "", "") => Ok(Transform::ForEach(
-                                Some(Grouping::By(vec![parse::<N>(by)?])),
-                                Box::new(parse::<N>(&s.to_string())?),
+                                Some(Grouping::By(vec![parse::<N>(by, Some(n.clone()))?])),
+                                Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e, ns, attr_sets)?);
+                                        body.push(to_transform(e, attr_sets)?);
                                         Ok(body)
                                     },
                                 )?)),
                                 ord,
                             )),
                             ("", adj, "", "") => Ok(Transform::ForEach(
-                                Some(Grouping::Adjacent(vec![parse::<N>(adj)?])),
-                                Box::new(parse::<N>(&s.to_string())?),
+                                Some(Grouping::Adjacent(vec![parse::<N>(adj, Some(n.clone()))?])),
+                                Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?),
                                 Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                     vec![],
                                     |mut body, e| {
-                                        body.push(to_transform(e, ns, attr_sets)?);
+                                        body.push(to_transform(e, attr_sets)?);
                                         Ok(body)
                                     },
                                 )?)),
@@ -964,7 +976,7 @@ fn to_transform<N: Node>(
                     // TODO: handle select attribute
                     let mut content: Vec<Transform<N>> =
                         n.child_iter().try_fold(vec![], |mut body, e| {
-                            body.push(to_transform(e, ns, attr_sets)?);
+                            body.push(to_transform(e, attr_sets)?);
                             Ok(body)
                         })?;
                     // Process @xsl:use-attribute-sets
@@ -975,7 +987,7 @@ fn to_transform<N: Node>(
                     ));
                     let mut attrs = vec![];
                     use_atts.to_string().split_whitespace().try_for_each(|a| {
-                        let eqa = QualifiedName::try_from((a, ns))?;
+                        let eqa = QualifiedName::try_from((a, n.clone()))?;
                         attr_sets
                             .get(&eqa)
                             .iter()
@@ -996,9 +1008,9 @@ fn to_transform<N: Node>(
                     ))
                 }
                 (Some(XSLTNS), "copy-of") => {
-                    let s = n.get_attribute(&QualifiedName::new(None, None, "select".to_string()));
+                    let s = n.get_attribute(&QualifiedName::new(None, None, "select"));
                     if !s.to_string().is_empty() {
-                        Ok(Transform::DeepCopy(Box::new(parse::<N>(&s.to_string())?)))
+                        Ok(Transform::DeepCopy(Box::new(parse::<N>(&s.to_string(), Some(n.clone()))?)))
                     } else {
                         Ok(Transform::DeepCopy(Box::new(Transform::ContextItem)))
                     }
@@ -1012,8 +1024,8 @@ fn to_transform<N: Node>(
                         n.child_iter()
                             .filter(|c| {
                                 c.is_element()
-                                    && c.name().get_nsuri_ref() == Some(XSLTNS)
-                                    && c.name().get_localname() == "with-param"
+                                    && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                                    && c.name().localname_to_string() == "with-param"
                             })
                             .try_for_each(|c| {
                                 let wp_name =
@@ -1025,19 +1037,19 @@ fn to_transform<N: Node>(
                                         // xsl:with-param content is the sequence constructor
                                         let mut body = vec![];
                                         c.child_iter().try_for_each(|d| {
-                                            body.push(to_transform(d, ns, attr_sets)?);
+                                            body.push(to_transform(d, attr_sets)?);
                                             Ok(())
                                         })?;
                                         ap.push((
-                                            QualifiedName::new(None, None, wp_name.to_string()),
+                                            QualifiedName::new_from_values(None, None, wp_name),
                                             Transform::SequenceItems(body),
                                         ));
                                         Ok(())
                                     } else {
                                         // select attribute value is an expression
                                         ap.push((
-                                            QualifiedName::new(None, None, wp_name.to_string()),
-                                            parse::<N>(&sel.to_string())?,
+                                            QualifiedName::new_from_values(None, None, wp_name),
+                                            parse::<N>(&sel.to_string(), Some(n.clone()))?,
                                         ));
                                         Ok(())
                                     }
@@ -1049,8 +1061,9 @@ fn to_transform<N: Node>(
                                 }
                             })?;
                         Ok(Transform::Invoke(
-                            QualifiedName::new(None, None, name.to_string()),
+                            Rc::new(QualifiedName::new_from_values(None, None, name)),
                             ActualParameters::Named(ap),
+                            in_scope_namespaces(Some(n)),
                         ))
                     } else {
                         Err(Error::new(
@@ -1060,12 +1073,12 @@ fn to_transform<N: Node>(
                     }
                 }
                 (Some(XSLTNS), "element") => {
-                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name"));
                     if m.to_string().is_empty() {
                         return Err(Error::new(ErrorKind::TypeError, "missing name attribute"));
                     }
                     let mut content = n.child_iter().try_fold(vec![], |mut body, e| {
-                        body.push(to_transform(e, ns, attr_sets)?);
+                        body.push(to_transform(e, attr_sets)?);
                         Ok(body)
                     })?;
                     // Process @xsl:use-attribute-sets
@@ -1076,7 +1089,7 @@ fn to_transform<N: Node>(
                     ));
                     let mut attrs = vec![];
                     use_atts.to_string().split_whitespace().try_for_each(|a| {
-                        let eqa = QualifiedName::try_from((a, ns))?;
+                        let eqa = QualifiedName::try_from((a, n.clone()))?;
                         attr_sets
                             .get(&eqa)
                             .iter()
@@ -1086,7 +1099,7 @@ fn to_transform<N: Node>(
                     })?;
 
                     Ok(Transform::Element(
-                        Box::new(parse_avt(m.to_string().as_str())?),
+                        Box::new(parse_avt(m.to_string().as_str(), Some(n.clone()))?),
                         Box::new(if content.is_empty() && attrs.is_empty() {
                             Transform::Empty
                         } else {
@@ -1097,14 +1110,14 @@ fn to_transform<N: Node>(
                     ))
                 }
                 (Some(XSLTNS), "attribute") => {
-                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name"));
                     if !m.to_string().is_empty() {
                         Ok(Transform::LiteralAttribute(
-                            QualifiedName::new(None, None, m.to_string()),
+                            Rc::new(QualifiedName::new_from_values(None, None, m)),
                             Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                                 vec![],
                                 |mut body, e| {
-                                    body.push(to_transform(e, ns, attr_sets)?);
+                                    body.push(to_transform(e, attr_sets)?);
                                     Ok(body)
                                 },
                             )?)),
@@ -1112,30 +1125,30 @@ fn to_transform<N: Node>(
                     } else {
                         Err(Error::new(
                             ErrorKind::TypeError,
-                            "missing name attribute".to_string(),
+                            "missing name attribute",
                         ))
                     }
                 }
                 (Some(XSLTNS), "comment") => Ok(Transform::LiteralComment(Box::new(
                     Transform::SequenceItems(n.child_iter().try_fold(vec![], |mut body, e| {
-                        body.push(to_transform(e, ns, attr_sets)?);
+                        body.push(to_transform(e, attr_sets)?);
                         Ok(body)
                     })?),
                 ))),
                 (Some(XSLTNS), "processing-instruction") => {
-                    let m = n.get_attribute(&QualifiedName::new(None, None, "name".to_string()));
+                    let m = n.get_attribute(&QualifiedName::new(None, None, "name"));
                     if m.to_string().is_empty() {
                         return Result::Err(Error::new(
                             ErrorKind::TypeError,
-                            "missing name attribute".to_string(),
+                            "missing name attribute",
                         ));
                     }
                     Ok(Transform::LiteralProcessingInstruction(
-                        Box::new(parse_avt(m.to_string().as_str())?),
+                        Box::new(parse_avt(m.to_string().as_str(), Some(n.clone()))?),
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e, ns, attr_sets)?);
+                                body.push(to_transform(e, attr_sets)?);
                                 Ok(body)
                             },
                         )?)),
@@ -1143,12 +1156,12 @@ fn to_transform<N: Node>(
                 }
                 (Some(XSLTNS), "message") => {
                     let t =
-                        n.get_attribute(&QualifiedName::new(None, None, "terminate".to_string()));
+                        n.get_attribute(&QualifiedName::new(None, None, "terminate"));
                     Ok(Transform::Message(
                         Box::new(Transform::SequenceItems(n.child_iter().try_fold(
                             vec![],
                             |mut body, e| {
-                                body.push(to_transform(e, ns, attr_sets)?);
+                                body.push(to_transform(e, attr_sets)?);
                                 Ok(body)
                             },
                         )?)),
@@ -1183,7 +1196,7 @@ fn to_transform<N: Node>(
                                 Box::new(if sel.to_string().is_empty() {
                                     Transform::ContextItem
                                 } else {
-                                    parse::<N>(&sel.to_string())?
+                                    parse::<N>(&sel.to_string(), Some(n.clone()))?
                                 }), // select
                                 Box::new(Numbering::new(
                                     Level::Single, // TODO: parse level attribute value
@@ -1210,7 +1223,7 @@ fn to_transform<N: Node>(
                     } else {
                         // Place marker is supplied
                         Ok(Transform::FormatInteger(
-                            Box::new(parse::<N>(&value.to_string())?),
+                            Box::new(parse::<N>(&value.to_string(), Some(n.clone()))?),
                             Box::new(Transform::Literal(Item::Value(
                                 if format.to_string().is_empty() {
                                     Rc::new(Value::from("1"))
@@ -1237,7 +1250,7 @@ fn to_transform<N: Node>(
                     ));
                     let mut attrs = vec![];
                     use_atts.to_string().split_whitespace().try_for_each(|a| {
-                        let eqa = QualifiedName::try_from((a, ns))?;
+                        let eqa = QualifiedName::try_from((a, ns.clone()))?;
                         attr_sets
                             .get(&eqa)
                             .iter()
@@ -1248,21 +1261,21 @@ fn to_transform<N: Node>(
                     let mut content = vec![];
                     // Copy attributes to the result, except for XSLT directives
                     n.attribute_iter()
-                        .filter(|e| e.name().get_nsuri_ref() != Some(XSLTNS))
+                        .filter(|e| e.name().namespace_uri_to_string() != Some(XSLTNS.to_string()))
                         .try_for_each(|e| {
-                            content.push(to_transform(e, ns, attr_sets)?);
+                            content.push(to_transform(e, attr_sets)?);
                             Ok::<(), Error>(())
                         })?;
                     n.child_iter().try_for_each(|e| {
-                        content.push(to_transform(e, ns, attr_sets)?);
+                        content.push(to_transform(e, attr_sets)?);
                         Ok::<(), Error>(())
                     })?;
                     Ok(Transform::LiteralElement(
-                        QualifiedName::new(
-                            u.map(|v| v.to_string()),
-                            n.name().get_prefix(),
-                            a.to_string(),
-                        ),
+                        Rc::new(QualifiedName::new_from_values(
+                            u.map(|v| Rc::new(Value::from(v))),
+                            n.name().prefix(),
+                            Rc::new(Value::from(a)),
+                        )),
                         Box::new(if content.is_empty() && attrs.is_empty() {
                             Transform::Empty
                         } else {
@@ -1296,14 +1309,14 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
     n.child_iter()
         .try_fold(vec![], |mut acc, c| match c.node_type() {
             NodeType::Element => {
-                if c.name() == QualifiedName::new(Some(XSLTNS.to_string()), None, "sort") {
+                if *c.name() == QualifiedName::new(Some(XSLTNS.to_string()), None, "sort") {
                     let ordval = c.get_attribute(&QualifiedName::new(None, None, "order"));
                     let ord = match ordval.to_string().as_str() {
                         "descending" => Order::Descending,
                         _ => Order::Ascending,
                     };
                     let sortsel = c.get_attribute(&QualifiedName::new(None, None, "select"));
-                    acc.push((ord, parse::<N>(&sortsel.to_string())?));
+                    acc.push((ord, parse::<N>(&sortsel.to_string(), Some(n.clone()))?));
                     Ok(acc)
                 } else {
                     Err(Error::new(
@@ -1363,12 +1376,12 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
         n.child_iter().try_for_each(|m| {
             match (
                 m.node_type(),
-                m.name().get_nsuri_ref(),
-                m.name().get_localname().as_str(),
+                m.name().namespace_uri_to_string().as_deref(),
+                m.name().localname_to_string().as_str(),
             ) {
                 (NodeType::Element, Some(XSLTNS), "strip-space") => {
                     let v =
-                        m.get_attribute(&QualifiedName::new(None, None, "elements".to_string()));
+                        m.get_attribute(&QualifiedName::new(None, None, "elements"));
                     if !v.to_string().is_empty() {
                         v.to_string().split_whitespace().try_for_each(|t| {
                             ss.push(NodeTest::try_from(t)?);
@@ -1383,7 +1396,7 @@ pub fn strip_source_document<N: Node>(src: N, style: N) -> Result<(), Error> {
                 }
                 (NodeType::Element, Some(XSLTNS), "preserve-space") => {
                     let v =
-                        m.get_attribute(&QualifiedName::new(None, None, "elements".to_string()));
+                        m.get_attribute(&QualifiedName::new(None, None, "elements"));
                     if !v.to_string().is_empty() {
                         v.to_string().split_whitespace().try_for_each(|t| {
                             ps.push(NodeTest::try_from(t)?);
@@ -1435,7 +1448,7 @@ fn strip_whitespace_node<N: Node>(
                         ss = -0.25;
                     }
                     (None, Some(WildcardOrName::Name(name))) => {
-                        match (n.name().get_nsuri(), n.name().get_localname()) {
+                        match (n.name().namespace_uri(), n.name().localname()) {
                             (Some(_), _) => {}
                             (None, ename) => {
                                 if *name == ename {
@@ -1445,7 +1458,7 @@ fn strip_whitespace_node<N: Node>(
                         }
                     }
                     (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
-                        match (n.name().get_nsuri(), n.name().get_localname()) {
+                        match (n.name().namespace_uri(), n.name().localname()) {
                             (Some(ens), ename) => {
                                 if *ns == ens && *name == ename {
                                     ss = 0.5;
@@ -1475,7 +1488,7 @@ fn strip_whitespace_node<N: Node>(
                 NodeTest::Kind(KindTest::Any) | NodeTest::Kind(KindTest::Element) => ps = -0.5,
                 NodeTest::Name(nt) => match (nt.ns.as_ref(), nt.name.as_ref()) {
                     (None, Some(WildcardOrName::Name(name))) => {
-                        match (n.name().get_nsuri(), n.name().get_localname()) {
+                        match (n.name().namespace_uri(), n.name().localname()) {
                             (Some(_), _) => {}
                             (None, ename) => {
                                 if *name == ename {
@@ -1485,7 +1498,7 @@ fn strip_whitespace_node<N: Node>(
                         }
                     }
                     (Some(WildcardOrName::Name(ns)), Some(WildcardOrName::Name(name))) => {
-                        match (n.name().get_nsuri(), n.name().get_localname()) {
+                        match (n.name().namespace_uri(), n.name().localname()) {
                             (Some(ens), ename) => {
                                 if *ns == ens && *name == ename {
                                     ps = 0.5;

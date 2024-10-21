@@ -13,9 +13,9 @@ use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
 
-pub(crate) fn nmtoken<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+pub(crate) fn nmtoken<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
 {
-    map(many1(take_while(|c| is_namechar(&c))), |_x| ())
+    map(many1(take_while(|c| is_namechar(&c))), |x| x.join(""))
 }
 
 pub(crate) fn contentspec<N: Node>(

@@ -8,7 +8,7 @@
 use crate::item::Node;
 use crate::qname::QualifiedName;
 use crate::transform::context::StaticContext;
-use crate::transform::Transform;
+use crate::transform::{NamespaceMap, Transform};
 use crate::{Context, Error, ErrorKind, Sequence};
 use std::collections::HashMap;
 use url::Url;
@@ -49,9 +49,13 @@ pub(crate) fn invoke<
     stctxt: &mut StaticContext<N, F, G, H>,
     qn: &QualifiedName,
     a: &ActualParameters<N>,
+    ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
     let mut qnr = qn.clone();
-    qnr.resolve(ctxt.namespaces_ref())?;
+    qnr.resolve(|p| ns.get(&p).map_or(
+        Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
+        |r| Ok(r.clone())
+    ))?;
     match ctxt.callables.get(&qnr) {
         Some(t) => {
             match &t.parameters {

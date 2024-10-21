@@ -8,10 +8,12 @@ mod reference;
 mod strings;
 mod xmldecl;
 
+use std::rc::Rc;
 use crate::item::Node;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
-use crate::parser::combinators::tuple::{tuple3, tuple4};
+use crate::parser::combinators::tag::tag;
+use crate::parser::combinators::tuple::tuple4;
 use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
@@ -19,7 +21,7 @@ use crate::parser::xml::xmldecl::xmldecl;
 use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
-use std::collections::HashMap;
+use crate::namespace::NamespaceMap;
 
 pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
     let (xmldoc, _) = parse_with_ns(doc, input, config)?;
@@ -30,10 +32,10 @@ pub fn parse_with_ns<N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
-) -> Result<(N, Vec<HashMap<String, String>>), Error> {
-    let state = ParserState::new(Some(doc), config);
+) -> Result<(N, Rc<NamespaceMap>), Error> {
+    let state = ParserState::new(Some(doc), None, config);
     match document((input, state)) {
-        Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespaces_ref().clone())),
+        Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespace.clone())),
         Err(err) => {
             match err {
                 ParseError::Combinator => Err(Error::new(
@@ -90,9 +92,9 @@ pub fn parse_with_ns<N: Node>(
 }
 
 fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
-    match tuple3(opt(prolog()), element(), opt(misc()))(input) {
+    match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input) {
         Err(err) => Err(err),
-        Ok(((input1, state1), (p, e, m))) => {
+        Ok(((input1, state1), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
             if input1.is_empty() {
                 let pr = p.unwrap_or((None, vec![]));
@@ -146,4 +148,8 @@ fn prolog<N: Node>(
             (xmld, m1)
         },
     )
+}
+
+fn utf8bom<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+    tag("\u{feff}")
 }

@@ -1,10 +1,13 @@
 /*
+
 Bjoern Hoehrmann via HST 2013-09-18
+
 */
 
-use std::convert::TryFrom;
 use std::fs;
-use xrust::Document;
+use xrust::parser::xml;
+use xrust::item::Node;
+use xrust::trees::smite::RNode;
 
 #[test]
 #[ignore]
@@ -16,12 +19,16 @@ fn hstbh005() {
         Description:xmlns:xml is an attribute as far as validation is concerned and must be declared
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/005.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/005.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
 
 #[test]
@@ -34,10 +41,14 @@ fn hstbh006() {
         Description:xmlns:foo is an attribute as far as validation is concerned and must be declared
     */
 
-    let testxml = Document::try_from((
-        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/006.xml").unwrap(),
+    let testxml = RNode::new_document();
+    let parseresult = xml::parse(
+        testxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/eduni/misc/006.xml")
+            .unwrap()
+            .as_str(),
         None,
-        None,
-    ));
-    assert!(testxml.is_err());
+    );
+
+    assert!(parseresult.is_err());
 }
