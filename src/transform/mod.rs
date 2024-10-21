@@ -280,6 +280,7 @@ pub enum Transform<N: Node> {
         Box<Transform<N>>,
     ),
 
+    // Why not just use Invoke?
     /// Extension elements/functions.
     /// The QName identifies the extension.
     Extension(Rc<QualifiedName>, Extension),

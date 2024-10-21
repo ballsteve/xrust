@@ -14,14 +14,19 @@ use std::collections::HashMap;
 use url::Url;
 
 #[derive(Clone, Debug)]
+pub enum CallableBody<N: Node> {
+    Transform(Transform<N>),
+    ApplicationDefined,
+}
+#[derive(Clone, Debug)]
 pub struct Callable<N: Node> {
-    pub(crate) body: Transform<N>,
+    pub(crate) body: CallableBody<N>,
     pub(crate) parameters: FormalParameters<N>,
     // TODO: return type
 }
 
 impl<N: Node> Callable<N> {
-    pub fn new(body: Transform<N>, parameters: FormalParameters<N>) -> Self {
+    pub fn new(body: CallableBody<N>, parameters: FormalParameters<N>) -> Self {
         Callable { body, parameters }
     }
 }
