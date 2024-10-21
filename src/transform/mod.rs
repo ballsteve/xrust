@@ -283,7 +283,7 @@ pub enum Transform<N: Node> {
     // Why not just use Invoke?
     /// Extension elements/functions.
     /// The QName identifies the extension.
-    Extension(Rc<QualifiedName>, Extension),
+    //Extension(Rc<QualifiedName>, Extension),
 
     /// For things that are not yet implemented, such as:
     /// Union, IntersectExcept, InstanceOf, Treat, Castable, Cast, Arrow, Unary, SimpleMap, Is, Before, After.

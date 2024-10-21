@@ -10,23 +10,24 @@ use crate::qname::QualifiedName;
 use crate::transform::context::StaticContext;
 use crate::transform::{NamespaceMap, Transform};
 use crate::{Context, Error, ErrorKind, Sequence};
+use std::rc::Rc;
 use std::collections::HashMap;
 use url::Url;
 
 #[derive(Clone, Debug)]
-pub enum CallableBody<N: Node> {
+pub enum CallType<N: Node> {
     Transform(Transform<N>),
-    ApplicationDefined,
+    ApplicationCallback(Rc<QualifiedName>),
 }
 #[derive(Clone, Debug)]
 pub struct Callable<N: Node> {
-    pub(crate) body: CallableBody<N>,
+    pub(crate) body: CallType<N>,
     pub(crate) parameters: FormalParameters<N>,
     // TODO: return type
 }
 
 impl<N: Node> Callable<N> {
-    pub fn new(body: CallableBody<N>, parameters: FormalParameters<N>) -> Self {
+    pub fn new(body: CallType<N>, parameters: FormalParameters<N>) -> Self {
         Callable { body, parameters }
     }
 }
@@ -49,9 +50,10 @@ pub(crate) fn invoke<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
     qn: &QualifiedName,
     a: &ActualParameters<N>,
     ns: &NamespaceMap,
@@ -105,7 +107,21 @@ pub(crate) fn invoke<
                                 newctxt.var_push(qn.to_string(), ctxt.dispatch(stctxt, t)?);
                                 Ok(())
                             })?;
-                            newctxt.dispatch(stctxt, &t.body)
+                            match &t.body {
+                                CallType::Transform(u) => newctxt.dispatch(stctxt, &u),
+                                CallType::ApplicationCallback(qn) => {
+                                    stctxt.extensions.get(&qn).map_or(
+                                        Err(Error::new(ErrorKind::StaticAbsent, format!("unable to find extension function \"{}\"", qn.to_string()))),
+                                        |f| {
+                                            if let Some(g) = f {
+                                                g(&vec![]) // we don't need this coz the actual arguments are now variables
+                                            } else {
+                                                Err(Error::new(ErrorKind::TypeError, format!("function \"{}\" is not an extension function", qn.to_string())))
+                                            }
+                                        }
+                                    )
+                                }
+                            }
                         } else {
                             Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
                         }

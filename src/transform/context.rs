@@ -128,9 +128,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
     >(
         &mut self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &mut StaticContext<N, F, G, H, J>,
         sd: N,
     ) -> Result<(), Error> {
         populate_key_values(self, stctxt, sd)
@@ -228,9 +229,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
     >(
         &self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &mut StaticContext<N, F, G, H, J>,
     ) -> Result<Sequence<N>, Error> {
         if self.cur.is_empty() {
             Ok(Sequence::new())
@@ -286,9 +288,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
     >(
         &self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &mut StaticContext<N, F, G, H, J>,
         i: &Item<N>,
         m: &Option<Rc<QualifiedName>>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
@@ -353,9 +356,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
     >(
         &self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &mut StaticContext<N, F, G, H, J>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
         match t {
@@ -562,34 +566,38 @@ impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
 /// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
-pub struct StaticContext<N: Node, F, G, H>
+pub struct StaticContext<N: Node, F, G, H, J>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>, // Parses a string into a tree
     H: FnMut(&Url) -> Result<String, Error>, // Fetches the data from a URL
+    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>, // Extension functions
 {
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
+    pub(crate) extensions: HashMap<Rc<QualifiedName>, Option<J>>,
 }
 
-impl<N: Node, F, G, H> StaticContext<N, F, G, H>
+impl<N: Node, F, G, H, J> StaticContext<N, F, G, H, J>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
 {
     pub fn new() -> Self {
         StaticContext {
             message: None,
             parser: None,
             fetcher: None,
+            extensions: HashMap::new(),
         }
     }
 }
 
 /// Builder for a [StaticContext].
-/// The main feature of the static context is the ability to set up a callback for messages.
+/// The main features of the static context are the ability to set up a callback for messages and for extension functions.
 /// ```rust
 /// use std::rc::Rc;
 /// use xrust::{Error, ErrorKind};
@@ -631,13 +639,15 @@ pub struct StaticContextBuilder<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
->(StaticContext<N, F, G, H>);
+    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+>(StaticContext<N, F, G, H, J>);
 
-impl<N: Node, F, G, H> StaticContextBuilder<N, F, G, H>
+impl<N: Node, F, G, H, J> StaticContextBuilder<N, F, G, H, J>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
 {
     pub fn new() -> Self {
         StaticContextBuilder(StaticContext::new())
@@ -654,7 +664,19 @@ where
         self.0.fetcher = Some(f);
         self
     }
-    pub fn build(self) -> StaticContext<N, F, G, H> {
+    pub fn extension_function(mut self, qn: Rc<QualifiedName>, ef: J) -> Self {
+        if qn.namespace_uri().is_none() {
+            panic!("an extension function must have a Namespace URI")
+        }
+        self.0.extensions.insert(qn, Some(ef));
+        self
+    }
+    // This registers the name of a built-in function
+    pub(crate) fn register_function(mut self, qn: Rc<QualifiedName>, _ef: J) -> Self {
+        self.0.extensions.insert(qn, None);
+        self
+    }
+    pub fn build(self) -> StaticContext<N, F, G, H, J> {
         self.0
     }
 }
