@@ -1,5 +1,5 @@
-use std::collections::HashSet;
 use crate::item::Node;
+use crate::namespace::NamespaceMap;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many0;
@@ -16,29 +16,25 @@ use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
 use crate::value::Value;
-use crate::namespace::NamespaceMap;
-use std::rc::Rc;
 use crate::{Error, ErrorKind};
+use std::collections::HashSet;
+use std::rc::Rc;
 
 /// Parse all of the attributes in an element's start tag.
 /// Returns (attribute nodes, namespace declaration nodes).
-pub(crate) fn attributes<N: Node>() -> impl Fn(
-    ParseInput<N>,
-) -> Result<
-    (ParseInput<N>, (Vec<N>, Vec<N>)),
-    ParseError,
-> {
+pub(crate) fn attributes<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Vec<N>, Vec<N>)), ParseError> {
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
             let doc = state1.doc.clone().unwrap().clone();
 
             //let n: HashMap<Option<String>, String> = HashMap::new();
             //let mut namespaces = state1.namespace.last().unwrap_or(&n).clone();
-//            let mut resnsnodes = if state1.namespace_nodes {
-//                state1.namespace.last().unwrap_or(&n).clone()
-//            } else {
-//                HashMap::new()
-//            };
+            //            let mut resnsnodes = if state1.namespace_nodes {
+            //                state1.namespace.last().unwrap_or(&n).clone()
+            //            } else {
+            //                HashMap::new()
+            //            };
 
             // If new namespaces are declared, then construct a new namespace hashmap
             // with the old entries overlaid with the new entries.
@@ -57,9 +53,7 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 let val_str = val.to_string();
 
                 //Return error if someone attempts to redefine namespaces.
-                if qn_prefix_str == "xmlns"
-                    && qn_localname == "xmlns"
-                {
+                if qn_prefix_str == "xmlns" && qn_localname == "xmlns" {
                     return Err(ParseError::NotWellFormed(String::from(
                         "cannot redefine namespace",
                     )));
@@ -115,7 +109,10 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 }
 
                 if qn_prefix_str == "xmlns" {
-                    new_namespaces.push(doc.new_namespace(val.clone(), Some(qn.localname())).expect("unable to create namespace node"));
+                    new_namespaces.push(
+                        doc.new_namespace(val.clone(), Some(qn.localname()))
+                            .expect("unable to create namespace node"),
+                    );
                     match new_namespace_prefixes.insert(Some(qn.localname())) {
                         true => {}
                         false => {
@@ -128,7 +125,10 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                     //resnsnodes.insert(Some(qn.get_localname()), val.to_string());
                 };
                 if qn_localname == "xmlns" && !val_str.is_empty() {
-                    new_namespaces.push(doc.new_namespace(val.clone(), None).expect("unable to create default namespace node"));
+                    new_namespaces.push(
+                        doc.new_namespace(val.clone(), None)
+                            .expect("unable to create default namespace node"),
+                    );
                     match new_namespace_prefixes.insert(None) {
                         true => {}
                         false => {
@@ -191,10 +191,18 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 let qn_prefix = qn.prefix_to_string().map_or(String::from(""), |s| s);
                 let qn_localname = qn.localname_to_string();
                 if qn_prefix != "xmlns" && qn_localname != "xmlns" {
-                    if qn.resolve(|p| state1.namespace.get(&p).map_or(
-                        Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
-                        |r| Ok(r.clone())
-                    )).is_err() {
+                    if qn
+                        .resolve(|p| {
+                            state1.namespace.get(&p).map_or(
+                                Err(Error::new(
+                                    ErrorKind::DynamicAbsent,
+                                    "no namespace for prefix",
+                                )),
+                                |r| Ok(r.clone()),
+                            )
+                        })
+                        .is_err()
+                    {
                         return Err(ParseError::MissingNameSpace);
                     }
                     if qn_prefix != "xmlns" && qn_prefix != "" {
@@ -216,7 +224,9 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
 
                     /* Why not just use resnodes.contains()  ? I don't know how to do partial matching */
                     if resnodenames.contains(&(qn.namespace_uri(), qn.localname())) {
-                        return Err(ParseError::NotWellFormed(String::from("duplicate attributes")));
+                        return Err(ParseError::NotWellFormed(String::from(
+                            "duplicate attributes",
+                        )));
                     } else {
                         resnodenames.push((qn.namespace_uri(), qn.localname()));
                     }
@@ -239,7 +249,9 @@ fn attribute<N: Node>(
         attribute_value(),
     )((input, state))
     {
-        Ok(((input1, state1), (_, n, _, _, _, s))) => Ok(((input1, state1.clone()), (n, state1.get_value(s)))),
+        Ok(((input1, state1), (_, n, _, _, _, s))) => {
+            Ok(((input1, state1.clone()), (n, state1.get_value(s))))
+        }
         Err(e) => Err(e),
     }
 }

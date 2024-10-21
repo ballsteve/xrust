@@ -145,7 +145,10 @@ mod tests {
         );
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None, None)), vec!["1", "2", "3", "4"])),
+            Ok((
+                ("", ParserState::new(None, None, None)),
+                vec!["1", "2", "3", "4"]
+            )),
             parse_doc((testdoc, teststate))
         );
     }
@@ -177,7 +180,10 @@ mod tests {
         );
 
         assert_eq!(
-            Ok((("", ParserState::new(None, None, None)), vec!["1", "2", "3", "4"])),
+            Ok((
+                ("", ParserState::new(None, None, None)),
+                vec!["1", "2", "3", "4"]
+            )),
             parse_doc((testdoc, teststate))
         );
     }

@@ -1,11 +1,11 @@
 //! Tests for XSLT defined generically
 
-use std::rc::Rc;
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
+use std::rc::Rc;
 use url::Url;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
-use xrust::transform::context::StaticContextBuilder;
 use xrust::namespace::NamespaceMap;
+use xrust::transform::context::StaticContextBuilder;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
 
@@ -34,12 +34,7 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
-    let mut ctxt = from_document(
-        styledoc,
-        None,
-        |s| parse_from_str(s),
-        |_| Ok(String::new()),
-    )?;
+    let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     ctxt.populate_key_values(&mut stctxt, srcdoc.clone())?;
@@ -69,12 +64,7 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
-    let mut ctxt = from_document(
-        styledoc,
-        None,
-        |s| parse_from_str(s),
-        |_| Ok(String::new()),
-    )?;
+    let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     let seq = ctxt.evaluate(&mut stctxt)?;
@@ -871,12 +861,7 @@ where
         })
         .parser(|s| parse_from_str(s))
         .build();
-    let mut ctxt = from_document(
-        styledoc,
-        None,
-        |s| parse_from_str(s),
-        |_| Ok(String::new()),
-    )?;
+    let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     let result = ctxt.evaluate(&mut stctxt)?;
@@ -910,12 +895,7 @@ where
         .fetcher(|_url| Ok(String::new()))
         .parser(|s| parse_from_str(s))
         .build();
-    let mut ctxt = from_document(
-        styledoc,
-        None,
-        |s| parse_from_str(s),
-        |_| Ok(String::new()),
-    )?;
+    let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     let result = ctxt.evaluate(&mut stctxt)?;

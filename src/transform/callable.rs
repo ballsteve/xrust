@@ -52,10 +52,15 @@ pub(crate) fn invoke<
     ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
     let mut qnr = qn.clone();
-    qnr.resolve(|p| ns.get(&p).map_or(
-        Err(Error::new(ErrorKind::DynamicAbsent, "no namespace for prefix")),
-        |r| Ok(r.clone())
-    ))?;
+    qnr.resolve(|p| {
+        ns.get(&p).map_or(
+            Err(Error::new(
+                ErrorKind::DynamicAbsent,
+                "no namespace for prefix",
+            )),
+            |r| Ok(r.clone()),
+        )
+    })?;
     match ctxt.callables.get(&qnr) {
         Some(t) => {
             match &t.parameters {

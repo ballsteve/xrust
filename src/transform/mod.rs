@@ -54,16 +54,11 @@ pub(crate) mod strings;
 pub mod template;
 pub(crate) mod variables;
 
-use std::convert::TryFrom;
-use std::fmt;
-use std::fmt::{Debug, Formatter};
-use std::rc::Rc;
-use url::Url;
 #[allow(unused_imports)]
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
-use crate::qname::QualifiedName;
 use crate::namespace::NamespaceMap;
+use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::numbers::Numbering;
@@ -71,6 +66,11 @@ use crate::value::Operator;
 #[allow(unused_imports)]
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
+use std::convert::TryFrom;
+use std::fmt;
+use std::fmt::{Debug, Formatter};
+use std::rc::Rc;
+use url::Url;
 
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
@@ -172,7 +172,12 @@ pub enum Transform<N: Node> {
 
     /// Declare a variable in the current context.
     /// Consists of the variable name, its value, a transformation to perform with the variable in scope, and in-scope namespace declarations.
-    VariableDeclaration(String, Box<Transform<N>>, Box<Transform<N>>, Rc<NamespaceMap>),
+    VariableDeclaration(
+        String,
+        Box<Transform<N>>,
+        Box<Transform<N>>,
+        Rc<NamespaceMap>,
+    ),
     /// Reference a variable.
     /// The result is the value stored for that variable in the current context and current scope.
     VariableReference(String, Rc<NamespaceMap>),
@@ -725,7 +730,9 @@ impl NameTest {
                             (None, Some(WildcardOrName::Wildcard), None, _) => true,
                             (None, Some(WildcardOrName::Wildcard), Some(_), _) => false,
                             (None, Some(WildcardOrName::Name(_)), None, "") => false,
-                            (None, Some(WildcardOrName::Name(wn)), None, qn) => wn.to_string() == qn,
+                            (None, Some(WildcardOrName::Name(wn)), None, qn) => {
+                                wn.to_string() == qn
+                            }
                             (None, Some(WildcardOrName::Name(_)), Some(_), _) => false,
                             (Some(_), None, _, _) => false, // A namespace URI without a local name doesn't make sense
                             (

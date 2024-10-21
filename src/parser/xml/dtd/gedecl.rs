@@ -58,7 +58,7 @@ pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
                                     } else {
                                         c.to_string()
                                     }
-                                }
+                                },
                             ),
                             petextreference(),
                             //General entity is ignored.

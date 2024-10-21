@@ -11,7 +11,11 @@ where
     G: Fn() -> N,
 {
     let mut sd = make_doc();
-    let t = sd.new_element(Rc::new(QualifiedName::new(None, None, String::from("Test"))))?;
+    let t = sd.new_element(Rc::new(QualifiedName::new(
+        None,
+        None,
+        String::from("Test"),
+    )))?;
     sd.push(t.clone())?;
     let a1 = sd.new_attribute(
         Rc::new(QualifiedName::new(None, None, String::from("role"))),

@@ -7,8 +7,8 @@ IBM test cases
 use crate::conformance::dtdfileresolve;
 use std::fs;
 //use hexdump::hexdump;
-use xrust::parser::{xml, ParserConfig};
 use xrust::item::Node;
+use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
 
 #[test]
@@ -4716,10 +4716,10 @@ fn ibmvalid_p66ibm66v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-//    assert_eq!(
-//        parseresult.unwrap().get_canonical().unwrap(),
-//        canonicalparseresult.unwrap()
-//    );
+    //    assert_eq!(
+    //        parseresult.unwrap().get_canonical().unwrap(),
+    //        canonicalparseresult.unwrap()
+    //    );
     assert_eq!(
         parseresult.unwrap().get_canonical().unwrap(),
         canonicalparseresult.unwrap().get_canonical().unwrap()

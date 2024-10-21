@@ -1,20 +1,20 @@
 //! Support for Qualified Names.
 //! TODO: Intern names for speedy equality checks (compare pointers, rather than characters).
 
-use crate::value::Value;
 use crate::item::Node;
+use crate::namespace::NamespaceMap;
 use crate::parser::xml::qname::eqname;
 use crate::parser::ParserState;
 use crate::trees::nullo::Nullo;
+use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::namespace::NamespaceMap;
 use core::hash::{Hash, Hasher};
-use std::rc::Rc;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
+use std::rc::Rc;
 
 #[derive(Clone)]
 pub struct QualifiedName {
@@ -74,10 +74,7 @@ impl QualifiedName {
     /// then find the prefix in the supplied namespaces and use the corresponding URI.
     /// If the qualified name already has a namespace URI, then this method has no effect.
     /// If the qualified name has no prefix, then this method has no effect.
-    pub fn resolve<F>(
-        &mut self,
-        mapper: F,
-    ) -> Result<(), Error>
+    pub fn resolve<F>(&mut self, mapper: F) -> Result<(), Error>
     where
         F: Fn(Option<Rc<Value>>) -> Result<Rc<Value>, Error>,
     {
@@ -85,7 +82,7 @@ impl QualifiedName {
             (Some(p), None) => {
                 self.nsuri = Some(mapper(Some(p.clone()))?.clone());
                 Ok(())
-            },
+            }
             _ => Ok(()),
         }
     }
@@ -106,9 +103,19 @@ impl fmt::Display for QualifiedName {
 impl Debug for QualifiedName {
     fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
         let _ = f.write_str("namespace ");
-        let _ = f.write_str(self.nsuri.as_ref().map_or("--none--".to_string(), |ns| ns.to_string()).as_str());
+        let _ = f.write_str(
+            self.nsuri
+                .as_ref()
+                .map_or("--none--".to_string(), |ns| ns.to_string())
+                .as_str(),
+        );
         let _ = f.write_str(" prefix ");
-        let _ = f.write_str(self.prefix.as_ref().map_or("--none--".to_string(), |p| p.to_string()).as_str());
+        let _ = f.write_str(
+            self.prefix
+                .as_ref()
+                .map_or("--none--".to_string(), |p| p.to_string())
+                .as_str(),
+        );
         let _ = f.write_str(" local part \"");
         let _ = f.write_str(self.localname.to_string().as_str());
         f.write_str("\"")
@@ -205,7 +212,10 @@ impl TryFrom<(&str, Rc<NamespaceMap>)> for QualifiedName {
                         )),
                         _ => Err(Error::new(
                             ErrorKind::Unknown,
-                            format!("unable to match prefix \"{}\"", qn.prefix_to_string().unwrap()),
+                            format!(
+                                "unable to match prefix \"{}\"",
+                                qn.prefix_to_string().unwrap()
+                            ),
                         )),
                     }
                 } else {
@@ -234,12 +244,20 @@ impl<N: Node> TryFrom<(&str, N)> for QualifiedName {
                     s.1.namespace_iter()
                         .find(|ns| ns.name().localname() == qn.prefix().unwrap())
                         .map_or(
-                            Err(Error::new(ErrorKind::DynamicAbsent, format!("no namespace matching prefix \"{}\"", qn.prefix_to_string().unwrap()))),
-                            |ns| Ok(QualifiedName::new_from_values(
-                                Some(ns.value()),
-                                qn.prefix(),
-                                qn.localname(),
-                            ))
+                            Err(Error::new(
+                                ErrorKind::DynamicAbsent,
+                                format!(
+                                    "no namespace matching prefix \"{}\"",
+                                    qn.prefix_to_string().unwrap()
+                                ),
+                            )),
+                            |ns| {
+                                Ok(QualifiedName::new_from_values(
+                                    Some(ns.value()),
+                                    qn.prefix(),
+                                    qn.localname(),
+                                ))
+                            },
                         )
                 } else {
                     Ok(qn)
@@ -259,10 +277,7 @@ mod tests {
 
     #[test]
     fn unqualified_raw() {
-        assert_eq!(
-            QualifiedName::new(None, None, "foo").to_string(),
-            "foo"
-        )
+        assert_eq!(QualifiedName::new(None, None, "foo").to_string(), "foo")
     }
     #[test]
     fn unqualified_rc() {
@@ -291,7 +306,7 @@ mod tests {
                 Some(Rc::new(Value::from("x"))),
                 Rc::new(Value::from("foo"))
             )
-                .to_string(),
+            .to_string(),
             "x:foo"
         )
     }
@@ -300,7 +315,10 @@ mod tests {
         let e = QualifiedName::try_from("Q{http://example.org/bar}foo")
             .expect("unable to parse EQName");
         assert_eq!(e.localname_to_string(), "foo");
-        assert_eq!(e.namespace_uri_to_string(), Some(String::from("http://example.org/bar")));
+        assert_eq!(
+            e.namespace_uri_to_string(),
+            Some(String::from("http://example.org/bar"))
+        );
         assert_eq!(e.prefix_to_string(), None)
     }
     #[test]

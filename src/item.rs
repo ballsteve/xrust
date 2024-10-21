@@ -476,7 +476,11 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
+    fn new_processing_instruction(
+        &self,
+        qn: Rc<QualifiedName>,
+        v: Rc<Value>,
+    ) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
     fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
 

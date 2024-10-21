@@ -6,9 +6,9 @@ Richard Tobin's XML 1.0 2nd edition errata test suite.
 
 use crate::conformance::dtdfileresolve;
 use std::fs;
+use xrust::item::Node;
 use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
-use xrust::item::Node;
 
 #[test]
 #[ignore]

@@ -230,7 +230,11 @@ pub(crate) fn literal_processing_instruction<
     }
 
     let pi = ctxt.rd.clone().unwrap().new_processing_instruction(
-        Rc::new(QualifiedName::new(None, None, ctxt.dispatch(stctxt, name)?.to_string())),
+        Rc::new(QualifiedName::new(
+            None,
+            None,
+            ctxt.dispatch(stctxt, name)?.to_string(),
+        )),
         Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
     )?;
     Ok(vec![Item::Node(pi)])

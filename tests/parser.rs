@@ -60,16 +60,16 @@ fn parser_config_namespace_nodes_1() {
 #[test]
 fn parser_config_default_attrs_1() {
     /*
-        Conformance tests will determine if the ATTLIST functions are working,
-        this tests only that it can be disabled.
-     */
+       Conformance tests will determine if the ATTLIST functions are working,
+       this tests only that it can be disabled.
+    */
     let doc = r#"<!DOCTYPE doc [
         <!ELEMENT doc EMPTY>
         <!ATTLIST doc a CDATA "a" b CDATA "b" c CDATA #IMPLIED>
     ]>
     <doc/>"#;
 
-    let  pc1 = ParserConfig::new();
+    let pc1 = ParserConfig::new();
     let testxml1 = RNode::new_document();
     let parseresult1 = xml::parse(testxml1, doc, Some(pc1));
 
@@ -81,9 +81,26 @@ fn parser_config_default_attrs_1() {
     assert!(parseresult1.is_ok());
     assert!(parseresult2.is_ok());
 
-    assert_eq!(parseresult1.clone().unwrap().first_child().unwrap().attribute_iter().count(),2);
-    assert_eq!(parseresult2.clone().unwrap().first_child().unwrap().attribute_iter().count(),0);
-
+    assert_eq!(
+        parseresult1
+            .clone()
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .count(),
+        2
+    );
+    assert_eq!(
+        parseresult2
+            .clone()
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .count(),
+        0
+    );
 }
 
 #[test]

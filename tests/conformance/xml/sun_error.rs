@@ -5,8 +5,8 @@ Sun Microsystems test cases
 */
 
 use std::fs;
-use xrust::parser::xml;
 use xrust::item::Node;
+use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
 #[test]

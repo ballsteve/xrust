@@ -13,8 +13,8 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use std::rc::Rc;
 //use crate::parser::combinators::debug::inspect;
-use crate::parser::xpath::expr;
 use crate::parser::combinators::support::none_of;
+use crate::parser::xpath::expr;
 use crate::transform::Transform;
 
 /// AVT ::= text* "{" xpath "}" text*

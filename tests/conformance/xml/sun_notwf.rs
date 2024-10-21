@@ -5,8 +5,8 @@ Sun Microsystems test cases
 */
 use crate::conformance::dtdfileresolve;
 use std::fs;
-use xrust::parser::{xml, ParserConfig};
 use xrust::item::Node;
+use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
 
 #[test]

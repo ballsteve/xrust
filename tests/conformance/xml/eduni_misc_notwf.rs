@@ -5,8 +5,8 @@ Bjoern Hoehrmann via HST 2013-09-18
 */
 
 use std::fs;
-use xrust::parser::xml;
 use xrust::item::Node;
+use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
 #[test]

@@ -5,8 +5,8 @@ Richard Tobin's XML 1.0 3rd edition errata test suite 1 June 2006
 */
 
 use std::fs;
-use xrust::parser::xml;
 use xrust::item::Node;
+use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
 #[test]

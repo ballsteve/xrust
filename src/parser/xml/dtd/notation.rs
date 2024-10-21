@@ -23,16 +23,14 @@ pub(crate) fn notationtype<N: Node>(
             tag("("),
             whitespace0(),
             name(),
-            many0(
-                map(
-                    tuple4(whitespace0(), tag("|"), whitespace0(), name()),
-                    |(_,_,_,n)| n
-                )
-            ),
+            many0(map(
+                tuple4(whitespace0(), tag("|"), whitespace0(), name()),
+                |(_, _, _, n)| n,
+            )),
             whitespace0(),
             tag(")"),
         ),
-        |(_,_,_,_,nm, mut nms,_,_)| {
+        |(_, _, _, _, nm, mut nms, _, _)| {
             nms.push(nm);
             AttType::NOTATION(nms)
         },
@@ -116,18 +114,13 @@ pub(crate) fn notation_decl<N: Node>(
 }
 
 #[allow(dead_code)]
-pub(crate) fn ndatadecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
-{
+pub(crate) fn ndatadecl<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
     map(
-        tuple4(
-            whitespace1(),
-            tag("NDATA"),
-            whitespace1(),
-            name()
-        ),
-        |(_,_,_,notation)|{
+        tuple4(whitespace1(), tag("NDATA"), whitespace1(), name()),
+        |(_, _, _, notation)| {
             println!("notation");
             notation
-        }
+        },
     )
 }
