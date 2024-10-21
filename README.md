@@ -65,7 +65,7 @@ Although the eventual desire is to implement all of XSLT v3.0 functionality, som
 
 ## Documentation
 
-See the [XSLT module](https://docs.rs/xrust/1.1.0/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
+See the [XSLT module](https://docs.rs/xrust/latest/xrust/xslt/index.html) for an example of how to evaluate an XSL stylesheet.
 
 ## Examples
 
