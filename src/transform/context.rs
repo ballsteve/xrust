@@ -128,7 +128,7 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+        J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
     >(
         &mut self,
         stctxt: &mut StaticContext<N, F, G, H, J>,
@@ -229,7 +229,7 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+        J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H, J>,
@@ -288,7 +288,7 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+        J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H, J>,
@@ -356,7 +356,7 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+        J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H, J>,
@@ -571,7 +571,7 @@ where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>, // Parses a string into a tree
     H: FnMut(&Url) -> Result<String, Error>, // Fetches the data from a URL
-    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>, // Extension functions
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>, // Extension functions
 {
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
@@ -584,7 +584,7 @@ where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 {
     pub fn new() -> Self {
         StaticContext {
@@ -639,7 +639,7 @@ pub struct StaticContextBuilder<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(StaticContext<N, F, G, H, J>);
 
 impl<N: Node, F, G, H, J> StaticContextBuilder<N, F, G, H, J>
@@ -647,7 +647,7 @@ where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 {
     pub fn new() -> Self {
         StaticContextBuilder(StaticContext::new())
@@ -665,13 +665,14 @@ where
         self
     }
     pub fn extension_function(mut self, qn: Rc<QualifiedName>, ef: J) -> Self {
-        if qn.namespace_uri().is_none() {
-            panic!("an extension function must have a Namespace URI")
+        if qn.namespace_uri().is_none() && qn.prefix().is_none() {
+            panic!("an extension function must have a prefix and/or Namespace URI")
         }
         self.0.extensions.insert(qn, Some(ef));
         self
     }
-    // This registers the name of a built-in function
+    // This registers the name of a built-in function.
+    // The name is expected to have only a local-part, but this is unchecked.
     pub(crate) fn register_function(mut self, qn: Rc<QualifiedName>, _ef: J) -> Self {
         self.0.extensions.insert(qn, None);
         self

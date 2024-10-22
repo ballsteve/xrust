@@ -5,6 +5,7 @@ use std::rc::Rc;
 use url::Url;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::namespace::NamespaceMap;
+use xrust::qname::QualifiedName;
 use xrust::transform::context::StaticContextBuilder;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
@@ -33,6 +34,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
@@ -63,6 +68,10 @@ where
         })
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
@@ -811,6 +820,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let mut ctxt = from_document(
         styledoc,
@@ -860,6 +873,10 @@ where
             ))
         })
         .parser(|s| parse_from_str(s))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
@@ -894,6 +911,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_url| Ok(String::new()))
         .parser(|s| parse_from_str(s))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);

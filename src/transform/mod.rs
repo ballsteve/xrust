@@ -425,11 +425,12 @@ pub(crate) fn do_sort<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     seq: &mut Sequence<N>,
     o: &Vec<(Order, Transform<N>)>,
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
 ) -> Result<(), Error> {
     // Optionally sort the select sequence
     // TODO: multiple sort keys

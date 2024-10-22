@@ -17,6 +17,10 @@ fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
 }
@@ -34,6 +38,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let rd = make_empty_doc();
     ContextBuilder::new()
@@ -429,6 +437,10 @@ where
                 .message(|_| Ok(()))
                 .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .extension_function(
+                    Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                )
                 .build();
             let s = ContextBuilder::new()
                 .context(vec![Item::Node(l)])
@@ -456,6 +468,10 @@ where
                 .message(|_| Ok(()))
                 .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .extension_function(
+                    Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                )
                 .build();
             let s = ContextBuilder::new()
                 .context(vec![Item::Node(l)])
@@ -484,6 +500,10 @@ where
                 .message(|_| Ok(()))
                 .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+                .extension_function(
+                    Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                )
                 .build();
             let s = ContextBuilder::new()
                 .context(vec![Item::Node(l)])
@@ -532,6 +552,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let s = ContextBuilder::new()
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
@@ -553,6 +577,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let s = ContextBuilder::new()
         .context(vec![Item::Value(Rc::new(Value::from("foobar")))])
@@ -838,6 +866,10 @@ where
             .message(|_| Ok(()))
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .extension_function(
+                Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            )
             .build();
         let s = ContextBuilder::new()
             .result_document(rd)
@@ -1242,6 +1274,10 @@ where
             .message(|_| Ok(()))
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .extension_function(
+                Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            )
             .build();
         let s = ContextBuilder::new()
             .result_document(rd)
@@ -1395,6 +1431,10 @@ where
             .message(|_| Ok(()))
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+            .extension_function(
+                Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            )
             .build();
         let s = ContextBuilder::new()
             .context(vec![Item::Node(
@@ -1465,6 +1505,10 @@ where
         })
         .fetcher(|_| Ok(String::from("<Test>external document</Test>")))
         .parser(|s| make_from_str(s))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     let rd = make_empty_doc();
     let seq: Sequence<N> = ContextBuilder::new()
@@ -1545,6 +1589,10 @@ where
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .extension_function(
+            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
+            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+        )
         .build();
     ctxt.populate_key_values(&mut stctxt, sd.clone())
         .expect("unable to populate key values");

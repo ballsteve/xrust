@@ -17,9 +17,10 @@ pub(crate) fn tr_loop<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
     v: &Vec<(String, Transform<N>)>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -47,9 +48,10 @@ pub(crate) fn switch<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
     v: &Vec<(Transform<N>, Transform<N>)>,
     o: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -70,9 +72,10 @@ pub fn for_each<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
     g: &Option<Grouping<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -106,9 +109,10 @@ fn group_by<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
     by: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -188,9 +192,10 @@ fn group_adjacent<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
     adj: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -296,9 +301,10 @@ fn group_starting_with<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<N, F, G, H>,
+    _stctxt: &mut StaticContext<N, F, G, H, J>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
@@ -316,9 +322,10 @@ pub fn group_ending_with<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<N, F, G, H>,
+    _stctxt: &mut StaticContext<N, F, G, H, J>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,

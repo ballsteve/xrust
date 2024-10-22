@@ -50,7 +50,7 @@ pub(crate) fn invoke<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Vec<Transform<N>>) -> Result<Sequence<N>, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H, J>,
@@ -101,7 +101,24 @@ pub(crate) fn invoke<
                             }
                         }
                     })?;
-                    newctxt.dispatch(stctxt, &t.body)
+                    match &t.body {
+                        CallType::Transform(u) => newctxt.dispatch(stctxt, &u),
+                        CallType::ApplicationCallback(qn) => {
+                            let ct = {
+                                let ext = &mut stctxt.extensions;
+                                ext.get_mut(qn)
+                            };
+                            if let Some(f) = ct {
+                                if let Some(g) = f {
+                                    g(&newctxt)
+                                } else {
+                                    Err(Error::new(ErrorKind::TypeError, format!("function \"{}\" is not an extension function", qn.to_string())))
+                                }
+                            } else {
+                                Err(Error::new(ErrorKind::StaticAbsent, format!("unable to find extension function \"{}\"", qn.to_string())))
+                            }
+                        }
+                    }
                 }
                 FormalParameters::Positional(v) => {
                     if let ActualParameters::Positional(av) = a {
@@ -115,11 +132,11 @@ pub(crate) fn invoke<
                             match &t.body {
                                 CallType::Transform(u) => newctxt.dispatch(stctxt, &u),
                                 CallType::ApplicationCallback(qn) => {
-                                    stctxt.extensions.get(&qn).map_or(
+                                    (&mut stctxt.extensions).get_mut(qn).map_or(
                                         Err(Error::new(ErrorKind::StaticAbsent, format!("unable to find extension function \"{}\"", qn.to_string()))),
                                         |f| {
                                             if let Some(g) = f {
-                                                g(&vec![]) // we don't need this coz the actual arguments are now variables
+                                                g(&newctxt)
                                             } else {
                                                 Err(Error::new(ErrorKind::TypeError, format!("function \"{}\" is not an extension function", qn.to_string())))
                                             }

@@ -808,6 +808,14 @@ fn tr_callable_positional_1() {
     .expect("test failed")
 }
 #[test]
+fn tr_callable_extension_1() {
+    transformgeneric::generic_tr_callable_extension_1::<RNode, _, _>(
+        smite::make_empty_doc,
+        smite::make_sd,
+    )
+        .expect("test failed")
+}
+#[test]
 fn tr_document_1() {
     transformgeneric::generic_tr_document_1::<RNode, _, _>(
         smite::make_empty_doc,
