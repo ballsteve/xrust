@@ -16,7 +16,7 @@ use crate::output::OutputDefinition;
 use crate::pattern::Pattern;
 use crate::qname::QualifiedName;
 use crate::transform::booleans::*;
-use crate::transform::callable::{invoke, Callable};
+use crate::transform::callable::{invoke, Callable, ExtFunction, FormalParameters};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -576,7 +576,8 @@ where
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
-    pub(crate) extensions: HashMap<Rc<QualifiedName>, Option<J>>,
+    pub(crate) extensions: HashMap<QualifiedName, Option<J>>,
+    pub(crate) ext_formals: HashMap<QualifiedName, FormalParameters<N>>,
 }
 
 impl<N: Node, F, G, H, J> StaticContext<N, F, G, H, J>
@@ -592,6 +593,7 @@ where
             parser: None,
             fetcher: None,
             extensions: HashMap::new(),
+            ext_formals: HashMap::new(),
         }
     }
 }
@@ -664,16 +666,17 @@ where
         self.0.fetcher = Some(f);
         self
     }
-    pub fn extension_function(mut self, qn: Rc<QualifiedName>, ef: J) -> Self {
+    pub fn extension_function(mut self, qn: QualifiedName, ef: ExtFunction<N, J>) -> Self {
         if qn.namespace_uri().is_none() && qn.prefix().is_none() {
             panic!("an extension function must have a prefix and/or Namespace URI")
         }
-        self.0.extensions.insert(qn, Some(ef));
+        self.0.extensions.insert(qn.clone(), Some(ef.callback));
+        self.0.ext_formals.insert(qn, ef.parameters);
         self
     }
     // This registers the name of a built-in function.
     // The name is expected to have only a local-part, but this is unchecked.
-    pub(crate) fn register_function(mut self, qn: Rc<QualifiedName>, _ef: J) -> Self {
+    pub(crate) fn register_function(mut self, qn: QualifiedName) -> Self {
         self.0.extensions.insert(qn, None);
         self
     }

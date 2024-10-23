@@ -76,7 +76,7 @@ use crate::parser::avt::parse as parse_avt;
 use crate::parser::xpath::parse;
 use crate::pattern::Pattern;
 use crate::qname::*;
-use crate::transform::callable::{ActualParameters, Callable, CallType, FormalParameters};
+use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
 use crate::transform::numbers::{Level, Numbering};
 use crate::transform::template::Template;
@@ -585,7 +585,7 @@ where
             newctxt.callable_push(
                 QualifiedName::new(None, None, name.to_string()),
                 Callable::new(
-                    CallType::Transform(Transform::SequenceItems(body)),
+                    Transform::SequenceItems(body),
                     FormalParameters::Named(params),
                 ),
             );
@@ -649,7 +649,7 @@ where
             newctxt.callable_push(
                 eqname,
                 Callable::new(
-                    CallType::Transform(Transform::SequenceItems(body)),
+                    Transform::SequenceItems(body),
                     FormalParameters::Positional(params),
                 ),
             );

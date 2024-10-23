@@ -6,7 +6,7 @@ use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::parser::xpath::parse;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
-use xrust::transform::callable::ActualParameters;
+use xrust::transform::callable::{ActualParameters, ExtFunction, FormalParameters};
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
 use xrust::value::Value;
@@ -18,8 +18,11 @@ fn no_src_no_result<N: Node>(e: impl AsRef<str>) -> Result<Sequence<N>, Error> {
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     Context::new().dispatch(&mut stctxt, &parse(e.as_ref(), None)?)
@@ -39,8 +42,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let rd = make_empty_doc();
@@ -438,8 +444,11 @@ where
                 .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .extension_function(
-                    Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                    QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+                    ExtFunction::new(
+                        |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                        FormalParameters::Positional(vec![]),
+                    )
                 )
                 .build();
             let s = ContextBuilder::new()
@@ -469,8 +478,11 @@ where
                 .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .extension_function(
-                    Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                    QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+                    ExtFunction::new(
+                        |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                        FormalParameters::Positional(vec![]),
+                    )
                 )
                 .build();
             let s = ContextBuilder::new()
@@ -501,8 +513,11 @@ where
                 .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
                 .extension_function(
-                    Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                    QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+                    ExtFunction::new(
+                        |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                        FormalParameters::Positional(vec![]),
+                    )
                 )
                 .build();
             let s = ContextBuilder::new()
@@ -553,8 +568,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let s = ContextBuilder::new()
@@ -578,8 +596,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let s = ContextBuilder::new()
@@ -867,8 +888,11 @@ where
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .extension_function(
-                Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+                ExtFunction::new(
+                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                    FormalParameters::Positional(vec![]),
+                )
             )
             .build();
         let s = ContextBuilder::new()
@@ -1275,8 +1299,11 @@ where
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .extension_function(
-                Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+                ExtFunction::new(
+                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                    FormalParameters::Positional(vec![]),
+                )
             )
             .build();
         let s = ContextBuilder::new()
@@ -1432,8 +1459,11 @@ where
             .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
             .extension_function(
-                Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+                ExtFunction::new(
+                    |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                    FormalParameters::Positional(vec![]),
+                )
             )
             .build();
         let s = ContextBuilder::new()
@@ -1506,8 +1536,11 @@ where
         .fetcher(|_| Ok(String::from("<Test>external document</Test>")))
         .parser(|s| make_from_str(s))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let rd = make_empty_doc();
@@ -1590,8 +1623,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     ctxt.populate_key_values(&mut stctxt, sd.clone())

@@ -14,21 +14,38 @@ use std::rc::Rc;
 use std::collections::HashMap;
 use url::Url;
 
+/// A user-defined callable object, such as a function or named template.
 #[derive(Clone, Debug)]
-pub enum CallType<N: Node> {
-    Transform(Transform<N>),
-    ApplicationCallback(Rc<QualifiedName>),
-}
-#[derive(Clone, Debug)]
-pub struct Callable<N: Node> {
-    pub(crate) body: CallType<N>,
+pub struct Callable<N: Node>
+{
+    pub(crate) body: Transform<N>,
     pub(crate) parameters: FormalParameters<N>,
     // TODO: return type
 }
 
-impl<N: Node> Callable<N> {
-    pub fn new(body: CallType<N>, parameters: FormalParameters<N>) -> Self {
+impl<N: Node> Callable<N>
+{
+    pub fn new(body: Transform<N>, parameters: FormalParameters<N>) -> Self {
         Callable { body, parameters }
+    }
+}
+
+/// A custom extension function.
+#[derive(Clone, Debug)]
+pub struct ExtFunction<N: Node, J>
+where
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
+{
+    pub(crate) callback: J,
+    pub(crate) parameters: FormalParameters<N>,
+}
+
+impl<N: Node, J> ExtFunction<N, J>
+where
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
+{
+    pub fn new(callback: J, parameters: FormalParameters<N>) -> Self {
+        ExtFunction { callback, parameters }
     }
 }
 
@@ -58,7 +75,7 @@ pub(crate) fn invoke<
     a: &ActualParameters<N>,
     ns: &NamespaceMap,
 ) -> Result<Sequence<N>, Error> {
-    let mut qnr = qn.clone();
+    let mut qnr = (*qn).clone();
     qnr.resolve(|p| {
         ns.get(&p).map_or(
             Err(Error::new(
@@ -68,94 +85,94 @@ pub(crate) fn invoke<
             |r| Ok(r.clone()),
         )
     })?;
+    // Callable transforms have precedence over application callbacks
     match ctxt.callables.get(&qnr) {
         Some(t) => {
-            match &t.parameters {
-                FormalParameters::Named(v) => {
-                    let mut newctxt = ctxt.clone();
-                    // Put the actual parameters in a HashMap for easy access
-                    let mut actuals = HashMap::new();
-                    if let ActualParameters::Named(av) = a {
-                        av.iter().try_for_each(|(a_name, a_value)| {
-                            actuals.insert(a_name, ctxt.dispatch(stctxt, a_value)?);
-                            Ok(())
-                        })?
-                    } else {
-                        return Err(Error::new(ErrorKind::TypeError, "argument mismatch"));
-                    }
-                    // Match each actual parameter to a formal parameter by name
-                    v.iter().try_for_each(|(name, dflt)| {
-                        match actuals.get(name) {
-                            Some(val) => {
-                                newctxt.var_push(name.to_string(), val.clone());
-                                Ok(())
-                            }
-                            None => {
-                                // Use default value
-                                if let Some(d) = dflt {
-                                    newctxt.var_push(name.to_string(), ctxt.dispatch(stctxt, d)?)
-                                } else {
-                                    newctxt.var_push(name.to_string(), vec![])
-                                }
-                                Ok(())
-                            }
-                        }
-                    })?;
-                    match &t.body {
-                        CallType::Transform(u) => newctxt.dispatch(stctxt, &u),
-                        CallType::ApplicationCallback(qn) => {
-                            let ct = {
-                                let ext = &mut stctxt.extensions;
-                                ext.get_mut(qn)
-                            };
-                            if let Some(f) = ct {
-                                if let Some(g) = f {
-                                    g(&newctxt)
-                                } else {
-                                    Err(Error::new(ErrorKind::TypeError, format!("function \"{}\" is not an extension function", qn.to_string())))
-                                }
-                            } else {
-                                Err(Error::new(ErrorKind::StaticAbsent, format!("unable to find extension function \"{}\"", qn.to_string())))
-                            }
-                        }
-                    }
+            let newctxt = make_new_context(ctxt, stctxt, &t.parameters, a)?;
+            newctxt.dispatch(stctxt, &t.body)
+        }
+        None => {
+            let fp = stctxt.ext_formals.get(&qnr).unwrap().clone();
+            let newctxt = make_new_context(ctxt, stctxt, &fp, a)?;
+            if let Some(e) = stctxt.extensions.get_mut(&qnr) {
+                if let Some(g) = e {
+                    g(&newctxt)
+                } else {
+                    Err(Error::new(
+                        ErrorKind::TypeError,
+                        format!("extension function \"{}\" is built-in", qn),
+                    ))
                 }
-                FormalParameters::Positional(v) => {
-                    if let ActualParameters::Positional(av) = a {
-                        // Make sure number of parameters are equal, then set up variables by position
-                        if v.len() == av.len() {
-                            let mut newctxt = ctxt.clone();
-                            v.iter().zip(av.iter()).try_for_each(|(qn, t)| {
-                                newctxt.var_push(qn.to_string(), ctxt.dispatch(stctxt, t)?);
-                                Ok(())
-                            })?;
-                            match &t.body {
-                                CallType::Transform(u) => newctxt.dispatch(stctxt, &u),
-                                CallType::ApplicationCallback(qn) => {
-                                    (&mut stctxt.extensions).get_mut(qn).map_or(
-                                        Err(Error::new(ErrorKind::StaticAbsent, format!("unable to find extension function \"{}\"", qn.to_string()))),
-                                        |f| {
-                                            if let Some(g) = f {
-                                                g(&newctxt)
-                                            } else {
-                                                Err(Error::new(ErrorKind::TypeError, format!("function \"{}\" is not an extension function", qn.to_string())))
-                                            }
-                                        }
-                                    )
-                                }
-                            }
+            } else {
+                Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!("unknown extension function \"{}\"", qn),
+                ))
+            }
+        },
+    }
+}
+
+fn make_new_context<N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H, J>,
+    p: &FormalParameters<N>,
+    a: &ActualParameters<N>,
+) -> Result<Context<N>, Error> {
+    match &p {
+        FormalParameters::Named(v) => {
+            let mut newctxt = ctxt.clone();
+            // Put the actual parameters in a HashMap for easy access
+            let mut actuals = HashMap::new();
+            if let ActualParameters::Named(av) = a {
+                av.iter().try_for_each(|(a_name, a_value)| {
+                    actuals.insert(a_name, ctxt.dispatch(stctxt, a_value)?);
+                    Ok(())
+                })?
+            } else {
+                return Err(Error::new(ErrorKind::TypeError, "argument mismatch"));
+            }
+            // Match each actual parameter to a formal parameter by name
+            v.iter().try_for_each(|(name, dflt)| {
+                match actuals.get(name) {
+                    Some(val) => {
+                        newctxt.var_push(name.to_string(), val.clone());
+                        Ok(())
+                    }
+                    None => {
+                        // Use default value
+                        if let Some(d) = dflt {
+                            newctxt.var_push(name.to_string(), ctxt.dispatch(stctxt, d)?)
                         } else {
-                            Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
+                            newctxt.var_push(name.to_string(), vec![])
                         }
-                    } else {
-                        Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
+                        Ok(())
                     }
                 }
+            })?;
+            Ok(newctxt)
+        }
+        FormalParameters::Positional(v) => {
+            if let ActualParameters::Positional(av) = a {
+                // Make sure number of parameters are equal, then set up variables by position
+                if v.len() == av.len() {
+                    let mut newctxt = ctxt.clone();
+                    v.iter().zip(av.iter()).try_for_each(|(qn, t)| {
+                        newctxt.var_push(qn.to_string(), ctxt.dispatch(stctxt, t)?);
+                        Ok(())
+                    })?;
+                    Ok(newctxt)
+                } else {
+                    Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
+                }
+            } else {
+                Err(Error::new(ErrorKind::TypeError, "argument mismatch"))
             }
         }
-        None => Err(Error::new(
-            ErrorKind::Unknown,
-            format!("unknown callable \"{}\"", qn),
-        )),
     }
 }

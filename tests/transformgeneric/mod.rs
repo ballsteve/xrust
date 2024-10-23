@@ -7,7 +7,7 @@ use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::namespace::NamespaceMap;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
-use xrust::transform::callable::{ActualParameters, Callable, CallType, FormalParameters};
+use xrust::transform::callable::{ActualParameters, Callable, ExtFunction, FormalParameters};
 use xrust::transform::context::{Context, ContextBuilder, StaticContext, StaticContextBuilder};
 use xrust::transform::numbers::{Level, Numbering};
 use xrust::transform::template::Template;
@@ -29,8 +29,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -50,8 +53,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -77,8 +83,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -110,8 +119,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -139,8 +151,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -166,8 +181,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -193,8 +211,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -226,8 +247,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -256,8 +280,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -291,8 +318,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
@@ -313,8 +343,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().context(vec![Item::Node(sd)]).build();
@@ -366,8 +399,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().context(vec![Item::Node(sd)]).build();
@@ -411,8 +447,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), String::from("unused"))),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -459,8 +498,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), String::from("unused"))),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -503,8 +545,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), String::from("unused"))),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     match ctxt.dispatch(&mut stctxt, &x) {
@@ -546,8 +591,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new()
@@ -575,8 +623,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -601,8 +652,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -651,8 +705,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new()
@@ -696,8 +753,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new()
@@ -748,8 +808,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let ctxt = ContextBuilder::new().context(vec![Item::Node(n)]).build();
@@ -778,8 +841,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -810,8 +876,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -877,8 +946,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -941,8 +1013,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -976,8 +1051,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -1001,8 +1079,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = c.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -1022,8 +1103,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let c = Context::from(vec![Item::<N>::Value(Rc::new(Value::from(
@@ -1067,8 +1151,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(l1)])
@@ -1093,8 +1180,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -1141,8 +1231,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(n)])
@@ -1205,8 +1298,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(l1_1), Item::Node(l1_2)])
@@ -1281,8 +1377,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![
@@ -1362,8 +1461,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(sd)])
@@ -1436,8 +1538,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(n)])
@@ -1507,8 +1612,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![
@@ -1564,8 +1672,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(sd)])
@@ -1614,8 +1725,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -1676,8 +1790,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -1741,8 +1858,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -1806,8 +1926,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(sd)])
@@ -1868,8 +1991,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t2)])
@@ -1930,8 +2056,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t2)])
@@ -2004,8 +2133,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(l1_1)])
@@ -2078,8 +2210,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(et)])
@@ -2182,8 +2317,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(seven)])
@@ -2286,8 +2424,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(six)])
@@ -2355,8 +2496,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -2445,8 +2589,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -2527,8 +2674,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(a2)])
@@ -2609,8 +2759,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(l1_2)])
@@ -2674,8 +2827,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -2700,8 +2856,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2725,8 +2884,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2751,8 +2913,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2777,8 +2942,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2810,8 +2978,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2843,8 +3014,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2874,8 +3048,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2905,8 +3082,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2933,8 +3113,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2962,8 +3145,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -2992,8 +3178,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -3024,8 +3213,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -3057,8 +3249,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -3135,8 +3330,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(t)])
@@ -3227,8 +3425,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -3321,8 +3522,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -3375,8 +3579,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -3431,8 +3638,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -3488,8 +3698,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -3536,8 +3749,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -3605,8 +3821,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -3693,8 +3912,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -3784,8 +4006,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -3947,8 +4172,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -4060,8 +4288,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -4172,8 +4403,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -4296,8 +4530,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -4415,8 +4652,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -4438,8 +4678,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -4472,8 +4715,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -4505,8 +4751,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -4541,8 +4790,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ContextBuilder::new()
@@ -4593,8 +4845,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(l1)])
@@ -4637,8 +4892,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::from(vec![Item::Node(l1)])
@@ -4663,8 +4921,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4691,8 +4952,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4722,8 +4986,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4753,8 +5020,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4784,8 +5054,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4815,8 +5088,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4847,8 +5123,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4881,8 +5160,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4912,8 +5194,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4943,8 +5228,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -4972,8 +5260,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5006,8 +5297,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5032,8 +5326,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5058,8 +5355,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5084,8 +5384,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5110,8 +5413,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5136,8 +5442,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5162,8 +5471,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5186,8 +5498,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5210,8 +5525,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5236,8 +5554,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5264,8 +5585,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5290,8 +5614,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5316,8 +5643,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5345,8 +5675,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5376,8 +5709,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5400,8 +5736,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5437,8 +5776,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5471,8 +5813,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5515,8 +5860,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5549,8 +5897,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5583,8 +5934,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5615,8 +5969,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = Context::new()
@@ -5697,8 +6054,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     ctxt.populate_key_values(&mut stctxt, sd.clone())
@@ -5728,7 +6088,7 @@ where
         .callable(
             QualifiedName::new(None, None, String::from("mycallable")),
             Callable::new(
-                CallType::Transform(Transform::SequenceItems(vec![
+                Transform::SequenceItems(vec![
                     Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                         "found parameter, value: ",
                     )))),
@@ -5736,7 +6096,7 @@ where
                         "param1".to_string(),
                         Rc::new(NamespaceMap::new()),
                     ),
-                ])),
+                ]),
                 FormalParameters::Named(vec![(
                     QualifiedName::new(None, None, String::from("param1")),
                     None,
@@ -5750,8 +6110,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -5785,7 +6148,7 @@ where
                 String::from("my_func"),
             ),
             Callable::new(
-                CallType::Transform(Transform::SequenceItems(vec![
+                Transform::SequenceItems(vec![
                     Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
                         "found parameter, value: ",
                     )))),
@@ -5793,7 +6156,7 @@ where
                         "param1".to_string(),
                         Rc::new(NamespaceMap::new()),
                     ),
-                ])),
+                ]),
                 FormalParameters::Positional(vec![QualifiedName::new(
                     None,
                     None,
@@ -5808,8 +6171,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -5842,10 +6208,13 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some("http://example.org/".to_string()), Some("eg".to_string()), String::from("my_func"))),
-            |_ctxt| {
-                Ok(vec![Item::Value(Rc::new(Value::from("from extension function")))])
-            }
+            QualifiedName::new(Some("http://example.org/".to_string()), Some("eg".to_string()), String::from("my_func")),
+            ExtFunction::new(
+                |_ctxt| {
+                    Ok(vec![Item::Value(Rc::new(Value::from("from extension function")))])
+                },
+                FormalParameters::Positional(vec![QualifiedName::new(Some(String::from("http::example.org/")), Some("eg".to_string()), String::from("arg_one"))]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -5899,8 +6268,11 @@ where
         .parser(|s| parser(s))
         .message(|_| Ok(()))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -5942,8 +6314,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -5974,8 +6349,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -6008,8 +6386,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -6040,8 +6421,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -6072,8 +6456,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -6104,8 +6491,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -6136,8 +6526,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
@@ -6168,8 +6561,11 @@ where
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .extension_function(
-            Rc::new(QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused")),
-            |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+            QualifiedName::new(Some(String::from("unused")), Some(String::from("unused")), "unused"),
+            ExtFunction::new(
+                |_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")),
+                FormalParameters::Positional(vec![]),
+            )
         )
         .build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
