@@ -52,10 +52,9 @@ pub(crate) fn compose<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut context = ctxt.cur.clone();
@@ -313,10 +312,9 @@ pub(crate) fn filter<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {

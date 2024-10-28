@@ -94,10 +94,9 @@ pub(crate) fn apply_templates<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     s: &Transform<N>,
     m: &Option<Rc<QualifiedName>>,
     o: &Vec<(Order, Transform<N>)>, // sort keys
@@ -151,10 +150,9 @@ pub(crate) fn apply_imports<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
@@ -183,10 +181,9 @@ pub(crate) fn next_match<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.current_templates.len() > 2 {
         ContextBuilder::from(ctxt)

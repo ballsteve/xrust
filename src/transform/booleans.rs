@@ -15,10 +15,9 @@ pub fn boolean<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Boolean(
@@ -32,10 +31,9 @@ pub fn not<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     n: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Boolean(

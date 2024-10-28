@@ -15,10 +15,9 @@ pub(crate) fn tr_or<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -45,10 +44,9 @@ pub(crate) fn tr_and<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -75,10 +73,9 @@ pub(crate) fn general_comparison<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -108,10 +105,9 @@ pub(crate) fn value_comparison<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -143,10 +139,9 @@ pub(crate) fn union<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     branches: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut result = vec![];

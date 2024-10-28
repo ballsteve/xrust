@@ -27,10 +27,9 @@ pub(crate) fn message<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     body: &Transform<N>,
     _sel: &Option<Box<Transform<N>>>, // select expression, an alternative to body
     _e: &Transform<N>,                // error code

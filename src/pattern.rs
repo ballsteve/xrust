@@ -128,11 +128,10 @@ impl<N: Node> Pattern<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
     >(
         &self,
         ctxt: &Context<N>,
-        stctxt: &mut StaticContext<N, F, G, H, J>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
     ) -> bool {
         match self {

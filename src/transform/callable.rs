@@ -10,7 +10,6 @@ use crate::qname::QualifiedName;
 use crate::transform::context::StaticContext;
 use crate::transform::{NamespaceMap, Transform};
 use crate::{Context, Error, ErrorKind, Sequence};
-use std::rc::Rc;
 use std::collections::HashMap;
 use url::Url;
 
@@ -31,20 +30,18 @@ impl<N: Node> Callable<N>
 }
 
 /// A custom extension function.
-#[derive(Clone, Debug)]
-pub struct ExtFunction<N: Node, J>
-where
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
+pub struct ExtFunction<N: Node>
 {
-    pub(crate) callback: J,
+    pub(crate) callback: Box<dyn FnMut(&Context<N>) -> Result<Sequence<N>, Error>>,
     pub(crate) parameters: FormalParameters<N>,
 }
 
-impl<N: Node, J> ExtFunction<N, J>
-where
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
+impl<N: Node> ExtFunction<N>
 {
-    pub fn new(callback: J, parameters: FormalParameters<N>) -> Self {
+    pub fn new(
+        callback: Box<dyn FnMut(&Context<N>) -> Result<Sequence<N>, Error>>,
+        parameters: FormalParameters<N>
+    ) -> Self {
         ExtFunction { callback, parameters }
     }
 }
@@ -67,10 +64,9 @@ pub(crate) fn invoke<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     qn: &QualifiedName,
     a: &ActualParameters<N>,
     ns: &NamespaceMap,
@@ -117,10 +113,9 @@ fn make_new_context<N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    J: FnMut(&Context<N>) -> Result<Sequence<N>, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H, J>,
+    stctxt: &mut StaticContext<N, F, G, H>,
     p: &FormalParameters<N>,
     a: &ActualParameters<N>,
 ) -> Result<Context<N>, Error> {
