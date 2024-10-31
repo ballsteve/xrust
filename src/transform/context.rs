@@ -145,7 +145,7 @@ impl<N: Node> Context<N> {
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
     pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
-    pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
+    pub fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
             Some(u) => {
                 // If the variable already has a value, then this is a new, inner scope
