@@ -150,7 +150,7 @@ pub struct ParserState<N: Node> {
 
 impl<N: Node> ParserState<N> {
     pub fn new(doc: Option<N>, cur: Option<N>, parser_config: Option<ParserConfig>) -> Self {
-        let pc = if let Some(..) = parser_config {
+        let pc = if parser_config.is_some() {
             parser_config.unwrap()
         } else {
             ParserConfig::new()

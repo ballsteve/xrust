@@ -145,6 +145,7 @@ pub enum DTDDecl {
     ParamEntity(QualifiedName, String),
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum AttType {
     CDATA,
@@ -159,6 +160,7 @@ pub(crate) enum AttType {
     ENUMERATION(Vec<String>),
 }
 
+#[allow(clippy::upper_case_acronyms)]
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub(crate) enum DefaultDecl {
     Required,

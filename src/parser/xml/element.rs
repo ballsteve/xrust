@@ -192,7 +192,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                     (AttType::ID, true) => Rc::new(Value::ID(av)),
                                     (AttType::IDREF, true) => Rc::new(Value::IDREF(av)),
                                     (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
-                                        av.split(" ").map(|s| s.to_string()).collect(),
+                                        av.split(' ').map(|s| s.to_string()).collect(),
                                     )),
                                     (_, _) => state1.get_value(av),
                                 };

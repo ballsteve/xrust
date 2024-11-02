@@ -110,10 +110,7 @@ pub enum Pattern<N: Node> {
 impl<N: Node> Pattern<N> {
     /// Returns whether the Pattern is of type error.
     pub fn is_err(&self) -> bool {
-        match self {
-            Pattern::Error(_) => true,
-            _ => false,
-        }
+        matches!(self, Pattern::Error(_))
     }
     pub fn get_err(&self) -> Option<Error> {
         if let Pattern::Error(e) = self {
@@ -526,8 +523,7 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
             if b.is_empty() {
                 // this is the terminal step
                 a
-            } else {
-                if let Pattern::Selection(mut ap) = a {
+            } else if let Pattern::Selection(mut ap) = a {
                     // TODO: handle "//" separator
                     for (_c, d) in b {
                         match d {
@@ -541,7 +537,7 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
                 } else {
                     panic!("pattern must be a selection")
                 }
-            }
+
         },
     ))
 }

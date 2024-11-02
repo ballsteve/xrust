@@ -102,7 +102,7 @@ pub(crate) fn attlistdecl<N: Node>(
                                 }
                             }
                             AttType::IDREFS => {
-                                let names = s.split(" ");
+                                let names = s.split(' ');
                                 for name in names {
                                     let mut ch = name.chars();
                                     match ch.next() {
@@ -151,7 +151,7 @@ pub(crate) fn attlistdecl<N: Node>(
                                 }
                             }
                             AttType::ENTITIES => {
-                                let entities = s.split(" ");
+                                let entities = s.split(' ');
                                 for entity in entities {
                                     let mut ch = entity.chars();
                                     match ch.next() {
@@ -183,7 +183,7 @@ pub(crate) fn attlistdecl<N: Node>(
                     _ => {}
                 }
                 //xml:id datatype checking
-                if &qn == &QualifiedName::new(None, Some("xml".to_string()), "id".to_string())
+                if qn == QualifiedName::new(None, Some("xml".to_string()), "id".to_string())
                     && att != AttType::ID
                 {
                     return Err(ParseError::IDError(
@@ -256,7 +256,7 @@ fn attdef<N: Node>(
         ),
         |(_, an, _, at, _, dd)| {
             let qn = if an.contains(':') {
-                let mut attnamesplit = an.split(":");
+                let mut attnamesplit = an.split(':');
                 let prefix = Some(attnamesplit.next().unwrap().to_string());
                 let local = attnamesplit.collect::<String>();
                 QualifiedName::new(None, prefix, local)

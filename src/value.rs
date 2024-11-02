@@ -447,7 +447,7 @@ impl Ord for Value {
                 _ => Ordering::Equal, // type error?
             },
             Value::Double(d) => match other {
-                Value::Double(e) => d.partial_cmp(e).unwrap_or_else(|| Ordering::Equal),
+                Value::Double(e) => d.partial_cmp(e).unwrap_or(Ordering::Equal),
                 _ => Ordering::Equal, // type error?
             },
             _ => Ordering::Equal,
