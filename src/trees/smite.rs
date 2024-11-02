@@ -366,6 +366,7 @@ impl ItemNode for RNode {
         Ok(child)
     }
     fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error> {
+        //TODO if the attribute is xml:id then type needs to be set as ID, regardless of DTD.
         let att = Rc::new(Node(NodeInner::Attribute(
             RefCell::new(Rc::downgrade(self)),
             qn.clone(),
@@ -803,6 +804,33 @@ impl ItemNode for RNode {
                 .clone()
                 .map_or_else(|| XMLDeclBuilder::new().build(), |x| x.clone()),
             _ => self.owner_document().xmldecl(),
+        }
+    }
+
+    fn is_id(&self) -> bool {
+        match &self.0 {
+            //TODO Add Element XML ID support
+            NodeInner::Attribute(_, _, v) => {
+                match v.as_ref() {
+                    Value::ID(_) => true,
+                    _ => false
+                }
+            }
+            _ => false
+        }
+    }
+
+    fn is_idrefs(&self) -> bool {
+        match &self.0 {
+            //TODO Add Element XML ID REF support
+            NodeInner::Attribute(_, _, v) => {
+                match v.as_ref() {
+                    Value::IDREF(_) => true,
+                    Value::IDREFS(_) => true,
+                    _ => false
+                }
+            }
+            _ => false
         }
     }
 }

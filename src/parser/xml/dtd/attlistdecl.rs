@@ -182,6 +182,11 @@ pub(crate) fn attlistdecl<N: Node>(
                     //else do nothing
                     _ => {}
                 }
+                //xml:id datatype checking
+                if &qn == &QualifiedName::new(None, Some("xml".to_string()), "id".to_string())
+                    && att != AttType::ID {
+                    return Err(ParseError::IDError("xml:id declaration in the DTD does not have type ID".to_string()))
+                }
                 atts.insert(qn, (att, dfd, replaceable));
             }
             if count_id_attrs > 1 {

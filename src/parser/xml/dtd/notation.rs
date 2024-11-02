@@ -119,7 +119,6 @@ pub(crate) fn ndatadecl<N: Node>(
     map(
         tuple4(whitespace1(), tag("NDATA"), whitespace1(), name()),
         |(_, _, _, notation)| {
-            println!("notation");
             notation
         },
     )

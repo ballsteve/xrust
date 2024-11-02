@@ -184,6 +184,14 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
+
+    fn is_id(&self) -> bool {
+        false
+    }
+
+    fn is_idrefs(&self) -> bool {
+        false
+    }
 }
 
 pub struct NulloIter();
