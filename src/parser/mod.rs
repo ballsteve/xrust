@@ -49,7 +49,7 @@ pub enum ParseError {
     Unbalanced,
     Notimplemented,
     ExtDTDLoadError,
-    IDError(String)
+    IDError(String),
 }
 
 pub struct ParserConfig {
@@ -66,7 +66,7 @@ pub struct ParserConfig {
     /// Set to true by default.
     pub attr_defaults: bool,
     /// Track and assign XML IDs based on the DTDs.
-    pub id_tracking: bool
+    pub id_tracking: bool,
 }
 
 impl Default for ParserConfig {

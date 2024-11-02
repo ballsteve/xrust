@@ -81,9 +81,26 @@ fn parser_config_default_attrs_1() {
     assert!(parseresult1.is_ok());
     assert!(parseresult2.is_ok());
 
-    assert_eq!(parseresult1.clone().unwrap().first_child().unwrap().attribute_iter().count(),2);
-    assert_eq!(parseresult2.clone().unwrap().first_child().unwrap().attribute_iter().count(),0);
-
+    assert_eq!(
+        parseresult1
+            .clone()
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .count(),
+        2
+    );
+    assert_eq!(
+        parseresult2
+            .clone()
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .count(),
+        0
+    );
 }
 
 #[test]
@@ -104,7 +121,6 @@ fn parser_issue_94() {
 
 #[test]
 fn parser_config_id_1() {
-
     /*
         Conformance tests will determine if the XML IDs are properly tracked by the parser,
         this tests only that it can be disabled.
@@ -123,7 +139,6 @@ fn parser_config_id_1() {
     <element1 id="a1"/>
 </doc>
 "#;
-
 
     let pc = ParserConfig::new();
 
@@ -143,7 +158,6 @@ fn parser_config_id_1() {
 
 #[test]
 fn parser_config_id_2() {
-
     /*
         Conformance tests will determine if the XML IDs are properly tracked by the parser,
         this tests only that it can be disabled.
@@ -161,7 +175,6 @@ fn parser_config_id_2() {
     <element1 idref="a1"/>
 </doc>
 "#;
-
 
     let pc = ParserConfig::new();
 
@@ -181,7 +194,6 @@ fn parser_config_id_2() {
 
 #[test]
 fn parser_config_id_3() {
-
     /*
         Conformance tests will determine if the XML IDs are properly tracked by the parser,
         this tests only that it can be disabled.
@@ -199,14 +211,23 @@ fn parser_config_id_3() {
 <doc id="a1"/>
 "#;
 
-
     let pc = ParserConfig::new();
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(testxml, doc, Some(pc));
 
     assert!(parseresult.is_ok());
-    assert_eq!(parseresult.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_id(), true);
+    assert_eq!(
+        parseresult
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .next()
+            .unwrap()
+            .is_id(),
+        true
+    );
 
     let mut pc2 = ParserConfig::new();
     pc2.id_tracking = false;
@@ -215,13 +236,21 @@ fn parser_config_id_3() {
     let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
 
     assert!(parseresult2.is_ok());
-    assert_eq!(parseresult2.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_id(), false);
-
+    assert_eq!(
+        parseresult2
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .next()
+            .unwrap()
+            .is_id(),
+        false
+    );
 }
 
 #[test]
 fn parser_config_id_4() {
-
     /*
         Conformance tests will determine if the XML IDs are properly tracked by the parser,
         this tests only that it can be disabled.
@@ -244,14 +273,23 @@ fn parser_config_id_4() {
 </doc>
 "#;
 
-
     let pc = ParserConfig::new();
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(testxml, doc, Some(pc));
 
     assert!(parseresult.is_ok());
-    assert_eq!(parseresult.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_idrefs(), true);
+    assert_eq!(
+        parseresult
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .next()
+            .unwrap()
+            .is_idrefs(),
+        true
+    );
 
     let mut pc2 = ParserConfig::new();
     pc2.id_tracking = false;
@@ -260,6 +298,15 @@ fn parser_config_id_4() {
     let parseresult2 = xml::parse(testxml2, doc, Some(pc2));
 
     assert!(parseresult2.is_ok());
-    assert_eq!(parseresult2.unwrap().first_child().unwrap().attribute_iter().next().unwrap().is_idrefs(), false);
-
+    assert_eq!(
+        parseresult2
+            .unwrap()
+            .first_child()
+            .unwrap()
+            .attribute_iter()
+            .next()
+            .unwrap()
+            .is_idrefs(),
+        false
+    );
 }

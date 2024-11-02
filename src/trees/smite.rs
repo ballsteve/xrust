@@ -810,27 +810,23 @@ impl ItemNode for RNode {
     fn is_id(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID support
-            NodeInner::Attribute(_, _, v) => {
-                match v.as_ref() {
-                    Value::ID(_) => true,
-                    _ => false
-                }
-            }
-            _ => false
+            NodeInner::Attribute(_, _, v) => match v.as_ref() {
+                Value::ID(_) => true,
+                _ => false,
+            },
+            _ => false,
         }
     }
 
     fn is_idrefs(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID REF support
-            NodeInner::Attribute(_, _, v) => {
-                match v.as_ref() {
-                    Value::IDREF(_) => true,
-                    Value::IDREFS(_) => true,
-                    _ => false
-                }
-            }
-            _ => false
+            NodeInner::Attribute(_, _, v) => match v.as_ref() {
+                Value::IDREF(_) => true,
+                Value::IDREFS(_) => true,
+                _ => false,
+            },
+            _ => false,
         }
     }
 }

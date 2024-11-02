@@ -15,19 +15,15 @@ use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::textreference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
-use crate::value::Value;
 use crate::{Error, ErrorKind};
 use std::collections::HashSet;
 use std::rc::Rc;
 
 /// Parse all of the attributes in an element's start tag.
 /// Returns (attribute nodes, namespace declaration nodes).
-pub(crate) fn attributes<N: Node>() -> impl Fn(
-    ParseInput<N>,
-) -> Result<
-    (ParseInput<N>, (Vec<(QualifiedName, String)>, Vec<N>)),
-    ParseError,
-> {
+pub(crate) fn attributes<N: Node>(
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Vec<(QualifiedName, String)>, Vec<N>)), ParseError>
+{
     move |input| match many0(attribute())(input) {
         Ok(((input1, mut state1), nodes)) => {
             let doc = state1.doc.clone().unwrap().clone();
@@ -105,7 +101,10 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                 }
 
                 if qn_prefix_str == "xmlns" {
-                    new_namespaces.push(doc.new_namespace(state1.get_value(val), Some(qn.localname())).expect("unable to create namespace node"));
+                    new_namespaces.push(
+                        doc.new_namespace(state1.get_value(val), Some(qn.localname()))
+                            .expect("unable to create namespace node"),
+                    );
                     match new_namespace_prefixes.insert(Some(qn.localname())) {
                         true => {}
                         false => {
@@ -117,7 +116,10 @@ pub(crate) fn attributes<N: Node>() -> impl Fn(
                     //namespaces.insert(Some(qn.get_localname()), val.to_string());
                     //resnsnodes.insert(Some(qn.get_localname()), val.to_string());
                 } else if qn_localname == "xmlns" && !val_str.is_empty() {
-                    new_namespaces.push(doc.new_namespace(state1.get_value(val), None).expect("unable to create default namespace node"));
+                    new_namespaces.push(
+                        doc.new_namespace(state1.get_value(val), None)
+                            .expect("unable to create default namespace node"),
+                    );
                     match new_namespace_prefixes.insert(None) {
                         true => {}
                         false => {
@@ -239,9 +241,7 @@ fn attribute<N: Node>(
         attribute_value(),
     )((input, state))
     {
-        Ok(((input1, state1), (_, n, _, _, _, s))) => {
-            Ok(((input1, state1.clone()), (n, s)))
-        }
+        Ok(((input1, state1), (_, n, _, _, _, s))) => Ok(((input1, state1.clone()), (n, s))),
         Err(e) => Err(e),
     }
 }
