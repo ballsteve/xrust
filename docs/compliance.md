@@ -160,9 +160,9 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | floor            | yes    |                                                      |
 | ceiling          | yes    |                                                      |
 | round            | yes    |                                                      |
-| min              | no     | v2.0                                                 |
-| max              | no     | v2.0                                                 |
-| avg              | no     | v2.0                                                 |
+| min              | yes    | v2.0                                                 |
+| max              | yes    | v2.0                                                 |
+| avg              | yes    | v2.0                                                 |
 
 ## XSLT
 

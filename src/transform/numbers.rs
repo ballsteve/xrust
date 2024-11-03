@@ -206,6 +206,88 @@ pub fn sum<
     )))])
 }
 
+/// XPath 2.0 avg function.
+pub fn avg<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    s: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    let seq = ctxt.dispatch(stctxt, s)?;
+    if seq.is_empty() {
+        return Ok(seq);
+    }
+
+    // XPath 2.0 has rules for type conversion
+    let sum = seq.iter().fold(0.0, |mut acc, i| {
+        acc += i.to_double();
+        acc
+    });
+    Ok(vec![Item::Value(Rc::new(Value::Double(
+        sum / (seq.len() as f64),
+    )))])
+}
+
+/// XPath 2.0 min function.
+pub fn min<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    s: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    let seq = ctxt.dispatch(stctxt, s)?;
+    // XPath 2.0 has rules for type conversion
+    if seq.is_empty() {
+        Ok(seq)
+    } else {
+        Ok(vec![Item::Value(Rc::new(Value::Double(
+            seq.iter().skip(1).fold(seq[0].to_double(), |acc, i| {
+                if acc > i.to_double() {
+                    i.to_double()
+                } else {
+                    acc
+                }
+            }),
+        )))])
+    }
+}
+
+/// XPath 2.0 max function.
+pub fn max<
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<N, F, G, H>,
+    s: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    let seq = ctxt.dispatch(stctxt, s)?;
+    // XPath 2.0 has rules for type conversion
+    if seq.is_empty() {
+        Ok(seq)
+    } else {
+        Ok(vec![Item::Value(Rc::new(Value::Double(
+            seq.iter().skip(1).fold(seq[0].to_double(), |acc, i| {
+                if acc < i.to_double() {
+                    i.to_double()
+                } else {
+                    acc
+                }
+            }),
+        )))])
+    }
+}
+
 /// XPath floor function.
 pub fn floor<
     N: Node,
