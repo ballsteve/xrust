@@ -1,0 +1,8 @@
+<!DOCTYPE doc [
+<!ATTLIST para
+	xml:id	NMTOKENS	#IMPLIED
+>
+]>
+<doc>
+  <para xml:id="id">BADDECL</para>
+</doc>

@@ -1,0 +1,11 @@
+<!DOCTYPE doc [
+<!ATTLIST para
+	id ID #IMPLIED
+	ref IDREF #IMPLIED
+>
+]>
+<doc>
+ <para id="id1" xml:id="id2"/>
+ <para ref="id1"/>
+ <para ref="id2"/>
+</doc>

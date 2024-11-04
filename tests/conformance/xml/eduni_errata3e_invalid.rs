@@ -10,7 +10,6 @@ use xrust::parser::xml;
 use xrust::trees::smite::RNode;
 
 #[test]
-#[ignore]
 fn rmte3e06a() {
     /*
         Test ID:rmt-e3e-06a
@@ -27,7 +26,6 @@ fn rmte3e06a() {
             .as_str(),
         None,
     );
-
     assert!(parseresult.is_err());
 }
 
@@ -53,7 +51,6 @@ fn rmte3e06b() {
 }
 
 #[test]
-#[ignore]
 fn rmte3e06c() {
     /*
         Test ID:rmt-e3e-06c

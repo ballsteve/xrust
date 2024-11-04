@@ -85,7 +85,7 @@ pub enum Value {
     /// base type of all simple types. i.e. not a node
     AnySimpleType,
     /// a list of IDREF
-    IDREFS,
+    IDREFS(Vec<String>),
     /// a list of NMTOKEN
     NMTOKENS,
     /// a list of ENTITY
@@ -135,9 +135,9 @@ pub enum Value {
     /// (Letter | '_') NCNameChar+ (i.e. a Name without the colon)
     NCName,
     /// Same format as NCName
-    ID,
+    ID(String),
     /// Same format as NCName
-    IDREF,
+    IDREF(String),
     /// Same format as NCName
     ENTITY,
     Boolean(bool),
@@ -177,6 +177,9 @@ impl fmt::Display for Value {
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
             Value::QName(q) => q.to_string(),
             Value::RQName(q) => q.to_string(),
+            Value::ID(s) => s.to_string(),
+            Value::IDREF(s) => s.to_string(),
+            Value::IDREFS(s) => s.join(" ").to_string(),
             _ => "".to_string(),
         };
         f.write_str(result.as_str())
@@ -236,7 +239,7 @@ impl Value {
             Value::AnyType => "AnyType",
             Value::Untyped => "Untyped",
             Value::AnySimpleType => "AnySimpleType",
-            Value::IDREFS => "IDREFS",
+            Value::IDREFS(_) => "IDREFS",
             Value::NMTOKENS => "NMTOKENS",
             Value::ENTITIES => "ENTITIES",
             Value::Numeric => "Numeric",
@@ -270,8 +273,8 @@ impl Value {
             Value::NMTOKEN => "NMTOKEN",
             Value::Name => "Name",
             Value::NCName => "NCName",
-            Value::ID => "ID",
-            Value::IDREF => "IDREF",
+            Value::ID(_) => "ID",
+            Value::IDREF(_) => "IDREF",
             Value::ENTITY => "ENTITY",
             Value::Boolean(_) => "boolean",
             Value::QName(_) => "QName",
@@ -444,7 +447,7 @@ impl Ord for Value {
                 _ => Ordering::Equal, // type error?
             },
             Value::Double(d) => match other {
-                Value::Double(e) => d.partial_cmp(e).unwrap_or_else(|| Ordering::Equal),
+                Value::Double(e) => d.partial_cmp(e).unwrap_or(Ordering::Equal),
                 _ => Ordering::Equal, // type error?
             },
             _ => Ordering::Equal,
