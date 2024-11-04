@@ -97,6 +97,19 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
         Ok(((input1, state1), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
             if input1.is_empty() {
+                /*
+                   We were checking XML IDRefs as we parsed, but sometimes an ID comes after the IDREF,
+                   we now check those cases to ensure that all IDs needed were reported.
+                */
+                if state1.id_tracking {
+                    for idref in state1.ids_pending.iter() {
+                        match state1.ids_read.get(idref) {
+                            None => return Err(ParseError::IDError(String::from("ID missing"))),
+                            Some(_) => {}
+                        }
+                    }
+                }
+
                 let pr = p.unwrap_or((None, vec![]));
 
                 pr.1.iter().for_each(|n| {

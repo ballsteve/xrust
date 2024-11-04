@@ -434,6 +434,11 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
         self.node_type() == NodeType::Element
     }
 
+    /// Check if a node is an XML ID
+    fn is_id(&self) -> bool;
+    /// Check if a node is an  XML IDREF or IDREFS
+    fn is_idrefs(&self) -> bool;
+
     /// An iterator over the children of the node
     fn child_iter(&self) -> Self::NodeIterator;
     /// Get the first child of the node, if there is one
