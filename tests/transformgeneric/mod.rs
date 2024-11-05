@@ -4843,6 +4843,78 @@ where
     Ok(())
 }
 
+pub fn generic_tr_avg<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // XPath == sum((1, 2, 4))
+    let x = Transform::Avg(Box::new(Transform::SequenceItems(vec![
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(2)))),
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(4)))),
+    ])));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = Context::new()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert!(seq[0].to_double() - 7.0 / 3.0 < 0.01);
+    Ok(())
+}
+
+pub fn generic_tr_min<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // XPath == sum((1, 2, 4))
+    let x = Transform::Min(Box::new(Transform::SequenceItems(vec![
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(2)))),
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(4)))),
+    ])));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = Context::new()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq.to_int().unwrap(), 1);
+    Ok(())
+}
+
+pub fn generic_tr_max<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    // XPath == sum((1, 2, 4))
+    let x = Transform::Max(Box::new(Transform::SequenceItems(vec![
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(1)))),
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(2)))),
+        Transform::Literal(Item::<N>::Value(Rc::new(Value::from(4)))),
+    ])));
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let seq = Context::new()
+        .dispatch(&mut stctxt, &x)
+        .expect("evaluation failed");
+    assert_eq!(seq.len(), 1);
+    assert_eq!(seq.to_int().unwrap(), 4);
+    Ok(())
+}
+
 pub fn generic_tr_floor<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,

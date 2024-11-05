@@ -386,6 +386,21 @@ fn xpath_fncall_sum() {
         .expect("test failed")
 }
 #[test]
+fn xpath_fncall_avg() {
+    xpathgeneric::generic_fncall_avg::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_fncall_min() {
+    xpathgeneric::generic_fncall_min::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_fncall_max() {
+    xpathgeneric::generic_fncall_max::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_fncall_floor() {
     xpathgeneric::generic_fncall_floor::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
