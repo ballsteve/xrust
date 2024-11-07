@@ -723,6 +723,21 @@ fn tr_sum() {
         .expect("test failed")
 }
 #[test]
+fn tr_avg() {
+    transformgeneric::generic_tr_avg::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn tr_min() {
+    transformgeneric::generic_tr_min::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn tr_max() {
+    transformgeneric::generic_tr_max::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn tr_floor() {
     transformgeneric::generic_tr_floor::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")

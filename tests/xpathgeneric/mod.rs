@@ -1146,6 +1146,57 @@ where
     Ok(())
 }
 
+pub fn generic_fncall_avg<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("avg(('123.456', 10, 20, '0'))")?;
+    assert_eq!(s.len(), 1);
+    match &s[0] {
+        Item::Value(v) => match **v {
+            Value::Double(d) => assert!(d - 38.364 < 0.01),
+            _ => panic!("not a singleton double value"),
+        },
+        _ => panic!("not a value"),
+    }
+    Ok(())
+}
+
+pub fn generic_fncall_min<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("min(('123.456', 10, 20, '0'))")?;
+    assert_eq!(s.len(), 1);
+    match &s[0] {
+        Item::Value(v) => match **v {
+            Value::Double(d) => assert_eq!(d, 0.0),
+            _ => panic!("not a singleton double value"),
+        },
+        _ => panic!("not a value"),
+    }
+    Ok(())
+}
+
+pub fn generic_fncall_max<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("max(('123.456', 10, 20, '0'))")?;
+    assert_eq!(s.len(), 1);
+    match &s[0] {
+        Item::Value(v) => match **v {
+            Value::Double(d) => assert_eq!(d, 123.456),
+            _ => panic!("not a singleton double value"),
+        },
+        _ => panic!("not a value"),
+    }
+    Ok(())
+}
+
 pub fn generic_fncall_floor<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,
