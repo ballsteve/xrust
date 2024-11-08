@@ -259,6 +259,36 @@ pub(crate) fn function_call<'a, N: Node + 'a>(
                         Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
                     }
                 }
+                "avg" => {
+                    if a.len() == 0 {
+                        Transform::Empty
+                    } else if a.len() == 1 {
+                        Transform::Avg(Box::new(a.pop().unwrap()))
+                    } else {
+                        // Too many arguments
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
+                    }
+                }
+                "min" => {
+                    if a.len() == 0 {
+                        Transform::Empty
+                    } else if a.len() == 1 {
+                        Transform::Min(Box::new(a.pop().unwrap()))
+                    } else {
+                        // Too many arguments
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
+                    }
+                }
+                "max" => {
+                    if a.len() == 0 {
+                        Transform::Empty
+                    } else if a.len() == 1 {
+                        Transform::Max(Box::new(a.pop().unwrap()))
+                    } else {
+                        // Too many arguments
+                        Transform::Error(ErrorKind::ParseError, String::from("too many arguments"))
+                    }
+                }
                 "floor" => {
                     if a.len() == 1 {
                         Transform::Floor(Box::new(a.pop().unwrap()))

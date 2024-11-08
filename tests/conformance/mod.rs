@@ -5,6 +5,7 @@ use xrust::{Error, ErrorKind};
 
 //mod relaxng;
 mod xml;
+mod xml_id;
 
 use encoding_rs::UTF_16BE;
 use encoding_rs::UTF_16LE;

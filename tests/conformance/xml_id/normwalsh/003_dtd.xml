@@ -1,0 +1,8 @@
+<!DOCTYPE doc [
+<!ATTLIST para
+	xml:id	ID	#IMPLIED
+>
+]>
+<doc>
+  <para xml:id="id">MATCH</para>
+</doc>

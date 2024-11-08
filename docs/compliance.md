@@ -159,7 +159,10 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | sum              | yes    |                                                      |
 | floor            | yes    |                                                      |
 | ceiling          | yes    |                                                      |
-|  round           | yes    |                                                      |
+| round            | yes    |                                                      |
+| min              | yes    | v2.0                                                 |
+| max              | yes    | v2.0                                                 |
+| avg              | yes    | v2.0                                                 |
 
 ## XSLT
 
@@ -537,4 +540,3 @@ Version 1.0 functions. Version 2.0 - 3.1 all not supported (yet).
 | unparsed-entity-public-id   | no     |       |
 | system-property             | yes    |       |
 | available-system-properties | yes    |       |
-
