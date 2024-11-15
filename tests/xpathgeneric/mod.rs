@@ -1429,6 +1429,34 @@ where
     assert_eq!(s.to_string(), "not one");
     Ok(())
 }
+pub fn generic_identity<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = dispatch_rig("@*|node()", make_empty_doc, make_doc)?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+                (NodeType::Element, "b") => Ok(()),
+                (NodeType::Element, _) => Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!(
+                        "got element named \"{}\", expected \"a\"",
+                        result[0].name().to_string()
+                    ),
+                )),
+                _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
+            },
+            _ => Err(Error::new(ErrorKind::Unknown, "not a node")),
+        }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("got {} results, expected 0", result.len()),
+        ))
+    }
+}
 
 pub fn generic_navigate_predicate_1<N: Node, G, H>(
     make_empty_doc: G,
