@@ -1429,7 +1429,7 @@ where
     assert_eq!(s.to_string(), "not one");
     Ok(())
 }
-pub fn generic_identity<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+pub fn generic_issue_95<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn() -> Item<N>,

@@ -466,8 +466,8 @@ fn xpath_if_2() {
         .expect("test failed")
 }
 #[test]
-fn xpath_generic_identity() {
-    xpathgeneric::generic_identity::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+fn xpath_issue_95() {
+    xpathgeneric::generic_issue_95::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
 #[test]

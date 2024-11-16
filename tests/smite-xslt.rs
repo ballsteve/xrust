@@ -139,6 +139,15 @@ fn xslt_issue_58() {
     .expect("test failed")
 }
 #[test]
+fn xslt_issue_95() {
+    xsltgeneric::generic_issue_95(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_sd_cooked,
+    )
+    .expect("test failed")
+}
+#[test]
 fn xslt_callable_named_1() {
     xsltgeneric::generic_callable_named_1(
         smite::make_from_str,
