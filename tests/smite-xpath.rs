@@ -185,6 +185,16 @@ fn xpath_comment() {
         .expect("test failed")
 }
 #[test]
+fn xpath_kindtest_text_abbrev() {
+    xpathgeneric::generic_kindtest_text_abbrev::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
+fn xpath_kindtest_text_full() {
+    xpathgeneric::generic_kindtest_text_full::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
+#[test]
 fn xpath_context_item() {
     xpathgeneric::generic_xpath_context_item::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
