@@ -297,7 +297,7 @@ impl<N: Node> Item<N> {
     /// Is this item a node?
     pub fn is_node(&self) -> bool {
         match self {
-            Item::Node(n) => true,
+            Item::Node(_) => true,
             _ => false,
         }
     }

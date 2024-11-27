@@ -63,3 +63,19 @@ fn pattern_sel_text_kind_1_pos() {
     patterngeneric::pattern_sel_text_kind_1_pos::<RNode, _>(smite::make_empty_doc)
         .expect("test failed")
 }
+#[test]
+fn pattern_issue_95() {
+    patterngeneric::pattern_issue_95::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
+fn pattern_union_1() {
+    patterngeneric::pattern_union_1::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
+fn pattern_union_2() {
+    patterngeneric::pattern_union_2::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}
+#[test]
+fn pattern_union_3() {
+    patterngeneric::pattern_union_3::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}

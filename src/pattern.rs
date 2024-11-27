@@ -138,37 +138,50 @@ impl<N: Node> Pattern<N> {
                 .dispatch(stctxt, t)
                 .unwrap_or(vec![Item::Value(Rc::new(Value::from(false)))])
                 .to_bool(),
-            Pattern::Selection(p) => {
-                // First step is the terminal case,
-                // next steps are non-terminal
-                let mut pit = p.iter();
-                pit.next().map_or(false, |q| {
-                    if is_match(&q.terminal, &q.nt, i) {
-                        let mut seq: Sequence<N> = find_seq(&q.non_terminal, i);
-                        loop {
-                            if let Some(s) = pit.next() {
+            Pattern::Selection(p) => path_match(p, i),
+            _ => false, // not yet implemented
+        }
+    }
+}
+
+fn path_match<N: Node>(p: &Path, i: &Item<N>) -> bool {
+    // First step is the terminal case,
+    // next steps are non-terminal
+    let mut pit = p.iter();
+    pit.next().map_or(false, |ax| match ax {
+        Step::AxisStep(q) => {
+            if is_match(&q.terminal, &q.nt, i) {
+                let mut seq: Sequence<N> = find_seq(&q.non_terminal, i);
+                loop {
+                    if let Some(t) = pit.next() {
+                        match t {
+                            Step::AxisStep(s) => {
                                 let new_seq = seq
                                     .iter()
                                     .filter(|f| is_match(&s.terminal, &s.nt, f))
                                     .fold(vec![], |mut acc, m| {
-                                        let mut new_seq = find_seq(&s.non_terminal, m);
-                                        acc.append(&mut new_seq);
+                                        let mut nt_seq = find_seq(&s.non_terminal, m);
+                                        acc.append(&mut nt_seq);
                                         acc
                                     });
                                 seq = new_seq;
-                            } else {
-                                break;
+                            }
+                            Step::Branch(b) => {
+                                b.iter().fold(vec![],
+                                    |c| ???)
                             }
                         }
-                        !seq.is_empty()
                     } else {
-                        false
+                        break;
                     }
-                })
+                }
+                !seq.is_empty()
+            } else {
+                false
             }
-            _ => false, // not yet implemented
         }
-    }
+        Step::Branch(b) => b.iter().any(|c| path_match(c, i)),
+    })
 }
 
 fn find_seq<N: Node>(a: &Axis, i: &Item<N>) -> Sequence<N> {
@@ -232,11 +245,16 @@ impl<N: Node> Debug for Pattern<N> {
     }
 }
 
-//    Each step in the Path consists of (terminal, non-terminal) axes and a NodeTest
+// Each step in the Path is a vector of Steps.
+// Each item in the vector is a branch of a union.
+// A branch is caused by a union ("|") operator -
+// if any of the branches match then the Path matches.
+// If the vector is empty then there is no match.
+pub type Path = Vec<Vec<Step>>;
+
+// A step in the Path consists of (terminal, non-terminal) axes and a NodeTest
 // If this is the last step, then the terminal axis is used.
 // Otherwise the non-terminal axis applies.
-pub type Path = Vec<Step>;
-
 #[derive(Clone, Debug)]
 pub struct Step {
     terminal: Axis,
@@ -246,7 +264,7 @@ pub struct Step {
 
 impl Step {
     pub fn new(terminal: Axis, non_terminal: Axis, nt: NodeTest) -> Self {
-        Step {
+        AxisTest {
             terminal,
             non_terminal,
             nt,
@@ -359,11 +377,12 @@ fn union_expr_pattern<'a, N: Node + 'a>(
             intersect_except_expr_pattern::<N>(),
         ),
         |mut v| {
-            if v.len() == 1 {
-                v.pop().unwrap()
-            } else {
-                Pattern::Selection(Path::new())
-            }
+            Pattern::Selection(vec![v])
+//            if v.len() == 1 {
+//                v.pop().unwrap()
+//            } else {
+//                Pattern::Selection(vec![v])
+//            }
         },
     ))
 }
@@ -524,20 +543,19 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
                 // this is the terminal step
                 a
             } else if let Pattern::Selection(mut ap) = a {
-                    // TODO: handle "//" separator
-                    for (_c, d) in b {
-                        match d {
-                            Pattern::Selection(p) => {
-                                p.into_iter().for_each(|s| ap.insert(0, s));
-                            }
-                            _ => panic!("relative path can only contain steps"),
+                // TODO: handle "//" separator
+                for (_c, d) in b {
+                    match d {
+                        Pattern::Selection(p) => {
+                            p.into_iter().for_each(|s| ap.insert(0, s));
                         }
+                        _ => panic!("relative path can only contain steps"),
                     }
-                    Pattern::Selection(ap)
-                } else {
-                    panic!("pattern must be a selection")
                 }
-
+                Pattern::Selection(ap)
+            } else {
+                panic!("pattern must be a selection")
+            }
         },
     ))
 }
