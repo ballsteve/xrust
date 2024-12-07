@@ -1347,47 +1347,6 @@ fn get_sort_keys<N: Node>(n: &N) -> Result<Vec<(Order, Transform<N>)>, Error> {
     } else {
         Ok(result)
     }
-    /*     n.child_iter()
-            .try_fold(vec![], |mut acc, c| match c.node_type() {
-                NodeType::Element => {
-                    if *c.name() == QualifiedName::new(Some(XSLTNS.to_string()), None, "sort") {
-                        let ordval = c.get_attribute(&QualifiedName::new(None, None, "order"));
-                        let ord = match ordval.to_string().as_str() {
-                            "descending" => Order::Descending,
-                            _ => Order::Ascending,
-                        };
-                        let sortsel = c.get_attribute(&QualifiedName::new(None, None, "select"));
-                        acc.push((ord, parse::<N>(&sortsel.to_string(), Some(n.clone()))?));
-                        Ok(acc)
-                    } else {
-                        Err(Error::new(
-                            ErrorKind::TypeError,
-                            "only sort elements allowed",
-                        ))
-                    }
-                }
-                NodeType::Text => {
-                    if c.value()
-                        .to_string()
-                        .as_str()
-                        .find(|d: char| !d.is_whitespace())
-                        .is_none()
-                    {
-                        Ok(acc)
-                    } else {
-                        Err(Error::new(
-                            ErrorKind::TypeError,
-                            "only sort elements allowed",
-                        ))
-                    }
-                }
-                NodeType::Comment | NodeType::ProcessingInstruction => Ok(acc),
-                _ => Err(Error::new(
-                    ErrorKind::TypeError,
-                    "only sort elements allowed",
-                )),
-            })
-    */
 }
 
 /// Strip whitespace nodes from a XDM tree.
