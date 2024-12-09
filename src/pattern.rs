@@ -524,20 +524,19 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
                 // this is the terminal step
                 a
             } else if let Pattern::Selection(mut ap) = a {
-                    // TODO: handle "//" separator
-                    for (_c, d) in b {
-                        match d {
-                            Pattern::Selection(p) => {
-                                p.into_iter().for_each(|s| ap.insert(0, s));
-                            }
-                            _ => panic!("relative path can only contain steps"),
+                // TODO: handle "//" separator
+                for (_c, d) in b {
+                    match d {
+                        Pattern::Selection(p) => {
+                            p.into_iter().for_each(|s| ap.insert(0, s));
                         }
+                        _ => panic!("relative path can only contain steps"),
                     }
-                    Pattern::Selection(ap)
-                } else {
-                    panic!("pattern must be a selection")
                 }
-
+                Pattern::Selection(ap)
+            } else {
+                panic!("pattern must be a selection")
+            }
         },
     ))
 }
