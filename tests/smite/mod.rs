@@ -14,6 +14,10 @@ use xrust::xdmerror::Error;
 pub fn make_empty_doc() -> RNode {
     RNode::new_document()
 }
+#[allow(dead_code)]
+pub fn make_empty_doc_cooked() -> Result<RNode, Error> {
+    Ok(RNode::new_document())
+}
 
 #[allow(dead_code)]
 pub fn make_doc(n: Rc<QualifiedName>, v: Value) -> RNode {
