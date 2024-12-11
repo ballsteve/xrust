@@ -214,7 +214,9 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                             true => {}
                             false => {
                                 //Value already existed!
-                                return Err(ParseError::IDError(String::from("Diplicate ID found")));
+                                return Err(ParseError::IDError(String::from(
+                                    "Diplicate ID found",
+                                )));
                             }
                         }
                     }

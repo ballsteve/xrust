@@ -56,11 +56,13 @@ pub(crate) fn literal_element<
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
         // Item could be a Node or text
         match i {
-            Item::Node(t) => match t.node_type() {
-                NodeType::Attribute => e.add_attribute(t.clone()), // TODO: Also check namespace of attribute
-                NodeType::Namespace => e.add_namespace(t.clone()),
-                _ => e.push(t.deep_copy()?),
-            },
+            Item::Node(t) => {
+                match t.node_type() {
+                    NodeType::Attribute => e.add_attribute(t.clone()), // TODO: Also check namespace of attribute
+                    NodeType::Namespace => e.add_namespace(t.clone()),
+                    _ => e.push(t.deep_copy()?),
+                }
+            }
             _ => {
                 // Add the Value as a text node
                 let n = r.new_text(Rc::new(Value::from(i.to_string())))?;

@@ -21,12 +21,14 @@ where
     H: Fn() -> Result<N, Error>,
     J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
 {
+    eprintln!("test_rig, parse source doc");
     let srcdoc = parse_from_str(src.as_ref()).map_err(|e| {
         Error::new(
             e.kind,
             format!("error parsing source document: {}", e.message),
         )
     })?;
+    eprintln!("parse style doc");
     let styledoc = parse_from_str(style.as_ref())
         .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
     let mut stctxt = StaticContextBuilder::new()
@@ -38,6 +40,7 @@ where
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     ctxt.populate_key_values(&mut stctxt, srcdoc.clone())?;
+    eprintln!("evaluate xform {:?}", ctxt);
     ctxt.evaluate(&mut stctxt)
 }
 
@@ -1091,6 +1094,262 @@ where
     assert_eq!(
         result.to_xml(),
         "found a Level1 elementfound a Level1 element"
+    );
+    Ok(())
+}
+
+pub fn issue_126<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<catalog>
+          <cd>
+            <title>Empire Burlesque</title>
+            <artist>Bob Dylan</artist>
+            <country>USA</country>
+            <company>Columbia</company>
+            <price>10.90</price>
+            <year>1985</year>
+          </cd>
+          <cd>
+            <title>Hide your heart</title>
+            <artist>Bonnie Tyler</artist>
+            <country>UK</country>
+            <company>CBS Records</company>
+            <price>9.90</price>
+            <year>1988</year>
+          </cd>
+          <cd>
+            <title>Greatest Hits</title>
+            <artist>Dolly Parton</artist>
+            <country>USA</country>
+            <company>RCA</company>
+            <price>9.90</price>
+            <year>1982</year>
+          </cd>
+          <cd>
+            <title>Still got the blues</title>
+            <artist>Gary Moore</artist>
+            <country>UK</country>
+            <company>Virgin records</company>
+            <price>10.20</price>
+            <year>1990</year>
+          </cd>
+          <cd>
+            <title>Eros</title>
+            <artist>Eros Ramazzotti</artist>
+            <country>EU</country>
+            <company>BMG</company>
+            <price>9.90</price>
+            <year>1997</year>
+          </cd>
+          <cd>
+            <title>One night only</title>
+            <artist>Bee Gees</artist>
+            <country>UK</country>
+            <company>Polydor</company>
+            <price>10.90</price>
+            <year>1998</year>
+          </cd>
+          <cd>
+            <title>Sylvias Mother</title>
+            <artist>Dr.Hook</artist>
+            <country>UK</country>
+            <company>CBS</company>
+            <price>8.10</price>
+            <year>1973</year>
+          </cd>
+          <cd>
+            <title>Maggie May</title>
+            <artist>Rod Stewart</artist>
+            <country>UK</country>
+            <company>Pickwick</company>
+            <price>8.50</price>
+            <year>1990</year>
+          </cd>
+          <cd>
+            <title>Romanza</title>
+            <artist>Andrea Bocelli</artist>
+            <country>EU</country>
+            <company>Polydor</company>
+            <price>10.80</price>
+            <year>1996</year>
+          </cd>
+          <cd>
+            <title>When a man loves a woman</title>
+            <artist>Percy Sledge</artist>
+            <country>USA</country>
+            <company>Atlantic</company>
+            <price>8.70</price>
+            <year>1987</year>
+          </cd>
+          <cd>
+            <title>Black angel</title>
+            <artist>Savage Rose</artist>
+            <country>EU</country>
+            <company>Mega</company>
+            <price>10.90</price>
+            <year>1995</year>
+          </cd>
+          <cd>
+            <title>1999 Grammy Nominees</title>
+            <artist>Many</artist>
+            <country>USA</country>
+            <company>Grammy</company>
+            <price>10.20</price>
+            <year>1999</year>
+          </cd>
+          <cd>
+            <title>For the good times</title>
+            <artist>Kenny Rogers</artist>
+            <country>UK</country>
+            <company>Mucik Master</company>
+            <price>8.70</price>
+            <year>1995</year>
+          </cd>
+          <cd>
+            <title>Big Willie style</title>
+            <artist>Will Smith</artist>
+            <country>USA</country>
+            <company>Columbia</company>
+            <price>9.90</price>
+            <year>1997</year>
+          </cd>
+          <cd>
+            <title>Tupelo Honey</title>
+            <artist>Van Morrison</artist>
+            <country>UK</country>
+            <company>Polydor</company>
+            <price>8.20</price>
+            <year>1971</year>
+          </cd>
+          <cd>
+            <title>Soulsville</title>
+            <artist>Jorn Hoel</artist>
+            <country>Norway</country>
+            <company>WEA</company>
+            <price>7.90</price>
+            <year>1996</year>
+          </cd>
+          <cd>
+            <title>The very best of</title>
+            <artist>Cat Stevens</artist>
+            <country>UK</country>
+            <company>Island</company>
+            <price>8.90</price>
+            <year>1990</year>
+          </cd>
+          <cd>
+            <title>Stop</title>
+            <artist>Sam Brown</artist>
+            <country>UK</country>
+            <company>A and M</company>
+            <price>8.90</price>
+            <year>1988</year>
+          </cd>
+          <cd>
+            <title>Bridge of Spies</title>
+            <artist>T`Pau</artist>
+            <country>UK</country>
+            <company>Siren</company>
+            <price>7.90</price>
+            <year>1987</year>
+          </cd>
+          <cd>
+            <title>Private Dancer</title>
+            <artist>Tina Turner</artist>
+            <country>UK</country>
+            <company>Capitol</company>
+            <price>8.90</price>
+            <year>1983</year>
+          </cd>
+          <cd>
+            <title>Midt om natten</title>
+            <artist>Kim Larsen</artist>
+            <country>EU</country>
+            <company>Medley</company>
+            <price>7.80</price>
+            <year>1983</year>
+          </cd>
+          <cd>
+            <title>Pavarotti Gala Concert</title>
+            <artist>Luciano Pavarotti</artist>
+            <country>UK</country>
+            <company>DECCA</company>
+            <price>9.90</price>
+            <year>1991</year>
+          </cd>
+          <cd>
+            <title>The dock of the bay</title>
+            <artist>Otis Redding</artist>
+            <country>USA</country>
+            <COMPANY>Stax Records</COMPANY>
+            <PRICE>7.90</PRICE>
+            <YEAR>1968</YEAR>
+          </cd>
+          <cd>
+            <title>Picture book</title>
+            <artist>Simply Red</artist>
+            <country>EU</country>
+            <company>Elektra</company>
+            <price>7.20</price>
+            <year>1985</year>
+          </cd>
+          <cd>
+            <title>Red</title>
+            <artist>The Communards</artist>
+            <country>UK</country>
+            <company>London</company>
+            <price>7.80</price>
+            <year>1987</year>
+          </cd>
+          <cd>
+            <title>Unchain my heart</title>
+            <artist>Joe Cocker</artist>
+            <country>USA</country>
+            <company>EMI</company>
+            <price>8.20</price>
+            <year>1987</year>
+          </cd>
+        </catalog>",
+        r###"<xsl:stylesheet version="1.0"
+        xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+
+        <xsl:template match="/">
+          <html>
+          <body>
+          <h2>My CD Collection</h2>
+          <table border="1">
+            <ts bgcolor="#9acd32">
+              <th>Title</th>
+              <th>Artist</th>
+            </ts>
+            <xsl:for-each select="catalog/cd">
+            <tr>
+              <td><xsl:value-of select="title"/></td>
+              <td><xsl:value-of select="artist"/></td>
+            </tr>
+            </xsl:for-each>
+          </table>
+          </body>
+          </html>
+        </xsl:template>
+
+        </xsl:stylesheet>"###,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    assert_eq!(
+        result.to_xml(),
+        r###"<html><body><h2>My CD Collection</h2><table border='1'><ts bgcolor='#9acd32'><th>Title</th><th>Artist</th></ts><tr><td>Empire Burlesque</td><td>Bob Dylan</td></tr><tr><td>Hide your heart</td><td>Bonnie Tyler</td></tr><tr><td>Greatest Hits</td><td>Dolly Parton</td></tr><tr><td>Still got the blues</td><td>Gary Moore</td></tr><tr><td>Eros</td><td>Eros Ramazzotti</td></tr><tr><td>One night only</td><td>Bee Gees</td></tr><tr><td>Sylvias Mother</td><td>Dr.Hook</td></tr><tr><td>Maggie May</td><td>Rod Stewart</td></tr><tr><td>Romanza</td><td>Andrea Bocelli</td></tr><tr><td>When a man loves a woman</td><td>Percy Sledge</td></tr><tr><td>Black angel</td><td>Savage Rose</td></tr><tr><td>1999 Grammy Nominees</td><td>Many</td></tr><tr><td>For the good times</td><td>Kenny Rogers</td></tr><tr><td>Big Willie style</td><td>Will Smith</td></tr><tr><td>Tupelo Honey</td><td>Van Morrison</td></tr><tr><td>Soulsville</td><td>Jorn Hoel</td></tr><tr><td>The very best of</td><td>Cat Stevens</td></tr><tr><td>Stop</td><td>Sam Brown</td></tr><tr><td>Bridge of Spies</td><td>T`Pau</td></tr><tr><td>Private Dancer</td><td>Tina Turner</td></tr><tr><td>Midt om natten</td><td>Kim Larsen</td></tr><tr><td>Pavarotti Gala Concert</td><td>Luciano Pavarotti</td></tr><tr><td>The dock of the bay</td><td>Otis Redding</td></tr><tr><td>Picture book</td><td>Simply Red</td></tr><tr><td>Red</td><td>The Communards</td></tr><tr><td>Unchain my heart</td><td>Joe Cocker</td></tr></table></body></html>"###
     );
     Ok(())
 }

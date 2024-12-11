@@ -428,7 +428,8 @@ impl ItemNode for RNode {
             }
             NodeInner::Attribute(parent, qn, _) => {
                 // Remove this node from the attribute hashmap
-                match Weak::upgrade(&parent.borrow()) {
+                let myp = Weak::upgrade(&parent.borrow()); // make borrow temporary
+                match myp {
                     Some(p) => {
                         match &p.0 {
                             NodeInner::Element(_, _, att, _, _) => {
@@ -531,6 +532,12 @@ impl ItemNode for RNode {
 
         match &self.0 {
             NodeInner::Element(_, _, patt, _, _) => {
+                // Short-circuit: Is this attribute already attached to this element?
+                if let Some(b) = patt.borrow().get(&self.name()) {
+                    if att.is_same(b) {
+                        return Ok(());
+                    }
+                }
                 // Firstly, make sure the node is removed from its old parent
                 let mut m = att.clone();
                 m.pop()?;
@@ -874,14 +881,21 @@ fn format_attrs(ats: &BTreeMap<Rc<QualifiedName>, RNode>) -> String {
 // Put the given node in the unattached list for the document "d".
 // This is for use when the node is newly created.
 fn unattached(d: &RNode, n: RNode) {
+    // Is it already in the unattached list? If so then do nothing
     match &d.0 {
         NodeInner::Document(_, _, u) => {
+            if u.borrow().iter().any(|f| f.is_same(&n)) {
+                return;
+            }
             u.borrow_mut().push(n.clone());
             make_parent(n, d.clone())
         }
         NodeInner::Element(_, _, _, _, _) => {
             let doc = d.owner_document();
             if let NodeInner::Document(_, _, u) = &doc.0 {
+                if u.borrow().iter().any(|f| f.is_same(&n)) {
+                    return;
+                }
                 u.borrow_mut().push(n.clone());
                 make_parent(n, doc.clone())
             } else {
