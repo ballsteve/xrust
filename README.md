@@ -80,6 +80,8 @@ Status of [standards implementation](https://github.com/ballsteve/xrust/blob/mai
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 1.2.2 | Fixed node() kind test. Fixed union in Pattern.                                          |
+|---------------|------------------------------------------------------------------------------------------|
 | Version 1.2.1 | Fixed xsl:sort elements. Fixed 'already borrowed' bug in smite.                          |
 |---------------|------------------------------------------------------------------------------------------|
 | Version 1.2   | Added ID/IDREFS support. Added XPath 2.0 functions: avg(), min(), max().                 |

@@ -396,7 +396,7 @@ where
                             _ => 1.0,
                         },
                         Pattern::Selection(s) => {
-                            let (t, nt, q) = s[0].get_ref();
+                            let (t, nt, q) = s.terminal_node_test();
                             // If "/" then -0.5
                             match (t, nt) {
                                 (Axis::SelfAttribute, _) => -0.5,
