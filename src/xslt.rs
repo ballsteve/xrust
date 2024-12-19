@@ -74,7 +74,7 @@ use crate::item::{Item, Node, NodeType, Sequence};
 use crate::output::*;
 use crate::parser::avt::parse as parse_avt;
 use crate::parser::xpath::parse;
-use crate::pattern::Pattern;
+use crate::pattern::{Branch, Pattern};
 use crate::qname::*;
 use crate::transform::callable::{ActualParameters, Callable, FormalParameters};
 use crate::transform::context::{Context, ContextBuilder};
@@ -376,6 +376,9 @@ where
             if pat.is_err() {
                 return Err(pat.get_err().unwrap());
             }
+            if let Pattern::Selection(Branch::Error(e)) = pat {
+                return Err(e.clone());
+            }
             let mut body = vec![];
             let mode = c.get_attribute_node(&QualifiedName::new(None, None, "mode"));
             c.child_iter().try_for_each(|d| {
@@ -396,6 +399,10 @@ where
                             _ => 1.0,
                         },
                         Pattern::Selection(s) => {
+                            if let Branch::Error(e) = s {
+                                return Err(e.clone());
+                            }
+
                             let (t, nt, q) = s.terminal_node_test();
                             // If "/" then -0.5
                             match (t, nt) {

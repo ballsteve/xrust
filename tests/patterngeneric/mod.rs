@@ -663,7 +663,7 @@ pub fn pattern_union_1<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
 where
     G: Fn() -> N,
 {
-    let p: Pattern<N> = Pattern::try_from("c|b").expect("unable to parse \"a|b\"");
+    let p: Pattern<N> = Pattern::try_from("c|b").expect("unable to parse \"c|b\"");
 
     // Setup a source document
     let mut sd = make_empty_doc();
@@ -709,7 +709,7 @@ pub fn pattern_union_2<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
 where
     G: Fn() -> N,
 {
-    let p: Pattern<N> = Pattern::try_from("c|b").expect("unable to parse \"a|b\"");
+    let p: Pattern<N> = Pattern::try_from("c|b").expect("unable to parse \"c|b\"");
 
     // Setup a source document
     let mut sd = make_empty_doc();
@@ -792,6 +792,60 @@ where
 
     assert_eq!(
         p.matches(&Context::new(), &mut stctxt, &Rc::new(Item::Node(b))),
+        false
+    );
+    Ok(())
+}
+
+pub fn pattern_union_4<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
+where
+    G: Fn() -> N,
+{
+    let p: Pattern<N> = Pattern::try_from("(a|b)/(c|d)").expect("unable to parse \"(a|b)/(c|d)\"");
+
+    // Setup a source document
+    let mut sd = make_empty_doc();
+    let mut t = sd
+        .new_element(Rc::new(QualifiedName::new(
+            None,
+            None,
+            String::from("Test"),
+        )))
+        .expect("unable to create element");
+    sd.push(t.clone()).expect("unable to append child");
+    let mut a = sd
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("a"))))
+        .expect("unable to create element");
+    t.push(a.clone()).expect("unable to append child");
+    let t_a = sd
+        .new_text(Rc::new(Value::from("first")))
+        .expect("unable to create text node");
+    a.push(t_a.clone()).expect("unable to append text node");
+    let mut b = sd
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("b"))))
+        .expect("unable to create element");
+    t.push(b.clone()).expect("unable to append child");
+    let t_b = sd
+        .new_text(Rc::new(Value::from("second")))
+        .expect("unable to create text node");
+    b.push(t_b).expect("unable to append text node");
+    let mut c = sd
+        .new_element(Rc::new(QualifiedName::new(None, None, String::from("c"))))
+        .expect("unable to create element");
+    a.push(c.clone()).expect("unable to append child");
+    let t_c = sd
+        .new_text(Rc::new(Value::from("third")))
+        .expect("unable to create text node");
+    c.push(t_c).expect("unable to append text node");
+
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+
+    assert_eq!(
+        p.matches(&Context::new(), &mut stctxt, &Rc::new(Item::Node(c))),
         true
     );
     Ok(())

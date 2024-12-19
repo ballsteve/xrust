@@ -79,3 +79,7 @@ fn pattern_union_2() {
 fn pattern_union_3() {
     patterngeneric::pattern_union_3::<RNode, _>(smite::make_empty_doc).expect("test failed")
 }
+#[test]
+fn pattern_union_4() {
+    patterngeneric::pattern_union_4::<RNode, _>(smite::make_empty_doc).expect("test failed")
+}

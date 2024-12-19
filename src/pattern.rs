@@ -67,9 +67,9 @@ assert_eq!(p.matches(&Context::new(), &mut static_context, &n), false)
 */
 
 use std::convert::TryFrom;
-use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
+use std::{any, fmt};
 use url::Url;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
@@ -110,10 +110,16 @@ pub enum Pattern<N: Node> {
 impl<N: Node> Pattern<N> {
     /// Returns whether the Pattern is of type error.
     pub fn is_err(&self) -> bool {
-        matches!(self, Pattern::Error(_))
+        if let Pattern::Selection(s) = self {
+            s.is_err()
+        } else {
+            matches!(self, Pattern::Error(_))
+        }
     }
     pub fn get_err(&self) -> Option<Error> {
-        if let Pattern::Error(e) = self {
+        if let Pattern::Selection(s) = self {
+            s.get_err()
+        } else if let Pattern::Error(e) = self {
             Some(e.clone())
         } else {
             None
@@ -295,7 +301,36 @@ impl Branch {
     pub fn terminal_node_test(&self) -> (Axis, Axis, NodeTest) {
         branch_terminal_node_test(self)
     }
+    /// Check whether the Branch is an error or contains an error
+    pub fn is_err(&self) -> bool {
+        match self {
+            Branch::Error(_) => true,
+            Branch::SingleStep(_) => false,
+            Branch::RelPath(r) => r.iter().any(|f| f.is_err()),
+            Branch::Union(u) => u.iter().any(|f| f.is_err()),
+        }
+    }
+    /// Get any error in the Branch
+    pub fn get_err(&self) -> Option<Error> {
+        match self {
+            Branch::Error(e) => Some(e.clone()),
+            Branch::SingleStep(_) => None,
+            Branch::RelPath(r) => r.iter().fold(None, |v, f| v.or_else(|| f.get_err())),
+            Branch::Union(u) => u.iter().fold(None, |v, f| v.or_else(|| f.get_err())),
+        }
+    }
 }
+
+/*impl Debug for Branch {
+    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
+        match self {
+            Branch::SingleStep(s) => write!(f, format!("step {}/{}", s.terminal, s.nt)),
+            Branch::Union(u) => write!(f, format!("union {} options", u.len())),
+            Branch::RelPath(r) => write!(f, format!("rel path {} steps", r.len())),
+            Branch::Error(e) => write!(f, "error"),
+        }
+    }
+}*/
 
 // * == Branch::SingleStep(*)
 // *|node() == Branch::Union(vec![Branch::SingleStep(*), Branch::SingleStep(node())])
@@ -587,14 +622,19 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
                 ))
             }
             ("/", Some(Branch::RelPath(mut a))) => {
-                a.insert(
+                /*a.insert(
                     0,
                     Branch::SingleStep(Step::new(
                         Axis::SelfDocument,
                         Axis::SelfDocument,
                         NodeTest::Kind(KindTest::Document),
                     )),
-                );
+                );*/
+                a.push(Branch::SingleStep(Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )));
                 Branch::RelPath(a)
             }
             _ => Branch::Error(Error::new(
