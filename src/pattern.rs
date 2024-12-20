@@ -67,9 +67,9 @@ assert_eq!(p.matches(&Context::new(), &mut static_context, &n), false)
 */
 
 use std::convert::TryFrom;
+use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
-use std::{any, fmt};
 use url::Url;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
@@ -84,6 +84,7 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 use crate::parser::combinators::alt::{alt2, alt4, alt6};
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::{separated_list0, separated_list1};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -92,7 +93,6 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::{ParseError, ParseInput, ParserState};
-//use crate::parser::combinators::debug::inspect;
 
 /// An XPath pattern. A pattern most frequently appears as the value of a match attribute.
 /// A pattern is either a predicate pattern or a selection pattern.
@@ -320,17 +320,6 @@ impl Branch {
         }
     }
 }
-
-/*impl Debug for Branch {
-    fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-        match self {
-            Branch::SingleStep(s) => write!(f, format!("step {}/{}", s.terminal, s.nt)),
-            Branch::Union(u) => write!(f, format!("union {} options", u.len())),
-            Branch::RelPath(r) => write!(f, format!("rel path {} steps", r.len())),
-            Branch::Error(e) => write!(f, "error"),
-        }
-    }
-}*/
 
 // * == Branch::SingleStep(*)
 // *|node() == Branch::Union(vec![Branch::SingleStep(*), Branch::SingleStep(node())])
@@ -612,7 +601,7 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
             map(tag("/"), |_| "/"),
             opt(relativepath_expr_pattern::<N>()),
         ),
-        |(d, r)| match (d, r) {
+        |(d, r)| match (d, r.clone()) {
             ("/", None) => {
                 // Matches the root node
                 Branch::SingleStep(Step::new(
@@ -621,6 +610,14 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
                     NodeTest::Kind(KindTest::Document),
                 ))
             }
+            ("/", Some(Branch::SingleStep(s))) => Branch::RelPath(vec![
+                Branch::SingleStep(s),
+                Branch::SingleStep(Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )),
+            ]),
             ("/", Some(Branch::RelPath(mut a))) => {
                 /*a.insert(
                     0,
@@ -637,6 +634,14 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
                 )));
                 Branch::RelPath(a)
             }
+            ("/", Some(Branch::Union(u))) => Branch::RelPath(vec![
+                Branch::Union(u),
+                Branch::SingleStep(Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )),
+            ]),
             _ => Branch::Error(Error::new(
                 ErrorKind::Unknown,
                 String::from("unable to parse pattern"),
