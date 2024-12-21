@@ -793,6 +793,25 @@ where
     Ok(())
 }
 
+pub fn generic_kindtest_text_abbrev<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("text()")?;
+    assert_eq!(s.len(), 0);
+    Ok(())
+}
+pub fn generic_kindtest_text_full<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let s: Sequence<N> = no_src_no_result("child::text()")?;
+    assert_eq!(s.len(), 0);
+    Ok(())
+}
+
 pub fn generic_fncall_string<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,
@@ -1429,6 +1448,34 @@ where
     assert_eq!(s.to_string(), "not one");
     Ok(())
 }
+pub fn generic_issue_95<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let result: Sequence<N> = dispatch_rig("@*|node()", make_empty_doc, make_doc)?;
+    if result.len() == 1 {
+        match &result[0] {
+            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+                (NodeType::Element, "a") => Ok(()),
+                (NodeType::Element, _) => Err(Error::new(
+                    ErrorKind::Unknown,
+                    format!(
+                        "got element named \"{}\", expected \"a\"",
+                        result[0].name().to_string()
+                    ),
+                )),
+                _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
+            },
+            _ => Err(Error::new(ErrorKind::Unknown, "not a node")),
+        }
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!("got {} results, expected 0", result.len()),
+        ))
+    }
+}
 
 pub fn generic_navigate_predicate_1<N: Node, G, H>(
     make_empty_doc: G,
@@ -1632,7 +1679,12 @@ where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    unimplemented_rig("'a' | 'b'", make_empty_doc, make_doc)
+    dispatch_rig("'a' | 'b'", make_empty_doc, make_doc).map_or(Ok(()), |v| {
+        Err(Error::new(
+            ErrorKind::TypeError,
+            format!("expected type error, got \"{}\"", v.to_string()),
+        ))
+    })
 }
 pub fn generic_intersectexcept<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
 where

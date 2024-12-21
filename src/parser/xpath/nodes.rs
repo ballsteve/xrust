@@ -2,6 +2,7 @@
 
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
+use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -10,12 +11,11 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::combinators::whitespace::xpwhitespace;
-use crate::parser::{ParseError, ParseInput};
-//use crate::parser::combinators::debug::inspect;
 use crate::parser::xpath::expressions::postfix_expr;
-use crate::parser::xpath::nodetests::nodetest;
+use crate::parser::xpath::nodetests::{kindtest, nodetest};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::types::instanceof_expr;
+use crate::parser::{ParseError, ParseInput};
 use crate::transform::{Axis, KindTest, NameTest, NodeMatch, NodeTest, Transform, WildcardOrName};
 
 // UnionExpr ::= IntersectExceptExpr ( ('union' | '|') IntersectExceptExpr)*
@@ -33,7 +33,7 @@ pub(crate) fn union_expr<'a, N: Node + 'a>(
             if v.len() == 1 {
                 v.pop().unwrap()
             } else {
-                Transform::NotImplemented("union_expr".to_string())
+                Transform::Union(v)
             }
         },
     ))
@@ -150,8 +150,9 @@ fn relativepath_expr<'a, N: Node + 'a>(
 // StepExpr ::= PostfixExpr | AxisStep
 fn step_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
-    Box::new(alt3(
+    Box::new(alt4(
         abbreviated_parent::<N>(),
+        inspect("kindtest", abbreviated_kindtest::<N>()),
         postfix_expr::<N>(),
         axisstep::<N>(),
     ))
@@ -186,13 +187,15 @@ fn abbreviated_parent<'a, N: Node + 'a>(
         Transform::Step(NodeMatch::new(Axis::Parent, NodeTest::Kind(KindTest::Any)))
     }))
 }
-/*fn abbreviated_parent<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, (&'static str, NodeTest)), ParseError> + 'a> {
-    Box::new(map(
-        tag(".."),
-    |_| ("parent", NodeTest::Kind(KindTest::Any))
-    ))
-}*/
+fn abbreviated_kindtest<'a, N: Node + 'a>(
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+    Box::new(map(pair(abbreviated_axisstep(), kindtest()), |(a, n)| {
+        Transform::Step(NodeMatch {
+            axis: Axis::from(a),
+            nodetest: n,
+        })
+    }))
+}
 
 fn abbreviated_axisstep<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, &'static str), ParseError> + 'a> {

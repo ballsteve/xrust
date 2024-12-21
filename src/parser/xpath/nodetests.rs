@@ -49,7 +49,7 @@ pub(crate) fn nodetest<'a, N: Node + 'a>(
 }
 
 // KindTest ::= DocumentTest | ElementTest | AttributeTest | SchemaElementTest | SchemaAttributeTest | PITest | CommentTest | TextTest | NamespaceNodeTest | AnyKindTest
-fn kindtest<'a, N: Node + 'a>(
+pub(crate) fn kindtest<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, NodeTest), ParseError> + 'a> {
     // Need alt10
     Box::new(alt2(
