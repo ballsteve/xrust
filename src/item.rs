@@ -294,16 +294,18 @@ impl<N: Node> Item<N> {
         }
     }
 
+    /// Is this item a node?
+    pub fn is_node(&self) -> bool {
+        match self {
+            Item::Node(_) => true,
+            _ => false,
+        }
+    }
+
     /// Is this item an element-type node?
     pub fn is_element_node(&self) -> bool {
         match self {
             Item::Node(n) => matches!(n.node_type(), NodeType::Element),
-            /*
-                match n.node_type() {
-                NodeType::Element => true,
-                _ => false,
-            },
-                 */
             _ => false,
         }
     }

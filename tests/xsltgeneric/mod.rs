@@ -612,6 +612,42 @@ where
     }
 }
 
+pub fn generic_issue_95<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<Test><Level1>one</Level1><Level1>two</Level1></Test>",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+          <xsl:template match="@*|node()">
+            <xsl:copy>
+              <xsl:apply-templates select="@*|node()"/>
+            </xsl:copy>
+          </xsl:template>
+        </xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+    if result.to_xml() == "<Test><Level1>one</Level1><Level1>two</Level1></Test>" {
+        Ok(())
+    } else {
+        Err(Error::new(
+            ErrorKind::Unknown,
+            format!(
+                "got result \"{}\", expected \"Found the document\"",
+                result.to_xml()
+            ),
+        ))
+    }
+}
+
 pub fn generic_message_1<N: Node, G, H, J>(
     parse_from_str: G,
     parse_from_str_with_ns: J,

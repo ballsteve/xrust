@@ -84,6 +84,7 @@ use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
 use crate::parser::combinators::alt::{alt2, alt4, alt6};
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::{separated_list0, separated_list1};
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -92,7 +93,6 @@ use crate::parser::combinators::pair::pair;
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::tuple::{tuple2, tuple3};
 use crate::parser::{ParseError, ParseInput, ParserState};
-//use crate::parser::combinators::debug::inspect;
 
 /// An XPath pattern. A pattern most frequently appears as the value of a match attribute.
 /// A pattern is either a predicate pattern or a selection pattern.
@@ -110,10 +110,16 @@ pub enum Pattern<N: Node> {
 impl<N: Node> Pattern<N> {
     /// Returns whether the Pattern is of type error.
     pub fn is_err(&self) -> bool {
-        matches!(self, Pattern::Error(_))
+        if let Pattern::Selection(s) = self {
+            s.is_err()
+        } else {
+            matches!(self, Pattern::Error(_))
+        }
     }
     pub fn get_err(&self) -> Option<Error> {
-        if let Pattern::Error(e) = self {
+        if let Pattern::Selection(s) = self {
+            s.get_err()
+        } else if let Pattern::Error(e) = self {
             Some(e.clone())
         } else {
             None
@@ -138,36 +144,77 @@ impl<N: Node> Pattern<N> {
                 .dispatch(stctxt, t)
                 .unwrap_or(vec![Item::Value(Rc::new(Value::from(false)))])
                 .to_bool(),
-            Pattern::Selection(p) => {
-                // First step is the terminal case,
-                // next steps are non-terminal
-                let mut pit = p.iter();
-                pit.next().map_or(false, |q| {
-                    if is_match(&q.terminal, &q.nt, i) {
-                        let mut seq: Sequence<N> = find_seq(&q.non_terminal, i);
-                        loop {
-                            if let Some(s) = pit.next() {
-                                let new_seq = seq
-                                    .iter()
-                                    .filter(|f| is_match(&s.terminal, &s.nt, f))
-                                    .fold(vec![], |mut acc, m| {
-                                        let mut new_seq = find_seq(&s.non_terminal, m);
-                                        acc.append(&mut new_seq);
-                                        acc
-                                    });
-                                seq = new_seq;
-                            } else {
-                                break;
-                            }
-                        }
-                        !seq.is_empty()
-                    } else {
-                        false
-                    }
-                })
-            }
+            Pattern::Selection(p) => path_match(p, i),
             _ => false, // not yet implemented
         }
+    }
+    /// Find the NodeTest for the terminal step
+    pub fn terminal_node_test(&self) -> (Axis, Axis, NodeTest) {
+        if let Pattern::Selection(sel) = self {
+            branch_terminal_node_test(sel)
+        } else {
+            (
+                Axis::SelfDocument,
+                Axis::SelfDocument,
+                NodeTest::Kind(KindTest::Document),
+            )
+        }
+    }
+}
+
+fn branch_terminal_node_test(b: &Branch) -> (Axis, Axis, NodeTest) {
+    match b {
+        Branch::SingleStep(t) => (t.terminal, t.non_terminal, t.nt.clone()),
+        Branch::RelPath(r) => branch_terminal_node_test(&r[0]),
+        Branch::Union(u) => branch_terminal_node_test(&u[0]), // TODO: should be all of the alternatives
+        Branch::Error(_) => (
+            Axis::SelfDocument,
+            Axis::SelfDocument,
+            NodeTest::Kind(KindTest::Document),
+        ),
+    }
+}
+
+// Entry point for matching a Pattern.
+// The given Item is the initial context.
+fn path_match<N: Node>(p: &Path, i: &Item<N>) -> bool {
+    !branch_match(p, vec![i.clone()]).is_empty()
+}
+// Match a branch in the Pattern. Each Item in the Sequence is tested.
+// This results in a new context.
+fn branch_match<N: Node>(p: &Path, s: Sequence<N>) -> Sequence<N> {
+    // First step is the terminal case,
+    // next steps are non-terminal
+    match p {
+        Branch::SingleStep(t) => s
+            .iter()
+            .filter(|i| is_match(&t.terminal, &t.nt, i))
+            .flat_map(|i| find_seq(&t.non_terminal, i))
+            .collect(),
+        Branch::RelPath(r) => {
+            // A series of steps
+            // Each step selects a new context for the next step
+            r.iter().fold(s, |ctxt, b| {
+                let new_ctxt = ctxt
+                    .iter()
+                    .cloned()
+                    .flat_map(|i| branch_match(b, vec![i]))
+                    .collect();
+                new_ctxt
+            })
+        }
+        Branch::Union(u) => {
+            // If any match, then the whole matches
+            u.iter()
+                .flat_map(|b| {
+                    s.iter()
+                        .cloned()
+                        .flat_map(|i| branch_match(b, vec![i]))
+                        .collect::<Sequence<N>>()
+                })
+                .collect()
+        }
+        Branch::Error(_) => vec![],
     }
 }
 
@@ -232,11 +279,83 @@ impl<N: Node> Debug for Pattern<N> {
     }
 }
 
-//    Each step in the Path consists of (terminal, non-terminal) axes and a NodeTest
+// A Path is a tree structure, but does not need to be mutable.
+// It also does not need to be fully navigable.
+
+// A Path is a Branch.
+// A Branch::Union is caused by a union ("|") operator -
+// if any of the union branches match then the Path matches.
+// If the vector is empty then there is no match.
+// A Rel(ative)Path is caused by the "/" character.
+// The terminal case is a single Step.
+pub type Path = Branch;
+#[derive(Clone, Debug)]
+pub enum Branch {
+    SingleStep(Step),
+    RelPath(Vec<Branch>),
+    Union(Vec<Branch>),
+    Error(Error),
+}
+
+impl Branch {
+    pub fn terminal_node_test(&self) -> (Axis, Axis, NodeTest) {
+        branch_terminal_node_test(self)
+    }
+    /// Check whether the Branch is an error or contains an error
+    pub fn is_err(&self) -> bool {
+        match self {
+            Branch::Error(_) => true,
+            Branch::SingleStep(_) => false,
+            Branch::RelPath(r) => r.iter().any(|f| f.is_err()),
+            Branch::Union(u) => u.iter().any(|f| f.is_err()),
+        }
+    }
+    /// Get any error in the Branch
+    pub fn get_err(&self) -> Option<Error> {
+        match self {
+            Branch::Error(e) => Some(e.clone()),
+            Branch::SingleStep(_) => None,
+            Branch::RelPath(r) => r.iter().fold(None, |v, f| v.or_else(|| f.get_err())),
+            Branch::Union(u) => u.iter().fold(None, |v, f| v.or_else(|| f.get_err())),
+        }
+    }
+}
+
+// * == Branch::SingleStep(*)
+// *|node() == Branch::Union(vec![Branch::SingleStep(*), Branch::SingleStep(node())])
+// a/b == Branch::RelPath(vec![Branch::SingleStep(a), Branch::SingleStep(b)])
+// a/b|c/d == Branch::Union(vec![
+//   Branch::RelPath(vec![Branch::SingleStep(a),Branch::SingleStep(b)]),
+//   Branch::RelPath(vec![Branch::SingleStep(c),Branch::SingleStep(d)]),
+// ])
+// a/(b|c)/d (matches a/b/d or a/c/d) == Branch::RelPath(vec![
+//   Branch::SingleStep(a),
+//   Branch::Union(vec![Branch::SingleStep(b),Branch::SingleStep(c)]),
+//   Branch::SingleStep(d)
+// ]
+// a/ (b/c | (d/e|f/g)) / (h|i) |j == Branch::Union(vec![
+//   Branch::RelPath(vec![
+//     Branch::SingleStep(a),
+//     Branch::RelPath(vec![
+//       Branch::Union(vec![
+//         Branch::RelPath(vec![Branch::SingleStep(b), Branch::SingleStep(c)]),
+//         Branch::Union(vec![
+//           Branch::RelPath(vec![Branch::SingleStep(d), Branch::SingleStep(e)]),
+//           Branch::RelPath(vec![Branch::SingleStep(f), Branch::SingleStep(g)]),
+//         ]),
+//       ]),
+//       Branch::Union(vec![
+//         Branch::SingleStep(h),
+//         Branch::SingleStep(i),
+//       ])
+//     ]),
+//   ]),
+//   Branch::SingleStep(j),
+// ]
+
+// A step in the Path consists of (terminal, non-terminal) axes and a NodeTest
 // If this is the last step, then the terminal axis is used.
 // Otherwise the non-terminal axis applies.
-pub type Path = Vec<Step>;
-
 #[derive(Clone, Debug)]
 pub struct Step {
     terminal: Axis,
@@ -358,12 +477,13 @@ fn union_expr_pattern<'a, N: Node + 'a>(
             ),
             intersect_except_expr_pattern::<N>(),
         ),
-        |mut v| {
-            if v.len() == 1 {
-                v.pop().unwrap()
-            } else {
-                Pattern::Selection(Path::new())
-            }
+        |v| {
+            Pattern::Selection(Branch::Union(v))
+            //            if v.len() == 1 {
+            //                v.pop().unwrap()
+            //            } else {
+            //                Pattern::Selection(vec![v])
+            //            }
         },
     ))
 }
@@ -389,7 +509,7 @@ fn noop<N: Node>() -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Patter
 // IntersectExceptExprP ::= PathExprP (("intersect" | "except") PathExprP)*
 // intersect and except not yet supported
 fn intersect_except_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         separated_list1(
             map(
@@ -407,7 +527,7 @@ fn intersect_except_expr_pattern<'a, N: Node + 'a>(
                 v.pop().unwrap()
             } else {
                 // intersect/except not implemented
-                Pattern::Error(Error::new(
+                Branch::Error(Error::new(
                     ErrorKind::NotImplemented,
                     String::from("intersect or except in a pattern has not been implemented"),
                 ))
@@ -418,7 +538,7 @@ fn intersect_except_expr_pattern<'a, N: Node + 'a>(
 
 // PathExprP ::= RootedPath | ("/" RelativePathExprP) | ("//" RelativePathExprP) | RelativePathExprP
 fn path_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(alt4(
         rooted_path_pattern::<N>(),
         absolutedescendant_expr_pattern(),
@@ -429,7 +549,7 @@ fn path_expr_pattern<'a, N: Node + 'a>(
 
 // RootedPath ::= (VarRef | FunctionCallP) PredicateList (("/" | "//") RelativePathExprP)?
 fn rooted_path_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             alt2(variable_reference_pattern::<N>(), function_call_pattern()),
@@ -440,7 +560,7 @@ fn rooted_path_pattern<'a, N: Node + 'a>(
             ),
         ),
         |(_a, _b, _c)| {
-            Pattern::Error(Error::new(
+            Branch::Error(Error::new(
                 ErrorKind::NotImplemented,
                 String::from("rooted path in a pattern has not been implemented"),
             ))
@@ -450,17 +570,22 @@ fn rooted_path_pattern<'a, N: Node + 'a>(
 
 // Variable Reference
 fn variable_reference_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
-    Box::new(map(variable_reference::<N>(), |r| Pattern::Predicate(r)))
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+    Box::new(map(variable_reference::<N>(), |_| {
+        Branch::Error(Error::new(
+            ErrorKind::NotImplemented,
+            "variable reference not yet supported",
+        ))
+    }))
 }
 
 // ('//' RelativePathExpr?)
 fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         pair(tag("//"), relativepath_expr_pattern::<N>()),
         |(_, _r)| {
-            Pattern::Error(Error::new(
+            Branch::Error(Error::new(
                 ErrorKind::NotImplemented,
                 String::from("absolute descendant path in a pattern has not been implemented"),
             ))
@@ -470,34 +595,54 @@ fn absolutedescendant_expr_pattern<'a, N: Node + 'a>(
 
 // ('/' RelativePathExpr?)
 fn absolutepath_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         pair(
             map(tag("/"), |_| "/"),
             opt(relativepath_expr_pattern::<N>()),
         ),
-        |(d, r)| match (d, r) {
+        |(d, r)| match (d, r.clone()) {
             ("/", None) => {
                 // Matches the root node
-                Pattern::Selection(vec![Step::new(
+                Branch::SingleStep(Step::new(
                     Axis::SelfDocument,
                     Axis::SelfDocument,
                     NodeTest::Kind(KindTest::Document),
-                )])
+                ))
             }
-            ("/", Some(a)) => {
-                if let Pattern::Selection(mut b) = a {
-                    b.push(Step::new(
+            ("/", Some(Branch::SingleStep(s))) => Branch::RelPath(vec![
+                Branch::SingleStep(s),
+                Branch::SingleStep(Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )),
+            ]),
+            ("/", Some(Branch::RelPath(mut a))) => {
+                /*a.insert(
+                    0,
+                    Branch::SingleStep(Step::new(
                         Axis::SelfDocument,
                         Axis::SelfDocument,
                         NodeTest::Kind(KindTest::Document),
-                    ));
-                    Pattern::Selection(b)
-                } else {
-                    panic!("pattern must be a selection")
-                }
+                    )),
+                );*/
+                a.push(Branch::SingleStep(Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )));
+                Branch::RelPath(a)
             }
-            _ => Pattern::Error(Error::new(
+            ("/", Some(Branch::Union(u))) => Branch::RelPath(vec![
+                Branch::Union(u),
+                Branch::SingleStep(Step::new(
+                    Axis::SelfDocument,
+                    Axis::SelfDocument,
+                    NodeTest::Kind(KindTest::Document),
+                )),
+            ]),
+            _ => Branch::Error(Error::new(
                 ErrorKind::Unknown,
                 String::from("unable to parse pattern"),
             )),
@@ -507,7 +652,7 @@ fn absolutepath_expr_pattern<'a, N: Node + 'a>(
 
 // RelativePathExpr ::= StepExpr (('/' | '//') StepExpr)*
 fn relativepath_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         pair(
             step_expr_pattern::<N>(),
@@ -523,19 +668,13 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
             if b.is_empty() {
                 // this is the terminal step
                 a
-            } else if let Pattern::Selection(mut ap) = a {
-                // TODO: handle "//" separator
-                for (_c, d) in b {
-                    match d {
-                        Pattern::Selection(p) => {
-                            p.into_iter().for_each(|s| ap.insert(0, s));
-                        }
-                        _ => panic!("relative path can only contain steps"),
-                    }
-                }
-                Pattern::Selection(ap)
             } else {
-                panic!("pattern must be a selection")
+                // TODO: handle "//" separator
+                let mut result = vec![a];
+                for (_c, d) in b {
+                    result.insert(0, d);
+                }
+                Branch::RelPath(result)
             }
         },
     ))
@@ -543,14 +682,14 @@ fn relativepath_expr_pattern<'a, N: Node + 'a>(
 
 // StepExprP ::= PostfixExprExpr | AxisStepP
 fn step_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(alt2(postfix_expr_pattern::<N>(), axis_step_pattern::<N>()))
 }
 
 // PostfixExprP ::= ParenthesizedExprP PredicateList
 // TODO: predicates
 fn postfix_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         tuple2(paren_expr_pattern(), predicate_list::<N>()),
         |(p, _)| p,
@@ -559,21 +698,30 @@ fn postfix_expr_pattern<'a, N: Node + 'a>(
 
 // ParenthesizedExprP ::= "(" UnionExprP ")"
 fn paren_expr_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             tuple3(xpwhitespace(), tag("("), xpwhitespace()),
             union_expr_wrapper(true),
             tuple3(xpwhitespace(), tag(")"), xpwhitespace()),
         ),
-        |(_, u, _)| u,
+        |(_, u, _)| {
+            if let Pattern::Selection(sel) = u {
+                sel
+            } else {
+                Branch::Error(Error::new(
+                    ErrorKind::TypeError,
+                    "expression must be a selection",
+                ))
+            }
+        },
     ))
 }
 
 // AxisStepP ::= ForwardStepP PredicateList
 // TODO: predicate
 fn axis_step_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         tuple2(forward_step_pattern(), predicate_list::<N>()),
         |(f, _p)| f, // TODO: pass predicate back to caller
@@ -583,13 +731,13 @@ fn axis_step_pattern<'a, N: Node + 'a>(
 // ForwardStepP ::= (ForwardAxisP NodeTest) | AbbrevForwardStep
 // Returns the node test, the terminal axis and the non-terminal axis
 fn forward_step_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         alt2(
             tuple2(forward_axis_pattern(), nodetest()),
             abbrev_forward_step(),
         ),
-        |((a, c), nt)| Pattern::Selection(vec![Step::new(a, c, nt)]),
+        |((a, c), nt)| Branch::SingleStep(Step::new(a, c, nt)),
     ))
 }
 
@@ -635,12 +783,12 @@ fn forward_axis_pattern<'a, N: Node + 'a>(
 
 // FunctionCallP ::= OuterFunctionName ArgumentListP
 fn function_call_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         tuple2(outer_function_name(), argument_list_pattern::<N>()),
         |(_n, _a)| {
             // TODO
-            Pattern::Error(Error::new(
+            Branch::Error(Error::new(
                 ErrorKind::NotImplemented,
                 String::from("function call in a pattern has not been implemented"),
             ))
@@ -650,7 +798,7 @@ fn function_call_pattern<'a, N: Node + 'a>(
 
 // ArgumentListP ::= "(" (ArgumentP ("," ArgumentP)*)? ")"
 fn argument_list_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(map(
         tuple3(
             map(tuple3(xpwhitespace(), tag("("), xpwhitespace()), |_| ()),
@@ -662,7 +810,7 @@ fn argument_list_pattern<'a, N: Node + 'a>(
         ),
         |(_, _a, _)| {
             // TODO
-            Pattern::Error(Error::new(
+            Branch::Error(Error::new(
                 ErrorKind::NotImplemented,
                 String::from("argument list in a pattern has not been implemented"),
             ))
@@ -672,7 +820,7 @@ fn argument_list_pattern<'a, N: Node + 'a>(
 
 // ArgumentP ::= VarRef | Literal
 fn argument_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
     Box::new(alt2(
         variable_reference_pattern::<N>(),
         literal_pattern::<N>(),
@@ -681,8 +829,10 @@ fn argument_pattern<'a, N: Node + 'a>(
 
 // literal
 fn literal_pattern<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Pattern<N>), ParseError> + 'a> {
-    Box::new(map(literal::<N>(), |l| Pattern::Predicate(l)))
+) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Path), ParseError> + 'a> {
+    Box::new(map(literal::<N>(), |_| {
+        Branch::Error(Error::new(ErrorKind::NotImplemented, "not yet implemented"))
+    }))
 }
 
 // OuterFunctionName ::= "doc" | "id" | "element-with-id" | "key" | "root" | URIQualifiedName
