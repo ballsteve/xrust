@@ -8,6 +8,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
 #[ignore]
@@ -28,7 +29,13 @@ fn hstbh005() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
@@ -50,5 +57,11 @@ fn hstbh006() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }

@@ -8,9 +8,9 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
-#[ignore]
 fn rmtns10017() {
     /*
         Test ID:rmt-ns10-017
@@ -28,11 +28,16 @@ fn rmtns10017() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10018() {
     /*
         Test ID:rmt-ns10-018
@@ -50,11 +55,16 @@ fn rmtns10018() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10019() {
     /*
         Test ID:rmt-ns10-019
@@ -72,11 +82,16 @@ fn rmtns10019() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10020() {
     /*
         Test ID:rmt-ns10-020
@@ -94,11 +109,16 @@ fn rmtns10020() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10021() {
     /*
         Test ID:rmt-ns10-021
@@ -116,11 +136,16 @@ fn rmtns10021() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10022() {
     /*
         Test ID:rmt-ns10-022
@@ -138,11 +163,16 @@ fn rmtns10022() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10024() {
     /*
         Test ID:rmt-ns10-024
@@ -160,11 +190,16 @@ fn rmtns10024() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10027() {
     /*
         Test ID:rmt-ns10-027
@@ -182,11 +217,16 @@ fn rmtns10027() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10028() {
     /*
         Test ID:rmt-ns10-028
@@ -204,11 +244,16 @@ fn rmtns10028() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10034() {
     /*
         Test ID:rmt-ns10-034
@@ -226,11 +271,16 @@ fn rmtns10034() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10037() {
     /*
         Test ID:rmt-ns10-037
@@ -248,11 +298,16 @@ fn rmtns10037() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10038() {
     /*
         Test ID:rmt-ns10-038
@@ -270,11 +325,16 @@ fn rmtns10038() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10039() {
     /*
         Test ID:rmt-ns10-039
@@ -292,11 +352,16 @@ fn rmtns10039() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10040() {
     /*
         Test ID:rmt-ns10-040
@@ -314,11 +379,16 @@ fn rmtns10040() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn rmtns10041() {
     /*
         Test ID:rmt-ns10-041
@@ -336,7 +406,13 @@ fn rmtns10041() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
@@ -358,7 +434,13 @@ fn rmtns10045() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
@@ -380,5 +462,11 @@ fn rmtns10046() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }

@@ -92,13 +92,24 @@ impl XMLDeclBuilder {
     }
 }
 
-/// DTD declarations.
-/// Only general entities are supported, so far.
-/// TODO: element, attribute declarations
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) enum Contentspec {
+    ///The XML DTD "ANY" declaration doesn't mean arbitrary content, rather it means anything that
+    ///has already been delcared. We treat it as a special case until the final pattern construction
+    /// and assemble only when we know what other elements are present in the DTD.
+    ANY,
+    DTDPattern(DTDPattern)
+}
 
-#[derive(Clone, PartialEq)]
+/// DTD declarations.
+/// Data is not stored in any fashion conformant with any standard and will be adusted to meet
+/// the needs of any validators implemented.
+///
+#[derive(Clone, PartialEq, Debug)]
 pub struct DTD {
-    pub(crate) elements: HashMap<String, DTDDecl>,
+    /// This struct is for internal consumption mainly, it holding the DTD in various incomplete forms
+    /// before construction into useful patterns for validation
+    pub(crate) elements: HashMap<QualifiedName, Contentspec>,
     pub(crate) attlists:
         HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>, // Boolean for is_editable;
     pub(crate) notations: HashMap<String, DTDDecl>,
@@ -106,7 +117,8 @@ pub struct DTD {
     pub(crate) paramentities: HashMap<String, (String, bool)>,   // Boolean for is_editable;
     publicid: Option<String>,
     systemid: Option<String>,
-    name: Option<String>,
+    pub(crate) name: Option<QualifiedName>,
+    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>
 }
 
 impl DTD {
@@ -127,6 +139,7 @@ impl DTD {
             publicid: None,
             systemid: None,
             name: None,
+            patterns: HashMap::new()
         }
     }
 }
@@ -139,7 +152,6 @@ impl Default for DTD {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DTDDecl {
-    Element(QualifiedName, String),
     Notation(QualifiedName, String),
     GeneralEntity(QualifiedName, String),
     ParamEntity(QualifiedName, String),
@@ -168,3 +180,26 @@ pub(crate) enum DefaultDecl {
     FIXED(String),
     Default(String),
 }
+
+#[derive(Clone, PartialEq, Debug)]
+pub(crate) enum DTDPattern {
+    Choice(Box<DTDPattern>, Box<DTDPattern>),
+    Interleave(Box<DTDPattern>, Box<DTDPattern>),
+    Group(Box<DTDPattern>, Box<DTDPattern>),
+    OneOrMore(Box<DTDPattern>),
+    After(Box<DTDPattern>, Box<DTDPattern>),
+    Empty,
+    NotAllowed,
+    Text,
+    Value(String),
+    Attribute(QualifiedName, Box<DTDPattern>),
+    Element(QualifiedName, Box<DTDPattern>),
+    Ref(QualifiedName),
+    /*
+        This Enum is never used, but it might see application when properly validating ENTITYs.
+     */
+    #[allow(dead_code)]
+    List(Box<DTDPattern>),
+}
+
+

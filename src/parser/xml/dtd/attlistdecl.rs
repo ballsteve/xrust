@@ -198,44 +198,37 @@ pub(crate) fn attlistdecl<N: Node>(
                 )));
             }
 
-            match state2.dtd.attlists.get(&n) {
-                None => {
-                    state2.dtd.attlists.insert(n, atts);
-                    Ok(((input2, state2), ()))
-                }
-                Some(al) => {
-                    let mut newal = al.clone();
-                    for (attname, (atttype, defaultdecl, is_editable)) in atts.iter() {
-                        match newal.get(attname) {
-                            None => {
-                                newal.insert(
-                                    attname.clone(),
-                                    (atttype.clone(), defaultdecl.clone(), *is_editable),
-                                );
-                            }
-                            Some((_, _, existing_is_editable)) => {
-                                if *existing_is_editable {
+            if !atts.is_empty() {
+                match state2.dtd.attlists.get(&n) {
+                    None => {
+                        state2.dtd.attlists.insert(n, atts);
+                    }
+                    Some(al) => {
+                        let mut newal = al.clone();
+                        for (attname, (atttype, defaultdecl, is_editable)) in atts.iter() {
+                            match newal.get(attname) {
+                                None => {
                                     newal.insert(
                                         attname.clone(),
                                         (atttype.clone(), defaultdecl.clone(), *is_editable),
                                     );
                                 }
+                                Some((_, _, existing_is_editable)) => {
+                                    if *existing_is_editable {
+                                        newal.insert(
+                                            attname.clone(),
+                                            (atttype.clone(), defaultdecl.clone(), *is_editable),
+                                        );
+                                    }
+                                }
                             }
                         }
+                        state2.dtd.attlists.insert(n, newal);
                     }
-                    state2.dtd.attlists.insert(n, newal);
-                    Ok(((input2, state2), ()))
                 }
             }
 
-            /*
-                   state2
-                       .dtd
-                       .attlists
-                       .insert(n, atts);
-                   Ok(((input2, state2), ()))
-
-            */
+            Ok(((input2, state2), ()))
         }
         Err(err) => Err(err),
     }
