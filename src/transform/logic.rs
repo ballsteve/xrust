@@ -133,7 +133,8 @@ pub(crate) fn value_comparison<
 }
 
 /// Each function in the supplied vector is evaluated, and the resulting sequences are combined into a single sequence.
-/// TODO: eliminate duplicates
+/// All items must be nodes.
+/// TODO: eliminate duplicates, sort by document order (XPath 3.1 3.4.2).
 pub(crate) fn union<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
@@ -147,7 +148,14 @@ pub(crate) fn union<
     let mut result = vec![];
     for b in branches {
         let mut c = ctxt.dispatch(stctxt, b)?;
+        if c.iter().any(|f| !f.is_node()) {
+            return Err(Error::new(
+                ErrorKind::TypeError,
+                "all operands must be nodes",
+            ));
+        }
         result.append(&mut c)
     }
+    // TODO: eliminate duplicates and sort into document order
     Ok(result)
 }
