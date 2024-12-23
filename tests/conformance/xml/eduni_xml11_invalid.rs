@@ -8,7 +8,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
-
+use xrust::validators::Schema;
 /*
 #[test]
 fn rmt015() {
@@ -111,7 +111,12 @@ fn rmt030() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -133,7 +138,12 @@ fn rmt032() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -197,7 +207,12 @@ fn rmt046() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]

@@ -12,11 +12,12 @@ use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::XMLDecl;
+use crate::xmldecl::{DTD, XMLDecl};
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
+use crate::validators::{Schema, ValidationError};
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -600,4 +601,13 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// It is not guaranteed that the namespace nodes returned
     /// will specify the current element node as their parent.
     fn namespace_iter(&self) -> Self::NodeIterator;
+
+    /// Retrieve the internal representation of the DTD, for use in validation functions.
+    fn get_dtd(&self) -> Option<DTD>;
+
+    /// Store an internal representation of the DTD. Does not keep a copy of the original text
+    fn set_dtd(&self, dtd: DTD) -> Result<(), Error>;
+
+    fn validate(&self, schema: Schema) -> Result<(), ValidationError>;
+
 }

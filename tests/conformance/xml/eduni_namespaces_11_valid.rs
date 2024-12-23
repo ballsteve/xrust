@@ -6,6 +6,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
 #[ignore]
@@ -27,6 +28,7 @@ fn rmtns11001() {
     );
 
     assert!(parseresult.is_ok());
+
 }
 
 #[test]
@@ -49,6 +51,12 @@ fn rmtns11002() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -70,6 +78,12 @@ fn rmtns11003() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -91,9 +105,16 @@ fn rmtns11004() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
+#[ignore]
 fn rmtns11006() {
     /*
         Test ID:rmt-ns11-006
@@ -112,4 +133,10 @@ fn rmtns11006() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }

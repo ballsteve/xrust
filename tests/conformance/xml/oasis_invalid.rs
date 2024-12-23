@@ -9,9 +9,9 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
-#[ignore]
 fn op01pass1() {
     /*
         Test ID:o-p01pass1
@@ -33,11 +33,14 @@ fn op01pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op01pass3() {
     /*
         Test ID:o-p01pass3
@@ -59,11 +62,14 @@ fn op01pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op03pass1() {
     /*
         Test ID:o-p03pass1
@@ -85,7 +91,11 @@ fn op03pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -95,6 +105,9 @@ fn op04pass1() {
         Test URI:p04pass1.xml
         Spec Sections:2.3 [4]
         Description:names with all valid ASCII characters, and one from each other class in NameChar
+
+        Note: While this may be well formed in a not namespace-aware XML processor, we don't have any
+        interest in supporting those at this time.
     */
 
     let mut pc = ParserConfig::new();
@@ -120,6 +133,9 @@ fn op05pass1() {
         Test URI:p05pass1.xml
         Spec Sections:2.3 [5]
         Description:various valid Name constructions
+
+        Note: While this may be well formed in a not namespace-aware XML processor, we don't have any
+        interest in supporting those at this time.
     */
 
     let mut pc = ParserConfig::new();
@@ -149,6 +165,7 @@ fn op06fail1() {
     */
 
     let mut pc = ParserConfig::new();
+    pc.id_tracking = true;
     pc.ext_dtd_resolver = Some(dtdfileresolve());
     pc.docloc = Some("tests/conformance/xml/xmlconf/oasis/".to_string());
 
@@ -217,7 +234,6 @@ fn op08fail2() {
 }
 
 #[test]
-#[ignore]
 fn op10pass1() {
     /*
         Test ID:o-p10pass1
@@ -239,11 +255,14 @@ fn op10pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op14pass1() {
     /*
         Test ID:o-p14pass1
@@ -265,11 +284,14 @@ fn op14pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op15pass1() {
     /*
         Test ID:o-p15pass1
@@ -291,11 +313,14 @@ fn op15pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op16pass1() {
     /*
         Test ID:o-p16pass1
@@ -317,11 +342,14 @@ fn op16pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op16pass2() {
     /*
         Test ID:o-p16pass2
@@ -343,11 +371,14 @@ fn op16pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
-#[ignore]
 fn op16pass3() {
     /*
         Test ID:o-p16pass3
@@ -369,11 +400,16 @@ fn op16pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
+
 #[test]
-#[ignore]
 fn op18pass1() {
     /*
         Test ID:o-p18pass1
@@ -395,11 +431,15 @@ fn op18pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op22pass1() {
     /*
         Test ID:o-p22pass1
@@ -421,11 +461,15 @@ fn op22pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op22pass2() {
     /*
         Test ID:o-p22pass2
@@ -447,11 +491,15 @@ fn op22pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op22pass3() {
     /*
         Test ID:o-p22pass3
@@ -473,11 +521,15 @@ fn op22pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op23pass1() {
     /*
         Test ID:o-p23pass1
@@ -499,11 +551,15 @@ fn op23pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op23pass2() {
     /*
         Test ID:o-p23pass2
@@ -525,11 +581,15 @@ fn op23pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op23pass3() {
     /*
         Test ID:o-p23pass3
@@ -551,11 +611,15 @@ fn op23pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op23pass4() {
     /*
         Test ID:o-p23pass4
@@ -577,11 +641,15 @@ fn op23pass4() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op24pass1() {
     /*
         Test ID:o-p24pass1
@@ -603,11 +671,15 @@ fn op24pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op24pass2() {
     /*
         Test ID:o-p24pass2
@@ -629,11 +701,15 @@ fn op24pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op24pass3() {
     /*
         Test ID:o-p24pass3
@@ -655,11 +731,15 @@ fn op24pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op24pass4() {
     /*
         Test ID:o-p24pass4
@@ -681,11 +761,15 @@ fn op24pass4() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op25pass1() {
     /*
         Test ID:o-p25pass1
@@ -707,11 +791,15 @@ fn op25pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op25pass2() {
     /*
         Test ID:o-p25pass2
@@ -733,11 +821,15 @@ fn op25pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op26pass1() {
     /*
         Test ID:o-p26pass1
@@ -759,11 +851,15 @@ fn op26pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op27pass1() {
     /*
         Test ID:o-p27pass1
@@ -785,11 +881,15 @@ fn op27pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op27pass2() {
     /*
         Test ID:o-p27pass2
@@ -811,11 +911,15 @@ fn op27pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op27pass3() {
     /*
         Test ID:o-p27pass3
@@ -837,11 +941,15 @@ fn op27pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op27pass4() {
     /*
         Test ID:o-p27pass4
@@ -863,11 +971,15 @@ fn op27pass4() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op32pass1() {
     /*
         Test ID:o-p32pass1
@@ -889,11 +1001,15 @@ fn op32pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op32pass2() {
     /*
         Test ID:o-p32pass2
@@ -915,11 +1031,15 @@ fn op32pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op39pass1() {
     /*
         Test ID:o-p39pass1
@@ -941,11 +1061,15 @@ fn op39pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op39pass2() {
     /*
         Test ID:o-p39pass2
@@ -967,11 +1091,15 @@ fn op39pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op40pass1() {
     /*
         Test ID:o-p40pass1
@@ -993,11 +1121,15 @@ fn op40pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op40pass2() {
     /*
         Test ID:o-p40pass2
@@ -1019,11 +1151,15 @@ fn op40pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op40pass3() {
     /*
         Test ID:o-p40pass3
@@ -1045,11 +1181,15 @@ fn op40pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op40pass4() {
     /*
         Test ID:o-p40pass4
@@ -1071,11 +1211,15 @@ fn op40pass4() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op41pass1() {
     /*
         Test ID:o-p41pass1
@@ -1097,11 +1241,15 @@ fn op41pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op41pass2() {
     /*
         Test ID:o-p41pass2
@@ -1123,11 +1271,15 @@ fn op41pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op42pass1() {
     /*
         Test ID:o-p42pass1
@@ -1149,11 +1301,15 @@ fn op42pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op42pass2() {
     /*
         Test ID:o-p42pass2
@@ -1175,11 +1331,15 @@ fn op42pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op44pass1() {
     /*
         Test ID:o-p44pass1
@@ -1201,11 +1361,15 @@ fn op44pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op44pass2() {
     /*
         Test ID:o-p44pass2
@@ -1227,11 +1391,15 @@ fn op44pass2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op44pass3() {
     /*
         Test ID:o-p44pass3
@@ -1253,11 +1421,15 @@ fn op44pass3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op44pass4() {
     /*
         Test ID:o-p44pass4
@@ -1279,11 +1451,15 @@ fn op44pass4() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op44pass5() {
     /*
         Test ID:o-p44pass5
@@ -1305,11 +1481,15 @@ fn op44pass5() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn op66pass1() {
     /*
         Test ID:o-p66pass1
@@ -1331,10 +1511,16 @@ fn op66pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
+#[ignore]
 fn op74pass1() {
     /*
         Test ID:o-p74pass1
@@ -1356,10 +1542,16 @@ fn op74pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
+#[ignore]
 fn op75pass1() {
     /*
         Test ID:o-p75pass1
@@ -1381,11 +1573,15 @@ fn op75pass1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
-#[ignore]
 fn oe2() {
     /*
         Test ID:o-e2
@@ -1407,5 +1603,10 @@ fn oe2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }

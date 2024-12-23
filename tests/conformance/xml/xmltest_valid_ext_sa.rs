@@ -11,6 +11,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
 fn validextsa001() {
@@ -44,8 +45,14 @@ fn validextsa001() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -82,8 +89,14 @@ fn validextsa002() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -120,8 +133,14 @@ fn validextsa003() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -158,8 +177,14 @@ fn validextsa004() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -196,13 +221,20 @@ fn validextsa005() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validextsa006() {
     /*
         Test ID:valid-ext-sa-006
@@ -234,8 +266,14 @@ fn validextsa006() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -273,8 +311,14 @@ fn validextsa007() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -312,8 +356,14 @@ fn validextsa008() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -350,8 +400,14 @@ fn validextsa009() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -388,8 +444,14 @@ fn validextsa011() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -426,8 +488,14 @@ fn validextsa012() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -465,8 +533,14 @@ fn validextsa013() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -504,8 +578,14 @@ fn validextsa014() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }

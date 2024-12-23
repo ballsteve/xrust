@@ -9,6 +9,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
 #[ignore]
@@ -30,6 +31,12 @@ fn rmte2e9a() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -51,6 +58,12 @@ fn rmte2e15e() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -72,6 +85,12 @@ fn rmte2e15f() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -93,6 +112,12 @@ fn rmte2e15i() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -114,6 +139,12 @@ fn rmte2e15j() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -135,6 +166,12 @@ fn rmte2e15k() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -156,6 +193,12 @@ fn rmte2e15l() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -187,10 +230,17 @@ fn rmte2e18() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
+
 }
 
 #[test]
@@ -222,10 +272,17 @@ fn rmte2e19() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
+
 }
 
 #[test]
@@ -248,6 +305,12 @@ fn rmte2e22() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -269,6 +332,12 @@ fn rmte2e24() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -290,6 +359,12 @@ fn rmte2e29() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -312,6 +387,12 @@ fn rmte2e36() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -333,6 +414,12 @@ fn rmte2e41() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -354,6 +441,12 @@ fn rmte2e48() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -376,6 +469,12 @@ fn rmte2e50() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
 
 #[test]
@@ -401,4 +500,10 @@ fn rmte2e60() {
     );
 
     assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
 }
