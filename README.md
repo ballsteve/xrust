@@ -1,5 +1,9 @@
 # χrust
 
+[![crates.io](https://img.shields.io/crates/v/xrust.svg)](https://crates.io/crates/xrust)
+[![Released API docs](https://docs.rs/xrust/badge.svg)](https://docs.rs/xrust)
+[![ALv2 licensed](https://img.shields.io/badge/license-ALv2-blue.svg)](./LICENSE)
+
 XPath, XQuery, and XSLT for Rust
 
 Pronounced "crust".
