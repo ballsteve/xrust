@@ -1,5 +1,6 @@
 use crate::item::{Node, NodeType};
 use crate::parser::combinators::alt::{alt2, alt4};
+use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::many::many0nsreset;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
@@ -39,13 +40,16 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
         wellformed(
             tuple10(
                 tag("<"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                inspect(
+                    "tagged name",
+                    wellformed(qualname(), |qn| {
+                        qn.prefix_to_string() != Some("xmlns".to_string())
+                    }),
+                ),
                 attributes(), //many0(attribute),
                 whitespace0(),
                 tag(">"),
-                content(),
+                inspect("tagged content", content()),
                 tag("</"),
                 wellformed(qualname(), |qn| {
                     qn.prefix_to_string() != Some("xmlns".to_string())

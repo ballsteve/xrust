@@ -274,3 +274,12 @@ fn xslt_issue_126() {
     )
     .expect("test failed")
 }
+#[test]
+fn xslt_issue_132() {
+    xsltgeneric::issue_132(
+        smite::make_from_str,
+        smite::make_from_str_with_ns,
+        smite::make_empty_doc_cooked,
+    )
+    .expect("test failed")
+}
