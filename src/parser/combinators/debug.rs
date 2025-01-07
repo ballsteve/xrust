@@ -11,7 +11,11 @@ where
     P1: Fn(ParseInput<N>) -> Result<(ParseInput<N>, A), ParseError> + 'a,
 {
     move |(input, state)| {
-        eprintln!("inspect pre: {} - input: \"{}\"", msg, input);
+        eprintln!(
+            "inspect pre: {} - input: \"{}\"",
+            msg,
+            input.chars().take(80).collect::<String>()
+        );
         let result = parser((input, state.clone()));
         let errmsg = format!(
             "error: {:?}",
@@ -25,6 +29,9 @@ where
             result
                 .as_ref()
                 .map_or_else(|_| errmsg, |((r, _), _)| r.to_string())
+                .chars()
+                .take(80)
+                .collect::<String>()
         );
         result
     }
