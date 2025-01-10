@@ -80,10 +80,19 @@ pub(crate) fn chardata_unicode_codepoint<N: Node>(
 
 fn parse_hex<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, u32), ParseError> {
     move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
-        Ok((input1, hex)) => match u32::from_str_radix(&hex, 16) {
-            Ok(r) => Ok((input1, r)),
-            Err(_) => Err(ParseError::NotWellFormed(hex)),
-        },
+        Ok((input1, hex)) => {
+            //eprintln!("parse_hex \"{}\"", &hex);
+            match u32::from_str_radix(&hex, 16) {
+                Ok(r) => {
+                    //eprintln!("Ok");
+                    Ok((input1, r))
+                }
+                Err(_) => {
+                    //eprintln!("Err");
+                    Err(ParseError::NotWellFormed(hex))
+                }
+            }
+        }
         Err(e) => Err(e),
     }
 }
