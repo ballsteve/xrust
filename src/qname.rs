@@ -1,5 +1,6 @@
 //! Support for Qualified Names.
-//! TODO: Intern names for speedy equality checks (compare pointers, rather than characters).
+//! Names are interned, using slotmap, for speedy equality checks (compare keys, rather than characters).
+//! This also applies to local names, prefixes, and XML Namespace URIs.
 
 use crate::item::Node;
 use crate::namespace::NamespaceMap;
@@ -9,29 +10,97 @@ use crate::trees::nullo::Nullo;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use core::hash::{Hash, Hasher};
+use slotmap::{DefaultKey, SecondaryMap, SlotMap};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Debug;
 use std::fmt::Formatter;
-use std::rc::Rc;
+use std::path::Prefix;
 
-#[derive(Clone)]
-pub struct QualifiedName {
-    nsuri: Option<Rc<Value>>,
-    prefix: Option<Rc<Value>>,
-    localname: Rc<Value>,
+/// A QualifiedName is a slotmap Key
+pub type QualifiedName = DefaultKey;
+
+/// Initialise both the slotmap internment and a corresponding secondary mapping from keys to qualified names.
+/// An application should only create one of these.
+pub fn new_map() -> (
+    SlotMap<DefaultKey, String>,
+    SecondaryMap<_, QualifiedNameData>,
+) {
+    let mut sm = SlotMap::new();
+    let mut sec = SecondaryMap::new();
+
+    // Prime with the XML namespace
+    let xml_uri = "http://www.w3.org/XML/1998/namespace";
+    let prefix = sm.insert("xml");
+    let uri = sm.insert(xml_uri);
+    let xml = sm.insert("^");
+    let uriqualified = sm.insert(uri_qualifiedname(xml_uri, "^").as_str());
+
+    let _ = sec.insert(
+        uriqualified,
+        QualifiedNameData::new(Some(uri), Some(prefix), "^"),
+    );
+
+    (sm, sec)
 }
 
+pub fn uri_qualifiedname(uri: &str, name: &str) -> String {
+    format!("Q{}{}{}{}", "{", uri, "}", name)
+}
+
+/// Create a QualifiedName (QN). A QN consists of a Namespace URI and a local name.
+/// QNs may optionally have a prefix.
+/// It is not valid for a QN to have a prefix but no Namespace URI.
+/// Both prefix and Namespace URI may not be empty strings.
+pub fn new(
+    nsuri: Option<DefaultKey>,
+    prefix: Option<DefaultKey>,
+    localname: impl Into<String>,
+    intern: (
+        SlotMap<DefaultKey, String>,
+        SecondaryMap<_, QualifiedNameData>,
+    ),
+) -> Result<QualifiedName, Error> {
+    match (nsuri, prefix) {
+        (None, Some(_)) => Err(Error::new(
+            ErrorKind::DynamicAbsent,
+            "missing Namespace URI",
+        )),
+        (Some(n), Some(p)) => {
+            let uriqualified = uri_qualifiedname(intern.0[n].as_str(), localname.into().as_str());
+            Ok(())
+        }
+        (Some(n), None) => {
+            let uriqualified = uri_qualifiedname(intern.0[n].as_str(), localname.into().as_str());
+            Ok(())
+        }
+        (None, None) => {
+            // An unprefixed QName
+            let uriqualified = localname.into();
+            let k = intern.0.insert(uriqualified);
+            let qn = QualifiedNameData::new(None, None, localname);
+            intern.1.insert(k, qn);
+            Ok(k)
+        }
+    }
+}
+
+#[derive(Clone)]
+pub struct QualifiedNameData {
+    nsuri: Option<DefaultKey>,
+    prefix: Option<DefaultKey>,
+    localname: DefaultKey,
+}
 // TODO: we may need methods that return a string slice, rather than a copy of the string
-impl QualifiedName {
+impl QualifiedNameData {
     /// Builds a QualifiedName from String parts
     pub fn new(
-        nsuri: Option<String>,
-        prefix: Option<String>,
+        nsuri: Option<DefaultKey>,
+        prefix: Option<DefaultKey>,
         localname: impl Into<String>,
-    ) -> QualifiedName {
-        QualifiedName {
+    ) -> Self {
+        QualifiedNameData {
             nsuri: nsuri.map(|s| Rc::new(Value::from(s))),
             prefix: prefix.map(|s| Rc::new(Value::from(s))),
             localname: Rc::new(Value::from(localname.into())),
