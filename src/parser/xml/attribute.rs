@@ -254,7 +254,7 @@ fn attribute_value<N: Node>(
                 tag("'"),
                 many0(alt3(
                     map(
-                        wellformed(chardata_unicode_codepoint(), |c| c != &'<'),
+                        chardata_unicode_codepoint(),
                         |c| c.to_string(),
                     ),
                     textreference(),
@@ -266,7 +266,7 @@ fn attribute_value<N: Node>(
                 tag("\""),
                 many0(alt3(
                     map(
-                        wellformed(chardata_unicode_codepoint(), |c| c != &'<'),
+                        chardata_unicode_codepoint(),
                         |c| c.to_string(),
                     ),
                     textreference(),

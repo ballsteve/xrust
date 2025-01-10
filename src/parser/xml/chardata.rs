@@ -81,14 +81,14 @@ pub(crate) fn chardata_unicode_codepoint<N: Node>(
 fn parse_hex<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, u32), ParseError> {
     move |input| match take_while(|c: char| c.is_ascii_hexdigit())(input) {
         Ok((input1, hex)) => {
-            eprintln!("parse_hex \"{}\"", &hex);
+            //eprintln!("parse_hex \"{}\"", &hex);
             match u32::from_str_radix(&hex, 16) {
                 Ok(r) => {
-                    eprintln!("Ok");
+                    //eprintln!("Ok");
                     Ok((input1, r))
                 }
                 Err(_) => {
-                    eprintln!("Err");
+                    //eprintln!("Err");
                     Err(ParseError::NotWellFormed(hex))
                 }
             }
