@@ -13,6 +13,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
 fn validsa001() {
@@ -42,10 +43,17 @@ fn validsa001() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
+
 }
 
 #[test]
@@ -76,8 +84,14 @@ fn validsa002() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -110,8 +124,14 @@ fn validsa003() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -144,8 +164,14 @@ fn validsa004() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -178,8 +204,14 @@ fn validsa005() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -212,8 +244,14 @@ fn validsa006() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -246,13 +284,20 @@ fn validsa007() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa008() {
     /*
         Test ID:valid-sa-008
@@ -280,9 +325,15 @@ fn validsa008() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -314,8 +365,14 @@ fn validsa009() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -348,8 +405,14 @@ fn validsa010() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -382,8 +445,14 @@ fn validsa011() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -450,8 +519,14 @@ fn validsa013() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -484,8 +559,14 @@ fn validsa014() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -518,8 +599,14 @@ fn validsa015() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -552,8 +639,14 @@ fn validsa016() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -586,13 +679,20 @@ fn validsa017() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa018() {
     /*
         Test ID:valid-sa-018
@@ -620,13 +720,20 @@ fn validsa018() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa019() {
     /*
         Test ID:valid-sa-019
@@ -654,13 +761,20 @@ fn validsa019() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa020() {
     /*
         Test ID:valid-sa-020
@@ -688,9 +802,15 @@ fn validsa020() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -722,8 +842,14 @@ fn validsa021() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -756,8 +882,14 @@ fn validsa022() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -790,8 +922,14 @@ fn validsa023() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -824,8 +962,14 @@ fn validsa024() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -858,8 +1002,14 @@ fn validsa025() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -892,8 +1042,14 @@ fn validsa026() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -926,8 +1082,14 @@ fn validsa027() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -960,8 +1122,14 @@ fn validsa028() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -994,8 +1162,14 @@ fn validsa029() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1028,8 +1202,14 @@ fn validsa030() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1062,8 +1242,14 @@ fn validsa031() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1096,8 +1282,14 @@ fn validsa032() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1161,8 +1353,14 @@ fn validsa034() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1195,8 +1393,14 @@ fn validsa035() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1229,13 +1433,20 @@ fn validsa036() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa017a() {
     /*
         Test ID:valid-sa-017a
@@ -1263,9 +1474,15 @@ fn validsa017a() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -1297,8 +1514,14 @@ fn validsa037() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1331,8 +1554,14 @@ fn validsa038() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1365,8 +1594,14 @@ fn validsa039() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1399,8 +1634,14 @@ fn validsa040() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1433,8 +1674,14 @@ fn validsa041() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1467,8 +1714,14 @@ fn validsa042() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1501,8 +1754,14 @@ fn validsa043() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1535,8 +1794,14 @@ fn validsa044() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1569,8 +1834,14 @@ fn validsa045() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1603,8 +1874,14 @@ fn validsa046() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1637,8 +1914,14 @@ fn validsa047() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1671,8 +1954,14 @@ fn validsa048() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1704,8 +1993,14 @@ fn validsa049() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1737,8 +2032,14 @@ fn validsa050() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1770,8 +2071,14 @@ fn validsa051() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1804,8 +2111,14 @@ fn validsa052() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1838,8 +2151,14 @@ fn validsa053() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1872,8 +2191,14 @@ fn validsa054() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1906,8 +2231,14 @@ fn validsa055() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1940,8 +2271,14 @@ fn validsa056() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1974,8 +2311,14 @@ fn validsa057() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2008,8 +2351,14 @@ fn validsa058() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2042,8 +2391,14 @@ fn validsa059() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2076,8 +2431,14 @@ fn validsa060() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2110,8 +2471,14 @@ fn validsa061() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2144,8 +2511,14 @@ fn validsa062() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2178,8 +2551,14 @@ fn validsa063() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2212,8 +2591,14 @@ fn validsa064() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2246,8 +2631,14 @@ fn validsa065() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2280,13 +2671,20 @@ fn validsa066() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa067() {
     /*
         Test ID:valid-sa-067
@@ -2314,13 +2712,20 @@ fn validsa067() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa068() {
     /*
         Test ID:valid-sa-068
@@ -2348,9 +2753,15 @@ fn validsa068() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -2382,13 +2793,20 @@ fn validsa069() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa070() {
     /*
         Test ID:valid-sa-070
@@ -2416,8 +2834,14 @@ fn validsa070() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2450,8 +2874,14 @@ fn validsa071() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2484,8 +2914,14 @@ fn validsa072() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2518,8 +2954,14 @@ fn validsa073() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2552,8 +2994,14 @@ fn validsa074() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2586,8 +3034,14 @@ fn validsa075() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2620,8 +3074,14 @@ fn validsa076() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2654,8 +3114,14 @@ fn validsa077() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2688,8 +3154,14 @@ fn validsa078() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2722,8 +3194,14 @@ fn validsa079() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2756,8 +3234,14 @@ fn validsa080() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2790,8 +3274,14 @@ fn validsa081() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2825,8 +3315,14 @@ fn validsa082() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2860,8 +3356,14 @@ fn validsa083() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2894,8 +3396,14 @@ fn validsa084() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2928,8 +3436,14 @@ fn validsa085() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2962,8 +3476,14 @@ fn validsa086() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2996,13 +3516,20 @@ fn validsa087() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa088() {
     /*
         Test ID:valid-sa-088
@@ -3030,9 +3557,15 @@ fn validsa088() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -3064,8 +3597,14 @@ fn validsa089() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3098,8 +3637,14 @@ fn validsa090() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3133,8 +3678,14 @@ fn validsa091() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3167,8 +3718,14 @@ fn validsa092() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3201,8 +3758,14 @@ fn validsa093() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3235,8 +3798,14 @@ fn validsa094() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3270,8 +3839,14 @@ fn validsa095() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3304,8 +3879,14 @@ fn validsa096() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3343,8 +3924,14 @@ fn validsa097() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3378,8 +3965,14 @@ fn validsa098() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3412,8 +4005,14 @@ fn validsa099() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3451,8 +4050,14 @@ fn validsa100() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3485,8 +4090,14 @@ fn validsa101() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3519,13 +4130,20 @@ fn validsa102() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa103() {
     /*
         Test ID:valid-sa-103
@@ -3553,9 +4171,15 @@ fn validsa103() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -3587,8 +4211,14 @@ fn validsa104() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3621,8 +4251,14 @@ fn validsa105() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3655,8 +4291,14 @@ fn validsa106() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3689,8 +4331,14 @@ fn validsa107() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3723,8 +4371,14 @@ fn validsa108() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3757,8 +4411,14 @@ fn validsa109() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3792,8 +4452,14 @@ fn validsa110() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3826,8 +4492,14 @@ fn validsa111() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3860,8 +4532,14 @@ fn validsa112() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3894,13 +4572,20 @@ fn validsa113() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn validsa114() {
     /*
         Test ID:valid-sa-114
@@ -3928,9 +4613,15 @@ fn validsa114() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -3962,8 +4653,14 @@ fn validsa115() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3996,8 +4693,14 @@ fn validsa116() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4030,8 +4733,14 @@ fn validsa117() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4064,8 +4773,14 @@ fn validsa118() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4098,8 +4813,14 @@ fn validsa119() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }

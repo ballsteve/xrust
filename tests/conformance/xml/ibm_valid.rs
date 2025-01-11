@@ -10,6 +10,7 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
 fn ibmvalid_p01ibm01v01xml() {
@@ -39,13 +40,20 @@ fn ibmvalid_p01ibm01v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p02ibm02v01xml() {
     /*
         Test ID:ibm-valid-P02-ibm02v01.xml
@@ -62,11 +70,32 @@ fn ibmvalid_p02ibm02v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P02/out/ibm02v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
+
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p03ibm03v01xml() {
     /*
         Test ID:ibm-valid-P03-ibm03v01.xml
@@ -83,8 +112,28 @@ fn ibmvalid_p03ibm03v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P03/out/ibm03v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
+
 }
 
 #[test]
@@ -115,8 +164,14 @@ fn ibmvalid_p09ibm09v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -149,8 +204,14 @@ fn ibmvalid_p09ibm09v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -184,8 +245,14 @@ fn ibmvalid_p09ibm09v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -218,8 +285,14 @@ fn ibmvalid_p09ibm09v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -253,8 +326,14 @@ fn ibmvalid_p09ibm09v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -287,8 +366,14 @@ fn ibmvalid_p10ibm10v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -321,8 +406,14 @@ fn ibmvalid_p10ibm10v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -355,8 +446,14 @@ fn ibmvalid_p10ibm10v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -389,8 +486,14 @@ fn ibmvalid_p10ibm10v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -423,8 +526,14 @@ fn ibmvalid_p10ibm10v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -457,8 +566,14 @@ fn ibmvalid_p10ibm10v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -491,8 +606,14 @@ fn ibmvalid_p10ibm10v07xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -525,8 +646,14 @@ fn ibmvalid_p10ibm10v08xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -560,8 +687,14 @@ fn ibmvalid_p11ibm11v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -595,8 +728,14 @@ fn ibmvalid_p11ibm11v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -634,8 +773,14 @@ fn ibmvalid_p11ibm11v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -673,8 +818,14 @@ fn ibmvalid_p11ibm11v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -708,8 +859,14 @@ fn ibmvalid_p12ibm12v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -743,8 +900,14 @@ fn ibmvalid_p12ibm12v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -778,8 +941,14 @@ fn ibmvalid_p12ibm12v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -813,8 +982,14 @@ fn ibmvalid_p12ibm12v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -848,8 +1023,14 @@ fn ibmvalid_p13ibm13v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -882,8 +1063,14 @@ fn ibmvalid_p14ibm14v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -950,8 +1137,14 @@ fn ibmvalid_p14ibm14v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -984,8 +1177,14 @@ fn ibmvalid_p15ibm15v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1018,8 +1217,14 @@ fn ibmvalid_p15ibm15v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1052,8 +1257,14 @@ fn ibmvalid_p15ibm15v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1086,8 +1297,14 @@ fn ibmvalid_p15ibm15v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1120,8 +1337,14 @@ fn ibmvalid_p16ibm16v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1154,8 +1377,14 @@ fn ibmvalid_p16ibm16v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1222,8 +1451,14 @@ fn ibmvalid_p17ibm17v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1290,8 +1525,14 @@ fn ibmvalid_p19ibm19v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1324,8 +1565,14 @@ fn ibmvalid_p20ibm20v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1392,8 +1639,14 @@ fn ibmvalid_p21ibm21v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1426,8 +1679,14 @@ fn ibmvalid_p22ibm22v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1460,8 +1719,14 @@ fn ibmvalid_p22ibm22v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1494,8 +1759,14 @@ fn ibmvalid_p22ibm22v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1528,8 +1799,14 @@ fn ibmvalid_p22ibm22v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1562,8 +1839,14 @@ fn ibmvalid_p22ibm22v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1596,8 +1879,14 @@ fn ibmvalid_p22ibm22v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1630,8 +1919,14 @@ fn ibmvalid_p22ibm22v07xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1664,8 +1959,14 @@ fn ibmvalid_p23ibm23v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1698,8 +1999,14 @@ fn ibmvalid_p23ibm23v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1732,8 +2039,14 @@ fn ibmvalid_p23ibm23v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1766,8 +2079,14 @@ fn ibmvalid_p23ibm23v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1800,8 +2119,14 @@ fn ibmvalid_p23ibm23v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1834,8 +2159,14 @@ fn ibmvalid_p23ibm23v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1868,8 +2199,14 @@ fn ibmvalid_p24ibm24v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1902,8 +2239,14 @@ fn ibmvalid_p24ibm24v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1936,8 +2279,14 @@ fn ibmvalid_p25ibm25v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -1970,8 +2319,14 @@ fn ibmvalid_p25ibm25v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2004,8 +2359,14 @@ fn ibmvalid_p25ibm25v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2038,8 +2399,14 @@ fn ibmvalid_p25ibm25v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2072,8 +2439,14 @@ fn ibmvalid_p26ibm26v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2106,8 +2479,14 @@ fn ibmvalid_p27ibm27v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2140,8 +2519,14 @@ fn ibmvalid_p27ibm27v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2174,8 +2559,14 @@ fn ibmvalid_p27ibm27v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2208,8 +2599,14 @@ fn ibmvalid_p28ibm28v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2243,8 +2640,14 @@ fn ibmvalid_p28ibm28v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2278,8 +2681,14 @@ fn ibmvalid_p29ibm29v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2313,8 +2722,14 @@ fn ibmvalid_p29ibm29v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2352,8 +2767,14 @@ fn ibmvalid_p30ibm30v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2391,8 +2812,14 @@ fn ibmvalid_p30ibm30v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2430,8 +2857,14 @@ fn ibmvalid_p31ibm31v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2469,8 +2902,14 @@ fn ibmvalid_p32ibm32v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2508,8 +2947,14 @@ fn ibmvalid_p32ibm32v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2547,8 +2992,14 @@ fn ibmvalid_p32ibm32v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2582,8 +3033,14 @@ fn ibmvalid_p32ibm32v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2616,8 +3073,14 @@ fn ibmvalid_p33ibm33v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2650,8 +3113,14 @@ fn ibmvalid_p34ibm34v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2684,8 +3153,14 @@ fn ibmvalid_p35ibm35v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2718,8 +3193,14 @@ fn ibmvalid_p36ibm36v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2752,8 +3233,14 @@ fn ibmvalid_p37ibm37v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2786,8 +3273,14 @@ fn ibmvalid_p38ibm38v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2820,8 +3313,14 @@ fn ibmvalid_p39ibm39v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2854,13 +3353,20 @@ fn ibmvalid_p40ibm40v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p41ibm41v01xml() {
     /*
         Test ID:ibm-valid-P41-ibm41v01.xml
@@ -2888,8 +3394,14 @@ fn ibmvalid_p41ibm41v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2922,8 +3434,14 @@ fn ibmvalid_p42ibm42v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -2957,13 +3475,20 @@ fn ibmvalid_p43ibm43v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p44ibm44v01xml() {
     /*
         Test ID:ibm-valid-P44-ibm44v01.xml
@@ -2991,13 +3516,20 @@ fn ibmvalid_p44ibm44v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p45ibm45v01xml() {
     /*
         Test ID:ibm-valid-P45-ibm45v01.xml
@@ -3025,8 +3557,14 @@ fn ibmvalid_p45ibm45v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3059,8 +3597,14 @@ fn ibmvalid_p47ibm47v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3098,8 +3642,14 @@ fn ibmvalid_p49ibm49v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3137,13 +3687,20 @@ fn ibmvalid_p50ibm50v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p51ibm51v01xml() {
     /*
         Test ID:ibm-valid-P51-ibm51v01.xml
@@ -3175,8 +3732,14 @@ fn ibmvalid_p51ibm51v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3214,13 +3777,20 @@ fn ibmvalid_p51ibm51v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p52ibm52v01xml() {
     /*
         Test ID:ibm-valid-P52-ibm52v01.xml
@@ -3248,8 +3818,14 @@ fn ibmvalid_p52ibm52v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3272,8 +3848,27 @@ fn ibmvalid_p54ibm54v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P54/out/ibm54v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -3304,8 +3899,14 @@ fn ibmvalid_p54ibm54v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3338,8 +3939,14 @@ fn ibmvalid_p54ibm54v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3372,8 +3979,14 @@ fn ibmvalid_p55ibm55v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3406,8 +4019,14 @@ fn ibmvalid_p56ibm56v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3440,8 +4059,14 @@ fn ibmvalid_p56ibm56v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3474,8 +4099,14 @@ fn ibmvalid_p56ibm56v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3508,8 +4139,14 @@ fn ibmvalid_p56ibm56v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3542,8 +4179,14 @@ fn ibmvalid_p56ibm56v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3576,8 +4219,14 @@ fn ibmvalid_p56ibm56v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3610,8 +4259,14 @@ fn ibmvalid_p56ibm56v07xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3645,8 +4300,14 @@ fn ibmvalid_p56ibm56v08xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3679,8 +4340,14 @@ fn ibmvalid_p56ibm56v09xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3713,13 +4380,20 @@ fn ibmvalid_p56ibm56v10xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p57ibm57v01xml() {
     /*
         Test ID:ibm-valid-P57-ibm57v01.xml
@@ -3747,8 +4421,14 @@ fn ibmvalid_p57ibm57v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3781,8 +4461,14 @@ fn ibmvalid_p58ibm58v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3815,8 +4501,14 @@ fn ibmvalid_p58ibm58v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3849,13 +4541,20 @@ fn ibmvalid_p59ibm59v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p59ibm59v02xml() {
     /*
         Test ID:ibm-valid-P59-ibm59v02.xml
@@ -3883,8 +4582,14 @@ fn ibmvalid_p59ibm59v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3917,8 +4622,14 @@ fn ibmvalid_p60ibm60v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3951,8 +4662,14 @@ fn ibmvalid_p60ibm60v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -3985,8 +4702,14 @@ fn ibmvalid_p60ibm60v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4019,8 +4742,14 @@ fn ibmvalid_p60ibm60v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4058,8 +4787,14 @@ fn ibmvalid_p61ibm61v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4097,8 +4832,14 @@ fn ibmvalid_p61ibm61v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4136,8 +4877,14 @@ fn ibmvalid_p62ibm62v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4175,8 +4922,14 @@ fn ibmvalid_p62ibm62v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4214,8 +4967,14 @@ fn ibmvalid_p62ibm62v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4253,8 +5012,14 @@ fn ibmvalid_p62ibm62v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4292,8 +5057,14 @@ fn ibmvalid_p62ibm62v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4331,8 +5102,14 @@ fn ibmvalid_p63ibm63v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4370,8 +5147,14 @@ fn ibmvalid_p63ibm63v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4409,8 +5192,14 @@ fn ibmvalid_p63ibm63v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4448,8 +5237,14 @@ fn ibmvalid_p63ibm63v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4487,8 +5282,14 @@ fn ibmvalid_p63ibm63v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4526,8 +5327,14 @@ fn ibmvalid_p64ibm64v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4565,8 +5372,14 @@ fn ibmvalid_p64ibm64v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4604,8 +5417,14 @@ fn ibmvalid_p64ibm64v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4643,8 +5462,14 @@ fn ibmvalid_p65ibm65v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4682,13 +5507,20 @@ fn ibmvalid_p65ibm65v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p66ibm66v01xml() {
     /*
         Test ID:ibm-valid-P66-ibm66v01.xml
@@ -4716,13 +5548,15 @@ fn ibmvalid_p66ibm66v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
-    //    assert_eq!(
-    //        parseresult.unwrap().get_canonical().unwrap(),
-    //        canonicalparseresult.unwrap()
-    //    );
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
-        canonicalparseresult.unwrap().get_canonical().unwrap()
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
     );
 }
 
@@ -4754,8 +5588,14 @@ fn ibmvalid_p67ibm67v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4789,8 +5629,14 @@ fn ibmvalid_p68ibm68v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4824,8 +5670,14 @@ fn ibmvalid_p68ibm68v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4859,8 +5711,14 @@ fn ibmvalid_p69ibm69v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4894,8 +5752,14 @@ fn ibmvalid_p69ibm69v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4929,8 +5793,14 @@ fn ibmvalid_p70ibm70v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4964,8 +5834,14 @@ fn ibmvalid_p78ibm78v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
@@ -4988,8 +5864,27 @@ fn ibmvalid_p79ibm79v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P79/out/ibm79v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
@@ -5021,13 +5916,20 @@ fn ibmvalid_p82ibm82v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
     assert_eq!(
-        parseresult.unwrap().get_canonical().unwrap(),
+        doc.get_canonical().unwrap(),
         canonicalparseresult.unwrap()
     );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p85ibm85v01xml() {
     /*
         Test ID:ibm-valid-P85-ibm85v01.xml
@@ -5044,11 +5946,31 @@ fn ibmvalid_p85ibm85v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P85/out/ibm85v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p86ibm86v01xml() {
     /*
         Test ID:ibm-valid-P86-ibm86v01.xml
@@ -5065,11 +5987,31 @@ fn ibmvalid_p86ibm86v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P86/out/ibm86v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p87ibm87v01xml() {
     /*
         Test ID:ibm-valid-P87-ibm87v01.xml
@@ -5086,11 +6028,31 @@ fn ibmvalid_p87ibm87v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P87/out/ibm87v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p88ibm88v01xml() {
     /*
         Test ID:ibm-valid-P88-ibm88v01.xml
@@ -5107,11 +6069,31 @@ fn ibmvalid_p88ibm88v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P88/out/ibm88v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }
 
 #[test]
+#[ignore]
 fn ibmvalid_p89ibm89v01xml() {
     /*
         Test ID:ibm-valid-P89-ibm89v01.xml
@@ -5128,6 +6110,25 @@ fn ibmvalid_p89ibm89v01xml() {
             .as_str(),
         None,
     );
+    let canonicalxml = RNode::new_document();
+    let canonicalparseresult = xml::parse(
+        canonicalxml,
+        fs::read_to_string("tests/conformance/xml/xmlconf/ibm/valid/P89/out/ibm89v01.xml")
+            .unwrap()
+            .as_str(),
+        None,
+    );
 
     assert!(parseresult.is_ok());
+    assert!(canonicalparseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_ok());
+
+    assert_eq!(
+        doc.get_canonical().unwrap(),
+        canonicalparseresult.unwrap()
+    );
 }

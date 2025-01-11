@@ -5,7 +5,7 @@ use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::dtd::misc::contentspec;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput};
-use crate::xmldecl::DTDDecl;
+use crate::xmldecl::Contentspec;
 
 //elementdecl	   ::=   	'<!ELEMENT' S Name S contentspec S? '>'
 pub(crate) fn elementdecl<N: Node>(
@@ -21,10 +21,14 @@ pub(crate) fn elementdecl<N: Node>(
     )(input)
     {
         Ok(((input2, mut state2), (_, _, n, _, s, _, _))) => {
+            match s {
+                Contentspec::ANY => {}
+                Contentspec::DTDPattern(_) => {}
+            }
             state2
                 .dtd
                 .elements
-                .insert(n.to_string(), DTDDecl::Element(n, s));
+                .insert(n, s);
             Ok(((input2, state2), ()))
         }
         Err(err) => Err(err),

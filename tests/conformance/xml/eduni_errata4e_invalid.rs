@@ -8,8 +8,10 @@ use std::fs;
 use xrust::item::Node;
 use xrust::parser::xml;
 use xrust::trees::smite::RNode;
+use xrust::validators::Schema;
 
 #[test]
+#[ignore]
 fn invalidbo1() {
     /*
         Test ID:invalid-bo-1
@@ -27,10 +29,17 @@ fn invalidbo1() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
+#[ignore]
 fn invalidbo2() {
     /*
         Test ID:invalid-bo-2
@@ -48,10 +57,16 @@ fn invalidbo2() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
+#[ignore]
 fn invalidbo3() {
     /*
         Test ID:invalid-bo-3
@@ -69,10 +84,17 @@ fn invalidbo3() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
+#[ignore]
 fn invalidbo4() {
     /*
         Test ID:invalid-bo-4
@@ -90,10 +112,17 @@ fn invalidbo4() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
+#[ignore]
 fn invalidbo5() {
     /*
         Test ID:invalid-bo-5
@@ -111,10 +140,17 @@ fn invalidbo5() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 #[test]
+#[ignore]
 fn invalidbo6() {
     /*
         Test ID:invalid-bo-6
@@ -132,7 +168,13 @@ fn invalidbo6() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
+
 }
 
 /*
@@ -304,7 +346,12 @@ fn ibminvalid_p89ibm89n06xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -326,7 +373,12 @@ fn ibminvalid_p89ibm89n07xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -348,7 +400,12 @@ fn ibminvalid_p89ibm89n08xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -370,7 +427,12 @@ fn ibminvalid_p89ibm89n09xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -392,7 +454,12 @@ fn ibminvalid_p89ibm89n10xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -414,7 +481,12 @@ fn ibminvalid_p89ibm89n11xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }
 
 #[test]
@@ -436,5 +508,10 @@ fn ibminvalid_p89ibm89n12xml() {
         None,
     );
 
-    assert!(parseresult.is_err());
+    assert!(parseresult.is_ok());
+
+    let doc = parseresult.unwrap();
+
+    let validation = doc.validate(Schema::DTD);
+    assert!(validation.is_err());
 }

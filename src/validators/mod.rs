@@ -1,30 +1,33 @@
-pub mod relaxng;
 
-use crate::item::Node;
-use crate::trees::smite::RNode;
-use crate::parser::xml;
-use crate::validators::relaxng::validate_relaxng;
+pub mod dtd;
 
+use crate::item::{Node, NodeType};
+use crate::validators::dtd::validate_dtd;
 
-pub(crate) enum Schema{
-    //Schematron(String), //Schema File
-    //XMLSchema(schemafile)
-    RelaxNG(String) //Schema File
-    //DTD //How do we pull the DTD? Store on doc while parsing?
+#[derive(Clone)]
+pub enum Schema{
+    DTD
+    //Will add the rest as they become available.
 }
 
+#[derive(Debug)]
 pub enum ValidationError{
     DocumentError(String),
     SchemaError(String)
 }
 
 
-pub(crate) fn validate(doc: &RNode, s: Schema) -> Result<(), ValidationError>  {
-    match s {
-        Schema::RelaxNG(schema) => {
-            let schemadoc = RNode::new_document();
-            let _ = xml::parse(schemadoc.clone(), schema.as_str(), None);
-            validate_relaxng(doc, &schemadoc)
+pub(crate) fn validate(doc: &impl Node, schema: Schema) -> Result<(), ValidationError>{
+    match doc.node_type(){
+        NodeType::Document => {
+            match schema {
+                Schema::DTD => {
+                    validate_dtd(doc.clone())
+                }
+            }
+        }
+        _ => {
+            Err(ValidationError::DocumentError("Node provided was not a document".to_string()))
         }
     }
 }

@@ -84,11 +84,9 @@ Status of [standards implementation](https://github.com/ballsteve/xrust/blob/mai
 
 | Releases      | Notes                                                                                    |
 |---------------|------------------------------------------------------------------------------------------|
+| Version 1.2.3 | Fixed handling of '<' character in attribute value.                                      |
 | Version 1.2.2 | Fixed node() kind test. Fixed union in Pattern. Fixed relative path in Pattern.          |
-|---------------|------------------------------------------------------------------------------------------|
 | Version 1.2.1 | Fixed xsl:sort elements. Fixed 'already borrowed' bug in smite.                          |
-|---------------|------------------------------------------------------------------------------------------|
 | Version 1.2   | Added ID/IDREFS support. Added XPath 2.0 functions: avg(), min(), max().                 |
-|---------------|------------------------------------------------------------------------------------------|
 | Version 1.1   | Added new_document() to Node trait. Tree documents can now be created in one step. eg. smite::RNode::new_document() |
 |               | XML Namespace support has been redesigned. Node names are now Rc-shared.                 |
