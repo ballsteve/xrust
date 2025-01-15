@@ -2,15 +2,17 @@
 A parser combinator, inspired by nom.
 
 This parser combinator passes a context into the function, which includes the string being parsed. This supports resolving context-based constructs such as general entities and XML Namespaces.
+The parser also interns names, i.e. [QualifiedName]s.
 */
 
 use crate::externals::URLResolver;
 use crate::item::Node;
 use crate::namespace::NamespaceMap;
-use crate::qname::QualifiedName;
+use crate::qname::{new, Internment, QualifiedName};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::DTD;
+use slotmap::DefaultKey;
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt;
@@ -24,10 +26,18 @@ pub mod xpath;
 
 pub mod datetime;
 
+/*
+   Interning of names.
+   Strings, in particular element and attribute names, are often repeated.
+   To cut down on data copying, we will intern the string and reuse it.
+   Also, strings can be tested for equality by simply comparing pointers.
+   NB. document content is not interned. This design decision is subject to review.
+*/
+
 #[allow(type_alias_bounds)]
-pub type ParseInput<'a, N: Node> = (&'a str, ParserState<N>);
+pub type ParseInput<'a, 'i, N: Node> = (&'a str, ParserState<N>, &'i mut Internment);
 #[allow(type_alias_bounds)]
-pub type ParseResult<'a, N: Node, Output> = Result<(ParseInput<'a, N>, Output), ParseError>;
+pub type ParseResult<'a, 'i, N: Node, Output> = Result<(ParseInput<'a, 'i, N>, Output), ParseError>;
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ParseError {
@@ -69,7 +79,7 @@ pub struct ParserConfig {
     pub id_tracking: bool,
 }
 
-impl Default for ParserConfig {
+impl<'i> Default for ParserConfig {
     fn default() -> Self {
         Self::new()
     }
@@ -114,15 +124,11 @@ pub struct ParserState<N: Node> {
        NOTE: the "None" key in this hashmap is used to track the namespace when no alias is declared, i.e. unprefixed names.
     */
     namespace: Rc<NamespaceMap>, // (prefix, namespace node)
-    /*
-       Interning of values.
-       Strings (represented in xrust as a Value) are often repeated.
-       To cut down on data copying, we will intern the string and reuse it.
-       NB. in a future version, we will intern values globally so that equality can be tested by comparing pointers.
-    */
-    interned_values: Rc<RefCell<HashMap<String, Rc<Value>>>>,
     // Intern QualifiedNames. Map (Option<Namespace URI>, local-part) -> QN
-    interned_names: Rc<RefCell<HashMap<(Option<Rc<Value>>, Rc<Value>), Rc<QualifiedName>>>>,
+    // This is internal to the parser to find an already interned QN.
+    // TODO: is this needed with slotmap?
+    interned_names: Rc<RefCell<HashMap<(Option<Rc<Value>>, Rc<Value>), DefaultKey>>>,
+
     standalone: bool,
     xmlversion: String,
     /*
@@ -149,16 +155,23 @@ pub struct ParserState<N: Node> {
 }
 
 impl<N: Node> ParserState<N> {
-    pub fn new(doc: Option<N>, cur: Option<N>, parser_config: Option<ParserConfig>) -> Self {
+    pub fn new(
+        doc: Option<N>,
+        cur: Option<N>,
+        parser_config: Option<ParserConfig>,
+        intern: &mut Internment,
+    ) -> Self {
         let pc = if parser_config.is_some() {
             parser_config.unwrap()
         } else {
             ParserConfig::new()
         };
-        let xnsprefix = Rc::new(Value::from("xml"));
-        let xnsuri = Rc::new(Value::from("http://www.w3.org/XML/1998/namespace"));
-        let mut ns_map = NamespaceMap::new();
-        ns_map.insert(Some(xnsprefix.clone()), xnsuri.clone());
+        let xnsprefix = intern.0.insert("xml".to_string());
+        let xnsuri = intern
+            .0
+            .insert("http://www.w3.org/XML/1998/namespace".to_string());
+        let mut ns_map = NamespaceMap::new(intern);
+        ns_map.insert(Some(xnsprefix), xnsuri);
 
         ParserState {
             doc,
@@ -167,13 +180,6 @@ impl<N: Node> ParserState<N> {
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
             namespace: Rc::new(ns_map),
-            interned_values: Rc::new(RefCell::new(HashMap::from([
-                (String::from("xml"), xnsprefix.clone()),
-                (
-                    String::from("http://www.w3.org/XML/1998/namespace"),
-                    xnsuri.clone(),
-                ),
-            ]))),
             id_tracking: pc.id_tracking,
             ids_read: Default::default(),
             ids_pending: Default::default(),
@@ -213,7 +219,7 @@ impl<N: Node> ParserState<N> {
             Some(e) => e(locdir, uri),
         }
     }
-    pub fn get_value(&self, s: String) -> Rc<Value> {
+    /*pub fn get_value(&self, s: String) -> Rc<Value> {
         {
             if let Some(u) = self.interned_values.borrow().get(&s) {
                 return u.clone();
@@ -223,8 +229,8 @@ impl<N: Node> ParserState<N> {
         let v = Rc::new(Value::from(s.clone()));
         self.interned_values.borrow_mut().insert(s, v.clone());
         v
-    }
-    /// Find a QualifiedName. If the name exists in the interned names. then return a reference to the interned name.
+    }*/
+    /*/// Find a QualifiedName. If the name exists in the interned names. then return a reference to the interned name.
     /// Otherwise, add this name to the interned names and return its reference.
     pub fn get_qualified_name(
         &self,
@@ -251,7 +257,7 @@ impl<N: Node> ParserState<N> {
             .borrow_mut()
             .insert((nsuri, local_part), newqn.clone());
         newqn
-    }
+    }*/
 }
 
 impl<N: Node> PartialEq for ParserState<N> {

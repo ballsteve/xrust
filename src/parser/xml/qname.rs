@@ -13,7 +13,7 @@ use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::common::{is_namechar, is_namestartchar, is_ncnamechar, is_ncnamestartchar};
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::qname::{new, QualifiedName};
 
 // QualifiedName
 pub(crate) fn qualname<N: Node>(
@@ -39,7 +39,7 @@ pub(crate) fn uriqualname<N: Node>(
             ),
             ncname(),
         ),
-        |((_, uri, _), localpart)| QualifiedName::new(Some(uri), None, localpart),
+        |((_, uri, _), localpart)| new(Some(uri), None, localpart, state.intern),
     )
 }
 

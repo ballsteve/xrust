@@ -19,22 +19,29 @@ use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
 use crate::parser::xml::xmldecl::xmldecl;
 use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
+use crate::qname::Internment;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use std::rc::Rc;
 
-pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
-    let (xmldoc, _) = parse_with_ns(doc, input, config)?;
-    Ok(xmldoc)
-}
-
-pub fn parse_with_ns<N: Node>(
+pub fn parse<'i, N: Node>(
     doc: N,
     input: &str,
     config: Option<ParserConfig>,
+    intern: &'i mut Internment,
+) -> Result<N, Error> {
+    let (xmldoc, _) = parse_with_ns(doc, input, config, intern)?;
+    Ok(xmldoc)
+}
+
+pub fn parse_with_ns<'i, N: Node>(
+    doc: N,
+    input: &str,
+    config: Option<ParserConfig>,
+    intern: &'i mut Internment,
 ) -> Result<(N, Rc<NamespaceMap>), Error> {
-    let state = ParserState::new(Some(doc), None, config);
-    match document((input, state)) {
+    let state = ParserState::new(Some(doc), None, intern, config);
+    match document((input, state, intern)) {
         Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespace.clone())),
         Err(err) => {
             match err {
@@ -91,10 +98,12 @@ pub fn parse_with_ns<N: Node>(
     }
 }
 
-fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
+fn document<'a, 'i, N: Node>(
+    input: ParseInput<'a, 'i, N>,
+) -> Result<(ParseInput<'a, 'i, N>, N), ParseError> {
     match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input) {
         Err(err) => Err(err),
-        Ok(((input1, state1), (_, p, e, m))) => {
+        Ok(((input1, state1, intern), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
             if input1.is_empty() {
                 /*
@@ -138,7 +147,7 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
                     let _ = state1.doc.clone().unwrap().set_xmldecl(x);
                 }
                 Ok((
-                    (input1, state1.clone()),
+                    (input1, state1.clone(), intern),
                     state1.doc.clone().unwrap().clone(),
                 ))
             } else {
@@ -152,8 +161,12 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
-fn prolog<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Option<XMLDecl>, Vec<N>)), ParseError> {
+fn prolog<'a, 'i, N: Node>() -> impl Fn(
+    ParseInput<'a, 'i, N>,
+) -> Result<
+    (ParseInput<'a, 'i, N>, (Option<XMLDecl>, Vec<N>)),
+    ParseError,
+> {
     map(
         tuple4(opt(xmldecl()), misc(), opt(doctypedecl()), misc()),
         |(xmld, mut m1, _dtd, mut m2)| {
@@ -163,6 +176,7 @@ fn prolog<N: Node>(
     )
 }
 
-fn utf8bom<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+fn utf8bom<'a, 'i, N: Node>(
+) -> impl Fn(ParseInput<'a, 'i, N>) -> Result<(ParseInput<'a, 'i, N>, ()), ParseError> {
     tag("\u{feff}")
 }
