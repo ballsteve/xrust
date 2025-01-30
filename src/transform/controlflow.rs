@@ -13,13 +13,14 @@ use crate::xdmerror::{Error, ErrorKind};
 /// Iterate over the items in a sequence.
 // TODO: Allow multiple variables
 pub(crate) fn tr_loop<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     v: &Vec<(String, Transform<N>)>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -43,13 +44,14 @@ pub(crate) fn tr_loop<
 
 /// Choose a sequence to return.
 pub(crate) fn switch<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     v: &Vec<(Transform<N>, Transform<N>)>,
     o: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -66,13 +68,14 @@ pub(crate) fn switch<
 
 /// Evaluate a combinator for each item.
 pub fn for_each<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     g: &Option<Grouping<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -102,13 +105,14 @@ pub fn for_each<
 
 /// Evaluate a combinator for each group of items.
 fn group_by<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     by: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -184,13 +188,14 @@ fn group_by<
 
 /// Evaluate a combinator for each group of items. 'adj' is an expression that is evaluated for each selected item. It must resolve to a singleton item. The first item starts the first group. For the second and subsequent items, if the 'adj' item is the same as the previous item then the item is added to the same group. Otherwise a new group is started.
 fn group_adjacent<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     adj: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -292,13 +297,14 @@ fn group_adjacent<
 
 /// Evaluate a combinator for each group of items.
 fn group_starting_with<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<N, F, G, H>,
+    _stctxt: &mut StaticContext<'i, N, F, G, H>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
@@ -312,13 +318,14 @@ fn group_starting_with<
 
 /// Evaluate a combinator for each group of items.
 pub fn group_ending_with<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<N, F, G, H>,
+    _stctxt: &mut StaticContext<'i, N, F, G, H>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,

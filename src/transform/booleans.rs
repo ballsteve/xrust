@@ -11,13 +11,14 @@ use crate::xdmerror::Error;
 
 /// XPath boolean function.
 pub fn boolean<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Boolean(
@@ -27,13 +28,14 @@ pub fn boolean<
 
 /// XPath not function.
 pub fn not<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     n: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Boolean(

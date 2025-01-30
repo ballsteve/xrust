@@ -2,6 +2,7 @@
 
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
+use crate::qname_in::{Internment, QualifiedName as InQualifiedName};
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
@@ -24,13 +25,14 @@ pub(crate) fn literal<N: Node>(_ctxt: &Context<N>, val: &Item<N>) -> Result<Sequ
 /// Also create a Namespace node, if required.
 /// The transform is evaluated to create the content of the element.
 pub(crate) fn literal_element<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     qn: &Rc<QualifiedName>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -75,18 +77,72 @@ pub(crate) fn literal_element<
 
     Ok(vec![Item::Node(e)])
 }
-
-/// Creates a singleton sequence with a new element node.
-/// The name is interpreted as an AVT to determine the element name.
-/// The transform is evaluated to create the content of the element.
-pub(crate) fn element<
+pub(crate) fn literal_element_in<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    qn: &InQualifiedName,
+    c: &Transform<N>,
+) -> Result<Sequence<N>, Error> {
+    if ctxt.rd.is_none() {
+        return Err(Error::new(
+            ErrorKind::Unknown,
+            String::from("context has no result document"),
+        ));
+    }
+    let r = ctxt.rd.clone().unwrap();
+
+    let mut e = r.new_element_in(*qn, stctxt.intern)?;
+
+    /* TODO   // If the element is in a namespace, check if the namespace is in scope.
+    // If not, create and add a Namespace node for that namespace.
+    // Issue: the tree is being created from the bottom up, so we can't know if an ancestor will declare the namespace.
+    // This will result in lots of redundant Namespace nodes.
+    if let Some(ns) = qn.namespace_uri() {
+        e.add_namespace(r.new_namespace(ns, qn.prefix())?)?;
+    }*/
+
+    // Create the content of the new element
+    ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
+        // Item could be a Node or text
+        match i {
+            Item::Node(t) => {
+                match t.node_type() {
+                    NodeType::Attribute => e.add_attribute(t.clone()), // TODO: Also check namespace of attribute
+                    NodeType::Namespace => e.add_namespace(t.clone()),
+                    _ => e.push(t.deep_copy()?),
+                }
+            }
+            _ => {
+                // Add the Value as a text node
+                let n = r.new_text(Rc::new(Value::from(i.to_string())))?;
+                e.push(n)
+            }
+        }
+    })?;
+
+    // TODO: remove redundant namespace declarations from the newly added child elements
+
+    Ok(vec![Item::Node(e)])
+}
+
+/// Creates a singleton sequence with a new element node.
+/// The name is interpreted as an AVT to determine the element name.
+/// The transform is evaluated to create the content of the element.
+pub(crate) fn element<
+    'i,
+    N: Node,
+    F: FnMut(&str) -> Result<(), Error>,
+    G: FnMut(&str) -> Result<N, Error>,
+    H: FnMut(&Url) -> Result<String, Error>,
+>(
+    ctxt: &Context<N>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     qn: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -121,13 +177,14 @@ pub(crate) fn element<
 /// The transform is evaluated to create the value of the text node.
 /// Special characters are escaped, unless disabled.
 pub(crate) fn literal_text<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     t: &Transform<N>,
     b: &bool,
 ) -> Result<Sequence<N>, Error> {
@@ -160,13 +217,14 @@ pub(crate) fn literal_text<
 /// The transform is evaluated to create the value of the attribute.
 /// TODO: AVT for attribute name
 pub(crate) fn literal_attribute<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     qn: &Rc<QualifiedName>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -187,13 +245,14 @@ pub(crate) fn literal_attribute<
 /// Creates a singleton sequence with a new comment node.
 /// The transform is evaluated to create the value of the comment.
 pub(crate) fn literal_comment<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -214,13 +273,14 @@ pub(crate) fn literal_comment<
 /// Creates a singleton sequence with a new processing instruction node.
 /// The transform is evaluated to create the value of the PI.
 pub(crate) fn literal_processing_instruction<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     name: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -248,13 +308,14 @@ pub(crate) fn literal_processing_instruction<
 /// Otherwise replace the attribute's value with the supplied value.
 /// Returns an empty sequence.
 pub(crate) fn set_attribute<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     atname: &Rc<QualifiedName>,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -307,13 +368,14 @@ pub(crate) fn set_attribute<
 
 /// Construct a [Sequence] of items
 pub(crate) fn make_sequence<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     items: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     items.iter().try_fold(vec![], |mut acc, i| {
@@ -326,13 +388,14 @@ pub(crate) fn make_sequence<
 /// The first argument selects the items to be copied.
 /// The second argument creates the content of the target item.
 pub(crate) fn copy<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     s: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -368,13 +431,14 @@ pub(crate) fn copy<
 /// Deep copy of an item.
 /// The first argument selects the items to be copied. If not specified then the context item is copied.
 pub(crate) fn deep_copy<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let sel = ctxt.dispatch(stctxt, s)?;

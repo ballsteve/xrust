@@ -5,6 +5,7 @@ use std::rc::Rc;
 use url::Url;
 use xrust::item::{Item, Node, Sequence, SequenceTrait};
 use xrust::namespace::NamespaceMap;
+use xrust::qname_in::new_map;
 use xrust::transform::context::StaticContextBuilder;
 use xrust::xdmerror::{Error, ErrorKind};
 use xrust::xslt::from_document;
@@ -31,7 +32,8 @@ where
     eprintln!("parse style doc");
     let styledoc = parse_from_str(style.as_ref())
         .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -59,7 +61,8 @@ where
     let srcdoc = parse_from_str(src.as_ref())?;
     let styledoc = parse_from_str(style.as_ref())?;
     let mut msgs: Vec<String> = vec![];
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|m| {
             msgs.push(String::from(m));
             Ok(())
@@ -846,7 +849,8 @@ where
         .into_os_string()
         .into_string()
         .expect("unable to convert pwd");
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -891,7 +895,8 @@ where
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
 </xsl:stylesheet>"##,
     )?;
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_url| {
             Ok(String::from(
@@ -929,7 +934,8 @@ where
   <xsl:template match='child::text()'><xsl:sequence select='.'/></xsl:template>
 </xsl:stylesheet>"##,
     )?;
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_url| Ok(String::new()))
         .parser(|s| parse_from_str(s))

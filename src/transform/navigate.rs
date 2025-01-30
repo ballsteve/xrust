@@ -48,13 +48,14 @@ pub(crate) fn context<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> 
 /// The sequence returned by a transform is used as the context for the next transform.
 /// See also XSLT 20.4.1 for how the current item is set.
 pub(crate) fn compose<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut context = ctxt.cur.clone();
@@ -308,13 +309,14 @@ fn get_node<N: Node>(i: &Item<N>) -> Result<&N, Error> {
 
 /// Remove items that don't match the predicate.
 pub(crate) fn filter<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {

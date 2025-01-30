@@ -40,13 +40,14 @@ pub enum ActualParameters<N: Node> {
 
 /// Invoke a callable component
 pub(crate) fn invoke<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     qn: &QualifiedName,
     a: &ActualParameters<N>,
     ns: &NamespaceMap,

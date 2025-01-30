@@ -74,6 +74,7 @@ pub use xdmerror::{Error, ErrorKind};
 pub mod externals;
 pub mod output;
 pub mod qname;
+pub mod qname_in;
 pub mod xmldecl;
 
 pub mod value;
@@ -99,3 +100,4 @@ pub mod trees;
 pub mod testutils;
 pub mod validators;
 pub mod namespace;
+pub mod namespace_in;

@@ -33,13 +33,14 @@ pub fn current_time<N: Node>(_ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 /// XPath format-date-time function.
 /// NB. language, calendar, and place are not implemented.
 pub fn format_date_time<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
@@ -89,13 +90,14 @@ pub fn format_date_time<
 /// XPath format-date function.
 /// NB. language, calendar, and place are not implemented.
 pub fn format_date<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
@@ -146,13 +148,14 @@ pub fn format_date<
 /// XPath format-time function.
 /// NB. language, calendar, and place are not implemented.
 pub fn format_time<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,

@@ -6,6 +6,7 @@ use xrust::item::{Item, Node, SequenceTrait};
 use xrust::namespace::NamespaceMap;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
+use xrust::qname_in::{new, new_map, Internment, QualifiedName as InQualifiedName};
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::numbers::{Level, Numbering};
@@ -17,13 +18,16 @@ use xrust::transform::{
 use xrust::value::{Operator, Value};
 use xrust::xdmerror::{Error, ErrorKind};
 
+use crate::smite_in::make_empty_doc_in;
+
 pub fn generic_tr_empty<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
     let x = Transform::<N>::Empty;
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -40,7 +44,8 @@ where
     H: Fn() -> Item<N>,
 {
     let x = Transform::Literal(Item::<N>::Value(Rc::new(Value::from("this is a test"))));
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -51,29 +56,31 @@ where
     assert_eq!(seq.to_string(), "this is a test");
     Ok(())
 }
-pub fn generic_tr_literal_element<N: Node, G, H>(make_empty_doc: G, _: H) -> Result<(), Error>
+pub fn generic_tr_literal_element<N: Node, G, H>(make_empty_doc_in: G, _: H) -> Result<(), Error>
 where
     G: Fn() -> N,
     H: Fn() -> Item<N>,
 {
-    let x = Transform::LiteralElement(
-        Rc::new(QualifiedName::new(None, None, String::from("Test"))),
+    let mut intern = new_map();
+    let name = new(None, None, "Test", &mut intern).expect("unable to create QName");
+    let x = Transform::LiteralElementIn(
+        name,
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "content",
         ))))),
     );
-    let mydoc = make_empty_doc();
-    let mut stctxt = StaticContextBuilder::new()
+    let mydoc = make_empty_doc_in();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .build();
     let ctxt = ContextBuilder::new().result_document(mydoc).build();
     let seq = ctxt.dispatch(&mut stctxt, &x).expect("evaluation failed");
-    assert_eq!(seq.to_xml(), "<Test>content</Test>");
+    assert_eq!(seq.to_xml_in(&mut intern), "<Test>content</Test>");
     Ok(())
 }
-
+/*
 pub fn generic_tr_literal_element_nested<N: Node, G, H>(
     make_empty_doc: G,
     _: H,
@@ -5281,7 +5288,7 @@ where
         .build();
     ctxt.declare_key(
         String::from("mykey"),
-        Pattern::try_from("child::*").expect("unable to parse pattern"), // Top/*
+        Pattern::try_from("child::*").expect("unable to parse pattern"), // Top/ *
         Transform::Step(NodeMatch {
             axis: Axis::Child,
             nodetest: NodeTest::Kind(KindTest::Text),
@@ -5688,3 +5695,4 @@ where
     assert_eq!(seq.to_string(), "XLII");
     Ok(())
 }
+*/

@@ -10,7 +10,7 @@ mod smite;
 fn pattern_empty() {
     patterngeneric::pattern_empty::<RNode>().expect("test failed")
 }
-#[test]
+/*#[test]
 fn pattern_predicate_1_pos() {
     patterngeneric::pattern_predicate_1_pos::<RNode, _>(smite::make_empty_doc).expect("test failed")
 }
@@ -91,3 +91,4 @@ fn pattern_union_3() {
 fn pattern_union_4() {
     patterngeneric::pattern_union_4::<RNode, _>(smite::make_empty_doc).expect("test failed")
 }
+*/

@@ -4,7 +4,10 @@ version = "1.2.3"
 keywords = ["xml", "json", "xpath", "xslt", "tree"]
 categories = ["parser-implementations"]
 description = "Support for XPath and XSLT"
-authors = ["Steve Ball <Steve.Ball@explain.com.au>", "Daniel Murphy <daniel@devasta.ie>"]
+authors = [
+    "Steve Ball <Steve.Ball@explain.com.au>",
+    "Daniel Murphy <daniel@devasta.ie>",
+]
 license = "Apache-2.0"
 repository = "https://github.com/ballsteve/xrust"
 documentation = "https://docs.rs/xrust/"
@@ -23,6 +26,7 @@ harness = false
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+slotmap = "1.0.7"
 rust_decimal = "1.36.0"
 rust_decimal_macros = "1.36.0"
 lexers = "0.1.4"
@@ -45,5 +49,5 @@ hexdump = "0.1.2"
 criterion = "0.5.1"
 encoding_rs = "0.8.34"
 encoding_rs_io = "0.1.7"
-earleybird = {git = "https://github.com/mdubinko/earleybird.git"}
+earleybird = { git = "https://github.com/mdubinko/earleybird.git" }
 indextree = "4.6.1"

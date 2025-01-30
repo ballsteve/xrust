@@ -15,13 +15,14 @@ use url::Url;
 /// NB. an optimisation is to calculate a key's value the first time that key is accessed
 /// TODO: support composite keys
 pub(crate) fn populate_key_values<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &mut Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     sd: N,
 ) -> Result<(), Error> {
     // We have to visit N nodes to compute K keys.
@@ -64,13 +65,14 @@ pub(crate) fn populate_key_values<
 /// Look up the value of a key. The value is evaluated to a Sequence. The interpretation of the sequence depends on the key's composite setting.
 /// TODO: support composite keys
 pub fn key<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     name: &Box<Transform<N>>,
     v: &Box<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {

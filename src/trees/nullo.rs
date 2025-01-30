@@ -1,9 +1,11 @@
 use crate::item::{Node, NodeType};
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
+use crate::qname_in::{Internment, QualifiedName as InQualifiedName};
+use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
+use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
 /// A null tree implementation
 ///
 /// This tree implementation implements nothing.
@@ -13,7 +15,6 @@ use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
 use std::cmp::Ordering;
 use std::fmt;
 use std::rc::Rc;
-use crate::validators::{Schema, ValidationError};
 
 #[derive(Clone)]
 pub struct Nullo();
@@ -30,6 +31,9 @@ impl Node for Nullo {
     fn name(&self) -> Rc<QualifiedName> {
         Rc::new(QualifiedName::new(None, None, String::new()))
     }
+    fn in_name(&self, intern: &mut Internment) -> InQualifiedName {
+        intern.0.insert(String::new())
+    }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
@@ -42,7 +46,13 @@ impl Node for Nullo {
     fn to_xml(&self) -> String {
         String::new()
     }
+    fn to_xml_in(&self, intern: &mut Internment) -> String {
+        String::new()
+    }
     fn to_xml_with_options(&self, _: &OutputDefinition) -> String {
+        String::new()
+    }
+    fn to_xml_with_options_in(&self, od: &OutputDefinition, intern: &mut Internment) -> String {
         String::new()
     }
     fn to_json(&self) -> String {
@@ -84,6 +94,9 @@ impl Node for Nullo {
     fn get_attribute(&self, _: &QualifiedName) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
+    fn get_attribute_in(&self, a: InQualifiedName, intern: &Internment) -> Rc<Value> {
+        Rc::new(Value::from(""))
+    }
     fn get_attribute_node(&self, _: &QualifiedName) -> Option<Self> {
         None
     }
@@ -102,6 +115,12 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
+    fn new_element_in(&self, qn: InQualifiedName, intern: &Internment) -> Result<Self, Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    }
     fn new_text(&self, _: Rc<Value>) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
@@ -109,6 +128,17 @@ impl Node for Nullo {
         ))
     }
     fn new_attribute(&self, _: Rc<QualifiedName>, _: Rc<Value>) -> Result<Self, Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    }
+    fn new_attribute_in(
+        &self,
+        qn: InQualifiedName,
+        v: Rc<Value>,
+        intern: &Internment,
+    ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -130,8 +160,29 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
+    fn new_processing_instruction_in(
+        &self,
+        qn: InQualifiedName,
+        v: Rc<Value>,
+        intern: &Internment,
+    ) -> Result<Self, Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
+    }
     fn new_namespace(&self, _ns: Rc<Value>, _prefix: Option<Rc<Value>>) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not implemented"))
+    }
+    fn new_namespace_in(
+        &self,
+        ns: slotmap::DefaultKey,
+        prefix: Option<slotmap::DefaultKey>,
+    ) -> Result<Self, Error> {
+        Err(Error::new(
+            ErrorKind::NotImplemented,
+            String::from("not implemented"),
+        ))
     }
     fn push(&mut self, _: Self) -> Result<(), Error> {
         Err(Error::new(
@@ -196,17 +247,16 @@ impl Node for Nullo {
     fn get_dtd(&self) -> Option<DTD> {
         None
     }
-    fn set_dtd(&self, _dtd: DTD) -> Result<(), Error>{
+    fn set_dtd(&self, _dtd: DTD) -> Result<(), Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
         ))
     }
 
-    fn validate(&self, _sch: Schema) -> Result<(), ValidationError>{
+    fn validate(&self, _sch: Schema) -> Result<(), ValidationError> {
         Err(ValidationError::SchemaError("Not Implemented".to_string()))
     }
-
 }
 
 pub struct NulloIter();

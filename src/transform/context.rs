@@ -15,6 +15,7 @@ use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
 use crate::qname::QualifiedName;
+use crate::qname_in::{Internment, QualifiedName as InQualifiedName};
 use crate::transform::booleans::*;
 use crate::transform::callable::{invoke, Callable};
 use crate::transform::construct::*;
@@ -368,6 +369,7 @@ impl<N: Node> Context<N> {
             Transform::Empty => empty(self),
             Transform::Literal(v) => literal(self, v),
             Transform::LiteralElement(qn, t) => literal_element(self, stctxt, qn, t),
+            Transform::LiteralElementIn(qn, t) => literal_element_in(self, stctxt, qn, t),
             Transform::Element(qn, t) => element(self, stctxt, qn, t),
             Transform::LiteralText(t, b) => literal_text(self, stctxt, t, b),
             Transform::LiteralAttribute(qn, t) => literal_attribute(self, stctxt, qn, t),
@@ -565,7 +567,7 @@ impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
 /// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
-pub struct StaticContext<N: Node, F, G, H>
+pub struct StaticContext<'i, N: Node, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>, // Parses a string into a tree
@@ -574,19 +576,21 @@ where
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
+    pub(crate) intern: &'i mut Internment,
 }
 
-impl<N: Node, F, G, H> StaticContext<N, F, G, H>
+impl<'i, N: Node, F, G, H> StaticContext<'i, N, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 {
-    pub fn new() -> Self {
+    pub fn new(intern: &'i mut Internment) -> Self {
         StaticContext {
             message: None,
             parser: None,
             fetcher: None,
+            intern,
         }
     }
 }
@@ -630,20 +634,21 @@ where
 /// assert_eq!(message, "a message from the transformation")
 /// ```
 pub struct StaticContextBuilder<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
->(StaticContext<N, F, G, H>);
+>(StaticContext<'i, N, F, G, H>);
 
-impl<N: Node, F, G, H> StaticContextBuilder<N, F, G, H>
+impl<'i, N: Node, F, G, H> StaticContextBuilder<'i, N, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 {
-    pub fn new() -> Self {
-        StaticContextBuilder(StaticContext::new())
+    pub fn new(intern: &'i mut Internment) -> Self {
+        StaticContextBuilder(StaticContext::new(intern))
     }
     pub fn message(mut self, f: F) -> Self {
         self.0.message = Some(f);
@@ -657,7 +662,7 @@ where
         self.0.fetcher = Some(f);
         self
     }
-    pub fn build(self) -> StaticContext<N, F, G, H> {
+    pub fn build(self) -> StaticContext<'i, N, F, G, H> {
         self.0
     }
 }

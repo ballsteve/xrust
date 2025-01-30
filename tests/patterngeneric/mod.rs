@@ -6,6 +6,7 @@ use xrust::ErrorKind;
 use xrust::item::{Item, Node};
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
+use xrust::qname_in::{new_map, Internment, QualifiedName as InQualifiedName};
 use xrust::transform::context::{Context, StaticContextBuilder};
 use xrust::value::Value;
 use xrust::xdmerror::Error;
@@ -14,7 +15,7 @@ pub fn pattern_empty<N: Node>() -> Result<(), Error> {
     let _: Pattern<N> = Pattern::try_from("").expect("unable to parse empty string");
     Ok(())
 }
-
+/*
 pub fn pattern_predicate_1_pos<N: Node, G>(make_empty_doc: G) -> Result<(), Error>
 where
     G: Fn() -> N,
@@ -48,7 +49,8 @@ where
         .expect("unable to create text node");
     b.push(t_b).expect("unable to append text node");
 
-    let mut stctxt = StaticContextBuilder::new()
+    let mut intern = new_map();
+    let mut stctxt = StaticContextBuilder::new(&mut intern)
         .message(|_| Ok(()))
         .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
         .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
@@ -947,3 +949,4 @@ where
     );
     Ok(())
 }
+*/

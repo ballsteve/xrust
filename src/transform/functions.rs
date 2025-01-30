@@ -26,13 +26,14 @@ pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 
 /// XPath count function.
 pub fn tr_count<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -42,13 +43,14 @@ pub fn tr_count<
 
 /// XPath generate-id function.
 pub fn generate_id<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let i = match s {
@@ -78,13 +80,14 @@ const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
 
 /// XSLT system-property function.
 pub fn system_property<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     s: &Box<Transform<N>>,
     ns: &Rc<NamespaceMap>,
 ) -> Result<Sequence<N>, Error> {
@@ -222,13 +225,14 @@ pub fn available_system_properties<N: Node>() -> Result<Sequence<N>, Error> {
 /// The first argument is a sequence of URI references. Each reference is cast to xs:anyURI.
 /// Relative URIs are resolved against the base URI of the second argument. The default is to use the baseURI of the context (i.e. the XSL stylesheet).
 pub fn document<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     uris: &Box<Transform<N>>,
     _base: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {

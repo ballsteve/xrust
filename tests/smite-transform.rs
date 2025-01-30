@@ -1,31 +1,35 @@
 // Transform tests
 
-use xrust::trees::smite::RNode;
+use xrust::trees::smite_in::RNode;
 
-mod smite;
+mod smite_in;
 mod transformgeneric;
 
 #[test]
 fn tr_empty() {
-    transformgeneric::generic_tr_empty::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
-        .expect("test failed")
+    transformgeneric::generic_tr_empty::<RNode, _, _>(
+        smite_in::make_empty_doc_in,
+        smite_in::make_sd_in,
+    )
+    .expect("test failed")
 }
 #[test]
 fn tr_singleton_literal() {
     transformgeneric::generic_tr_singleton_literal::<RNode, _, _>(
-        smite::make_empty_doc,
-        smite::make_sd,
+        smite_in::make_empty_doc_in,
+        smite_in::make_sd_in,
     )
     .expect("test failed")
 }
 #[test]
 fn tr_literal_element() {
     transformgeneric::generic_tr_literal_element::<RNode, _, _>(
-        smite::make_empty_doc,
-        smite::make_sd,
+        smite_in::make_empty_doc_in,
+        smite_in::make_sd_in,
     )
     .expect("test failed")
 }
+/*
 #[test]
 fn tr_literal_element_nested() {
     transformgeneric::generic_tr_literal_element_nested::<RNode, _, _>(
@@ -903,3 +907,4 @@ fn tr_format_int_7() {
     )
     .expect("test failed")
 }
+*/

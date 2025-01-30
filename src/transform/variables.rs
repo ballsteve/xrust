@@ -9,13 +9,14 @@ use url::Url;
 /// Declare a variable in a new scope and then evaluate the given transformation.
 /// Returns the result of the transformation.
 pub fn declare_variable<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     name: String,
     value: &Transform<N>,
     f: &Transform<N>,

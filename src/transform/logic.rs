@@ -11,13 +11,14 @@ use crate::xdmerror::{Error, ErrorKind};
 
 /// Return the disjunction of all of the given functions.
 pub(crate) fn tr_or<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -40,13 +41,14 @@ pub(crate) fn tr_or<
 
 /// Return the conjunction of all of the given functions.
 pub(crate) fn tr_and<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -69,13 +71,14 @@ pub(crate) fn tr_and<
 
 /// General comparison of two sequences.
 pub(crate) fn general_comparison<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -101,13 +104,14 @@ pub(crate) fn general_comparison<
 
 /// Value comparison of two singleton sequences.
 pub(crate) fn value_comparison<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -136,13 +140,14 @@ pub(crate) fn value_comparison<
 /// All items must be nodes.
 /// TODO: eliminate duplicates, sort by document order (XPath 3.1 3.4.2).
 pub(crate) fn union<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H>,
     branches: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut result = vec![];
