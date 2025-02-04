@@ -2,10 +2,12 @@
 
 use crate::item::{Node, Sequence, SequenceTrait};
 use crate::qname::QualifiedName;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::ErrorKind;
+use lasso::Interner;
 use url::Url;
 
 /// XSLT current function.
@@ -28,9 +30,10 @@ pub(crate) fn message<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     body: &Transform<N>,
     _sel: &Option<Box<Transform<N>>>, // select expression, an alternative to body
     _e: &Transform<N>,                // error code

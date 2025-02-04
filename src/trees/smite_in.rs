@@ -52,11 +52,12 @@ use crate::value::Value;
 use crate::xdmerror::*;
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
 //use regex::Regex;
-use slotmap::{DefaultKey, SecondaryMap};
+use lasso::Interner;
 use std::cell::RefCell;
 use std::cmp::Ordering;
 use std::collections::btree_map::IntoIter;
 use std::collections::BTreeMap;
+use std::collections::HashMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
@@ -74,18 +75,18 @@ enum NodeInner {
     Element(
         RefCell<Weak<Node>>, // Parent: must be a Document or an Element
         InQualifiedName,     // name
-        RefCell<SecondaryMap<InQualifiedName, RNode>>, // attributes
+        RefCell<HashMap<InQualifiedName, RNode>>, // attributes
         RefCell<Vec<RNode>>, // children
-        Rc<RefCell<BTreeMap<Option<DefaultKey>, RNode>>>, // namespace declarations
+        Rc<RefCell<BTreeMap<Option<InQualifiedName>, RNode>>>, // namespace declarations
     ),
     Text(RefCell<Weak<Node>>, Rc<Value>),
     Attribute(RefCell<Weak<Node>>, InQualifiedName, Rc<Value>),
     Comment(RefCell<Weak<Node>>, Rc<Value>),
     ProcessingInstruction(RefCell<Weak<Node>>, InQualifiedName, Rc<Value>),
     Namespace(
-        RefCell<Weak<Node>>, // Parent
-        Option<DefaultKey>,  // Prefix
-        DefaultKey,          // URI
+        RefCell<Weak<Node>>,     // Parent
+        Option<InQualifiedName>, // Prefix
+        InQualifiedName,         // URI
     ),
 }
 pub struct Node(NodeInner);
@@ -102,7 +103,11 @@ impl Node {
     }
     /// Sets the XML Namespace URI for the name of an element.
     /// This results in replacing the [QualifiedName] of the element.
-    pub fn set_nsuri(&mut self, uri: DefaultKey, intern: &mut Internment) -> Result<(), Error> {
+    pub fn set_nsuri<'i, I: Interner<InQualifiedName>>(
+        &mut self,
+        uri: InQualifiedName,
+        intern: &'i mut Internment<'i, I>,
+    ) -> Result<(), Error> {
         Err(Error::new(
             ErrorKind::TypeError,
             String::from("invalid operation"),
@@ -136,11 +141,12 @@ impl PartialEq for Node {
                     let b_atts = atts.borrow();
                     let b_o_atts = o_atts.borrow();
                     if b_atts.len() == b_o_atts.len() {
-                        let mut at_names: Vec<DefaultKey> = b_atts.iter().map(|(k, _)| k).collect();
+                        let mut at_names: Vec<&InQualifiedName> =
+                            b_atts.iter().map(|(k, _)| k).collect();
                         at_names.sort();
                         if at_names.iter().fold(true, |mut acc, qn| {
                             if acc {
-                                acc = b_atts.get(*qn) == b_o_atts.get(*qn);
+                                acc = b_atts.get(&qn) == b_o_atts.get(&qn);
                                 acc
                             } else {
                                 acc
@@ -208,16 +214,19 @@ impl ItemNode for RNode {
     fn name(&self) -> Rc<QualifiedName> {
         Rc::new(QualifiedName::new(None, None, "use in_name() instead"))
     }
-    fn in_name(&self, intern: &mut Internment) -> InQualifiedName {
+    fn name_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        intern: &'i Internment<'i, I>,
+    ) -> InQualifiedName {
         match &self.0 {
             NodeInner::Element(_, qn, _, _, _)
             | NodeInner::ProcessingInstruction(_, qn, _)
             | NodeInner::Attribute(_, qn, _) => qn.clone(),
             NodeInner::Namespace(_, p, _) => match p {
-                None => intern.0.insert(String::new()),
+                None => intern.get(""),
                 Some(pf) => *pf,
             },
-            _ => intern.0.insert(String::new()),
+            _ => intern.get(""),
         }
     }
     fn value(&self) -> Rc<Value> {
@@ -254,14 +263,18 @@ impl ItemNode for RNode {
         String::new()
         //to_xml_int(self, &OutputDefinition::new(), 0)
     }
-    fn to_xml_in(&self, intern: &mut Internment) -> String {
+    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String {
         to_xml_int(self, &OutputDefinition::new(), 0, intern)
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> String {
         String::new()
         //to_xml_int(self, od, 0)
     }
-    fn to_xml_with_options_in(&self, od: &OutputDefinition, intern: &mut Internment) -> String {
+    fn to_xml_with_options_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        od: &OutputDefinition,
+        intern: &'i Internment<'i, I>,
+    ) -> String {
         to_xml_int(self, od, 0, intern)
     }
     fn is_same(&self, other: &Self) -> bool {
@@ -325,11 +338,15 @@ impl ItemNode for RNode {
     fn get_attribute(&self, a: &QualifiedName) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
-    fn get_attribute_in(&self, a: InQualifiedName, intern: &Internment) -> Rc<Value> {
+    fn get_attribute_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        a: InQualifiedName,
+        intern: &Internment<'i, I>,
+    ) -> Rc<Value> {
         match &self.0 {
             NodeInner::Element(_, _, att, _, _) => att
                 .borrow()
-                .get(a)
+                .get(&a)
                 .map_or(Rc::new(Value::from(String::new())), |v| v.value()),
             _ => Rc::new(Value::from(String::new())),
         }
@@ -353,11 +370,15 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)*/
     }
-    fn new_element_in(&self, qn: InQualifiedName, intern: &Internment) -> Result<Self, Error> {
+    fn new_element_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        qn: InQualifiedName,
+        intern: &Internment<'i, I>,
+    ) -> Result<Self, Error> {
         let child = Rc::new(Node(NodeInner::Element(
             RefCell::new(Rc::downgrade(&self.owner_document())),
             qn,
-            RefCell::new(SecondaryMap::new()),
+            RefCell::new(HashMap::new()),
             RefCell::new(vec![]),
             Rc::new(RefCell::new(BTreeMap::new())),
         )));
@@ -367,7 +388,11 @@ impl ItemNode for RNode {
     fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "obsolete"))
     }
-    fn new_namespace_in(&self, ns: DefaultKey, prefix: Option<DefaultKey>) -> Result<Self, Error> {
+    fn new_namespace_in(
+        &self,
+        ns: InQualifiedName,
+        prefix: Option<InQualifiedName>,
+    ) -> Result<Self, Error> {
         let ns_node = Rc::new(Node(NodeInner::Namespace(
             RefCell::new(Rc::downgrade(&self.owner_document())),
             prefix,
@@ -387,11 +412,11 @@ impl ItemNode for RNode {
     fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "obsolete"))
     }
-    fn new_attribute_in(
+    fn new_attribute_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error> {
         // TODO if the attribute is xml:id then type needs to be set as ID, regardless of DTD.
         let att = Rc::new(Node(NodeInner::Attribute(
@@ -417,11 +442,11 @@ impl ItemNode for RNode {
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "obsolete"))
     }
-    fn new_processing_instruction_in(
+    fn new_processing_instruction_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error> {
         let child = Rc::new(Node(NodeInner::ProcessingInstruction(
             RefCell::new(Rc::downgrade(&self.owner_document())),
@@ -468,7 +493,7 @@ impl ItemNode for RNode {
                     Some(p) => {
                         match &p.0 {
                             NodeInner::Element(_, _, att, _, _) => {
-                                att.borrow_mut().remove(*qn).ok_or(Error::new(
+                                att.borrow_mut().remove(qn).ok_or(Error::new(
                                     ErrorKind::DynamicAbsent,
                                     String::from("unable to find attribute"),
                                 ))?;
@@ -684,7 +709,7 @@ impl ItemNode for RNode {
                 let new = Rc::new(Node(NodeInner::Element(
                     p.clone(),
                     qn.clone(),
-                    RefCell::new(SecondaryMap::new()),
+                    RefCell::new(HashMap::new()),
                     RefCell::new(vec![]),
                     ns.clone(),
                 )));
@@ -933,7 +958,10 @@ impl Debug for Node {
     }
 }
 
-fn format_attrs(ats: &BTreeMap<QualifiedName, RNode>, intern: Internment) -> String {
+fn format_attrs<'i, I: Interner<InQualifiedName>>(
+    ats: &BTreeMap<QualifiedName, RNode>,
+    intern: Internment<'i, I>,
+) -> String {
     /*let mut result = String::new();
     ats.iter().for_each(|(k, v)| {
         result.push_str(format!(" {}='{}'", intern.0[k], v.to_string()).as_str())
@@ -1087,11 +1115,11 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 
 // This handles the XML serialisation of the document.
 // "indent" is the current level of indentation.
-fn to_xml_int(
+fn to_xml_int<'i, I: Interner<InQualifiedName>>(
     node: &RNode,
     od: &OutputDefinition,
     indent: usize,
-    intern: &mut Internment,
+    intern: &'i Internment<'i, I>,
 ) -> String {
     match &node.0 {
         NodeInner::Document(_, _, _, _) => {
@@ -1102,13 +1130,13 @@ fn to_xml_int(
         }
         NodeInner::Element(_, qn, _, _, ns) => {
             let mut result = String::from("<");
-            result.push_str(intern.0[*qn].as_str());
+            result.push_str(intern.resolve(qn));
 
             // Namespace declarations
             ns.borrow().iter().for_each(|(pre, nsuri)| {
                 let pre_str = pre.as_ref().map_or_else(
                     || format!(" xmlns='{}'", nsuri.to_string()),
-                    |p| format!(" xmlns:{}='{}'", intern.0[*p], nsuri.to_string()),
+                    |p| format!(" xmlns:{}='{}'", intern.resolve(p), nsuri.to_string()),
                 );
                 result.push_str(pre_str.as_str());
             });
@@ -1147,7 +1175,7 @@ fn to_xml_int(
                 (0..(indent - 2)).for_each(|_| result.push(' '))
             }
             result.push_str("</");
-            result.push_str(intern.0[*qn].as_str());
+            result.push_str(intern.resolve(qn));
             result.push('>');
             result
         }
@@ -1160,7 +1188,7 @@ fn to_xml_int(
         }
         NodeInner::ProcessingInstruction(_, qn, v) => {
             let mut result = String::from("<?");
-            result.push_str(intern.0[*qn].as_str());
+            result.push_str(intern.resolve(qn));
             result.push(' ');
             result.push_str(v.to_string().as_str());
             result.push_str("?>");
@@ -1342,10 +1370,10 @@ impl Iterator for Attributes {
 // NB. Prefixed namespaces cannot be undeclared (XML Namespaces, 3rd Edition, section 5)
 // TODO: handle undeclaring a default namespace. i.e. xmlns=""
 pub struct NamespaceNodes {
-    in_scope: Vec<Option<DefaultKey>>, // namespaces that are already in scope, masking outer declarations
+    in_scope: Vec<Option<InQualifiedName>>, // namespaces that are already in scope, masking outer declarations
     cur_element: RNode,
     ancestor_it: Box<dyn Iterator<Item = RNode>>,
-    ns_it: Option<IntoIter<Option<DefaultKey>, RNode>>,
+    ns_it: Option<IntoIter<Option<InQualifiedName>, RNode>>,
     xmlns: bool, // The undeclared, but always in-scope, "xml" namespace
 }
 
@@ -1486,6 +1514,7 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
 mod tests {
     use super::*;
     use crate::{qname_in, xmldecl::XMLDeclBuilder};
+    use lasso::Rodeo;
 
     #[test]
     fn smite_new() {
@@ -1502,10 +1531,13 @@ mod tests {
     }
     #[test]
     fn smite_element_1() {
-        let mut root = Rc::new(Node::new());
-        let mut intern = qname_in::new_map();
-        let name = qname_in::new(None, None, "Test", &mut intern)
+        let mut rodeo = Rodeo::default();
+        let mut intern = Internment::new(&mut rodeo);
+        let name = intern
+            .add(None, None, "Test")
             .expect("unable to create qualified name");
+
+        let mut root = Rc::new(Node::new());
         let c = root
             .new_element_in(name, &intern)
             .expect("unable to create element node");
@@ -1514,15 +1546,18 @@ mod tests {
     }
     #[test]
     fn smite_element_2() {
-        let mut root = Rc::new(Node::new());
-        let mut intern = qname_in::new_map();
-        let name1 = qname_in::new(None, None, "Test", &mut intern)
+        let mut rodeo = Rodeo::default();
+        let mut intern = Internment::new(&mut rodeo);
+        let name1 = intern
+            .add(None, None, "Test")
             .expect("unable to create qualified name");
+        let mut root = Rc::new(Node::new());
         let mut child1 = root
             .new_element_in(name1, &intern)
             .expect("unable to create element node");
         root.push(child1.clone()).expect("unable to add node");
-        let name2 = qname_in::new(None, None, "MoreTest", &mut intern)
+        let name2 = intern
+            .add(None, None, "MoreTest")
             .expect("unable to create qualified name");
         let child2 = child1
             .new_element_in(name2, &intern)
@@ -1536,15 +1571,19 @@ mod tests {
 
     #[test]
     fn smite_generate_id_1() {
-        let mut root = Rc::new(Node::new());
-        let mut intern = qname_in::new_map();
-        let name1 = qname_in::new(None, None, "Test", &mut intern)
+        let mut rodeo = Rodeo::default();
+        let mut intern = Internment::new(&mut rodeo);
+        let name1 = intern
+            .add(None, None, "Test")
             .expect("unable to create qualified name");
+
+        let mut root = Rc::new(Node::new());
         let mut child1 = root
             .new_element_in(name1, &intern)
             .expect("unable to create element node");
         root.push(child1.clone()).expect("unable to add node");
-        let name2 = qname_in::new(None, None, "MoreTest", &mut intern)
+        let name2 = intern
+            .add(None, None, "MoreTest")
             .expect("unable to create qualified name");
         let child2 = child1
             .new_element_in(name2, &intern)

@@ -4,8 +4,11 @@ use pkg_version::*;
 use std::rc::Rc;
 use url::Url;
 
+use lasso::Interner;
+
 use crate::item::{Item, Node, Sequence};
 use crate::qname::QualifiedName;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{NamespaceMap, Transform};
 use crate::value::Value;
@@ -31,9 +34,10 @@ pub fn tr_count<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
@@ -48,9 +52,10 @@ pub fn generate_id<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
     let i = match s {
@@ -85,9 +90,10 @@ pub fn system_property<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Box<Transform<N>>,
     ns: &Rc<NamespaceMap>,
 ) -> Result<Sequence<N>, Error> {
@@ -230,9 +236,10 @@ pub fn document<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     uris: &Box<Transform<N>>,
     _base: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {

@@ -12,100 +12,127 @@ use crate::trees::nullo::Nullo;
 //use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 //use core::hash::{Hash, Hasher};
-use slotmap::{DefaultKey, SecondaryMap, SlotMap};
+use lasso::{Interner, Key, LargeSpur, Resolver};
 //use std::cmp::Ordering;
-//use std::collections::HashMap;
+use std::collections::HashMap;
 //use std::fmt;
 //use std::fmt::Debug;
 //use std::fmt::Formatter;
 
-/// A QualifiedName is a slotmap Key
-pub type QualifiedName = DefaultKey;
+/// A QualifiedName is a lasso Key
+pub type QualifiedName = LargeSpur;
 
-/// An Internment is a SlotMap for the base strings plus a SecondaryMap to map to a [QualifiedNameData] struct.
-pub type Internment = (
-    SlotMap<DefaultKey, String>,
-    SecondaryMap<DefaultKey, QualifiedNameData>,
-);
+/// An Internment is an Interner for the base strings plus *something* to map to a [QualifiedNameData] struct.
+pub struct Internment<'i, I: Interner<QualifiedName>> {
+    intern: &'i mut I,
+    map: HashMap<QualifiedName, QualifiedNameData>,
+}
 
-/// Initialise both the slotmap internment and a corresponding secondary mapping from keys to qualified names.
-/// An application should only create one of these.
-pub fn new_map() -> Internment {
-    let mut sm = SlotMap::new();
-    let mut sec = SecondaryMap::new();
+impl<'i, I: Interner<QualifiedName>> Internment<'i, I> {
+    /// Create and initialise an internment.
+    pub fn new(intern: &'i mut I) -> Self {
+        let mut map = HashMap::new();
+        let _ = intern.get_or_intern_static("");
+        let xml_uri = "http://www.w3.org/XML/1998/namespace";
+        let xml_uri_qn = intern.get_or_intern_static(xml_uri);
+        let uriqualified = uri_qualifiedname(xml_uri, "^");
+        let uri = intern.get_or_intern(uriqualified.as_str());
+        let xml_qn = intern.get_or_intern_static("xml");
+        let caret_qn = intern.get_or_intern_static("^");
+        let _ = map.insert(
+            uri,
+            QualifiedNameData::new(Some(xml_uri_qn), Some(xml_qn), caret_qn),
+        );
+        Internment { intern, map }
+    }
+    /// Directly add a string to the internment.
+    pub fn get_or_intern(&mut self, s: &str) -> LargeSpur {
+        self.intern.get_or_intern(s)
+    }
+    pub fn get(&self, s: &str) -> LargeSpur {
+        self.intern
+            .get(s)
+            .map_or_else(|| panic!("string is not interned"), |k| k)
+    }
+    /// Directly retrieve a string
+    pub fn resolve(&self, k: &QualifiedName) -> &str {
+        self.intern.resolve(k)
+    }
+    /// Retrieve the prefix
+    pub fn prefix(&self, k: &QualifiedName) -> Option<QualifiedName> {
+        self.map
+            .get(k)
+            .map_or(Some(self.intern.get("").unwrap()), |p| p.prefix)
+    }
+    /// Retrieve the Namespace URI
+    pub fn namespace(&self, k: &QualifiedName) -> QualifiedName {
+        self.map.get(k).map_or(self.intern.get("").unwrap(), |p| {
+            p.nsuri.map_or(self.intern.get("").unwrap(), |q| q)
+        })
+    }
+    /// Retrieve the local part
+    pub fn local_name(&self, k: &QualifiedName) -> QualifiedName {
+        self.map
+            .get(k)
+            .map_or(self.intern.get("").unwrap(), |p| p.localname)
+    }
+    /// Create a QualifiedName (QN), adding it to the internment.
+    /// A QN consists of a Namespace URI and a local name.
+    /// QNs may optionally have a prefix.
+    /// It is not valid for a QN to have a prefix but no Namespace URI.
+    /// Both prefix and Namespace URI may not be empty strings.
+    pub fn add(
+        &mut self,
+        nsuri: Option<&str>,
+        prefix: Option<&str>,
+        localname: &str,
+    ) -> Result<QualifiedName, Error> {
+        match (nsuri, prefix) {
+            (None, Some(_)) => Err(Error::new(
+                ErrorKind::DynamicAbsent,
+                "missing Namespace URI",
+            )),
+            (Some(n), Some(p)) => {
+                let uriqualified = uri_qualifiedname(n, localname);
+                let localname_key = self.intern.get_or_intern(localname);
+                let nsuri_key = self.intern.get_or_intern(n);
+                let prefix_key = self.intern.get_or_intern(p);
+                let k = self.intern.get_or_intern(uriqualified.as_str());
 
-    // Prime with the empty string and XML namespace
-    let xml_uri = "http://www.w3.org/XML/1998/namespace";
-    let prefix = sm.insert("xml".to_string());
-    let uri = sm.insert(xml_uri.to_string());
-    let xml = sm.insert("^".to_string());
-    let uriqualified = sm.insert(uri_qualifiedname(xml_uri, "^"));
+                let _ = self.map.insert(
+                    k,
+                    QualifiedNameData::new(Some(nsuri_key), Some(prefix_key), localname_key),
+                );
 
-    let _ = sec.insert(
-        uriqualified,
-        QualifiedNameData::new(Some(uri), Some(prefix), xml),
-    );
+                Ok(k)
+            }
+            (Some(n), None) => {
+                let uriqualified = uri_qualifiedname(n, localname);
+                let localname_key = self.intern.get_or_intern(localname);
+                let nsuri_key = self.intern.get_or_intern(n);
+                let k = self.intern.get_or_intern(uriqualified.as_str());
 
-    (sm, sec)
+                let _ = self.map.insert(
+                    k,
+                    QualifiedNameData::new(Some(nsuri_key), None, localname_key),
+                );
+
+                Ok(k)
+            }
+            (None, None) => {
+                // An unprefixed QName
+                let the_localname = localname.into();
+                let k = self.intern.get_or_intern(the_localname);
+                let qn = QualifiedNameData::new(None, None, k);
+                self.map.insert(k, qn);
+                Ok(k)
+            }
+        }
+    }
 }
 
 pub fn uri_qualifiedname(uri: &str, name: &str) -> String {
     format!("Q{}{}{}{}", "{", uri, "}", name)
-}
-
-/// Create a QualifiedName (QN). A QN consists of a Namespace URI and a local name.
-/// QNs may optionally have a prefix.
-/// It is not valid for a QN to have a prefix but no Namespace URI.
-/// Both prefix and Namespace URI may not be empty strings.
-pub fn new(
-    nsuri: Option<String>,
-    prefix: Option<String>,
-    localname: impl Into<String>,
-    intern: &mut Internment,
-) -> Result<QualifiedName, Error> {
-    match (nsuri, prefix) {
-        (None, Some(_)) => Err(Error::new(
-            ErrorKind::DynamicAbsent,
-            "missing Namespace URI",
-        )),
-        (Some(n), Some(p)) => {
-            let my_localname = localname.into();
-            let uriqualified = uri_qualifiedname(n.as_str(), my_localname.as_str());
-            let localname_key = intern.0.insert(my_localname);
-            let nsuri_key = intern.0.insert(n);
-            let prefix_key = intern.0.insert(p);
-            let k = intern.0.insert(uriqualified);
-
-            let _ = intern.1.insert(
-                k,
-                QualifiedNameData::new(Some(nsuri_key), Some(prefix_key), localname_key),
-            );
-
-            Ok(k)
-        }
-        (Some(n), None) => {
-            let my_localname = localname.into();
-            let uriqualified = uri_qualifiedname(n.as_str(), my_localname.as_str());
-            let localname_key = intern.0.insert(my_localname);
-            let nsuri_key = intern.0.insert(n);
-            let k = intern.0.insert(uriqualified);
-
-            let _ = intern.1.insert(
-                k,
-                QualifiedNameData::new(Some(nsuri_key), None, localname_key),
-            );
-
-            Ok(k)
-        }
-        (None, None) => {
-            // An unprefixed QName
-            let my_localname = localname.into();
-            let k = intern.0.insert(my_localname.clone());
-            let qn = QualifiedNameData::new(None, None, k);
-            intern.1.insert(k, qn);
-            Ok(k)
-        }
-    }
 }
 
 /*/// Create a [QualifiedName] by parsing a string.
@@ -128,18 +155,14 @@ pub fn parse(
 
 #[derive(Clone)]
 pub struct QualifiedNameData {
-    nsuri: Option<DefaultKey>,
-    prefix: Option<DefaultKey>,
-    localname: DefaultKey,
+    nsuri: Option<LargeSpur>,
+    prefix: Option<LargeSpur>,
+    localname: LargeSpur,
 }
 // TODO: we may need methods that return a string slice, rather than a copy of the string
 impl QualifiedNameData {
     /// Builds a QualifiedName from String parts
-    pub fn new(
-        nsuri: Option<DefaultKey>,
-        prefix: Option<DefaultKey>,
-        localname: DefaultKey,
-    ) -> Self {
+    pub fn new(nsuri: Option<LargeSpur>, prefix: Option<LargeSpur>, localname: LargeSpur) -> Self {
         QualifiedNameData {
             nsuri,
             prefix,
@@ -149,19 +172,19 @@ impl QualifiedNameData {
     pub fn as_ref(&self) -> &Self {
         self
     }
-    pub fn namespace_uri(&self) -> Option<DefaultKey> {
+    pub fn namespace_uri(&self) -> Option<LargeSpur> {
         self.nsuri
     }
     //    pub fn namespace_uri_to_string(&self) -> Option<String> {
     //        self.nsuri.as_ref().map(|x| x.to_string())
     //    }
-    pub fn prefix(&self) -> Option<DefaultKey> {
+    pub fn prefix(&self) -> Option<LargeSpur> {
         self.prefix
     }
     //    pub fn prefix_to_string(&self) -> Option<String> {
     //        self.prefix.as_ref().map(|x| x.to_string())
     //    }
-    pub fn localname(&self) -> DefaultKey {
+    pub fn localname(&self) -> LargeSpur {
         self.localname.clone()
     }
     //    pub fn localname_to_string(&self) -> String {

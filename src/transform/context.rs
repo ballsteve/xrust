@@ -34,6 +34,7 @@ use crate::transform::variables::{declare_variable, reference_variable};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
+use lasso::Interner;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -77,7 +78,7 @@ pub struct Context<N: Node> {
     //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
 }
 
-impl<N: Node> Context<N> {
+impl<'i, N: Node> Context<N> {
     pub fn new() -> Self {
         Context {
             cur: Sequence::new(),
@@ -129,9 +130,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        I: Interner<InQualifiedName>,
     >(
         &mut self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
         sd: N,
     ) -> Result<(), Error> {
         populate_key_values(self, stctxt, sd)
@@ -229,9 +231,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        I: Interner<InQualifiedName>,
     >(
         &self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
     ) -> Result<Sequence<N>, Error> {
         if self.cur.is_empty() {
             Ok(Sequence::new())
@@ -287,9 +290,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        I: Interner<InQualifiedName>,
     >(
         &self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
         i: &Item<N>,
         m: &Option<Rc<QualifiedName>>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
@@ -354,9 +358,10 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        I: Interner<InQualifiedName>,
     >(
         &self,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
         match t {
@@ -567,25 +572,27 @@ impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
 /// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
-pub struct StaticContext<'i, N: Node, F, G, H>
+pub struct StaticContext<'i, N: Node, F, G, H, I>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>, // Parses a string into a tree
     H: FnMut(&Url) -> Result<String, Error>, // Fetches the data from a URL
+    I: Interner<InQualifiedName>,
 {
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
-    pub(crate) intern: &'i mut Internment,
+    pub(crate) intern: &'i mut Internment<'i, I>,
 }
 
-impl<'i, N: Node, F, G, H> StaticContext<'i, N, F, G, H>
+impl<'i, N: Node, F, G, H, I> StaticContext<'i, N, F, G, H, I>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 {
-    pub fn new(intern: &'i mut Internment) -> Self {
+    pub fn new(intern: &'i mut Internment<'i, I>) -> Self {
         StaticContext {
             message: None,
             parser: None,
@@ -639,15 +646,17 @@ pub struct StaticContextBuilder<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
->(StaticContext<'i, N, F, G, H>);
+    I: Interner<InQualifiedName>,
+>(StaticContext<'i, N, F, G, H, I>);
 
-impl<'i, N: Node, F, G, H> StaticContextBuilder<'i, N, F, G, H>
+impl<'i, N: Node, F, G, H, I> StaticContextBuilder<'i, N, F, G, H, I>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 {
-    pub fn new(intern: &'i mut Internment) -> Self {
+    pub fn new(intern: &'i mut Internment<'i, I>) -> Self {
         StaticContextBuilder(StaticContext::new(intern))
     }
     pub fn message(mut self, f: F) -> Self {
@@ -662,7 +671,7 @@ where
         self.0.fetcher = Some(f);
         self
     }
-    pub fn build(self) -> StaticContext<'i, N, F, G, H> {
+    pub fn build(self) -> StaticContext<'i, N, F, G, H, I> {
         self.0
     }
 }

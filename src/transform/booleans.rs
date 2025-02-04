@@ -4,10 +4,12 @@ use std::rc::Rc;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::Error;
+use lasso::Interner;
 
 /// XPath boolean function.
 pub fn boolean<
@@ -16,9 +18,10 @@ pub fn boolean<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Boolean(
@@ -33,9 +36,10 @@ pub fn not<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
     n: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Boolean(

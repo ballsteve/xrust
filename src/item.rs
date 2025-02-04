@@ -15,7 +15,7 @@ use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{XMLDecl, DTD};
-use slotmap::DefaultKey;
+use lasso::Interner;
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
@@ -33,7 +33,7 @@ pub trait SequenceTrait<N: Node> {
     fn to_string(&self) -> String;
     /// Return a XML formatted representation of the [Sequence].
     fn to_xml(&self) -> String;
-    fn to_xml_in(&self, intern: &mut Internment) -> String;
+    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String;
     /// Return a XML formatted representation of the [Sequence], controlled by the supplied output definition.
     fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
     /// Return a JSON formatted representation of the [Sequence].
@@ -67,7 +67,7 @@ impl<N: Node> SequenceTrait<N> for Sequence<N> {
         }
         r
     }
-    fn to_xml_in(&self, intern: &mut Internment) -> String {
+    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String {
         let mut r = String::new();
         for i in self {
             r.push_str(i.to_xml_in(intern).as_str())
@@ -225,7 +225,10 @@ impl<N: Node> Item<N> {
             Item::Value(v) => v.to_string(),
         }
     }
-    pub fn to_xml_in(&self, intern: &mut Internment) -> String {
+    pub fn to_xml_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        intern: &'i Internment<'i, I>,
+    ) -> String {
         match self {
             Item::Node(n) => n.to_xml_in(intern),
             Item::Function => "".to_string(),
@@ -293,10 +296,13 @@ impl<N: Node> Item<N> {
             _ => Rc::new(QualifiedName::new(None, None, "")),
         }
     }
-    pub fn in_name(&self, intern: &mut Internment) -> InQualifiedName {
+    pub fn name_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        intern: &'i mut Internment<'i, I>,
+    ) -> InQualifiedName {
         match self {
-            Item::Node(n) => n.in_name(intern),
-            _ => intern.0.insert(String::new()),
+            Item::Node(n) => n.name_in(intern),
+            _ => intern.get_or_intern(String::new().as_str()),
         }
     }
 
@@ -426,7 +432,10 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
     /// If the node is a namespace-type node, then the local part of the name is the namespace prefix. An unprefixed namespace has the empty string as its name.
     fn name(&self) -> Rc<QualifiedName>;
-    fn in_name(&self, intern: &mut Internment) -> InQualifiedName;
+    fn name_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        intern: &'i Internment<'i, I>,
+    ) -> InQualifiedName;
     /// Get the value of the node.
     /// If the node doesn't have a value, then returns a [Value] that is an empty string.
     /// If the node is a namespace-type node, then the value is the namespace URI.
@@ -439,10 +448,14 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn to_string(&self) -> String;
     /// Serialise the node as XML
     fn to_xml(&self) -> String;
-    fn to_xml_in(&self, intern: &mut Internment) -> String;
+    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String;
     /// Serialise the node as XML, with options such as indentation.
     fn to_xml_with_options(&self, od: &OutputDefinition) -> String;
-    fn to_xml_with_options_in(&self, od: &OutputDefinition, intern: &mut Internment) -> String;
+    fn to_xml_with_options_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        od: &OutputDefinition,
+        intern: &'i Internment<'i, I>,
+    ) -> String;
     /// Serialise the node as JSON
     fn to_json(&self) -> String {
         String::new()
@@ -498,22 +511,30 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
     fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
-    fn get_attribute_in(&self, a: InQualifiedName, intern: &Internment) -> Rc<Value>;
+    fn get_attribute_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        a: InQualifiedName,
+        intern: &'i Internment<'i, I>,
+    ) -> Rc<Value>;
     /// Get an attribute of the node. If the node is not an element returns None. Otherwise returns the attribute node. If the node does not have an attribute of the given name, returns None.
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
     fn new_element(&self, qn: Rc<QualifiedName>) -> Result<Self, Error>;
-    fn new_element_in(&self, qn: InQualifiedName, intern: &Internment) -> Result<Self, Error>;
+    fn new_element_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        qn: InQualifiedName,
+        intern: &'i Internment<'i, I>,
+    ) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
     fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
-    fn new_attribute_in(
+    fn new_attribute_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
@@ -523,15 +544,19 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
         qn: Rc<QualifiedName>,
         v: Rc<Value>,
     ) -> Result<Self, Error>;
-    fn new_processing_instruction_in(
+    fn new_processing_instruction_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
     fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
-    fn new_namespace_in(&self, ns: DefaultKey, prefix: Option<DefaultKey>) -> Result<Self, Error>;
+    fn new_namespace_in(
+        &self,
+        ns: InQualifiedName,
+        prefix: Option<InQualifiedName>,
+    ) -> Result<Self, Error>;
 
     /// Append a node to the child list
     fn push(&mut self, n: Self) -> Result<(), Error>;

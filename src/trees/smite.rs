@@ -51,6 +51,7 @@ use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::*;
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
+use lasso::Interner;
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
@@ -230,8 +231,11 @@ impl ItemNode for RNode {
             _ => Rc::new(QualifiedName::new(None, None, "")),
         }
     }
-    fn in_name(&self, intern: &mut Internment) -> InQualifiedName {
-        intern.0.insert(String::new())
+    fn name_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        intern: &'i Internment<'i, I>,
+    ) -> InQualifiedName {
+        intern.get("")
     }
     fn value(&self) -> Rc<Value> {
         match &self.0 {
@@ -266,13 +270,17 @@ impl ItemNode for RNode {
     fn to_xml(&self) -> String {
         to_xml_int(self, &OutputDefinition::new(), 0)
     }
-    fn to_xml_in(&self, intern: &mut Internment) -> String {
+    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String {
         String::new()
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> std::string::String {
         to_xml_int(self, od, 0)
     }
-    fn to_xml_with_options_in(&self, od: &OutputDefinition, intern: &mut Internment) -> String {
+    fn to_xml_with_options_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        od: &OutputDefinition,
+        intern: &'i Internment<'i, I>,
+    ) -> String {
         String::new()
     }
     fn is_same(&self, other: &Self) -> bool {
@@ -342,7 +350,11 @@ impl ItemNode for RNode {
             _ => Rc::new(Value::from(String::new())),
         }
     }
-    fn get_attribute_in(&self, a: InQualifiedName, intern: &Internment) -> Rc<Value> {
+    fn get_attribute_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        a: InQualifiedName,
+        intern: &'i Internment<'i, I>,
+    ) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
     fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self> {
@@ -362,7 +374,11 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_element_in(&self, qn: InQualifiedName, intern: &Internment) -> Result<Self, Error> {
+    fn new_element_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        qn: InQualifiedName,
+        intern: &'i Internment<'i, I>,
+    ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }
     fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error> {
@@ -376,8 +392,8 @@ impl ItemNode for RNode {
     }
     fn new_namespace_in(
         &self,
-        ns: slotmap::DefaultKey,
-        prefix: Option<slotmap::DefaultKey>,
+        ns: InQualifiedName,
+        prefix: Option<InQualifiedName>,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }
@@ -399,11 +415,11 @@ impl ItemNode for RNode {
         unattached(self, att.clone());
         Ok(att)
     }
-    fn new_attribute_in(
+    fn new_attribute_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }
@@ -428,11 +444,11 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_processing_instruction_in(
+    fn new_processing_instruction_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }

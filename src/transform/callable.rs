@@ -7,9 +7,11 @@
 
 use crate::item::Node;
 use crate::qname::QualifiedName;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::StaticContext;
 use crate::transform::{NamespaceMap, Transform};
 use crate::{Context, Error, ErrorKind, Sequence};
+use lasso::Interner;
 use std::collections::HashMap;
 use url::Url;
 
@@ -45,9 +47,10 @@ pub(crate) fn invoke<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
     qn: &QualifiedName,
     a: &ActualParameters<N>,
     ns: &NamespaceMap,
@@ -70,10 +73,13 @@ pub(crate) fn invoke<
                     // Put the actual parameters in a HashMap for easy access
                     let mut actuals = HashMap::new();
                     if let ActualParameters::Named(av) = a {
-                        av.iter().try_for_each(|(a_name, a_value)| {
+                        /*av.iter().try_for_each(|(a_name, a_value)| {
                             actuals.insert(a_name, ctxt.dispatch(stctxt, a_value)?);
                             Ok(())
-                        })?
+                        })?*/
+                        for (a_name, a_value) in av {
+                            let _ = actuals.insert(a_name, ctxt.dispatch(stctxt, a_value)?);
+                        }
                     } else {
                         return Err(Error::new(ErrorKind::TypeError, "argument mismatch"));
                     }

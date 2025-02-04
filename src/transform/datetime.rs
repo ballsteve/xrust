@@ -6,8 +6,11 @@ use std::rc::Rc;
 use chrono::{DateTime, Datelike, FixedOffset, Local, Timelike};
 use url::Url;
 
+use lasso::Interner;
+
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::parser::datetime::parse as picture_parse;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::Value;
@@ -38,9 +41,10 @@ pub fn format_date_time<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
@@ -95,9 +99,10 @@ pub fn format_date<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,
@@ -153,9 +158,10 @@ pub fn format_time<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     value: &Transform<N>,
     picture: &Transform<N>,
     _language: &Option<Box<Transform<N>>>,

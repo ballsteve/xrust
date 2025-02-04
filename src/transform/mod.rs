@@ -73,6 +73,8 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
+use lasso::Interner;
+
 /// Specifies how a [Sequence] is constructed.
 #[derive(Clone)]
 pub enum Transform<N: Node> {
@@ -425,15 +427,17 @@ pub enum Order {
 
 /// Performing sorting of a [Sequence] using the given sort keys.
 pub(crate) fn do_sort<
+    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     seq: &mut Sequence<N>,
     o: &Vec<(Order, Transform<N>)>,
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
 ) -> Result<(), Error> {
     // Optionally sort the select sequence
     // TODO: multiple sort keys

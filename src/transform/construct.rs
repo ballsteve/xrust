@@ -8,6 +8,7 @@ use crate::transform::Transform;
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
+use lasso::Interner;
 use std::rc::Rc;
 use url::Url;
 
@@ -30,9 +31,10 @@ pub(crate) fn literal_element<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     qn: &Rc<QualifiedName>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -83,9 +85,10 @@ pub(crate) fn literal_element_in<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     qn: &InQualifiedName,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -140,9 +143,10 @@ pub(crate) fn element<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     qn: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -182,9 +186,10 @@ pub(crate) fn literal_text<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     t: &Transform<N>,
     b: &bool,
 ) -> Result<Sequence<N>, Error> {
@@ -222,9 +227,10 @@ pub(crate) fn literal_attribute<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     qn: &Rc<QualifiedName>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -250,9 +256,10 @@ pub(crate) fn literal_comment<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -278,9 +285,10 @@ pub(crate) fn literal_processing_instruction<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     name: &Transform<N>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -313,9 +321,10 @@ pub(crate) fn set_attribute<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     atname: &Rc<QualifiedName>,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -373,9 +382,10 @@ pub(crate) fn make_sequence<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     items: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     items.iter().try_fold(vec![], |mut acc, i| {
@@ -393,9 +403,10 @@ pub(crate) fn copy<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -436,9 +447,10 @@ pub(crate) fn deep_copy<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let sel = ctxt.dispatch(stctxt, s)?;

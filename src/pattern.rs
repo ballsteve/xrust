@@ -72,12 +72,15 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
+use lasso::Interner;
+
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::literals::literal;
 use crate::parser::xpath::nodetests::{nodetest, qualname_test};
 use crate::parser::xpath::predicates::predicate_list;
 use crate::parser::xpath::variables::variable_reference;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, KindTest, NameTest, NodeTest, Transform, WildcardOrName};
 use crate::value::Value;
@@ -128,13 +131,15 @@ impl<N: Node> Pattern<N> {
     /// Returns whether the given item matches the pattern.
     /// TODO: return dynamic errors
     pub fn matches<
+        'i,
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        I: Interner<InQualifiedName>,
     >(
         &self,
         ctxt: &Context<N>,
-        stctxt: &mut StaticContext<N, F, G, H>,
+        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
         i: &Item<N>,
     ) -> bool {
         match self {

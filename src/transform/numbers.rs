@@ -6,10 +6,12 @@ use url::Url;
 use english_numbers::{convert, Formatting};
 use formato::Formato;
 use italian_numbers::roman_converter;
+use lasso::Interner;
 
 use crate::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use crate::pattern::{Branch, Pattern, Step};
 use crate::qname::QualifiedName;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, KindTest, NameTest, NodeTest, Transform,
@@ -47,9 +49,10 @@ pub fn generate_integers<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     _start_at: &Transform<N>,
     select: &Transform<N>,
     num: &Numbering<N>,
@@ -166,9 +169,10 @@ pub fn number<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     num: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, num)?;
@@ -198,9 +202,10 @@ pub fn sum<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::Double(
@@ -218,9 +223,10 @@ pub fn avg<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let seq = ctxt.dispatch(stctxt, s)?;
@@ -245,9 +251,10 @@ pub fn min<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let seq = ctxt.dispatch(stctxt, s)?;
@@ -274,9 +281,10 @@ pub fn max<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let seq = ctxt.dispatch(stctxt, s)?;
@@ -303,9 +311,10 @@ pub fn floor<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     f: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, f)?;
@@ -327,9 +336,10 @@ pub fn ceiling<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     let n = ctxt.dispatch(stctxt, c)?;
@@ -351,9 +361,10 @@ pub fn round<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     r: &Transform<N>,
     pr: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
@@ -395,9 +406,10 @@ pub(crate) fn tr_range<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     start: &Transform<N>,
     end: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -438,9 +450,10 @@ pub(crate) fn arithmetic<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     ops: &Vec<ArithmeticOperand<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Type: the result will be a number, but integer or double?
@@ -481,9 +494,10 @@ pub fn format_number<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     num: &Transform<N>,
     picture: &Transform<N>,
     _name: &Option<Box<Transform<N>>>,
@@ -520,9 +534,10 @@ pub fn format_integer<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     num: &Transform<N>,
     picture: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {

@@ -1,10 +1,12 @@
 //! Navigation routines
 
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{Axis, NodeMatch, Transform};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
+use lasso::Interner;
 use url::Url;
 
 /// The root node of the context item.
@@ -53,9 +55,10 @@ pub(crate) fn compose<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut context = ctxt.cur.clone();
@@ -314,9 +317,10 @@ pub(crate) fn filter<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     ctxt.cur.iter().try_fold(vec![], |mut acc, i| {

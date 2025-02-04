@@ -5,7 +5,10 @@ use std::fmt::{Debug, Formatter};
 use std::rc::Rc;
 use url::Url;
 
+use lasso::Interner;
+
 use crate::qname::QualifiedName;
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{do_sort, Order, Transform};
 use crate::xdmerror::Error;
@@ -95,9 +98,10 @@ pub(crate) fn apply_templates<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     s: &Transform<N>,
     m: &Option<Rc<QualifiedName>>,
     o: &Vec<(Order, Transform<N>)>, // sort keys
@@ -152,9 +156,10 @@ pub(crate) fn apply_imports<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
 ) -> Result<Sequence<N>, Error> {
     // Find the template with the next highest level within the same import tree
     // current_templates[0] is the currently matching template
@@ -184,9 +189,10 @@ pub(crate) fn next_match<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.current_templates.len() > 2 {
         ContextBuilder::from(ctxt)

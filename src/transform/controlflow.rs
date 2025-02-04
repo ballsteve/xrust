@@ -4,7 +4,10 @@ use std::collections::HashMap;
 use std::rc::Rc;
 use url::Url;
 
+use lasso::Interner;
+
 use crate::item::{Node, Sequence, SequenceTrait};
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
 use crate::transform::{do_sort, Grouping, Order, Transform};
 use crate::value::{Operator, Value};
@@ -18,9 +21,10 @@ pub(crate) fn tr_loop<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     v: &Vec<(String, Transform<N>)>,
     b: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -49,9 +53,10 @@ pub(crate) fn switch<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     v: &Vec<(Transform<N>, Transform<N>)>,
     o: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
@@ -73,9 +78,10 @@ pub fn for_each<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     g: &Option<Grouping<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -110,9 +116,10 @@ fn group_by<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     by: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -193,9 +200,10 @@ fn group_adjacent<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     adj: &Vec<Transform<N>>,
     s: &Transform<N>,
     body: &Transform<N>,
@@ -302,9 +310,10 @@ fn group_starting_with<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<'i, N, F, G, H>,
+    _stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,
@@ -323,9 +332,10 @@ pub fn group_ending_with<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     _ctxt: &Context<N>,
-    _stctxt: &mut StaticContext<'i, N, F, G, H>,
+    _stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     _pat: &Vec<Transform<N>>,
     _s: &Transform<N>,
     _body: &Transform<N>,

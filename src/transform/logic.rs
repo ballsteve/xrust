@@ -3,7 +3,10 @@
 use std::rc::Rc;
 use url::Url;
 
+use lasso::Interner;
+
 use crate::item::{Item, Node, Sequence, SequenceTrait};
+use crate::qname_in::QualifiedName as InQualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
 use crate::value::{Operator, Value};
@@ -16,9 +19,10 @@ pub(crate) fn tr_or<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -46,9 +50,10 @@ pub(crate) fn tr_and<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     v: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     // Future: Evaluate every operand to check for dynamic errors
@@ -76,9 +81,10 @@ pub(crate) fn general_comparison<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -109,9 +115,10 @@ pub(crate) fn value_comparison<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     o: &Operator,
     l: &Transform<N>,
     r: &Transform<N>,
@@ -145,9 +152,10 @@ pub(crate) fn union<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    I: Interner<InQualifiedName>,
 >(
     ctxt: &Context<N>,
-    stctxt: &mut StaticContext<'i, N, F, G, H>,
+    stctxt: &mut StaticContext<'i, N, F, G, H, I>,
     branches: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
     let mut result = vec![];

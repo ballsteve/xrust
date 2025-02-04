@@ -6,6 +6,7 @@ use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
+use lasso::Interner;
 /// A null tree implementation
 ///
 /// This tree implementation implements nothing.
@@ -31,8 +32,11 @@ impl Node for Nullo {
     fn name(&self) -> Rc<QualifiedName> {
         Rc::new(QualifiedName::new(None, None, String::new()))
     }
-    fn in_name(&self, intern: &mut Internment) -> InQualifiedName {
-        intern.0.insert(String::new())
+    fn name_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        intern: &'i Internment<'i, I>,
+    ) -> InQualifiedName {
+        intern.get("")
     }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
@@ -46,13 +50,17 @@ impl Node for Nullo {
     fn to_xml(&self) -> String {
         String::new()
     }
-    fn to_xml_in(&self, intern: &mut Internment) -> String {
+    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String {
         String::new()
     }
     fn to_xml_with_options(&self, _: &OutputDefinition) -> String {
         String::new()
     }
-    fn to_xml_with_options_in(&self, od: &OutputDefinition, intern: &mut Internment) -> String {
+    fn to_xml_with_options_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        od: &OutputDefinition,
+        intern: &'i Internment<'i, I>,
+    ) -> String {
         String::new()
     }
     fn to_json(&self) -> String {
@@ -94,7 +102,11 @@ impl Node for Nullo {
     fn get_attribute(&self, _: &QualifiedName) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
-    fn get_attribute_in(&self, a: InQualifiedName, intern: &Internment) -> Rc<Value> {
+    fn get_attribute_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        a: InQualifiedName,
+        intern: &'i Internment<'i, I>,
+    ) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
     fn get_attribute_node(&self, _: &QualifiedName) -> Option<Self> {
@@ -115,7 +127,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_element_in(&self, qn: InQualifiedName, intern: &Internment) -> Result<Self, Error> {
+    fn new_element_in<'i, I: Interner<InQualifiedName>>(
+        &self,
+        qn: InQualifiedName,
+        intern: &'i Internment<'i, I>,
+    ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
@@ -133,11 +149,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_attribute_in(
+    fn new_attribute_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
@@ -160,11 +176,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_processing_instruction_in(
+    fn new_processing_instruction_in<'i, I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &Internment,
+        intern: &'i Internment<'i, I>,
     ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
@@ -176,8 +192,8 @@ impl Node for Nullo {
     }
     fn new_namespace_in(
         &self,
-        ns: slotmap::DefaultKey,
-        prefix: Option<slotmap::DefaultKey>,
+        ns: InQualifiedName,
+        prefix: Option<InQualifiedName>,
     ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
