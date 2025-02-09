@@ -25,7 +25,7 @@ use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
 use crate::parser::xml::dtd::externalid::externalid;
 use crate::qname::QualifiedName;
-use crate::xmldecl::{AttType, Contentspec, DefaultDecl, DTDPattern};
+use crate::xmldecl::{AttType, DefaultDecl, DTDPattern};
 
 
 #[derive(Clone)]
@@ -86,23 +86,9 @@ pub(crate) fn doctypedecl<N: Node>(
 
             for (elname, eldecl) in &state1.dtd.elements {
 
-                let mut pat = match eldecl {
-                    Contentspec::ANY => {
-                        //println!("element-{:?}", elname);
-                        //println!("elementp-{:?}", anypattern.clone());
-                        //anypattern.clone()
-                        DTDPattern::ANY
-                    }
-                    Contentspec::DTDPattern(d) => {
-                        //println!("element-{:?}", elname);
-                        //println!("elementp-{:?}", d.clone());
-                        d.clone()
-                    }
-                };
                 match &state1.dtd.attlists.get(elname){
                     None => {
-                        pat = DTDPattern::Element(elname.clone(), Box::new(pat));
-                        state1.dtd.patterns.insert(elname.clone(), pat);
+                        state1.dtd.patterns.insert(elname.clone(), DTDPattern::Element(elname.clone(), Box::new(eldecl.clone())));
                     }
                     Some(attlist) => {
                         let mut attpat = None;
@@ -167,8 +153,8 @@ pub(crate) fn doctypedecl<N: Node>(
                         state1.dtd.patterns.insert(elname.clone(),
                             DTDPattern::Element(elname.clone(),
                                Box::new(DTDPattern::Group(
-                                    Box::new(pat),
-                                    Box::new(
+                                   Box::new(eldecl.clone()),
+                                   Box::new(
                                         attpat.unwrap())
                                ))
                             )

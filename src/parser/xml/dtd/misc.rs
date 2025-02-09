@@ -14,7 +14,7 @@ use crate::parser::xml::qname::name;
 use crate::parser::{ParseError, ParseInput};
 use crate::parser::xml::dtd::Occurances;
 use crate::qname::QualifiedName;
-use crate::xmldecl::{Contentspec, DTDPattern};
+use crate::xmldecl::DTDPattern;
 
 pub(crate) fn nmtoken<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
@@ -22,12 +22,12 @@ pub(crate) fn nmtoken<N: Node>(
 }
 
 pub(crate) fn contentspec<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Contentspec), ParseError> {
+) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
     alt4(
-        value(tag("EMPTY"), Contentspec::DTDPattern(DTDPattern::Empty)),
-        value(tag("ANY"), Contentspec::ANY),
-        map(mixed(),|m|{Contentspec::DTDPattern(m)}),
-        map(children(),|c|{Contentspec::DTDPattern(c)}),
+        value(tag("EMPTY"), DTDPattern::Empty),
+        value(tag("ANY"), DTDPattern::ANY),
+        mixed(),
+        children()
     )
 }
 
