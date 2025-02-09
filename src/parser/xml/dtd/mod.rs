@@ -84,39 +84,14 @@ pub(crate) fn doctypedecl<N: Node>(
                 }
             }
 
-            // Construction of DTDPatterns for validation
-
-            // First, we construct our "ANY" pattern. It can be any text or comment or declared element, so we loop through the DTD to build it.
-            let mut anypattern = DTDPattern::Text;
-
-            for el in &state1.dtd.elements {
-                anypattern = DTDPattern::Choice(
-                    Box::new(DTDPattern::Ref(el.0.clone())),
-                    Box::new(anypattern)
-                );
-            }
-            anypattern = DTDPattern::Choice(
-                Box::new(DTDPattern::Empty),
-                Box::new(
-                    DTDPattern::OneOrMore(
-                        Box::new(anypattern)
-                    )
-                ),
-            );
-
-            //println!("dtdelements");
-            //println!("{:?}", &state1.dtd.elements);
-            //println!("{:?}", &state1.dtd.patterns);
-
-            //let mut patternrefs = HashMap::new();
-
             for (elname, eldecl) in &state1.dtd.elements {
 
                 let mut pat = match eldecl {
                     Contentspec::ANY => {
                         //println!("element-{:?}", elname);
                         //println!("elementp-{:?}", anypattern.clone());
-                        anypattern.clone()
+                        //anypattern.clone()
+                        DTDPattern::ANY
                     }
                     Contentspec::DTDPattern(d) => {
                         //println!("element-{:?}", elname);

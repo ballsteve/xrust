@@ -10,6 +10,7 @@ pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
     match pat{
         DTDPattern::Empty => true,
         DTDPattern::Text => true,
+        DTDPattern::ANY => true,//TODO Check
         DTDPattern::Group(pat1, pat2) => {
             is_nullable(*pat1) && is_nullable(*pat2)
         },
@@ -56,6 +57,8 @@ fn interleave(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
         (_, DTDPattern::NotAllowed) => DTDPattern::NotAllowed,
         (DTDPattern::Empty, p2) => p2,
         (p1, DTDPattern::Empty) => p1,
+        (DTDPattern::ANY, p2) => p2, //TODO CHECK
+        (p1, DTDPattern::ANY) => p1, //TODO CHECK
         (p1, p2) => {
             DTDPattern::Interleave(
                 Box::new(p1),
@@ -166,6 +169,7 @@ fn text_deriv(pat: DTDPattern, s: String) -> DTDPattern {
         }
         //textDeriv cx1 (Value dt value cx2) s = if datatypeEqual dt value cx2 s cx1 then Empty else NotAllowed
         DTDPattern::Text => pat,
+        DTDPattern::ANY =>pat,
         DTDPattern::Empty => DTDPattern::NotAllowed,
         DTDPattern::NotAllowed => DTDPattern::NotAllowed,
         DTDPattern::Attribute(_, _) => DTDPattern::NotAllowed,
@@ -197,15 +201,84 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
         NodeType::Text => text_deriv(pat, n.to_string()),
         NodeType::Element => {
             let mut pat1 = start_tag_open_deriv(pat, n.name().as_ref().clone(), dtd.clone());
+            //at this stage, we check if the DTD is for DTDPattern::ANY. If it is present, we build a pattern
+            //based on the child nodes, so that they are all validated individually.
+            match pat1.clone() {
+                DTDPattern::After(a, p) => {
+                    match *a {
+                        DTDPattern::ANY => {
+                            let mut newpat = DTDPattern::Empty;
+                            let mut children = n.child_iter().filter( |node| {
+                                node.node_type() != NodeType::ProcessingInstruction
+                                    &&  node.node_type() != NodeType::Comment
+                                    && !(node.node_type() == NodeType::Text && node.value().to_string() == "".to_string())
+                            }).collect::<Vec<_>>();
+                            //todo POP VECTOR UNTIL EMPTY
+                            children.reverse();
+                            for c in children{
+                                match c.node_type(){
+                                    NodeType::Element => {
+                                        newpat = DTDPattern::Group(
+                                            Box::new(DTDPattern::Ref(c.name().as_ref().clone())),
+                                            Box::new(newpat)
+                                        )
+                                    }
+                                    NodeType::Text => {
+                                        newpat = DTDPattern::Group(
+                                            Box::new(DTDPattern::Text),
+                                            Box::new(newpat)
+                                        )
+                                    }
+                                    _ => {}
+                                }
+                            }
+
+                            pat1 = DTDPattern::After(Box::new(newpat), p)
+
+                        }
+                        DTDPattern::Group(an, p1) =>{
+                            if *an == DTDPattern::ANY {
+                                let mut newpat = DTDPattern::Empty;
+                                let mut children = n.child_iter().filter( |node| {
+                                    node.node_type() != NodeType::ProcessingInstruction
+                                        &&  node.node_type() != NodeType::Comment
+                                        && !(node.node_type() == NodeType::Text && node.value().to_string() == "".to_string())
+                                }).collect::<Vec<_>>();
+                                //todo POP VECTOR UNTIL EMPTY
+                                children.reverse();
+                                for c in children{
+                                    match c.node_type(){
+                                        NodeType::Element => {
+                                            newpat = DTDPattern::Group(
+                                                Box::new(DTDPattern::Ref(c.name().as_ref().clone())),
+                                                Box::new(newpat)
+                                            )
+                                        }
+                                        NodeType::Text => {
+                                            newpat = DTDPattern::Group(
+                                                Box::new(DTDPattern::Text),
+                                                Box::new(newpat)
+                                            )
+                                        }
+                                        _ => {}
+                                    }
+                                }
+
+                                pat1 = DTDPattern::After(Box::from(DTDPattern::Group(Box::new(newpat), p1)), p)
+                            }
+                        }
+                        _ => {}
+                    }
+                }
+                _ => {}
+            }
+
             for attribute in n.attribute_iter(){
                 pat1 = att_deriv(pat1, attribute)
             };
             pat1 = start_tag_close_deriv(pat1);
-            //println!("    STOD{:?}", &pat1);
             pat1 = children_deriv(pat1, n, dtd);
-            //println!("    CHDE-{:?}", &pat1);
             pat1 = end_tag_deriv(pat1);
-            //println!("    ETD-{:?}", &pat1);
             pat1
         }
     }
@@ -221,6 +294,12 @@ fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPatt
                 None => DTDPattern::NotAllowed,
                 Some(p1) => start_tag_open_deriv(p1.clone(), qn, dtd)
             }
+        }
+        DTDPattern::ANY =>{
+            after(
+                pat,
+                DTDPattern::Empty
+            )
         }
         DTDPattern::Element(nc, pat1) => {
             if contains(nc, qn){
@@ -355,6 +434,7 @@ fn att_deriv(pat: DTDPattern, att: impl Node) -> DTDPattern {
                 DTDPattern::NotAllowed
             }
         }
+        DTDPattern::ANY => DTDPattern::NotAllowed,
         DTDPattern::Value(_) => DTDPattern::NotAllowed,
         DTDPattern::Empty => DTDPattern::NotAllowed,
         DTDPattern::NotAllowed => DTDPattern::NotAllowed,
@@ -400,6 +480,7 @@ fn start_tag_close_deriv(pat: DTDPattern) -> DTDPattern {
             )
         }
         DTDPattern::Attribute(_, _) => DTDPattern::NotAllowed,
+        DTDPattern::ANY => pat,
         DTDPattern::Value(_) => pat,
         DTDPattern::Empty => pat,
         DTDPattern::NotAllowed => pat,
@@ -423,33 +504,37 @@ fn children_deriv(pat: DTDPattern, cn: impl Node, dtd: DTD) -> DTDPattern {
         }
     ).collect();
     //println!("children_deriv_children-{:?}", &children);
-    match children.len(){
+    let mut pat1 = pat;
+    match children.len() {
         0 => {
-            choice(pat.clone(), text_deriv(pat, "".to_string()))
+            pat1 = choice(pat1.clone(), text_deriv(pat1, "".to_string()));
         },
-        1 => {
-            match children[0].node_type() {
-                NodeType::Text => {
-                    let p1 = child_deriv(pat.clone(), children[0].clone(), dtd);
-                    if whitespace(children[0].value().to_string()){
-                        choice(pat, p1)
-                    } else {
-                        p1
+        _ => {
+            let mut c = children.into_iter().peekable();
+            while let Some(n) = c.next() {
+                if c.peek().is_none() {
+                    match n.node_type() {
+                        NodeType::Text => {
+                            let p1 = child_deriv(pat1.clone(), n.clone(), dtd.clone());
+                            pat1 = if whitespace(n.value().to_string()) {
+                                choice(pat1.clone(), p1)
+                            } else {
+                                p1
+                            }
+                        }
+                        _ => {
+                            pat1 = strip_children_deriv(pat1.clone(), vec![n], dtd.clone())
+                        }
                     }
-                }
-                _ => {
-                    strip_children_deriv(pat, children, dtd)
+                } else {
+                    if !strip(n.clone()) {
+                        pat1 = child_deriv(pat1, n.clone(), dtd.clone())
+                    }
                 }
             }
         }
-        _ => strip_children_deriv(pat, cn.child_iter().filter(
-            |node| {
-                node.node_type() != NodeType::ProcessingInstruction
-                    &&  node.node_type() != NodeType::Comment
-                    && !(node.node_type() == NodeType::Text && node.value().to_string() == "".to_string())
-            }
-        ).map(|c| c.clone()).collect(), dtd),
     }
+    pat1
 }
 
 fn end_tag_deriv(pat: DTDPattern) -> DTDPattern {
@@ -469,6 +554,7 @@ fn end_tag_deriv(pat: DTDPattern) -> DTDPattern {
                 DTDPattern::NotAllowed
             }
         }
+        DTDPattern::ANY => pat,
         _ => DTDPattern::NotAllowed
     }
 }

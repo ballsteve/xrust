@@ -109,8 +109,17 @@ pub(crate) fn textexternalid<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(Par
                 match state2.clone().resolve(state2.docloc.clone(), sid) {
                     Err(_) => Err(ParseError::ExtDTDLoadError),
                     Ok(s) => {
+                        if state2.xmlversion == "1.1"{
+                            s.replace("\r\n", "\n")
+                                .replace("\r\u{85}","\n")
+                                .replace("\u{85}","\n")
+                                .replace("\u{2028}","\n")
+                                .replace("\r", "\n")
+                        } else {
+                            s.replace("\r\n", "\n").replace('\r', "\n")
+                        };
                         match opt(textdecl())((
-                            s.replace("\r\n", "\n").replace('\r', "\n").as_str(),
+                            s.as_str(),
                             state2.clone(),
                         )) {
                             Err(_) => Ok(((input2, state2), s)),

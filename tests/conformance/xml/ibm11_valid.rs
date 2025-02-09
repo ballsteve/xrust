@@ -137,13 +137,17 @@ fn ibm11valid_p02ibm02v06xml() {
         Description:This test case contains valid char references in the CDATA section, comment and processing instruction of an external entity that match the char production.
     */
 
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/".to_string());
+
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
         testxml,
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P02/ibm02v06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
 
     assert!(parseresult.is_ok());
@@ -152,7 +156,6 @@ fn ibm11valid_p02ibm02v06xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11valid_p03ibm03v01xml() {
     /*
         Test ID:ibm-1-1-valid-P03-ibm03v01.xml
@@ -160,6 +163,9 @@ fn ibm11valid_p03ibm03v01xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -167,7 +173,7 @@ fn ibm11valid_p03ibm03v01xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v01.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -194,7 +200,6 @@ fn ibm11valid_p03ibm03v01xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11valid_p03ibm03v02xml() {
     /*
         Test ID:ibm-1-1-valid-P03-ibm03v02.xml
@@ -202,6 +207,9 @@ fn ibm11valid_p03ibm03v02xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -209,7 +217,7 @@ fn ibm11valid_p03ibm03v02xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v02.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -236,7 +244,6 @@ fn ibm11valid_p03ibm03v02xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11valid_p03ibm03v03xml() {
     /*
         Test ID:ibm-1-1-valid-P03-ibm03v03.xml
@@ -244,6 +251,9 @@ fn ibm11valid_p03ibm03v03xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in an external entity must be normalized to a single newline.
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -251,7 +261,7 @@ fn ibm11valid_p03ibm03v03xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v03.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -278,7 +288,6 @@ fn ibm11valid_p03ibm03v03xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11valid_p03ibm03v04xml() {
     /*
         Test ID:ibm-1-1-valid-P03-ibm03v04.xml
@@ -286,6 +295,9 @@ fn ibm11valid_p03ibm03v04xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in an external entity must be normalized to a single newline.
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -293,7 +305,7 @@ fn ibm11valid_p03ibm03v04xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v04.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -320,7 +332,6 @@ fn ibm11valid_p03ibm03v04xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11valid_p03ibm03v05xml() {
     /*
         Test ID:ibm-1-1-valid-P03-ibm03v05.xml
@@ -328,6 +339,9 @@ fn ibm11valid_p03ibm03v05xml() {
         Spec Sections:2.11
         Description:The two character sequence #x0D #x85 in a document entity must be normalized to a single newline.
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -335,7 +349,7 @@ fn ibm11valid_p03ibm03v05xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v05.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -362,7 +376,6 @@ fn ibm11valid_p03ibm03v05xml() {
 }
 
 #[test]
-#[ignore]
 fn ibm11valid_p03ibm03v06xml() {
     /*
         Test ID:ibm-1-1-valid-P03-ibm03v06.xml
@@ -370,6 +383,9 @@ fn ibm11valid_p03ibm03v06xml() {
         Spec Sections:2.11
         Description:The single character sequence #x85 in a document entity must be normalized to a single newline.
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -377,7 +393,7 @@ fn ibm11valid_p03ibm03v06xml() {
         fs::read_to_string("tests/conformance/xml/xmlconf/ibm/xml-1.1/valid/P03/ibm03v06.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
     let canonicalxml = RNode::new_document();
     let canonicalparseresult = xml::parse(
@@ -528,9 +544,14 @@ fn ibm11valid_p03ibm03v09xml() {
 
 }
 
+/*
 #[test]
 #[ignore]
 fn ibm11valid_p04ibm04v01xml() {
+    /*
+        This test is deliberately ignored. Although these are valid XML documents,
+        XML without namespaces is not something we wish to handle.
+    */
     /*
         Test ID:ibm-1-1-valid-P04-ibm04v01.xml
         Test URI:valid/P04/ibm04v01.xml
@@ -551,9 +572,9 @@ fn ibm11valid_p04ibm04v01xml() {
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
 
 }
+ */
 
 #[test]
-#[ignore]
 fn ibm11valid_p04ibm04av01xml() {
     /*
         Test ID:ibm-1-1-valid-P04-ibm04av01.xml
@@ -576,9 +597,14 @@ fn ibm11valid_p04ibm04av01xml() {
 
 }
 
+/*
 #[test]
 #[ignore]
 fn ibm11valid_p05ibm05v01xml() {
+    /*
+        This test is deliberately ignored. Although these are valid XML documents,
+        XML without namespaces is not something we wish to handle.
+    */
     /*
         Test ID:ibm-1-1-valid-P05-ibm05v01.xml
         Test URI:valid/P05/ibm05v01.xml
@@ -599,6 +625,7 @@ fn ibm11valid_p05ibm05v01xml() {
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
 
 }
+ */
 
 #[test]
 #[ignore]
@@ -624,9 +651,14 @@ fn ibm11valid_p05ibm05v02xml() {
 
 }
 
+/*
 #[test]
 #[ignore]
 fn ibm11valid_p05ibm05v03xml() {
+    /*
+        This test is deliberately ignored. Although these are valid XML documents,
+        XML without namespaces is not something we wish to handle.
+    */
     /*
         Test ID:ibm-1-1-valid-P05-ibm05v03.xml
         Test URI:valid/P05/ibm05v03.xml
@@ -647,6 +679,7 @@ fn ibm11valid_p05ibm05v03xml() {
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
 
 }
+*/
 
 #[test]
 fn ibm11valid_p05ibm05v04xml() {
@@ -671,9 +704,14 @@ fn ibm11valid_p05ibm05v04xml() {
 
 }
 
+/*
 #[test]
 #[ignore]
 fn ibm11valid_p05ibm05v05xml() {
+    /*
+        This test is deliberately ignored. Although these are valid XML documents,
+        XML without namespaces is not something we wish to handle.
+    */
     /*
         Test ID:ibm-1-1-valid-P05-ibm05v05.xml
         Test URI:valid/P05/ibm05v05.xml
@@ -694,6 +732,7 @@ fn ibm11valid_p05ibm05v05xml() {
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
 
 }
+ */
 
 #[test]
 fn ibm11valid_p047ibm07v01xml() {

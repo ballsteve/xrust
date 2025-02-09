@@ -195,6 +195,7 @@ pub(crate) enum DTDPattern {
     Attribute(QualifiedName, Box<DTDPattern>),
     Element(QualifiedName, Box<DTDPattern>),
     Ref(QualifiedName),
+    ANY,
     /*
         This Enum is never used, but it might see application when properly validating ENTITYs.
      */
