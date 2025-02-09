@@ -114,16 +114,12 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
 
                 let mut d = state1.doc.clone().unwrap();
 
-                pr.1.iter().for_each(|n| {
-                    d.push(n.clone())
-                        .expect("unable to add node")
-                });
-                    d.push(e)
-                        .expect("unable to add node");
-                m.unwrap_or_default().iter().for_each(|n| {
-                    d.push(n.clone())
-                        .expect("unable to add node")
-                });
+                pr.1.iter()
+                    .for_each(|n| d.push(n.clone()).expect("unable to add node"));
+                d.push(e).expect("unable to add node");
+                m.unwrap_or_default()
+                    .iter()
+                    .for_each(|n| d.push(n.clone()).expect("unable to add node"));
                 if let Some(x) = pr.0 {
                     let _ = d.set_xmldecl(x);
                 }

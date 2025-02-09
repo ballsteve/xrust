@@ -32,7 +32,6 @@ fn rmte3e05a() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -59,7 +58,6 @@ fn rmte3e05b() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -87,5 +85,4 @@ fn rmte3e06i() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }

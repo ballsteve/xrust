@@ -31,7 +31,6 @@ fn ibm11valid_p02ibm02v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -54,7 +53,6 @@ fn ibm11valid_p02ibm02v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -78,7 +76,6 @@ fn ibm11valid_p02ibm02v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -101,7 +98,6 @@ fn ibm11valid_p02ibm02v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -124,7 +120,6 @@ fn ibm11valid_p02ibm02v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -152,7 +147,6 @@ fn ibm11valid_p02ibm02v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -192,11 +186,7 @@ fn ibm11valid_p03ibm03v01xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -236,11 +226,7 @@ fn ibm11valid_p03ibm03v02xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -280,11 +266,7 @@ fn ibm11valid_p03ibm03v03xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -324,11 +306,7 @@ fn ibm11valid_p03ibm03v04xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -368,11 +346,7 @@ fn ibm11valid_p03ibm03v05xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -412,11 +386,7 @@ fn ibm11valid_p03ibm03v06xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -454,11 +424,7 @@ fn ibm11valid_p03ibm03v07xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -495,11 +461,7 @@ fn ibm11valid_p03ibm03v08xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -537,11 +499,7 @@ fn ibm11valid_p03ibm03v09xml() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 /*
@@ -594,7 +552,6 @@ fn ibm11valid_p04ibm04av01xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 /*
@@ -648,7 +605,6 @@ fn ibm11valid_p05ibm05v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 /*
@@ -701,7 +657,6 @@ fn ibm11valid_p05ibm05v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 /*
@@ -754,7 +709,6 @@ fn ibm11valid_p047ibm07v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -782,7 +736,6 @@ fn ibm11valid_p77ibm77v01xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -810,7 +763,6 @@ fn ibm11valid_p77ibm77v02xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -838,7 +790,6 @@ fn ibm11valid_p77ibm77v03xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -862,7 +813,6 @@ fn ibm11valid_p77ibm77v04xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -886,7 +836,6 @@ fn ibm11valid_p77ibm77v05xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -910,7 +859,6 @@ fn ibm11valid_p77ibm77v06xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -938,7 +886,6 @@ fn ibm11valid_p77ibm77v07xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -966,7 +913,6 @@ fn ibm11valid_p77ibm77v08xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -994,7 +940,6 @@ fn ibm11valid_p77ibm77v09xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1018,7 +963,6 @@ fn ibm11valid_p77ibm77v10xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1042,7 +986,6 @@ fn ibm11valid_p77ibm77v11xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1066,7 +1009,6 @@ fn ibm11valid_p77ibm77v12xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1094,7 +1036,6 @@ fn ibm11valid_p77ibm77v13xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1122,7 +1063,6 @@ fn ibm11valid_p77ibm77v14xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1150,7 +1090,6 @@ fn ibm11valid_p77ibm77v15xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1174,7 +1113,6 @@ fn ibm11valid_p77ibm77v16xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1198,7 +1136,6 @@ fn ibm11valid_p77ibm77v17xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1222,7 +1159,6 @@ fn ibm11valid_p77ibm77v18xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1250,7 +1186,6 @@ fn ibm11valid_p77ibm77v19xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1278,7 +1213,6 @@ fn ibm11valid_p77ibm77v20xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1306,7 +1240,6 @@ fn ibm11valid_p77ibm77v21xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1330,7 +1263,6 @@ fn ibm11valid_p77ibm77v22xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1354,7 +1286,6 @@ fn ibm11valid_p77ibm77v23xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1378,7 +1309,6 @@ fn ibm11valid_p77ibm77v24xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1406,7 +1336,6 @@ fn ibm11valid_p77ibm77v25xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1434,7 +1363,6 @@ fn ibm11valid_p77ibm77v26xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1462,7 +1390,6 @@ fn ibm11valid_p77ibm77v27xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1486,7 +1413,6 @@ fn ibm11valid_p77ibm77v28xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1510,7 +1436,6 @@ fn ibm11valid_p77ibm77v29xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }
 
 #[test]
@@ -1534,5 +1459,4 @@ fn ibm11valid_p77ibm77v30xml() {
 
     assert!(parseresult.is_ok());
     assert!(parseresult.unwrap().validate(Schema::DTD).is_ok())
-
 }

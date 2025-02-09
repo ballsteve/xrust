@@ -35,7 +35,6 @@ fn hstbh005() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -63,5 +62,4 @@ fn hstbh006() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }

@@ -109,7 +109,7 @@ pub struct DTD {
     publicid: Option<String>,
     systemid: Option<String>,
     pub(crate) name: Option<QualifiedName>,
-    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>
+    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>,
 }
 
 impl DTD {
@@ -130,7 +130,7 @@ impl DTD {
             publicid: None,
             systemid: None,
             name: None,
-            patterns: HashMap::new()
+            patterns: HashMap::new(),
         }
     }
 }
@@ -188,10 +188,8 @@ pub(crate) enum DTDPattern {
     Ref(QualifiedName),
     Any,
     /*
-        This Enum is never used, but it might see application when properly validating ENTITYs.
-     */
+       This Enum is never used, but it might see application when properly validating ENTITYs.
+    */
     #[allow(dead_code)]
     List(Box<DTDPattern>),
 }
-
-

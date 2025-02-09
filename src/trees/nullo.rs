@@ -1,9 +1,10 @@
 use crate::item::{Node, NodeType};
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
+use crate::validators::{Schema, ValidationError};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
+use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
 /// A null tree implementation
 ///
 /// This tree implementation implements nothing.
@@ -13,7 +14,6 @@ use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
 use std::cmp::Ordering;
 use std::fmt;
 use std::rc::Rc;
-use crate::validators::{Schema, ValidationError};
 
 #[derive(Clone)]
 pub struct Nullo();
@@ -196,17 +196,16 @@ impl Node for Nullo {
     fn get_dtd(&self) -> Option<DTD> {
         None
     }
-    fn set_dtd(&self, _dtd: DTD) -> Result<(), Error>{
+    fn set_dtd(&self, _dtd: DTD) -> Result<(), Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
             String::from("not implemented"),
         ))
     }
 
-    fn validate(&self, _sch: Schema) -> Result<(), ValidationError>{
+    fn validate(&self, _sch: Schema) -> Result<(), ValidationError> {
         Err(ValidationError::SchemaError("Not Implemented".to_string()))
     }
-
 }
 
 pub struct NulloIter();

@@ -51,10 +51,7 @@ fn validextsa001() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -95,10 +92,7 @@ fn validextsa002() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -139,10 +133,7 @@ fn validextsa003() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -183,10 +174,7 @@ fn validextsa004() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -227,10 +215,7 @@ fn validextsa005() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -272,10 +257,7 @@ fn validextsa006() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -317,10 +299,7 @@ fn validextsa007() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -362,10 +341,7 @@ fn validextsa008() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -406,10 +382,7 @@ fn validextsa009() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -450,10 +423,7 @@ fn validextsa011() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -494,10 +464,7 @@ fn validextsa012() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -539,10 +506,7 @@ fn validextsa013() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -584,8 +548,5 @@ fn validextsa014() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }

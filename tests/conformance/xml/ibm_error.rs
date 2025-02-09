@@ -4,11 +4,11 @@ IBM test cases
 
 */
 
+use crate::conformance::dtdfileresolve;
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::{ParserConfig, xml};
+use xrust::parser::{xml, ParserConfig};
 use xrust::trees::smite::RNode;
-use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore]

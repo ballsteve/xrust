@@ -2,6 +2,7 @@ mod attlistdecl;
 mod conditionals;
 mod elementdecl;
 mod enumerated;
+mod externalid;
 pub(crate) mod extsubset;
 mod gedecl;
 mod intsubset;
@@ -10,30 +11,28 @@ mod notation;
 mod pedecl;
 pub(crate) mod pereference;
 mod textdecl;
-mod externalid;
 
 use crate::item::Node;
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{ tuple8};
+use crate::parser::combinators::tuple::tuple8;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
+use crate::parser::xml::dtd::externalid::externalid;
 use crate::parser::xml::dtd::extsubset::extsubset;
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::qname::name;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
-use crate::parser::xml::dtd::externalid::externalid;
 use crate::qname::QualifiedName;
-use crate::xmldecl::{AttType, DefaultDecl, DTDPattern};
-
+use crate::xmldecl::{AttType, DTDPattern, DefaultDecl};
 
 #[derive(Clone)]
 pub(crate) enum Occurances {
     ZeroOrMore,
     OneOrMore,
     One,
-    ZeroOrOne
+    ZeroOrOne,
 }
 
 pub(crate) fn doctypedecl<N: Node>(
@@ -50,9 +49,13 @@ pub(crate) fn doctypedecl<N: Node>(
     )(input)
     {
         Ok(((input1, mut state1), (_, _, n, _, _, _, _inss, _))) => {
-            let q: QualifiedName = if n.contains(':'){
+            let q: QualifiedName = if n.contains(':') {
                 let mut nameparts = n.split(':');
-                QualifiedName::new(None, Some(nameparts.next().unwrap().parse().unwrap()), nameparts.next().unwrap())
+                QualifiedName::new(
+                    None,
+                    Some(nameparts.next().unwrap().parse().unwrap()),
+                    nameparts.next().unwrap(),
+                )
             } else {
                 QualifiedName::new(None, None, n)
             };
@@ -85,33 +88,36 @@ pub(crate) fn doctypedecl<N: Node>(
             }
 
             for (elname, eldecl) in &state1.dtd.elements {
-
-                match &state1.dtd.attlists.get(elname){
+                match &state1.dtd.attlists.get(elname) {
                     None => {
-                        state1.dtd.patterns.insert(elname.clone(), DTDPattern::Element(elname.clone(), Box::new(eldecl.clone())));
+                        state1.dtd.patterns.insert(
+                            elname.clone(),
+                            DTDPattern::Element(elname.clone(), Box::new(eldecl.clone())),
+                        );
                     }
                     Some(attlist) => {
                         let mut attpat = None;
-                        for (attname, (at,dd,_)) in attlist.iter() {
+                        for (attname, (at, dd, _)) in attlist.iter() {
                             let mut ap = match at {
-                                AttType::CDATA => { DTDPattern::Text }
-                                AttType::ID => { DTDPattern::Text }
-                                AttType::IDREF => { DTDPattern::Text }
-                                AttType::IDREFS => { DTDPattern::Text }
-                                AttType::ENTITY => { DTDPattern::Text }
-                                AttType::ENTITIES => {DTDPattern::Text }
-                                AttType::NMTOKEN => { DTDPattern::Text }
-                                AttType::NMTOKENS => { DTDPattern::Text }
-                                AttType::NOTATION(_) => { DTDPattern::Text }
+                                AttType::CDATA => DTDPattern::Text,
+                                AttType::ID => DTDPattern::Text,
+                                AttType::IDREF => DTDPattern::Text,
+                                AttType::IDREFS => DTDPattern::Text,
+                                AttType::ENTITY => DTDPattern::Text,
+                                AttType::ENTITIES => DTDPattern::Text,
+                                AttType::NMTOKEN => DTDPattern::Text,
+                                AttType::NMTOKENS => DTDPattern::Text,
+                                AttType::NOTATION(_) => DTDPattern::Text,
                                 AttType::ENUMERATION(el) => {
                                     let mut enumers = el.iter();
-                                    let mut pat = DTDPattern::Value(enumers.next().unwrap().clone());
+                                    let mut pat =
+                                        DTDPattern::Value(enumers.next().unwrap().clone());
                                     for s in enumers {
                                         pat = DTDPattern::Group(
                                             Box::new(pat),
-                                            Box::new(DTDPattern::Value(s.clone()))
+                                            Box::new(DTDPattern::Value(s.clone())),
                                         )
-                                    };
+                                    }
                                     pat
                                 }
                             };
@@ -121,43 +127,32 @@ pub(crate) fn doctypedecl<N: Node>(
                                     ap = DTDPattern::Choice(
                                         Box::new(DTDPattern::Attribute(
                                             attname.clone(),
-                                            Box::new(ap)
+                                            Box::new(ap),
                                         )),
-                                        Box::new(DTDPattern::Empty)
+                                        Box::new(DTDPattern::Empty),
                                     )
                                 }
-                                _ => {
-                                    ap = DTDPattern::Attribute(
-                                        attname.clone(),
-                                        Box::new(ap)
-                                    )
-                                }
+                                _ => ap = DTDPattern::Attribute(attname.clone(), Box::new(ap)),
                             }
 
                             match attpat {
                                 None => {
                                     attpat = Some(ap);
-                                },
+                                }
                                 Some(ap2) => {
-                                    attpat = Some(
-                                        DTDPattern::Group(
-                                            Box::new(
-                                                ap
-                                            ),
-                                            Box::new(ap2)
-                                        )
-                                    );
+                                    attpat = Some(DTDPattern::Group(Box::new(ap), Box::new(ap2)));
                                 }
                             }
-                        };
-                        state1.dtd.patterns.insert(elname.clone(),
-                            DTDPattern::Element(elname.clone(),
-                               Box::new(DTDPattern::Group(
-                                   Box::new(eldecl.clone()),
-                                   Box::new(
-                                        attpat.unwrap())
-                               ))
-                            )
+                        }
+                        state1.dtd.patterns.insert(
+                            elname.clone(),
+                            DTDPattern::Element(
+                                elname.clone(),
+                                Box::new(DTDPattern::Group(
+                                    Box::new(eldecl.clone()),
+                                    Box::new(attpat.unwrap()),
+                                )),
+                            ),
                         );
                     }
                 }
@@ -165,9 +160,6 @@ pub(crate) fn doctypedecl<N: Node>(
             //println!("{:?}", patternrefs);
             Ok(((input1, state1), ()))
         }
-        Err(err) => {
-            Err(err)
-        },
+        Err(err) => Err(err),
     }
 }
-

@@ -52,10 +52,7 @@ fn validnotsa001() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -96,10 +93,7 @@ fn validnotsa002() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -141,10 +135,7 @@ fn validnotsa003() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -186,10 +177,7 @@ fn validnotsa004() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -231,10 +219,7 @@ fn validnotsa005() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -276,10 +261,7 @@ fn validnotsa006() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -321,10 +303,7 @@ fn validnotsa007() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -366,10 +345,7 @@ fn validnotsa008() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -411,10 +387,7 @@ fn validnotsa009() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -456,10 +429,7 @@ fn validnotsa010() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -501,10 +471,7 @@ fn validnotsa011() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -546,10 +513,7 @@ fn validnotsa012() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -591,10 +555,7 @@ fn validnotsa013() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -636,10 +597,7 @@ fn validnotsa014() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -681,10 +639,7 @@ fn validnotsa015() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -726,10 +681,7 @@ fn validnotsa016() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -771,10 +723,7 @@ fn validnotsa017() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -816,10 +765,7 @@ fn validnotsa018() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -861,10 +807,7 @@ fn validnotsa019() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -906,10 +849,7 @@ fn validnotsa020() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -951,10 +891,7 @@ fn validnotsa021() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -996,10 +933,7 @@ fn validnotsa023() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1041,10 +975,7 @@ fn validnotsa024() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1086,10 +1017,7 @@ fn validnotsa025() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1131,10 +1059,7 @@ fn validnotsa026() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1176,10 +1101,7 @@ fn validnotsa027() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1221,10 +1143,7 @@ fn validnotsa028() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1266,10 +1185,7 @@ fn validnotsa029() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1311,10 +1227,7 @@ fn validnotsa030() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1356,8 +1269,5 @@ fn validnotsa031() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }

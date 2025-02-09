@@ -36,7 +36,6 @@ fn rmte2e9a() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -63,7 +62,6 @@ fn rmte2e15e() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -90,7 +88,6 @@ fn rmte2e15f() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -117,7 +114,6 @@ fn rmte2e15i() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -144,7 +140,6 @@ fn rmte2e15j() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -171,7 +166,6 @@ fn rmte2e15k() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -198,7 +192,6 @@ fn rmte2e15l() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -236,11 +229,7 @@ fn rmte2e18() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -278,11 +267,7 @@ fn rmte2e19() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -310,7 +295,6 @@ fn rmte2e22() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -337,7 +321,6 @@ fn rmte2e24() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -364,7 +347,6 @@ fn rmte2e29() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -392,7 +374,6 @@ fn rmte2e36() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -419,7 +400,6 @@ fn rmte2e41() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -446,7 +426,6 @@ fn rmte2e48() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -474,7 +453,6 @@ fn rmte2e50() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -505,5 +483,4 @@ fn rmte2e60() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }

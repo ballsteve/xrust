@@ -13,7 +13,7 @@ use std::str::FromStr;
 // CharData ::= [^<&]* - (']]>')
 pub(crate) fn chardata<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
-    move |(input, state)|{
+    move |(input, state)| {
         map(
             many1(alt3(
                 map_ver(
@@ -22,14 +22,14 @@ pub(crate) fn chardata<N: Node>(
                         |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
                         |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
                     ),
-                    |s: String| s.replace("\r\n", "\n")
-                        .replace("\r", "\n"),
-                    |s: String| s.replace("\r\n", "\n")
-                        .replace("\r\u{85}","\n")
-                        .replace("\u{85}","\n")
-                        .replace("\u{2028}","\n")
-                        .replace("\r", "\n")
-
+                    |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
+                    |s: String| {
+                        s.replace("\r\n", "\n")
+                            .replace("\r\u{85}", "\n")
+                            .replace("\u{85}", "\n")
+                            .replace("\u{2028}", "\n")
+                            .replace("\r", "\n")
+                    },
                 ),
                 map(
                     wellformed_ver(
@@ -43,15 +43,18 @@ pub(crate) fn chardata<N: Node>(
                     wellformed_ver(
                         chardata_literal(),
                         |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
-                        |s| !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+                        |s| {
+                            !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c))
+                        }, //XML 1.1
                     ),
-                    |s: String| s.replace("\r\n", "\n")
-                        .replace("\r", "\n"),
-                    |s: String| s.replace("\r\n", "\n")
-                        .replace("\r\u{85}","\n")
-                        .replace("\u{85}","\n")
-                        .replace("\u{2028}","\n")
-                        .replace("\r", "\n")
+                    |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
+                    |s: String| {
+                        s.replace("\r\n", "\n")
+                            .replace("\r\u{85}", "\n")
+                            .replace("\u{85}", "\n")
+                            .replace("\u{2028}", "\n")
+                            .replace("\r", "\n")
+                    },
                 ),
                 // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
             )),

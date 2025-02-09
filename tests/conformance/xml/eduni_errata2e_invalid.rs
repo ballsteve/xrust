@@ -36,7 +36,6 @@ fn rmte2e2a() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -64,7 +63,6 @@ fn rmte2e2b() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -92,7 +90,6 @@ fn rmte2e9b() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -118,7 +115,6 @@ fn rmte2e14() {
     );
 
     assert!(parseresult.is_err());
-
 }
 
 #[test]
@@ -146,7 +142,6 @@ fn rmte2e15a() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -174,7 +169,6 @@ fn rmte2e15b() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -202,7 +196,6 @@ fn rmte2e15c() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -230,7 +223,6 @@ fn rmte2e15d() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -258,7 +250,6 @@ fn rmte2e15g() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -286,7 +277,6 @@ fn rmte2e15h() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -314,5 +304,4 @@ fn rmte2e20() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }

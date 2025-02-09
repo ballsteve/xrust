@@ -16,7 +16,7 @@ where
     }
 }
 
-pub fn map_ver<P, F,G, A, B, N: Node>(
+pub fn map_ver<P, F, G, A, B, N: Node>(
     parser: P,
     map_fn10: F,
     map_fn11: G,
@@ -38,7 +38,6 @@ where
         Err(err) => Err(err),
     }
 }
-
 
 pub fn map_with_state<P, F, A, B, N: Node>(
     parser: P,

@@ -20,10 +20,7 @@ pub(crate) fn elementdecl<N: Node>(
     )(input)
     {
         Ok(((input2, mut state2), (_, _, n, _, s, _, _))) => {
-            state2
-                .dtd
-                .elements
-                .insert(n, s);
+            state2.dtd.elements.insert(n, s);
             Ok(((input2, state2), ()))
         }
         Err(err) => Err(err),

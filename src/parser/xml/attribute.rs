@@ -253,10 +253,7 @@ fn attribute_value<N: Node>(
             delimited(
                 tag("'"),
                 many0(alt3(
-                    map(
-                        chardata_unicode_codepoint(),
-                        |c| c.to_string(),
-                    ),
+                    map(chardata_unicode_codepoint(), |c| c.to_string()),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\''), |c| !c.contains('<')),
                 )),
@@ -265,10 +262,7 @@ fn attribute_value<N: Node>(
             delimited(
                 tag("\""),
                 many0(alt3(
-                    map(
-                        chardata_unicode_codepoint(),
-                        |c| c.to_string(),
-                    ),
+                    map(chardata_unicode_codepoint(), |c| c.to_string()),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\"'), |c| !c.contains('<')),
                 )),
