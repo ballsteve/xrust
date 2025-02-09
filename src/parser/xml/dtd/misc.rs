@@ -25,7 +25,7 @@ pub(crate) fn contentspec<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, DTDPattern), ParseError> {
     alt4(
         value(tag("EMPTY"), DTDPattern::Empty),
-        value(tag("ANY"), DTDPattern::ANY),
+        value(tag("ANY"), DTDPattern::Any),
         mixed(),
         children()
     )

@@ -10,7 +10,7 @@ pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
     match pat{
         DTDPattern::Empty => true,
         DTDPattern::Text => true,
-        DTDPattern::ANY => true,//TODO Check
+        DTDPattern::Any => true,//TODO Check
         DTDPattern::Group(pat1, pat2) => {
             is_nullable(*pat1) && is_nullable(*pat2)
         },
@@ -57,8 +57,8 @@ fn interleave(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
         (_, DTDPattern::NotAllowed) => DTDPattern::NotAllowed,
         (DTDPattern::Empty, p2) => p2,
         (p1, DTDPattern::Empty) => p1,
-        (DTDPattern::ANY, p2) => p2, //TODO CHECK
-        (p1, DTDPattern::ANY) => p1, //TODO CHECK
+        (DTDPattern::Any, p2) => p2, //TODO CHECK
+        (p1, DTDPattern::Any) => p1, //TODO CHECK
         (p1, p2) => {
             DTDPattern::Interleave(
                 Box::new(p1),
@@ -169,7 +169,7 @@ fn text_deriv(pat: DTDPattern, s: String) -> DTDPattern {
         }
         //textDeriv cx1 (Value dt value cx2) s = if datatypeEqual dt value cx2 s cx1 then Empty else NotAllowed
         DTDPattern::Text => pat,
-        DTDPattern::ANY =>pat,
+        DTDPattern::Any =>pat,
         DTDPattern::Empty => DTDPattern::NotAllowed,
         DTDPattern::NotAllowed => DTDPattern::NotAllowed,
         DTDPattern::Attribute(_, _) => DTDPattern::NotAllowed,
@@ -201,17 +201,17 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
         NodeType::Text => text_deriv(pat, n.to_string()),
         NodeType::Element => {
             let mut pat1 = start_tag_open_deriv(pat, n.name().as_ref().clone(), dtd.clone());
-            //at this stage, we check if the DTD is for DTDPattern::ANY. If it is present, we build a pattern
+            //at this stage, we check if the DTD is for DTDPattern::Any. If it is present, we build a pattern
             //based on the child nodes, so that they are all validated individually.
             match pat1.clone() {
                 DTDPattern::After(a, p) => {
                     match *a {
-                        DTDPattern::ANY => {
+                        DTDPattern::Any => {
                             let mut newpat = DTDPattern::Empty;
                             let mut children = n.child_iter().filter( |node| {
                                 node.node_type() != NodeType::ProcessingInstruction
                                     &&  node.node_type() != NodeType::Comment
-                                    && !(node.node_type() == NodeType::Text && node.value().to_string() == "".to_string())
+                                    && !(node.node_type() == NodeType::Text && node.value().to_string() == *"")
                             }).collect::<Vec<_>>();
                             //todo POP VECTOR UNTIL EMPTY
                             children.reverse();
@@ -237,12 +237,12 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
 
                         }
                         DTDPattern::Group(an, p1) =>{
-                            if *an == DTDPattern::ANY {
+                            if *an == DTDPattern::Any {
                                 let mut newpat = DTDPattern::Empty;
                                 let mut children = n.child_iter().filter( |node| {
                                     node.node_type() != NodeType::ProcessingInstruction
                                         &&  node.node_type() != NodeType::Comment
-                                        && !(node.node_type() == NodeType::Text && node.value().to_string() == "".to_string())
+                                        && !(node.node_type() == NodeType::Text && node.value().to_string() == *"")
                                 }).collect::<Vec<_>>();
                                 //todo POP VECTOR UNTIL EMPTY
                                 children.reverse();
@@ -295,7 +295,7 @@ fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPatt
                 Some(p1) => start_tag_open_deriv(p1.clone(), qn, dtd)
             }
         }
-        DTDPattern::ANY =>{
+        DTDPattern::Any =>{
             after(
                 pat,
                 DTDPattern::Empty
@@ -314,12 +314,10 @@ fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPatt
             }
         }
         DTDPattern::Choice(pat1, pat2) => {
-            let x = choice(
+            choice(
                 start_tag_open_deriv(*pat1, qn.clone(), dtd.clone()),
                 start_tag_open_deriv(*pat2, qn, dtd)
-            );
-            //println!("x-{:?}", &x);
-            x
+            )
         }
         DTDPattern::Interleave(pat1, pat2) => {
             choice(
@@ -434,7 +432,7 @@ fn att_deriv(pat: DTDPattern, att: impl Node) -> DTDPattern {
                 DTDPattern::NotAllowed
             }
         }
-        DTDPattern::ANY => DTDPattern::NotAllowed,
+        DTDPattern::Any => DTDPattern::NotAllowed,
         DTDPattern::Value(_) => DTDPattern::NotAllowed,
         DTDPattern::Empty => DTDPattern::NotAllowed,
         DTDPattern::NotAllowed => DTDPattern::NotAllowed,
@@ -480,7 +478,7 @@ fn start_tag_close_deriv(pat: DTDPattern) -> DTDPattern {
             )
         }
         DTDPattern::Attribute(_, _) => DTDPattern::NotAllowed,
-        DTDPattern::ANY => pat,
+        DTDPattern::Any => pat,
         DTDPattern::Value(_) => pat,
         DTDPattern::Empty => pat,
         DTDPattern::NotAllowed => pat,
@@ -526,10 +524,8 @@ fn children_deriv(pat: DTDPattern, cn: impl Node, dtd: DTD) -> DTDPattern {
                             pat1 = strip_children_deriv(pat1.clone(), vec![n], dtd.clone())
                         }
                     }
-                } else {
-                    if !strip(n.clone()) {
-                        pat1 = child_deriv(pat1, n.clone(), dtd.clone())
-                    }
+                } else if !strip(n.clone()) {
+                    pat1 = child_deriv(pat1, n.clone(), dtd.clone())
                 }
             }
         }
@@ -554,7 +550,7 @@ fn end_tag_deriv(pat: DTDPattern) -> DTDPattern {
                 DTDPattern::NotAllowed
             }
         }
-        DTDPattern::ANY => pat,
+        DTDPattern::Any => pat,
         _ => DTDPattern::NotAllowed
     }
 }
@@ -573,7 +569,8 @@ where
                 } else {
                     child_deriv(pat, h.clone(), dtd.clone())
                 },
-                ci.map(|c| c.clone()).collect(),
+                ci.cloned().collect(),
+                //ci.map(|c| c.clone()).collect(),
                 dtd
             )
         }

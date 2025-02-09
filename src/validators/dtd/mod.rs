@@ -26,7 +26,7 @@ pub(crate) fn validate_dtd(doc: impl Node) -> Result<(), ValidationError>{
                                     match is_nullable(child_deriv(pat.clone(), doc.child_iter().filter( |node| {
                                         node.node_type() != NodeType::ProcessingInstruction
                                             &&  node.node_type() != NodeType::Comment
-                                            && !(node.node_type() == NodeType::Text && node.value().to_string() == "".to_string())
+                                            && !(node.node_type() == NodeType::Text && node.value().to_string() == *"")
                                     }).next().unwrap(), dtd)){
                                         true => Ok(()),
                                         false => Err(ValidationError::SchemaError("Invalid".to_string()))
