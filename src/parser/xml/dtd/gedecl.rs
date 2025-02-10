@@ -10,11 +10,11 @@ use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11, is_unrestricted_char11};
 use crate::parser::xml::chardata::chardata_unicode_codepoint;
+use crate::parser::xml::dtd::externalid::textexternalid;
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
 use crate::parser::xml::qname::qualname;
 use crate::parser::{ParseError, ParseInput};
-use crate::parser::xml::dtd::externalid::textexternalid;
 
 pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
 {

@@ -405,9 +405,7 @@ fn op16pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
-
 
 #[test]
 fn op18pass1() {
@@ -436,7 +434,6 @@ fn op18pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -466,7 +463,6 @@ fn op22pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -496,7 +492,6 @@ fn op22pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -526,7 +521,6 @@ fn op22pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -556,7 +550,6 @@ fn op23pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -586,7 +579,6 @@ fn op23pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -616,7 +608,6 @@ fn op23pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -646,7 +637,6 @@ fn op23pass4() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -676,7 +666,6 @@ fn op24pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -706,7 +695,6 @@ fn op24pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -736,7 +724,6 @@ fn op24pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -766,7 +753,6 @@ fn op24pass4() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -796,7 +782,6 @@ fn op25pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -826,7 +811,6 @@ fn op25pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -856,7 +840,6 @@ fn op26pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -886,7 +869,6 @@ fn op27pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -916,7 +898,6 @@ fn op27pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -946,7 +927,6 @@ fn op27pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -976,7 +956,6 @@ fn op27pass4() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1006,7 +985,6 @@ fn op32pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1036,7 +1014,6 @@ fn op32pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1066,7 +1043,6 @@ fn op39pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1096,7 +1072,6 @@ fn op39pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1126,7 +1101,6 @@ fn op40pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1156,7 +1130,6 @@ fn op40pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1186,7 +1159,6 @@ fn op40pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1216,7 +1188,6 @@ fn op40pass4() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1246,7 +1217,6 @@ fn op41pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1276,7 +1246,6 @@ fn op41pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1306,7 +1275,6 @@ fn op42pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1336,7 +1304,6 @@ fn op42pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1366,7 +1333,6 @@ fn op44pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1396,7 +1362,6 @@ fn op44pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1426,7 +1391,6 @@ fn op44pass3() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1456,7 +1420,6 @@ fn op44pass4() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1486,7 +1449,6 @@ fn op44pass5() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1516,7 +1478,6 @@ fn op66pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1547,7 +1508,6 @@ fn op74pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1578,7 +1538,6 @@ fn op75pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1608,5 +1567,4 @@ fn oe2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }

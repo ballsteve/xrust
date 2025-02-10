@@ -46,11 +46,7 @@ fn rmt006() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -87,11 +83,7 @@ fn rmt007() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -127,11 +119,7 @@ fn rmt010() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -168,11 +156,7 @@ fn rmt012() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -208,11 +192,7 @@ fn rmt022() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -248,11 +228,7 @@ fn rmt023() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -289,11 +265,7 @@ fn rmt024() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -331,11 +303,7 @@ fn rmt025() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -373,11 +341,7 @@ fn rmt026() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -415,11 +379,7 @@ fn rmt027() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -457,11 +417,7 @@ fn rmt028() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -499,11 +455,7 @@ fn rmt029() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -539,11 +491,7 @@ fn rmt031() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -580,11 +528,7 @@ fn rmt033() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -621,11 +565,7 @@ fn rmt034() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -662,11 +602,7 @@ fn rmt035() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -702,11 +638,7 @@ fn rmt040() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -743,11 +675,7 @@ fn rmt043() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -784,11 +712,7 @@ fn rmt044() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -825,11 +749,7 @@ fn rmt045() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -865,11 +785,7 @@ fn rmt047() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -907,11 +823,7 @@ fn rmt049() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -949,11 +861,7 @@ fn rmt050() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -991,11 +899,7 @@ fn rmt051() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }
 
 #[test]
@@ -1033,9 +937,5 @@ fn rmt054() {
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
 
-    assert_eq!(
-        doc.get_canonical().unwrap(),
-        canonicalparseresult.unwrap()
-    );
-
+    assert_eq!(doc.get_canonical().unwrap(), canonicalparseresult.unwrap());
 }

@@ -79,7 +79,7 @@ pub(crate) fn attributes<N: Node>(
                 }
                 // Default namespace cannot be http://www.w3.org/XML/1998/namespace
                 // Default namespace cannot be http://www.w3.org/2000/xmlns/
-                if qn_prefix_str == ""
+                if qn_prefix_str.is_empty()
                     && qn_localname == "xmlns"
                     && (val_str == "http://www.w3.org/XML/1998/namespace"
                         || val_str == "http://www.w3.org/2000/xmlns/")
@@ -91,8 +91,8 @@ pub(crate) fn attributes<N: Node>(
 
                 // XML 1.0 documents cannot redefine an alias to ""
                 if qn_prefix_str == "xmlns"
-                    && qn_localname != ""
-                    && val_str == ""
+                    && !qn_localname.is_empty()
+                    && val_str.is_empty()
                     && state1.xmlversion == *"1.0"
                 {
                     return Err(ParseError::NotWellFormed(String::from(
@@ -196,7 +196,7 @@ pub(crate) fn attributes<N: Node>(
                     {
                         return Err(ParseError::MissingNameSpace);
                     }
-                    if qn_prefix != "xmlns" && qn_prefix != "" {
+                    if qn_prefix != "xmlns" && !qn_prefix.is_empty() {
                         match qn.namespace_uri() {
                             None => {
                                 return Err(ParseError::MissingNameSpace);
@@ -253,10 +253,7 @@ fn attribute_value<N: Node>(
             delimited(
                 tag("'"),
                 many0(alt3(
-                    map(
-                        chardata_unicode_codepoint(),
-                        |c| c.to_string(),
-                    ),
+                    map(chardata_unicode_codepoint(), |c| c.to_string()),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\''), |c| !c.contains('<')),
                 )),
@@ -265,10 +262,7 @@ fn attribute_value<N: Node>(
             delimited(
                 tag("\""),
                 many0(alt3(
-                    map(
-                        chardata_unicode_codepoint(),
-                        |c| c.to_string(),
-                    ),
+                    map(chardata_unicode_codepoint(), |c| c.to_string()),
                     textreference(),
                     wellformed(take_while(|c| c != '&' && c != '\"'), |c| !c.contains('<')),
                 )),

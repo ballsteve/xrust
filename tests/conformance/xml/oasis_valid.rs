@@ -33,7 +33,6 @@ fn op01pass2() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -59,7 +58,6 @@ fn op06pass1() {
     let doc = parseresult.unwrap();
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]

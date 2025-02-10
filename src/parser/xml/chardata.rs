@@ -2,7 +2,7 @@ use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3};
 use crate::parser::combinators::delimited::delimited;
 use crate::parser::combinators::many::many1;
-use crate::parser::combinators::map::map;
+use crate::parser::combinators::map::{map, map_ver};
 use crate::parser::combinators::tag::tag;
 use crate::parser::combinators::take::{take_until, take_while};
 use crate::parser::combinators::wellformed::{wellformed, wellformed_ver};
@@ -13,36 +13,54 @@ use std::str::FromStr;
 // CharData ::= [^<&]* - (']]>')
 pub(crate) fn chardata<N: Node>(
 ) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
-    map(
-        many1(alt3(
-            map(
-                wellformed_ver(
-                    chardata_cdata(),
-                    |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
-                    |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+    move |(input, state)| {
+        map(
+            many1(alt3(
+                map_ver(
+                    wellformed_ver(
+                        chardata_cdata(),
+                        |s| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                        |s| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+                    ),
+                    |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
+                    |s: String| {
+                        s.replace("\r\n", "\n")
+                            .replace("\r\u{85}", "\n")
+                            .replace("\u{85}", "\n")
+                            .replace("\u{2028}", "\n")
+                            .replace("\r", "\n")
+                    },
                 ),
-                |s| s.replace("\r\n", "\n").replace("\r", "\n"),
-            ),
-            map(
-                wellformed_ver(
-                    chardata_unicode_codepoint(),
-                    is_char10, //XML 1.0
-                    is_char11,
-                ), //XML 1.1
-                |c| c.to_string(),
-            ),
-            map(
-                wellformed_ver(
-                    chardata_literal(),
-                    |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
-                    |s| !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
+                map(
+                    wellformed_ver(
+                        chardata_unicode_codepoint(),
+                        is_char10, //XML 1.0
+                        is_char11,
+                    ), //XML 1.1
+                    |c| c.to_string(),
                 ),
-                |s| s.replace("\r\n", "\n").replace("\r", "\n"),
-            ),
-            // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
-        )),
-        |v| v.concat(),
-    )
+                map_ver(
+                    wellformed_ver(
+                        chardata_literal(),
+                        |s| !s.contains("]]>") && !s.contains(|c: char| !is_char10(&c)), //XML 1.0
+                        |s| {
+                            !s.contains("]]>") && !s.contains(|c: char| !is_unrestricted_char11(&c))
+                        }, //XML 1.1
+                    ),
+                    |s: String| s.replace("\r\n", "\n").replace("\r", "\n"),
+                    |s: String| {
+                        s.replace("\r\n", "\n")
+                            .replace("\r\u{85}", "\n")
+                            .replace("\u{85}", "\n")
+                            .replace("\u{2028}", "\n")
+                            .replace("\r", "\n")
+                    },
+                ),
+                // |s| { !s.contains("]]>") && !s.contains(|c: char| !is_char11(&c)) }, // XML 1.1
+            )),
+            |v| v.concat(),
+        )((input, state))
+    }
 }
 
 fn chardata_cdata<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>

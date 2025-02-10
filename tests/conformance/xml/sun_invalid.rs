@@ -36,7 +36,6 @@ fn invdtd01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -64,7 +63,6 @@ fn invdtd02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -91,7 +89,6 @@ fn invdtd03() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -118,7 +115,6 @@ fn el01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -145,7 +141,6 @@ fn el02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -172,7 +167,6 @@ fn el03() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -200,7 +194,6 @@ fn el04() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -228,7 +221,6 @@ fn el05() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -255,7 +247,6 @@ fn el06() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -283,7 +274,6 @@ fn id01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -311,7 +301,6 @@ fn id02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -339,7 +328,6 @@ fn id03() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -366,7 +354,6 @@ fn id04() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -394,7 +381,6 @@ fn id05() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -422,7 +408,6 @@ fn id06() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -450,7 +435,6 @@ fn id07() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -477,7 +461,6 @@ fn id08() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -505,7 +488,6 @@ fn id09() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -537,7 +519,6 @@ fn invnotsa01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -565,7 +546,6 @@ fn invnotsa02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -593,7 +573,6 @@ fn invnotsa04() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -621,7 +600,6 @@ fn invnotsa05() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -649,7 +627,6 @@ fn invnotsa06() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -677,7 +654,6 @@ fn invnotsa07() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -705,7 +681,6 @@ fn invnotsa08() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -733,7 +708,6 @@ fn invnotsa09() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -761,7 +735,6 @@ fn invnotsa10() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -789,7 +762,6 @@ fn invnotsa11() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -817,7 +789,6 @@ fn invnotsa12() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -845,7 +816,6 @@ fn invnotsa13() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -873,7 +843,6 @@ fn invnotsa14() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -901,7 +870,6 @@ fn optional01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -929,7 +897,6 @@ fn optional02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -957,7 +924,6 @@ fn optional03() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -985,7 +951,6 @@ fn optional04() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1013,7 +978,6 @@ fn optional05() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1041,7 +1005,6 @@ fn optional06() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1069,7 +1032,6 @@ fn optional07() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1097,7 +1059,6 @@ fn optional08() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1125,7 +1086,6 @@ fn optional09() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1153,7 +1113,6 @@ fn optional10() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1181,7 +1140,6 @@ fn optional11() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1209,7 +1167,6 @@ fn optional12() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1237,7 +1194,6 @@ fn optional13() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1265,7 +1221,6 @@ fn optional14() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1293,7 +1248,6 @@ fn optional20() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1321,7 +1275,6 @@ fn optional21() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1349,7 +1302,6 @@ fn optional22() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1377,7 +1329,6 @@ fn optional23() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1405,7 +1356,6 @@ fn optional24() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1433,7 +1383,6 @@ fn optional25() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1460,7 +1409,6 @@ fn invrequired00() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1488,7 +1436,6 @@ fn invrequired01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1515,7 +1462,6 @@ fn invrequired02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1543,7 +1489,6 @@ fn root() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1571,7 +1516,6 @@ fn attr01() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1599,7 +1543,6 @@ fn attr02() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1627,7 +1570,6 @@ fn attr03() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1655,7 +1597,6 @@ fn attr04() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1683,7 +1624,6 @@ fn attr05() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1711,7 +1651,6 @@ fn attr06() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1738,7 +1677,6 @@ fn attr07() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1766,7 +1704,6 @@ fn attr08() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1794,7 +1731,6 @@ fn attr09() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1822,7 +1758,6 @@ fn attr10() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1850,7 +1785,6 @@ fn attr11() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1878,7 +1812,6 @@ fn attr12() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1906,7 +1839,6 @@ fn attr13() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1934,7 +1866,6 @@ fn attr14() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1962,7 +1893,6 @@ fn attr15() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -1990,7 +1920,6 @@ fn attr16() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -2018,7 +1947,6 @@ fn utf16b() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -2046,7 +1974,6 @@ fn utf16l() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -2074,5 +2001,4 @@ fn empty() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }

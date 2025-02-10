@@ -34,7 +34,6 @@ fn rmtns10017() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -61,7 +60,6 @@ fn rmtns10018() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -88,7 +86,6 @@ fn rmtns10019() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -115,7 +112,6 @@ fn rmtns10020() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -142,7 +138,6 @@ fn rmtns10021() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -169,7 +164,6 @@ fn rmtns10022() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -196,7 +190,6 @@ fn rmtns10024() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -223,7 +216,6 @@ fn rmtns10027() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -250,7 +242,6 @@ fn rmtns10028() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -277,7 +268,6 @@ fn rmtns10034() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -304,7 +294,6 @@ fn rmtns10037() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -331,7 +320,6 @@ fn rmtns10038() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -358,7 +346,6 @@ fn rmtns10039() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -385,7 +372,6 @@ fn rmtns10040() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -412,7 +398,6 @@ fn rmtns10041() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -440,7 +425,6 @@ fn rmtns10045() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -468,5 +452,4 @@ fn rmtns10046() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }

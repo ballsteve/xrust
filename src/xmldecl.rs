@@ -92,15 +92,6 @@ impl XMLDeclBuilder {
     }
 }
 
-#[derive(Clone, PartialEq, Debug)]
-pub(crate) enum Contentspec {
-    ///The XML DTD "ANY" declaration doesn't mean arbitrary content, rather it means anything that
-    ///has already been delcared. We treat it as a special case until the final pattern construction
-    /// and assemble only when we know what other elements are present in the DTD.
-    ANY,
-    DTDPattern(DTDPattern)
-}
-
 /// DTD declarations.
 /// Data is not stored in any fashion conformant with any standard and will be adusted to meet
 /// the needs of any validators implemented.
@@ -109,7 +100,7 @@ pub(crate) enum Contentspec {
 pub struct DTD {
     /// This struct is for internal consumption mainly, it holding the DTD in various incomplete forms
     /// before construction into useful patterns for validation
-    pub(crate) elements: HashMap<QualifiedName, Contentspec>,
+    pub(crate) elements: HashMap<QualifiedName, DTDPattern>,
     pub(crate) attlists:
         HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>, // Boolean for is_editable;
     pub(crate) notations: HashMap<String, DTDDecl>,
@@ -118,7 +109,7 @@ pub struct DTD {
     publicid: Option<String>,
     systemid: Option<String>,
     pub(crate) name: Option<QualifiedName>,
-    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>
+    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>,
 }
 
 impl DTD {
@@ -139,7 +130,7 @@ impl DTD {
             publicid: None,
             systemid: None,
             name: None,
-            patterns: HashMap::new()
+            patterns: HashMap::new(),
         }
     }
 }
@@ -195,11 +186,10 @@ pub(crate) enum DTDPattern {
     Attribute(QualifiedName, Box<DTDPattern>),
     Element(QualifiedName, Box<DTDPattern>),
     Ref(QualifiedName),
+    Any,
     /*
-        This Enum is never used, but it might see application when properly validating ENTITYs.
-     */
+       This Enum is never used, but it might see application when properly validating ENTITYs.
+    */
     #[allow(dead_code)]
     List(Box<DTDPattern>),
 }
-
-

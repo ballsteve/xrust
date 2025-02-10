@@ -28,7 +28,6 @@ fn rmtns11001() {
     );
 
     assert!(parseresult.is_ok());
-
 }
 
 #[test]
@@ -56,7 +55,6 @@ fn rmtns11002() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -83,7 +81,6 @@ fn rmtns11003() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -110,7 +107,6 @@ fn rmtns11004() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }
 
 #[test]
@@ -138,5 +134,4 @@ fn rmtns11006() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_ok());
-
 }

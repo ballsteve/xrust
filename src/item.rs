@@ -10,14 +10,14 @@ An [Item] is a [Node], Function or atomic [Value].
 use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
+use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{DTD, XMLDecl};
+use crate::xmldecl::{XMLDecl, DTD};
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use crate::validators::{Schema, ValidationError};
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -609,5 +609,4 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn set_dtd(&self, dtd: DTD) -> Result<(), Error>;
 
     fn validate(&self, schema: Schema) -> Result<(), ValidationError>;
-
 }

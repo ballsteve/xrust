@@ -35,7 +35,6 @@ fn invalidbo1() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -90,7 +89,6 @@ fn invalidbo3() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -118,7 +116,6 @@ fn invalidbo4() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -146,7 +143,6 @@ fn invalidbo5() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 #[test]
@@ -174,7 +170,6 @@ fn invalidbo6() {
 
     let validation = doc.validate(Schema::DTD);
     assert!(validation.is_err());
-
 }
 
 /*
