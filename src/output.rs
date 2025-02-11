@@ -54,3 +54,10 @@ impl fmt::Display for OutputDefinition {
         }
     }
 }
+
+/// Directive for how to treat a [Value] upon serialisation.
+#[derive(Clone, Debug)]
+pub enum OutputSpec {
+    Normal,
+    Escaped,
+}

@@ -14,8 +14,9 @@ use crate::parser::xml::qname::qualname;
 use crate::parser::xml::reference::reference;
 use crate::parser::{ParseError, ParseInput};
 use crate::qname::QualifiedName;
+use crate::value::{Value, ID, IDREF};
+use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::{AttType, DefaultDecl};
-use crate::{Error, ErrorKind, Value};
 use std::rc::Rc;
 
 // Element ::= EmptyElemTag | STag content ETag
@@ -107,9 +108,13 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                             && attname.localname_to_string() == "id"
                         {
                             av = attval.trim().replace("  ", " ");
-                            a = d
-                                .new_attribute(Rc::new(attname), Rc::new(Value::ID(av)))
-                                .expect("unable to create attribute");
+                            if let Ok(avr) = ID::try_from(av) {
+                                a = d
+                                    .new_attribute(Rc::new(attname), Rc::new(Value::from(avr)))
+                                    .expect("unable to create attribute");
+                            } else {
+                                return Err(ParseError::IDError("not an ID".to_string()));
+                            }
                         } else {
                             av = attval;
                             a = d
@@ -189,7 +194,15 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                 };
                                 //Assign IDs only if we are tracking.
                                 let v = match (atttype, state1.id_tracking) {
-                                    (AttType::ID, true) => Rc::new(Value::ID(av)),
+                                    (AttType::ID, true) => {
+                                        if let Ok(avr) = ID::try_from(av) {
+                                            Rc::new(Value::from(avr))
+                                        } else {
+                                            return Err(ParseError::IDError(
+                                                "not an ID".to_string(),
+                                            ));
+                                        }
+                                    }
                                     (AttType::IDREF, true) => Rc::new(Value::IDREF(av)),
                                     (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
                                         av.split(' ').map(|s| s.to_string()).collect(),
