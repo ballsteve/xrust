@@ -84,6 +84,53 @@ pub struct Value {
     pub output: OutputSpec,
 }
 
+impl Value {
+    pub fn value_ref(&self) -> &ValueData {
+        &self.value
+    }
+    pub fn output_ref(&self) -> &OutputSpec {
+        &self.output
+    }
+}
+
+pub struct ValueBuilder {
+    value: Option<ValueData>,
+    output: OutputSpec,
+}
+
+impl ValueBuilder {
+    pub fn new() -> Self {
+        ValueBuilder {
+            value: None,
+            output: OutputSpec::Normal,
+        }
+    }
+    pub fn value(mut self, v: ValueData) -> Self {
+        self.value = Some(v);
+        self
+    }
+    pub fn output(mut self, o: OutputSpec) -> Self {
+        self.output = o;
+        self
+    }
+    /// Produce the Value. This will panic if a value has not been specified.
+    pub fn build(self) -> Value {
+        Value {
+            value: self.value.unwrap(),
+            output: self.output,
+        }
+    }
+}
+/// Derive a new [ValueBuilder] from an existing [Value]. The value data in the old Value will be copie to the builder.
+impl From<&Value> for ValueBuilder {
+    fn from(v: &Value) -> Self {
+        ValueBuilder {
+            value: Some(v.value.clone()),
+            output: OutputSpec::Normal,
+        }
+    }
+}
+
 #[derive(Clone, Debug)]
 pub enum ValueData {
     /// node or simple type
@@ -1303,5 +1350,24 @@ mod tests {
     #[test]
     fn op_after() {
         assert_eq!(Operator::After.to_string(), ">>")
+    }
+
+    // Building a value
+    #[test]
+    fn build_1() {
+        let v = ValueBuilder::new()
+            .value(ValueData::String(String::from("test value")))
+            .build();
+        assert_eq!(v.to_string(), "test value");
+        assert_eq!(v.output_ref(), &OutputSpec::Normal)
+    }
+    #[test]
+    fn build_2() {
+        let v = ValueBuilder::new()
+            .value(ValueData::String(String::from("test value")))
+            .output(OutputSpec::Escaped)
+            .build();
+        assert_eq!(v.to_string(), "test value");
+        assert_eq!(v.output_ref(), &OutputSpec::Escaped)
     }
 }
