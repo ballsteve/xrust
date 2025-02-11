@@ -48,9 +48,10 @@ use crate::output::OutputDefinition;
 use crate::qname;
 use crate::qname::QualifiedName;
 use crate::trees::smite;
-use crate::value::Value;
+use crate::validators::{Schema, ValidationError};
+use crate::value::{Value, ValueData};
 use crate::xdmerror::*;
-use crate::xmldecl::{DTD, XMLDecl, XMLDeclBuilder};
+use crate::xmldecl::{XMLDecl, XMLDeclBuilder, DTD};
 use regex::Regex;
 use std::cell::RefCell;
 use std::cmp::Ordering;
@@ -59,7 +60,6 @@ use std::collections::BTreeMap;
 use std::fmt;
 use std::fmt::{Debug, Formatter};
 use std::rc::{Rc, Weak};
-use crate::validators::{Schema, ValidationError};
 
 /// A node in a tree.
 pub type RNode = Rc<Node>;
@@ -69,7 +69,7 @@ enum NodeInner {
         RefCell<Option<XMLDecl>>,
         RefCell<Vec<RNode>>, // Child nodes
         RefCell<Vec<RNode>>, // Unattached nodes
-        RefCell<Option<DTD>>
+        RefCell<Option<DTD>>,
     ), // to be well-formed, only one of the child nodes can be an element-type node
     Element(
         RefCell<Weak<Node>>, // Parent: must be a Document or an Element
@@ -97,7 +97,7 @@ impl Node {
             RefCell::new(None),
             RefCell::new(vec![]),
             RefCell::new(vec![]),
-            None.into()
+            None.into(),
         ))
     }
     pub fn set_nsuri(&mut self, uri: Rc<Value>) -> Result<(), Error> {
@@ -646,7 +646,7 @@ impl ItemNode for RNode {
                 x.clone(),
                 RefCell::new(vec![]),
                 RefCell::new(vec![]),
-                None.into()
+                None.into(),
             )))),
             NodeInner::Element(p, qn, _, _, ns) => {
                 let new = Rc::new(Node(NodeInner::Element(
@@ -721,8 +721,8 @@ impl ItemNode for RNode {
             NodeInner::ProcessingInstruction(_, qn, v) => {
                 let d = self.owner_document();
                 let mut w = v.clone();
-                if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(
+                if let ValueData::String(s) = v.value.clone() {
+                    w = Rc::new(Value::from(
                         s.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace(">", "&gt;")
@@ -738,8 +738,8 @@ impl ItemNode for RNode {
             NodeInner::Text(_, v) => {
                 let d = self.owner_document();
                 let mut w = v.clone();
-                if let Value::String(s) = (*v.clone()).clone() {
-                    w = Rc::new(Value::String(
+                if let ValueData::String(s) = v.value.clone() {
+                    w = Rc::new(Value::from(
                         s.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace(">", "&gt;")
@@ -754,7 +754,7 @@ impl ItemNode for RNode {
                 let w = v.to_string();
                 Ok(d.new_attribute(
                     qn.clone(),
-                    Rc::new(Value::String(
+                    Rc::new(Value::from(
                         w.replace("&", "&amp;")
                             .replace("<", "&lt;")
                             .replace("\"", "&quot;")
@@ -774,7 +774,7 @@ impl ItemNode for RNode {
                     result.add_attribute(
                         d.new_attribute(
                             a.name(),
-                            Rc::new(Value::String(
+                            Rc::new(Value::from(
                                 re.replace_all(a.clone().value().to_string().trim(), " ")
                                     .to_string(),
                             )),
@@ -821,8 +821,8 @@ impl ItemNode for RNode {
     fn is_id(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID support
-            NodeInner::Attribute(_, _, v) => match v.as_ref() {
-                Value::ID(_) => true,
+            NodeInner::Attribute(_, _, v) => match v.as_ref().value {
+                ValueData::ID(_) => true,
                 _ => false,
             },
             _ => false,
@@ -832,9 +832,9 @@ impl ItemNode for RNode {
     fn is_idrefs(&self) -> bool {
         match &self.0 {
             //TODO Add Element XML ID REF support
-            NodeInner::Attribute(_, _, v) => match v.as_ref() {
-                Value::IDREF(_) => true,
-                Value::IDREFS(_) => true,
+            NodeInner::Attribute(_, _, v) => match v.as_ref().value {
+                ValueData::IDREF(_) => true,
+                ValueData::IDREFS(_) => true,
                 _ => false,
             },
             _ => false,
@@ -843,9 +843,7 @@ impl ItemNode for RNode {
 
     fn get_dtd(&self) -> Option<DTD> {
         match &self.0 {
-            NodeInner::Document(_, _, _, dtd) => dtd
-                .borrow()
-                .clone(),
+            NodeInner::Document(_, _, _, dtd) => dtd.borrow().clone(),
             _ => self.owner_document().get_dtd(),
         }
     }
@@ -864,7 +862,7 @@ impl ItemNode for RNode {
         }
     }
 
-    fn validate(&self, sch:Schema) -> Result<(), ValidationError> {
+    fn validate(&self, sch: Schema) -> Result<(), ValidationError> {
         crate::validators::validate(self, sch)
     }
 }
@@ -1056,10 +1054,12 @@ fn find_index(parent: &RNode, child: &RNode) -> Result<usize, Error> {
 // "indent" is the current level of indentation.
 fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
     match &node.0 {
-        NodeInner::Document(_, _, _, _) => node.child_iter().fold(String::new(), |mut result, c| {
-            result.push_str(to_xml_int(&c, od, indent + 2).as_str());
-            result
-        }),
+        NodeInner::Document(_, _, _, _) => {
+            node.child_iter().fold(String::new(), |mut result, c| {
+                result.push_str(to_xml_int(&c, od, indent + 2).as_str());
+                result
+            })
+        }
         NodeInner::Element(_, qn, _, _, ns) => {
             let mut result = String::from("<");
             result.push_str(qn.to_string().as_str());

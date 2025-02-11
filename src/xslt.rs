@@ -675,7 +675,7 @@ fn to_transform<N: Node>(
     let ns = in_scope_namespaces(Some(n.clone()));
 
     match n.node_type() {
-        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
+        NodeType::Text => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
             n.to_string(),
         ))))),
         NodeType::Element => {
@@ -691,7 +691,7 @@ fn to_transform<N: Node>(
                     ));
                     if !doe.to_string().is_empty() {
                         match &doe.to_string()[..] {
-                            "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::String(
+                            "yes" => Ok(Transform::Literal(Item::Value(Rc::new(Value::from(
                                 n.to_string(),
                             ))))),
                             "no" => {
@@ -1291,7 +1291,7 @@ fn to_transform<N: Node>(
             // Get value as a Value
             Ok(Transform::LiteralAttribute(
                 n.name(),
-                Box::new(Transform::Literal(Item::Value(Rc::new(Value::String(
+                Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
                     n.to_string(),
                 ))))),
             ))

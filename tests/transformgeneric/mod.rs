@@ -14,7 +14,7 @@ use xrust::transform::{
     ArithmeticOperand, ArithmeticOperator, Axis, Grouping, KindTest, NameTest, NodeMatch, NodeTest,
     Order, Transform, WildcardOrName,
 };
-use xrust::value::{Operator, Value};
+use xrust::value::{Operator, Value, ValueData};
 use xrust::xdmerror::{Error, ErrorKind};
 
 pub fn generic_tr_empty<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
@@ -5028,8 +5028,8 @@ where
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
-        Item::Value(v) => match **v {
-            Value::DateTime(dt) => {
+        Item::Value(v) => match v.value {
+            ValueData::DateTime(dt) => {
                 assert_eq!(dt.year(), Local::now().year());
                 assert_eq!(dt.month(), Local::now().month());
                 assert_eq!(dt.day(), Local::now().day());
@@ -5061,8 +5061,8 @@ where
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
-        Item::Value(v) => match **v {
-            Value::Date(dt) => {
+        Item::Value(v) => match v.value {
+            ValueData::Date(dt) => {
                 assert_eq!(dt.year(), Local::now().year());
                 assert_eq!(dt.month(), Local::now().month());
                 assert_eq!(dt.day(), Local::now().day());
@@ -5091,8 +5091,8 @@ where
         .expect("evaluation failed");
     assert_eq!(seq.len(), 1);
     match &seq[0] {
-        Item::Value(v) => match **v {
-            Value::Time(dt) => {
+        Item::Value(v) => match v.value {
+            ValueData::Time(dt) => {
                 assert_eq!(dt.hour(), Local::now().hour());
                 assert_eq!(dt.minute(), Local::now().minute());
                 assert_eq!(dt.second(), Local::now().second()); // It is possible for this to fail if the elapsed time to execute the function call and the test falls across a second quantum
@@ -5502,7 +5502,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("1"))))),
     );
@@ -5530,7 +5530,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from(
             "0001",
@@ -5560,7 +5560,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("W"))))),
     );
@@ -5588,7 +5588,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("w"))))),
     );
@@ -5616,7 +5616,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("Ww"))))),
     );
@@ -5644,7 +5644,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("i"))))),
     );
@@ -5672,7 +5672,7 @@ where
 {
     let x = Transform::FormatInteger(
         Box::new(Transform::SequenceItems(vec![Transform::Literal(
-            Item::Value(Rc::new(Value::Integer(42))),
+            Item::Value(Rc::new(Value::from(42))),
         )])),
         Box::new(Transform::Literal(Item::Value(Rc::new(Value::from("I"))))),
     );

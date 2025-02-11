@@ -203,10 +203,28 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                             ));
                                         }
                                     }
-                                    (AttType::IDREF, true) => Rc::new(Value::IDREF(av)),
-                                    (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
-                                        av.split(' ').map(|s| s.to_string()).collect(),
-                                    )),
+                                    (AttType::IDREF, true) => {
+                                        if let Ok(avr) = IDREF::try_from(av) {
+                                            Rc::new(Value::from(avr))
+                                        } else {
+                                            return Err(ParseError::IDError(
+                                                "not an IDREF".to_string(),
+                                            ));
+                                        }
+                                    }
+                                    (AttType::IDREFS, true) => {
+                                        let mut result = vec![];
+                                        for i in av.split(' ') {
+                                            if let Ok(avr) = IDREF::try_from(i) {
+                                                result.push(avr);
+                                            } else {
+                                                return Err(ParseError::IDError(
+                                                    "not an IDREF".to_string(),
+                                                ));
+                                            }
+                                        }
+                                        Rc::new(Value::from(result))
+                                    }
                                     (_, _) => state1.get_value(av),
                                 };
                                 let a = d
@@ -297,7 +315,7 @@ pub(crate) fn content<N: Node>(
                                             .doc
                                             .clone()
                                             .unwrap()
-                                            .new_text(Rc::new(Value::String(notex.concat())))
+                                            .new_text(Rc::new(Value::from(notex.concat())))
                                             .expect("unable to create text node"),
                                     );
                                     notex.clear();
@@ -317,7 +335,7 @@ pub(crate) fn content<N: Node>(
                         .doc
                         .clone()
                         .unwrap()
-                        .new_text(Rc::new(Value::String(notex.concat())))
+                        .new_text(Rc::new(Value::from(notex.concat())))
                         .expect("unable to create text node"),
                 );
             }

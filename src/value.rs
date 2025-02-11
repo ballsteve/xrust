@@ -80,8 +80,8 @@ impl fmt::Display for Operator {
 /// Also included is a hint for serialisation for if the value should be escaped.
 #[derive(Clone, Debug)]
 pub struct Value {
-    value: ValueData,
-    output: OutputSpec,
+    pub value: ValueData,
+    pub output: OutputSpec,
 }
 
 #[derive(Clone, Debug)]
@@ -209,6 +209,20 @@ impl Hash for Value {
 impl Eq for Value {}
 
 impl Value {
+    /// Create a Time, ignoring the date part
+    pub fn new_time(t: DateTime<Local>) -> Self {
+        Value {
+            value: ValueData::Time(t),
+            output: OutputSpec::Normal,
+        }
+    }
+    /// Create a date
+    pub fn new_date(d: NaiveDate) -> Self {
+        Value {
+            value: ValueData::Date(d),
+            output: OutputSpec::Normal,
+        }
+    }
     /// Give the effective boolean value.
     pub fn to_bool(&self) -> bool {
         match &self.value {
@@ -678,6 +692,14 @@ impl From<Rc<QualifiedName>> for Value {
         }
     }
 }
+impl From<DateTime<Local>> for Value {
+    fn from(d: DateTime<Local>) -> Self {
+        Value {
+            value: ValueData::DateTime(d),
+            output: OutputSpec::Normal,
+        }
+    }
+}
 
 #[derive(Clone, Debug, Hash)]
 pub struct NonPositiveInteger(i64);
@@ -911,6 +933,21 @@ impl TryFrom<&str> for IDREF {
         let n: &[_] = &['\n', '\r', '\t'];
         if v.find(n).is_none() {
             Ok(IDREF(v.to_string()))
+        } else {
+            Err(Error::new(
+                ErrorKind::TypeError,
+                String::from("value is not an IDREF"),
+            ))
+        }
+    }
+}
+impl TryFrom<String> for IDREF {
+    type Error = Error;
+    fn try_from(v: String) -> Result<Self, Self::Error> {
+        // TODO: An XML IDREF must be a Name
+        let n: &[_] = &['\n', '\r', '\t'];
+        if v.find(n).is_none() {
+            Ok(IDREF(v))
         } else {
             Err(Error::new(
                 ErrorKind::TypeError,

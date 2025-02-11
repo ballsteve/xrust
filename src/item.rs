@@ -10,14 +10,14 @@ An [Item] is a [Node], Function or atomic [Value].
 use crate::item;
 use crate::output::OutputDefinition;
 use crate::qname::QualifiedName;
+use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{DTD, XMLDecl};
+use crate::xmldecl::{XMLDecl, DTD};
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
 use std::rc::Rc;
-use crate::validators::{Schema, ValidationError};
 
 /// In XPath, the Sequence is the fundamental data structure.
 /// It is an ordered collection of [Item]s.
@@ -285,11 +285,11 @@ impl<N: Node> Item<N> {
         match self {
             Item::Value(v) => match other {
                 Item::Value(w) => v.compare(w, op),
-                Item::Node(..) => v.compare(&Value::String(other.to_string()), op),
+                Item::Node(..) => v.compare(&Value::from(other.to_string()), op),
                 _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             Item::Node(..) => {
-                other.compare(&Item::Value(Rc::new(Value::String(self.to_string()))), op)
+                other.compare(&Item::Value(Rc::new(Value::from(self.to_string()))), op)
             }
             _ => Result::Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
         }
@@ -609,5 +609,4 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     fn set_dtd(&self, dtd: DTD) -> Result<(), Error>;
 
     fn validate(&self, schema: Schema) -> Result<(), ValidationError>;
-
 }
