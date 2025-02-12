@@ -44,7 +44,7 @@ assert_eq!(doc.to_xml(), "<Top-Level>content of the element</Top-Level>")
 */
 
 use crate::item::{Node as ItemNode, NodeType};
-use crate::output::OutputDefinition;
+use crate::output::{OutputDefinition, OutputSpec};
 use crate::qname;
 use crate::qname::QualifiedName;
 use crate::trees::smite;
@@ -1076,7 +1076,12 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             // Attributes
             node.attribute_iter().for_each(|a| {
                 result.push_str(
-                    format!(" {}='{}'", a.name().to_string().as_str(), a.value()).as_str(),
+                    format!(
+                        " {}='{}'",
+                        a.name().to_string().as_str(),
+                        serialise(&a.value())
+                    )
+                    .as_str(),
                 )
             });
             result.push('>');
@@ -1111,7 +1116,7 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result.push('>');
             result
         }
-        NodeInner::Text(_, v) => v.to_string(),
+        NodeInner::Text(_, v) => serialise(&v),
         NodeInner::Comment(_, v) => {
             let mut result = String::from("<!--");
             result.push_str(v.to_string().as_str());
@@ -1127,6 +1132,21 @@ fn to_xml_int(node: &RNode, od: &OutputDefinition, indent: usize) -> String {
             result
         }
         _ => String::new(),
+    }
+}
+
+// Serialise a [Value]. If necessary, perform output escaping
+fn serialise(v: &Rc<Value>) -> String {
+    if v.output == OutputSpec::NoEscape {
+        v.to_string()
+    } else {
+        // Escape special characters
+        v.to_string()
+            .replace("&", "&amp;")
+            .replace("'", "&apos;")
+            .replace('"', "&quot;")
+            .replace("<", "&lt;")
+            .replace(">", "&gt;")
     }
 }
 

@@ -60,4 +60,5 @@ impl fmt::Display for OutputDefinition {
 pub enum OutputSpec {
     Normal,
     Escaped,
+    NoEscape,
 }
