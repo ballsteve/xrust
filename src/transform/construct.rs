@@ -1,10 +1,11 @@
 //! These functions construct nodes, possibly destined for the result document.
 
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
+use crate::output::OutputSpec;
 use crate::qname::QualifiedName;
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
-use crate::value::Value;
+use crate::value::{Value, ValueBuilder, ValueData};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::Item;
 use std::rc::Rc;
@@ -119,7 +120,7 @@ pub(crate) fn element<
 
 /// Creates a new text node.
 /// The transform is evaluated to create the value of the text node.
-/// Special characters are escaped, unless disabled.
+/// Special characters are escaped, unless disabled as per output specification.
 pub(crate) fn literal_text<
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
@@ -129,7 +130,7 @@ pub(crate) fn literal_text<
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
     t: &Transform<N>,
-    b: &bool,
+    o: &OutputSpec,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
         return Err(Error::new(
@@ -139,21 +140,14 @@ pub(crate) fn literal_text<
     }
 
     let v = ctxt.dispatch(stctxt, t)?.to_string();
-    if *b {
-        Ok(vec![Item::Node(
-            ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(v)))?,
-        )])
-    } else {
-        Ok(vec![Item::Node(
-            ctxt.rd.clone().unwrap().new_text(Rc::new(Value::from(
-                v.replace('&', "&amp;")
-                    .replace('>', "&gt;")
-                    .replace('<', "&lt;")
-                    .replace('\'', "&apos;")
-                    .replace('\"', "&quot;"),
-            )))?,
-        )])
-    }
+    Ok(vec![Item::Node(
+        ctxt.rd.clone().unwrap().new_text(Rc::new(
+            ValueBuilder::new()
+                .value(ValueData::String(v))
+                .output(o.clone())
+                .build(),
+        ))?,
+    )])
 }
 
 /// Creates a singleton sequence with a new attribute node.

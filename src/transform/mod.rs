@@ -58,6 +58,7 @@ pub(crate) mod variables;
 use crate::item::Sequence;
 use crate::item::{Item, Node, NodeType, SequenceTrait};
 use crate::namespace::NamespaceMap;
+use crate::output::OutputSpec;
 use crate::qname::QualifiedName;
 use crate::transform::callable::ActualParameters;
 use crate::transform::context::{Context, ContextBuilder, StaticContext};
@@ -102,8 +103,8 @@ pub enum Transform<N: Node> {
     LiteralElement(Rc<QualifiedName>, Box<Transform<N>>),
     /// A constructed element. Consists of the name and content.
     Element(Box<Transform<N>>, Box<Transform<N>>),
-    /// A literal text node. Consists of the value of the node. Second argument gives whether to disable output escaping.
-    LiteralText(Box<Transform<N>>, bool),
+    /// A literal text node. Consists of the value of the node. Second argument gives an output hint.
+    LiteralText(Box<Transform<N>>, OutputSpec),
     /// A literal attribute. Consists of the attribute name and value.
     /// NB. The value may be produced by an Attribute Value Template, so must be dynamic.
     LiteralAttribute(Rc<QualifiedName>, Box<Transform<N>>),
@@ -317,7 +318,7 @@ impl<N: Node> Debug for Transform<N> {
             Transform::Literal(_) => write!(f, "literal value"),
             Transform::LiteralElement(qn, _) => write!(f, "literal element named \"{}\"", qn),
             Transform::Element(_, _) => write!(f, "constructed element"),
-            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {})", b),
+            Transform::LiteralText(_, b) => write!(f, "literal text (disable escaping {:?})", b),
             Transform::LiteralAttribute(qn, _) => write!(f, "literal attribute named \"{}\"", qn),
             Transform::LiteralComment(_) => write!(f, "literal comment"),
             Transform::LiteralProcessingInstruction(_, _) => {

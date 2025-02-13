@@ -4,6 +4,7 @@ use chrono::{Datelike, Local, Timelike};
 use std::rc::Rc;
 use xrust::item::{Item, Node, SequenceTrait};
 use xrust::namespace::NamespaceMap;
+use xrust::output::OutputSpec;
 use xrust::pattern::Pattern;
 use xrust::qname::QualifiedName;
 use xrust::transform::callable::{ActualParameters, Callable, FormalParameters};
@@ -137,7 +138,7 @@ where
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "special character: < less than",
         ))))),
-        false,
+        OutputSpec::Normal,
     );
     let mydoc = make_empty_doc();
     let mut stctxt = StaticContextBuilder::new()
@@ -160,7 +161,7 @@ where
         Box::new(Transform::Literal(Item::<N>::Value(Rc::new(Value::from(
             "special character: < less than",
         ))))),
-        true,
+        OutputSpec::NoEscape,
     );
     let mydoc = make_empty_doc();
     let mut stctxt = StaticContextBuilder::new()
