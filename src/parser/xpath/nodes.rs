@@ -152,7 +152,7 @@ fn step_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt4(
         abbreviated_parent::<N>(),
-        inspect("kindtest", abbreviated_kindtest::<N>()),
+        abbreviated_kindtest::<N>(),
         postfix_expr::<N>(),
         axisstep::<N>(),
     ))

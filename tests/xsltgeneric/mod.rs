@@ -170,13 +170,13 @@ where
         parse_from_str_with_ns,
         make_doc,
     )?;
-    if result.to_string() == "special &lt; less than" {
+    if result.to_string() == "special < less than" {
         Ok(())
     } else {
         Err(Error::new(
             ErrorKind::Unknown,
             format!(
-                "got result \"{}\", expected \"special &lt; less than\"",
+                "got result \"{}\", expected \"special < less than\"",
                 result.to_string()
             ),
         ))
