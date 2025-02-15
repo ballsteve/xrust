@@ -155,7 +155,6 @@ fn op05pass1() {
 }
 
 #[test]
-#[ignore]
 fn op06fail1() {
     /*
         Test ID:o-p06fail1
@@ -175,14 +174,13 @@ fn op06fail1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/oasis/p06fail1.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
 
     assert!(parseresult.is_err());
 }
 
 #[test]
-#[ignore]
 fn op08fail1() {
     /*
         Test ID:o-p08fail1

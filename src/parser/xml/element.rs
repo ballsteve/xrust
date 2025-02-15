@@ -17,6 +17,7 @@ use crate::qname::QualifiedName;
 use crate::xmldecl::{AttType, DefaultDecl};
 use crate::{Error, ErrorKind, Value};
 use std::rc::Rc;
+use crate::parser::common::is_ncnamechar;
 
 // Element ::= EmptyElemTag | STag content ETag
 pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
@@ -189,13 +190,31 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                 };
                                 //Assign IDs only if we are tracking.
                                 let v = match (atttype, state1.id_tracking) {
-                                    (AttType::ID, true) => Rc::new(Value::ID(av)),
-                                    (AttType::IDREF, true) => Rc::new(Value::IDREF(av)),
+                                    (AttType::ID, true) => Rc::new(Value::ID(av.clone())),
+                                    (AttType::IDREF, true) => Rc::new(Value::IDREF(av.clone())),
                                     (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
-                                        av.split(' ').map(|s| s.to_string()).collect(),
+                                        av.clone().split(' ').map(|s| s.to_string()).collect(),
                                     )),
-                                    (_, _) => state1.get_value(av),
+                                    (_, _) => state1.get_value(av.clone()),
                                 };
+                                if atttype == &AttType::NMTOKENS && av.is_empty(){
+                                    return Err(ParseError::NotWellFormed("NMTOKENs must not be empty".to_string()))
+                                } else if atttype == &AttType::NMTOKENS {
+                                    let names = av.split(' ');
+                                    for name in names {
+                                        let ch = name.chars();
+                                        for cha in ch {
+                                            if !(is_ncnamechar(&cha) || cha == ':') {
+                                                return Err(ParseError::NotWellFormed(
+                                                    String::from(
+                                                        "Invalid NMTOKEN",
+                                                    ),
+                                                ));
+                                            }
+                                        }
+                                    }
+                                }
+
                                 let a = d
                                     .new_attribute(Rc::new(attname), v)
                                     .expect("unable to create attribute");
@@ -226,11 +245,15 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         may exist further along, we'll make a note of it to check when we
                         have completely parsed the document.
                         */
-                        for idref in attribute.value().to_string().split_whitespace() {
-                            match state1.ids_read.get(idref) {
-                                Some(_) => {}
-                                None => {
-                                    state1.ids_pending.insert(idref.to_string());
+                        if attribute.value().to_string().split_whitespace().count() == 0 {
+                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()))
+                        } else {
+                            for idref in attribute.value().to_string().split_whitespace() {
+                                match state1.ids_read.get(idref) {
+                                    Some(_) => {}
+                                    None => {
+                                        state1.ids_pending.insert(idref.to_string());
+                                    }
                                 }
                             }
                         }
