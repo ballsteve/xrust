@@ -6,9 +6,10 @@ University of Edinburgh XML 1.0 4th edition errata test suite.
 
 use std::fs;
 use xrust::item::Node;
-use xrust::parser::xml;
+use xrust::parser::{ParserConfig, xml};
 use xrust::trees::smite::RNode;
 use xrust::validators::Schema;
+use crate::conformance::dtdfileresolve;
 
 #[test]
 #[ignore]
@@ -19,6 +20,9 @@ fn invalidbo1() {
         Spec Sections:4.3.3
         Description:Byte order mark in general entity should go away (big-endian)
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string());
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -26,7 +30,7 @@ fn invalidbo1() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_be.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
 
     assert!(parseresult.is_ok());
@@ -46,6 +50,10 @@ fn invalidbo2() {
         Spec Sections:4.3.3
         Description:Byte order mark in general entity should go away (little-endian)
     */
+    let mut pc = ParserConfig::new();
+    pc.ext_dtd_resolver = Some(dtdfileresolve());
+    pc.docloc = Some("tests/conformance/xml/xmlconf/eduni/errata-4e/".to_string());
+
 
     let testxml = RNode::new_document();
     let parseresult = xml::parse(
@@ -53,9 +61,8 @@ fn invalidbo2() {
         fs::read_to_string("tests/conformance/xml/xmlconf/eduni/errata-4e/inclbom_le.xml")
             .unwrap()
             .as_str(),
-        None,
+        Some(pc),
     );
-
     assert!(parseresult.is_ok());
 
     let doc = parseresult.unwrap();
@@ -323,7 +330,6 @@ fn xrmt5019() {
 */
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n06xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n06.xml
@@ -350,7 +356,6 @@ fn ibminvalid_p89ibm89n06xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n07xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n07.xml
@@ -377,7 +382,6 @@ fn ibminvalid_p89ibm89n07xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n08xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n08.xml
@@ -404,7 +408,6 @@ fn ibminvalid_p89ibm89n08xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n09xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n09.xml
@@ -431,7 +434,6 @@ fn ibminvalid_p89ibm89n09xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n10xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n10.xml
@@ -458,7 +460,6 @@ fn ibminvalid_p89ibm89n10xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n11xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n11.xml
@@ -485,7 +486,6 @@ fn ibminvalid_p89ibm89n11xml() {
 }
 
 #[test]
-#[ignore]
 fn ibminvalid_p89ibm89n12xml() {
     /*
         Test ID:ibm-invalid-P89-ibm89n12.xml

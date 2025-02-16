@@ -281,11 +281,18 @@ fn attribute_value<N: Node>(
                    For a white space character (#x20, #xD, #xA, #x9), append a space character (#x20) to the normalized value.
                    For another character, append the character to the normalized value.
                 */
-                let r = rn
+                let r = if state1.xmlversion == "1.1"{
+                    rn
+                    .concat()
+                    .replace(['\u{85}','\u{2028}','\n', '\r', '\t', '\n'], " ")
+                    .trim()
+                    .to_string()
+                } else {rn
                     .concat()
                     .replace(['\n', '\r', '\t', '\n'], " ")
                     .trim()
-                    .to_string();
+                    .to_string()
+                };
                 //NEL character cannot be in attributes.
                 if state1.xmlversion == "1.1" && r.find(|c| !is_char11(&c)).is_some() {
                     Err(ParseError::NotWellFormed(r))
