@@ -5,7 +5,7 @@
 //! Namespace prefixes and URIs are interned in a Slotmap.
 
 use crate::qname_in::{Internment, QualifiedName};
-use lasso::Interner;
+use lasso::{Interner, LargeSpur};
 use std::collections::hash_map::Iter;
 use std::collections::HashMap;
 
@@ -13,33 +13,40 @@ use std::collections::HashMap;
 /// To do this, it must have a copy of the in-scope namespaces.
 /// This type represents a mapping from prefix to Namespace URI.
 /// The "None" prefix is for the default namespace.
-pub struct NamespaceMap(HashMap<Option<QualifiedName>, QualifiedName>);
+pub struct NamespaceMap(HashMap<Option<LargeSpur>, LargeSpur>);
 // TODO: should the default namespace be represented by the empty string prefix?
 
 impl NamespaceMap {
     /// Create a new namespace mapping.
-    pub fn new<'i, I: Interner<QualifiedName>>(intern: &'i mut Internment<'i, I>) -> Self {
+    pub fn new<I: Interner<LargeSpur>>(intern: &Internment<I>) -> Self {
         let mut map = HashMap::new();
         map.insert(
-            Some(intern.get_or_intern("xml")),
-            intern.get_or_intern("http://www.w3.org/XML/1998/namespace"),
+            Some(intern.borrow().get("xml").unwrap()),
+            intern
+                .borrow()
+                .get("http://www.w3.org/XML/1998/namespace")
+                .unwrap(),
         );
         NamespaceMap(map)
     }
     /// Insert a mapping into the map.
-    pub fn insert(
+    pub fn insert<I: Interner<LargeSpur>>(
         &mut self,
-        prefix: Option<QualifiedName>,
-        uri: QualifiedName,
-    ) -> Option<QualifiedName> {
-        self.0.insert(prefix, uri)
+        intern: &Internment<I>,
+        prefix: Option<String>,
+        uri: String,
+    ) -> Option<LargeSpur> {
+        let mut interner = intern.borrow_mut();
+        let prefix_key = prefix.map(|p| interner.get_or_intern(p.as_str()));
+        let uri_key = interner.get_or_intern(uri.as_str());
+        self.0.insert(prefix_key, uri_key)
     }
     /// Lookup a prefix in the map, returning the namespace URI.
-    pub fn get(&self, prefix: &Option<QualifiedName>) -> Option<QualifiedName> {
+    pub fn get(&self, prefix: &Option<LargeSpur>) -> Option<LargeSpur> {
         self.0.get(prefix).cloned()
     }
     /// Iterate over mappings. Each item is a (prefix,namespace URI) pair.
-    pub fn iter(&self) -> Iter<Option<QualifiedName>, QualifiedName> {
+    pub fn iter(&self) -> Iter<Option<LargeSpur>, LargeSpur> {
         self.0.iter()
     }
 }

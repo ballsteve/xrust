@@ -231,11 +231,8 @@ impl ItemNode for RNode {
             _ => Rc::new(QualifiedName::new(None, None, "")),
         }
     }
-    fn name_in<'i, I: Interner<InQualifiedName>>(
-        &self,
-        intern: &'i Internment<'i, I>,
-    ) -> InQualifiedName {
-        intern.get("")
+    fn name_in<I: Interner<InQualifiedName>>(&self, intern: &Internment<I>) -> InQualifiedName {
+        InQualifiedName::new(None, None, "").expect("unable to create QN")
     }
     fn value(&self) -> Rc<Value> {
         match &self.0 {
@@ -270,16 +267,16 @@ impl ItemNode for RNode {
     fn to_xml(&self) -> String {
         to_xml_int(self, &OutputDefinition::new(), 0)
     }
-    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String {
+    fn to_xml_in<I: Interner<InQualifiedName>>(&self, intern: &Internment<I>) -> String {
         String::new()
     }
     fn to_xml_with_options(&self, od: &OutputDefinition) -> std::string::String {
         to_xml_int(self, od, 0)
     }
-    fn to_xml_with_options_in<'i, I: Interner<InQualifiedName>>(
+    fn to_xml_with_options_in<I: Interner<InQualifiedName>>(
         &self,
         od: &OutputDefinition,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> String {
         String::new()
     }
@@ -350,10 +347,10 @@ impl ItemNode for RNode {
             _ => Rc::new(Value::from(String::new())),
         }
     }
-    fn get_attribute_in<'i, I: Interner<InQualifiedName>>(
+    fn get_attribute_in<I: Interner<InQualifiedName>>(
         &self,
         a: InQualifiedName,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
@@ -374,10 +371,10 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_element_in<'i, I: Interner<InQualifiedName>>(
+    fn new_element_in<I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }
@@ -415,11 +412,11 @@ impl ItemNode for RNode {
         unattached(self, att.clone());
         Ok(att)
     }
-    fn new_attribute_in<'i, I: Interner<InQualifiedName>>(
+    fn new_attribute_in<I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }
@@ -444,11 +441,11 @@ impl ItemNode for RNode {
         unattached(self, child.clone());
         Ok(child)
     }
-    fn new_processing_instruction_in<'i, I: Interner<InQualifiedName>>(
+    fn new_processing_instruction_in<I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Result<Self, Error> {
         Err(Error::new(ErrorKind::NotImplemented, "not here"))
     }

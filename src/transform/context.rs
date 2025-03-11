@@ -34,7 +34,7 @@ use crate::transform::variables::{declare_variable, reference_variable};
 use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
-use lasso::Interner;
+use lasso::{Interner, LargeSpur};
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -47,7 +47,7 @@ use url::Url;
 /// Contexts are immutable, but frequently are cloned to provide a new context.
 /// Although it is optional, it would be very unusual not to set a result document in a context since nodes cannot be created in the result without one.
 #[derive(Clone, Debug)]
-pub struct Context<N: Node> {
+pub struct Context<N: Node, I: Interner<LargeSpur>> {
     pub(crate) cur: Sequence<N>,                  // The current context
     pub(crate) i: usize, // The index to the item that is the current context item
     pub(crate) previous_context: Option<Item<N>>, // The "current" XPath item, which is really the context item for the invoking context. See XSLT 20.4.1.
@@ -76,10 +76,12 @@ pub struct Context<N: Node> {
     // Namespace resolution. If any transforms contain a QName that needs to be resolved to an EQName,
     // then these prefix -> URI mappings are used. These are usually derived from the stylesheet document.
     //pub(crate) namespaces: Vec<HashMap<Option<String>, String>>,
+    // String interning
+    pub(crate) intern: Internment<I>,
 }
 
-impl<'i, N: Node> Context<N> {
-    pub fn new() -> Self {
+impl<N: Node, I: Interner<LargeSpur>> Context<N, I> {
+    pub fn new(intern: Internment<I>) -> Self {
         Context {
             cur: Sequence::new(),
             i: 0,
@@ -96,6 +98,7 @@ impl<'i, N: Node> Context<N> {
             key_values: HashMap::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            intern,
         }
     }
     /// Sets the context item.
@@ -130,10 +133,9 @@ impl<'i, N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        I: Interner<InQualifiedName>,
     >(
         &mut self,
-        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         sd: N,
     ) -> Result<(), Error> {
         populate_key_values(self, stctxt, sd)
@@ -231,10 +233,9 @@ impl<'i, N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        I: Interner<InQualifiedName>,
     >(
         &self,
-        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
+        stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
         if self.cur.is_empty() {
             Ok(Sequence::new())
@@ -290,10 +291,9 @@ impl<'i, N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        I: Interner<InQualifiedName>,
     >(
         &self,
-        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
         m: &Option<Rc<QualifiedName>>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
@@ -358,10 +358,9 @@ impl<'i, N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
-        I: Interner<InQualifiedName>,
     >(
         &self,
-        stctxt: &'i mut StaticContext<'i, N, F, G, H, I>,
+        stctxt: &mut StaticContext<N, F, G, H>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
         match t {
@@ -462,8 +461,8 @@ impl<'i, N: Node> Context<N> {
     }
 }
 
-impl<N: Node> From<Sequence<N>> for Context<N> {
-    fn from(value: Sequence<N>) -> Self {
+impl<N: Node, I: Interner<LargeSpur>> From<Sequence<N>> for Context<N, I> {
+    fn from(value: Sequence<N>, intern: Internment<I>) -> Self {
         Context {
             cur: value,
             i: 0,
@@ -480,16 +479,17 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_group: Sequence::new(),
             od: OutputDefinition::new(),
             base_url: None,
+            intern,
         }
     }
 }
 
 /// Builder for a [Context]
-pub struct ContextBuilder<N: Node>(Context<N>);
+pub struct ContextBuilder<N: Node, I: Interner<LargeSpur>>(Context<N, I>);
 
-impl<N: Node> ContextBuilder<N> {
-    pub fn new() -> Self {
-        ContextBuilder(Context::new())
+impl<N: Node, I: Interner<LargeSpur>> ContextBuilder<N> {
+    pub fn new(intern: Internment<I>) -> Self {
+        ContextBuilder(Context::new(intern))
     }
     pub fn context(mut self, s: Sequence<N>) -> Self {
         self.0.cur = s;
@@ -553,14 +553,14 @@ impl<N: Node> ContextBuilder<N> {
         self.0.callables.insert(qn, c);
         self
     }
-    pub fn build(self) -> Context<N> {
+    pub fn build(self) -> Context<N, I> {
         self.0
     }
 }
 
 /// Derive a new [Context] from an old [Context]. The context item in the old context becomes the "current" item in the new context.
-impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
-    fn from(c: &Context<N>) -> Self {
+impl<N: Node, I: Interner<LargeSpur>> From<&Context<N, I>> for ContextBuilder<N, I> {
+    fn from(c: &Context<N, I>) -> Self {
         if c.cur.len() > c.i {
             ContextBuilder(c.clone()).previous_context(Some(c.cur[c.i].clone()))
         } else {
@@ -572,32 +572,28 @@ impl<N: Node> From<&Context<N>> for ContextBuilder<N> {
 /// The static context. This is not cloneable, since it includes the storage of a closure.
 /// The main feature of the static context is the ability to set up a callback for messages.
 /// See [StaticContextBuilder] for details.
-pub struct StaticContext<'i, N: Node, F, G, H, I>
+pub struct StaticContext<N: Node, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>, // Parses a string into a tree
     H: FnMut(&Url) -> Result<String, Error>, // Fetches the data from a URL
-    I: Interner<InQualifiedName>,
 {
     pub(crate) message: Option<F>,
     pub(crate) parser: Option<G>,
     pub(crate) fetcher: Option<H>,
-    pub(crate) intern: &'i mut Internment<'i, I>,
 }
 
-impl<'i, N: Node, F, G, H, I> StaticContext<'i, N, F, G, H, I>
+impl<N: Node, F, G, H> StaticContext<N, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    I: Interner<InQualifiedName>,
 {
-    pub fn new(intern: &'i mut Internment<'i, I>) -> Self {
+    pub fn new() -> Self {
         StaticContext {
             message: None,
             parser: None,
             fetcher: None,
-            intern,
         }
     }
 }
@@ -641,23 +637,20 @@ where
 /// assert_eq!(message, "a message from the transformation")
 /// ```
 pub struct StaticContextBuilder<
-    'i,
     N: Node,
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    I: Interner<InQualifiedName>,
->(StaticContext<'i, N, F, G, H, I>);
+>(StaticContext<N, F, G, H>);
 
-impl<'i, N: Node, F, G, H, I> StaticContextBuilder<'i, N, F, G, H, I>
+impl<N: Node, F, G, H> StaticContextBuilder<N, F, G, H>
 where
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
-    I: Interner<InQualifiedName>,
 {
-    pub fn new(intern: &'i mut Internment<'i, I>) -> Self {
-        StaticContextBuilder(StaticContext::new(intern))
+    pub fn new() -> Self {
+        StaticContextBuilder(StaticContext::new())
     }
     pub fn message(mut self, f: F) -> Self {
         self.0.message = Some(f);
@@ -671,7 +664,7 @@ where
         self.0.fetcher = Some(f);
         self
     }
-    pub fn build(self) -> StaticContext<'i, N, F, G, H, I> {
+    pub fn build(self) -> StaticContext<N, F, G, H> {
         self.0
     }
 }

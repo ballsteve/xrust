@@ -32,11 +32,8 @@ impl Node for Nullo {
     fn name(&self) -> Rc<QualifiedName> {
         Rc::new(QualifiedName::new(None, None, String::new()))
     }
-    fn name_in<'i, I: Interner<InQualifiedName>>(
-        &self,
-        intern: &'i Internment<'i, I>,
-    ) -> InQualifiedName {
-        intern.get("")
+    fn name_in<I: Interner<InQualifiedName>>(&self, intern: &Internment<I>) -> InQualifiedName {
+        InQualifiedName::new(None, None, "").expect("unable to create QN")
     }
     fn value(&self) -> Rc<Value> {
         Rc::new(Value::from(""))
@@ -50,16 +47,16 @@ impl Node for Nullo {
     fn to_xml(&self) -> String {
         String::new()
     }
-    fn to_xml_in<'i, I: Interner<InQualifiedName>>(&self, intern: &'i Internment<'i, I>) -> String {
+    fn to_xml_in<I: Interner<InQualifiedName>>(&self, intern: &Internment<I>) -> String {
         String::new()
     }
     fn to_xml_with_options(&self, _: &OutputDefinition) -> String {
         String::new()
     }
-    fn to_xml_with_options_in<'i, I: Interner<InQualifiedName>>(
+    fn to_xml_with_options_in<I: Interner<InQualifiedName>>(
         &self,
         od: &OutputDefinition,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> String {
         String::new()
     }
@@ -102,10 +99,10 @@ impl Node for Nullo {
     fn get_attribute(&self, _: &QualifiedName) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
-    fn get_attribute_in<'i, I: Interner<InQualifiedName>>(
+    fn get_attribute_in<I: Interner<InQualifiedName>>(
         &self,
         a: InQualifiedName,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Rc<Value> {
         Rc::new(Value::from(""))
     }
@@ -127,10 +124,10 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_element_in<'i, I: Interner<InQualifiedName>>(
+    fn new_element_in<I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
@@ -149,11 +146,11 @@ impl Node for Nullo {
             String::from("not implemented"),
         ))
     }
-    fn new_attribute_in<'i, I: Interner<InQualifiedName>>(
+    fn new_attribute_in<I: Interner<InQualifiedName>>(
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
@@ -180,7 +177,7 @@ impl Node for Nullo {
         &self,
         qn: InQualifiedName,
         v: Rc<Value>,
-        intern: &'i Internment<'i, I>,
+        intern: &Internment<I>,
     ) -> Result<Self, Error> {
         Err(Error::new(
             ErrorKind::NotImplemented,
