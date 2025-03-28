@@ -96,7 +96,11 @@ fn braced_expr<'a, N: Node + 'a>(
         Some("{") => match input.find('}') {
             None => Err(ParseError::Combinator),
             Some(ind) => match expr()((input.get(1..ind).unwrap(), state.clone())) {
-                Ok((_, result)) => Ok(((input.get(ind..).map_or("", |r| r), state), result)),
+                Ok((_, result)) => {
+                    // Successful parse of expression
+                    // Must also consume the close brace
+                    Ok(((input.get((ind + 1)..).map_or("", |r| r), state), result))
+                }
                 Err(e) => Err(e),
             },
         },

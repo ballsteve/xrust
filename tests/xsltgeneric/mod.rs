@@ -29,6 +29,7 @@ where
         )
     })?;
     eprintln!("parse style doc");
+    //eprintln!("style=={}", style.as_ref());
     let styledoc = parse_from_str(style.as_ref())
         .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
     let mut stctxt = StaticContextBuilder::new()
@@ -41,7 +42,7 @@ where
     ctxt.result_document(make_doc()?);
     ctxt.populate_key_values(&mut stctxt, srcdoc.clone())?;
     eprintln!("evaluate xform {:?}", ctxt);
-    ctxt.evaluate(&mut stctxt)
+    ctxt.evaluate_with_setup(&mut stctxt)
 }
 
 fn test_msg_rig<N: Node, G, H, J>(
@@ -70,7 +71,7 @@ where
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
-    let seq = ctxt.evaluate(&mut stctxt)?;
+    let seq = ctxt.evaluate_with_setup(&mut stctxt)?;
     Ok((seq, msgs))
 }
 
@@ -862,7 +863,7 @@ where
     )?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
-    let result = ctxt.evaluate(&mut stctxt)?;
+    let result = ctxt.evaluate_with_setup(&mut stctxt)?;
     if result.to_string()
         == "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour"
     {
@@ -903,7 +904,7 @@ where
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
-    let result = ctxt.evaluate(&mut stctxt)?;
+    let result = ctxt.evaluate_with_setup(&mut stctxt)?;
     if result.to_string() == "found internal element|found external element" {
         Ok(())
     } else {
@@ -1350,6 +1351,40 @@ where
     assert_eq!(
         result.to_xml(),
         r###"<html><body><h2>My CD Collection</h2><table border='1'><ts bgcolor='#9acd32'><th>Title</th><th>Artist</th></ts><tr><td>Empire Burlesque</td><td>Bob Dylan</td></tr><tr><td>Hide your heart</td><td>Bonnie Tyler</td></tr><tr><td>Greatest Hits</td><td>Dolly Parton</td></tr><tr><td>Still got the blues</td><td>Gary Moore</td></tr><tr><td>Eros</td><td>Eros Ramazzotti</td></tr><tr><td>One night only</td><td>Bee Gees</td></tr><tr><td>Sylvias Mother</td><td>Dr.Hook</td></tr><tr><td>Maggie May</td><td>Rod Stewart</td></tr><tr><td>Romanza</td><td>Andrea Bocelli</td></tr><tr><td>When a man loves a woman</td><td>Percy Sledge</td></tr><tr><td>Black angel</td><td>Savage Rose</td></tr><tr><td>1999 Grammy Nominees</td><td>Many</td></tr><tr><td>For the good times</td><td>Kenny Rogers</td></tr><tr><td>Big Willie style</td><td>Will Smith</td></tr><tr><td>Tupelo Honey</td><td>Van Morrison</td></tr><tr><td>Soulsville</td><td>Jorn Hoel</td></tr><tr><td>The very best of</td><td>Cat Stevens</td></tr><tr><td>Stop</td><td>Sam Brown</td></tr><tr><td>Bridge of Spies</td><td>T`Pau</td></tr><tr><td>Private Dancer</td><td>Tina Turner</td></tr><tr><td>Midt om natten</td><td>Kim Larsen</td></tr><tr><td>Pavarotti Gala Concert</td><td>Luciano Pavarotti</td></tr><tr><td>The dock of the bay</td><td>Otis Redding</td></tr><tr><td>Picture book</td><td>Simply Red</td></tr><tr><td>Red</td><td>The Communards</td></tr><tr><td>Unchain my heart</td><td>Joe Cocker</td></tr></table></body></html>"###
+    );
+    Ok(())
+}
+
+pub fn issue_137_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<dummy/>",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:variable name="title">A really exciting document</xsl:variable>
+        <xsl:variable name="backcolor">#FFFFCC</xsl:variable>
+        <xsl:template match="/*">
+            <HTML><TITLE><xsl:value-of select="$title"/></TITLE>
+            <BODY BGCOLOR='{$backcolor}'>
+                <!-- ... -->
+            </BODY></HTML>
+        </xsl:template>
+        </xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'></BODY></HTML>"
     );
     Ok(())
 }

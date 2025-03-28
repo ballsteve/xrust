@@ -59,6 +59,9 @@ pub struct Context<N: Node> {
     pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
+    // Stylesheet variables, to be evaluated before template processing.
+    // (name, value) pairs
+    pub(crate) pre_vars: Vec<(String, Transform<N>)>,
     // Grouping
     pub(crate) current_grouping_key: Option<Rc<Value>>,
     pub(crate) current_group: Sequence<N>,
@@ -88,6 +91,7 @@ impl<N: Node> Context<N> {
             current_templates: vec![],
             callables: HashMap::new(),
             vars: HashMap::new(),
+            pre_vars: Vec::new(),
             current_grouping_key: None,
             current_group: Sequence::new(),
             keys: HashMap::new(),
@@ -145,7 +149,8 @@ impl<N: Node> Context<N> {
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
     pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
-    pub(crate) fn var_push(&mut self, name: String, value: Sequence<N>) {
+    pub fn var_push(&mut self, name: String, value: Sequence<N>) {
+        eprintln!("var_push {}=={}", name, value.to_string());
         match self.vars.get_mut(name.as_str()) {
             Some(u) => {
                 // If the variable already has a value, then this is a new, inner scope
@@ -168,6 +173,10 @@ impl<N: Node> Context<N> {
             acc.push_str(format!("{}==\"{}\", ", k, v[0].to_string()).as_str());
             acc
         })
+    }
+    /// Add a stylesheet variable
+    pub fn pre_var_push(&mut self, name: String, x: Transform<N>) {
+        self.pre_vars.push((name, x));
     }
 
     /// Callable components: named templates and user-defined functions
@@ -232,6 +241,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
+        eprintln!("evaluate with vars {:?}", self.vars);
         if self.cur.is_empty() {
             Ok(Sequence::new())
         } else {
@@ -278,6 +288,42 @@ impl<N: Node> Context<N> {
                     }
                 },
             )
+        }
+    }
+    /// Find a template to evaluate, but first setup initial variables
+    pub fn evaluate_with_setup<
+        F: FnMut(&str) -> Result<(), Error>,
+        G: FnMut(&str) -> Result<N, Error>,
+        H: FnMut(&Url) -> Result<String, Error>,
+    >(
+        &self,
+        stctxt: &mut StaticContext<N, F, G, H>,
+    ) -> Result<Sequence<N>, Error> {
+        // Define initial (stylesheet) variables by evakuating their transformation with the root node as the context
+        if self.cur.is_empty() {
+            // There is no context item
+            return Ok(Sequence::new());
+        } else {
+            let mut ctxt = self.clone();
+            // If the context item is a node then set the new context to the root node
+            // otherwise there is no context
+            ctxt.context(
+                self.cur.get(self.i).map_or_else(
+                    || vec![],
+                    |i| {
+                        if let Item::Node(n) = i {
+                            vec![Item::Node(n.owner_document())]
+                        } else {
+                            vec![]
+                        }
+                    },
+                ),
+                0,
+            );
+            for (name, x) in &self.pre_vars {
+                ctxt.var_push(name.clone(), self.dispatch(stctxt, &x)?);
+            }
+            ctxt.evaluate(stctxt)
         }
     }
 
@@ -358,6 +404,7 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
+        eprintln!("dispatch {:?}", t);
         match t {
             Transform::Root => root(self),
             Transform::ContextItem => context(self),
@@ -467,6 +514,7 @@ impl<N: Node> From<Sequence<N>> for Context<N> {
             current_templates: vec![],
             callables: HashMap::new(),
             vars: HashMap::new(),
+            pre_vars: Vec::new(),
             keys: HashMap::new(),
             key_values: HashMap::new(),
             current_grouping_key: None,

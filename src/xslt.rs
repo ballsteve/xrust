@@ -662,6 +662,44 @@ where
             );
             Ok(())
         })?;
+    // Add top-level variables
+    // TODO: stylesheet parameters
+    stylenode
+        .child_iter()
+        .filter(|c| {
+            c.is_element()
+                && c.name().namespace_uri_to_string() == Some(XSLTNS.to_string())
+                && c.name().localname_to_string() == "variable"
+        })
+        .try_for_each(|c| {
+            let name = c
+                .get_attribute(&QualifiedName::new(None, None, "name"))
+                .to_string();
+            if name.is_empty() {
+                return Err(Error::new(
+                    ErrorKind::StaticAbsent,
+                    "variable must have a name",
+                ));
+            }
+            let sel = c
+                .get_attribute(&QualifiedName::new(None, None, "select"))
+                .to_string();
+            if sel.is_empty() {
+                // Use element content
+                newctxt.pre_var_push(
+                    name,
+                    Transform::SequenceItems(c.child_iter().try_fold(vec![], |mut body, e| {
+                        body.push(to_transform(e, &attr_sets)?);
+                        Ok(body)
+                    })?),
+                );
+                Ok(())
+            } else {
+                // Parse XPath
+                newctxt.pre_var_push(name, parse::<N>(&sel.to_string(), Some(c.clone()))?);
+                Ok(())
+            }
+        })?;
 
     Ok(newctxt)
 }
@@ -1242,6 +1280,7 @@ fn to_transform<N: Node>(
                     u
                 ))),
                 (u, a) => {
+                    eprintln!("literal element \"{}\"", n.name().to_string());
                     // Process @xsl:use-attribute-sets
                     let use_atts = n.get_attribute(&QualifiedName::new(
                         Some(XSLTNS.to_string()),
@@ -1263,6 +1302,7 @@ fn to_transform<N: Node>(
                     n.attribute_iter()
                         .filter(|e| e.name().namespace_uri_to_string() != Some(XSLTNS.to_string()))
                         .try_for_each(|e| {
+                            eprintln!("have attribute \"{}\"", e.name().to_string());
                             content.push(to_transform(e, attr_sets)?);
                             Ok::<(), Error>(())
                         })?;
@@ -1288,12 +1328,16 @@ fn to_transform<N: Node>(
             }
         }
         NodeType::Attribute => {
+            eprintln!("node is an attribute with value \"{}\"", n.to_string());
+            let x = parse_avt(n.to_string().as_str(), Some(n.clone()))?;
+            eprintln!("content xform:\n{:?}", x);
             // Get value as a Value
             Ok(Transform::LiteralAttribute(
                 n.name(),
-                Box::new(Transform::Literal(Item::Value(Rc::new(Value::String(
-                    n.to_string(),
-                ))))),
+                Box::new(x),
+                //Box::new(Transform::Literal(Item::Value(Rc::new(Value::String(
+                //n.to_string(),
+                //))))),
             ))
         }
         _ => {
