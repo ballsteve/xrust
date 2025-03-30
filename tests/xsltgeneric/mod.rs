@@ -21,15 +21,12 @@ where
     H: Fn() -> Result<N, Error>,
     J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
 {
-    eprintln!("test_rig, parse source doc");
     let srcdoc = parse_from_str(src.as_ref()).map_err(|e| {
         Error::new(
             e.kind,
             format!("error parsing source document: {}", e.message),
         )
     })?;
-    eprintln!("parse style doc");
-    //eprintln!("style=={}", style.as_ref());
     let styledoc = parse_from_str(style.as_ref())
         .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
     let mut stctxt = StaticContextBuilder::new()
@@ -41,8 +38,7 @@ where
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     ctxt.populate_key_values(&mut stctxt, srcdoc.clone())?;
-    eprintln!("evaluate xform {:?}", ctxt);
-    ctxt.evaluate_with_setup(&mut stctxt)
+    ctxt.evaluate(&mut stctxt)
 }
 
 fn test_msg_rig<N: Node, G, H, J>(
@@ -71,7 +67,7 @@ where
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
-    let seq = ctxt.evaluate_with_setup(&mut stctxt)?;
+    let seq = ctxt.evaluate(&mut stctxt)?;
     Ok((seq, msgs))
 }
 
@@ -863,7 +859,7 @@ where
     )?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
-    let result = ctxt.evaluate_with_setup(&mut stctxt)?;
+    let result = ctxt.evaluate(&mut stctxt)?;
     if result.to_string()
         == "onefound Level1 elementtwofound Level2 elementthreefound Level3 elementfour"
     {
@@ -904,7 +900,7 @@ where
     let mut ctxt = from_document(styledoc, None, |s| parse_from_str(s), |_| Ok(String::new()))?;
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
-    let result = ctxt.evaluate_with_setup(&mut stctxt)?;
+    let result = ctxt.evaluate(&mut stctxt)?;
     if result.to_string() == "found internal element|found external element" {
         Ok(())
     } else {
@@ -1369,7 +1365,7 @@ where
         "<dummy/>",
         r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
         <xsl:variable name="title">A really exciting document</xsl:variable>
-        <xsl:variable name="backcolor">#FFFFCC</xsl:variable>
+        <xsl:variable name="backcolor" select="'#FFFFCC'"/>
         <xsl:template match="/*">
             <HTML><TITLE><xsl:value-of select="$title"/></TITLE>
             <BODY BGCOLOR='{$backcolor}'>

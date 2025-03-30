@@ -150,7 +150,6 @@ impl<N: Node> Context<N> {
     pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub fn var_push(&mut self, name: String, value: Sequence<N>) {
-        eprintln!("var_push {}=={}", name, value.to_string());
         match self.vars.get_mut(name.as_str()) {
             Some(u) => {
                 // If the variable already has a value, then this is a new, inner scope
@@ -195,45 +194,9 @@ impl<N: Node> Context<N> {
         self.base_url = Some(url);
     }
 
-    /// Evaluate finds a template matching the current item and evaluates the body of the template,
-    /// returning the resulting [Sequence].
-    /// ```rust
-    /// use std::rc::Rc;
-    /// use url::Url;
-    /// use xrust::ErrorKind;
-    /// use xrust::xdmerror::Error;
-    /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
-    /// use xrust::transform::Transform;
-    /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
-    /// use xrust::trees::smite::RNode;
-    /// use xrust::parser::xml::parse;
-    /// use xrust::xslt::from_document;
-    ///
-    /// // A little helper function to parse a string to a Document Node
-    /// fn make_from_str(s: &str) -> RNode {
-    ///   let mut d = RNode::new_document();
-    ///   parse(d.clone(), s, None)
-    ///     .expect("failed to parse XML");
-    ///   d
-    /// }
-    ///
-    /// let sd = Item::Node(make_from_str("<Example/>"));
-    /// let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
-    /// <xsl:template match='/'><xsl:apply-templates/></xsl:template>
-    /// <xsl:template match='child::Example'>This template will match</xsl:template>
-    /// </xsl:stylesheet>");
-    /// let mut stctxt = StaticContextBuilder::new()
-    ///     .message(|_| Ok(()))
-    ///     .fetcher(|_| Ok(String::new()))
-    ///     .parser(|s| Ok(make_from_str(s)))
-    ///     .build();
-    /// let mut context = from_document(style, None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
-    /// context.context(vec![sd], 0);
-    /// context.result_document(make_from_str("<Result/>"));
-    /// let sequence = context.evaluate(&mut stctxt).expect("evaluation failed");
-    /// assert_eq!(sequence.to_string(), "This template will match")
-    /// ```
-    pub fn evaluate<
+    // Does the work of evaluating the context,
+    // but without the initial setup.
+    pub(crate) fn evaluate_internal<
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
@@ -241,7 +204,6 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
-        eprintln!("evaluate with vars {:?}", self.vars);
         if self.cur.is_empty() {
             Ok(Sequence::new())
         } else {
@@ -290,8 +252,45 @@ impl<N: Node> Context<N> {
             )
         }
     }
-    /// Find a template to evaluate, but first setup initial variables
-    pub fn evaluate_with_setup<
+    /// Evaluate finds a template matching the current item and evaluates the body of the template,
+    /// returning the resulting [Sequence].
+    /// ```rust
+    /// use std::rc::Rc;
+    /// use url::Url;
+    /// use xrust::ErrorKind;
+    /// use xrust::xdmerror::Error;
+    /// use xrust::item::{Item, Sequence, SequenceTrait, Node, NodeType};
+    /// use xrust::transform::Transform;
+    /// use xrust::transform::context::{Context, StaticContext, StaticContextBuilder};
+    /// use xrust::trees::smite::RNode;
+    /// use xrust::parser::xml::parse;
+    /// use xrust::xslt::from_document;
+    ///
+    /// // A little helper function to parse a string to a Document Node
+    /// fn make_from_str(s: &str) -> RNode {
+    ///   let mut d = RNode::new_document();
+    ///   parse(d.clone(), s, None)
+    ///     .expect("failed to parse XML");
+    ///   d
+    /// }
+    ///
+    /// let sd = Item::Node(make_from_str("<Example/>"));
+    /// let style = make_from_str("<xsl:stylesheet xmlns:xsl='http://www.w3.org/1999/XSL/Transform'>
+    /// <xsl:template match='/'><xsl:apply-templates/></xsl:template>
+    /// <xsl:template match='child::Example'>This template will match</xsl:template>
+    /// </xsl:stylesheet>");
+    /// let mut stctxt = StaticContextBuilder::new()
+    ///     .message(|_| Ok(()))
+    ///     .fetcher(|_| Ok(String::new()))
+    ///     .parser(|s| Ok(make_from_str(s)))
+    ///     .build();
+    /// let mut context = from_document(style, None, |s| Ok(make_from_str(s)), |_| Ok(String::new())).expect("unable to compile stylesheet");
+    /// context.context(vec![sd], 0);
+    /// context.result_document(make_from_str("<Result/>"));
+    /// let sequence = context.evaluate(&mut stctxt).expect("evaluation failed");
+    /// assert_eq!(sequence.to_string(), "This template will match")
+    /// ```
+    pub fn evaluate<
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
@@ -323,7 +322,7 @@ impl<N: Node> Context<N> {
             for (name, x) in &self.pre_vars {
                 ctxt.var_push(name.clone(), self.dispatch(stctxt, &x)?);
             }
-            ctxt.evaluate(stctxt)
+            ctxt.evaluate_internal(stctxt)
         }
     }
 
@@ -404,7 +403,6 @@ impl<N: Node> Context<N> {
         stctxt: &mut StaticContext<N, F, G, H>,
         t: &Transform<N>,
     ) -> Result<Sequence<N>, Error> {
-        eprintln!("dispatch {:?}", t);
         match t {
             Transform::Root => root(self),
             Transform::ContextItem => context(self),

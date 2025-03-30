@@ -170,11 +170,6 @@ pub(crate) fn literal_attribute<
     qn: &Rc<QualifiedName>,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    eprintln!(
-        "create literal attribute \"{}\" using value xform {:?}",
-        qn.to_string(),
-        t
-    );
     if ctxt.rd.is_none() {
         return Err(Error::new(
             ErrorKind::Unknown,
@@ -183,7 +178,6 @@ pub(crate) fn literal_attribute<
     }
 
     let v = ctxt.dispatch(stctxt, t)?;
-    eprintln!("got value \"{:?}\"", v);
     let a = ctxt
         .rd
         .clone()

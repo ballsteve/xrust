@@ -27,16 +27,13 @@ pub fn declare_variable<
 }
 pub fn reference_variable<N: Node>(ctxt: &Context<N>, name: &String) -> Result<Sequence<N>, Error> {
     match ctxt.vars.get(name) {
-        Some(u) => {
-            eprintln!("ref var \"{}\" value {:?}", name, u);
-            match u.last() {
-                Some(t) => Ok(t.clone()),
-                None => Err(Error::new(
-                    ErrorKind::Unknown,
-                    format!("variable \"{}\" is no longer in scope", name),
-                )),
-            }
-        }
+        Some(u) => match u.last() {
+            Some(t) => Ok(t.clone()),
+            None => Err(Error::new(
+                ErrorKind::Unknown,
+                format!("variable \"{}\" is no longer in scope", name),
+            )),
+        },
         None => Err(Error::new(
             ErrorKind::Unknown,
             format!("unknown variable \"{}\"", name),

@@ -2,7 +2,7 @@
 
 use crate::item::Node;
 use crate::parser::combinators::alt::{alt2, alt3, alt4, alt5};
-use crate::parser::combinators::debug::inspect;
+//use crate::parser::combinators::debug::inspect;
 use crate::parser::combinators::list::separated_list1;
 use crate::parser::combinators::many::many0;
 use crate::parser::combinators::map::map;
@@ -152,7 +152,7 @@ fn step_expr<'a, N: Node + 'a>(
 ) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
     Box::new(alt4(
         abbreviated_parent::<N>(),
-        inspect("kindtest", abbreviated_kindtest::<N>()),
+        abbreviated_kindtest::<N>(),
         postfix_expr::<N>(),
         axisstep::<N>(),
     ))

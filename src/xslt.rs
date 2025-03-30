@@ -1280,7 +1280,6 @@ fn to_transform<N: Node>(
                     u
                 ))),
                 (u, a) => {
-                    eprintln!("literal element \"{}\"", n.name().to_string());
                     // Process @xsl:use-attribute-sets
                     let use_atts = n.get_attribute(&QualifiedName::new(
                         Some(XSLTNS.to_string()),
@@ -1302,7 +1301,6 @@ fn to_transform<N: Node>(
                     n.attribute_iter()
                         .filter(|e| e.name().namespace_uri_to_string() != Some(XSLTNS.to_string()))
                         .try_for_each(|e| {
-                            eprintln!("have attribute \"{}\"", e.name().to_string());
                             content.push(to_transform(e, attr_sets)?);
                             Ok::<(), Error>(())
                         })?;
@@ -1328,9 +1326,7 @@ fn to_transform<N: Node>(
             }
         }
         NodeType::Attribute => {
-            eprintln!("node is an attribute with value \"{}\"", n.to_string());
             let x = parse_avt(n.to_string().as_str(), Some(n.clone()))?;
-            eprintln!("content xform:\n{:?}", x);
             // Get value as a Value
             Ok(Transform::LiteralAttribute(
                 n.name(),
