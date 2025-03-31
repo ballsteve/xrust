@@ -517,8 +517,8 @@ fn xpath_issue138_1() {
     xpathgeneric::issue138_1::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
         .expect("test failed")
 }
-//#[test]
-//fn xpath_issue138_2() {
-//    xpathgeneric::issue138_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
-//        .expect("test failed")
-//}
+#[test]
+fn xpath_issue138_2() {
+    xpathgeneric::issue138_2::<RNode, _, _>(smite::make_empty_doc, smite::make_sd)
+        .expect("test failed")
+}
