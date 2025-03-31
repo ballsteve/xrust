@@ -317,16 +317,20 @@ pub(crate) fn filter<
     stctxt: &mut StaticContext<N, F, G, H>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
-        if ContextBuilder::from(ctxt)
-            .context(vec![i.clone()])
-            .previous_context(ctxt.previous_context.clone())
-            .build()
-            .dispatch(stctxt, predicate)?
-            .to_bool()
-        {
-            acc.push(i.clone())
-        }
-        Ok(acc)
-    })
+    ctxt.cur
+        .iter()
+        .enumerate()
+        .try_fold(vec![], |mut acc, (j, i)| {
+            if ContextBuilder::from(ctxt)
+                .context(vec![i.clone()])
+                .index(j)
+                .previous_context(ctxt.previous_context.clone())
+                .build()
+                .dispatch(stctxt, predicate)?
+                .to_bool()
+            {
+                acc.push(i.clone())
+            }
+            Ok(acc)
+        })
 }

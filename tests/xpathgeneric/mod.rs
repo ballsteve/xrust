@@ -1551,8 +1551,6 @@ where
     e2.push(t2).expect("unable to add text 2");
     top.push(e2).expect("unable to add element 2");
 
-    eprintln!("source:\n{}", sd.to_xml());
-
     let xform = parse("/root/element[position() = 1]", None).expect("parsing failed");
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
@@ -1565,7 +1563,6 @@ where
         .build()
         .dispatch(&mut stctxt, &xform)
         .expect("transform failed");
-    s.iter().for_each(|x| eprintln!("got item {:?}", x));
     assert_eq!(s.len(), 1);
     assert_eq!(s.to_xml(), "<element attr='val1'>text1</element>");
     Ok(())
@@ -1611,8 +1608,6 @@ where
     e2.push(t2).expect("unable to add text 2");
     top.push(e2).expect("unable to add element 2");
 
-    eprintln!("source:\n{}", sd.to_xml());
-
     let xform = parse("/root/element[position() = 2]", None).expect("parsing failed");
     let mut stctxt = StaticContextBuilder::new()
         .message(|_| Ok(()))
@@ -1625,7 +1620,6 @@ where
         .build()
         .dispatch(&mut stctxt, &xform)
         .expect("transform failed");
-    s.iter().for_each(|x| eprintln!("got item {:?}", x));
     assert_eq!(s.len(), 1);
     assert_eq!(s.to_xml(), "<element attr='val2'>text2</element>");
     Ok(())
