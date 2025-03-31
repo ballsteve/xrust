@@ -1511,6 +1511,66 @@ where
     }
 }
 
+pub fn issue138_1<N: Node, G, H>(make_empty_doc: G, make_doc: H) -> Result<(), Error>
+where
+    G: Fn() -> N,
+    H: Fn() -> Item<N>,
+{
+    let rd = make_empty_doc();
+    let mut sd = make_empty_doc();
+    let mut top = sd
+        .new_element(Rc::new(QualifiedName::new(None, None, "root")))
+        .expect("unable to create root element");
+    sd.push(top.clone()).expect("unable to add root element");
+    let e_name = Rc::new(QualifiedName::new(None, None, "element"));
+    let at_name = Rc::new(QualifiedName::new(None, None, "attr"));
+    // <element attr="val1">text1</element>
+    let mut e1 = sd
+        .new_element(e_name.clone())
+        .expect("unable to create element 1");
+    let a1 = sd
+        .new_attribute(at_name.clone(), Rc::new(Value::from("val1")))
+        .expect("unable to create attribute 1");
+    e1.add_attribute(a1).expect("unable to add attribute 1");
+    let t1 = sd
+        .new_text(Rc::new(Value::from("text1")))
+        .expect("unable to create text 1");
+    e1.push(t1).expect("unable to add text 1");
+    top.push(e1).expect("unable to add element 1");
+    // <element attr="val2">text2</element>
+    let mut e2 = sd
+        .new_element(e_name.clone())
+        .expect("unable to create element 2");
+    let a2 = sd
+        .new_attribute(at_name.clone(), Rc::new(Value::from("val2")))
+        .expect("unable to create attribute 2");
+    e2.add_attribute(a2).expect("unable to add attribute 2");
+    let t2 = sd
+        .new_text(Rc::new(Value::from("text2")))
+        .expect("unable to create text 2");
+    e2.push(t2).expect("unable to add text 2");
+    top.push(e2).expect("unable to add element 2");
+
+    eprintln!("source:\n{}", sd.to_xml());
+
+    let xform = parse("/root/element[position() = 1]", None).expect("parsing failed");
+    let mut stctxt = StaticContextBuilder::new()
+        .message(|_| Ok(()))
+        .fetcher(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .parser(|_| Err(Error::new(ErrorKind::NotImplemented, "not implemented")))
+        .build();
+    let s = ContextBuilder::new()
+        .context(vec![Item::Node(sd)])
+        .result_document(rd)
+        .build()
+        .dispatch(&mut stctxt, &xform)
+        .expect("transform failed");
+    s.iter().for_each(|x| eprintln!("got item {:?}", x));
+    assert_eq!(s.len(), 1);
+    assert_eq!(s.to_xml(), "<element attr='val1'>text1</element>");
+    Ok(())
+}
+
 // System properties
 
 pub fn generic_sys_prop_vers_qual<N: Node, G, H>(_: G, _: H) -> Result<(), Error>
