@@ -1415,7 +1415,7 @@ where
 
     assert_eq!(
         result.to_xml(),
-        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'></BODY></HTML>"
+        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'><H1>Title: A really exciting document</H1></BODY></HTML>"
     );
     Ok(())
 }

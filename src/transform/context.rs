@@ -298,7 +298,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
     ) -> Result<Sequence<N>, Error> {
-        // Define initial (stylesheet) variables by evakuating their transformation with the root node as the context
+        // Define initial (stylesheet) variables by evaluating their transformation with the root node as the context
         if self.cur.is_empty() {
             // There is no context item
             return Ok(Sequence::new());
@@ -319,8 +319,10 @@ impl<N: Node> Context<N> {
                 ),
                 0,
             );
+            // Populate the context with stylesheet-level variables.
+            // Each variable creates a new context for the evaluation of subsequent variables.
             for (name, x) in &self.pre_vars {
-                ctxt.var_push(name.clone(), self.dispatch(stctxt, &x)?);
+                ctxt.var_push(name.clone(), ctxt.dispatch(stctxt, &x)?);
             }
             ctxt.evaluate_internal(stctxt)
         }
