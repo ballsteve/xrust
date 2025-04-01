@@ -1384,3 +1384,38 @@ where
     );
     Ok(())
 }
+
+pub fn issue_137_2<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<dummy/>",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:variable name="title">A really exciting document</xsl:variable>
+        <xsl:variable name="body-title" select="concat('Title: ', $title)"/>
+        <xsl:variable name="backcolor" select="'#FFFFCC'"/>
+        <xsl:template match="/*">
+            <HTML><TITLE><xsl:value-of select="$title"/></TITLE>
+            <BODY BGCOLOR='{$backcolor}'>
+                <H1><xsl:value-of select="$body-title"/></H1>
+            </BODY></HTML>
+        </xsl:template>
+        </xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'></BODY></HTML>"
+    );
+    Ok(())
+}
