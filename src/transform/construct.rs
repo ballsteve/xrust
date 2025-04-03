@@ -177,10 +177,12 @@ pub(crate) fn literal_attribute<
         ));
     }
 
-    let a = ctxt.rd.clone().unwrap().new_attribute(
-        qn.clone(),
-        Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
-    )?;
+    let v = ctxt.dispatch(stctxt, t)?;
+    let a = ctxt
+        .rd
+        .clone()
+        .unwrap()
+        .new_attribute(qn.clone(), Rc::new(Value::from(v.to_string())))?;
     Ok(vec![Item::Node(a)])
 }
 

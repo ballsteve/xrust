@@ -21,14 +21,12 @@ where
     H: Fn() -> Result<N, Error>,
     J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
 {
-    eprintln!("test_rig, parse source doc");
     let srcdoc = parse_from_str(src.as_ref()).map_err(|e| {
         Error::new(
             e.kind,
             format!("error parsing source document: {}", e.message),
         )
     })?;
-    eprintln!("parse style doc");
     let styledoc = parse_from_str(style.as_ref())
         .map_err(|e| Error::new(e.kind, format!("error parsing stylesheet: {}", e.message)))?;
     let mut stctxt = StaticContextBuilder::new()
@@ -40,7 +38,6 @@ where
     ctxt.context(vec![Item::Node(srcdoc.clone())], 0);
     ctxt.result_document(make_doc()?);
     ctxt.populate_key_values(&mut stctxt, srcdoc.clone())?;
-    eprintln!("evaluate xform {:?}", ctxt);
     ctxt.evaluate(&mut stctxt)
 }
 
@@ -1350,6 +1347,75 @@ where
     assert_eq!(
         result.to_xml(),
         r###"<html><body><h2>My CD Collection</h2><table border='1'><ts bgcolor='#9acd32'><th>Title</th><th>Artist</th></ts><tr><td>Empire Burlesque</td><td>Bob Dylan</td></tr><tr><td>Hide your heart</td><td>Bonnie Tyler</td></tr><tr><td>Greatest Hits</td><td>Dolly Parton</td></tr><tr><td>Still got the blues</td><td>Gary Moore</td></tr><tr><td>Eros</td><td>Eros Ramazzotti</td></tr><tr><td>One night only</td><td>Bee Gees</td></tr><tr><td>Sylvias Mother</td><td>Dr.Hook</td></tr><tr><td>Maggie May</td><td>Rod Stewart</td></tr><tr><td>Romanza</td><td>Andrea Bocelli</td></tr><tr><td>When a man loves a woman</td><td>Percy Sledge</td></tr><tr><td>Black angel</td><td>Savage Rose</td></tr><tr><td>1999 Grammy Nominees</td><td>Many</td></tr><tr><td>For the good times</td><td>Kenny Rogers</td></tr><tr><td>Big Willie style</td><td>Will Smith</td></tr><tr><td>Tupelo Honey</td><td>Van Morrison</td></tr><tr><td>Soulsville</td><td>Jorn Hoel</td></tr><tr><td>The very best of</td><td>Cat Stevens</td></tr><tr><td>Stop</td><td>Sam Brown</td></tr><tr><td>Bridge of Spies</td><td>T`Pau</td></tr><tr><td>Private Dancer</td><td>Tina Turner</td></tr><tr><td>Midt om natten</td><td>Kim Larsen</td></tr><tr><td>Pavarotti Gala Concert</td><td>Luciano Pavarotti</td></tr><tr><td>The dock of the bay</td><td>Otis Redding</td></tr><tr><td>Picture book</td><td>Simply Red</td></tr><tr><td>Red</td><td>The Communards</td></tr><tr><td>Unchain my heart</td><td>Joe Cocker</td></tr></table></body></html>"###
+    );
+    Ok(())
+}
+
+pub fn issue_137_1<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<dummy/>",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:variable name="title">A really exciting document</xsl:variable>
+        <xsl:variable name="backcolor" select="'#FFFFCC'"/>
+        <xsl:template match="/*">
+            <HTML><TITLE><xsl:value-of select="$title"/></TITLE>
+            <BODY BGCOLOR='{$backcolor}'>
+                <!-- ... -->
+            </BODY></HTML>
+        </xsl:template>
+        </xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'></BODY></HTML>"
+    );
+    Ok(())
+}
+
+pub fn issue_137_2<N: Node, G, H, J>(
+    parse_from_str: G,
+    parse_from_str_with_ns: J,
+    make_doc: H,
+) -> Result<(), Error>
+where
+    G: Fn(&str) -> Result<N, Error>,
+    H: Fn() -> Result<N, Error>,
+    J: Fn(&str) -> Result<(N, Rc<NamespaceMap>), Error>,
+{
+    let result = test_rig(
+        "<dummy/>",
+        r#"<xsl:stylesheet xmlns:xsl="http://www.w3.org/1999/XSL/Transform">
+        <xsl:variable name="title">A really exciting document</xsl:variable>
+        <xsl:variable name="body-title" select="concat('Title: ', $title)"/>
+        <xsl:variable name="backcolor" select="'#FFFFCC'"/>
+        <xsl:template match="/*">
+            <HTML><TITLE><xsl:value-of select="$title"/></TITLE>
+            <BODY BGCOLOR='{$backcolor}'>
+                <H1><xsl:value-of select="$body-title"/></H1>
+            </BODY></HTML>
+        </xsl:template>
+        </xsl:stylesheet>"#,
+        parse_from_str,
+        parse_from_str_with_ns,
+        make_doc,
+    )?;
+
+    assert_eq!(
+        result.to_xml(),
+        "<HTML><TITLE>A really exciting document</TITLE><BODY BGCOLOR='#FFFFCC'><H1>Title: A really exciting document</H1></BODY></HTML>"
     );
     Ok(())
 }
