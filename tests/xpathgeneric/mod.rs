@@ -861,7 +861,7 @@ where
         let s = ContextBuilder::new()
             .result_document(rd)
             .context(vec![Item::Node(top)])
-            .previous_context(Some(sd))
+            .context_item(Some(sd))
             .build()
             .dispatch(&mut stctxt, &parse("current()/child::a", None)?)
             .expect("evaluation failed");
@@ -1316,7 +1316,7 @@ where
         let s = ContextBuilder::new()
             .result_document(rd)
             .context(vec![Item::Node(l)])
-            .previous_context(Some(sd))
+            .context_item(Some(sd))
             .build()
             .dispatch(&mut stctxt, &parse("count(ancestor::*)", None)?)
             .expect("evaluation failed");

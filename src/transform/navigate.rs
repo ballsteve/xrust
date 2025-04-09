@@ -9,15 +9,12 @@ use url::Url;
 
 /// The root node of the context item.
 pub(crate) fn root<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    if ctxt.cur.is_empty() {
+    ctxt.context_item.as_ref().map_or(
         Err(Error::new(
             ErrorKind::ContextNotNode,
             String::from("no context"),
-        ))
-    } else {
-        // TODO: check all context items.
-        // If any of them is not a Node then error.
-        match &ctxt.cur[0] {
+        )),
+        |i| match &i {
             Item::Node(n) => match n.node_type() {
                 NodeType::Document => Ok(vec![Item::Node(n.clone())]),
                 _ => n
@@ -29,13 +26,13 @@ pub(crate) fn root<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
                 ErrorKind::ContextNotNode,
                 String::from("context item is not a node"),
             )),
-        }
-    }
+        },
+    )
 }
 
 /// The context item.
 pub(crate) fn context<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    ctxt.cur.get(ctxt.i).map_or(
+    ctxt.context_item.as_ref().map_or(
         Err(Error::new(
             ErrorKind::DynamicAbsent,
             String::from("no context"),
@@ -57,49 +54,29 @@ pub(crate) fn compose<
     stctxt: &mut StaticContext<N, F, G, H>,
     steps: &Vec<Transform<N>>,
 ) -> Result<Sequence<N>, Error> {
-    let mut context = ctxt.cur.clone();
-    let mut current;
-    if ctxt.previous_context.is_none() {
-        if ctxt.cur.is_empty() {
-            current = None
-        } else {
-            current = Some(context[ctxt.i].clone())
-        }
-    } else {
-        current = ctxt.previous_context.clone()
-    }
+    let mut context = ctxt.clone();
     let mut it = steps.iter();
     loop {
         if let Some(t) = it.next() {
             // previous context is the last step's context.
             // If the initial previous context is None, then the current context is also the previous context (XSLT 20.4.1)
-            let new = ContextBuilder::from(ctxt)
-                .context(context.clone())
-                .previous_context(current)
-                .build()
-                .dispatch(stctxt, t)?;
-            if context.len() > ctxt.i {
-                current = Some(context[ctxt.i].clone());
-            } else {
-                current = None
-            }
-            context = new;
+            let previous = ctxt.context.clone();
+            let new = context.dispatch(stctxt, t)?;
+            let new_ctxt = ContextBuilder::from(&context)
+                .context(new.clone())
+                .current(previous)
+                .build();
+            context = new_ctxt;
         } else {
             break;
         }
     }
-    Ok(context)
-    //    steps.iter().try_fold(ctxt.cur.clone(), |seq, t| {
-    //        ContextBuilder::from(ctxt)
-    //            .current(seq)
-    //            .build()
-    //            .dispatch(stctxt, t)
-    //    })
+    Ok(context.context)
 }
 
 /// For each item in the current context, evaluate the given node matching operation.
 pub(crate) fn step<N: Node>(ctxt: &Context<N>, nm: &NodeMatch) -> Result<Sequence<N>, Error> {
-    match ctxt.cur.iter().try_fold(vec![], |mut acc, i| {
+    match ctxt.context.iter().try_fold(vec![], |mut acc, i| {
         match i {
             Item::Node(n) => {
                 match nm.axis {
@@ -317,14 +294,19 @@ pub(crate) fn filter<
     stctxt: &mut StaticContext<N, F, G, H>,
     predicate: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
-    ctxt.cur
+    // The outer context remains the same, but the inner focus will be each item in the context in turn.
+    let outer = ctxt.current.clone();
+    let outer_item = ctxt.current_item.clone();
+    ctxt.context
         .iter()
         .enumerate()
         .try_fold(vec![], |mut acc, (j, i)| {
             if ContextBuilder::from(ctxt)
                 .context(vec![i.clone()])
+                .context_item(Some(i.clone()))
+                .current(outer.clone())
+                .current_item(outer_item.clone())
                 .index(j)
-                .previous_context(ctxt.previous_context.clone())
                 .build()
                 .dispatch(stctxt, predicate)?
                 .to_bool()

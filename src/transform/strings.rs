@@ -22,11 +22,13 @@ pub fn local_name<
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
+    if s.is_none() && ctxt.context_item.is_none() {
+        return Err(Error::new(ErrorKind::DynamicAbsent, "no context item"));
+    }
     s.as_ref().map_or_else(
         || {
             // Get the name of the context item
-            // TODO: handle the case of there not being a context item
-            match ctxt.cur[ctxt.i] {
+            match ctxt.context_item.as_ref().unwrap() {
                 Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname().clone())]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
@@ -66,11 +68,13 @@ pub fn name<
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
+    if s.is_none() && ctxt.context_item.is_none() {
+        return Err(Error::new(ErrorKind::DynamicAbsent, "no context item"));
+    }
     s.as_ref().map_or_else(
         || {
             // Get the name of the context item
-            // TODO: handle the case of there being no context item
-            match ctxt.cur[ctxt.i] {
+            match ctxt.context_item.as_ref().unwrap() {
                 Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(m.name().clone())))]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
@@ -289,10 +293,13 @@ pub fn normalize_space<
     stctxt: &mut StaticContext<N, F, G, H>,
     n: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
+    if n.is_none() && ctxt.context_item.is_none() {
+        return Err(Error::new(ErrorKind::DynamicAbsent, "no context item"));
+    }
     let s: Result<String, Error> = n.as_ref().map_or_else(
         || {
-            // Use the current item
-            Ok(ctxt.cur[ctxt.i].to_string())
+            // Use the context item
+            Ok(ctxt.context_item.as_ref().unwrap().to_string())
         },
         |m| {
             let t = ctxt.dispatch(stctxt, m)?;
