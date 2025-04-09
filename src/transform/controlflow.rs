@@ -86,7 +86,7 @@ pub fn for_each<
             for i in seq {
                 let mut v = ContextBuilder::from(ctxt)
                     .context(vec![i.clone()])
-                    .previous_context(Some(i))
+                    .context_item(Some(i))
                     .build()
                     .dispatch(stctxt, body)?;
                 result.append(&mut v);
@@ -123,7 +123,7 @@ fn group_by<
         // For each one, add this item into the group for that key
         ContextBuilder::from(ctxt)
             .context(vec![i.clone()])
-            .previous_context(Some(i.clone()))
+            .context_item(Some(i.clone()))
             .build()
             .dispatch(stctxt, &t)?
             .iter()
@@ -217,7 +217,7 @@ fn group_adjacent<
         sel.iter().skip(1).try_for_each(|i| {
             let thiskey = ContextBuilder::from(ctxt)
                 .context(vec![i.clone()])
-                .previous_context(Some(i.clone()))
+                .context_item(Some(i.clone()))
                 .build()
                 .dispatch(stctxt, &t)?;
             if thiskey.len() == 1 {
