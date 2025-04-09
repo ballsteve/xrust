@@ -8,16 +8,21 @@ use crate::xdmerror::Error;
 use crate::ErrorKind;
 use url::Url;
 
-/// XSLT current function.
+/// XSLT current() function.
 pub fn current<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
-    if ctxt.previous_context.is_some() {
-        Ok(vec![ctxt.previous_context.as_ref().unwrap().clone()])
-    } else {
-        Err(Error::new(
-            ErrorKind::DynamicAbsent,
-            String::from("current item missing"),
-        ))
-    }
+    ctxt.current_item.as_ref().map_or_else(
+        || {
+            // Otherwise the current item is the same as the context item
+            ctxt.context_item.as_ref().map_or(
+                Err(Error::new(
+                    ErrorKind::DynamicAbsent,
+                    String::from("current item missing"),
+                )),
+                |c| Ok(vec![c.clone()]),
+            )
+        },
+        |c| Ok(vec![c.clone()]),
+    )
 }
 
 /// Emits a message from the stylesheet.

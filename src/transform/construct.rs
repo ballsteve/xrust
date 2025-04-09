@@ -264,7 +264,10 @@ pub(crate) fn set_attribute<
             String::from("context has no result document"),
         ));
     }
-    match &ctxt.cur[ctxt.i] {
+    if ctxt.context_item.is_none() {
+        return Err(Error::new(ErrorKind::DynamicAbsent, "no context item"));
+    }
+    match &ctxt.context_item.as_ref().unwrap() {
         Item::Node(n) => match n.node_type() {
             NodeType::Element => {
                 let od = n.owner_document();

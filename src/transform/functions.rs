@@ -20,7 +20,7 @@ pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
 /// XPath last function.
 pub fn last<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
     Ok(vec![Item::Value(Rc::new(Value::from(
-        ctxt.cur.len() as i64
+        ctxt.context.len() as i64
     )))])
 }
 
@@ -51,8 +51,14 @@ pub fn generate_id<
     stctxt: &mut StaticContext<N, F, G, H>,
     s: &Option<Box<Transform<N>>>,
 ) -> Result<Sequence<N>, Error> {
+    if s.is_none() && ctxt.context_item.is_none() {
+        return Err(Error::new(
+            ErrorKind::DynamicAbsent,
+            String::from("no context"),
+        ));
+    }
     let i = match s {
-        None => ctxt.cur[ctxt.i].clone(),
+        None => ctxt.context_item.as_ref().unwrap().clone(),
         Some(t) => {
             let seq = ctxt.dispatch(stctxt, t)?;
             match seq.len() {
