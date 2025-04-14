@@ -72,6 +72,7 @@ pub mod xdmerror;
 pub use xdmerror::{Error, ErrorKind};
 
 pub mod externals;
+pub mod new_qname;
 pub mod output;
 pub mod qname;
 pub mod xmldecl;
