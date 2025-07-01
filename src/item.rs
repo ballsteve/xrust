@@ -7,13 +7,14 @@ An [Item] is a [Node], Function or atomic [Value].
 [Node]s are defined as a trait.
 */
 
+use qualname::QName;
+
 use crate::item;
 use crate::output::OutputDefinition;
-use crate::qname::QualifiedName;
 use crate::validators::{Schema, ValidationError};
 use crate::value::{Operator, Value};
 use crate::xdmerror::{Error, ErrorKind};
-use crate::xmldecl::{XMLDecl, DTD};
+use crate::xmldecl::{DTD, XMLDecl};
 use std::cmp::Ordering;
 use std::fmt;
 use std::fmt::Formatter;
@@ -270,10 +271,10 @@ impl<N: Node> Item<N> {
     }
 
     /// Gives the name of the item. Certain types of Nodes have names, such as element-type nodes. If the item does not have a name returns an empty string.
-    pub fn name(&self) -> Rc<QualifiedName> {
+    pub fn name(&self) -> Option<QName> {
         match self {
             Item::Node(n) => n.name(),
-            _ => Rc::new(QualifiedName::new(None, None, "")),
+            _ => None,
         }
     }
 
@@ -400,13 +401,18 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// Get the type of the node
     fn node_type(&self) -> NodeType;
     /// Get the name of the node.
-    /// If the node doesn't have a name, then returns a [QualifiedName] with an empty string for it's localname.
-    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix. An unprefixed namespace has the empty string as its name.
-    fn name(&self) -> Rc<QualifiedName>;
+    /// If the node is a namespace-type node, then the local part of the name is the namespace prefix.
+    /// An unprefixed namespace has no name.
+    fn name(&self) -> Option<QName>;
     /// Get the value of the node.
     /// If the node doesn't have a value, then returns a [Value] that is an empty string.
     /// If the node is a namespace-type node, then the value is the namespace URI.
     fn value(&self) -> Rc<Value>;
+
+    /// Resolve a name using the in-scope namespace declarations in the document,
+    /// resulting in a Qualified Name.
+    /// This will fail if the name is not a QName, or has a prefix that is unknown.
+    fn to_qname(&self, name: impl AsRef<str>) -> Result<QName, Error>;
 
     /// Get a unique identifier for this node.
     fn get_id(&self) -> String;
@@ -471,24 +477,20 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
     /// An iterator over the attributes of an element
     fn attribute_iter(&self) -> Self::NodeIterator;
     /// Get an attribute of the node. Returns a copy of the attribute's value. If the node does not have an attribute of the given name, a value containing an empty string is returned.
-    fn get_attribute(&self, a: &QualifiedName) -> Rc<Value>;
+    fn get_attribute(&self, a: &QName) -> Rc<Value>;
     /// Get an attribute of the node. If the node is not an element returns None. Otherwise returns the attribute node. If the node does not have an attribute of the given name, returns None.
-    fn get_attribute_node(&self, a: &QualifiedName) -> Option<Self>;
+    fn get_attribute_node(&self, a: &QName) -> Option<Self>;
 
     /// Create a new element-type node in the same document tree. The new node is not attached to the tree.
-    fn new_element(&self, qn: Rc<QualifiedName>) -> Result<Self, Error>;
+    fn new_element(&self, qn: QName) -> Result<Self, Error>;
     /// Create a new text-type node in the same document tree. The new node is not attached to the tree.
     fn new_text(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new attribute-type node in the same document tree. The new node is not attached to the tree.
-    fn new_attribute(&self, qn: Rc<QualifiedName>, v: Rc<Value>) -> Result<Self, Error>;
+    fn new_attribute(&self, qn: QName, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new comment-type node in the same document tree. The new node is not attached to the tree.
     fn new_comment(&self, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a new processing-instruction-type node in the same document tree. The new node is not attached to the tree.
-    fn new_processing_instruction(
-        &self,
-        qn: Rc<QualifiedName>,
-        v: Rc<Value>,
-    ) -> Result<Self, Error>;
+    fn new_processing_instruction(&self, qn: Rc<Value>, v: Rc<Value>) -> Result<Self, Error>;
     /// Create a namespace node for an XML Namespace declaration.
     fn new_namespace(&self, ns: Rc<Value>, prefix: Option<Rc<Value>>) -> Result<Self, Error>;
 
@@ -541,8 +543,8 @@ pub trait Node: Clone + PartialEq + fmt::Debug {
                 if other.node_type() == NodeType::Element {
                     if self.name() == other.name() {
                         // Attributes
-                        let mut at_names: Vec<Rc<QualifiedName>> =
-                            self.attribute_iter().map(|a| a.name()).collect();
+                        let mut at_names: Vec<QName> =
+                            self.attribute_iter().map(|a| a.name().unwrap()).collect();
                         if at_names.len() == other.attribute_iter().count() {
                             at_names.sort();
                             if at_names.iter().fold(true, |mut acc, qn| {

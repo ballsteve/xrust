@@ -1,7 +1,7 @@
 //! XDM, XPath, XQuery, and XSLT errors.
 
-use crate::qname::QualifiedName;
 use core::str;
+use qualname::QName;
 use std::fmt;
 use std::fmt::Formatter;
 
@@ -70,7 +70,7 @@ impl fmt::Display for ErrorKind {
 pub struct Error {
     pub kind: ErrorKind,
     pub message: String,
-    pub code: Option<QualifiedName>,
+    pub code: Option<QName>,
 }
 
 impl std::error::Error for Error {}
@@ -83,11 +83,7 @@ impl Error {
             code: None,
         }
     }
-    pub fn new_with_code(
-        kind: ErrorKind,
-        message: impl Into<String>,
-        code: Option<QualifiedName>,
-    ) -> Self {
+    pub fn new_with_code(kind: ErrorKind, message: impl Into<String>, code: Option<QName>) -> Self {
         Error {
             kind,
             message: message.into(),

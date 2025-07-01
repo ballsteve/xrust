@@ -2,19 +2,19 @@
 //!
 //! An atomic value that is an item in a sequence.
 
-use crate::qname::QualifiedName;
+use qualname::QName;
+
 use crate::xdmerror::{Error, ErrorKind};
 use chrono::{DateTime, Local, NaiveDate};
 use core::fmt;
 use core::hash::{Hash, Hasher};
-use rust_decimal::prelude::ToPrimitive;
 use rust_decimal::Decimal;
+use rust_decimal::prelude::ToPrimitive;
 #[cfg(test)]
 use rust_decimal_macros::dec;
 use std::cmp::Ordering;
 use std::convert::TryFrom;
 use std::fmt::Formatter;
-use std::rc::Rc;
 
 /// Comparison operators for values
 #[derive(Copy, Clone, Debug)]
@@ -145,9 +145,7 @@ pub enum Value {
     //hexBinary,
     //anyURI,
     /// Qualified Name
-    QName(QualifiedName),
-    /// Rc-shared Qualified Name
-    RQName(Rc<QualifiedName>),
+    QName(QName),
     //NOTATION
 }
 
@@ -176,7 +174,6 @@ impl fmt::Display for Value {
             Value::DateTime(dt) => dt.format("%Y-%m-%dT%H:%M:%S%z").to_string(),
             Value::Date(d) => d.format("%Y-%m-%d").to_string(),
             Value::QName(q) => q.to_string(),
-            Value::RQName(q) => q.to_string(),
             Value::ID(s) => s.to_string(),
             Value::IDREF(s) => s.to_string(),
             Value::IDREFS(s) => s.join(" ").to_string(),
@@ -278,7 +275,6 @@ impl Value {
             Value::ENTITY => "ENTITY",
             Value::Boolean(_) => "boolean",
             Value::QName(_) => "QName",
-            Value::RQName(_) => "QName",
         }
     }
     pub fn compare(&self, other: &Value, op: Operator) -> Result<bool, Error> {
@@ -355,16 +351,7 @@ impl Value {
             }
             Value::QName(q) => match (op, other) {
                 (Operator::Equal, Value::QName(r)) => Ok(*q == *r),
-                (Operator::Equal, Value::RQName(r)) => Ok(*q == **r),
                 (Operator::NotEqual, Value::QName(r)) => Ok(*q != *r),
-                (Operator::NotEqual, Value::RQName(r)) => Ok(*q != **r),
-                _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
-            },
-            Value::RQName(q) => match (op, other) {
-                (Operator::Equal, Value::QName(r)) => Ok(**q == *r),
-                (Operator::Equal, Value::RQName(r)) => Ok(**q == **r),
-                (Operator::NotEqual, Value::QName(r)) => Ok(**q != *r),
-                (Operator::NotEqual, Value::RQName(r)) => Ok(**q != **r),
                 _ => Err(Error::new(ErrorKind::TypeError, String::from("type error"))),
             },
             _ => Result::Err(Error::new(
@@ -530,14 +517,9 @@ impl From<bool> for Value {
         Value::Boolean(b)
     }
 }
-impl From<QualifiedName> for Value {
-    fn from(q: QualifiedName) -> Self {
+impl From<QName> for Value {
+    fn from(q: QName) -> Self {
         Value::QName(q)
-    }
-}
-impl From<Rc<QualifiedName>> for Value {
-    fn from(q: Rc<QualifiedName>) -> Self {
-        Value::RQName(q)
     }
 }
 
@@ -906,16 +888,20 @@ mod tests {
 
     #[test]
     fn value_compare_eq() {
-        assert!(Value::from("3")
-            .compare(&Value::Double(3.0), Operator::Equal)
-            .expect("unable to compare"))
+        assert!(
+            Value::from("3")
+                .compare(&Value::Double(3.0), Operator::Equal)
+                .expect("unable to compare")
+        )
     }
 
     #[test]
     fn value_compare_ne() {
-        assert!(!Value::from("3")
-            .compare(&Value::Double(3.0), Operator::NotEqual)
-            .expect("unable to compare"))
+        assert!(
+            !Value::from("3")
+                .compare(&Value::Double(3.0), Operator::NotEqual)
+                .expect("unable to compare")
+        )
     }
 
     //#[test]

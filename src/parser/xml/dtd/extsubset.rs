@@ -14,17 +14,21 @@ use crate::parser::xml::dtd::pedecl::pedecl;
 use crate::parser::xml::dtd::pereference::pereference;
 use crate::parser::xml::dtd::textdecl::textdecl;
 use crate::parser::xml::misc::{comment, processing_instruction};
-use crate::parser::{ParseError, ParseInput};
 use crate::parser::xml::utf8bom;
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn extsubset<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |(input, mut state)| {
+pub(crate) fn extsubset<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, mut state), ss| {
         if state.standalone {
             Ok(((input, state), ()))
         } else {
             state.currentlyexternal = true;
-            match tuple3(opt(utf8bom()),opt(textdecl()), extsubsetdecl())((input, state)) {
+            match tuple3(opt(utf8bom()), opt(textdecl()), extsubsetdecl())((input, state), ss) {
                 Ok(((input2, mut state2), (_, _, _))) => {
                     if !input2.is_empty() {
                         Err(ParseError::NotWellFormed(input2.to_string()))
@@ -39,8 +43,11 @@ pub(crate) fn extsubset<N: Node>(
     }
 }
 
-pub(crate) fn extsubsetdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<()>), ParseError> {
+pub(crate) fn extsubsetdecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, Vec<()>), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     many0(alt10(
         conditionalsect(),
         elementdecl(),

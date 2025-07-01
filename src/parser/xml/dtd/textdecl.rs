@@ -6,18 +6,22 @@ use crate::parser::combinators::tuple::{tuple2, tuple5, tuple6};
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::xml::strings::delimited_string;
 use crate::parser::xml::xmldecl::encodingdecl;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::XMLDecl;
+use qualname::{NamespacePrefix, NamespaceUri};
 
-fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError>
+fn xmldeclversion<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |(input, state)| match tuple5(
+    move |(input, state), ss| match tuple5(
         tag("version"),
         whitespace0(),
         tag("="),
         whitespace0(),
         delimited_string(),
-    )((input, state))
+    )((input, state), ss)
     {
         Ok(((input1, state1), (_, _, _, _, v))) => {
             if v == *"1.1" {
@@ -35,8 +39,11 @@ fn xmldeclversion<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>,
     }
 }
 
-pub(crate) fn textdecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, XMLDecl), ParseError> {
+pub(crate) fn textdecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, XMLDecl), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     //This is NOT the same as the XML declaration in XML documents.
     //There is no standalone, and the version is optional.
     map(

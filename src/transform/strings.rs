@@ -2,12 +2,13 @@
 
 use std::rc::Rc;
 
+use qualname::NamespaceUri;
 use unicode_segmentation::UnicodeSegmentation;
 use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -27,7 +28,10 @@ pub fn local_name<
             // Get the name of the context item
             // TODO: handle the case of there not being a context item
             match ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname().clone())]),
+                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
+                    m.name()
+                        .map_or(String::from(""), |l| l.local_name().to_string()),
+                )))]),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
@@ -40,7 +44,10 @@ pub fn local_name<
             match n.len() {
                 0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
                 1 => match n[0] {
-                    Item::Node(ref m) => Ok(vec![Item::Value(m.name().localname())]),
+                    Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
+                        m.name()
+                            .map_or(String::from(""), |l| l.local_name().to_string()),
+                    )))]),
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("type error: not a node"),
@@ -68,10 +75,26 @@ pub fn name<
 ) -> Result<Sequence<N>, Error> {
     s.as_ref().map_or_else(
         || {
-            // Get the name of the context item
+            // Get the name of the context item.
+            // This may be a prefixed name.
             // TODO: handle the case of there being no context item
             match ctxt.cur[ctxt.i] {
-                Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(m.name().clone())))]),
+                Item::Node(ref m) => m.name().map_or_else(
+                    || Ok(vec![Item::Value(Rc::new(Value::from("")))]),
+                    |qn| {
+                        qn.namespace_uri().map_or_else(
+                            || Ok(vec![Item::Value(Rc::new(Value::from(qn.local_name())))]),
+                            |nsuri| {
+                                Ok(vec![Item::Value(Rc::new(Value::from(
+                                    get_prefix(m, &nsuri).map_or_else(
+                                        || String::from(qn.local_name()),
+                                        |p| format!("{}:{}", p, qn.local_name()).to_string(),
+                                    ),
+                                )))])
+                            },
+                        )
+                    },
+                ),
                 _ => Err(Error::new(
                     ErrorKind::TypeError,
                     String::from("type error: not a node"),
@@ -84,9 +107,22 @@ pub fn name<
             match n.len() {
                 0 => Ok(vec![Item::Value(Rc::new(Value::from("")))]),
                 1 => match n[0] {
-                    Item::Node(ref m) => Ok(vec![Item::Value(Rc::new(Value::from(
-                        m.name().to_string(),
-                    )))]),
+                    Item::Node(ref m) => m.name().map_or_else(
+                        || Ok(vec![Item::Value(Rc::new(Value::from("")))]),
+                        |qn| {
+                            qn.namespace_uri().map_or_else(
+                                || Ok(vec![Item::Value(Rc::new(Value::from(qn.local_name())))]),
+                                |nsuri| {
+                                    Ok(vec![Item::Value(Rc::new(Value::from(
+                                        get_prefix(m, &nsuri).map_or_else(
+                                            || String::from(qn.local_name()),
+                                            |p| format!("{}:{}", p, qn.local_name()).to_string(),
+                                        ),
+                                    )))])
+                                },
+                            )
+                        },
+                    ),
                     _ => Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("type error: not a node"),
@@ -99,6 +135,15 @@ pub fn name<
             }
         },
     )
+}
+
+fn get_prefix<N: Node>(n: &N, nsuri: &NamespaceUri) -> Option<String> {
+    n.namespace_iter()
+        .find(|ns| ns.value().to_string() == nsuri.as_str())
+        .map(|ns| {
+            ns.name()
+                .map_or(String::from(""), |p| p.local_name().to_string())
+        })
 }
 
 /// XPath string function.

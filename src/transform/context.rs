@@ -14,9 +14,9 @@ use crate::item::{Node, Sequence};
 use crate::output::OutputDefinition;
 #[allow(unused_imports)]
 use crate::pattern::Pattern;
-use crate::qname::QualifiedName;
+use crate::transform::Transform;
 use crate::transform::booleans::*;
-use crate::transform::callable::{invoke, Callable};
+use crate::transform::callable::{Callable, invoke};
 use crate::transform::construct::*;
 use crate::transform::controlflow::*;
 use crate::transform::datetime::*;
@@ -28,11 +28,11 @@ use crate::transform::misc::*;
 use crate::transform::navigate::*;
 use crate::transform::numbers::*;
 use crate::transform::strings::*;
-use crate::transform::template::{apply_imports, apply_templates, next_match, Template};
+use crate::transform::template::{Template, apply_imports, apply_templates, next_match};
 use crate::transform::variables::{declare_variable, reference_variable};
-use crate::transform::Transform;
 use crate::xdmerror::Error;
 use crate::{ErrorKind, Item, SequenceTrait, Value};
+use qualname::QName;
 use std::cmp::Ordering;
 use std::collections::HashMap;
 use std::rc::Rc;
@@ -56,7 +56,7 @@ pub struct Context<N: Node> {
     pub(crate) templates: Vec<Rc<Template<N>>>,
     pub(crate) current_templates: Vec<Rc<Template<N>>>,
     // Named templates and functions
-    pub(crate) callables: HashMap<QualifiedName, Callable<N>>,
+    pub(crate) callables: HashMap<QName, Callable<N>>,
     // Variables, with scoping
     pub(crate) vars: HashMap<String, Vec<Sequence<N>>>,
     // Stylesheet variables, to be evaluated before template processing.
@@ -147,7 +147,7 @@ impl<N: Node> Context<N> {
         })
     }
     /// Add a named attribute set. This replaces any previously declared attribute set with the same name
-    pub fn attribute_set(&mut self, _name: QualifiedName, _body: Vec<Transform<N>>) {}
+    pub fn attribute_set(&mut self, _name: QName, _body: Vec<Transform<N>>) {}
     /// Set the value of a variable. If the variable already exists, then this creates a new inner scope.
     pub fn var_push(&mut self, name: String, value: Sequence<N>) {
         match self.vars.get_mut(name.as_str()) {
@@ -179,7 +179,7 @@ impl<N: Node> Context<N> {
     }
 
     /// Callable components: named templates and user-defined functions
-    pub fn callable_push(&mut self, qn: QualifiedName, c: Callable<N>) {
+    pub fn callable_push(&mut self, qn: QName, c: Callable<N>) {
         self.callables.insert(qn, c);
     }
 
@@ -337,7 +337,7 @@ impl<N: Node> Context<N> {
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
         i: &Item<N>,
-        m: &Option<Rc<QualifiedName>>,
+        m: &Option<QName>,
     ) -> Result<Vec<Rc<Template<N>>>, Error> {
         let mut candidates =
             self.templates
@@ -400,6 +400,7 @@ impl<N: Node> Context<N> {
         F: FnMut(&str) -> Result<(), Error>,
         G: FnMut(&str) -> Result<N, Error>,
         H: FnMut(&Url) -> Result<String, Error>,
+        //L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
     >(
         &self,
         stctxt: &mut StaticContext<N, F, G, H>,
@@ -590,7 +591,7 @@ impl<N: Node> ContextBuilder<N> {
         self.0.base_url = Some(b);
         self
     }
-    pub fn callable(mut self, qn: QualifiedName, c: Callable<N>) -> Self {
+    pub fn callable(mut self, qn: QName, c: Callable<N>) -> Self {
         self.0.callables.insert(qn, c);
         self
     }

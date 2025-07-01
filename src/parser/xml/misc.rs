@@ -11,12 +11,20 @@ use crate::parser::combinators::wellformed::wellformed_ver;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_char10, is_char11};
 use crate::parser::xml::qname::name;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::{ParseError, ParseInput, StaticState};
+use crate::value::Value;
+use qualname::{NamespacePrefix, NamespaceUri};
+use std::rc::Rc;
 
 // PI ::= '<?' PITarget (char* - '?>') '?>'
-pub(crate) fn processing_instruction<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
-    move |(input, state)| {
+// PITarget ::= Name - 'X' 'M' 'L'
+// In other words, the name must not start with the three characters 'X' 'M' 'L' in any capitalisation.
+pub(crate) fn processing_instruction<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, N), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| {
         wellformed_ver(
             map(
                 tuple5(
@@ -32,8 +40,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            state.get_qualified_name(None, None, state.get_value(n)),
-                            state.get_value("".to_string()),
+                            Rc::new(Value::from(n)),
+                            Rc::new(Value::from("".to_string())),
                         )
                         .expect("unable to create processing instruction"),
                     Some((_, v)) => state
@@ -41,8 +49,8 @@ pub(crate) fn processing_instruction<N: Node>(
                         .as_ref()
                         .unwrap()
                         .new_processing_instruction(
-                            state.get_qualified_name(None, None, state.get_value(n)),
-                            state.get_value(v),
+                            Rc::new(Value::from(n)),
+                            Rc::new(Value::from(v)),
                         )
                         .expect("unable to create processing instruction"),
                 },
@@ -52,11 +60,15 @@ pub(crate) fn processing_instruction<N: Node>(
                 NodeType::ProcessingInstruction => {
                     if v.to_string().contains(|c: char| !is_char10(&c)) {
                         false
-                    } else if v.name().to_string().contains(':') {
+                    } else if v.name().unwrap().to_string().contains(':') {
                         //"No entity names, processing instruction targets, or notation names contain any colons."
                         false
                     } else {
-                        v.name().to_string().to_lowercase() != *"xml"
+                        !v.name()
+                            .unwrap()
+                            .to_string()
+                            .to_lowercase()
+                            .starts_with("xml")
                     }
                 }
                 _ => false,
@@ -66,23 +78,30 @@ pub(crate) fn processing_instruction<N: Node>(
                 NodeType::ProcessingInstruction => {
                     if v.to_string().contains(|c: char| !is_char11(&c)) {
                         false
-                    } else if v.name().to_string().contains(':') {
+                    } else if v.name().unwrap().to_string().contains(':') {
                         // "No entity names, processing instruction targets, or notation names contain any colons."
                         false
                     } else {
-                        v.name().to_string().to_lowercase() != *"xml"
+                        !v.name()
+                            .unwrap()
+                            .to_string()
+                            .to_lowercase()
+                            .starts_with("xml")
                     }
                 }
                 _ => false,
             },
-        )((input, state.clone()))
+        )((input, state.clone()), ss)
     }
 }
 
 // Comment ::= '<!--' (char* - '--') '-->'
-pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
+pub(crate) fn comment<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, N), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    |(input, state)| {
+    |(input, state), ss| {
         wellformed_ver(
             map(
                 delimited(tag("<!--"), take_until("--"), tag("-->")),
@@ -91,7 +110,7 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         .doc
                         .as_ref()
                         .unwrap()
-                        .new_comment(state.get_value(v))
+                        .new_comment(Rc::new(Value::from(v)))
                         .expect("unable to create comment")
                 },
             ),
@@ -105,13 +124,16 @@ pub(crate) fn comment<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                 NodeType::Comment => !v.to_string().contains(|c: char| !is_char11(&c)),
                 _ => false,
             },
-        )((input, state.clone()))
+        )((input, state.clone()), ss)
     }
 }
 
 // Misc ::= Comment | PI | S
-pub(crate) fn misc<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
+pub(crate) fn misc<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, Vec<N>), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple2(
             many0(map(

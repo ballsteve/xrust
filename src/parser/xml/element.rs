@@ -4,32 +4,42 @@ use crate::parser::combinators::many::many0nsreset;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
-use crate::parser::combinators::tuple::{tuple10, tuple2, tuple5};
+use crate::parser::combinators::tuple::{tuple2, tuple5, tuple10};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::whitespace0;
+use crate::parser::common::is_ncnamechar;
 use crate::parser::xml::attribute::attributes;
 use crate::parser::xml::chardata::chardata;
 use crate::parser::xml::misc::{comment, processing_instruction};
-use crate::parser::xml::qname::qualname;
+use crate::parser::xml::qname::qualname_to_parts;
 use crate::parser::xml::reference::reference;
-use crate::parser::{ParseError, ParseInput};
-use crate::qname::QualifiedName;
+use crate::parser::{ParseError, ParseInput, StaticState};
+use crate::value::Value;
 use crate::xmldecl::{AttType, DefaultDecl};
-use crate::{Error, ErrorKind, Value};
+use qualname::{NamespacePrefix, NamespaceUri, NcName, QName};
 use std::rc::Rc;
-use crate::parser::common::is_ncnamechar;
+use std::sync::LazyLock;
+
+// static QNames
+static XMLID: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("id").unwrap(),
+        Some(NamespaceUri::try_from("http://www.w3.org/XML/1998/namespace").unwrap()),
+    )
+});
 
 // Element ::= EmptyElemTag | STag content ETag
-pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError>
+pub(crate) fn element<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, N), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match alt2(
+    move |input, ss| match alt2(
         //Empty element
         map(
             tuple5(
                 tag("<"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                qualname_to_parts(),
                 attributes(), //many0(attribute),
                 whitespace0(),
                 tag("/>"),
@@ -40,69 +50,77 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
         wellformed(
             tuple10(
                 tag("<"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                qualname_to_parts(),
                 attributes(), //many0(attribute),
                 whitespace0(),
                 tag(">"),
                 content(),
                 tag("</"),
-                wellformed(qualname(), |qn| {
-                    qn.prefix_to_string() != Some("xmlns".to_string())
-                }),
+                qualname_to_parts(),
                 whitespace0(),
                 tag(">"),
             ),
-            |(_, n, _a, _, _, _c, _, e, _, _)| n.to_string() == e.to_string(),
+            |(_, n, _a, _, _, _c, _, e, _, _)| n == e,
         ),
-    )(input)
+    )(input, ss)
     {
         Err(err) => Err(err),
-        Ok(((input1, mut state1), (_, mut n, (av, namespaces), _, _, c, _, _, _, _))) => {
-            if n.resolve(|p| {
-                state1.namespace.get(&p).map_or(
-                    Err(Error::new(
-                        ErrorKind::DynamicAbsent,
-                        "no namespace for prefix",
-                    )),
-                    |r| Ok(r.clone()),
-                )
-            })
-            .is_err()
-            {
-                return Err(ParseError::MissingNameSpace);
+        Ok((
+            (input1, mut state1),
+            (_, (prefix, local_part), (av, namespaces), _, _, c, _, _, _, _),
+        )) => {
+            // Need to resolve element name to create element node,
+            // then we can add namespace declarations.
+            // Processing the attribute list updates the in-scope namespaces in the state
+
+            let nsuri = prefix.as_ref().map(|p| {
+                state1
+                    .in_scope_namespaces
+                    .borrow()
+                    .namespace_uri(&NamespacePrefix::try_from(p.as_str()).unwrap()) // Creating the prefix cannot fail, since it has already been parsed
+                    // if this returns None then prefix lookup failed
+                    .ok_or(ParseError::MissingNameSpace)
+            });
+            if let Some(Err(e)) = nsuri {
+                return Err(e);
             }
-            let elementname =
-                state1.get_qualified_name(n.namespace_uri(), n.prefix(), n.localname());
+            let elementname = QName::new_from_parts(
+                NcName::try_from(local_part.as_str()).unwrap(), // creating NcName cannot fail, since we have already parsed it
+                nsuri.map(|p| p.unwrap()), // we've guarded for the error case, see above
+            );
+            /* SRB: is this possible?
             if state1.xmlversion == "1.1"
-                && elementname.namespace_uri_to_string() == Some("".to_string())
-                && elementname.prefix_to_string().is_some()
+                && elementname.namespace_uri().to_string() == Some("".to_string())
+                && elementname.prefix().to_string().is_some()
             {
                 return Err(ParseError::MissingNameSpace);
-            }
+            }*/
             let d = state1.doc.clone().unwrap();
             let mut e = d
                 .new_element(elementname)
                 .expect("unable to create element");
 
-            //Looking up the DTD, seeing if there are any attributes we should populate
-            //Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
+            // Add namespace declarations
+            namespaces
+                .iter()
+                .try_for_each(|nsd| e.push(nsd.clone()))
+                .map_err(|_| ParseError::MissingNameSpace)?;
+
+            // Looking up the DTD, seeing if there are any attributes we should populate
+            // Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
             // We generate the attributes in two sweeps:
             // Once for attributes declared on the element and once for the DTD default attribute values.
 
-            let attlist = state1.dtd.attlists.get(&QualifiedName::new_from_values(
-                None,
-                n.prefix(),
-                n.localname(),
-            ));
+            let attlist = state1.dtd.attlists.get(&(prefix, local_part));
 
             match attlist {
                 None => {
-                    //No Attribute DTD, just insert all attributes.
-                    for (attname, attval) in av.into_iter() {
+                    // No Attribute DTD, just insert all attributes.
+                    av.into_iter()
+                        .for_each(|a| e.add_attribute(a).expect("unable to add attribute"))
+                    /*for (attname, attval) in av.into_iter() {
                         //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
-                        let av: String;
+                        let avalue: String;
                         let a: N;
                         if attname.prefix_to_string() == Some("xml".to_string())
                             && attname.localname_to_string() == "id"
@@ -119,40 +137,36 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         };
 
                         e.add_attribute(a).expect("unable to add attribute")
-                    }
+                    }*/
                 }
                 Some(atts) => {
                     if state1.attr_defaults {
-                        for (attname, (atttype, defdecl, _)) in atts.iter() {
+                        for ((attprefix, attlocalname), (atttype, defdecl, _)) in atts.iter() {
                             match defdecl {
                                 DefaultDecl::Default(s) | DefaultDecl::FIXED(s) => {
-                                    let mut at = attname.clone();
-                                    match at.prefix() {
-                                        None => {}
-                                        Some(_) => {
-                                            if at
-                                                .resolve(|p| {
-                                                    state1.namespace.get(&p).map_or(
-                                                        Err(Error::new(
-                                                            ErrorKind::DynamicAbsent,
-                                                            "no namespace for prefix",
-                                                        )),
-                                                        |r| Ok(r.clone()),
-                                                    )
-                                                })
-                                                .is_err()
-                                            {
-                                                return Err(ParseError::MissingNameSpace);
-                                            }
-                                        }
-                                    }
+                                    let qn = attprefix.as_ref().map_or_else(
+                                        || {
+                                            QName::from_local_name(
+                                                NcName::try_from(attlocalname.as_str()).unwrap(),
+                                            )
+                                        },
+                                        |ap| {
+                                            QName::new_from_parts(
+                                                NcName::try_from(attlocalname.as_str()).unwrap(),
+                                                state1.in_scope_namespaces.borrow().namespace_uri(
+                                                    &NamespacePrefix::try_from(ap.as_str())
+                                                        .unwrap(),
+                                                ), // TODO: return error if no namespace found
+                                            )
+                                        },
+                                    );
                                     //https://www.w3.org/TR/xml11/#AVNormalize
                                     let attval = match atttype {
                                         AttType::CDATA => s.clone(),
                                         _ => s.trim().replace("  ", " "),
                                     };
                                     let a = d
-                                        .new_attribute(Rc::new(at), state1.get_value(attval))
+                                        .new_attribute(qn, Rc::new(Value::from(attval)))
                                         .expect("unable to create attribute");
                                     e.add_attribute(a).expect("unable to add attribute")
                                 }
@@ -161,32 +175,38 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         }
                     }
 
-                    for (attname, attval) in av.into_iter() {
-                        match atts.get(&QualifiedName::new(
-                            None,
-                            attname.prefix_to_string(),
-                            attname.localname_to_string(),
+                    for attnode in av.into_iter() {
+                        match atts.get(&(
+                            attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
+                                state1
+                                    .in_scope_namespaces
+                                    .borrow()
+                                    .prefix(&ns)
+                                    .map(|p| p.to_string())
+                            }),
+                            attnode.name().unwrap().local_name().to_string(),
                         )) {
                             //No DTD found, we just create the value
                             None => {
                                 //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
-                                let av = if attname.prefix_to_string() == Some("xml".to_string())
-                                    && attname.localname_to_string() == "id"
-                                {
-                                    attval.trim().replace("  ", " ")
+                                let av = if attnode.name().unwrap() == *XMLID {
+                                    attnode.value().to_string().trim().replace("  ", " ")
                                 } else {
-                                    attval
+                                    attnode.value().to_string()
                                 };
                                 let a = d
-                                    .new_attribute(Rc::new(attname), state1.get_value(av))
+                                    .new_attribute(
+                                        attnode.name().unwrap(),
+                                        Rc::new(Value::from(av)),
+                                    )
                                     .expect("unable to create attribute");
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
                             Some((atttype, _, _)) => {
                                 //https://www.w3.org/TR/xml11/#AVNormalize
                                 let av = match atttype {
-                                    AttType::CDATA => attval,
-                                    _ => attval.trim().replace("  ", " "),
+                                    AttType::CDATA => attnode.value().to_string(),
+                                    _ => attnode.value().to_string().trim().replace("  ", " "),
                                 };
                                 //Assign IDs only if we are tracking.
                                 let v = match (atttype, state1.id_tracking) {
@@ -195,10 +215,12 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                     (AttType::IDREFS, true) => Rc::new(Value::IDREFS(
                                         av.clone().split(' ').map(|s| s.to_string()).collect(),
                                     )),
-                                    (_, _) => state1.get_value(av.clone()),
+                                    (_, _) => Rc::new(Value::from(av.clone())),
                                 };
-                                if atttype == &AttType::NMTOKENS && av.is_empty(){
-                                    return Err(ParseError::NotWellFormed("NMTOKENs must not be empty".to_string()))
+                                if atttype == &AttType::NMTOKENS && av.is_empty() {
+                                    return Err(ParseError::NotWellFormed(
+                                        "NMTOKENs must not be empty".to_string(),
+                                    ));
                                 } else if atttype == &AttType::NMTOKENS {
                                     let names = av.split(' ');
                                     for name in names {
@@ -206,9 +228,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                         for cha in ch {
                                             if !(is_ncnamechar(&cha) || cha == ':') {
                                                 return Err(ParseError::NotWellFormed(
-                                                    String::from(
-                                                        "Invalid NMTOKEN",
-                                                    ),
+                                                    String::from("Invalid NMTOKEN"),
                                                 ));
                                             }
                                         }
@@ -216,7 +236,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                                 }
 
                                 let a = d
-                                    .new_attribute(Rc::new(attname), v)
+                                    .new_attribute(attnode.name().unwrap(), v)
                                     .expect("unable to create attribute");
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
@@ -246,7 +266,7 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
                         have completely parsed the document.
                         */
                         if attribute.value().to_string().split_whitespace().count() == 0 {
-                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()))
+                            return Err(ParseError::IDError("IDREFs cannot be empty".to_string()));
                         } else {
                             for idref in attribute.value().to_string().split_whitespace() {
                                 match state1.ids_read.get(idref) {
@@ -274,9 +294,12 @@ pub(crate) fn element<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput
 }
 
 // content ::= CharData? ((element | Reference | CDSect | PI | Comment) CharData?)*
-pub(crate) fn content<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, Vec<N>), ParseError> {
-    move |(input, state)| match tuple2(
+pub(crate) fn content<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, Vec<N>), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |(input, state), ss| match tuple2(
         opt(chardata()),
         many0nsreset(tuple2(
             alt4(
@@ -287,7 +310,7 @@ pub(crate) fn content<N: Node>(
             ),
             opt(chardata()),
         )),
-    )((input, state.clone()))
+    )((input, state.clone()), ss)
     {
         Ok((state1, (c, v))) => {
             let mut new: Vec<N> = Vec::new();

@@ -2,15 +2,18 @@
 
 use pkg_version::*;
 use std::rc::Rc;
+use std::sync::LazyLock;
 use url::Url;
 
+use crate::SequenceTrait;
 use crate::item::{Item, Node, Sequence};
-use crate::qname::QualifiedName;
+use crate::parser::xml::qname::qualname_to_qname;
+use crate::parser::{ParseError, ParserState, StaticStateBuilder};
 use crate::transform::context::{Context, StaticContext};
 use crate::transform::{NamespaceMap, Transform};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::SequenceTrait;
+use qualname::{NamespaceUri, NcName, QName};
 
 /// XPath position function.
 pub fn position<N: Node>(ctxt: &Context<N>) -> Result<Sequence<N>, Error> {
@@ -62,7 +65,7 @@ pub fn generate_id<
                     return Err(Error::new(
                         ErrorKind::TypeError,
                         String::from("not a singleton sequence"),
-                    ))
+                    ));
                 }
             }
         }
@@ -74,7 +77,67 @@ pub fn generate_id<
 }
 
 // TODO: this is copied from the xslt module. Move to a common definitions module.
-const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
+//const XSLTNS: &str = "http://www.w3.org/1999/XSL/Transform";
+static XSLTNS: LazyLock<Option<NamespaceUri>> =
+    LazyLock::new(|| Some(NamespaceUri::try_from("http://www.w3.org/1999/XSL/Transform").unwrap()));
+static XSLVERSION: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("version").unwrap(), XSLTNS.clone()));
+static XSLVENDOR: LazyLock<QName> =
+    LazyLock::new(|| QName::new_from_parts(NcName::try_from("vendor").unwrap(), XSLTNS.clone()));
+static XSLVENDORURL: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("vendor-url").unwrap(), XSLTNS.clone())
+});
+static XSLPRODUCTNAME: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("product-name").unwrap(), XSLTNS.clone())
+});
+static XSLPRODUCTVERSION: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("product-version").unwrap(), XSLTNS.clone())
+});
+static XSLISSCHEMAAWARE: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("is-schema-aware").unwrap(), XSLTNS.clone())
+});
+static XSLSUPPORTSSERIALIZATION: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("supports-serialization").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLSUPPORTSBACKWARDCOMPATIBILITY: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("supports-backward-campatibility").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLSUPPORTSNAMESPACEAXIS: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("supports-namespace-axis").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLSUPPORTSSTREAMING: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("supports-streaming").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLSUPPORTSDYNAMICEVALUATION: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("supports-dynamic-evaluation").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLSUPPORTSHOF: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(
+        NcName::try_from("supports-higher-order-functions").unwrap(),
+        XSLTNS.clone(),
+    )
+});
+static XSLXPATHVERSION: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("xpath-version").unwrap(), XSLTNS.clone())
+});
+static XSLXSDVERSION: LazyLock<QName> = LazyLock::new(|| {
+    QName::new_from_parts(NcName::try_from("xsd-version").unwrap(), XSLTNS.clone())
+});
 
 /// XSLT system-property function.
 pub fn system_property<
@@ -90,54 +153,56 @@ pub fn system_property<
 ) -> Result<Sequence<N>, Error> {
     let prop = ctxt.dispatch(stctxt, s)?;
     if prop.len() == 1 {
-        let qn = QualifiedName::try_from((prop.to_string().as_str(), ns.clone()))?;
-        match (
-            qn.namespace_uri_to_string().as_deref(),
-            qn.localname_to_string().as_str(),
-        ) {
-            (Some(XSLTNS), "version") => Ok(vec![Item::Value(Rc::new(Value::from("0.9")))]),
-            (Some(XSLTNS), "vendor") => Ok(vec![Item::Value(Rc::new(Value::from(
+        let ps: ParserState<N> = ParserState::new();
+        let mut static_state = StaticStateBuilder::new()
+            .namespace(|prefix| ns.namespace_uri(prefix).ok_or(ParseError::MissingNameSpace))
+            .build();
+        let propstr = prop.to_string();
+        let qn = qualname_to_qname()((propstr.as_str(), ps), &mut static_state)
+            .map_err(|_| Error::new(ErrorKind::DynamicAbsent, "unable to resolve QName"))?;
+        //let qn = QName::try_from((prop.to_string().as_str(), ns.clone()))?;
+        if qn.1 == *XSLVERSION {
+            Ok(vec![Item::Value(Rc::new(Value::from("0.9")))])
+        } else if qn.1 == *XSLVENDOR {
+            Ok(vec![Item::Value(Rc::new(Value::from(
                 "Steve Ball, Daniel Murphy",
-            )))]),
-            (Some(XSLTNS), "vendor-url") => Ok(vec![Item::Value(Rc::new(Value::from(
+            )))])
+        } else if qn.1 == *XSLVENDORURL {
+            Ok(vec![Item::Value(Rc::new(Value::from(
                 "https://github.com/ballsteve/xrust",
-            )))]),
-            (Some(XSLTNS), "product-name") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("\u{03A7}rust")))])
-            }
-            (Some(XSLTNS), "product-version") => {
-                Ok(vec![Item::Value(Rc::new(Value::from(format!(
-                    "{}.{}.{}",
-                    pkg_version_major!(),
-                    pkg_version_minor!(),
-                    pkg_version_patch!()
-                ))))])
-            }
-            (Some(XSLTNS), "is-schema-aware") => Ok(vec![Item::Value(Rc::new(Value::from("no")))]),
-            (Some(XSLTNS), "supports-serialization") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("no")))])
-            }
-            (Some(XSLTNS), "supports-backwards-compatibility") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("no")))])
-            }
-            (Some(XSLTNS), "supports-namespace-axis") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("no")))])
-            }
-            (Some(XSLTNS), "supports-streaming") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("no")))])
-            }
-            (Some(XSLTNS), "supports-dynamic-evaluation") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("no")))])
-            }
-            (Some(XSLTNS), "supports-higher-order-functions") => {
-                Ok(vec![Item::Value(Rc::new(Value::from("no")))])
-            }
-            (Some(XSLTNS), "xpath-version") => Ok(vec![Item::Value(Rc::new(Value::from(2.9)))]),
-            (Some(XSLTNS), "xsd-version") => Ok(vec![Item::Value(Rc::new(Value::from(1.1)))]),
-            _ => Err(Error::new(
+            )))])
+        } else if qn.1 == *XSLPRODUCTNAME {
+            Ok(vec![Item::Value(Rc::new(Value::from("\u{03A7}rust")))])
+        } else if qn.1 == *XSLPRODUCTVERSION {
+            Ok(vec![Item::Value(Rc::new(Value::from(format!(
+                "{}.{}.{}",
+                pkg_version_major!(),
+                pkg_version_minor!(),
+                pkg_version_patch!()
+            ))))])
+        } else if qn.1 == *XSLISSCHEMAAWARE {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLSUPPORTSSERIALIZATION {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLSUPPORTSBACKWARDCOMPATIBILITY {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLSUPPORTSNAMESPACEAXIS {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLSUPPORTSSTREAMING {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLSUPPORTSDYNAMICEVALUATION {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLSUPPORTSHOF {
+            Ok(vec![Item::Value(Rc::new(Value::from("no")))])
+        } else if qn.1 == *XSLXPATHVERSION {
+            Ok(vec![Item::Value(Rc::new(Value::from(2.9)))])
+        } else if qn.1 == *XSLXSDVERSION {
+            Ok(vec![Item::Value(Rc::new(Value::from(1.1)))])
+        } else {
+            Err(Error::new(
                 ErrorKind::Unknown,
-                format!("unknown property \"{}\"", qn),
-            )),
+                format!("unknown property \"{}\"", qn.1),
+            ))
         }
     } else {
         Err(Error::new(
@@ -150,70 +215,57 @@ pub fn system_property<
 /// XSLT available-system-property function.
 pub fn available_system_properties<N: Node>() -> Result<Sequence<N>, Error> {
     Ok(vec![
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("version"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("version").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("vendor"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("vendor").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("vendor-url"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("vendor-url").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("product-name"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("product-name").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("product-version"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("product-version").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("is-schema-aware"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("is-schema-aware").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("supports-serialization"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("supports-serialization").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("supports-backward-compatibility"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("supports-backward-compatibility").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("supports-namspace-axis"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("supports-namespace-axis").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("supports-streaming"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("supports-streaming").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("supports-dynamic-evaluation"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("supports-dynamic-evaluation").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("xpath-version"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("xpath-version").unwrap(),
+            XSLTNS.clone(),
         )))),
-        Item::Value(Rc::new(Value::from(QualifiedName::new(
-            Some(XSLTNS.to_string()),
-            None,
-            String::from("xsd-version"),
+        Item::Value(Rc::new(Value::from(QName::new_from_parts(
+            NcName::try_from("xsd-version").unwrap(),
+            XSLTNS.clone(),
         )))),
     ])
 }

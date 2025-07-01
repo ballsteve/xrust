@@ -1,7 +1,6 @@
 /*! Defines common features of XML documents.
  */
 
-use crate::qname::QualifiedName;
 use std::collections::HashMap;
 use std::fmt;
 use std::fmt::Formatter;
@@ -96,20 +95,24 @@ impl XMLDeclBuilder {
 /// Data is not stored in any fashion conformant with any standard and will be adusted to meet
 /// the needs of any validators implemented.
 ///
+/// NB. Names of elements and attributes cannot be stored as QName, since in the DTD it is not possible to resolve the Namespace URI.
+/// Instead, they are stored here as a (prefix, local-part) pair.
 #[derive(Clone, PartialEq, Debug)]
 pub struct DTD {
     /// This struct is for internal consumption mainly, it holding the DTD in various incomplete forms
     /// before construction into useful patterns for validation
-    pub(crate) elements: HashMap<QualifiedName, DTDPattern>,
-    pub(crate) attlists:
-        HashMap<QualifiedName, HashMap<QualifiedName, (AttType, DefaultDecl, bool)>>, // Boolean for is_editable;
+    pub(crate) elements: HashMap<(Option<String>, String), DTDPattern>,
+    pub(crate) attlists: HashMap<
+        (Option<String>, String),
+        HashMap<(Option<String>, String), (AttType, DefaultDecl, bool)>,
+    >, // Boolean for is_editable;
     pub(crate) notations: HashMap<String, DTDDecl>,
     pub(crate) generalentities: HashMap<String, (String, bool)>, // Boolean for is_editable;
     pub(crate) paramentities: HashMap<String, (String, bool)>,   // Boolean for is_editable;
     publicid: Option<String>,
     systemid: Option<String>,
-    pub(crate) name: Option<QualifiedName>,
-    pub(crate) patterns: HashMap<QualifiedName, DTDPattern>,
+    pub(crate) name: Option<(Option<String>, String)>,
+    pub(crate) patterns: HashMap<(Option<String>, String), DTDPattern>,
 }
 
 impl DTD {
@@ -143,9 +146,9 @@ impl Default for DTD {
 
 #[derive(Clone, Debug, Eq, PartialEq)]
 pub enum DTDDecl {
-    Notation(QualifiedName, String),
-    GeneralEntity(QualifiedName, String),
-    ParamEntity(QualifiedName, String),
+    Notation((Option<String>, String), String),
+    GeneralEntity((Option<String>, String), String),
+    ParamEntity((Option<String>, String), String),
 }
 
 #[allow(clippy::upper_case_acronyms)]
@@ -183,9 +186,9 @@ pub(crate) enum DTDPattern {
     NotAllowed,
     Text,
     Value(String),
-    Attribute(QualifiedName, Box<DTDPattern>),
-    Element(QualifiedName, Box<DTDPattern>),
-    Ref(QualifiedName),
+    Attribute((Option<String>, String), Box<DTDPattern>),
+    Element((Option<String>, String), Box<DTDPattern>),
+    Ref((Option<String>, String)),
     Any,
     /*
        This Enum is never used, but it might see application when properly validating ENTITYs.

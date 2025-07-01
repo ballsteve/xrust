@@ -70,11 +70,14 @@ use crate::parser::combinators::whitespace::xpwhitespace;
 use crate::parser::xpath::flwr::{for_expr, if_expr, let_expr};
 use crate::parser::xpath::logic::or_expr;
 use crate::parser::xpath::support::noop;
-use crate::parser::{ParseError, ParseInput, ParserState};
+use crate::parser::{
+    ParseError, ParseInput, ParserState, ParserStateBuilder, StaticState, StaticStateBuilder,
+};
 
 use crate::item::Node;
 use crate::transform::Transform;
 use crate::xdmerror::{Error, ErrorKind};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 /// Parse an XPath expression to produce a [Transform]. The optional [Node] is used to resolve XML Namespaces.
 pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> {
@@ -83,8 +86,17 @@ pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> 
         return Ok(Transform::Empty);
     }
 
-    let state = ParserState::new(None, n, None);
-    match xpath_expr((input, state)) {
+    let state = n.map_or_else(
+        || ParserState::new(),
+        |m| ParserStateBuilder::new().doc(m).build(),
+    );
+    // TODO: define closure that uses Node to lookup in-scope namespaces
+    let mut static_state = StaticStateBuilder::new()
+        .namespace(|_| {
+            NamespaceUri::try_from("urn:xrust").map_err(|_| ParseError::MissingNameSpace)
+        })
+        .build();
+    match xpath_expr((input, state), &mut static_state) {
         Ok((_, x)) => Ok(x),
         Err(err) => match err {
             ParseError::Combinator => Err(Error::new(
@@ -111,8 +123,14 @@ pub fn parse<N: Node>(input: &str, n: Option<N>) -> Result<Transform<N>, Error> 
     }
 }
 
-fn xpath_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> {
-    match expr::<N>()(input) {
+fn xpath_expr<'a, N: Node + 'a, L>(
+    input: ParseInput<'a, N>,
+    ss: &mut StaticState<L>,
+) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
+    match expr::<N, L>()(input, ss) {
         Err(err) => Err(err),
         Ok(((input1, state1), e)) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
@@ -129,12 +147,20 @@ fn xpath_expr<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, Transform
 }
 // Implementation note: cannot use opaque type because XPath expressions are recursive, and Rust *really* doesn't like recursive opaque types. Dynamic trait objects aren't ideal, but compiling XPath expressions is a one-off operation so that shouldn't cause a major performance issue.
 // Implementation note 2: since XPath is recursive, must lazily evaluate arguments to avoid stack overflow.
-pub fn expr<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+pub fn expr<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(map(
         separated_list1(
             map(tuple3(xpwhitespace(), tag(","), xpwhitespace()), |_| ()),
-            expr_single::<N>(),
+            expr_single::<N, L>(),
         ),
         |mut v| {
             if v.len() == 1 {
@@ -146,32 +172,56 @@ pub fn expr<'a, N: Node + 'a>(
     ))
 }
 
-pub(crate) fn expr_wrapper<N: Node>(
+pub(crate) fn expr_wrapper<'a, N: Node + 'a, L>(
     b: bool,
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError>> {
-    Box::new(move |input| {
+) -> Box<
+    dyn Fn(
+        ParseInput<'a, N>,
+        &mut StaticState<L>,
+    ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
+    Box::new(move |input, ss| {
         if b {
-            expr::<N>()(input)
+            expr::<N, L>()(input, ss)
         } else {
-            noop::<N>()(input)
+            noop::<N, L>()(input, ss)
         }
     })
 }
 
 // ExprSingle ::= ForExpr | LetExpr | QuantifiedExpr | IfExpr | OrExpr
-fn expr_single<'a, N: Node + 'a>(
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError> + 'a> {
+fn expr_single<'a, N: Node + 'a, L>() -> Box<
+    dyn Fn(
+            ParseInput<'a, N>,
+            &mut StaticState<L>,
+        ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>
+        + 'a,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
     Box::new(alt4(let_expr(), for_expr(), if_expr(), or_expr()))
 }
 
-pub(crate) fn expr_single_wrapper<N: Node>(
+pub(crate) fn expr_single_wrapper<'a, N: Node + 'a, L>(
     b: bool,
-) -> Box<dyn Fn(ParseInput<N>) -> Result<(ParseInput<N>, Transform<N>), ParseError>> {
-    Box::new(move |input| {
+) -> Box<
+    dyn Fn(
+        ParseInput<'a, N>,
+        &mut StaticState<L>,
+    ) -> Result<(ParseInput<'a, N>, Transform<N>), ParseError>,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError> + 'a,
+{
+    Box::new(move |input, ss| {
         if b {
-            expr_single::<N>()(input)
+            expr_single::<N, L>()(input, ss)
         } else {
-            noop::<N>()(input)
+            noop::<N, L>()(input, ss)
         }
     })
 }

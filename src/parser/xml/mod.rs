@@ -9,7 +9,6 @@ mod strings;
 mod xmldecl;
 
 use crate::item::Node;
-use crate::namespace::NamespaceMap;
 use crate::parser::combinators::map::map;
 use crate::parser::combinators::opt::opt;
 use crate::parser::combinators::tag::tag;
@@ -18,24 +17,35 @@ use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
 use crate::parser::xml::xmldecl::xmldecl;
-use crate::parser::{ParseError, ParseInput, ParserConfig, ParserState};
+use crate::parser::{ParseError, ParseInput, ParserStateBuilder, StaticState, StaticStateBuilder};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
-use std::rc::Rc;
+use qualname::{NamespaceMap, NamespacePrefix, NamespaceUri};
 
-pub fn parse<N: Node>(doc: N, input: &str, config: Option<ParserConfig>) -> Result<N, Error> {
-    let (xmldoc, _) = parse_with_ns(doc, input, config)?;
+pub fn parse<L, N: Node>(doc: N, input: &str, r: Option<L>) -> Result<N, Error>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    let (xmldoc, _) = parse_with_ns(doc, input, r)?;
     Ok(xmldoc)
 }
 
-pub fn parse_with_ns<N: Node>(
+// TODO: Review need for this function.
+// Is returning a NamespaceMap really necessary?
+pub fn parse_with_ns<L, N: Node>(
     doc: N,
     input: &str,
-    config: Option<ParserConfig>,
-) -> Result<(N, Rc<NamespaceMap>), Error> {
-    let state = ParserState::new(Some(doc), None, config);
-    match document((input, state)) {
-        Ok(((_, state1), xmldoc)) => Ok((xmldoc, state1.namespace.clone())),
+    r: Option<L>,
+) -> Result<(N, Option<NamespaceMap>), Error>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    let state = ParserStateBuilder::new().doc(doc).build();
+    let mut static_state = r.map_or(StaticState::new(), |f| {
+        StaticStateBuilder::new().namespace(f).build()
+    });
+    match document((input, state), &mut static_state) {
+        Ok(((_, _), xmldoc)) => Ok((xmldoc, None)),
         Err(err) => {
             match err {
                 ParseError::Combinator => Err(Error::new(
@@ -91,8 +101,14 @@ pub fn parse_with_ns<N: Node>(
     }
 }
 
-fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseError> {
-    match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input) {
+fn document<'a, N: Node, L>(
+    input: ParseInput<'a, N>,
+    ss: &mut StaticState<L>,
+) -> Result<(ParseInput<'a, N>, N), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    match tuple4(opt(utf8bom()), opt(prolog()), element(), opt(misc()))(input, ss) {
         Err(err) => Err(err),
         Ok(((input1, state1), (_, p, e, m))) => {
             //Check nothing remaining in iterator, nothing after the end of the root node.
@@ -143,8 +159,16 @@ fn document<N: Node>(input: ParseInput<N>) -> Result<(ParseInput<N>, N), ParseEr
 }
 
 // prolog ::= XMLDecl misc* (doctypedecl Misc*)?
-fn prolog<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, (Option<XMLDecl>, Vec<N>)), ParseError> {
+fn prolog<'a, N: Node, L>() -> impl Fn(
+    ParseInput<'a, N>,
+    &mut StaticState<L>,
+) -> Result<
+    (ParseInput<'a, N>, (Option<XMLDecl>, Vec<N>)),
+    ParseError,
+>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple4(opt(xmldecl()), misc(), opt(doctypedecl()), misc()),
         |(xmld, mut m1, _dtd, mut m2)| {
@@ -154,6 +178,10 @@ fn prolog<N: Node>(
     )
 }
 
-fn utf8bom<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
+fn utf8bom<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     tag("\u{feff}")
 }

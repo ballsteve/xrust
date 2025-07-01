@@ -9,13 +9,17 @@ use crate::parser::combinators::tuple::{tuple3, tuple4, tuple5, tuple7, tuple8};
 use crate::parser::combinators::wellformed::wellformed;
 use crate::parser::combinators::whitespace::{whitespace0, whitespace1};
 use crate::parser::common::{is_pubid_char, is_pubid_charwithapos};
-use crate::parser::xml::qname::{name, qualname};
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::xml::qname::{name, qualname_to_parts};
+use crate::parser::{ParseError, ParseInput, StaticState};
 use crate::xmldecl::{AttType, DTDDecl};
+use qualname::{NamespacePrefix, NamespaceUri};
 
 //NotationType ::= 'NOTATION' S '(' S? Name (S? '|' S? Name)* S? ')'
-pub(crate) fn notationtype<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, AttType), ParseError> {
+pub(crate) fn notationtype<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, AttType), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple8(
             tag("NOTATION"),
@@ -37,8 +41,11 @@ pub(crate) fn notationtype<N: Node>(
     )
 }
 
-pub(crate) fn notationpublicid<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn notationpublicid<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     alt3(
         map(
             tuple3(
@@ -89,24 +96,27 @@ pub(crate) fn notationpublicid<N: Node>(
     )
 }
 
-pub(crate) fn notation_decl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError> {
-    move |input| match tuple7(
+pub(crate) fn notation_decl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    move |input, ss| match tuple7(
         tag("<!NOTATION"),
         whitespace1(),
-        wellformed(qualname(), |n| !n.to_string().contains(':')),
+        wellformed(qualname_to_parts(), |(p, _)| p.is_none()),
         whitespace1(),
         notationpublicid(),
         //contentspec(), //take_until(">"), //contentspec - TODO Build out.
         whitespace0(),
         tag(">"),
-    )(input)
+    )(input, ss)
     {
-        Ok(((input2, mut state2), (_, _, n, _, s, _, _))) => {
+        Ok(((input2, mut state2), (_, _, (p, l), _, s, _, _))) => {
             state2
                 .dtd
                 .notations
-                .insert(n.to_string(), DTDDecl::Notation(n, s));
+                .insert(l.clone(), DTDDecl::Notation((p, l), s));
             Ok(((input2, state2), ()))
         }
         Err(err) => Err(err),
@@ -114,8 +124,11 @@ pub(crate) fn notation_decl<N: Node>(
 }
 
 #[allow(dead_code)]
-pub(crate) fn ndatadecl<N: Node>(
-) -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, String), ParseError> {
+pub(crate) fn ndatadecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, String), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
     map(
         tuple4(whitespace1(), tag("NDATA"), whitespace1(), name()),
         |(_, _, _, notation)| notation,

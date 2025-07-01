@@ -13,16 +13,20 @@ use crate::parser::xml::chardata::chardata_unicode_codepoint;
 use crate::parser::xml::dtd::externalid::textexternalid;
 use crate::parser::xml::dtd::intsubset::intsubset;
 use crate::parser::xml::dtd::pereference::petextreference;
-use crate::parser::xml::qname::qualname;
-use crate::parser::{ParseError, ParseInput};
+use crate::parser::xml::qname::qualname_to_parts;
+use crate::parser::{ParseError, ParseInput, StaticState};
+use qualname::{NamespacePrefix, NamespaceUri};
 
-pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<N>, ()), ParseError>
+pub(crate) fn gedecl<'a, N: Node, L>()
+-> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, ()), ParseError>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    move |input| match wellformed_ver(
+    move |input, ss| match wellformed_ver(
         tuple7(
             tag("<!ENTITY"),
             whitespace1(),
-            wellformed(qualname(), |n| !n.to_string().contains(':')),
+            wellformed(qualname_to_parts(), |(p, _)| p.is_none()),
             whitespace1(),
             alt3(
                 textexternalid(),
@@ -34,9 +38,9 @@ pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
         ),
         |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_char10(&c)), //XML 1.0
         |(_, _, _, _, s, _, _)| !s.contains(|c: char| !is_unrestricted_char11(&c)), //XML 1.1
-    )(input)
+    )(input, ss)
     {
-        Ok(((input2, mut state2), (_, _, n, _, s, _, _))) => {
+        Ok(((input2, mut state2), (_, _, (_, l), _, s, _, _))) => {
             /*
             Numeric and other entities expanded immediately, since there'll be namespaces and the like to
             deal with later, after that we just store the entity as a string and parse again when called.
@@ -72,40 +76,34 @@ pub(crate) fn gedecl<N: Node>() -> impl Fn(ParseInput<N>) -> Result<(ParseInput<
                     wellformed(take_until_end(), |s| !s.contains('&') && !s.contains('%')),
                 ),
                 |(a, b)| [a, b].concat(),
-            )((s.as_str(), state2.clone()));
+            )((s.as_str(), state2.clone()), ss);
 
             match entityparse {
                 Ok(((_, _), res)) => {
                     if !state2.currentlyexternal {
-                        match intsubset()((res.as_str(), state2.clone())) {
+                        match intsubset()((res.as_str(), state2.clone()), ss) {
                             Ok(_) => {}
-                            Err(_) => return Err(ParseError::NotWellFormed(res)),
+                            Err(_) => return Err(ParseError::NotWellFormed(res.clone())),
                         }
                     };
 
                     /* Entities should always bind to the first value */
                     let replaceable = state2.currentlyexternal;
-                    match state2.dtd.generalentities.get(n.to_string().as_str()) {
+                    match state2.dtd.generalentities.get(l.as_str()) {
                         None => {
-                            state2
-                                .dtd
-                                .generalentities
-                                .insert(n.to_string(), (res, replaceable));
+                            state2.dtd.generalentities.insert(l, (res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         Some((_, true)) => {
                             state2
                                 .dtd
                                 .generalentities
-                                .entry(n.to_string())
+                                .entry(l)
                                 .or_insert((res, replaceable));
                             Ok(((input2, state2), ()))
                         }
                         _ => Ok(((input2, state2), ())),
                     }
-                    //state2.dtd
-                    //    .generalentities.entry(n.to_string())
-                    //    .or_insert(res);
                 }
                 Err(e) => Err(e),
             }

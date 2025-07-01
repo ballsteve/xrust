@@ -8,8 +8,8 @@ use url::Url;
 
 use crate::item::{Item, Node, Sequence, SequenceTrait};
 use crate::parser::datetime::parse as picture_parse;
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
 
@@ -37,6 +37,7 @@ pub fn format_date_time<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    //L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
@@ -93,6 +94,7 @@ pub fn format_date<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    //L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
@@ -150,6 +152,7 @@ pub fn format_time<
     F: FnMut(&str) -> Result<(), Error>,
     G: FnMut(&str) -> Result<N, Error>,
     H: FnMut(&Url) -> Result<String, Error>,
+    //L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,

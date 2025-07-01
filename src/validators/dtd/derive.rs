@@ -1,8 +1,8 @@
-use crate::item::NodeType;
-use crate::qname::QualifiedName;
 use crate::Node;
+use crate::item::NodeType;
+use qualname::QName;
 
-use crate::xmldecl::{DTDPattern, DTD};
+use crate::xmldecl::{DTD, DTDPattern};
 
 pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
     match pat {
@@ -17,9 +17,10 @@ pub(crate) fn is_nullable(pat: DTDPattern) -> bool {
     }
 }
 
-fn contains(nc: QualifiedName, qn: QualifiedName) -> bool {
-    nc.prefix() == qn.prefix() && nc.localname() == qn.localname()
-}
+/*fn contains(nc: QName, qn: QName) -> bool {
+    nc == qn
+    //nc.prefix() == qn.prefix() && nc.localname() == qn.localname()
+}*/
 
 fn after(pat1: DTDPattern, pat2: DTDPattern) -> DTDPattern {
     if pat1 == DTDPattern::NotAllowed || pat2 == DTDPattern::NotAllowed {
@@ -145,7 +146,7 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
         NodeType::Unknown => DTDPattern::NotAllowed,
         NodeType::Text => text_deriv(pat, n.to_string()),
         NodeType::Element => {
-            let mut pat1 = start_tag_open_deriv(pat, n.name().as_ref().clone(), dtd.clone());
+            let mut pat1 = start_tag_open_deriv(pat, n.name().unwrap(), dtd.clone());
             //at this stage, we check if the DTD is for DTDPattern::Any. If it is present, we build a pattern
             //based on the child nodes, so that they are all validated individually.
             match pat1.clone() {
@@ -168,7 +169,10 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
                                 match c.node_type() {
                                     NodeType::Element => {
                                         newpat = DTDPattern::Group(
-                                            Box::new(DTDPattern::Ref(c.name().as_ref().clone())),
+                                            Box::new(DTDPattern::Ref((
+                                                None,
+                                                c.name().unwrap().to_string(),
+                                            ))),
                                             Box::new(newpat),
                                         )
                                     }
@@ -202,9 +206,10 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
                                     match c.node_type() {
                                         NodeType::Element => {
                                             newpat = DTDPattern::Group(
-                                                Box::new(DTDPattern::Ref(
-                                                    c.name().as_ref().clone(),
-                                                )),
+                                                Box::new(DTDPattern::Ref((
+                                                    None,
+                                                    c.name().unwrap().to_string(),
+                                                ))),
                                                 Box::new(newpat),
                                             )
                                         }
@@ -241,7 +246,7 @@ pub(crate) fn child_deriv(pat: DTDPattern, n: impl Node, dtd: DTD) -> DTDPattern
     }
 }
 
-fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPattern {
+fn start_tag_open_deriv(pat: DTDPattern, qn: QName, dtd: DTD) -> DTDPattern {
     //println!("start_tag_open_deriv");
     //println!("    {:?}", &pat);
     //println!("    {:?}", &qn);
@@ -252,7 +257,7 @@ fn start_tag_open_deriv(pat: DTDPattern, qn: QualifiedName, dtd: DTD) -> DTDPatt
         },
         DTDPattern::Any => after(pat, DTDPattern::Empty),
         DTDPattern::Element(nc, pat1) => {
-            if contains(nc, qn) {
+            if nc.1 == qn.local_name() {
                 //TODO THE ERROR MIGHT BE HERE????
 
                 after(*pat1, DTDPattern::Empty)
@@ -327,7 +332,7 @@ fn att_deriv(pat: DTDPattern, att: impl Node) -> DTDPattern {
         ),
         DTDPattern::After(pat1, pat2) => after(att_deriv(*pat1, att), *pat2),
         DTDPattern::Attribute(nc, pat1) => {
-            if contains(nc, att.name().as_ref().clone())
+            if nc.1 == att.name().unwrap().local_name()
                 && value_match(*pat1, att.value().to_string())
             {
                 DTDPattern::Empty

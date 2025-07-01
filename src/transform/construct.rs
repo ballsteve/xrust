@@ -1,12 +1,12 @@
 //! These functions construct nodes, possibly destined for the result document.
 
+use crate::Item;
 use crate::item::{Node, NodeType, Sequence, SequenceTrait};
-use crate::qname::QualifiedName;
-use crate::transform::context::{Context, StaticContext};
 use crate::transform::Transform;
+use crate::transform::context::{Context, StaticContext};
 use crate::value::Value;
 use crate::xdmerror::{Error, ErrorKind};
-use crate::Item;
+use qualname::QName;
 use std::rc::Rc;
 use url::Url;
 
@@ -31,7 +31,7 @@ pub(crate) fn literal_element<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &Rc<QualifiedName>,
+    qn: &QName,
     c: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -48,8 +48,12 @@ pub(crate) fn literal_element<
     // If not, create and add a Namespace node for that namespace.
     // Issue: the tree is being created from the bottom up, so we can't know if an ancestor will declare the namespace.
     // This will result in lots of redundant Namespace nodes.
+    // TODO: find the prefix for the given namespace URI
     if let Some(ns) = qn.namespace_uri() {
-        e.add_namespace(r.new_namespace(ns, qn.prefix())?)?;
+        e.add_namespace(r.new_namespace(
+            Rc::new(Value::from(ns.as_str())),
+            Some(Rc::new(Value::from("a_prefix"))),
+        )?)?;
     }
 
     // Create the content of the new element
@@ -98,8 +102,9 @@ pub(crate) fn element<
     }
     let r = ctxt.rd.clone().unwrap();
 
-    let qnavt = QualifiedName::try_from(ctxt.dispatch(stctxt, qn)?.to_string().as_str())?;
-    let mut e = r.new_element(Rc::new(qnavt))?;
+    let qnavt = QName::try_from(ctxt.dispatch(stctxt, qn)?.to_string().as_str())
+        .map_err(|_| Error::new(ErrorKind::ParseError, "invalid QName"))?;
+    let mut e = r.new_element(qnavt)?;
     ctxt.dispatch(stctxt, c)?.iter().try_for_each(|i| {
         // Item could be a Node or text
         match i {
@@ -167,7 +172,7 @@ pub(crate) fn literal_attribute<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    qn: &Rc<QualifiedName>,
+    qn: &QName,
     t: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -234,11 +239,7 @@ pub(crate) fn literal_processing_instruction<
     }
 
     let pi = ctxt.rd.clone().unwrap().new_processing_instruction(
-        Rc::new(QualifiedName::new(
-            None,
-            None,
-            ctxt.dispatch(stctxt, name)?.to_string(),
-        )),
+        Rc::new(Value::from(ctxt.dispatch(stctxt, name)?.to_string())),
         Rc::new(Value::from(ctxt.dispatch(stctxt, t)?.to_string())),
     )?;
     Ok(vec![Item::Node(pi)])
@@ -257,7 +258,7 @@ pub(crate) fn set_attribute<
 >(
     ctxt: &Context<N>,
     stctxt: &mut StaticContext<N, F, G, H>,
-    atname: &Rc<QualifiedName>,
+    atname: &QName,
     v: &Transform<N>,
 ) -> Result<Sequence<N>, Error> {
     if ctxt.rd.is_none() {
@@ -294,14 +295,14 @@ pub(crate) fn set_attribute<
                 return Err(Error::new(
                     ErrorKind::Unknown,
                     String::from("context item is not an element-type node"),
-                ))
+                ));
             }
         },
         _ => {
             return Err(Error::new(
                 ErrorKind::Unknown,
                 String::from("context item is not a node"),
-            ))
+            ));
         }
     }
     Ok(vec![])
@@ -356,7 +357,7 @@ pub(crate) fn copy<
                             return Err(Error::new(
                                 ErrorKind::NotImplemented,
                                 String::from("not yet implemented"),
-                            ))
+                            ));
                         }
                     }
                 }
