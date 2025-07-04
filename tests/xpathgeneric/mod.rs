@@ -1,11 +1,12 @@
 //! Tests for XPath defined generically
 
 use pkg_version::{pkg_version_major, pkg_version_minor, pkg_version_patch};
+use qualname::{NamespaceUri, NcName, QName};
+use std::ops::Deref;
 use std::rc::Rc;
 use xrust::item::{Item, Node, NodeType, Sequence, SequenceTrait};
 use xrust::parser::xpath::parse;
 use xrust::pattern::Pattern;
-use xrust::qname::QualifiedName;
 use xrust::transform::callable::ActualParameters;
 use xrust::transform::context::{Context, ContextBuilder, StaticContextBuilder};
 use xrust::transform::{Axis, KindTest, NodeMatch, NodeTest, Transform};
@@ -63,13 +64,18 @@ where
     let result: Sequence<N> = dispatch_rig("child::a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0]
+                            .name()
+                            .map_or("--None--".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -92,13 +98,18 @@ where
     let result: Sequence<N> = dispatch_rig("a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0]
+                            .name()
+                            .map_or("--None--".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -121,13 +132,16 @@ where
     let result: Sequence<N> = dispatch_rig("/child::a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -149,13 +163,16 @@ where
     let result: Sequence<N> = dispatch_rig("/a", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -194,13 +211,16 @@ where
     let result: Sequence<N> = dispatch_rig("/child::a/child::b", make_empty_doc, make_doc)?;
     if result.len() == 2 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "b") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -222,13 +242,16 @@ where
     let result: Sequence<N> = dispatch_rig("/a/b", make_empty_doc, make_doc)?;
     if result.len() == 2 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "b") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -257,7 +280,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "a")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "a")
             }
             _ => panic!("not a node"),
         }
@@ -279,7 +302,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -301,7 +324,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -320,7 +343,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -339,7 +362,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "b")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "b")
             }
             _ => panic!("not a node"),
         }
@@ -368,7 +391,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Element);
-                assert_eq!(n.name().to_string(), "a")
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "a")
             }
             _ => panic!("not a node"),
         }
@@ -387,7 +410,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Attribute);
-                assert_eq!(n.name().to_string(), "id");
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "id");
                 assert_eq!(n.value().to_string(), "a1")
             }
             _ => panic!("not a node"),
@@ -406,7 +429,7 @@ where
         match &t {
             Item::Node(n) => {
                 assert_eq!(n.node_type(), NodeType::Attribute);
-                assert_eq!(n.name().to_string(), "id");
+                assert_eq!(n.name().map_or("".to_string(), |m| m.to_string()), "id");
                 assert_eq!(n.value().to_string(), "a1")
             }
             _ => panic!("not a node"),
@@ -436,7 +459,7 @@ where
                 .build()
                 .dispatch(&mut stctxt, &parse("parent::a", None)?)?;
             assert_eq!(s.len(), 1);
-            assert_eq!(s[0].name().to_string(), "a")
+            assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "a")
         }
         _ => panic!("unable to unpack node"),
     }
@@ -463,7 +486,7 @@ where
                 .build()
                 .dispatch(&mut stctxt, &parse("..", None)?)?;
             assert_eq!(s.len(), 1);
-            assert_eq!(s[0].name().to_string(), "a")
+            assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "a")
         }
         _ => panic!("unable to unpack node"),
     }
@@ -1356,11 +1379,10 @@ where
         Transform::Invoke(qn, ap, _) => {
             assert_eq!(
                 qn,
-                Rc::new(QualifiedName::new(
-                    None,
-                    Some("test".to_string()),
-                    "my_func".to_string()
-                ))
+                QName::new_from_parts(
+                    NcName::try_from("test").unwrap(),
+                    Some(NamespaceUri::try_from("my_func").unwrap())
+                )
             );
             match ap {
                 ActualParameters::Positional(v) => {
@@ -1456,13 +1478,16 @@ where
     let result: Sequence<N> = dispatch_rig("@*|node()", make_empty_doc, make_doc)?;
     if result.len() == 1 {
         match &result[0] {
-            Item::Node(n) => match (n.node_type(), n.name().to_string().as_str()) {
+            Item::Node(n) => match (
+                n.node_type(),
+                n.name().map_or("".to_string(), |m| m.to_string()).deref(),
+            ) {
                 (NodeType::Element, "a") => Ok(()),
                 (NodeType::Element, _) => Err(Error::new(
                     ErrorKind::Unknown,
                     format!(
                         "got element named \"{}\", expected \"a\"",
-                        result[0].name().to_string()
+                        result[0].name().map_or("".to_string(), |m| m.to_string())
                     ),
                 )),
                 _ => Err(Error::new(ErrorKind::Unknown, "not an element type node")),
@@ -1504,7 +1529,7 @@ where
             .expect("transform failed");
         s.iter().for_each(|x| eprintln!("got item {:?}", x));
         assert_eq!(s.len(), 1);
-        assert_eq!(s[0].name().to_string(), "b");
+        assert_eq!(s[0].name().map_or("".to_string(), |m| m.to_string()), "b");
         Ok(())
     } else {
         panic!("unable to unpack node")
@@ -1591,11 +1616,11 @@ where
         .expect("failed to parse expression \"key('mykey', 'blue'))\"");
     let mut sd = make_empty_doc();
     let mut top = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("Top"))))
+        .new_element(QName::from_local_name(NcName::try_from("Top").unwrap()))
         .expect("unable to create element");
     sd.push(top.clone()).expect("unable to add node");
     let mut red1 = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("one"))))
+        .new_element(QName::from_local_name(NcName::try_from("one").unwrap()))
         .expect("unable to create element");
     red1.push(
         sd.new_text(Rc::new(Value::from("red")))
@@ -1604,7 +1629,7 @@ where
     .expect("unable to create element");
     top.push(red1).expect("unable to add node");
     let mut blue1 = sd
-        .new_element(Rc::new(QualifiedName::new(None, None, String::from("two"))))
+        .new_element(QName::from_local_name(NcName::try_from("two").unwrap()))
         .expect("unable to create element");
     blue1
         .push(
@@ -1614,11 +1639,7 @@ where
         .expect("unable to create element");
     top.push(blue1).expect("unable to add node");
     let mut yellow1 = sd
-        .new_element(Rc::new(QualifiedName::new(
-            None,
-            None,
-            String::from("three"),
-        )))
+        .new_element(QName::from_local_name(NcName::try_from("three").unwrap()))
         .expect("unable to create element");
     yellow1
         .push(
@@ -1649,7 +1670,10 @@ where
     let seq = ctxt.dispatch(&mut stctxt, &e).expect("evaluation failed");
 
     assert_eq!(seq.len(), 1);
-    assert_eq!(seq[0].name().to_string(), "two");
+    assert_eq!(
+        seq[0].name().map_or("".to_string(), |m| m.to_string()),
+        "two"
+    );
     Ok(())
 }
 

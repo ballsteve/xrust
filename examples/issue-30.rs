@@ -7,14 +7,13 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-use xrust::ErrorKind;
-
 use xrust::item::{Item, Node, SequenceTrait};
+use xrust::parser::ParseError;
 use xrust::parser::xml::parse as xmlparse;
 use xrust::parser::xpath::parse;
 use xrust::transform::context::{ContextBuilder, StaticContextBuilder};
 use xrust::trees::smite::RNode;
-use xrust::xdmerror::Error;
+use xrust::xdmerror::{Error, ErrorKind};
 
 fn main() {
     let args: Vec<String> = env::args().collect();
@@ -62,7 +61,12 @@ fn main() {
     };
     // Parse the XML into a RNode
     let root = RNode::new_document();
-    xmlparse(root.clone(), srcxml.as_str(), None).expect("unable to parse XML");
+    xmlparse(
+        root.clone(),
+        srcxml.as_str(),
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    )
+    .expect("unable to parse XML");
 
     // Create a dynamic transformation context
     let context = ContextBuilder::new()

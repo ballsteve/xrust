@@ -17,35 +17,23 @@ use crate::parser::xml::dtd::doctypedecl;
 use crate::parser::xml::element::element;
 use crate::parser::xml::misc::misc;
 use crate::parser::xml::xmldecl::xmldecl;
-use crate::parser::{ParseError, ParseInput, ParserStateBuilder, StaticState, StaticStateBuilder};
+use crate::parser::{
+    ParseError, ParseInput, ParserState, ParserStateBuilder, StaticState, StaticStateBuilder,
+};
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::XMLDecl;
 use qualname::{NamespaceMap, NamespacePrefix, NamespaceUri};
 
-pub fn parse<L, N: Node>(doc: N, input: &str, r: Option<L>) -> Result<N, Error>
-where
-    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
-{
-    let (xmldoc, _) = parse_with_ns(doc, input, r)?;
-    Ok(xmldoc)
-}
-
-// TODO: Review need for this function.
-// Is returning a NamespaceMap really necessary?
-pub fn parse_with_ns<L, N: Node>(
-    doc: N,
+pub fn parse_with_state<N: Node, L>(
     input: &str,
-    r: Option<L>,
-) -> Result<(N, Option<NamespaceMap>), Error>
+    ps: ParserState<N>,
+    mut ss: StaticState<L>,
+) -> Result<N, Error>
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
-    let state = ParserStateBuilder::new().doc(doc).build();
-    let mut static_state = r.map_or(StaticState::new(), |f| {
-        StaticStateBuilder::new().namespace(f).build()
-    });
-    match document((input, state), &mut static_state) {
-        Ok(((_, _), xmldoc)) => Ok((xmldoc, None)),
+    match document((input, ps), &mut ss) {
+        Ok(((_, _), xmldoc)) => Ok(xmldoc),
         Err(err) => {
             match err {
                 ParseError::Combinator => Err(Error::new(
@@ -99,6 +87,32 @@ where
             }
         }
     }
+}
+
+// TODO: remove Option<L> argument
+pub fn parse<L, N: Node>(doc: N, input: &str, r: Option<L>) -> Result<N, Error>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    let (xmldoc, _) = parse_with_ns(doc, input, r)?;
+    Ok(xmldoc)
+}
+
+// TODO: Review need for this function.
+// Is returning a NamespaceMap really necessary?
+pub fn parse_with_ns<L, N: Node>(
+    doc: N,
+    input: &str,
+    r: Option<L>,
+) -> Result<(N, Option<NamespaceMap>), Error>
+where
+    L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
+{
+    let state = ParserStateBuilder::new().doc(doc).build();
+    let static_state = r.map_or(StaticState::new(), |f| {
+        StaticStateBuilder::new().namespace(f).build()
+    });
+    Ok((parse_with_state(input, state, static_state)?, None))
 }
 
 fn document<'a, N: Node, L>(

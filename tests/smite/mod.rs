@@ -2,10 +2,10 @@
 
 use std::rc::Rc;
 
+use qualname::{NamespaceMap, QName};
 use xrust::item::{Item, Node};
-use xrust::namespace::NamespaceMap;
+use xrust::parser::ParseError;
 use xrust::parser::xml::{parse as xmlparse, parse_with_ns};
-use xrust::qname::QualifiedName;
 use xrust::trees::smite::RNode;
 use xrust::value::Value;
 use xrust::xdmerror::Error;
@@ -20,7 +20,7 @@ pub fn make_empty_doc_cooked() -> Result<RNode, Error> {
 }
 
 #[allow(dead_code)]
-pub fn make_doc(n: Rc<QualifiedName>, v: Value) -> RNode {
+pub fn make_doc(n: QName, v: Value) -> RNode {
     let mut d = RNode::new_document();
     let mut child = d.new_element(n).expect("unable to create element");
     d.push(child.clone()).expect("unable to add element node");
@@ -39,7 +39,7 @@ pub fn make_sd_raw() -> RNode {
     let doc = RNode::new_document();
     xmlparse(doc.clone(),
              "<a id='a1'><b id='b1'><a id='a2'><b id='b2'/><b id='b3'/></a><a id='a3'><b id='b4'/><b id='b5'/></a></b><b id='b6'><a id='a4'><b id='b7'/><b id='b8'/></a><a id='a5'><b id='b9'/><b id='b10'/></a></b></a>",
-             None).expect("unable to parse XML");
+             Some(|_: &_| Err(ParseError::MissingNameSpace))).expect("unable to parse XML");
     doc
 }
 #[allow(dead_code)]
@@ -54,13 +54,21 @@ pub fn make_sd() -> Item<RNode> {
 #[allow(dead_code)]
 pub fn make_from_str(s: &str) -> Result<RNode, Error> {
     let doc = RNode::new_document();
-    xmlparse(doc.clone(), s, None)?;
+    xmlparse(
+        doc.clone(),
+        s,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    )?;
     Ok(doc)
 }
 
 #[allow(dead_code)]
-pub fn make_from_str_with_ns(s: &str) -> Result<(RNode, Rc<NamespaceMap>), Error> {
+pub fn make_from_str_with_ns(s: &str) -> Result<(RNode, Option<NamespaceMap>), Error> {
     let doc = RNode::new_document();
-    let r = parse_with_ns(doc.clone(), s, None)?;
+    let r = parse_with_ns(
+        doc.clone(),
+        s,
+        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+    )?;
     Ok(r)
 }
