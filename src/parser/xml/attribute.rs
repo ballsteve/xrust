@@ -50,13 +50,14 @@ where
             // Create namespace declaration nodes
             // and update in-scope namespace map
             // TODO: use try_collect()
+            eprintln!("processing ns decls: {:?}", ns_decls);
             let mut nsd_vec: Vec<N> = vec![];
             let _ = ns_decls
                 .iter()
                 .try_for_each(|((prefix, local_part), value)| {
                     match (prefix.as_deref(), local_part.as_str(), value.as_str()) {
                         (Some("xmlns"), "xmlns", "http://www.w3.org/2000/xmlns/") => {
-                            state1.in_scope_namespaces.borrow_mut().push(
+                            ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
                                     NamespacePrefix::try_from("xmlns").unwrap(),
                                     NamespaceUri::try_from("http://www.w3.org/2000/xmlns/")
@@ -81,7 +82,7 @@ where
                             String::from("cannot redefine namespace"),
                         )),
                         (Some("xmlns"), "xml", "http://www.w3.org/XML/1998/namespace") => {
-                            state1.in_scope_namespaces.borrow_mut().push(
+                            ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
                                     NamespacePrefix::try_from("xml").unwrap(),
                                     NamespaceUri::try_from("http://www.w3.org/XML/1998/namespace")
@@ -129,7 +130,8 @@ where
                             }
                         }
                         (Some("xmlns"), p, v) => {
-                            state1.in_scope_namespaces.borrow_mut().push(
+                            eprintln!("adding ns ({:?},{:?}) to in-scope", p, v);
+                            ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
                                     NamespacePrefix::try_from(p).unwrap(),
                                     NamespaceUri::try_from(v).unwrap(),
@@ -150,7 +152,8 @@ where
                             Ok(())
                         }
                         (None, "xmlns", v) => {
-                            state1.in_scope_namespaces.borrow_mut().push(
+                            eprintln!("adding unprefixed ns ({:?}) to in-scope", v);
+                            ss.in_scope_namespaces.push(
                                 NamespaceDeclaration::new(
                                     NamespacePrefix::try_from("").unwrap(),
                                     NamespaceUri::try_from(v).unwrap(),
@@ -189,7 +192,7 @@ where
                                 doc.new_attribute(
                                     QName::new_from_parts(
                                         NcName::try_from("space").unwrap(),
-                                        state1.in_scope_namespaces.borrow().namespace_uri(
+                                        ss.in_scope_namespaces.namespace_uri(
                                             &NamespacePrefix::try_from("xml").unwrap(),
                                         ),
                                     ),
@@ -209,7 +212,7 @@ where
                                 doc.new_attribute(
                                     QName::new_from_parts(
                                         NcName::try_from("space").unwrap(),
-                                        state1.in_scope_namespaces.borrow().namespace_uri(
+                                        ss.in_scope_namespaces.namespace_uri(
                                             &NamespacePrefix::try_from("xml").unwrap(),
                                         ),
                                     ),
@@ -238,9 +241,8 @@ where
                                             ))
                                         })?,
                                         Some(
-                                            state1
+                                            ss
                                                 .in_scope_namespaces
-                                                .borrow()
                                                 .namespace_uri(&NamespacePrefix::try_from(p).map_err(|_| {
                                                     ParseError::NotWellFormed(String::from(
                                                         "unable to resolve namespace prefix",

@@ -24,6 +24,7 @@ where
 
 /// This is a special combinator, it will reset namespaces on the parser state between iterations
 /// It is only intended for use when parsing the children of an element node.
+/// TODO: consider the performance of copying the NamespaceMap for every iteration. Perhaps copy-on-write?
 pub fn many0nsreset<'a, P, R, N: Node, L>(
     parser: P,
 ) -> impl Fn(ParseInput<'a, N>, &mut StaticState<L>) -> Result<(ParseInput<'a, N>, Vec<R>), ParseError>
@@ -33,15 +34,16 @@ where
 {
     //TODO ERROR IF ANY ERROR OTHER THAN COMBINATOR RETURNED.
 
-    move |(mut input, mut state), ss| {
+    move |(mut input, state), ss| {
         let mut result = Vec::new();
-        let namespaces = state.in_scope_namespaces.clone();
+        let namespaces = ss.in_scope_namespaces.clone();
+        eprintln!("many0nsreset: starting with nsmap:\n{:?}", namespaces);
 
-        while let Ok(((input2, mut state2), next_item)) = parser((input, state.clone()), ss) {
+        while let Ok(((input2, _state2), next_item)) = parser((input, state.clone()), ss) {
             result.push(next_item);
             input = input2;
-            state2.in_scope_namespaces = namespaces.clone();
-            state = state2;
+            eprintln!("discarding nsmap: \n{:?}", ss.in_scope_namespaces);
+            ss.in_scope_namespaces = namespaces.clone();
         }
 
         Ok(((input, state), result))

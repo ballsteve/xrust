@@ -3,6 +3,7 @@
 University of Edinburgh XML 1.0 4th edition errata test suite.
 
 */
+use qualname::NamespacePrefix;
 use std::fs;
 use xrust::item::{Node, NodeType};
 use xrust::parser::xml;
@@ -159,7 +160,11 @@ fn parser_config_id_1() {
     let parseresult = xml::parse(
         testxml,
         doc,
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|_: &_| {
+            Err(ParseError::NotWellFormed(
+                "tried to resolve namespace prefix".to_string(),
+            ))
+        }),
     );
 
     assert!(parseresult.is_err());
@@ -468,9 +473,6 @@ fn parser_issue_132_full() {
         Some(|_: &_| Err(ParseError::MissingNameSpace)),
     );
 
-    if let Err(e) = &parseresult {
-        eprintln!("Parse error: {:?}", e)
-    };
     assert!(parseresult.is_ok());
 }
 
@@ -485,11 +487,13 @@ fn parser_issue_132_minimal() {
     let parseresult = xml::parse(
         testxml,
         doc,
-        Some(|_: &_| Err(ParseError::MissingNameSpace)),
+        Some(|p: &NamespacePrefix| {
+            Err(ParseError::NotWellFormed(format!(
+                "prefix: {}",
+                p.to_string()
+            )))
+        }),
     );
 
-    if let Err(e) = &parseresult {
-        eprintln!("Parse error: {:?}", e)
-    };
     assert!(parseresult.is_ok());
 }

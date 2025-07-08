@@ -119,7 +119,7 @@ fn serializer_4() {
         Testing the XML output, mixed content
     */
 
-    let data = r#"<content att1='val1' xmlns:a='someothernamespace' att2='val2' xmlns='somenamespace' a:att4='val4' someatt='val5' other='valx'>
+    let data = r#"<content att1='val1' xmlns:a='someothernamespace' att2='val2' xmlns='somenamespace' someatt='val5' other='valx' a:att4='val4'>
     <content2>text</content2>
     <content3/>
     <content4 xmlns='thirdnamespace' a:something='test'>text3</content4>
@@ -146,7 +146,7 @@ fn serializer_4() {
     </content>");
 
      */
-    assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' other='valx' someatt='val5' a:att4='val4'>
+    assert_eq!(xml_output, "<content xmlns='somenamespace' xmlns:a='someothernamespace' att1='val1' att2='val2' a:att4='val4' other='valx' someatt='val5'>
     <content2>text</content2>
     <content3></content3>
     <content4 xmlns='thirdnamespace' a:something='test'>text3</content4>

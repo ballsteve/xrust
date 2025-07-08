@@ -132,8 +132,8 @@ where
                    we now check those cases to ensure that all IDs needed were reported.
                 */
                 if state1.id_tracking {
-                    for idref in state1.ids_pending.iter() {
-                        match state1.ids_read.get(idref) {
+                    for idref in ss.ids_pending.iter() {
+                        match ss.ids_read.get(idref) {
                             None => return Err(ParseError::IDError(String::from("ID missing"))),
                             Some(_) => {}
                         }

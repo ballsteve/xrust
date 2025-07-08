@@ -1077,8 +1077,14 @@ fn to_prefixed_name(n: &RNode) -> String {
                 // Unprefixed name
                 String::from(qn.local_name())
             } else {
+                eprintln!(
+                    "need prefix for {}, local-part {}",
+                    qn.namespace_uri().unwrap().as_str(),
+                    qn.local_name()
+                );
                 let uns = ns.unwrap();
                 n.namespace_iter()
+                    .inspect(|f| eprintln!("inspect: f \"{}\"", f.value().to_string()))
                     .find(|m| m.value().to_string() == uns.as_str())
                     .map_or_else(
                         || panic!("unable to find namespace"),
@@ -1407,24 +1413,38 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
             match nsiter.next() {
                 Some((_, n)) => {
                     // Is there an inner scope?
-                    let nnu = n.name().unwrap();
-                    let np = nnu.local_name();
-                    let npo = if np.to_string().is_empty() {
-                        None
+                    eprintln!(
+                        "find_ns: n type {:?} name {:?} value {:?}",
+                        n.node_type(),
+                        n.name(),
+                        n.value()
+                    );
+                    // The default namespace should be represented by a None name.
+                    // However, it might be represented by a prefix that is an empty string.
+                    // Just in case, map an empty string to a None
+                    let npo: Option<String> = if let Some(qn) = n.name() {
+                        if qn.local_name().is_empty() {
+                            None
+                        } else {
+                            Some(qn.local_name().to_string())
+                        }
                     } else {
-                        Some(np)
+                        None
                     };
                     if let Some(_) = nn.in_scope.iter().find(|f| {
-                        f.is_none() && npo.is_none()
-                            || f.as_ref().is_some_and(|g| g.to_string().as_str() == np)
+                        (f.is_none() && npo.is_none())
+                            || f.as_ref().is_some_and(|g| {
+                                g.to_string().as_str() == npo.as_ref().map_or("", |np| np.as_str())
+                            })
                     }) {
                         // Yes, so don't include this outer scope declaration
                         nn.ns_it = Some(nsiter);
                         find_ns(nn)
                     } else {
                         // No, so this declaration is the inner scope
-                        nn.in_scope
-                            .push(Some(Rc::new(Value::from(n.name().unwrap().local_name()))));
+                        nn.in_scope.push(Some(Rc::new(Value::from(
+                            npo.as_ref().map_or("", |np| np.as_str()),
+                        ))));
                         nn.ns_it = Some(nsiter);
                         Some(n.clone())
                     }
@@ -1449,23 +1469,29 @@ fn find_ns(nn: &mut NamespaceNodes) -> Option<RNode> {
                 match nsiter.next() {
                     Some((_, n)) => {
                         // Is there an inner scope?
-                        let nnu = n.name().unwrap();
-                        let np = nnu.local_name();
-                        let npo = if np.to_string().is_empty() {
-                            None
+                        let npo: Option<String> = if let Some(qn) = n.name() {
+                            if qn.local_name().is_empty() {
+                                None
+                            } else {
+                                Some(qn.local_name().to_string())
+                            }
                         } else {
-                            Some(np)
+                            None
                         };
                         if let Some(_) = nn.in_scope.iter().find(|f| {
-                            f.is_none() && npo.is_none()
-                                || f.as_ref().is_some_and(|g| g.to_string().as_str() == np)
+                            (f.is_none() && npo.is_none())
+                                || f.as_ref().is_some_and(|g| {
+                                    g.to_string().as_str()
+                                        == npo.as_ref().map_or("", |np| np.as_str())
+                                })
                         }) {
                             nn.ns_it = Some(nsiter);
                             find_ns(nn)
                         } else {
                             // No, so this declaration is the inner scope
-                            nn.in_scope
-                                .push(Some(Rc::new(Value::from(n.name().unwrap().local_name()))));
+                            nn.in_scope.push(Some(Rc::new(Value::from(
+                                npo.as_ref().map_or("", |np| np.as_str()),
+                            ))));
                             nn.ns_it = Some(nsiter);
                             Some(n.clone())
                         }

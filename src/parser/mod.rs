@@ -9,10 +9,8 @@ use crate::item::Node;
 use crate::xdmerror::{Error, ErrorKind};
 use crate::xmldecl::DTD;
 use qualname::{NamespaceMap, NamespacePrefix, NamespaceUri};
-use std::cell::RefCell;
 use std::collections::HashSet;
 use std::fmt;
-use std::rc::Rc;
 
 pub mod avt;
 pub mod combinators;
@@ -52,65 +50,20 @@ pub enum ParseError {
     IDError(String),
 }
 
-/*
-pub struct ParserConfig<L>
-where
-    L: FnMut(NamespacePrefix) -> Result<NamespaceUri, Error>, // Resolves namespace prefix to namespace URI
-{
-    /// If you need to resolve external DTDs, you will need to provide your own resolver.
-    pub ext_dtd_resolver: Option<URLResolver>,
-    /// The location of the string being parsed, which can be provided to your resolver to work out
-    /// relative URLs
-    pub docloc: Option<String>,
-    /// Recursive entity depth, please note that setting this to a high value may leave
-    /// you prone to the "billion laughs" attack. Set to eight by default.
-    pub entitydepth: usize,
-    /// Creates attributes as specified in ATTLIST declarations in the DTD. Currently only adds
-    /// attributes where a default or fixed value is declared, does not enforce anything.
-    /// Set to true by default.
-    pub attr_defaults: bool,
-    /// Track and assign XML IDs based on the DTDs.
-    pub id_tracking: bool,
-    /// A method for resolving a namespace prefix to a namespace URI
-    pub ns_resolver: Option<L>,
-}
-
-impl<L> Default for ParserConfig<L>
-where
-    L: FnMut(NamespacePrefix) -> Result<NamespaceUri, Error>,
-{
-    fn default() -> Self {
-        Self::new()
-    }
-}
-impl<L> ParserConfig<L>
-where
-    L: FnMut(NamespacePrefix) -> Result<NamespaceUri, Error>,
-{
-    pub fn new() -> Self {
-        ParserConfig {
-            ext_dtd_resolver: None,
-            docloc: None,
-            entitydepth: 8,
-            attr_defaults: true,
-            id_tracking: true,
-            ns_resolver: None,
-        }
-    }
-    pub fn set_namespace_resolver(&mut self, r: L) {
-        self.ns_resolver = Some(r)
-    }
-}
-*/
-
-//pub trait NSResolver: FnOnce(NamespacePrefix) -> Result<NamespaceUri, Error> + Clone {}
-
-/// Parser state configuration that cannot be cloned
-#[derive(Default)]
+/// Parser state configuration that cannot be cloned.
+/// Also state that needs to be persistent during parsing.
 pub struct StaticState<L>
 where
     L: FnMut(&NamespacePrefix) -> Result<NamespaceUri, ParseError>,
 {
+    // The in-scope namespace declarations.
+    // This will be reset when the parsing context changes
+    pub(crate) in_scope_namespaces: NamespaceMap,
+
+    // Tracking ID-type attributes
+    ids_read: HashSet<String>,
+    ids_pending: HashSet<String>,
+
     /*
        A method for resolving a prefix to a namespace URI.
     */
@@ -128,6 +81,9 @@ where
         Self {
             namespace: None,
             ext_dtd_resolver: None,
+            in_scope_namespaces: NamespaceMap::new(),
+            ids_read: Default::default(),
+            ids_pending: Default::default(),
         }
     }
     pub fn resolve(&self, locdir: Option<String>, uri: String) -> Result<String, Error> {
@@ -180,15 +136,10 @@ pub struct ParserState<N: Node> {
     /*
       ID tracking:
       ids_read covers all IDs for duplicate checking. Where an IDREF is found and the ID is not
-      yet encountered, we pull into ids_pending and will review those when we have finished
+      yet encountered, we pull into StaticState::ids_pending and will review those when we have finished
       parsing the document.
     */
     id_tracking: bool,
-    ids_read: HashSet<String>,
-    ids_pending: HashSet<String>,
-
-    /* Track namespace declarations while building the tree */
-    pub(crate) in_scope_namespaces: Rc<RefCell<NamespaceMap>>,
 
     standalone: bool,
     xmlversion: String,
@@ -221,10 +172,7 @@ impl<N: Node> ParserState<N> {
             dtd: DTD::new(),
             standalone: false,
             xmlversion: "1.0".to_string(), // Always assume 1.0
-            in_scope_namespaces: Rc::new(RefCell::new(NamespaceMap::new())),
-            id_tracking: false,
-            ids_read: Default::default(),
-            ids_pending: Default::default(),
+            id_tracking: true,
             maxentitydepth: 8,
             attr_defaults: true,
             currententitydepth: 1,

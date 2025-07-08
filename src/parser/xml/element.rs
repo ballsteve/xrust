@@ -66,17 +66,14 @@ where
     {
         Err(err) => Err(err),
         Ok((
-            (input1, mut state1),
+            (input1, state1),
             (_, (prefix, local_part), (av, namespaces), _, _, c, _, _, _, _),
         )) => {
             // Need to resolve element name to create element node,
             // then we can add namespace declarations.
             // Processing the attribute list updates the in-scope namespaces in the state
-
             let nsuri = prefix.as_ref().map(|p| {
-                state1
-                    .in_scope_namespaces
-                    .borrow()
+                ss.in_scope_namespaces
                     .namespace_uri(&NamespacePrefix::try_from(p.as_str()).unwrap()) // Creating the prefix cannot fail, since it has already been parsed
                     // if this returns None then prefix lookup failed
                     .ok_or(ParseError::MissingNameSpace)
@@ -84,6 +81,7 @@ where
             if let Some(Err(e)) = nsuri {
                 return Err(e);
             }
+            eprintln!("creating element !{}!{:?}", local_part.as_str(), nsuri);
             let elementname = QName::new_from_parts(
                 NcName::try_from(local_part.as_str()).unwrap(), // creating NcName cannot fail, since we have already parsed it
                 nsuri.map(|p| p.unwrap()), // we've guarded for the error case, see above
@@ -100,18 +98,21 @@ where
                 .new_element(elementname)
                 .expect("unable to create element");
 
-            // Add namespace declarations
-            namespaces
-                .iter()
-                .try_for_each(|nsd| e.push(nsd.clone()))
-                .map_err(|_| ParseError::MissingNameSpace)?;
-
             // Looking up the DTD, seeing if there are any attributes we should populate
             // Remember, DTDs don't have namespaces, you need to lookup based on prefix and local name!
             // We generate the attributes in two sweeps:
             // Once for attributes declared on the element and once for the DTD default attribute values.
 
-            let attlist = state1.dtd.attlists.get(&(prefix, local_part));
+            let attlist = state1
+                .dtd
+                .attlists
+                .get(&(prefix.clone(), local_part.clone()));
+            eprintln!(
+                "for element {:?}:{} found attlist {:?}",
+                prefix,
+                local_part.clone(),
+                attlist
+            );
 
             match attlist {
                 None => {
@@ -153,7 +154,7 @@ where
                                         |ap| {
                                             QName::new_from_parts(
                                                 NcName::try_from(attlocalname.as_str()).unwrap(),
-                                                state1.in_scope_namespaces.borrow().namespace_uri(
+                                                ss.in_scope_namespaces.namespace_uri(
                                                     &NamespacePrefix::try_from(ap.as_str())
                                                         .unwrap(),
                                                 ), // TODO: return error if no namespace found
@@ -176,18 +177,19 @@ where
                     }
 
                     for attnode in av.into_iter() {
-                        match atts.get(&(
+                        let thisatprefix =
                             attnode.name().unwrap().namespace_uri().map_or(None, |ns| {
-                                state1
-                                    .in_scope_namespaces
-                                    .borrow()
-                                    .prefix(&ns)
-                                    .map(|p| p.to_string())
-                            }),
-                            attnode.name().unwrap().local_name().to_string(),
-                        )) {
+                                ss.in_scope_namespaces.prefix(&ns).map(|p| p.to_string())
+                            });
+                        let thisatlocalpart = attnode.name().unwrap().local_name().to_string();
+                        eprintln!(
+                            "looking in atts for ({:?},{:?})",
+                            thisatprefix, thisatlocalpart
+                        );
+                        match atts.get(&(thisatprefix, thisatlocalpart)) {
                             //No DTD found, we just create the value
                             None => {
+                                eprintln!("nothing found");
                                 //Ordinarily, you'll just treat attributes as CDATA and not normalize, however we need to check xml:id
                                 let av = if attnode.name().unwrap() == *XMLID {
                                     attnode.value().to_string().trim().replace("  ", " ")
@@ -203,12 +205,14 @@ where
                                 e.add_attribute(a).expect("unable to add attribute")
                             }
                             Some((atttype, _, _)) => {
+                                eprintln!("found atttype {:?}", atttype);
                                 //https://www.w3.org/TR/xml11/#AVNormalize
                                 let av = match atttype {
                                     AttType::CDATA => attnode.value().to_string(),
                                     _ => attnode.value().to_string().trim().replace("  ", " "),
                                 };
                                 //Assign IDs only if we are tracking.
+                                eprintln!("ID tracking? {}", state1.id_tracking);
                                 let v = match (atttype, state1.id_tracking) {
                                     (AttType::ID, true) => Rc::new(Value::ID(av.clone())),
                                     (AttType::IDREF, true) => Rc::new(Value::IDREF(av.clone())),
@@ -217,6 +221,7 @@ where
                                     )),
                                     (_, _) => Rc::new(Value::from(av.clone())),
                                 };
+                                eprintln!("value is {:?}", v);
                                 if atttype == &AttType::NMTOKENS && av.is_empty() {
                                     return Err(ParseError::NotWellFormed(
                                         "NMTOKENs must not be empty".to_string(),
@@ -249,7 +254,7 @@ where
             if state1.id_tracking {
                 for attribute in e.attribute_iter() {
                     if attribute.is_id() {
-                        match state1.ids_read.insert(attribute.to_string()) {
+                        match ss.ids_read.insert(attribute.to_string()) {
                             true => {}
                             false => {
                                 //Value already existed!
@@ -269,10 +274,10 @@ where
                             return Err(ParseError::IDError("IDREFs cannot be empty".to_string()));
                         } else {
                             for idref in attribute.value().to_string().split_whitespace() {
-                                match state1.ids_read.get(idref) {
+                                match ss.ids_read.get(idref) {
                                     Some(_) => {}
                                     None => {
-                                        state1.ids_pending.insert(idref.to_string());
+                                        ss.ids_pending.insert(idref.to_string());
                                     }
                                 }
                             }
